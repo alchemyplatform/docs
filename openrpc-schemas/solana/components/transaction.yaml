@@ -1,0 +1,254 @@
+# transaction-schemas.yaml
+
+SendTransactionConfig:
+  title: SendTransaction Configuration
+  type: object
+  properties:
+    encoding:
+      type: string
+      description: Encoding used for the transaction data.
+      enum:
+        - base58
+        - base64
+      default: base58
+    skipPreflight:
+      type: boolean
+      description: Skip preflight transaction checks if `true`.
+      default: false
+    preflightCommitment:
+      $ref: "#/components/schemas/Commitment"
+      description: Commitment level to use for preflight.
+      default: finalized
+    maxRetries:
+      type: integer
+      description: Maximum retries for the RPC node to send the transaction.
+    minContextSlot:
+      $ref: "#/components/schemas/MinContextSlot"
+
+SendTransactionResult:
+  title: Send Transaction Result
+  type: string
+  description: The transaction signature as a base-58 encoded string.
+
+SimulateTransactionConfig:
+  title: SimulateTransaction Configuration
+  type: object
+  properties:
+    commitment:
+      $ref: "#/components/schemas/Commitment"
+      default: finalized
+    sigVerify:
+      type: boolean
+      description: If true, the transaction signatures will be verified.
+      default: false
+    replaceRecentBlockhash:
+      type: boolean
+      description: If true, replaces recent blockhash with the most recent one.
+      default: false
+    minContextSlot:
+      $ref: "#/components/schemas/MinContextSlot"
+    encoding:
+      type: string
+      description: Encoding used for the transaction data.
+      enum:
+        - base58
+        - base64
+      default: base58
+    innerInstructions:
+      type: boolean
+      description: If true, includes inner instructions in the response.
+      default: false
+    accounts:
+      $ref: "#/components/schemas/SimulateTransactionAccountsConfig"
+
+SimulateTransactionAccountsConfig:
+  title: SimulateTransaction Accounts Configuration
+  type: object
+  properties:
+    addresses:
+      type: array
+      items:
+        $ref: "#/components/schemas/Pubkey"
+      description: An array of account Pubkeys to return.
+    encoding:
+      $ref: "#/components/schemas/Encoding"
+      description: Encoding for returned account data.
+      default: base64
+
+SimulatedTransactionResult:
+  title: Simulated Transaction Result
+  type: object
+  properties:
+    err:
+      type: string
+      nullable: true
+      description: Error if the transaction failed, null if succeeded.
+    logs:
+      type: array
+      nullable: true
+      items:
+        type: string
+      description: Log messages output during execution.
+    accounts:
+      type: array
+      nullable: true
+      items:
+        $ref: "#/components/schemas/AccountInfo"
+      description: Array of account information.
+    unitsConsumed:
+      type: integer
+      description: Compute budget units consumed.
+    returnData:
+      $ref: "#/components/schemas/ReturnData"
+    innerInstructions:
+      type: object
+      nullable: true
+      description: Inner instructions if `innerInstructions` is true.
+
+ReturnData:
+  title: Return Data
+  type: object
+  nullable: true
+  properties:
+    programId:
+      $ref: "#/components/schemas/Pubkey"
+      description: Program that generated the return data.
+    data:
+      type: array
+      items:
+        type: string
+      description: Return data as base-64 encoded binary data.
+
+GetSignaturesForAddressConfig:
+  title: GetSignaturesForAddress Configuration
+  type: object
+  properties:
+    commitment:
+      $ref: "#/components/schemas/Commitment"
+    minContextSlot:
+      $ref: "#/components/schemas/MinContextSlot"
+    limit:
+      type: integer
+      description: The maximum number of transaction signatures to return (between 1 and 1,000).
+      default: 1000
+    before:
+      type: string
+      description: Start searching backwards from this transaction signature.
+    until:
+      type: string
+      description: Search until this transaction signature, if found before the limit is reached.
+
+SignatureInfo:
+  title: Signature Information
+  type: object
+  properties:
+    signature:
+      type: string
+      description: The transaction signature as a base-58 encoded string.
+    slot:
+      type: integer
+      description: The slot that contains the block with the transaction.
+    err:
+      type: object
+      nullable: true
+      description: Error if the transaction failed, null if the transaction succeeded.
+    memo:
+      type: string
+      nullable: true
+      description: The memo associated with the transaction, null if no memo is present.
+    blockTime:
+      type: integer
+      nullable: true
+      description: The estimated production time of the transaction as a Unix timestamp, null if not available.
+    confirmationStatus:
+      type: string
+      nullable: true
+      description: The transaction's cluster confirmation status, either `processed`, `confirmed`, or `finalized`.
+
+TransactionStatus:
+  title: Transaction Status
+  type: object
+  properties:
+    slot:
+      type: integer
+      description: The slot in which the transaction was processed.
+    confirmations:
+      type: integer
+      nullable: true
+      description: The number of blocks since signature confirmation, or null if rooted and finalized.
+    err:
+      type: object
+      nullable: true
+      description: Error if the transaction failed, or null if the transaction succeeded.
+    confirmationStatus:
+      type: string
+      nullable: true
+      description: The transaction's cluster confirmation status.
+    status:
+      type: object
+      description: DEPRECATED. The transaction status.
+
+GetSignatureStatusesConfig:
+  title: GetSignatureStatuses Configuration
+  type: object
+  properties:
+    searchTransactionHistory:
+      type: boolean
+      description: If true, searches the ledger cache for any signatures not found in the recent status cache.
+
+GetTransactionConfig:
+  title: GetTransaction Configuration
+  type: object
+  properties:
+    commitment:
+      $ref: "#/components/schemas/Commitment"
+      description: Commitment level to use. `Processed` is not supported.
+    maxSupportedTransactionVersion:
+      type: integer
+      description: Sets the max transaction version to return.
+    encoding:
+      type: string
+      description: Encoding format for the returned transaction.
+      enum:
+        - json
+        - jsonParsed
+        - base64
+        - base58
+
+TransactionDetails:
+  title: Transaction Details
+  type: object
+  properties:
+    slot:
+      type: integer
+      description: The slot this transaction was processed in.
+    transaction:
+      oneOf:
+        - type: object
+          description: The transaction details in JSON format.
+        - type: string
+          description: The transaction details as encoded binary data.
+      description: The transaction details, either in JSON format or encoded binary data.
+    blockTime:
+      type: integer
+      nullable: true
+      description: Estimated production time as a Unix timestamp.
+    meta:
+      type: object
+      nullable: true
+      description: Transaction status metadata.
+    version:
+      oneOf:
+        - type: string
+        - type: number
+      nullable: true
+      description: Transaction version.
+
+SlotConfig:
+  title: Slot Configuration
+  type: object
+  properties:
+    commitment:
+      $ref: "#/components/schemas/Commitment"
+    minContextSlot:
+      $ref: "#/components/schemas/MinContextSlot"

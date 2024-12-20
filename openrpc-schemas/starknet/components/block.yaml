@@ -1,0 +1,407 @@
+BLOCK_ID:
+  title: Block id
+  description: Block hash, number or tag
+  oneOf:
+    - title: Block hash
+      type: object
+      required:
+        - block_hash
+      properties:
+        block_hash:
+          title: Block hash
+          $ref: "#/components/schemas/BLOCK_HASH"
+    - title: Block number
+      type: object
+      required:
+        - block_number
+      properties:
+        block_number:
+          title: Block number
+          $ref: "#/components/schemas/BLOCK_NUMBER"
+    - $ref: "#/components/schemas/BLOCK_TAG"
+
+BLOCK_BODY_WITH_TX_HASHES:
+  title: Block body with transaction hashes
+  type: object
+  required:
+    - transactions
+  properties:
+    transactions:
+      title: Transaction hashes
+      description: The hashes of the transactions included in this block
+      type: array
+      items:
+        description: The hash of a single transaction
+        $ref: "#/components/schemas/TXN_HASH"
+
+BLOCK_BODY_WITH_TXS:
+  title: Block body with transactions
+  type: object
+  required:
+    - transactions
+  properties:
+    transactions:
+      title: Transactions
+      description: The transactions in this block
+      type: array
+      items:
+        title: Transactions in block
+        type: object
+        allOf:
+          - $ref: "#/components/schemas/TXN"
+          - type: object
+            required:
+              - transaction_hash
+            properties:
+              transaction_hash:
+                title: Transaction hash
+                $ref: "#/components/schemas/TXN_HASH"
+
+BLOCK_BODY_WITH_RECEIPTS:
+  title: Block body with transactions and receipts
+  type: object
+  required:
+    - transactions
+  properties:
+    transactions:
+      title: Transactions
+      description: The transactions in this block
+      type: array
+      items:
+        title: Transaction and receipt
+        type: object
+        required:
+          - transaction
+          - receipt
+        properties:
+          transaction:
+            title: Transaction
+            $ref: "#/components/schemas/TXN"
+          receipt:
+            title: Receipt
+            $ref: "#/components/schemas/TXN_RECEIPT"
+
+BLOCK_HEADER:
+  title: Block header
+  type: object
+  required:
+    - block_hash
+    - parent_hash
+    - block_number
+    - new_root
+    - timestamp
+    - sequencer_address
+    - l1_gas_price
+    - l1_data_gas_price
+    - l1_da_mode
+    - starknet_version
+  properties:
+    block_hash:
+      title: Block hash
+      $ref: "#/components/schemas/BLOCK_HASH"
+    parent_hash:
+      title: Parent hash
+      description: The hash of this block's parent
+      $ref: "#/components/schemas/BLOCK_HASH"
+    block_number:
+      title: Block number
+      description: The block number (its height)
+      $ref: "#/components/schemas/BLOCK_NUMBER"
+    new_root:
+      title: New root
+      description: The new global state root
+      $ref: "#/components/schemas/FELT"
+    timestamp:
+      title: Timestamp
+      description: The time in which the block was created, encoded in Unix time
+      type: integer
+      minimum: 0
+    sequencer_address:
+      title: Sequencer address
+      description: The StarkNet identity of the sequencer submitting this block
+      $ref: "#/components/schemas/FELT"
+    l1_gas_price:
+      title: L1 gas price
+      description: The price of L1 gas in the block
+      $ref: "#/components/schemas/RESOURCE_PRICE"
+    l1_data_gas_price:
+      title: L1 data gas price
+      description: The price of L1 data gas in the block
+      $ref: "#/components/schemas/RESOURCE_PRICE"
+    l1_da_mode:
+      title: L1 da mode
+      type: string
+      description: Specifies whether the data of this block is published via blob data or calldata
+      enum:
+        - BLOB
+        - CALLDATA
+    starknet_version:
+      title: Starknet version
+      description: Semver of the current Starknet protocol
+      type: string
+
+PENDING_BLOCK_HEADER:
+  title: Pending block header
+  type: object
+  required:
+    - parent_hash
+    - timestamp
+    - sequencer_address
+    - l1_gas_price
+    - l1_data_gas_price
+    - l1_da_mode
+    - starknet_version
+  not:
+    required:
+      - block_hash
+      - block_number
+      - new_root
+  properties:
+    parent_hash:
+      title: Parent hash
+      description: The hash of this block's parent
+      $ref: "#/components/schemas/BLOCK_HASH"
+    timestamp:
+      title: Timestamp
+      description: The time in which the block was created, encoded in Unix time
+      type: integer
+      minimum: 0
+    sequencer_address:
+      title: Sequencer address
+      description: The StarkNet identity of the sequencer submitting this block
+      $ref: "#/components/schemas/FELT"
+    l1_gas_price:
+      title: L1 gas price
+      description: The price of L1 gas in the block
+      $ref: "#/components/schemas/RESOURCE_PRICE"
+    l1_data_gas_price:
+      title: L1 data gas price
+      description: The price of L1 data gas in the block
+      $ref: "#/components/schemas/RESOURCE_PRICE"
+    l1_da_mode:
+      title: L1 da mode
+      type: string
+      description: Specifies whether the data of this block is published via blob data or calldata
+      enum:
+        - BLOB
+        - CALLDATA
+    starknet_version:
+      title: Starknet version
+      description: Semver of the current Starknet protocol
+      type: string
+
+BLOCK_WITH_TX_HASHES:
+  title: Block with transaction hashes
+  description: The block object
+  allOf:
+    - type: object
+      required:
+        - status
+      properties:
+        status:
+          title: Status
+          $ref: "#/components/schemas/BLOCK_STATUS"
+    - $ref: "#/components/schemas/BLOCK_HEADER"
+    - $ref: "#/components/schemas/BLOCK_BODY_WITH_TX_HASHES"
+
+BLOCK_WITH_TXS:
+  title: Block with transactions
+  description: The block object
+  allOf:
+    - type: object
+      required:
+        - status
+      properties:
+        status:
+          title: Status
+          $ref: "#/components/schemas/BLOCK_STATUS"
+    - $ref: "#/components/schemas/BLOCK_HEADER"
+    - $ref: "#/components/schemas/BLOCK_BODY_WITH_TXS"
+
+BLOCK_WITH_RECEIPTS:
+  title: Block with transactions and receipts
+  description: The block object
+  allOf:
+    - type: object
+      required:
+        - status
+      properties:
+        status:
+          title: Status
+          $ref: "#/components/schemas/BLOCK_STATUS"
+    - $ref: "#/components/schemas/BLOCK_HEADER"
+    - $ref: "#/components/schemas/BLOCK_BODY_WITH_RECEIPTS"
+
+PENDING_BLOCK_WITH_TX_HASHES:
+  title: Pending block with transaction hashes
+  description: The dynamic block being constructed by the sequencer. Note that this object will be deprecated upon decentralization.
+  allOf:
+    - $ref: "#/components/schemas/BLOCK_BODY_WITH_TX_HASHES"
+    - $ref: "#/components/schemas/PENDING_BLOCK_HEADER"
+
+PENDING_BLOCK_WITH_TXS:
+  title: Pending block with transactions
+  description: The dynamic block being constructed by the sequencer. Note that this object will be deprecated upon decentralization.
+  allOf:
+    - $ref: "#/components/schemas/BLOCK_BODY_WITH_TXS"
+    - $ref: "#/components/schemas/PENDING_BLOCK_HEADER"
+
+PENDING_BLOCK_WITH_RECEIPTS:
+  title: Pending block with transactions and receipts
+  description: The dynamic block being constructed by the sequencer. Note that this object will be deprecated upon decentralization.
+  allOf:
+    - $ref: "#/components/schemas/BLOCK_BODY_WITH_RECEIPTS"
+    - $ref: "#/components/schemas/PENDING_BLOCK_HEADER"
+
+SYNC_STATUS:
+  title: Sync status
+  type: object
+  description: An object describing the node synchronization status
+  required:
+    - starting_block_hash
+    - starting_block_num
+    - current_block_hash
+    - current_block_num
+    - highest_block_hash
+    - highest_block_num
+  properties:
+    starting_block_hash:
+      title: Starting block hash
+      description: The hash of the block from which the sync started
+      $ref: "#/components/schemas/BLOCK_HASH"
+    starting_block_num:
+      title: Starting block number
+      description: The number (height) of the block from which the sync started
+      $ref: "#/components/schemas/BLOCK_NUMBER"
+    current_block_hash:
+      title: Current block hash
+      description: The hash of the current block being synchronized
+      $ref: "#/components/schemas/BLOCK_HASH"
+    current_block_num:
+      title: Current block number
+      description: The number (height) of the current block being synchronized
+      $ref: "#/components/schemas/BLOCK_NUMBER"
+    highest_block_hash:
+      title: Highest block hash
+      description: The hash of the estimated highest block to be synchronized
+      $ref: "#/components/schemas/BLOCK_HASH"
+    highest_block_num:
+      title: Highest block number
+      description: The number (height) of the estimated highest block to be synchronized
+      $ref: "#/components/schemas/BLOCK_NUMBER"
+
+STATE_DIFF:
+  description: The change in state applied in this block, given as a mapping of addresses to the new values and/or new contracts
+  type: object
+  required:
+    - storage_diffs
+    - deprecated_declared_classes
+    - declared_classes
+    - replaced_classes
+    - deployed_contracts
+    - nonces
+  properties:
+    storage_diffs:
+      title: Storage diffs
+      type: array
+      items:
+        $ref: "#/components/schemas/CONTRACT_STORAGE_DIFF_ITEM"
+    deprecated_declared_classes:
+      title: Deprecated declared classes
+      type: array
+      items:
+        $ref: "#/components/schemas/FELT"
+    declared_classes:
+      title: Declared classes
+      type: array
+      items:
+        title: New classes
+        type: object
+        description: The declared class hash and compiled class hash
+        properties:
+          class_hash:
+            title: Class hash
+            description: The hash of the declared class
+            $ref: "#/components/schemas/FELT"
+          compiled_class_hash:
+            title: Compiled class hash
+            description: The Cairo assembly hash corresponding to the declared class
+            $ref: "#/components/schemas/FELT"
+    deployed_contracts:
+      title: Deployed contracts
+      type: array
+      items:
+        $ref: "#/components/schemas/DEPLOYED_CONTRACT_ITEM"
+    replaced_classes:
+      title: Replaced classes
+      type: array
+      items:
+        title: Replaced class
+        type: object
+        description: The list of contracts whose class was replaced
+        properties:
+          contract_address:
+            title: Contract address
+            description: The address of the contract whose class was replaced
+            $ref: "#/components/schemas/ADDRESS"
+          class_hash:
+            title: Class hash
+            description: The new class hash
+            $ref: "#/components/schemas/FELT"
+    nonces:
+      title: Nonces
+      type: array
+      items:
+        title: Nonce update
+        type: object
+        description: The updated nonce per contract address
+        properties:
+          contract_address:
+            title: Contract address
+            description: The address of the contract
+            $ref: "#/components/schemas/ADDRESS"
+          nonce:
+            title: Nonce
+            description: The nonce for the given address at the end of the block
+            $ref: "#/components/schemas/FELT"
+
+PENDING_STATE_UPDATE:
+  title: Pending state update
+  description: Pending state update
+  type: object
+  required:
+    - old_root
+    - state_diff
+  additionalProperties: false
+  properties:
+    old_root:
+      title: Old root
+      description: The previous global state root
+      $ref: "#/components/schemas/FELT"
+    state_diff:
+      title: State diff
+      $ref: "#/components/schemas/STATE_DIFF"
+
+STATE_UPDATE:
+  title: State update
+  type: object
+  required:
+    - state_diff
+    - block_hash
+    - old_root
+    - new_root
+  properties:
+    block_hash:
+      title: Block hash
+      $ref: "#/components/schemas/BLOCK_HASH"
+    old_root:
+      title: Old root
+      description: The previous global state root
+      $ref: "#/components/schemas/FELT"
+    new_root:
+      title: New root
+      description: The new global state root
+      $ref: "#/components/schemas/FELT"
+    state_diff:
+      title: State diff
+      $ref: "#/components/schemas/STATE_DIFF"

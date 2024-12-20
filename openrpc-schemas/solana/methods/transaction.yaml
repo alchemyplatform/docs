@@ -1,0 +1,100 @@
+- name: sendTransaction
+  summary: Submits a signed transaction to the cluster for processing.
+  params:
+    - name: Transaction
+      required: true
+      description: Fully-signed Transaction, as encoded string.
+      schema:
+        type: string
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/SendTransactionConfig"
+  result:
+    name: Transaction signature
+    description: The first signature in the transaction, used as the transaction ID.
+    schema:
+      $ref: "#/components/schemas/SendTransactionResult"
+
+- name: simulateTransaction
+  summary: Simulates sending a transaction.
+  params:
+    - name: Transaction
+      required: true
+      description: The transaction to simulate, as an encoded string.
+      schema:
+        type: string
+    - name: Configuration
+      required: false
+      description: Optional configuration object containing additional options.
+      schema:
+        $ref: "#/components/schemas/SimulateTransactionConfig"
+  result:
+    name: Simulated transaction result
+    description: The result of simulating the transaction.
+    schema:
+      $ref: "#/components/schemas/SimulatedTransactionResult"
+
+- name: getSignaturesForAddress
+  summary: Returns signatures for confirmed transactions that include the given address.
+  params:
+    - name: Account address
+      required: true
+      description: The account address.
+      schema:
+        $ref: "#/components/schemas/Pubkey"
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/GetSignaturesForAddressConfig"
+  result:
+    name: Transaction signatures
+    description: An array of objects containing transaction signature information.
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/SignatureInfo"
+
+- name: getSignatureStatuses
+  summary: Returns the statuses of a list of transaction signatures.
+  params:
+    - name: Signatures
+      required: true
+      description: An array of transaction signatures to confirm.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/GetSignatureStatusesConfig"
+  result:
+    name: Transaction statuses
+    description: An array containing the status of each transaction signature.
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/TransactionStatus"
+
+- name: getTransaction
+  summary: Returns transaction details for a confirmed transaction.
+  params:
+    - name: Transaction signature
+      required: true
+      description: Transaction signature as a base-58 encoded string.
+      schema:
+        type: string
+    - name: Configuration
+      required: false
+      description: Optional configuration object containing additional settings.
+      schema:
+        $ref: "#/components/schemas/GetTransactionConfig"
+  result:
+    name: Transaction details
+    description: The details of a confirmed transaction.
+    schema:
+      $ref: "#/components/schemas/TransactionDetails"

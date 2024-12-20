@@ -1,0 +1,94 @@
+- name: getClusterNodes
+  summary: Returns information about all the nodes participating in the cluster.
+  params: []
+  result:
+    name: List of nodes
+    description: Returns an array of JSON objects, each containing information about a node in the cluster.
+    schema:
+      $ref: "#/components/schemas/ClusterNodesList"
+
+- name: getHealth
+  summary: Returns the current health of the node.
+  params: []
+  result:
+    name: Health status
+    description: If the node is healthy, the result is "ok".
+    schema:
+      $ref: "#/components/schemas/HealthStatus"
+
+- name: getIdentity
+  summary: Returns the identity pubkey for the current node.
+  params: []
+  result:
+    name: Identity pubkey
+    description: The identity pubkey of the current node.
+    schema:
+      $ref: "#/components/schemas/NodeIdentity"
+
+- name: getSlotLeader
+  summary: Returns the current slot leader.
+  params:
+    - name: Configuration
+      required: false
+      description: Optional configuration object containing additional settings.
+      schema:
+        $ref: "#/components/schemas/SlotConfig"
+  result:
+    name: Slot leader
+    description: The node identity Pubkey as a base-58 encoded string.
+    schema:
+      $ref: "#/components/schemas/SlotLeader"
+
+- name: getSlotLeaders
+  summary: Returns the slot leaders for a given slot range.
+  params:
+    - name: Start slot
+      required: true
+      description: The starting slot as a u64 integer.
+      schema:
+        type: integer
+    - name: Limit
+      required: true
+      description: The number of slot leaders to return, between 1 and 5,000.
+      schema:
+        type: integer
+  result:
+    name: Slot leaders
+    description: An array of node identity public keys as base-58 encoded strings.
+    schema:
+      $ref: "#/components/schemas/SlotLeaders"
+
+- name: getVoteAccounts
+  summary: Returns the account info and associated stake for all voting accounts in the current bank.
+  params:
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/GetVoteAccountsConfig"
+  result:
+    name: Vote accounts
+    description: Information about current and delinquent vote accounts.
+    schema:
+      $ref: "#/components/schemas/VoteAccounts"
+
+- name: getProgramAccounts
+  summary: Returns all accounts owned by the provided program Pubkey.
+  params:
+    - name: Pubkey
+      required: true
+      description: The Pubkey of the program.
+      schema:
+        $ref: "#/components/schemas/Pubkey"
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/GetProgramAccountsConfig"
+  result:
+    name: Program accounts
+    description: An array of JSON objects containing program account details.
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/ProgramAccount"

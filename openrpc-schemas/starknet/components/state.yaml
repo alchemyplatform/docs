@@ -1,0 +1,300 @@
+CONTRACT_CLASS:
+  title: Contract class
+  type: object
+  required:
+    - sierra_program
+    - contract_class_version
+    - entry_points_by_type
+  properties:
+    sierra_program:
+      title: Sierra program
+      type: array
+      description: The list of Sierra instructions of which the program consists
+      items:
+        $ref: "#/components/schemas/FELT"
+    contract_class_version:
+      title: Contract class version
+      type: string
+      description: The version of the contract class object. Currently, the Starknet OS supports version 0.1.0
+    entry_points_by_type:
+      title: Entry points by type
+      type: object
+      required:
+        - CONSTRUCTOR
+        - EXTERNAL
+        - L1_HANDLER
+      properties:
+        CONSTRUCTOR:
+          title: Constructor
+          type: array
+          items:
+            $ref: "#/components/schemas/SIERRA_ENTRY_POINT"
+        EXTERNAL:
+          title: External
+          type: array
+          items:
+            $ref: "#/components/schemas/SIERRA_ENTRY_POINT"
+        L1_HANDLER:
+          title: L1 handler
+          type: array
+          items:
+            $ref: "#/components/schemas/SIERRA_ENTRY_POINT"
+    abi:
+      title: ABI
+      type: string
+      description: The class ABI, as supplied by the user declaring the class
+
+DEPRECATED_CONTRACT_CLASS:
+  title: Deprecated contract class
+  description: The definition of a StarkNet contract class
+  type: object
+  required:
+    - program
+    - entry_points_by_type
+  properties:
+    program:
+      title: Program
+      type: string
+      description: A base64 representation of the compressed program code
+      pattern: "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"
+    entry_points_by_type:
+      title: Deprecated entry points by type
+      type: object
+      properties:
+        CONSTRUCTOR:
+          title: Deprecated constructor
+          type: array
+          items:
+            $ref: "#/components/schemas/DEPRECATED_CAIRO_ENTRY_POINT"
+        EXTERNAL:
+          title: Deprecated external
+          type: array
+          items:
+            $ref: "#/components/schemas/DEPRECATED_CAIRO_ENTRY_POINT"
+        L1_HANDLER:
+          title: Deprecated L1 handler
+          type: array
+          items:
+            $ref: "#/components/schemas/DEPRECATED_CAIRO_ENTRY_POINT"
+    abi:
+      title: Contract ABI
+      $ref: "#/components/schemas/CONTRACT_ABI"
+
+DEPRECATED_CAIRO_ENTRY_POINT:
+  title: Deprecated Cairo entry point
+  type: object
+  required:
+    - offset
+    - selector
+  properties:
+    offset:
+      title: Offset
+      description: The offset of the entry point in the program
+      $ref: "#/components/schemas/NUM_AS_HEX"
+    selector:
+      title: Selector
+      description: A unique identifier of the entry point (function) in the program
+      $ref: "#/components/schemas/FELT"
+
+SIERRA_ENTRY_POINT:
+  title: Sierra entry point
+  type: object
+  required:
+    - selector
+    - function_idx
+  properties:
+    selector:
+      title: Selector
+      description: A unique identifier of the entry point (function) in the program
+      $ref: "#/components/schemas/FELT"
+    function_idx:
+      title: Function index
+      description: The index of the function in the program
+      type: integer
+
+CONTRACT_ABI:
+  title: Contract ABI
+  type: array
+  items:
+    $ref: "#/components/schemas/CONTRACT_ABI_ENTRY"
+
+CONTRACT_ABI_ENTRY:
+  title: Contract ABI entry
+  oneOf:
+    - $ref: "#/components/schemas/FUNCTION_ABI_ENTRY"
+    - $ref: "#/components/schemas/EVENT_ABI_ENTRY"
+    - $ref: "#/components/schemas/STRUCT_ABI_ENTRY"
+
+STRUCT_ABI_TYPE:
+  title: Struct ABI type
+  type: string
+  enum:
+    - struct
+
+EVENT_ABI_TYPE:
+  title: Event ABI type
+  type: string
+  enum:
+    - event
+
+FUNCTION_ABI_TYPE:
+  title: Function ABI type
+  type: string
+  enum:
+    - function
+    - l1_handler
+    - constructor
+
+STRUCT_ABI_ENTRY:
+  title: Struct ABI entry
+  type: object
+  required:
+    - type
+    - name
+    - size
+    - members
+  properties:
+    type:
+      title: Struct ABI type
+      $ref: "#/components/schemas/STRUCT_ABI_TYPE"
+    name:
+      title: Struct name
+      description: The struct name
+      type: string
+    size:
+      title: Size
+      type: integer
+      minimum: 1
+    members:
+      title: Members
+      type: array
+      items:
+        $ref: "#/components/schemas/STRUCT_MEMBER"
+
+STRUCT_MEMBER:
+  title: Struct member
+  allOf:
+    - $ref: "#/components/schemas/TYPED_PARAMETER"
+    - type: object
+      properties:
+        offset:
+          title: Offset
+          description: Offset of this property within the struct
+          type: integer
+
+EVENT_ABI_ENTRY:
+  title: Event ABI entry
+  type: object
+  required:
+    - type
+    - name
+    - keys
+    - data
+  properties:
+    type:
+      title: Event ABI type
+      $ref: "#/components/schemas/EVENT_ABI_TYPE"
+    name:
+      title: Event name
+      description: The event name
+      type: string
+    keys:
+      title: Keys
+      type: array
+      items:
+        $ref: "#/components/schemas/TYPED_PARAMETER"
+    data:
+      title: Data
+      type: array
+      items:
+        $ref: "#/components/schemas/TYPED_PARAMETER"
+
+FUNCTION_ABI_ENTRY:
+  title: Function ABI entry
+  type: object
+  required:
+    - type
+    - name
+    - inputs
+    - outputs
+  properties:
+    type:
+      title: Function ABI type
+      $ref: "#/components/schemas/FUNCTION_ABI_TYPE"
+    name:
+      title: Function name
+      description: The function name
+      type: string
+    inputs:
+      title: Inputs
+      type: array
+      items:
+        $ref: "#/components/schemas/TYPED_PARAMETER"
+    outputs:
+      title: Outputs
+      type: array
+      items:
+        $ref: "#/components/schemas/TYPED_PARAMETER"
+    stateMutability:
+      title: Function state mutability
+      $ref: "#/components/schemas/FUNCTION_STATE_MUTABILITY"
+
+TYPED_PARAMETER:
+  title: Typed parameter
+  type: object
+  required:
+    - name
+    - type
+  properties:
+    name:
+      title: Parameter name
+      description: The parameter's name
+      type: string
+    type:
+      title: Parameter type
+      description: The parameter's type
+      type: string
+
+DEPLOYED_CONTRACT_ITEM:
+  title: Deployed contract item
+  type: object
+  required:
+    - address
+    - class_hash
+  properties:
+    address:
+      title: Address
+      description: The address of the contract
+      $ref: "#/components/schemas/FELT"
+    class_hash:
+      title: Class hash
+      description: The hash of the contract code
+      $ref: "#/components/schemas/FELT"
+
+CONTRACT_STORAGE_DIFF_ITEM:
+  title: Contract storage diff item
+  type: object
+  required:
+    - address
+    - storage_entries
+  properties:
+    address:
+      title: Address
+      description: The contract address for which the storage changed
+      $ref: "#/components/schemas/FELT"
+    storage_entries:
+      title: Storage entries
+      description: The changes in the storage of the contract
+      type: array
+      items:
+        title: Storage diff item
+        type: object
+        properties:
+          key:
+            title: Key
+            description: The key of the changed value
+            $ref: "#/components/schemas/FELT"
+          value:
+            title: Value
+            description: The new value applied to the given address
+            $ref: "#/components/schemas/FELT"

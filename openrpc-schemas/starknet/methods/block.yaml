@@ -1,0 +1,94 @@
+- name: starknet_blockHashAndNumber
+  summary: Get the most recent accepted block hash and number
+  params: []
+  result:
+    name: result
+    description: The latest block hash and number
+    schema:
+      title: Starknet block hash and number result
+      type: object
+      properties:
+        block_hash:
+          title: Block hash
+          $ref: "#/components/schemas/BLOCK_HASH"
+        block_number:
+          title: Block number
+          $ref: "#/components/schemas/BLOCK_NUMBER"
+      required:
+        - block_hash
+        - block_number
+
+- name: starknet_blockNumber
+  summary: Get the most recent accepted block number
+  params: []
+  result:
+    name: result
+    description: The latest block number
+    schema:
+      title: Block number
+      $ref: "#/components/schemas/BLOCK_NUMBER"
+
+- name: starknet_getBlockWithTxHashes
+  summary: Get block information with transaction hashes given the block id
+  params:
+    - name: block_id
+      description: >
+        The hash of the requested block, or number (height) of the requested
+        block, or a block tag
+      required: true
+      schema:
+        title: Block id
+        $ref: "#/components/schemas/BLOCK_ID"
+  result:
+    name: result
+    description: The resulting block information with transaction hashes
+    schema:
+      title: Starknet get block hash with tx hashes result
+      oneOf:
+        - title: Block with transaction hashes
+          $ref: "#/components/schemas/BLOCK_WITH_TX_HASHES"
+        - title: Pending block with transaction hashes
+          $ref: "#/components/schemas/PENDING_BLOCK_WITH_TX_HASHES"
+
+- name: starknet_getBlockWithTxs
+  summary: Get block information with full transactions given the block id
+  params:
+    - name: block_id
+      description: >
+        The hash of the requested block, or number (height) of the requested
+        block, or a block tag
+      required: true
+      schema:
+        title: Block id
+        $ref: "#/components/schemas/BLOCK_ID"
+  result:
+    name: result
+    description: The resulting block information with full transactions
+    schema:
+      title: Starknet get block with txs result
+      oneOf:
+        - title: Block with transactions
+          $ref: "#/components/schemas/BLOCK_WITH_TXS"
+        - title: Pending block with transactions
+          $ref: "#/components/schemas/PENDING_BLOCK_WITH_TXS"
+
+- name: starknet_getBlockTransactionCount
+  summary: Get the number of transactions in a block given a block id
+  description: Returns the number of transactions in the designated block.
+  params:
+    - name: block_id
+      description: >
+        The hash of the requested block, or number (height) of the requested
+        block, or a block tag
+      required: true
+      schema:
+        title: Block id
+        $ref: "#/components/schemas/BLOCK_ID"
+  result:
+    name: result
+    summary: The number of transactions in the designated block
+    description: The number of transactions in the designated block
+    schema:
+      title: Block transaction count
+      type: integer
+      minimum: 0
