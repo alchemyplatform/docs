@@ -1,0 +1,126 @@
+- name: getAccountInfo
+  summary: Returns all information associated with the account of provided Pubkey.
+  params:
+    - name: Pubkey
+      required: true
+      description: Pubkey of the account to query.
+      schema:
+        $ref: "#/components/schemas/Pubkey"
+    - name: Configuration
+      required: false
+      description: Optional configuration object for additional settings.
+      schema:
+        $ref: "#/components/schemas/GetAccountInfoConfig"
+  result:
+    name: Account information
+    description: Returns details of the account including balance, ownership, and other relevant data.
+    schema:
+      $ref: "#/components/schemas/AccountInfo"
+
+- name: getBalance
+  summary: Returns the lamport balance of the account of the provided Pubkey.
+  params:
+    - name: Pubkey
+      required: true
+      description: Pubkey of the account to query.
+      schema:
+        $ref: "#/components/schemas/Pubkey"
+    - name: Configuration
+      required: false
+      description: Optional configuration object containing additional settings.
+      schema:
+        $ref: "#/components/schemas/GetBalanceConfig"
+  result:
+    name: Lamport balance
+    description: Returns the balance in lamports of the account queried.
+    schema:
+      $ref: "#/components/schemas/LamportBalance"
+
+- name: getMultipleAccounts
+  summary: Returns the account information for a list of Pubkeys.
+  params:
+    - name: Pubkeys
+      required: true
+      description: An array of Pubkeys to query.
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/Pubkey"
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/GetMultipleAccountsConfig"
+  result:
+    name: Account information
+    description: An array of JSON objects containing account details.
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/AccountInfo"
+
+- name: getTokenAccountBalance
+  summary: Returns the token balance of an SPL Token account.
+  params:
+    - name: Token account Pubkey
+      required: true
+      description: The Pubkey of the token account to query.
+      schema:
+        $ref: "#/components/schemas/Pubkey"
+    - name: Configuration
+      required: false
+      description: Optional configuration object containing additional settings.
+      schema:
+        $ref: "#/components/schemas/GetTokenAccountBalanceConfig"
+  result:
+    name: Token account balance
+    description: The balance of the SPL Token account.
+    schema:
+      $ref: "#/components/schemas/TokenBalance"
+
+- name: getTokenAccountsByOwner
+  summary: Returns all SPL Token accounts owned by the specified token owner.
+  params:
+    - name: Token owner Pubkey
+      required: true
+      description: The Pubkey of the account owner to query.
+      schema:
+        $ref: "#/components/schemas/Pubkey"
+    - name: Token filter
+      required: false
+      description: A filter object containing either the Mint Pubkey or the Token program Pubkey.
+      schema:
+        type: object
+        properties:
+          mint:
+            $ref: "#/components/schemas/Pubkey"
+            description: The Pubkey of the specific token Mint to limit accounts to.
+          programId:
+            $ref: "#/components/schemas/Pubkey"
+            description: The Pubkey of the Token program that owns the accounts.
+    - name: Configuration
+      required: false
+      description: Optional configuration object containing additional settings.
+      schema:
+        $ref: "#/components/schemas/GetTokenAccountsByOwnerConfig"
+  result:
+    name: Token accounts
+    description: An array of JSON objects representing the token accounts owned by the specified Pubkey.
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/TokenAccount"
+
+- name: getLargestAccounts
+  summary: Returns the 20 largest accounts, by lamport balance.
+  params:
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/LargestAccountsConfig"
+  result:
+    name: Largest accounts
+    description: An array of objects containing the address of the account and its lamport balance.
+    schema:
+      $ref: "#/components/schemas/LargestAccountsList"

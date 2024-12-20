@@ -1,0 +1,72 @@
+# fee-schemas.yaml
+
+FeeForMessageParams:
+  title: FeeForMessage Parameters
+  type: object
+  properties:
+    Message:
+      type: string
+      description: Base-64 encoded Message.
+
+FeeForMessageConfig:
+  title: FeeForMessage Configuration
+  type: object
+  properties:
+    commitment:
+      $ref: "#/components/schemas/Commitment"
+    minContextSlot:
+      $ref: "#/components/schemas/MinContextSlot"
+
+FeeForMessageResult:
+  title: Fee For Message Result
+  type: integer
+  nullable: true
+  description: Fee corresponding to the message at the specified blockhash.
+
+MinimumBalanceForRentExemptionParams:
+  title: MinimumBalanceForRentExemption Parameters
+  type: object
+  properties:
+    dataLength:
+      type: integer
+      description: Account's data length in bytes.
+
+MinimumBalanceForRentExemptionConfig:
+  title: MinimumBalanceForRentExemption Configuration
+  type: object
+  properties:
+    commitment:
+      $ref: "#/components/schemas/Commitment"
+
+MinimumBalanceForRentExemptionResult:
+  title: Minimum Balance For Rent Exemption
+  type: integer
+  description: Minimum lamports required to make an account rent exempt.
+
+RecentPrioritizationFee:
+  title: Recent Prioritization Fee
+  type: object
+  properties:
+    slot:
+      type: integer
+      description: Slot in which the fee was observed.
+    prioritizationFee:
+      type: integer
+      description: The per-compute-unit fee in micro-lamports.
+
+GetRecentPrioritizationFeesParams:
+  title: GetRecentPrioritizationFees Parameters
+  type: object
+  properties:
+    AccountAddresses:
+      type: array
+      items:
+        $ref: "#/components/schemas/Pubkey"
+      description: An array of up to 128 account addresses as base-58 encoded strings.
+
+GetRecentPrioritizationFeesResult:
+  title: Recent Prioritization Fees
+  type: array
+  items:
+    $ref: "#/components/schemas/RecentPrioritizationFee"
+  description: An array of prioritization fees observed in recent blocks.

@@ -1,0 +1,48 @@
+MSG_TO_L1:
+  title: Message to L1
+  type: object
+  required:
+    - from_address
+    - to_address
+    - payload
+  properties:
+    from_address:
+      description: The address of the L2 contract sending the message
+      $ref: "#/components/schemas/FELT"
+    to_address:
+      title: To address
+      description: The target L1 address the message is sent to
+      $ref: "#/components/schemas/FELT"
+    payload:
+      title: Payload
+      description: The payload of the message
+      type: array
+      items:
+        $ref: "#/components/schemas/FELT"
+
+MSG_FROM_L1:
+  title: Message from L1
+  type: object
+  required:
+    - from_address
+    - to_address
+    - entry_point_selector
+    - payload
+  properties:
+    from_address:
+      description: The address of the L1 contract sending the message
+      $ref: "#/components/schemas/ETH_ADDRESS"
+    to_address:
+      title: To address
+      description: The target L2 address the message is sent to
+      $ref: "#/components/schemas/ADDRESS"
+    entry_point_selector:
+      title: Selector
+      description: The selector of the l1_handler to invoke in the target contract
+      $ref: "#/components/schemas/FELT"
+    payload:
+      title: Payload
+      description: The payload of the message
+      type: array
+      items:
+        $ref: "#/components/schemas/FELT"

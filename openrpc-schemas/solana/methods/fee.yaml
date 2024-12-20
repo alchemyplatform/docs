@@ -1,0 +1,53 @@
+- name: getFeeForMessage
+  summary: Get the fee the network will charge for a particular Message.
+  params:
+    - name: Message
+      required: true
+      description: Base-64 encoded Message.
+      schema:
+        $ref: "#/components/schemas/FeeForMessageParams"
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/FeeForMessageConfig"
+  result:
+    name: Fee for the message
+    description: The fee corresponding to the message at the specified blockhash.
+    schema:
+      $ref: "#/components/schemas/FeeForMessageResult"
+
+- name: getMinimumBalanceForRentExemption
+  summary: Returns the minimum balance required to make an account rent exempt.
+  params:
+    - name: Account data length
+      required: true
+      description: The account's data length in bytes.
+      schema:
+        $ref: "#/components/schemas/MinimumBalanceForRentExemptionParams"
+    - name: Configuration
+      required: false
+      description: Optional configuration object.
+      schema:
+        $ref: "#/components/schemas/MinimumBalanceForRentExemptionConfig"
+  result:
+    name: Minimum balance for rent exemption
+    description: The minimum number of lamports required in the account to remain rent-free.
+    schema:
+      $ref: "#/components/schemas/MinimumBalanceForRentExemptionResult"
+
+- name: getRecentPrioritizationFees
+  summary: Returns a list of prioritization fees from recent blocks.
+  params:
+    - name: Account addresses
+      required: false
+      description: An array of up to 128 account addresses. If provided, the response will reflect a fee to land a transaction locking all of the provided accounts as writable.
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/Pubkey"
+  result:
+    name: Prioritization fees
+    description: An array of prioritization fees observed in recent blocks.
+    schema:
+      $ref: "#/components/schemas/GetRecentPrioritizationFeesResult"

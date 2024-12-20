@@ -1,0 +1,153 @@
+FELT:
+  title: Field element
+  description: A field element. Represented by at most 63 hex digits
+  type: string
+  pattern: "^0x(0|[a-fA-F1-9]{1}[a-fA-F0-9]{0,62})$"
+
+NUM_AS_HEX:
+  title: Number as hex
+  description: An integer number in hex format (0x...)
+  type: string
+  pattern: "^0x[a-fA-F0-9]+$"
+
+u64:
+  title: u64
+  description: 64-bit integers, represented by a hex string of length at most 16
+  type: string
+  pattern: "^0x(0|[a-fA-F1-9]{1}[a-fA-F0-9]{0,15})$"
+
+u128:
+  title: u128
+  description: 128-bit integers, represented by a hex string of length at most 32
+  type: string
+  pattern: "^0x(0|[a-fA-F1-9]{1}[a-fA-F0-9]{0,31})$"
+
+ADDRESS:
+  title: Address
+  description: A contract address
+  allOf:
+    - $ref: "#/components/schemas/FELT"
+
+ETH_ADDRESS:
+  title: Ethereum address
+  description: An Ethereum address represented as 40 hex digits
+  type: string
+  pattern: "^0x[a-fA-F0-9]{40}$"
+
+STORAGE_KEY:
+  title: Storage key
+  description: >
+    A storage key. Represented as up to 62 hex digits, 3 bits, and 5 leading zeroes.
+  type: string
+  pattern: "^0x(0|[0-7]{1}[a-fA-F0-9]{0,62})$"
+
+BLOCK_HASH:
+  title: Block hash
+  description: The hash identifying a block
+  allOf:
+    - $ref: "#/components/schemas/FELT"
+
+BLOCK_NUMBER:
+  title: Block number
+  description: The block's number (its height)
+  type: integer
+  minimum: 0
+
+BLOCK_TAG:
+  title: Block tag
+  description: A tag specifying a dynamic reference to a block
+  type: string
+  enum:
+    - latest
+    - pending
+
+TXN_HASH:
+  title: Transaction hash
+  description: The transaction hash, as assigned in StarkNet
+  allOf:
+    - $ref: "#/components/schemas/FELT"
+
+SIGNATURE:
+  title: Signature
+  description: A transaction signature
+  type: array
+  items:
+    $ref: "#/components/schemas/FELT"
+
+PRICE_UNIT:
+  title: Price unit
+  type: string
+  enum:
+    - WEI
+    - FRI
+
+DA_MODE:
+  title: DA mode
+  description: >
+    Specifies a storage domain in StarkNet. Each domain has different guarantees regarding availability
+  type: string
+  enum:
+    - L1
+    - L2
+
+TXN_STATUS:
+  title: Transaction status
+  description: >
+    The finality status of the transaction, including cases where the transaction is still in the mempool or failed validation during the block construction phase
+  type: string
+  enum:
+    - RECEIVED
+    - REJECTED
+    - ACCEPTED_ON_L2
+    - ACCEPTED_ON_L1
+
+TXN_FINALITY_STATUS:
+  title: Finality status
+  description: The finality status of the transaction
+  type: string
+  enum:
+    - ACCEPTED_ON_L2
+    - ACCEPTED_ON_L1
+
+TXN_EXECUTION_STATUS:
+  title: Execution status
+  description: The execution status of the transaction
+  type: string
+  enum:
+    - SUCCEEDED
+    - REVERTED
+
+TXN_TYPE:
+  title: Transaction type
+  description: The type of the transaction
+  type: string
+  enum:
+    - DECLARE
+    - DEPLOY
+    - DEPLOY_ACCOUNT
+    - INVOKE
+    - L1_HANDLER
+
+BLOCK_STATUS:
+  title: Block status
+  description: The status of the block
+  type: string
+  enum:
+    - PENDING
+    - ACCEPTED_ON_L2
+    - ACCEPTED_ON_L1
+    - REJECTED
+
+FUNCTION_STATE_MUTABILITY:
+  title: Function state mutability type
+  type: string
+  enum:
+    - view
+
+SIMULATION_FLAG_FOR_ESTIMATE_FEE:
+  title: Simulation flag for estimate fee
+  description: >
+    Flags that indicate how to simulate a given transaction. By default, the sequencer behavior is replicated locally
+  type: string
+  enum:
+    - SKIP_VALIDATE
