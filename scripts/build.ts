@@ -1,4 +1,4 @@
-import {
+import type {
   InfoObject,
   JSONSchema,
   Methods,
