@@ -8,6 +8,7 @@ import { dereferenceDocument } from "@open-rpc/schema-utils-js";
 import { cp, mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
+import { DerefedOpenRpcDoc } from "../src/types/OpenRpc";
 
 const allChainsBase = "src/openrpc-schemas/chains";
 const allChainFiles = readdirSync(allChainsBase);
@@ -46,7 +47,10 @@ const generateChainSpec = async (chainFile: string) => {
   }, {});
 
   const baseRaw = readFileSync(`${chainBase}/base.yaml`).toString();
-  const base = yaml.load(baseRaw) as Pick<OpenrpcDocument, "info" | "servers">;
+  const base = yaml.load(baseRaw) as Pick<
+    OpenrpcDocument,
+    "info" | "externalDocs" | "servers"
+  >;
 
   const doc: OpenrpcDocument = {
     openrpc: "1.2.4",
@@ -57,25 +61,18 @@ const generateChainSpec = async (chainFile: string) => {
     },
   };
 
-  const spec = await dereferenceDocument(doc);
+  const spec = (await dereferenceDocument(doc)) as DerefedOpenRpcDoc;
 
   delete spec.components; // once dereferenced, components are no longer needed
 
-  spec.methods.forEach((method, i) => {
-    if ("params" in method) {
-      method.params.forEach((param, j) => {
-        if ("schema" in param && typeof param.schema !== "boolean") {
-          param.schema = mergeAllOf(param.schema) as JSONSchema;
-        }
-      });
-    }
+  spec.methods.forEach((method) => {
+    method.params.forEach((param) => {
+      if (typeof param.schema !== "boolean") {
+        param.schema = mergeAllOf(param.schema) as JSONSchema;
+      }
+    });
 
-    if (
-      "result" in method &&
-      method.result &&
-      "schema" in method.result &&
-      typeof method.result.schema !== "boolean"
-    ) {
+    if (method.result && typeof method.result.schema !== "boolean") {
       method.result.schema = mergeAllOf(method.result.schema) as JSONSchema;
     }
   });
