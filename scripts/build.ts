@@ -5,14 +5,14 @@ import type {
   SchemaComponents,
 } from "@open-rpc/meta-schema";
 import { dereferenceDocument } from "@open-rpc/schema-utils-js";
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
+import { cp, mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
 
-const allChainsBase = "openrpc-schemas";
+const allChainsBase = "src/openrpc-schemas/chains";
 const allChainFiles = readdirSync(allChainsBase);
 
-const outputDir = "docs/api-specs";
+const outputDir = "docs/api-specs/chains";
 
 mkdirSync(outputDir, { recursive: true });
 
@@ -85,5 +85,11 @@ const generateChainSpec = async (chainFile: string) => {
     JSON.stringify(spec, null, "\t")
   );
 };
+
+cp("src/markdown", "docs/markdown", { recursive: true }, (e) => {
+  if (e) {
+    console.error(e);
+  }
+});
 
 allChainFiles.forEach(generateChainSpec);
