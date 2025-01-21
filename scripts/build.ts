@@ -1,5 +1,4 @@
 import type {
-  InfoObject,
   JSONSchema,
   Methods,
   OpenrpcDocument,
@@ -21,9 +20,6 @@ const generateChainSpec = async (chainFile: string) => {
   const chainBase = `${allChainsBase}/${chainFile}`;
   const componentsBase = `${chainBase}/components`;
   const methodsBase = `${chainBase}/methods`;
-
-  const infoRaw = readFileSync(`${chainBase}/info.yaml`).toString();
-  const info = yaml.load(infoRaw) as InfoObject;
 
   const componentsFiles = readdirSync(componentsBase);
   const methodsFiles = readdirSync(methodsBase);
@@ -49,9 +45,12 @@ const generateChainSpec = async (chainFile: string) => {
     return { ...acc, ...parsed };
   }, {});
 
+  const baseRaw = readFileSync(`${chainBase}/base.yaml`).toString();
+  const base = yaml.load(baseRaw) as Pick<OpenrpcDocument, "info" | "servers">;
+
   const doc: OpenrpcDocument = {
     openrpc: "1.2.4",
-    info,
+    ...base,
     methods,
     components: {
       schemas,
