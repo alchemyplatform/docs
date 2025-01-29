@@ -1,0 +1,177 @@
+- name: eth_getBlockByHash
+  summary: Returns information about a block by its hash.
+  params:
+    - name: Block hash
+      required: true
+      description: The hash of the block to retrieve.
+      schema:
+        $ref: "#/components/schemas/hash32"
+    - name: Hydrated transactions
+      required: true
+      description: If true, returns full transaction objects; if false, returns only transaction hashes.
+      schema:
+        title: hydrated
+        type: boolean
+  result:
+    name: Block information
+    description: The block object containing various properties of the block.
+    schema:
+      oneOf:
+        - $ref: "#/components/schemas/notFound"
+        - $ref: "#/components/schemas/Block"
+  examples:
+    - name: eth_getBlockByHash example
+      params:
+        - name: Block hash
+          value: "0xd5f1812548be429cbdc6376b29611fc49e06f1359758c4ceaaa3b393e2239f9c"
+        - name: Hydrated transactions
+          value: false
+      result:
+        name: Block information
+        value:
+          number: "0x68b3"
+          hash: "0xd5f1812548be429cbdc6376b29611fc49e06f1359758c4ceaaa3b393e2239f9c"
+          mixHash: "0x24900fb3da77674a861c428429dce0762707ecb6052325bbd9b3c64e74b5af9d"
+          parentHash: "0x1f68ac259155e2f38211ddad0f0a15394d55417b185a93923e2abe71bb7a4d6d"
+          nonce: "0x378da40ff335b070"
+          sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+          logsBloom: "0x00000000000000100000004080000000000500000000000000020000100000000800001000000004000001000000000000000800040010000020100000000400000010000000000000000040000000000000040000000000000000000000000000000400002400000000000000000000000000000004000004000000000000840000000800000080010004000000001000000800000000000000000000000000000000000800000000000040000000020000000000000000000800000400000000000000000000000600000400000000002000000000000000000000004000000000000000100000000000000000000000000000000000040000900010000000"
+          transactionsRoot: "0x4d0c8e91e16bdff538c03211c5c73632ed054d00a7e210c0eb25146c20048126"
+          stateRoot: "0x91309efa7e42c1f137f31fe9edbe88ae087e6620d0d59031324da3e2f4f93233"
+          receiptsRoot: "0x68461ab700003503a305083630a8fb8d14927238f0bc8b6b3d246c0c64f21f4a"
+          miner: "0xb42b6c4a95406c78ff892d270ad20b22642e102d"
+          difficulty: "0x66e619a"
+          totalDifficulty: "0x1e875d746ae"
+          extraData: "0xd583010502846765746885676f312e37856c696e7578"
+          size: "0x334"
+          gasLimit: "0x47e7c4"
+          gasUsed: "0x37993"
+          timestamp: "0x5835c54d"
+          uncles: []
+          transactions:
+            - "0xa0807e117a8dd124ab949f460f08c36c72b710188f01609595223b325e58e0fc"
+            - "0xeae6d797af50cb62a596ec3939114d63967c374fa57de9bc0f4e2b576ed6639d"
+          baseFeePerGas: "0x7"
+          withdrawalsRoot: "0x7a4ecf19774d15cf9c15adf0dd8e8a250c128b26c9e2ab2a08d6c9c8ffbd104f"
+          withdrawals:
+            - index: "0x0"
+              validatorIndex: "0x9d8c0"
+              address: "0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f"
+              amount: "0x11a33e3760"
+          blobGasUsed: "0x0"
+          excessBlobGas: "0x0"
+          parentBeaconBlockRoot: "0x95c4dbd5b19f6fe3cbc3183be85ff4e85ebe75c5b4fc911f1c91e5b7a554a685"
+
+- name: eth_getBlockByNumber
+  summary: Returns information about a block by its number.
+  params:
+    - name: Block number or tag
+      required: true
+      description: The block number or special tags like 'latest', 'earliest', or 'pending'.
+      schema:
+        $ref: "#/components/schemas/BlockNumberOrTag"
+    - name: Hydrated transactions
+      required: true
+      description: If true, returns full transaction objects; if false, returns only transaction hashes.
+      schema:
+        title: hydrated
+        type: boolean
+  result:
+    name: Block information
+    description: The block object containing various properties of the block.
+    schema:
+      oneOf:
+        - $ref: "#/components/schemas/notFound"
+        - $ref: "#/components/schemas/Block"
+  examples:
+    - name: eth_getBlockByNumber example
+      params:
+        - name: Block number or tag
+          value: "0x68b3"
+        - name: Hydrated transactions
+          value: false
+      result:
+        name: Block information
+        value:
+          number: "0x68b3"
+          hash: "0xd5f1812548be429cbdc6376b29611fc49e06f1359758c4ceaaa3b393e2239f9c"
+          mixHash: "0x24900fb3da77674a861c428429dce0762707ecb6052325bbd9b3c64e74b5af9d"
+          parentHash: "0x1f68ac259155e2f38211ddad0f0a15394d55417b185a93923e2abe71bb7a4d6d"
+          nonce: "0x378da40ff335b070"
+          sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+          logsBloom: "0x00000000000000100000004080000000000500000000000000020000100000000800001000000004000001000000000000000800040010000020100000000400000010000000000000000040000000000000040000000000000000000000000000000400002400000000000000000000000000000004000004000000000000840000000800000080010004000000001000000800000000000000000000000000000000000800000000000040000000020000000000000000000800000400000000000000000000000600000400000000002000000000000000000000004000000000000000100000000000000000000000000000000000040000900010000000"
+          transactionsRoot: "0x4d0c8e91e16bdff538c03211c5c73632ed054d00a7e210c0eb25146c20048126"
+          stateRoot: "0x91309efa7e42c1f137f31fe9edbe88ae087e6620d0d59031324da3e2f4f93233"
+          receiptsRoot: "0x68461ab700003503a305083630a8fb8d14927238f0bc8b6b3d246c0c64f21f4a"
+          miner: "0xb42b6c4a95406c78ff892d270ad20b22642e102d"
+          difficulty: "0x66e619a"
+          totalDifficulty: "0x1e875d746ae"
+          extraData: "0xd583010502846765746885676f312e37856c696e7578"
+          size: "0x334"
+          gasLimit: "0x47e7c4"
+          gasUsed: "0x37993"
+          timestamp: "0x5835c54d"
+          uncles: []
+          transactions:
+            - "0xa0807e117a8dd124ab949f460f08c36c72b710188f01609595223b325e58e0fc"
+            - "0xeae6d797af50cb62a596ec3939114d63967c374fa57de9bc0f4e2b576ed6639d"
+          baseFeePerGas: "0x7"
+          withdrawalsRoot: "0x7a4ecf19774d15cf9c15adf0dd8e8a250c128b26c9e2ab2a08d6c9c8ffbd104f"
+          withdrawals:
+            - index: "0x0"
+              validatorIndex: "0x9d8c0"
+              address: "0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f"
+              amount: "0x11a33e3760"
+          blobGasUsed: "0x0"
+          excessBlobGas: "0x0"
+          parentBeaconBlockRoot: "0x95c4dbd5b19f6fe3cbc3183be85ff4e85ebe75c5b4fc911f1c91e5b7a554a685"
+
+- name: eth_getBlockTransactionCountByHash
+  summary: Returns the number of transactions in a block from a block matching the given block hash.
+  params:
+    - name: Block hash
+      required: true
+      description: The hash of the block.
+      schema:
+        $ref: "#/components/schemas/hash32"
+  result:
+    name: Transaction count
+    description: The number of transactions in the block as a hexadecimal string.
+    schema:
+      oneOf:
+        - $ref: "#/components/schemas/notFound"
+        - title: Transaction count
+          $ref: "#/components/schemas/uint"
+  examples:
+    - name: eth_getBlockTransactionCountByHash example
+      params:
+        - name: Block hash
+          value: "0xb903239f8543d04b5dc1ba6579132b143087c68db1b2168786408fcbce568238"
+      result:
+        name: Transaction count
+        value: "0x8"
+
+- name: eth_getBlockTransactionCountByNumber
+  summary: Returns the number of transactions in a block matching the given block number.
+  params:
+    - name: Block number or tag
+      required: true
+      description: The block number or special tags like 'latest', 'earliest', or 'pending'.
+      schema:
+        $ref: "#/components/schemas/BlockNumberOrTag"
+  result:
+    name: Transaction count
+    description: The number of transactions in the block as a hexadecimal string.
+    schema:
+      oneOf:
+        - $ref: "#/components/schemas/notFound"
+        - title: Transaction count
+          $ref: "#/components/schemas/uint"
+  examples:
+    - name: eth_getBlockTransactionCountByNumber example
+      params:
+        - name: Block number or tag
+          value: "0xe8"
+      result:
+        name: Transaction count
+        value: "0x8"
