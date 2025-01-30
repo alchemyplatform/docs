@@ -79,3 +79,64 @@ export const generateRpcSpec = async (
     JSON.stringify(spec, null, "\t")
   );
 };
+
+export const generateAlchemyRpcSpec = async (
+  srcDir: string,
+  outputDir: string,
+  filename: string
+) => {
+  const schemaDir = `${srcDir}/${filename}`;
+  const componentsFile = `${schemaDir}/../components.yaml`;
+  const methodsFile = `${schemaDir}/methods.yaml`;
+
+  const raw = readFileSync(methodsFile).toString();
+  const parsed = yaml.load(raw) as Methods;
+  const unsortedMethods = [...parsed];
+
+  const methods = unsortedMethods.sort((a, b) => {
+    if ("name" in a && "name" in b) {
+      return a.name.localeCompare(b.name);
+    }
+    return 0;
+  });
+
+  const rawMethods = readFileSync(componentsFile).toString();
+  const parsedMethods = yaml.load(rawMethods) as SchemaComponents;
+  const schemas = { ...parsedMethods };
+
+  const baseRaw = readFileSync(`${schemaDir}/base.yaml`).toString();
+  const base = yaml.load(baseRaw) as Pick<
+    OpenrpcDocument,
+    "info" | "externalDocs" | "servers"
+  >;
+
+  const doc: OpenrpcDocument = {
+    openrpc: "1.2.4",
+    ...base,
+    methods,
+    components: {
+      schemas,
+    },
+  };
+
+  const spec = (await dereferenceDocument(doc)) as DerefedOpenRpcDoc;
+
+  delete spec.components; // once dereferenced, components are no longer needed
+
+  spec.methods.forEach((method) => {
+    method.params.forEach((param) => {
+      if (typeof param.schema !== "boolean") {
+        param.schema = mergeAllOf(param.schema) as JSONSchema;
+      }
+    });
+
+    if (method.result && typeof method.result.schema !== "boolean") {
+      method.result.schema = mergeAllOf(method.result.schema) as JSONSchema;
+    }
+  });
+
+  writeFileSync(
+    `${outputDir}/${filename}.json`,
+    JSON.stringify(spec, null, "\t")
+  );
+};
