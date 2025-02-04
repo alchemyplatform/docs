@@ -1,0 +1,82 @@
+- name: alchemy_sendPrivateTransaction
+  summary: Send a single private transaction through Flashbots. Private transactions are sent directly to validators and not included in the public mempool.
+  params:
+    - name: tx
+      required: true
+      description: "Raw, signed transaction."
+      schema:
+        $ref: "#/components/schemas/bytesAnyCase"
+      default: "0x02f87205158459682f00850c51e9727a82520894477db63b8e73aea96f201c3c4f5e8fbfcdd18b5c87038d7ea4c6800080c080a0312d6375e578ab953a41456d4be583a46dced97a9e38f349bb8e7b63d14cfc1ea001daea40332180670568a1864e6d3f910b194903128d4a0a5c499597f3f6ff40"
+
+    - name: maxBlockNumber
+      required: false
+      description: "Hex-encoded highest block number in which the transaction should be included."
+      schema:
+        $ref: "#/components/schemas/uintHexAnyCase"
+      default: "0x2540BE400"
+
+    - name: preferences
+      required: false
+      description: "Optional Flashbots preferences."
+      schema:
+        type: object
+        properties:
+          fast:
+            type: boolean
+            description: "Whether to enable the 'fast' preference."
+  
+  result:
+    name: "Private Transaction Hash"
+    description: "Returns the 32-byte transaction hash upon successful submission."
+    schema:
+      oneOf:
+        - $ref: "#/components/schemas/hash32AnyCase"
+        - type: string
+          description: "A 32-byte transaction hash."
+
+  examples:
+    - name: "alchemy_sendPrivateTransaction example"
+      params:
+        - name: tx
+          value: "0x02f87205158459682f00850c51e9727a82520894477db63b8e73aea96f201c3c4f5e8fbfcdd18b5c87038d7ea4c6800080c080a0312d6375e578ab953a41456d4be583a46dced97a9e38f349bb8e7b63d14cfc1ea001daea40332180670568a1864e6d3f910b194903128d4a0a5c499597f3f6ff40"
+        - name: maxBlockNumber
+          value: "0x2540BE400"
+        - name: preferences
+          value:
+            fast: true
+      result:
+        name: "Private Transaction Hash"
+        value:
+          jsonrpc: "2.0"
+          id: 1
+          result: "0xbadc0de3f2abc33d7309742b4473db63b8e73aea96f201c3c4f5e8fbfcdd18b5c"
+
+- name: alchemy_cancelPrivateTransaction
+  summary: "Request to cancel private transactions on Ethereum that are sent via eth_sendPrivateTransaction."
+  params:
+    - name: txHash
+      required: true
+      description: "Transaction hash of the private transaction to be cancelled."
+      schema:
+        $ref: "#/components/schemas/hash32AnyCase"
+
+  result:
+    name: "Private transaction cancellation result"
+    description: "Indicates whether the private transaction was successfully cancelled."
+    schema:
+      oneOf:
+        - $ref: "#/components/schemas/notFound"
+        - type: boolean
+          description: "Boolean value; true if cancelled successfully, false otherwise."
+
+  examples:
+    - name: alchemy_cancelPrivateTransaction example
+      params:
+        - name: txHash
+          value: "0xbadc0de3f2abc33d7309742b4473db63b8e73aea96f201c3c4f5e8fbfcdd18b5c"
+      result:
+        name: "Private transaction cancellation result"
+        value:
+          jsonrpc: "2.0"
+          id: 1
+          result: true
