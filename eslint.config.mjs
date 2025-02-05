@@ -1,4 +1,5 @@
 import eslint from "@eslint/js";
+import markdown from "@eslint/markdown";
 import parser from "@typescript-eslint/parser";
 import eslintPrettier from "eslint-config-prettier";
 import globals from "globals";
@@ -45,12 +46,6 @@ const tslintConfigs = tseslint.config({
         allowTaggedTemplates: true,
       },
     ],
-    "@typescript-eslint/no-floating-promises": [
-      "error",
-      {
-        ignoreVoid: true,
-      },
-    ],
     "@typescript-eslint/consistent-type-imports": "error",
   },
 });
@@ -75,5 +70,25 @@ const jsConfig = {
   },
 };
 
+/** @type {import('eslint').Linter.Config} */
+const mdConfig = {
+  name: "Markdown Eslint Config",
+  files: ["**/*.{md,mdx}"],
+  plugins: {
+    markdown,
+  },
+  processor: "markdown/markdown",
+  languageOptions: {
+    parserOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+  },
+  language: "markdown/commonmark",
+  rules: {
+    ...markdown.configs.recommended[0].rules,
+  },
+};
+
 /** @type {import('eslint').Linter.Config[]} */
-export default [jsConfig, ...tslintConfigs];
+export default [jsConfig, ...tslintConfigs, mdConfig];
