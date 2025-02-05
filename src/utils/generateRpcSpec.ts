@@ -8,12 +8,13 @@ import { dereferenceDocument } from "@open-rpc/schema-utils-js";
 import { readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
-import { DerefedOpenRpcDoc } from "../types/openRpc";
+
+import type { DerefedOpenRpcDoc } from "../types/openRpc";
 
 export const generateRpcSpec = async (
   srcDir: string,
   outputDir: string,
-  filename: string
+  filename: string,
 ) => {
   const schemaDir = `${srcDir}/${filename}`;
   const componentsDir = `${schemaDir}/components`;
@@ -76,14 +77,14 @@ export const generateRpcSpec = async (
 
   writeFileSync(
     `${outputDir}/${filename}.json`,
-    JSON.stringify(spec, null, "\t")
+    JSON.stringify(spec, null, "\t"),
   );
 };
 
 export const generateAlchemyRpcSpec = async (
   srcDir: string,
   outputDir: string,
-  filename: string
+  filename: string,
 ) => {
   const schemaDir = `${srcDir}/${filename}`;
   const componentsFile = `${schemaDir}/../components.yaml`;
@@ -137,6 +138,6 @@ export const generateAlchemyRpcSpec = async (
 
   writeFileSync(
     `${outputDir}/${filename}.json`,
-    JSON.stringify(spec, null, "\t")
+    JSON.stringify(spec, null, "\t"),
   );
 };
