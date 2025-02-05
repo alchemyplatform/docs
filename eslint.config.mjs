@@ -55,6 +55,7 @@ const tslintConfigs = tseslint.config({
   },
 });
 
+/** @type {import('eslint').Linter.Config} */
 const jsConfig = {
   name: "JS Eslint Config",
   files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
