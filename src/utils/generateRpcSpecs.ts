@@ -1,4 +1,5 @@
 import type { OpenrpcDocument } from "@open-rpc/meta-schema";
+
 import {
   formatOpenRpcDoc,
   getComponentsFromDir,
@@ -12,7 +13,7 @@ import {
 export const generateChainRpcSpec = async (
   srcDir: string,
   outputDir: string,
-  filename: string
+  filename: string,
 ) => {
   const schemaDir = `${srcDir}/${filename}`;
   const componentsDir = `${schemaDir}/components`;
@@ -39,7 +40,7 @@ const componentsFile = "src/openrpc-schemas/alchemy/_shared/components.yaml";
 export const generateAlchemyRpcSpec = async (
   srcDir: string,
   outputDir: string,
-  filename: string
+  filename: string,
 ) => {
   const schemaDir = `${srcDir}/${filename}`;
   const methodsFile = `${schemaDir}/methods.yaml`;

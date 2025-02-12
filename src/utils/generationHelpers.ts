@@ -9,7 +9,8 @@ import { dereferenceDocument } from "@open-rpc/schema-utils-js";
 import { readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
-import { DerefedOpenRpcDoc } from "../types/openRpc";
+
+import type { DerefedOpenRpcDoc } from "../types/openRpc";
 
 export const getComponentsFromFile = (componentsFile: string): Components => {
   const rawMethods = readFileSync(componentsFile).toString();
@@ -24,7 +25,7 @@ export const getComponentsFromDir = (componentsDir: string): Components => {
 
   const schemas = componentsFiles.reduce<SchemaComponents>((acc, file) => {
     const { schemas: innerSchemas } = getComponentsFromFile(
-      `${componentsDir}/${file}`
+      `${componentsDir}/${file}`,
     );
 
     return { ...acc, ...innerSchemas };
@@ -93,9 +94,9 @@ export const formatOpenRpcDoc = async (doc: OpenrpcDocument) => {
 export const writeOpenRpcDoc = (
   outputDir: string,
   filename: string,
-  spec: OpenrpcDocument
+  spec: OpenrpcDocument,
 ) =>
   writeFileSync(
     `${outputDir}/${filename}.json`,
-    JSON.stringify(spec, null, "\t")
+    JSON.stringify(spec, null, "\t"),
   );

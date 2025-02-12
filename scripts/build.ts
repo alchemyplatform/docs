@@ -1,4 +1,5 @@
 import { cp, mkdirSync, readdirSync } from "fs";
+
 import {
   generateAlchemyRpcSpec,
   generateChainRpcSpec,
@@ -15,20 +16,20 @@ const allChainFiles = readdirSync(allChainsDir);
 mkdirSync(outputDir, { recursive: true });
 
 allChainFiles.forEach((chain) =>
-  generateChainRpcSpec(allChainsDir, outputDir, chain)
+  generateChainRpcSpec(allChainsDir, outputDir, chain),
 );
 
 // generate alchemy API OpenRPC specs
 const alchemyApisDir = `${schemasRoot}/alchemy`;
 const alchemyOutputDir = `${outputRoot}/alchemy`;
 const allAlchemyFiles = readdirSync(alchemyApisDir).filter(
-  (file) => !file.startsWith("_")
+  (file) => !file.startsWith("_"),
 );
 
 mkdirSync(alchemyOutputDir, { recursive: true });
 
 allAlchemyFiles.forEach((api) =>
-  generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api)
+  generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api),
 );
 
 // Copy markdown files to docs dir
