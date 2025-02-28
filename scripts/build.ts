@@ -1,34 +1,38 @@
 import { cp, mkdirSync, readdirSync } from "fs";
-import { generateRpcSpec } from "../src/utils/generateRpcSpec";
-import { generateAlchemyRpcSpec } from "../src/utils/generateRpcSpec";
 
-const allChainsDir = "src/openrpc-schemas/chains";
+import {
+  generateAlchemyRpcSpec,
+  generateChainRpcSpec,
+} from "../src/utils/generateRpcSpecs";
+
+const schemasRoot = "src/openrpc-schemas";
+const outputRoot = "docs/api-specs";
+
+// generate chains OpenRPC specs
+const allChainsDir = `${schemasRoot}/chains`;
+const outputDir = `${outputRoot}/chains`;
 const allChainFiles = readdirSync(allChainsDir);
-
-const outputDir = "docs/api-specs/chains";
 
 mkdirSync(outputDir, { recursive: true });
 
 allChainFiles.forEach((chain) =>
-  generateRpcSpec(allChainsDir, outputDir, chain)
+  generateChainRpcSpec(allChainsDir, outputDir, chain),
 );
 
-const alchemyAPIsDir = "src/openrpc-schemas/alchemy";
-const allAlchemyFiles = readdirSync(alchemyAPIsDir).filter(
-  // Filter out components.yaml and any other non-API spec files
-  (file) => file !== "components.yaml" && !file.startsWith(".")
+// generate alchemy API OpenRPC specs
+const alchemyApisDir = `${schemasRoot}/alchemy`;
+const alchemyOutputDir = `${outputRoot}/alchemy`;
+const allAlchemyFiles = readdirSync(alchemyApisDir).filter(
+  (file) => !file.startsWith("_"),
 );
 
-const alchemyOutputDir = "docs/api-specs/alchemy";
-
-// Create output directory for Alchemy specs
 mkdirSync(alchemyOutputDir, { recursive: true });
 
-// Process each Alchemy API spec
 allAlchemyFiles.forEach((api) =>
-  generateAlchemyRpcSpec(alchemyAPIsDir, alchemyOutputDir, api)
+  generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api),
 );
 
+// Copy markdown files to docs dir
 cp("src/markdown", "docs/markdown", { recursive: true }, (e) => {
   if (e) {
     console.error(e);
