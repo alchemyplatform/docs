@@ -1,0 +1,345 @@
+- name: alchemy_debug_traceCall
+  summary: >
+    Runs an eth_call within the context of a given block using the final state
+    of the parent block as the base.
+  params:
+    - name: transaction
+      required: true
+      description: >
+        The transaction object containing call parameters. Fields include:
+        - **from**: the sender address.
+        - **to**: the receiver address.
+        - **gas** (optional): gas provided as a hex string.
+        - **gasPrice**: gas price as a hex string.
+        - **value**: amount of ETH (hex string) sent.
+        - **data**: the call data.
+      schema:
+        type: object
+        properties:
+          from:
+            $ref: "#/components/schemas/address"
+          to:
+            $ref: "#/components/schemas/address"
+          gas:
+            type: string
+          gasPrice:
+            type: string
+          value:
+            type: string
+          data:
+            type: string
+    - name: blockIdentifier
+      required: true
+      description: >
+        A block identifier. This may be a block hash, a block number (in hex), or a block tag
+        such as "pending", "latest", "safe", "finalized", or "earliest".
+      schema:
+        type: string
+    - name: tracerOptions
+      required: true
+      description: >
+        An object specifying tracer options. Supported properties include:
+        - **tracer**: a string specifying the tracer type (either `"callTracer"` or `"prestateTracer"`).
+        - **tracerConfig**: an optional object with tracer configuration.
+        - **onlyTopCall**: an optional boolean to trace only the top-level call.
+      schema:
+        type: object
+        properties:
+          tracer:
+            type: string
+            enum:
+              - callTracer
+              - prestateTracer
+          tracerConfig:
+            type: object
+          onlyTopCall:
+            type: boolean
+  result:
+    name: Trace Object
+    description: >
+      Returns a trace object describing the execution of the call. This includes properties such as:
+      **type**, **from**, **to**, **value**, **gas**, **gasUsed**, **input**, **output**, and an optional
+      nested array **calls** for sub-call frames.
+    schema:
+      $ref: "#/components/schemas/traceObject"
+  examples:
+    - name: alchemy_debug_traceCall example
+      params:
+        - name: transaction
+          value:
+            from: "0x0000000000000000000000000000000000000000"
+            to: "0xd46e8dd67c5d32be8058bb8eb970870f07244567"
+            gas: "0x7fffffffffffadf7"
+            gasPrice: "0x09184e72a000"
+            value: "0x0"
+            data: "0x"
+        - name: blockIdentifier
+          value: "finalized"
+        - name: tracerOptions
+          value:
+            tracer: "callTracer"
+            onlyTopCall: true
+      result:
+        name: Trace Object Example
+        value:
+          type: "CALL"
+          from: "0x0000000000000000000000000000000000000000"
+          to: "0xd46e8dd67c5d32be8058bb8eb970870f07244567"
+          value: "0x0"
+          gas: "0x7fffffffffffadf7"
+          gasUsed: "0x0"
+          input: "0x"
+          output: "0x"
+          calls: []
+
+- name: alchemy_debug_traceTransaction
+  summary: >
+    Replays a transaction as executed on the network and returns its execution trace.
+  params:
+    - name: transactionHash
+      required: true
+      description: "The hash of the transaction to trace."
+      schema:
+        type: string
+    - name: options
+      required: false
+      description: >
+        An optional object of tracing options. Supported fields include:
+        - **tracer**: a string ("callTracer" or "prestateTracer").
+        - **timeout**: a duration string (e.g., "300ms", "2s45ms") overriding the default timeout.
+        - **tracerConfig**: an optional object for tracer configuration.
+        - **onlyTopCall**: an optional boolean to trace only the main call.
+      schema:
+        type: object
+        properties:
+          tracer:
+            type: string
+            enum:
+              - callTracer
+              - prestateTracer
+          timeout:
+            type: string
+          tracerConfig:
+            type: object
+          onlyTopCall:
+            type: boolean
+  result:
+    name: Transaction Trace
+    description: >
+      Returns an execution trace object for the transaction.
+    schema:
+      $ref: "#/components/schemas/traceObject"
+  examples:
+    - name: alchemy_debug_traceTransaction example
+      params:
+        - name: transactionHash
+          value: "0x8fc90a6c3ee3001cdcbbb685b4fbe67b1fa2bec575b15b0395fea5540d0901ae"
+        - name: options
+          value:
+            tracer: "callTracer"
+            timeout: "5s"
+      result:
+        name: Transaction Trace Example
+        value:
+          type: "CALL"
+          from: "0x5067c042e35881843f2b31dfc2db1f4f272ef48c"
+          to: "0x3ee18b2214aff97000d974cf647e7c347e8fa585"
+          value: "0x0"
+          gas: "0x17459"
+          gasUsed: "0x166cb"
+          input: "0x0"
+          output: "0x"
+          calls: []
+
+- name: alchemy_debug_traceBlockByNumber
+  summary: >
+    Replays the block specified by a block number or tag and returns execution traces for its transactions.
+  params:
+    - name: blockIdentifier
+      required: true
+      description: >
+        The block number (in hex) or block tag (e.g., "latest", "earliest").
+      schema:
+        type: string
+    - name: tracerOptions
+      required: true
+      description: >
+        An object specifying tracer options. Fields include:
+        - **tracer**: a string ("callTracer" or "prestateTracer").
+        - **tracerConfig**: an optional object.
+        - **onlyTopCall**: an optional boolean.
+      schema:
+        type: object
+        properties:
+          tracer:
+            type: string
+            enum:
+              - callTracer
+              - prestateTracer
+          tracerConfig:
+            type: object
+          onlyTopCall:
+            type: boolean
+  result:
+    name: Block Traces
+    description: >
+      Returns an array of trace objects—one for each transaction in the block.
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/traceObject"
+  examples:
+    - name: alchemy_debug_traceBlockByNumber example
+      params:
+        - name: blockIdentifier
+          value: "0xECE410"
+        - name: tracerOptions
+          value:
+            tracer: "callTracer"
+      result:
+        name: Block Traces Example
+        value: [
+          {
+            "type": "CALL",
+            "from": "0x0000000000000000000000000000000000000000",
+            "to": "0xd46e8dd67c5d32be8058bb8eb970870f07244567",
+            "value": "0x0",
+            "gas": "0x7fffffffffffadf7",
+            "gasUsed": "0x0",
+            "input": "0x",
+            "output": "0x",
+            "calls": []
+          }
+        ]
+
+- name: alchemy_debug_traceBlockByHash
+  summary: >
+    Replays the block specified by its hash and returns execution traces for its transactions.
+  params:
+    - name: blockHash
+      required: true
+      description: "The hash of the block to trace."
+      schema:
+        type: string
+    - name: tracerOptions
+      required: true
+      description: >
+        An object specifying tracer options. Fields include:
+        - **tracer**: a string ("callTracer" or "prestateTracer").
+        - **tracerConfig**: an optional object.
+        - **onlyTopCall**: an optional boolean.
+      schema:
+        type: object
+        properties:
+          tracer:
+            type: string
+            enum:
+              - callTracer
+              - prestateTracer
+          tracerConfig:
+            type: object
+          onlyTopCall:
+            type: boolean
+  result:
+    name: Block Traces
+    description: "Returns an array of execution trace objects for the block."
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/traceObject"
+  examples:
+    - name: alchemy_debug_traceBlockByHash example
+      params:
+        - name: blockHash
+          value: "0x97b49e43632ac70c46b4003434058b18db0ad809617bd29f3448d46ca9085576"
+        - name: tracerOptions
+          value:
+            tracer: "callTracer"
+      result:
+        name: Block Traces Example
+        value: [
+          {
+            "type": "CALL",
+            "from": "0x0000000000000000000000000000000000000000",
+            "to": "0xd46e8dd67c5d32be8058bb8eb970870f07244567",
+            "value": "0x0",
+            "gas": "0x7fffffffffffadf7",
+            "gasUsed": "0x0",
+            "input": "0x",
+            "output": "0x",
+            "calls": []
+          }
+        ]
+
+- name: alchemy_debug_getRawBlock
+  summary: Returns an RLP-encoded block.
+  params:
+    - name: blockIdentifier
+      required: true
+      description: >
+        The block number (in hex) or block tag (e.g., "latest", "earliest").
+      schema:
+        type: string
+  result:
+    name: RLP-Encoded Block
+    description: "The RLP-encoded block as a hexadecimal string."
+    schema:
+      type: string
+  examples:
+    - name: alchemy_debug_getRawBlock example
+      params:
+        - name: blockIdentifier
+          value: "0x32026E"
+      result:
+        name: RLP-Encoded Block Example
+        value: "0xf90211a0..."
+
+- name: alchemy_debug_getRawHeader
+  summary: Returns an RLP-encoded block header.
+  params:
+    - name: blockIdentifier
+      required: true
+      description: >
+        The block number (in hex) or block tag (e.g., "latest", "earliest").
+      schema:
+        type: string
+  result:
+    name: RLP-Encoded Header
+    description: "The RLP-encoded header as a hexadecimal string."
+    schema:
+      type: string
+  examples:
+    - name: alchemy_debug_getRawHeader example
+      params:
+        - name: blockIdentifier
+          value: "0x32026E"
+      result:
+        name: RLP-Encoded Header Example
+        value: "0xf9020ea0..."
+
+- name: alchemy_debug_getRawReceipts
+  summary: Returns an array of EIP-2718 binary-encoded receipts.
+  params:
+    - name: blockIdentifier
+      required: true
+      description: >
+        The block number (in hex) or block tag (e.g., "latest", "earliest").
+      schema:
+        type: string
+  result:
+    name: Raw Receipts
+    description: >
+      An array of EIP-2718 binary-encoded receipts as hexadecimal strings.
+    schema:
+      type: array
+      items:
+        type: string
+  examples:
+    - name: alchemy_debug_getRawReceipts example
+      params:
+        - name: blockIdentifier
+          value: "0x32026E"
+      result:
+        name: Raw Receipts Example
+        value:
+          - "0xf9011a808082520894... (truncated)"
