@@ -4,7 +4,16 @@
   "description": "Open RPC Specs and content files for Alchemy's documentation",
   "license": "MIT",
   "scripts": {
-    "build": "ts-node ./scripts/build.ts"
+    "build": "ts-node ./scripts/build.ts",
+    "clean": "rm -rf docs",
+    "typecheck": "tsc --noEmit",
+    "lint": "pnpm run lint:eslint && pnpm run lint:prettier && pnpm run typecheck",
+    "lint:fix": "pnpm run lint:eslint:fix && pnpm run lint:prettier:fix",
+    "lint:eslint": "eslint --format stylish",
+    "lint:eslint:fix": "pnpm run lint:eslint --fix --quiet",
+    "lint:prettier": "prettier --cache --check \"{src,scripts}/**/*.{js,jsx,ts,tsx,md,mdx,mjs,mts,json,yml,yaml}\"",
+    "lint:prettier:fix": "pnpm run lint:prettier --write",
+    "prepare": "husky"
   },
   "dependencies": {
     "@open-rpc/schema-utils-js": "^2.0.5",
@@ -13,10 +22,20 @@
     "ts-node": "^10.9.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@eslint/markdown": "^6.2.2",
     "@open-rpc/meta-schema": "^1.14.9",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema-merge-allof": "^0.6.5",
     "@types/node": "^22.10.2",
-    "typescript": "^5.7.2"
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.23.0"
   }
 }
