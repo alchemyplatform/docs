@@ -26,6 +26,11 @@
     description: UserOperationReceipt object representing the outcome of a UserOperation.
     schema:
       type: object
+      properties:
+        entrypointV06Response:
+          $ref: "#/components/schemas/UserOperationV06"
+        entrypointV07Response:
+          $ref: "#/components/schemas/UserOperationV07"
   examples:
     - name: eth_getUserOperationReceipt example
       params:
@@ -82,6 +87,11 @@
     description: The UserOperation object.
     schema:
       type: object
+      properties:
+        entrypointV06Response:
+          $ref: "#/components/schemas/UserOperationV06"
+        entrypointV07Response:
+          $ref: "#/components/schemas/UserOperationV07"
   examples:
     - name: eth_getUserOperationByHash example
       params:
@@ -113,7 +123,9 @@
       required: true
       description: The UserOperation object (v0.6 or v0.7).
       schema:
-        type: object
+        oneOf:
+          - $ref: "#/components/schemas/UserOperationV06"
+          - $ref: "#/components/schemas/UserOperationV07"
     - name: Entrypoint address
       required: true
       description: The entrypoint address through which the operation is sent.
@@ -142,7 +154,9 @@
       required: true
       description: The UserOperation object (v0.6 or v0.7) with optional gas fields.
       schema:
-        type: object
+        oneOf:
+          - $ref: "#/components/schemas/UserOperationV06"
+          - $ref: "#/components/schemas/UserOperationV07"
     - name: Entrypoint address
       required: true
       description: The entrypoint address through which the operation is sent.
@@ -154,15 +168,35 @@
     schema:
       type: object
       properties:
-        preVerificationGas:
-          $ref: "#/components/schemas/uint256"
-        verificationGasLimit:
-          $ref: "#/components/schemas/uint256"
-        callGasLimit:
-          $ref: "#/components/schemas/uint256"
-        paymasterVerificationGasLimit:
-          $ref: "#/components/schemas/uint256"
-          description: (Optional) Gas used by the paymaster during verification.
+        entrypointV06Response:
+          type: object
+          title: Entrypoint v0.6 Response
+          properties:
+            preVerificationGas:
+              $ref: "#/components/schemas/uint256"
+              description: Gas overhead of this UserOperation.
+            verificationGasLimit:
+              $ref: "#/components/schemas/uint256"
+              description: Actual gas used by the validation of this UserOperation.
+            callGasLimit:
+              $ref: "#/components/schemas/uint256"
+              description: Value used by inner account execution.
+        entrypointV07Response:
+          type: object
+          title: Entrypoint v0.7 Response
+          properties:
+            preVerificationGas:
+              $ref: "#/components/schemas/uint256"
+              description: Gas overhead of this UserOperation.
+            verificationGasLimit:
+              $ref: "#/components/schemas/uint256"
+              description: Actual gas used by the validation of this UserOperation.
+            callGasLimit:
+              $ref: "#/components/schemas/uint256"
+              description: Value used by inner account execution.
+            paymasterVerificationGasLimit:
+              $ref: "#/components/schemas/uint256"
+              description: Value used by the paymaster during verification.
   examples:
     - name: eth_estimateUserOperationGas example
       params:
@@ -173,6 +207,12 @@
       result:
         name: Gas estimation
         value:
-          preVerificationGas: "0x1"
-          verificationGasLimit: "0x1"
-          callGasLimit: "0x1"
+          entrypointV06Response:
+            preVerificationGas: "0x1"
+            verificationGasLimit: "0x1"
+            callGasLimit: "0x1"
+          entrypointV07Response:
+            preVerificationGas: "0x1"
+            verificationGasLimit: "0x1"
+            callGasLimit: "0x1"
+            paymasterVerificationGasLimit: "0x1"

@@ -103,3 +103,94 @@ bytesAnyCase:
   title: hex encoded bytes (any case)
   type: string
   pattern: ^0[xX][0-9A-Fa-f]*$
+
+UserOperationV06:
+  type: object
+  properties:
+    sender:
+      $ref: "#/components/schemas/address"
+      description: "The account making the operation"
+    nonce:
+      $ref: "#/components/schemas/uint"
+      description: "Anti-replay parameter; used as salt for first-time account creation"
+      required: false
+    initCode:
+      $ref: "#/components/schemas/bytes"
+      description: "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
+      required: false
+    callData:
+      $ref: "#/components/schemas/bytes"
+      description: "Encoded data for the primary function call or operation"
+    callGasLimit:
+      type: string
+      description: "Gas allocated for the main execution call"
+    verificationGasLimit:
+      type: string
+      description: "Gas allocated for verification"
+    preVerificationGas:
+      type: string
+      description: "Gas for pre-verification execution and calldata"
+    maxFeePerGas:
+      type: string
+      description: "Maximum fee per gas (EIP-1559)"
+    maxPriorityFeePerGas:
+      type: string
+      description: "Max priority fee per gas (EIP-1559)"
+    signature:
+      type: string
+      description: "Data passed during verification"
+      pattern: "^0x[0-9a-fA-F]*$"
+    paymasterAndData:
+      $ref: "#/components/schemas/bytes"
+      description: "Paymaster address and extra data"
+
+UserOperationV07:
+  type: object
+  properties:
+    sender:
+      $ref: "#/components/schemas/address"
+      description: "Account initiating operation"
+    nonce:
+      $ref: "#/components/schemas/uint"
+      description: "Account nonce or creation salt"
+    initCode:
+      $ref: "#/components/schemas/bytes"
+      description: "Initialization code (for new accounts)"
+    callData:
+      $ref: "#/components/schemas/bytes"
+      description: "Data for operation call"
+    callGasLimit:
+      type: string
+      description: "Gas allocated for call"
+    verificationGasLimit:
+      type: string
+      description: "Gas allocated for verification"
+    maxFeePerGas:
+      type: string
+      description: "Max fee per gas (EIP-1559)"
+    maxPriorityFeePerGas:
+      type: string
+      description: "Priority fee per gas (EIP-1559)"
+    paymaster:
+      $ref: "#/components/schemas/address"
+      description: "Paymaster contract address"
+    paymasterData:
+      $ref: "#/components/schemas/bytes"
+      description: "Data for paymaster"
+    paymasterVerificationGasLimit:
+      type: string
+    factory:
+      $ref: "#/components/schemas/address"
+      description: "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+    factoryData:
+      $ref: "#/components/schemas/bytes"
+      description: "Data for the account factory (only if the account factory exists)"
+    preVerificationGas:
+      type: string
+      description: "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+    paymasterPostOpGasLimit:
+      type: string
+      description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+    signature:
+      type: string
+      description: "Data passed into the account along with the nonce during the verification step"
