@@ -36,61 +36,8 @@
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
-          - title: "User Operation v0.6 (missing signature and paymasterData)"
-            type: object
-            allOf:
-              - title: "User Operation v0.6 (missing signature, paymasterData, and gas fields)"
-                type: object
-                properties:
-                  sender:
-                    description: The account making the operation.
-                    type: string
-                    default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-                  nonce:
-                    description: Anti-replay parameter; also used as the salt for first-time account creation.
-                    type: string
-                    pattern: "^0[xX][0-9a-fA-F]*$"
-                    default: "0x3"
-                  initCode:
-                    description: The initCode of the account (needed if and only if the account is not yet on-chain and needs to be created).
-                    type: string
-                    default: "0x"
-                  callData:
-                    description: >
-                      Encoded data for executing the primary function call or operation within the user's transaction,
-                      such as calling a smart contract function or transferring tokens.
-                    type: string
-                    default: "0xb61d27f600000000000000000000000043f6bfbe9dad44cf0a60570c30c307d949be4cd40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000645c833bfd000000000000000000000000613c64104B98b048b93289ed20aefd80912b3cde0000000000000000000000000000000000000000000000000de123e8a84f9901000000000000000000000000c9371ea30dea5ac745b71e191ba8cde2c4e66df500000000000000000000000000000000000000000000000000000000"
-              - {} # Additional gas-related properties could be defined here if needed.
-          - title: "User Operation v0.7 (missing signature, paymasterData, and gas fields)"
-            type: object
-            allOf:
-              - title: "User Operation v0.7 (missing signature, paymasterData, and gas fields)"
-                type: object
-                properties:
-                  sender:
-                    description: The account making the operation.
-                    type: string
-                    default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-                  nonce:
-                    description: Anti-replay parameter; also used as the salt for first-time account creation.
-                    type: string
-                    pattern: "^0[xX][0-9a-fA-F]*$"
-                    default: "0x3"
-                  factory:
-                    description: The account factory address (needed if and only if the account is not yet on-chain and needs to be created).
-                    type: string
-                    default: "0x5061010c6114f7565b5061010c6114d6565B5061"
-                  factoryData:
-                    description: Data for the account factory (only if the account factory exists).
-                    type: string
-                    default: "0x"
-                  callData:
-                    description: >
-                      Encoded data for executing the primary function call or operation within the user's transaction.
-                    type: string
-                    default: "0xb61d27f600000000000000000000000043f6bfbe9dad44cf0a60570c30c307d949be4cd40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000645c833bfd000000000000000000000000613c64104B98b048b93289ed20aefd80912b3cde0000000000000000000000000000000000000000000000000de123e8a84f9901000000000000000000000000c9371ea30dea5ac745b71e191ba8cde2c4e66df500000000000000000000000000000000000000000000000000000000"
-              - {} # Additional gas-related properties could be defined here if needed.
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
   result:
     name: Response
     description: >
@@ -174,52 +121,8 @@
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature, paymasterData, and gas fields)"
         oneOf:
-          - title: "User Operation v0.6 (missing signature, paymasterData, and gas fields)"
-            type: object
-            properties:
-              sender:
-                description: The account making the operation.
-                type: string
-                default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-              nonce:
-                description: Anti-replay parameter; also used as the salt for first-time account creation.
-                type: string
-                pattern: "^0[xX][0-9a-fA-F]*$"
-                default: "0x3"
-              initCode:
-                description: The initCode of the account.
-                type: string
-                default: "0x"
-              callData:
-                description: >
-                  Encoded data for executing the primary function call or operation within the user's transaction.
-                type: string
-                default: "0xb61d27f600000000000000000000000043f6bfbe9dad44cf0a60570c30c307d949be4cd40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000645c833bfd000000000000000000000000613c64104B98b048b93289ed20aefd80912b3cde0000000000000000000000000000000000000000000000000de123e8a84f9901000000000000000000000000c9371ea30dea5ac745b71e191ba8cde2c4e66df500000000000000000000000000000000000000000000000000000000"
-          - title: "User Operation v0.7 (missing signature, paymasterData, and gas fields)"
-            type: object
-            properties:
-              sender:
-                description: The account making the operation.
-                type: string
-                default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-              nonce:
-                description: Anti-replay parameter; also used as the salt for first-time account creation.
-                type: string
-                pattern: "^0[xX][0-9a-fA-F]*$"
-                default: "0x3"
-              factory:
-                description: The account factory address.
-                type: string
-                default: "0x5061010c6114f7565b5061010c6114d6565B5061"
-              factoryData:
-                description: Data for the account factory.
-                type: string
-                default: "0x"
-              callData:
-                description: >
-                  Encoded data for executing the primary function call or operation within the user's transaction.
-                type: string
-                default: "0xb61d27f600000000000000000000000043f6bfbe9dad44cf0a60570c30c307d949be4cd40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000645c833bfd000000000000000000000000613c64104B98b048b93289ed20aefd80912b3cde0000000000000000000000000000000000000000000000000de123e8a84f9901000000000000000000000000c9371ea30dea5ac745b71e191ba8cde2c4e66df500000000000000000000000000000000000000000000000000000000"
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
     - name: overrides
       required: false
       description: >
@@ -278,68 +181,58 @@
                 required: [multiplier]
                 description: Multiplier value.
   result:
-    name: Response
+    name: Asset changes
     description: >
-      The response object may be one of two types:
-      - For entrypoint v0.6, an object including paymasterAndData and gas parameters.
-      - For entrypoint v0.7, an object including paymaster, paymasterData, and associated gas limits.
+      The transformed response object that wraps the original gas and paymaster response.
+      It includes an array of asset change objects, a gasUsed field, and an error field.
     schema:
       type: object
       properties:
-        entrypointV06Response:
-          title: Entrypoint v0.6 Response
+        name:
+          type: string
+          description: A fixed name for the response.
+          default: Asset changes
+        value:
           type: object
           properties:
-            paymasterAndData:
+            changes:
+              type: array
+              description: An array of asset change details.
+              items:
+                type: object
+                properties:
+                  assetType:
+                    type: string
+                  changeType:
+                    type: string
+                  from:
+                    type: string
+                  to:
+                    type: string
+                  rawAmount:
+                    type: string
+                  contractAddress:
+                    type: string
+                  tokenId:
+                    type: string
+                    nullable: true
+                  decimals:
+                    type: number
+                  symbol:
+                    type: string
+                  name:
+                    type: string
+                  logo:
+                    type: string
+                  amount:
+                    type: string
+            gasUsed:
               type: string
-              description: >
-                The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field.
-            callGasLimit:
+              description: The amount of gas used (e.g., "0x5208").
+            error:
               type: string
-              description: The amount of gas to allocate for the main execution call.
-            verificationGasLimit:
-              type: string
-              description: The amount of gas to allocate for the verification step.
-            preVerificationGas:
-              type: string
-              description: The amount of gas to compensate the bundler for pre‑verification execution and calldata.
-            maxFeePerGas:
-              type: string
-              description: The maximum fee per gas (similar to EIP‑1559 max_fee_per_gas).
-            maxPriorityFeePerGas:
-              type: string
-              description: Maximum priority fee per gas.
-        entrypointV07Response:
-          title: Entrypoint v0.7 Response
-          type: object
-          properties:
-            paymaster:
-              type: string
-              description: The paymaster address used in the operation.
-            paymasterData:
-              type: string
-              description: The data for the paymaster in the operation.
-            callGasLimit:
-              type: string
-              description: The amount of gas to allocate for the main execution call.
-            verificationGasLimit:
-              type: string
-              description: The amount of gas to allocate for the verification step.
-            preVerificationGas:
-              type: string
-              description: The amount of gas to compensate the bundler for pre‑verification execution and calldata.
-            maxFeePerGas:
-              type: string
-              description: The maximum fee per gas (similar to EIP‑1559 max_fee_per_gas).
-            maxPriorityFeePerGas:
-              type: string
-              description: Maximum priority fee per gas.
-            paymasterVerificationGasLimit:
-              type: string
-              description: The gas limit for paymaster verification.
-            paymasterPostOpGasLimit:
-              type: string
-              description: The gas limit for paymaster post‑operation.
+              description: Error message if an error occurred.
+              nullable: true
 
 - name: pm_getPaymasterData
   summary: >
@@ -354,50 +247,8 @@
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
-          - title: "User Operation v0.6 (missing signature and paymasterData)"
-            type: object
-            properties:
-              sender:
-                type: string
-                default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-                description: The account making the operation.
-              nonce:
-                type: string
-                pattern: "^0[xX][0-9a-fA-F]*$"
-                default: "0x3"
-                description: Anti-replay parameter.
-              initCode:
-                type: string
-                default: "0x"
-                description: The initCode for account creation if needed.
-              callData:
-                type: string
-                default: "0xb61d27f600000000..."
-                description: Encoded call data for the user operation.
-          - title: "User Operation v0.7 (missing signature and paymasterData)"
-            type: object
-            properties:
-              sender:
-                type: string
-                default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-                description: The account making the operation.
-              nonce:
-                type: string
-                pattern: "^0[xX][0-9a-fA-F]*$"
-                default: "0x3"
-                description: Anti-replay parameter.
-              factory:
-                type: string
-                default: "0x5061010c6114f7565b5061010c6114d6565B5061"
-                description: The account factory address.
-              factoryData:
-                type: string
-                default: "0x"
-                description: Data for account creation.
-              callData:
-                type: string
-                default: "0xb61d27f600000000..."
-                description: Encoded call data for the user operation.
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
     - name: entryPoint
       required: true
       description: >
@@ -472,50 +323,8 @@
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
-          - title: "User Operation v0.6 (missing signature and paymasterData)"
-            type: object
-            properties:
-              sender:
-                type: string
-                default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-                description: The account making the operation.
-              nonce:
-                type: string
-                pattern: "^0[xX][0-9a-fA-F]*$"
-                default: "0x3"
-                description: Anti-replay parameter.
-              initCode:
-                type: string
-                default: "0x"
-                description: The initCode for account creation if needed.
-              callData:
-                type: string
-                default: "0xb61d27f600000000..."
-                description: Encoded call data for the user operation.
-          - title: "User Operation v0.7 (missing signature and paymasterData)"
-            type: object
-            properties:
-              sender:
-                type: string
-                default: "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81"
-                description: The account making the operation.
-              nonce:
-                type: string
-                pattern: "^0[xX][0-9a-fA-F]*$"
-                default: "0x3"
-                description: Anti-replay parameter.
-              factory:
-                type: string
-                default: "0x5061010c6114f7565b5061010c6114d6565B5061"
-                description: The account factory address.
-              factoryData:
-                type: string
-                default: "0x"
-                description: Data for account creation.
-              callData:
-                type: string
-                default: "0xb61d27f600000000..."
-                description: Encoded call data for the user operation.
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
     - name: entryPoint
       required: true
       description: >
