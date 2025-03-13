@@ -1,0 +1,402 @@
+- name: alchemy_requestPaymasterAndData
+  summary: Requests coverage for a UserOperation. Returns paymasterAndData if approved, errors if not.
+  params:
+    - name: webhookData
+      required: false
+      description: Additional data you wish to include in the request, such as proof of humanity.
+      schema:
+        type: string
+    - name: policyId
+      required: false
+      description: The policy ID or list of policy IDs.
+      schema:
+        oneOf:
+          - type: string
+            format: uuid
+          - type: array
+            items:
+              type: string
+              format: uuid
+        default: "0x1234567890123456789012345678901234567890123456789012345678901234"
+    - name: entryPoint
+      required: true
+      description: >
+        The entrypoint address the request should be sent through. This MUST be one of the entry
+        points returned by the supportedEntryPoints RPC call and match the version of the user operation
+        in the userOperation field.
+      schema:
+        type: string
+        pattern: "^0[xX][0-9a-fA-F]*$"
+        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+    - name: userOperation
+      required: true
+      description: >
+        Partial UserOperation object, missing paymasterAndData and signature fields. This can be either a
+        v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field.
+      schema:
+        title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
+        oneOf:
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
+  result:
+    name: Response
+    description: >
+      The response object may be one of two types:
+      - For entrypoint v0.6, an object with property paymasterAndData.
+      - For entrypoint v0.7, an object with properties paymaster, paymasterData,
+        paymasterVerificationGasLimit, and paymasterPostOpGasLimit.
+    schema:
+      type: object
+      properties:
+        entrypointV06Response:
+          title: Entrypoint v0.6 Response
+          type: object
+          properties:
+            paymasterAndData:
+              type: string
+              description: >
+                The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field.
+                Contains gas manager address, sigTimeRange, and secp256k1 signature.
+        entrypointV07Response:
+          title: Entrypoint v0.7 Response
+          type: object
+          properties:
+            paymaster:
+              type: string
+              description: The paymaster address used in the operation.
+            paymasterData:
+              type: string
+              description: The data for the paymaster in the operation.
+            paymasterVerificationGasLimit:
+              type: string
+              description: The gas limit for paymaster verification.
+            paymasterPostOpGasLimit:
+              type: string
+              description: The gas limit for paymaster post-operation.
+
+- name: alchemy_requestGasAndPaymasterAndData
+  summary: >
+    Requests gas and coverage for a UserOperation. Returns paymasterAndData and gas parameters if approved,
+    errors if not. Optionally accepts fee parameter overrides to be used in the UserOperation.
+  params:
+    - name: webhookData
+      required: false
+      description: Additional data you wish to include in the request, such as proof of humanity.
+      schema:
+        type: string
+    - name: policyId
+      required: false
+      description: The policy ID or list of policy IDs.
+      schema:
+        oneOf:
+          - type: string
+            format: uuid
+          - type: array
+            items:
+              type: string
+              format: uuid
+        default: "69d524a7-e932-4214-8673-dcdcba31bb42"
+    - name: entryPoint
+      required: true
+      description: >
+        The entrypoint address the request should be sent through. This MUST be one of the entry
+        points returned by the supportedEntryPoints RPC call and match the version of the user operation
+        in the userOperation field.
+      schema:
+        type: string
+        pattern: "^0[xX][0-9a-fA-F]*$"
+        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+    - name: dummySignature
+      required: false
+      description: Dummy signature for the operation. This is useful for estimating gas costs.
+      schema:
+        type: string
+        default: "0xe8fe34b166b64d118dccf44c7198648127bf8a76a48a042862321af6058026d276ca6abb4ed4b60ea265d1e57e33840d7466de75e13f072bbd3b7e64387eebfe1b"
+    - name: userOperation
+      required: true
+      description: >
+        Partial UserOperation object, missing gas parameters, paymasterAndData and signature fields.
+        This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point
+        at the address in the entryPoint field.
+      schema:
+        title: "User Operation, either v0.6 or v0.7 (missing signature, paymasterData, and gas fields)"
+        oneOf:
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
+    - name: overrides
+      required: false
+      description: >
+        Optional fields to override default gas and fee behavior – these can be multiplier overrides or absolute overrides.
+      schema:
+        type: object
+        properties:
+          maxFeePerGas:
+            oneOf:
+              - type: string
+                description: Hex string.
+              - type: object
+                properties:
+                  multiplier:
+                    type: number
+                required: [multiplier]
+                description: Multiplier value.
+          maxPriorityFeePerGas:
+            oneOf:
+              - type: string
+                description: Hex string.
+              - type: object
+                properties:
+                  multiplier:
+                    type: number
+                required: [multiplier]
+                description: Multiplier value.
+          callGasLimit:
+            oneOf:
+              - type: string
+                description: Hex string.
+              - type: object
+                properties:
+                  multiplier:
+                    type: number
+                required: [multiplier]
+                description: Multiplier value.
+          verificationGasLimit:
+            oneOf:
+              - type: string
+                description: Hex string.
+              - type: object
+                properties:
+                  multiplier:
+                    type: number
+                required: [multiplier]
+                description: Multiplier value.
+          preVerificationGas:
+            oneOf:
+              - type: string
+                description: Hex string.
+              - type: object
+                properties:
+                  multiplier:
+                    type: number
+                required: [multiplier]
+                description: Multiplier value.
+  result:
+    name: Asset changes
+    description: >
+      The transformed response object that wraps the original gas and paymaster response.
+      It includes an array of asset change objects, a gasUsed field, and an error field.
+    schema:
+      type: object
+      properties:
+        name:
+          type: string
+          description: A fixed name for the response.
+          default: Asset changes
+        value:
+          type: object
+          properties:
+            changes:
+              type: array
+              description: An array of asset change details.
+              items:
+                type: object
+                properties:
+                  assetType:
+                    type: string
+                  changeType:
+                    type: string
+                  from:
+                    type: string
+                  to:
+                    type: string
+                  rawAmount:
+                    type: string
+                  contractAddress:
+                    type: string
+                  tokenId:
+                    type: string
+                    nullable: true
+                  decimals:
+                    type: number
+                  symbol:
+                    type: string
+                  name:
+                    type: string
+                  logo:
+                    type: string
+                  amount:
+                    type: string
+            gasUsed:
+              type: string
+              description: The amount of gas used (e.g., "0x5208").
+            error:
+              type: string
+              description: Error message if an error occurred.
+              nullable: true
+
+- name: pm_getPaymasterData
+  summary: >
+    Returns values to be used in paymaster-related fields of a signed user operation.
+    These values are not stubs and will be included in a signed user operation as part of an eth_sendUserOperation call.
+    Accepts an unsigned user operation, an entrypoint address, a chain ID, and a context object.
+  params:
+    - name: userOperation
+      required: true
+      description: >
+        Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData).
+      schema:
+        title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
+        oneOf:
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
+    - name: entryPoint
+      required: true
+      description: >
+        The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call.
+      schema:
+        type: string
+        pattern: "^0[xX][0-9a-fA-F]*$"
+        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+    - name: chainId
+      required: true
+      description: The chain ID of the network the operation will be submitted on.
+      schema:
+        type: string
+        pattern: "^0[xX][0-9a-fA-F]+$"
+        default: "0x1"
+    - name: context
+      required: false
+      description: >
+        An object containing context. Must include a policyId and may include webhookData.
+      schema:
+        type: object
+        properties:
+          policyId:
+            oneOf:
+              - type: string
+                format: uuid
+              - type: array
+                items:
+                  type: string
+                  format: uuid
+            description: The policy ID or list of policy IDs.
+          webhookData:
+            type: string
+            description: Additional data you wish to include (e.g. proof of humanity).
+  result:
+    name: Response
+    description: >
+      The response object may be one of two types:
+      - For entrypoint v0.6: an object with property paymasterAndData.
+      - For entrypoint v0.7: an object with properties paymaster and paymasterData.
+    schema:
+      type: object
+      properties:
+        entrypointV06Response:
+          title: EntryPoint v0.6 Response
+          type: object
+          properties:
+            paymasterAndData:
+              type: string
+              description: >
+                The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field.
+        entrypointV07Response:
+          title: EntryPoint v0.7 Response
+          type: object
+          properties:
+            paymaster:
+              type: string
+              description: The paymaster address used in the operation.
+            paymasterData:
+              type: string
+              description: The data for the paymaster in the operation.
+
+- name: pm_getPaymasterDataStub
+  summary: >
+    Returns stub values to be used in paymaster-related fields of an unsigned user operation for gas estimation.
+    Accepts an unsigned user operation, an entrypoint address, a chain ID, and a context object.
+  params:
+    - name: userOperation
+      required: true
+      description: >
+        Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData).
+      schema:
+        title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
+        oneOf:
+          - $ref: "#/components/schemas/UserOperationV06Partial"
+          - $ref: "#/components/schemas/UserOperationV07Partial"
+    - name: entryPoint
+      required: true
+      description: >
+        The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call.
+      schema:
+        type: string
+        pattern: "^0[xX][0-9a-fA-F]*$"
+        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+    - name: chainId
+      required: true
+      description: The chain ID of the network the operation will be submitted on.
+      schema:
+        type: string
+        pattern: "^0[xX][0-9a-fA-F]+$"
+        default: "0x1"
+    - name: context
+      required: false
+      description: >
+        An object containing context. Must include a policyId and may include webhookData.
+      schema:
+        type: object
+        properties:
+          policyId:
+            oneOf:
+              - type: string
+                format: uuid
+              - type: array
+                items:
+                  type: string
+                  format: uuid
+            description: The policy ID or list of policy IDs.
+          webhookData:
+            type: string
+            description: Additional data you wish to include (e.g. proof of humanity).
+  result:
+    name: Response
+    description: >
+      The response object may be one of two types:
+      - For entrypoint v0.6: an object with properties paymasterAndData and sponsor.
+      - For entrypoint v0.7: an object with properties paymaster, paymasterData, and sponsor.
+    schema:
+      type: object
+      properties:
+        entrypointV06Response:
+          title: EntryPoint v0.6 Stub Response
+          type: object
+          properties:
+            paymasterAndData:
+              type: string
+              description: >
+                The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field.
+            sponsor:
+              type: object
+              description: Information about who is sponsoring the user's transaction.
+              properties:
+                name:
+                  type: string
+                  description: The name of the entity sponsoring the operation.
+        entrypointV07Response:
+          title: EntryPoint v0.7 Stub Response
+          type: object
+          properties:
+            paymaster:
+              type: string
+              description: The paymaster address used in the operation.
+            paymasterData:
+              type: string
+              description: The data for the paymaster in the operation.
+            sponsor:
+              type: object
+              description: Information about who is sponsoring the user's transaction.
+              properties:
+                name:
+                  type: string
+                  description: The name of the entity sponsoring the operation.
