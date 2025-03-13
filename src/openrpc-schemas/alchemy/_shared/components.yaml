@@ -127,7 +127,6 @@ notFound:
   title: "Not Found (null)"
   type: "null"
 
-  
 AssetChange:
   type: object
   required:
@@ -398,3 +397,195 @@ UserOperationV07:
     signature:
       type: string
       description: "Data passed into the account along with the nonce during the verification step"
+
+SimulateAssetChangesResult:
+  title: SimulateAssetChangesResult
+  type: object
+  required:
+    - changes
+    - error
+  properties:
+    changes:
+      type: array
+      items:
+        $ref: "#/components/schemas/AssetChange"
+    gasUsed:
+      type: string
+      description: "The amount of gas used for the simulation"
+    error:
+      type: ["string", "null"]
+      description: "Error message if the transaction would revert, null otherwise"
+
+SimulateExecutionResult:
+  title: SimulateExecutionResult
+  type: object
+  required:
+    - calls
+    - logs
+    - error
+  properties:
+    calls:
+      type: array
+      items:
+        $ref: "#/components/schemas/Call"
+    logs:
+      type: array
+      items:
+        $ref: "#/components/schemas/Log"
+    error:
+      type: ["string", "null"]
+      description: "If the transaction would revert, error explains the reason"
+    revertReason:
+      $ref: "#/components/schemas/RevertMessage"
+
+Call:
+  title: Call
+  type: object
+  required:
+    - type
+    - from
+    - to
+    - gas
+    - gasUsed
+    - input
+    - output
+    - decoded
+  properties:
+    type:
+      $ref: "#/components/schemas/CallType"
+    from:
+      $ref: "#/components/schemas/address"
+      description: Address the transaction is sent from
+    to:
+      $ref: "#/components/schemas/address"
+      description: Address the transaction is directed to
+    value:
+      description: Amount in wei to transfer from sender to recipient
+      anyOf:
+        - $ref: "#/components/schemas/uint"
+        - type: "null"
+    gas:
+      $ref: "#/components/schemas/uint"
+      description: Hex-encoded gas limit
+    gasUsed:
+      $ref: "#/components/schemas/bytesAnyCase"
+      description: Hex-encoded gas actually used by this call
+    input:
+      $ref: "#/components/schemas/bytesAnyCase"
+      description: Hex-encoded call data
+    output:
+      type: string
+      description: Hex-encoded return data
+    decoded:
+      anyOf:
+        - $ref: "#/components/schemas/DecodedCall"
+        - type: "null"
+
+CallType:
+  title: CallType
+  type: string
+  enum: [CALL, STATICCALL, DELEGATECALL]
+
+DecodedCall:
+  title: DecodedCall
+  type: object
+  required:
+    - methodName
+    - inputs
+    - outputs
+    - authority
+  properties:
+    methodName:
+      type: string
+    inputs:
+      type: array
+      items:
+        $ref: "#/components/schemas/DecodedCallParam"
+    outputs:
+      type: array
+      items:
+        $ref: "#/components/schemas/DecodedCallParam"
+    authority:
+      $ref: "#/components/schemas/DecodingAuthority"
+
+DecodedCallParam:
+  title: DecodedCallParam
+  type: object
+  required:
+    - name
+    - type
+    - value
+  properties:
+    name:
+      type: string
+    type:
+      type: string
+    value:
+      anyOf:
+        - $ref: "#/components/schemas/bytesAnyCase"
+        - type: string
+      description: The decoded field value
+
+DecodingAuthority:
+  title: DecodingAuthority
+  type: string
+  enum: [ETHERSCAN]
+
+Log:
+  title: Log
+  type: object
+  required:
+    - topics
+    - address
+    - data
+    - decoded
+  properties:
+    topics:
+      type: array
+      items:
+        $ref: "#/components/schemas/bytesAnyCase"
+    address:
+      $ref: "#/components/schemas/address"
+    data:
+      $ref: "#/components/schemas/bytesAnyCase"
+    decoded:
+      anyOf:
+        - $ref: "#/components/schemas/DecodedLog"
+        - type: "null"
+
+DecodedLog:
+  title: DecodedLog
+  type: object
+  required:
+    - eventName
+    - inputs
+    - authority
+  properties:
+    eventName:
+      type: string
+    inputs:
+      type: array
+      items:
+        $ref: "#/components/schemas/DecodedLogInput"
+    authority:
+      $ref: "#/components/schemas/DecodingAuthority"
+
+DecodedLogInput:
+  title: DecodedLogInput
+  type: object
+  required:
+    - name
+    - type
+    - value
+    - indexed
+  properties:
+    name:
+      type: string
+    type:
+      type: string
+    value:
+      anyOf:
+        - $ref: "#/components/schemas/bytesAnyCase"
+        - type: string
+    indexed:
+      type: boolean
