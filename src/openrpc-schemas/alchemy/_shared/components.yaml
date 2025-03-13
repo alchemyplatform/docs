@@ -59,6 +59,11 @@ bytesAnyCase:
   type: string
   pattern: ^0x[0-9a-fA-F]*$
 
+blockTag:
+  title: block tag
+  type: string
+  enum: ["latest", "earliest", "pending"]
+
 bytes256AnyCase:
   title: 256 hex encoded bytes (any case)
   type: string
@@ -212,6 +217,136 @@ UserOperationV06:
     paymasterAndData:
       $ref: "#/components/schemas/bytes"
       description: "Paymaster address and extra data"
+
+transactionObject:
+  title: Transaction Object
+  type: object
+  properties:
+    from:
+      type: string
+      pattern: "^0[xX][0-9a-fA-F]{40}$"
+    to:
+      type: string
+      pattern: "^0[xX][0-9a-fA-F]{40}$"
+    gas:
+      type: string
+      pattern: "^0[xX]([1-9a-fA-F][0-9a-fA-F]*|0)$"
+    gasPrice:
+      type: string
+      pattern: "^0[xX]([1-9a-fA-F][0-9a-fA-F]*|0)$"
+    value:
+      type: string
+      pattern: "^0[xX]([1-9a-fA-F][0-9a-fA-F]*|0)$"
+    data:
+      type: string
+      pattern: "^0[xX][0-9a-fA-F]*$"
+
+tracer:
+  title: Tracer
+  type: object
+  properties:
+    tracer:
+      type: string
+      enum: ["callTracer", "prestateTracer"]
+    tracerConfig:
+      type: object
+      properties:
+        onlyTopCall:
+          type: boolean
+
+options:
+  title: Options
+  type: object
+  properties:
+    tracer:
+      type: string
+      enum: ["callTracer", "prestateTracer"]
+    tracerConfig:
+      type: object
+      properties:
+        onlyTopCall:
+          type: boolean
+    timeout:
+      type: string
+      description: A duration string that overrides the default timeout.
+
+tracerResult:
+  type: object
+  properties:
+    result:
+      type: array
+      description: Array of block traces.
+      items:
+        type: object
+        description: Array of block traces.
+        properties:
+          type:
+            type: string
+            description: CALL or CREATE
+          from:
+            type: string
+            description: 20-byte address of the caller
+          to:
+            type: string
+            description: 20-byte address of the recipient. Null when its a contract creation transaction.
+          value:
+            type: string
+            description: Amount of value included in the transfer (in hex)
+          gas:
+            type: string
+            description: Amount of gas provided for the call (in hex)
+          gasUsed:
+            type: string
+            description: Amount of gas used during the call (in hex)
+          input:
+            type: string
+            description: Call data
+          output:
+            type: string
+            description: Return data
+          error:
+            type: string
+            description: Error message, if any.
+          revertReason:
+            type: string
+            description: Solidity revert reason, if any.
+          calls:
+            type: array
+            description: Array of sub-calls made within the transaction.
+            items:
+              type: object
+              description: Array of block traces.
+              properties:
+                type:
+                  type: string
+                  description: CALL or CREATE
+                from:
+                  type: string
+                  description: 20-byte address of the caller
+                to:
+                  type: string
+                  description: 20-byte address of the recipient. Null when its a contract creation transaction.
+                value:
+                  type: string
+                  description: Amount of value included in the transfer (in hex)
+                gas:
+                  type: string
+                  description: Amount of gas provided for the call (in hex)
+                gasUsed:
+                  type: string
+                  description: Amount of gas used during the call (in hex)
+                input:
+                  type: string
+                  description: Call data
+                output:
+                  type: string
+                  description: Return data
+                error:
+                  type: string
+                  description: Error message, if any.
+                revertReason:
+                  type: string
+                  description: Solidity revert reason, if any.
 
 UserOperationV07:
   type: object
