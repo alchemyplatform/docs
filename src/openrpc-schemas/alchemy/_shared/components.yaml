@@ -39,6 +39,11 @@ bytes48:
   type: string
   pattern: ^0x[0-9a-f]{96}$
 
+bytes65:
+  title: 65 hex encoded bytes
+  type: string
+  pattern: ^0x[0-9a-f]{130}$
+
 bytes96:
   title: 96 hex encoded bytes
   type: string
@@ -49,16 +54,25 @@ bytes256:
   type: string
   pattern: ^0x[0-9a-f]{512}$
 
-bytes65:
-  title: 65 hex encoded bytes
+bytesAnyCase:
+  title: hex encoded bytes (any case)
   type: string
-  pattern: ^0x[0-9a-f]{130}$
+  pattern: ^0x[0-9a-fA-F]*$
 
-ratio:
-  title: normalized ratio
-  type: number
-  minimum: 0
-  maximum: 1
+bytes256AnyCase:
+  title: 256 hex encoded bytes (any case)
+  type: string
+  pattern: ^0x[0-9a-fA-F]{512}$
+
+hash32:
+  title: 32 byte hex value
+  type: string
+  pattern: ^0x[0-9a-f]{64}$
+
+hash32AnyCase:
+  title: 32 byte hex value (any case)
+  type: string
+  pattern: ^0[xX][0-9A-Fa-f]{64}$
 
 uint:
   title: hex encoded unsigned integer
@@ -75,34 +89,89 @@ uint256:
   type: string
   pattern: ^0x([1-9a-f]+[0-9a-f]{0,31})|0$
 
-hash32:
-  title: 32 byte hex value
+uintHexAnyCase:
+  title: hex encoded unsigned integer (any case)
   type: string
-  pattern: ^0x[0-9a-f]{64}$
+  pattern: ^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$
+
+ratio:
+  title: normalized ratio
+  type: number
+  minimum: 0
+  maximum: 1
+
+BlockChange:
+  type: object
+  required:
+    - assetType
+    - changeType
+  properties:
+    assetType:
+      type: string
+      enum: [NATIVE, ERC20, ERC721, ERC1155, SPECIAL_NFT]
+    changeType:
+      type: string
+      enum: [APPROVE, TRANSFER]
+    from:
+      $ref: "#/components/schemas/address"
+      description: "address the transaction is sent from"
+    to:
+      $ref: "#/components/schemas/address"
 
 notFound:
   title: "Not Found (null)"
   type: "null"
 
-hash32AnyCase:
-  title: 32 byte hex value (any case)
-  type: string
-  pattern: ^0[xX][0-9A-Fa-f]{64}$
+  
+AssetChange:
+  type: object
+  required:
+    - assetType
+    - changeType
+    - from
+    - to
+    - rawAmount
+    - amount
+    - symbol
+    - decimals
+    - contractAddress
+    - name
+    - logo
+    - tokenId
+  properties:
+    assetType:
+      type: string
+      enum: [NATIVE, ERC20, ERC721, ERC1155, SPECIAL_NFT]
+    changeType:
+      type: string
+      enum: [APPROVE, TRANSFER]
+    from:
+      description: "address the transaction is sent from"
+      $ref: "#/components/schemas/address"
+    to:
+      description: "address the transaction is directed to"
+      $ref: "#/components/schemas/address"
+    rawAmount:
+      type: string
+    amount:
+      type: string
+    symbol:
+      type: string
+    decimals:
+      type: [number, "null"]
+    contractAddress:
+      type: [string, "null"]
+    name:
+      type: [string, "null"]
+    logo:
+      type: [string, "null"]
+    tokenId:
+      type: [number, "null"]
 
-bytes256AnyCase:
-  title: 256 hex encoded bytes (any case)
+RevertMessage:
   type: string
-  pattern: ^0[xX][0-9A-Fa-f]{512}$
-
-uintHexAnyCase:
-  title: hex encoded unsigned integer (any case)
-  type: string
-  pattern: ^0[xX][0-9A-Fa-f]+$
-
-bytesAnyCase:
-  title: hex encoded bytes (any case)
-  type: string
-  pattern: ^0[xX][0-9A-Fa-f]*$
+  nullable: true
+  description: "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
 
 UserOperationV06:
   type: object
