@@ -5,7 +5,10 @@ import type {
   OpenrpcDocument,
   SchemaComponents,
 } from "@open-rpc/meta-schema";
-import { dereferenceDocument } from "@open-rpc/schema-utils-js";
+import {
+  dereferenceDocument,
+  validateOpenRPCDocument,
+} from "@open-rpc/schema-utils-js";
 import { readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
@@ -72,6 +75,41 @@ export const getOpenRpcBase = (schemaDir: string): OpenRpcBase => {
   return yaml.load(baseRaw) as OpenRpcBase;
 };
 
+interface ValidationError {
+  keyword: string;
+  dataPath: string;
+  schemaPath: string;
+  params: Record<string, unknown>;
+  message: string;
+}
+export const validateRpcSpec = (spec: DerefedOpenRpcDoc) => {
+  const validation = validateOpenRPCDocument(spec);
+
+  if (validation !== true) {
+    const errorMessageMatch = validation.message.match(/\[[\s\S]*\]/);
+    let validationErrors: ValidationError[] = [];
+
+    if (errorMessageMatch) {
+      try {
+        validationErrors = JSON.parse(errorMessageMatch[0]);
+      } catch (e) {
+        console.error(e);
+        throw new Error("Failed to parse validation errors. Check console");
+      }
+    }
+
+    const error = {
+      title: spec.info.title,
+      errorType: validation.name,
+      validationErrors,
+    };
+
+    throw new Error(
+      `Validation errors found in ${spec.info.title}\n  ${JSON.stringify(error, null, 2)}`,
+    );
+  }
+};
+
 export const formatOpenRpcDoc = async (doc: OpenrpcDocument) => {
   const spec = (await dereferenceDocument(doc)) as DerefedOpenRpcDoc;
 
@@ -88,6 +126,8 @@ export const formatOpenRpcDoc = async (doc: OpenrpcDocument) => {
       method.result.schema = mergeAllOf(method.result.schema) as JSONSchema;
     }
   });
+
+  validateRpcSpec(spec);
 
   return spec;
 };
