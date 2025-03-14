@@ -5,8 +5,8 @@ on:
     branches: [main]
 
 jobs:
-  rest-api-specs:
-    name: REST API Specs
+  open-api-specs:
+    name: OpenAPI Specs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -15,18 +15,10 @@ jobs:
         uses: ./.github/actions/setup-pnpm
 
       - name: Validate REST API specs
-        run: |
-          mkdir -p docs/api-specs/alchemy/rest
-          for file in src/openapi/*; do
-            if [ -f "$file" ]; then
-              filename="docs/api-specs/alchemy/rest/$(basename "$file" .yaml).json"
-              pnpm exec redocly bundle "$file" --dereferenced --output "$filename" --ext json && \
-              pnpm exec redocly lint "$filename" --format json
-            fi
-          done
+        run: ./scripts/build-open-api.sh
 
   rpc-specs:
-    name: RPC Specs
+    name: JSON-RPC Specs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -43,5 +35,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate markdown files
         run: |
-          mkdir -p docs/markdown
           rsync -av src/markdown docs/
