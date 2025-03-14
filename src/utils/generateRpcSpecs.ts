@@ -36,7 +36,7 @@ export const generateChainRpcSpec = async (
   writeOpenRpcDoc(outputDir, filename, spec);
 };
 
-const componentsFile = "src/openrpc-schemas/alchemy/_shared/components.yaml";
+const componentsFile = "src/openrpc/alchemy/_shared/components.yaml";
 export const generateAlchemyRpcSpec = async (
   srcDir: string,
   outputDir: string,
