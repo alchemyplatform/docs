@@ -10,6 +10,12 @@ import {
   writeOpenRpcDoc,
 } from "./generationHelpers";
 
+/**
+ * Generates an OpenRPC specification for a supported chain.
+ * @param srcDir - The source directory containing the chain's OpenRPC schema
+ * @param outputDir - The output directory where the generated OpenRPC specification will be saved
+ * @param filename - The name of the chain's OpenRPC schema file
+ */
 export const generateChainRpcSpec = async (
   srcDir: string,
   outputDir: string,
@@ -37,6 +43,12 @@ export const generateChainRpcSpec = async (
 };
 
 const componentsFile = "src/openrpc/alchemy/_shared/components.yaml";
+/**
+ * Generates an OpenRPC specification for the Alchemy JSON-RPC API.
+ * @param srcDir - The source directory containing the Alchemy OpenRPC schema
+ * @param outputDir - The output directory where the generated OpenRPC specification will be saved
+ * @param filename - The name of the Alchemy OpenRPC schema file
+ */
 export const generateAlchemyRpcSpec = async (
   srcDir: string,
   outputDir: string,
