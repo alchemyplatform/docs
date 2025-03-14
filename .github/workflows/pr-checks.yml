@@ -1,0 +1,50 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  rest-api-specs:
+    name: REST API Specs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - run: pnpm install
+      - name: Validate REST API specs
+        run: |
+          mkdir -p docs/api-specs/alchemy/rest
+          for file in src/openapi/*; do
+            if [ -f "$file" ]; then
+              filename="docs/api-specs/alchemy/rest/$(basename "$file" .yaml).json"
+              redocly bundle "$file" --dereferenced --output "$filename" --ext json && \
+              redocly lint "$filename" --format json
+            fi
+          done
+
+  markdown-files:
+    name: Markdown Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate markdown files
+        run: |
+          mkdir -p docs/markdown
+          rsync -av src/markdown docs/
+
+  rpc-specs:
+    name: RPC Specs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+      - run: pnpm install
+      - name: Validate RPC specs
+        run: ts-node ./scripts/build-rpc.ts
