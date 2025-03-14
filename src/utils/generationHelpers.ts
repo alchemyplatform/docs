@@ -36,7 +36,8 @@ export const getComponentsFromDir = (componentsDir: string): Components => {
 
 export const getMethodsFromFile = (methodsFile: string): Methods => {
   const rawMethods = readFileSync(methodsFile).toString();
-  const unsortedMethods = yaml.load(rawMethods) as Methods;
+  const documents = yaml.loadAll(rawMethods);
+  const unsortedMethods = documents.flat() as Methods;
 
   return unsortedMethods.sort((a, b) => {
     if ("name" in a && "name" in b) {

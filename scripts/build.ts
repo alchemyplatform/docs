@@ -23,7 +23,7 @@ allChainFiles.forEach((chain) =>
 const alchemyApisDir = `${schemasRoot}/alchemy`;
 const alchemyOutputDir = `${outputRoot}/alchemy`;
 const allAlchemyFiles = readdirSync(alchemyApisDir).filter(
-  (file) => !file.startsWith("_"),
+  (file) => !file.startsWith("_") && file !== ".DS_Store",
 );
 
 mkdirSync(alchemyOutputDir, { recursive: true });
