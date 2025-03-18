@@ -1,20 +1,21 @@
 openapi: 3.1.0
 info:
-  title: 👤 Smart Wallets
-  version: '1.0'
+  title: "👤 Smart Wallets"
+  version: "1.0"
 servers:
   - url: https://api.g.alchemy.com/signer/v1
 security:
   - apiKey: []
 paths:
-  '/signup':
+  /signup:
     post:
       summary: Create Wallet
       description: >
         Enables the creation of a Smart Wallet using Alchemy Signer. It allows applications to authenticate users and facilitate signature operations on their behalf. A Smart Wallet is either an on-chain Modular Account with Alchemy Signer as the owner, a standalone EOA signer managed through Alchemy Signer, or a standalone Solana Wallet managed through the Alchemy Signer.
-      tags: ['Wallets API Endpoints']
+      tags:
+        - Wallets API Endpoints
       security:
-        - apiKey: [] # Maps the request to a specific project using the Alchemy API key.
+        - apiKey: []
       x-readme:
         samples-languages:
           - javascript
@@ -30,11 +31,9 @@ paths:
                 email:
                   type: string
                   description: Optional. Used for user authentication when passkey is not provided. Specifies the user's email address.
-                  required: false
                 passkey:
                   type: object
                   description: Optional. Used for authentication when email is not provided. Enables passkey-based authentication.
-                  required: false
                   properties:
                     challenge:
                       type: string
@@ -62,7 +61,7 @@ paths:
                 expirationSeconds:
                   $ref: '#/components/schemas/expirationSeconds'
       responses:
-        '200':
+        "200":
           description: Wallet creation response.
           content:
             application/json:
@@ -72,14 +71,15 @@ paths:
                   orgId:
                     $ref: '#/components/schemas/orgId'
       operationId: createAccount
-  '/auth':
+  /auth:
     post:
       summary: Send Auth Email
       description: >
         Sends a user an email containing a magic link for authentication, allowing them to complete the login process and access their Smart Wallet through a secure, simple email verification method. Developers can customize the appearance and content of the authentication email through Alchemy dashboard to align with their application's branding and user experience requirements.
-      tags: ['Wallets API Endpoints']
+      tags:
+        - Wallets API Endpoints
       security:
-        - apiKey: [] # Ensures the request is authenticated and mapped to a specific project using the Alchemy API key.
+        - apiKey: []
       x-readme:
         samples-languages:
           - javascript
@@ -100,7 +100,7 @@ paths:
                 expirationSeconds:
                   $ref: '#/components/schemas/expirationSeconds'
       responses:
-        '200':
+        "200":
           description: Authentication email sent successfully.
           content:
             application/json:
@@ -111,14 +111,15 @@ paths:
                     $ref: '#/components/schemas/orgId'
                     description: The organization ID associated with the user and the application, facilitating the authentication process within the context of the user's application.
       operationId: sendEmailAuth
-  '/whoami':
+  /whoami:
     post:
       summary: Authenticate User
       description: >
         Authenticates a user and returns their identity and wallet information, enabling the application to grant the user access to their Smart Wallet functionalities. This endpoint is used to confirm user authentication via email or passkey, thereby authorizing them to perform actions as the owner of a smart account or to conduct transactions as an EOA signer. It ensures that only authenticated users can access and manage their wallets.
-      tags: ['Wallets API Endpoints']
+      tags:
+        - Wallets API Endpoints
       security:
-        - apiKey: [] # Ensures authentication and project-specific request mapping.
+        - apiKey: []
       x-readme:
         samples-languages:
           - javascript
@@ -136,7 +137,7 @@ paths:
                   description: >
                     A stamped [Turnkey Whoami Request](https://docs.turnkey.com/api#tag/Sessions/operation/GetWhoami).
       responses:
-        '200':
+        "200":
           description: User authentication successful.
           content:
             application/json:
@@ -159,14 +160,15 @@ paths:
                     type: string
                     description: The Solana address of the user's signer. Required for Solana transactions and wallet management.
       operationId: authUser
-  '/lookup':
+  /lookup:
     post:
       summary: Get User
       description: >
         Enables applications to query the existence of a user wallet based on an email address.
-      tags: ['Wallets API Endpoints']
+      tags:
+        - Wallets API Endpoints
       security:
-        - apiKey: [] # Ensures that the request is authenticated and mapped to a specific project.
+        - apiKey: []
       x-readme:
         samples-languages:
           - javascript
@@ -183,7 +185,7 @@ paths:
                   $ref: '#/components/schemas/email'
                   description: The email address of the user to look up. This is used to verify if an associated account exists within the system.
       responses:
-        '200':
+        "200":
           description: Query successful. Returns organization ID if an account exists for the provided email address.
           content:
             application/json:
@@ -195,14 +197,15 @@ paths:
                     description: >
                       The organization ID associated with the user. This ID is returned if an account exists for the given email address. If no account is found, this value will be null. The response is intentionally limited to this information to protect user privacy and security.
       operationId: getUser
-  '/sign-payload':
+  /sign-payload:
     post:
       summary: Sign Message
       description: >
         Allows for the signing of arbitrary payloads using the authenticated user's signer. The payload to be signed should be included within the body of a stamped request, ensuring the integrity and authenticity of the message to be signed. This operation is important for executing transactions and interactions on the blockchain that require verified signatures from the user's wallet.
-      tags: ['Wallets API Endpoints']
+      tags:
+        - Wallets API Endpoints
       security:
-        - apiKey: [] # Secures the request and ensures it is mapped to a specific project.
+        - apiKey: []
       x-readme:
         samples-languages:
           - javascript
@@ -219,23 +222,24 @@ paths:
                   $ref: '#/components/schemas/SignedTurnkeyRequest'
                   description: |
                     A stamped request that includes the payload to be signed. The payload is part of the stamped request's body, which should conform to the structure outlined in the Turnkey API documentation for signing raw payloads.
+                    
                     Because users are given wallets for both Ethereum and Solana, it's possible to request signatures for both chains. The following is an example of the payload structure for signing bytes on Ethereum and Solana:
-
+                    
                     Signing bytes for Ethereum:
                     ```
                     {
-                      organizationId: this.user.orgId, # the user's orgID (returned from whoami)
+                      organizationId: this.user.orgId,
                       type: "ACTIVITY_TYPE_SIGN_RAW_PAYLOAD_V2",
                       timestampMs: Date.now().toString(),
                       parameters: {
                         encoding: "PAYLOAD_ENCODING_HEXADECIMAL",
-                        hashFunction: "HASH_FUNCTION_NO_OP", # this assumes you've hashed the bytes alread on the client
+                        hashFunction: "HASH_FUNCTION_NO_OP",
                         payload: msg,
-                        signWith: this.user.address, # the user's Ethereum address (returned from whoami)
+                        signWith: this.user.address,
                       },
                     }
                     ```
-
+                    
                     Signing bytes for Solana:
                     ```
                     {
@@ -246,14 +250,14 @@ paths:
                         encoding: "PAYLOAD_ENCODING_HEXADECIMAL",
                         hashFunction: "HASH_FUNCTION_NOT_APPLICABLE",
                         payload: msg,
-                        signWith: this.user.solanaAddress, # the user's Solana address (returned from whoami)
+                        signWith: this.user.solanaAddress,
                       },
                     }
                     ```
-
+                    
                     For more details on the parameters of the request body, see [Turnkey's API Reference](https://docs.turnkey.com/api#tag/Signing/operation/SignRawPayload).
       responses:
-        '200':
+        "200":
           description: Message signing successful.
           content:
             application/json:
@@ -264,14 +268,15 @@ paths:
                     type: string
                     description: The signature generated for the specified payload.
       operationId: signMessage
-  '/account/authenticator':
+  /account/authenticator:
     post:
       summary: Register New Authenticator
       description: >
         Enables users to register a new authenticator with their wallet, supporting enhanced security and multi-device accessibility. Currently, this functionality supports adding a new passkey as an authenticator, facilitating secure login across different devices.
-      tags: ['Wallets API Endpoints']
+      tags:
+        - Wallets API Endpoints
       security:
-        - apiKey: [] # Secures the request and ensures it is mapped to a specific project.
+        - apiKey: []
       x-readme:
         samples-languages:
           - javascript
@@ -289,7 +294,7 @@ paths:
                   description: >
                     A stamped request that specifies the details of the new authenticator to be registered. This ensures the integrity of the request and confirms the user's intent to add a new authentication method to their wallet. The body of this request must match [Turnkey's Create Authenticators Request Body](https://docs.turnkey.com/api#tag/Authenticators/operation/CreateAuthenticators).
       responses:
-        '200':
+        "200":
           description: Authenticator registration successful.
           content:
             application/json:
@@ -298,7 +303,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: 'ok'
+                    example: "ok"
                     description: A confirmation message indicating the successful registration of the new authenticator.
       operationId: registerNewAuthenticator
 
@@ -309,76 +314,54 @@ components:
       name: Authorization
       in: header
       description: An API key that will be supplied in a named header.
-      x-default: Bearer API_KEY
+      x-default: "Bearer API_KEY"
   schemas:
-    apiKey:
-      name: apiKey
-      in: path
-      schema:
-        type: string
-        default: docs-demo
-        description: |
-          <style>
-            .custom-style {
-              color: #048FF4;
-            }
-          </style>
-          For higher throughput, <span class="custom-style"><a href="https://alchemy.com/?a=docs-demo" target="_blank">create your own API key</a></span>
-      required: true
     email:
-      name: email
-      description: The email of the user that is signing in
-      in: query
-      schema:
-        type: string
-      required: true
+      type: string
+      description: The email of the user that is signing in.
     expirationSeconds:
-      name: expirationSeconds
-      description: Optional. Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).
-      schema:
-        type: string
-      required: false
+      type: string
+      description: >
+        Optional. Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).
     targetPublicKey:
-      name: targetPublicKey
+      type: string
       description: |
-        Authentication of a client is done via an HPKE flow that allows the client and TEE to exchange an encrypted bundle without revealing it to a middleman (you, us, or Turnkey). The targetPublicKey is the public key that the client uses to decrypt a the shared secret.
+        Authentication of a client is done via an HPKE flow that allows the client and TEE to exchange an encrypted bundle without revealing it to a middleman (you, us, or Turnkey). The targetPublicKey is the public key that the client uses to decrypt the shared secret.
 
         See more in the [Turnkey Docs](https://docs.turnkey.com/embedded-wallets/sub-organization-auth).
-      schema:
-        type: string
-      required: false
     orgId:
-      name: orgId
+      type: string
       description: The organization ID associated with the user and application, enabling the management of Smart Wallets.
-      schema:
-        type: string
+    SignedTurnkeyRequestStamp:
+      type: object
+      description: >
+        A JSON-encoded object containing stamping information.
+      properties:
+        stampHeaderName:
+          type: string
+          description: >
+            For WebAuthN based stamps, this should be `X-Stamp-Webauthn`. For all other stamps, this should be `X-Stamp`.
+        stampHeaderValue:
+          type: string
+          description: >
+            The stamp over the request body. See the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps) for information on the format of this value.
+      required:
+        - stampHeaderName
+        - stampHeaderValue
     SignedTurnkeyRequest:
       type: object
       description: >
         The signed request object containing session information. It is used to ensure the integrity and authenticity of requests to our API. For detailed steps on how to create a stamped request refer to the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps).
-      required: true
       properties:
         url:
           type: string
           description: Generated by the turnkey client, but will be ignored on our end.
-          required: true
         body:
           type: string
           description: JSON stringified request body.
-          required: true
         stamp:
-          type: object
-          description: >
-            A JSON-encoded object containing stamping information.
-          required: true
-          properties:
-            stampHeaderName:
-              type: string
-              description: |
-                For WebAuthN based stamps, this should be `X-Stamp-Webauthn`. For all other stamps, this should be `X-Stamp`.
-              required: true
-            stampHeaderValue:
-              type: string
-              description: >
-                The stamp over the request body. See the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps) for information on the format of this value.
-              required: true
+          $ref: '#/components/schemas/SignedTurnkeyRequestStamp'
+      required:
+        - url
+        - body
+        - stamp

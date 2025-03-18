@@ -2,8 +2,13 @@ openapi: 3.1.0
 info:
   title: 📈 Prices API
   version: "1.0"
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 servers:
   - url: https://api.g.alchemy.com/prices/v1
+security:
+  - apiKey: []
 x-sandbox:
   category:
     type:
@@ -23,7 +28,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: '#/components/schemas/apiKey'
+        - $ref: '#/components/parameters/apiKey'
         - in: query
           name: symbols
           required: true
@@ -71,7 +76,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: '#/components/schemas/apiKey'
+        - $ref: '#/components/parameters/apiKey'
       requestBody:
         required: true
         content:
@@ -112,7 +117,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: '#/components/schemas/apiKey'
+        - $ref: '#/components/parameters/apiKey'
       requestBody:
         required: true
         content:
@@ -154,22 +159,22 @@ components:
       in: header
       description: An API key that will be supplied in a named header.
       x-default: Bearer API_KEY
-  schemas:
+  parameters:
     apiKey:
       name: apiKey
       in: path
+      required: true
       schema:
         type: string
         default: docs-demo
-        description: |
-          <style>
-            .custom-style {
-              color: #048FF4;
-            }
-          </style>
-          For higher throughput, <span class="custom-style"><a href="https://alchemy.com/?a=docs-demo" target="_blank">create your own API key</a></span>
-      required: true
-
+      description: |
+        <style>
+          .custom-style {
+            color: #048FF4;
+          }
+        </style>
+        For higher throughput, <span class="custom-style"><a href="https://alchemy.com/?a=docs-demo" target="_blank">create your own API key</a></span>
+  schemas:
     TokenPricesResponse:
       type: object
       properties:
@@ -193,8 +198,7 @@ components:
           items:
             $ref: "#/components/schemas/Price"
         error:
-          type: string
-          nullable: true
+          type: [ "string", "null" ]
           description: Error message if applicable.
       required:
         - symbol
@@ -225,11 +229,11 @@ components:
         addresses:
           type: array
           minItems: 1
+          maxItems: 25
           description: >
             Array of token network and address pairs (limit 25 addresses, max 3 networks). Networks should match network enums.
           items:
             $ref: "#/components/schemas/AddressItem"
-          maxItems: 25
       required:
         - addresses
 
@@ -282,8 +286,7 @@ components:
           items:
             $ref: "#/components/schemas/Price"
         error:
-          type: string
-          nullable: true
+          type: [ "string", "null" ]
           description: Error message if applicable.
       required:
         - network
@@ -326,7 +329,7 @@ components:
                   default: "2024-01-01T00:00:00Z"
                 - type: number
                   description: Start of the time range as a timestamp in seconds since epoch.
-                  default: 1704067200  # Equivalent to "2024-01-01T00:00:00Z"
+                  default: 1704067200
               description: Start of the time range.
               example: "2024-01-01T00:00:00Z"
             endTime:
@@ -337,7 +340,7 @@ components:
                   default: "2024-01-31T23:59:59Z"
                 - type: number
                   description: End of the time range as a timestamp in seconds since epoch.
-                  default: 1706745599  # Equivalent to "2024-01-31T23:59:59Z"
+                  default: 1706745599
               description: End of the time range.
               example: "2024-01-31T23:59:59Z"
             interval:
@@ -367,7 +370,7 @@ components:
                   default: "2024-01-01T00:00:00Z"
                 - type: number
                   description: Start of the time range as a timestamp since epoch.
-                  default: 1704067200  # Equivalent to "2024-01-01T00:00:00Z"
+                  default: 1704067200
               description: Start of the time range.
               example: "2024-01-01T00:00:00Z"
             endTime:
@@ -378,7 +381,7 @@ components:
                   default: "2024-01-31T23:59:59Z"
                 - type: number
                   description: End of the time range as a timestamp since epoch.
-                  default: 1706745599  # Equivalent to "2024-01-31T23:59:59Z"
+                  default: 1706745599
               description: End of the time range.
               example: "2024-01-31T23:59:59Z"
             interval:
