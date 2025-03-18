@@ -8,7 +8,7 @@ for file in src/openapi/*; do
   if [ -f "$file" ]; then
     filename="docs/api-specs/alchemy/rest/$(basename "$file" .yaml).json"
     (
-      if ! pnpm exec redocly bundle "$file" --dereferenced --output "$filename" --ext json || \
+      if ! pnpm exec redocly bundle "$file" --dereferenced --output "$filename" --ext json --remove-unused-components || \
          ! pnpm exec redocly lint "$filename" --format json; then
         # If either command fails, signal failure
         exit 1
