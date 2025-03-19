@@ -55,7 +55,7 @@ paths:
       description: getNFTsForOwner - Retrieves all NFTs currently owned by a specified address. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Ownership Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/owner"
+        - $ref: "#/components/parameters/owner"
         - $ref: "#/components/schemas/contractAddresses"
         - $ref: "#/components/schemas/withMetadata"
         - $ref: "#/components/schemas/orderBy"
@@ -710,7 +710,7 @@ paths:
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/schemas/wallet"
+        - $ref: "#/components/parameters/wallet"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -935,7 +935,7 @@ paths:
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/schemas/owner"
+        - $ref: "#/components/parameters/owner"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
         - $ref: "#/components/schemas/withMetadata"
@@ -978,7 +978,7 @@ paths:
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/schemas/owner"
+        - $ref: "#/components/parameters/owner"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
         - $ref: "#/components/schemas/withMetadata"
@@ -1095,7 +1095,7 @@ paths:
       description: Gets all NFTs currently owned by a given address.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/owner"
+        - $ref: "#/components/parameters/owner"
         - $ref: "#/components/schemas/contractAddresses"
         - $ref: "#/components/schemas/withMetadata"
         - $ref: "#/components/schemas/orderBy"
@@ -1883,7 +1883,7 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/schemas/wallet"
+        - $ref: "#/components/parameters/owner"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -2042,7 +2042,7 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/schemas/owner"
+        - $ref: "#/components/parameters/owner"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
         - $ref: "#/components/schemas/withMetadata"
@@ -2117,6 +2117,20 @@ components:
       schema:
         type: string
         default: "latest"
+    owner:
+      name: owner
+      description: String - Address for NFT owner (can be in ENS format for Eth Mainnet).
+      schema:
+        $ref: "#/components/schemas/wallet"
+      in: query
+      required: true
+    wallet:
+      name: wallet
+      description: String - Wallet address to check for contract ownership.
+      schema:
+        $ref: "#/components/schemas/wallet"
+      in: query
+      required: true
   schemas:
     apiKey:
       type: string
@@ -2126,24 +2140,12 @@ components:
           .custom-style {
             color: #048FF4;
           }
+
         </style>
         For higher throughput, <span class="custom-style"><a href="https://alchemy.com/?a=docs-demo" target="_blank">create your own API key</a></span>
-    owner:
-      name: owner
-      description: String - Address for NFT owner (can be in ENS format for Eth Mainnet).
-      schema:
-        type: string
-        default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-      in: query
-      required: true
     wallet:
-      name: wallet
-      description: String - Wallet address to check for contract ownership.
-      schema:
-        type: string
-        default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-      in: query
-      required: true
+      type: string
+      default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
     pageKey:
       name: pageKey
       description: "String - key for pagination. If more results are available, a pageKey will be returned in the response. Pass back the pageKey as a param to fetch the next page of results."
