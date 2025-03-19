@@ -42,13 +42,12 @@ servers: # servers are also specified at the method level, if there isn't a spec
           - abstract-testnet
           - apechain-mainnet
         default: eth-mainnet
-x-sandbox:
-  category:
-    type:
-      $ref: "../components/sandbox.yaml#/Category" # change the path to "../components/sandbox.yaml#/Category" if updating the spec from CLI
-    value: nft
+# x-sandbox:
+#   category:
+#     type:
+#       $ref: "../components/sandbox.yaml#/Category" # change the path to "../components/sandbox.yaml#/Category" if updating the spec from CLI
+#     value: nft
 paths:
-  ##
   ## Below are all the v3 methods
   "/v3/{apiKey}/getNFTsForOwner":
     get:
@@ -64,7 +63,7 @@ paths:
         - $ref: "#/components/schemas/includeFilters"
         - $ref: "#/components/schemas/spamConfidenceLevel"
         - $ref: "#/components/schemas/tokenUriTimeoutInMs"
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
       x-readme:
@@ -108,7 +107,7 @@ paths:
       description: getNFTsForContract - Retrieves all NFTs associated with a specific NFT contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/withMetadata"
@@ -144,7 +143,7 @@ paths:
       description: getNFTsForCollection - Retrieves all NFTs associated with a specific NFT collection. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
         - $ref: "#/components/schemas/collectionSlug"
         - $ref: "#/components/schemas/withMetadata"
@@ -211,7 +210,7 @@ paths:
       description: getNFTMetadata - Retrieves the metadata associated with a specific NFT. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -239,7 +238,7 @@ paths:
       description: getNFTMetadataBatch - Retrieves metadata for up to 100 specified NFT contracts in a single request. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         content:
           application/json:
@@ -301,7 +300,7 @@ paths:
       description: getContractMetadata - Retrieves high-level collection or contract-level information for an NFT. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -324,7 +323,7 @@ paths:
       description: getCollectionMetadata - Retrieves high-level collection or contract-level information for an NFT collection. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/collectionSlug"
           required: true
       x-readme:
@@ -347,7 +346,7 @@ paths:
       description: invalidateContract - Marks all cached tokens for the specified contract as stale, ensuring the next query fetches live data instead of cached data.
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -377,7 +376,7 @@ paths:
       description: getContractMetadataBatch - Retrieves metadata for a list of specified contract addresses in a single request.
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         content:
           application/json:
@@ -417,7 +416,7 @@ paths:
       description: getOwnersForNFT - Retrieves the owner(s) for a specific token. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Ownership Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -450,7 +449,7 @@ paths:
       description: getOwnersForContract - Retrieves all owners associated with a specific NFT contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Ownership Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/withTokenBalances"
@@ -496,7 +495,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       x-readme:
         samples-languages:
           - javascript
@@ -532,7 +531,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -560,7 +559,7 @@ paths:
       description: isAirdropNFT - Determines whether a specific token is marked as an airdrop. Airdrops are defined as NFTs minted to a user address in a transaction sent by a different address. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Spam Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -598,7 +597,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -640,7 +639,7 @@ paths:
                 - eth-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
         - $ref: "#/components/schemas/collectionSlug"
       x-readme:
@@ -685,7 +684,7 @@ paths:
       description: searchContractMetadata - Searches for a keyword across metadata of all ERC-721 and ERC-1155 smart contracts.
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/query"
       x-readme:
         samples-languages:
@@ -710,7 +709,7 @@ paths:
       description: isHolderOfContract - Determines whether a specific wallet holds any NFT from a given contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Ownership Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/wallet"
         - $ref: "#/components/schemas/contractAddress"
           required: true
@@ -747,7 +746,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -798,9 +797,9 @@ paths:
                 - opt-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/fromBlock"
-        - $ref: "#/components/schemas/toBlock"
+        - $ref: "#/components/parameters/toBlock"
         - $ref: "#/components/schemas/order"
         - $ref: "#/components/schemas/marketplace"
         - $ref: "#/components/schemas/contractAddress"
@@ -935,7 +934,7 @@ paths:
       description: getContractsForOwner - Retrieves all NFT contracts held by a specified owner address.
       tags: ["NFT Ownership Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/owner"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
@@ -978,7 +977,7 @@ paths:
       description: getCollectionsForOwner - Retrieves all NFT collections held by a specified owner address.
       tags: ["NFT Ownership Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/owner"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
@@ -1020,7 +1019,7 @@ paths:
       description: reportSpam - Reports a specific address to the API if it is suspected to be spam.
       tags: ["NFT Spam Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/address"
           required: true
       x-readme:
@@ -1044,7 +1043,7 @@ paths:
       description: refreshNftMetadata - Submits a request for Alchemy to refresh the cached metadata of a specific NFT token. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
       tags: ["NFT Metadata Endpoints"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       x-readme:
         samples-languages:
           - javascript
@@ -1104,7 +1103,7 @@ paths:
         - $ref: "#/components/schemas/includeFilters"
         - $ref: "#/components/schemas/spamConfidenceLevel"
         - $ref: "#/components/schemas/tokenUriTimeoutInMs"
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
       x-readme:
@@ -1166,7 +1165,7 @@ paths:
       description: Gets the metadata associated with a given NFT.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -1214,7 +1213,7 @@ paths:
       description: Gets the metadata associated with up to 100 given NFT contracts.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         content:
           application/json:
@@ -1282,7 +1281,7 @@ paths:
       description: Queries NFT high-level collection/contract level information.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -1329,7 +1328,7 @@ paths:
       description: Gets the metadata associated with the given list of contract addresses
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         content:
           application/json:
@@ -1367,7 +1366,7 @@ paths:
       description: Gets all NFTs for a given NFT contract.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
         - $ref: "#/components/schemas/collectionSlug"
         - $ref: "#/components/schemas/withMetadata"
@@ -1434,7 +1433,7 @@ paths:
       description: Get the owner(s) for a token.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -1483,7 +1482,7 @@ paths:
       description: Gets all owners for a given NFT contract.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/withTokenBalances"
@@ -1537,7 +1536,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       x-readme:
         samples-languages:
           - curl
@@ -1590,7 +1589,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -1633,7 +1632,7 @@ paths:
       description: Returns whether a token is marked as an airdrop or not. Airdrops are defined as NFTs that were minted to a user address in a transaction sent by a different address.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -1658,7 +1657,7 @@ paths:
       description: Marks all cached tokens for the particular contract as stale. So the next time the endpoint is queried it fetches live data instead of fetching from cache.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -1695,7 +1694,7 @@ paths:
                 - eth-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -1767,7 +1766,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
         - $ref: "#/components/schemas/tokenId"
@@ -1815,7 +1814,7 @@ paths:
                 - eth-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/query"
       x-readme:
         samples-languages:
@@ -1852,7 +1851,7 @@ paths:
                 - polygon-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/contractAddress"
           required: true
       x-readme:
@@ -1883,7 +1882,7 @@ paths:
       description: Checks whether a wallet holds a NFT in a given collection
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/wallet"
         - $ref: "#/components/schemas/contractAddress"
           required: true
@@ -1920,9 +1919,9 @@ paths:
                 - opt-mainnet
               default: eth-mainnet
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/fromBlock"
-        - $ref: "#/components/schemas/toBlock"
+        - $ref: "#/components/parameters/toBlock"
         - $ref: "#/components/schemas/order"
         - $ref: "#/components/schemas/marketplace"
         - $ref: "#/components/schemas/contractAddress"
@@ -2042,7 +2041,7 @@ paths:
       description: Gets all NFT contracts held by an owner address.
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/owner"
         - $ref: "#/components/schemas/pageKey"
         - $ref: "#/components/schemas/pageSize"
@@ -2084,7 +2083,7 @@ paths:
       description: Report a particular address to our APIs if you think it is spam
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/schemas/address"
           required: true
       x-readme:
@@ -2104,21 +2103,31 @@ paths:
   ## End of v2 methods
 
 components:
-  schemas:
+  parameters:
     apiKey:
       name: apiKey
       in: path
       schema:
-        type: string
-        default: docs-demo
-        description: |
-          <style>
-            .custom-style {
-              color: #048FF4;
-            }
-          </style>
-          For higher throughput, <span class="custom-style"><a href="https://alchemy.com/?a=docs-demo" target="_blank">create your own API key</a></span>
+        $ref: "#/components/schemas/apiKey"
       required: true
+    toBlock:
+      name: toBlock
+      description: String - The block number to start fetching NFT sales data from. Allowed values are decimal and hex integers, and "latest". Defaults to "latest".
+      in: query
+      schema:
+        type: string
+        default: "latest"
+  schemas:
+    apiKey:
+      type: string
+      default: docs-demo
+      description: |
+        <style>
+          .custom-style {
+            color: #048FF4;
+          }
+        </style>
+        For higher throughput, <span class="custom-style"><a href="https://alchemy.com/?a=docs-demo" target="_blank">create your own API key</a></span>
     owner:
       name: owner
       description: String - Address for NFT owner (can be in ENS format for Eth Mainnet).
@@ -2324,13 +2333,6 @@ components:
       schema:
         type: string
         default: "0"
-    toBlock:
-      name: toBlock
-      description: String - The block number to start fetching NFT sales data from. Allowed values are decimal and hex integers, and "latest". Defaults to "latest".
-      in: query
-      schema:
-        type: string
-        default: "latest"
     order:
       name: order
       description: Enum - Whether to return the results ascending from startBlock or descending from startBlock. Defaults to descending (false).
