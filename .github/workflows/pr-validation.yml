@@ -1,0 +1,40 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  open-api-specs:
+    name: OpenAPI Specs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Validate REST API specs
+        run: ./scripts/build-open-api.sh
+
+  rpc-specs:
+    name: JSON-RPC Specs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Validate RPC specs
+        run: pnpm exec ts-node ./scripts/build-rpc.ts
+
+  markdown-files:
+    name: Markdown Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Validate markdown files
+        run: pnpm exec ts-node ./scripts/validate-mdx.ts

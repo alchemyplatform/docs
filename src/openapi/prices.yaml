@@ -9,11 +9,6 @@ servers:
   - url: https://api.g.alchemy.com/prices/v1
 security:
   - apiKey: []
-x-sandbox:
-  category:
-    type:
-      $ref: '../components/sandbox.yaml#/Category'
-    value: token
 paths:
   "/{apiKey}/tokens/by-symbol":
     get:
@@ -28,7 +23,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: '#/components/parameters/apiKey'
+        - $ref: "#/components/parameters/apiKey"
         - in: query
           name: symbols
           required: true
@@ -50,13 +45,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/TokenPricesResponse"
         "400":
-          description: 'Bad Request: Malformed request or missing parameters.'
+          description: "Bad Request: Malformed request or missing parameters."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "429":
-          description: 'Too Many Requests: Rate limit exceeded.'
+          description: "Too Many Requests: Rate limit exceeded."
           content:
             application/json:
               schema:
@@ -76,7 +71,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: '#/components/parameters/apiKey'
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -91,13 +86,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/AddressPricesResponse"
         "400":
-          description: 'Bad Request: Invalid input (e.g., malformed JSON).'
+          description: "Bad Request: Invalid input (e.g., malformed JSON)."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "429":
-          description: 'Too Many Requests: Rate limit exceeded.'
+          description: "Too Many Requests: Rate limit exceeded."
           content:
             application/json:
               schema:
@@ -117,7 +112,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: '#/components/parameters/apiKey'
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -132,19 +127,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/HistoricalPricesResponse"
         "400":
-          description: 'Bad Request: Invalid input (e.g., malformed request, missing parameters).'
+          description: "Bad Request: Invalid input (e.g., malformed request, missing parameters)."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
-          description: 'Not Found: Token not found.'
+          description: "Not Found: Token not found."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "429":
-          description: 'Too Many Requests: Rate limit exceeded.'
+          description: "Too Many Requests: Rate limit exceeded."
           content:
             application/json:
               schema:
@@ -198,7 +193,7 @@ components:
           items:
             $ref: "#/components/schemas/Price"
         error:
-          type: [ "string", "null" ]
+          type: ["string", "null"]
           description: Error message if applicable.
       required:
         - symbol
@@ -286,7 +281,7 @@ components:
           items:
             $ref: "#/components/schemas/Price"
         error:
-          type: [ "string", "null" ]
+          type: ["string", "null"]
           description: Error message if applicable.
       required:
         - network
@@ -347,7 +342,7 @@ components:
               type: string
               description: >
                 Time interval for data points. Max ranges: (5m, 7d), (1h, 30d), (1d, 1yr)
-              enum: [ "5m", "1h", "1d" ]
+              enum: ["5m", "1h", "1d"]
               default: "1d"
               example: "1d"
         - required: ["network", "address", "startTime", "endTime"]
@@ -388,7 +383,7 @@ components:
               type: string
               description: >
                 Time interval for data points. Max ranges: (5m, 7d), (1h, 30d), (1d, 1yr)
-              enum: [ "5m", "1h", "1d" ]
+              enum: ["5m", "1h", "1d"]
               default: "1d"
               example: "1d"
 

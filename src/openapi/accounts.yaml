@@ -57,9 +57,9 @@ paths:
                           items:
                             type: string
                 targetPublicKey:
-                  $ref: '#/components/schemas/targetPublicKey'
+                  $ref: "#/components/schemas/targetPublicKey"
                 expirationSeconds:
-                  $ref: '#/components/schemas/expirationSeconds'
+                  $ref: "#/components/schemas/expirationSeconds"
       responses:
         "200":
           description: Wallet creation response.
@@ -69,7 +69,7 @@ paths:
                 type: object
                 properties:
                   orgId:
-                    $ref: '#/components/schemas/orgId'
+                    $ref: "#/components/schemas/orgId"
       operationId: createAccount
   /auth:
     post:
@@ -93,12 +93,12 @@ paths:
               type: object
               properties:
                 email:
-                  $ref: '#/components/schemas/email'
+                  $ref: "#/components/schemas/email"
                   description: The email address of the user requesting access. This is where the authentication email, containing the magic link, will be sent.
                 targetPublicKey:
-                  $ref: '#/components/schemas/targetPublicKey'
+                  $ref: "#/components/schemas/targetPublicKey"
                 expirationSeconds:
-                  $ref: '#/components/schemas/expirationSeconds'
+                  $ref: "#/components/schemas/expirationSeconds"
       responses:
         "200":
           description: Authentication email sent successfully.
@@ -108,7 +108,7 @@ paths:
                 type: object
                 properties:
                   orgId:
-                    $ref: '#/components/schemas/orgId'
+                    $ref: "#/components/schemas/orgId"
                     description: The organization ID associated with the user and the application, facilitating the authentication process within the context of the user's application.
       operationId: sendEmailAuth
   /whoami:
@@ -133,7 +133,7 @@ paths:
               type: object
               properties:
                 stampedRequest:
-                  $ref: '#/components/schemas/SignedTurnkeyRequest'
+                  $ref: "#/components/schemas/SignedTurnkeyRequest"
                   description: >
                     A stamped [Turnkey Whoami Request](https://docs.turnkey.com/api#tag/Sessions/operation/GetWhoami).
       responses:
@@ -145,13 +145,13 @@ paths:
                 type: object
                 properties:
                   email:
-                    $ref: '#/components/schemas/email'
+                    $ref: "#/components/schemas/email"
                     description: The authenticated user's email address.
                   userId:
                     type: string
                     description: A unique identifier for the authenticated user.
                   orgId:
-                    $ref: '#/components/schemas/orgId'
+                    $ref: "#/components/schemas/orgId"
                     description: The organization ID associated with the authenticated user's account.
                   address:
                     type: string
@@ -182,7 +182,7 @@ paths:
               type: object
               properties:
                 email:
-                  $ref: '#/components/schemas/email'
+                  $ref: "#/components/schemas/email"
                   description: The email address of the user to look up. This is used to verify if an associated account exists within the system.
       responses:
         "200":
@@ -193,7 +193,7 @@ paths:
                 type: object
                 properties:
                   orgId:
-                    $ref: '#/components/schemas/orgId'
+                    $ref: "#/components/schemas/orgId"
                     description: >
                       The organization ID associated with the user. This ID is returned if an account exists for the given email address. If no account is found, this value will be null. The response is intentionally limited to this information to protect user privacy and security.
       operationId: getUser
@@ -219,12 +219,12 @@ paths:
               type: object
               properties:
                 stampedRequest:
-                  $ref: '#/components/schemas/SignedTurnkeyRequest'
+                  $ref: "#/components/schemas/SignedTurnkeyRequest"
                   description: |
                     A stamped request that includes the payload to be signed. The payload is part of the stamped request's body, which should conform to the structure outlined in the Turnkey API documentation for signing raw payloads.
-                    
+
                     Because users are given wallets for both Ethereum and Solana, it's possible to request signatures for both chains. The following is an example of the payload structure for signing bytes on Ethereum and Solana:
-                    
+
                     Signing bytes for Ethereum:
                     ```
                     {
@@ -239,7 +239,7 @@ paths:
                       },
                     }
                     ```
-                    
+
                     Signing bytes for Solana:
                     ```
                     {
@@ -254,7 +254,7 @@ paths:
                       },
                     }
                     ```
-                    
+
                     For more details on the parameters of the request body, see [Turnkey's API Reference](https://docs.turnkey.com/api#tag/Signing/operation/SignRawPayload).
       responses:
         "200":
@@ -290,7 +290,7 @@ paths:
               type: object
               properties:
                 stampedAddAuthenticatorRequest:
-                  $ref: '#/components/schemas/SignedTurnkeyRequest'
+                  $ref: "#/components/schemas/SignedTurnkeyRequest"
                   description: >
                     A stamped request that specifies the details of the new authenticator to be registered. This ensures the integrity of the request and confirms the user's intent to add a new authentication method to their wallet. The body of this request must match [Turnkey's Create Authenticators Request Body](https://docs.turnkey.com/api#tag/Authenticators/operation/CreateAuthenticators).
       responses:
@@ -360,7 +360,7 @@ components:
           type: string
           description: JSON stringified request body.
         stamp:
-          $ref: '#/components/schemas/SignedTurnkeyRequestStamp'
+          $ref: "#/components/schemas/SignedTurnkeyRequestStamp"
       required:
         - url
         - body

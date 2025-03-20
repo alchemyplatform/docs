@@ -1,4 +1,4 @@
-import { cp, mkdirSync, readdirSync } from "fs";
+import { mkdirSync, readdirSync } from "fs";
 
 import {
   generateAlchemyRpcSpec,
@@ -21,9 +21,9 @@ allChainFiles.forEach((chain) =>
 
 // generate alchemy API OpenRPC specs
 const alchemyApisDir = `${schemasRoot}/alchemy`;
-const alchemyOutputDir = `${outputRoot}/alchemy`;
+const alchemyOutputDir = `${outputRoot}/alchemy/json-rpc`;
 const allAlchemyFiles = readdirSync(alchemyApisDir).filter(
-  (file) => !file.startsWith("_") && file !== ".DS_Store",
+  (file) => !file.startsWith("_") && !file.startsWith("."),
 );
 
 mkdirSync(alchemyOutputDir, { recursive: true });
@@ -31,10 +31,3 @@ mkdirSync(alchemyOutputDir, { recursive: true });
 allAlchemyFiles.forEach((api) =>
   generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api),
 );
-
-// Copy markdown files to docs dir
-cp("src/markdown", "docs/markdown", { recursive: true }, (e) => {
-  if (e) {
-    console.error(e);
-  }
-});

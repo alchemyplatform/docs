@@ -5,13 +5,21 @@ import type {
   OpenrpcDocument,
   SchemaComponents,
 } from "@open-rpc/meta-schema";
-import { dereferenceDocument } from "@open-rpc/schema-utils-js";
+import {
+  dereferenceDocument,
+  validateOpenRPCDocument,
+} from "@open-rpc/schema-utils-js";
 import { readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
 
 import type { DerefedOpenRpcDoc } from "../types/openRpc";
 
+/**
+ * Retrieves components (schemas) from a YAML file and returns them in OpenRPC Components format.
+ * @param componentsFile - Path to the YAML file containing component schemas
+ * @returns Components object containing parsed schemas for use in OpenRPC documents
+ */
 export const getComponentsFromFile = (componentsFile: string): Components => {
   const rawMethods = readFileSync(componentsFile).toString();
   const parsedMethods = yaml.load(rawMethods) as SchemaComponents;
@@ -20,6 +28,11 @@ export const getComponentsFromFile = (componentsFile: string): Components => {
   return { schemas };
 };
 
+/**
+ * Retrieves components (schemas) from all files in a directory and returns them in OpenRPC Components format.
+ * @param componentsDir - Path to the directory containing component schemas
+ * @returns Components object containing parsed schemas for use in OpenRPC documents
+ */
 export const getComponentsFromDir = (componentsDir: string): Components => {
   const componentsFiles = readdirSync(componentsDir);
 
@@ -34,6 +47,11 @@ export const getComponentsFromDir = (componentsDir: string): Components => {
   return { schemas };
 };
 
+/**
+ * Retrieves methods from a YAML file and returns them in OpenRPC Methods format.
+ * @param methodsFile - Path to the YAML file containing method definitions
+ * @returns Methods object containing parsed methods from the file
+ */
 export const getMethodsFromFile = (methodsFile: string): Methods => {
   const rawMethods = readFileSync(methodsFile).toString();
   const documents = yaml.loadAll(rawMethods);
@@ -47,6 +65,11 @@ export const getMethodsFromFile = (methodsFile: string): Methods => {
   });
 };
 
+/**
+ * Retrieves methods from all files in a directory and returns them in OpenRPC Methods format.
+ * @param methodsDir - Path to the directory containing method definitions
+ * @returns Methods object containing parsed methods from all files in the directory
+ */
 export const getMethodsFromDir = (methodsDir: string): Methods => {
   const methodsFiles = readdirSync(methodsDir);
 
@@ -66,12 +89,62 @@ export const getMethodsFromDir = (methodsDir: string): Methods => {
 };
 
 type OpenRpcBase = Pick<OpenrpcDocument, "info" | "externalDocs" | "servers">;
-export const getOpenRpcBase = (schemaDir: string): OpenRpcBase => {
+/**
+ * Retrieves the base OpenRPC document from a YAML file and returns it in OpenRPC Base format.
+ * @param schemaDir - Path to the directory containing the base OpenRPC document
+ * @returns Base OpenRPC document containing the base information for the OpenRPC document
+ */
+export const getOpenRpcBase = (schemaDir: string) => {
   const baseRaw = readFileSync(`${schemaDir}/base.yaml`).toString();
 
   return yaml.load(baseRaw) as OpenRpcBase;
 };
 
+interface ValidationError {
+  keyword: string;
+  dataPath: string;
+  schemaPath: string;
+  params: Record<string, unknown>;
+  message: string;
+}
+/**
+ * Validates an OpenRPC document against the OpenRPC meta schema.
+ * @param spec - The OpenRPC document to validate
+ * @throws Error if validation fails, with details about the errors found
+ */
+export const validateRpcSpec = (spec: DerefedOpenRpcDoc) => {
+  const validation = validateOpenRPCDocument(spec);
+
+  if (validation !== true) {
+    const errorMessageMatch = validation.message.match(/\[[\s\S]*\]/);
+    let validationErrors: ValidationError[] = [];
+
+    if (errorMessageMatch) {
+      try {
+        validationErrors = JSON.parse(errorMessageMatch[0]);
+      } catch (e) {
+        console.error(e);
+        throw new Error("Failed to parse validation errors. Check console");
+      }
+    }
+
+    const error = {
+      title: spec.info.title,
+      errorType: validation.name,
+      validationErrors,
+    };
+
+    throw new Error(
+      `Validation errors found in ${spec.info.title}:\n  ${JSON.stringify(error, null, 2)}`,
+    );
+  }
+};
+
+/**
+ * Formats an OpenRPC document by dereferencing it and merging allOf schemas. Validates the document after formatting.
+ * @param doc - The OpenRPC document to format
+ * @returns Formatted OpenRPC document with merged allOf schemas
+ */
 export const formatOpenRpcDoc = async (doc: OpenrpcDocument) => {
   const spec = (await dereferenceDocument(doc)) as DerefedOpenRpcDoc;
 
@@ -89,9 +162,17 @@ export const formatOpenRpcDoc = async (doc: OpenrpcDocument) => {
     }
   });
 
+  validateRpcSpec(spec);
+
   return spec;
 };
 
+/**
+ * Writes an OpenRPC document to a JSON file.
+ * @param outputDir - Path to the directory where the file will be written
+ * @param filename - Name of the file to write
+ * @param spec - The OpenRPC document to write
+ */
 export const writeOpenRpcDoc = (
   outputDir: string,
   filename: string,
