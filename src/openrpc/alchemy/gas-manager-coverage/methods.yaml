@@ -1,13 +1,11 @@
 - name: "alchemy_requestGasAndPaymasterAndData"
-  summary: "Requests gas and coverage for a UserOperation. Returns paymasterAndData and gas parameters if approved, errors if not. Optionally accepts fee parameter overrides to be used in the UserOperation.\n"
+  summary: "Requests gas and coverage for a UserOperation. Returns paymasterAndData and gas parameters if approved, errors if not. Optionally accepts fee parameter overrides to be used in the UserOperation."
   params:
     - name: "webhookData"
-      required: false
       description: "Additional data you wish to include in the request, such as proof of humanity."
       schema:
         type: "string"
     - name: "policyId"
-      required: false
       description: "The policy ID or list of policy IDs."
       schema:
         oneOf:
@@ -17,17 +15,13 @@
             items:
               type: "string"
               format: "uuid"
-        default: "69d524a7-e932-4214-8673-dcdcba31bb42"
     - name: "entryPoint"
-      required: true
-      description: "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the supportedEntryPoints RPC call and match the version of the user operation in the userOperation field.\n"
+      description: "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the supportedEntryPoints RPC call and match the version of the user operation in the userOperation field."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
-        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
     - name: "userOperation"
-      required: true
-      description: "Partial UserOperation object, missing gas parameters, paymasterAndData and signature fields. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field.\n"
+      description: "Partial UserOperation object, missing gas parameters, paymasterAndData and signature fields. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field."
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature, paymasterData, and gas fields)"
         oneOf:
@@ -43,13 +37,11 @@
                 type: "string"
                 pattern: "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 description: "Anti-replay parameter; used as salt for first-time account creation"
-                required: false
               initCode:
                 title: "hex encoded bytes"
                 type: "string"
                 pattern: "^0x[0-9a-f]*$"
                 description: "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
-                required: false
               callData:
                 title: "hex encoded bytes"
                 type: "string"
@@ -120,7 +112,7 @@
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
   result:
     name: "Asset changes"
-    description: "The transformed response object that wraps the original gas and paymaster response. It includes an array of asset change objects, a gasUsed field, and an error field.\n"
+    description: "The transformed response object that wraps the original gas and paymaster response. It includes an array of asset change objects, a gasUsed field, and an error field."
     schema:
       type: "object"
       properties:
@@ -130,7 +122,7 @@
           properties:
             paymasterAndData:
               type: "string"
-              description: "The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field. Contains gas manager address, sigTimeRange, and secp256k1 signature.\n"
+              description: "The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field. Contains gas manager address, sigTimeRange, and secp256k1 signature."
         entrypointV07Response:
           title: "Entrypoint v0.7 Response"
           type: "object"
@@ -150,25 +142,29 @@
   examples:
     - name: "alchemy_requestGasAndPaymasterAndData example"
       params:
-        - value:
-            webhookData: "example webhook data"
-            policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
-            entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-            dummySignature: "0xe8fe34b166b64d118dccf44c7198648127bf8a76a48a042862321af6058026d276ca6abb4ed4b60ea265d1e57e33840d7466de75e13f072bbd3b7e64387eebfe1b"
-            userOperation:
-              sender: "0x1234567890123456789012345678901234567890"
-              nonce: "0x1"
-              callData: "0xabcdef"
-              callGasLimit: "0x5208"
-              verificationGasLimit: "0x5208"
-              preVerificationGas: "0x5208"
-              maxFeePerGas: "0x1"
-              maxPriorityFeePerGas: "0x1"
+        - name: "webhookData"
+          value: "example webhook data"
+        - name: "policyId"
+          value: "69d524a7-e932-4214-8673-dcdcba31bb42"
+        - name: "entryPoint"
+          value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+        - name: "userOperation"
+          value:
+            sender: "0x1234567890123456789012345678901234567890"
+            nonce: "0x1"
+            callData: "0xabcdef"
+            callGasLimit: "0x5208"
+            verificationGasLimit: "0x5208"
+            preVerificationGas: "0x5208"
+            maxFeePerGas: "0x1"
+            maxPriorityFeePerGas: "0x1"
       result:
-        jsonrpc: "2.0"
-        id: 1
-        result:
-          entrypointV06Response:
+        name: "alchemy_requestGasAndPaymasterAndData response"
+        value:
+          jsonrpc: "2.0"
+          id: 1
+          result:
+            entrypointV06Response:
             paymasterAndData: "0xabcde"
           entrypointV07Response:
             paymasterData: "0x67890"
@@ -179,12 +175,10 @@
   summary: "Requests coverage for a UserOperation. Returns paymasterAndData if approved, errors if not."
   params:
     - name: "webhookData"
-      required: false
       description: "Additional data you wish to include in the request, such as proof of humanity."
       schema:
         type: "string"
     - name: "policyId"
-      required: false
       description: "The policy ID or list of policy IDs."
       schema:
         oneOf:
@@ -194,23 +188,17 @@
             items:
               type: "string"
               format: "uuid"
-        default: "0x1234567890123456789012345678901234567890123456789012345678901234"
     - name: "entryPoint"
-      required: true
-      description: "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the supportedEntryPoints RPC call and match the version of the user operation in the entryPoint field.\n"
+      description: "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the supportedEntryPoints RPC call and match the version of the user operation in the entryPoint field."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
-        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
     - name: "dummySignature"
-      required: false
       description: "Dummy signature for the operation. This is useful for estimating gas costs."
       schema:
         type: "string"
-        default: "0xe8fe34b166b64d118dccf44c7198648127bf8a76a48a042862321af6058026d276ca6abb4ed4b60ea265d1e57e33840d7466de75e13f072bbd3b7e64387eebfe1b"
     - name: "userOperation"
-      required: true
-      description: "Partial UserOperation object, missing paymasterAndData and signature fields. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field.\n"
+      description: "Partial UserOperation object, missing paymasterAndData and signature fields. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field."
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
@@ -226,13 +214,11 @@
                 type: "string"
                 pattern: "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 description: "Anti-replay parameter; used as salt for first-time account creation"
-                required: false
               initCode:
                 title: "hex encoded bytes"
                 type: "string"
                 pattern: "^0x[0-9a-f]*$"
                 description: "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
-                required: false
               callData:
                 title: "hex encoded bytes"
                 type: "string"
@@ -302,8 +288,7 @@
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
     - name: "overrides"
-      required: false
-      description: "Optional fields to override default gas and fee behavior – these can be multiplier overrides or absolute overrides.\n"
+      description: "Optional fields to override default gas and fee behavior – these can be multiplier overrides or absolute overrides."
       schema:
         type: "object"
         properties:
@@ -315,8 +300,6 @@
                 properties:
                   multiplier:
                     type: "number"
-                required:
-                  - multiplier
                 description: "Multiplier value."
           maxPriorityFeePerGas:
             oneOf:
@@ -326,8 +309,6 @@
                 properties:
                   multiplier:
                     type: "number"
-                required:
-                  - multiplier
                 description: "Multiplier value."
           callGasLimit:
             oneOf:
@@ -337,8 +318,6 @@
                 properties:
                   multiplier:
                     type: "number"
-                required:
-                  - multiplier
                 description: "Multiplier value."
           verificationGasLimit:
             oneOf:
@@ -348,8 +327,6 @@
                 properties:
                   multiplier:
                     type: "number"
-                required:
-                  - multiplier
                 description: "Multiplier value."
           preVerificationGas:
             oneOf:
@@ -359,33 +336,30 @@
                 properties:
                   multiplier:
                     type: "number"
-                required:
-                  - multiplier
                 description: "Multiplier value."
     - name: "stateOverrideSet"
-      required: false
       description: "Allows changes to the state of a contract before executing the call. For example, you can modify variable values (like balances or approvals) for that call without changing the contract itself on the blockchain. In more technical terms, the state override set is an optional parameter that allows executing the call against a modified chain state. It is an address-to-state mapping, where each entry specifies some state to be overridden prior to executing the call. Each address maps to an object containing:"
       schema:
         type: "object"
         properties:
           balance:
-            type: "Quantity (Hex string)"
-            description: "The balance of the contract"
+            type: "string"
+            description: "The balance of the contract (hex string)"
           code:
-            type: "Binary (Hex string)"
-            description: "The code of the contract"
+            type: "string"
+            description: "The code of the contract (hex string)"
           nonce:
-            type: "Quantity (Hex string)"
-            description: "The nonce of the contract"
+            type: "string"
+            description: "The nonce of the contract (hex string)"
           state:
-            type: "Object"
+            type: "object"
             description: "The state of the contract"
           stateDiff:
-            type: "Object"
+            type: "object"
             description: "The state diff of the contract"
   result:
     name: "Response"
-    description: "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with properties paymasterData, paymasterVerificationGasLimit, and paymasterPostOpGasLimit.\n"
+    description: "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with properties paymasterData, paymasterVerificationGasLimit, and paymasterPostOpGasLimit."
     schema:
       type: "object"
       properties:
@@ -445,24 +419,29 @@
   examples:
     - name: "alchemy_requestPaymasterAndData example"
       params:
-        - value:
-            webhookData: "example webhook data"
-            policyId: "0x1234567890123456789012345678901234567890123456789012345678901234"
-            entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-            userOperation:
-              sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
-              nonce: "0x2"
-              callData: "0xdeadbeef"
-              callGasLimit: "0x5208"
-              verificationGasLimit: "0x5208"
-              preVerificationGas: "0x5208"
-              maxFeePerGas: "0x1"
-              maxPriorityFeePerGas: "0x1"
+        - name: "webhookData"
+          value: "example webhook data"
+        - name: "policyId"
+          value: "0x1234567890123456789012345678901234567890123456789012345678901234"
+        - name: "entryPoint"
+          value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+        - name: "userOperation"
+          value:
+            sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+            nonce: "0x2"
+            callData: "0xdeadbeef"
+            callGasLimit: "0x5208"
+            verificationGasLimit: "0x5208"
+            preVerificationGas: "0x5208"
+            maxFeePerGas: "0x1"
+            maxPriorityFeePerGas: "0x1"
       result:
-        jsonrpc: "2.0"
-        id: 1
-        result:
-          entrypointV06Response:
+        name: "alchemy_requestPaymasterAndData response"
+        value:
+          jsonrpc: "2.0"
+          id: 1
+          result:
+            entrypointV06Response:
             paymasterAndData: "0xdead"
             callGasLimit: "0x5208"
             verificationGasLimit: "0x5208"
@@ -481,11 +460,10 @@
             maxPriorityFeePerGas: "0x1"
 
 - name: "pm_getPaymasterData"
-  summary: "Returns values to be used in paymaster-related fields of a signed user operation. These values are not stubs and will be included in a signed user operation as part of an eth_sendUserOperation call. Accepts an unsigned user operation, an entrypoint address, a chain ID, and a context object.\n"
+  summary: "Returns values to be used in paymaster-related fields of a signed user operation. These values are not stubs and will be included in a signed user operation as part of an eth_sendUserOperation call. Accepts an unsigned user operation, an entrypoint address, a chain ID, and a context object."
   params:
     - name: "userOperation"
-      required: true
-      description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData).\n"
+      description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData)."
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
@@ -501,13 +479,11 @@
                 type: "string"
                 pattern: "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 description: "Anti-replay parameter; used as salt for first-time account creation"
-                required: false
               initCode:
                 title: "hex encoded bytes"
                 type: "string"
                 pattern: "^0x[0-9a-f]*$"
                 description: "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
-                required: false
               callData:
                 title: "hex encoded bytes"
                 type: "string"
@@ -521,7 +497,7 @@
                 description: "Gas allocated for verification"
               preVerificationGas:
                 type: "string"
-                description: "Gas for pre-verification execution and calldata"
+                description: "Gas for renaissance-verification execution and calldata"
               maxFeePerGas:
                 type: "string"
                 description: "Maximum fee per gas (EIP-1559)"
@@ -577,22 +553,17 @@
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
     - name: "entryPoint"
-      required: true
-      description: "The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call.\n"
+      description: "The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
-        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
     - name: "chainId"
-      required: true
       description: "The chain ID of the network the operation will be submitted on."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]+$"
-        default: "0x1"
     - name: "context"
-      required: false
-      description: "An object containing context. Must include a policyId and may include webhookData.\n"
+      description: "An object containing context. Must include a policyId and may include webhookData."
       schema:
         type: "object"
         properties:
@@ -610,7 +581,7 @@
             description: "Additional data you wish to include (e.g. proof of humanity)."
   result:
     name: "Response"
-    description: "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with property paymasterData.\n"
+    description: "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with property paymasterData."
     schema:
       type: "object"
       properties:
@@ -634,37 +605,41 @@
   examples:
     - name: "pm_getPaymasterData example"
       params:
-        - value:
-            userOperation:
-              sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
-              nonce: "0x2"
-              callData: "0xdeadbeef"
-              callGasLimit: "0x5208"
-              verificationGasLimit: "0x5208"
-              preVerificationGas: "0x5208"
-              maxFeePerGas: "0x1"
-              maxPriorityFeePerGas: "0x1"
-        - value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-        - value: "0x1"
-        - value:
+        - name: "userOperation"
+          value:
+            sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+            nonce: "0x2"
+            callData: "0xdeadbeef"
+            callGasLimit: "0x5208"
+            verificationGasLimit: "0x5208"
+            preVerificationGas: "0x5208"
+            maxFeePerGas: "0x1"
+            maxPriorityFeePerGas: "0x1"
+        - name: "entryPoint"
+          value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+        - name: "chainId"
+          value: "0x1"
+        - name: "context"
+          value:
             policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
             webhookData: "example context data"
       result:
-        jsonrpc: "2.0"
-        id: 1
-        result:
-          entrypointV06Response:
+        name: "pm_getPaymasterData response"
+        value:
+          jsonrpc: "2.0"
+          id: 1
+          result:
+            entrypointV06Response:
             paymasterAndData: "0xabc123"
           entrypointV07Response:
             paymaster: "0xfeed"
             paymasterData: "0x789abc"
 
 - name: "pm_getPaymasterDataStub"
-  summary: "Returns stub values to be used in paymaster-related fields of an unsigned user operation for gas estimation. Accepts an unsigned user operation, an entrypoint address, a chain ID, and a context object.\n"
+  summary: "Returns stub values to be used in paymaster-related fields of an unsigned user operation for gas estimation. Accepts an unsigned user operation, an entrypoint address, a chain ID, and a context object."
   params:
     - name: "userOperation"
-      required: true
-      description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData).\n"
+      description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData)."
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
@@ -680,13 +655,11 @@
                 type: "string"
                 pattern: "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 description: "Anti-replay parameter; used as salt for first-time account creation"
-                required: false
               initCode:
                 title: "hex encoded bytes"
                 type: "string"
                 pattern: "^0x[0-9a-f]*$"
                 description: "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
-                required: false
               callData:
                 title: "hex encoded bytes"
                 type: "string"
@@ -756,22 +729,17 @@
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
     - name: "entryPoint"
-      required: true
-      description: "The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call.\n"
+      description: "The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
-        default: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
     - name: "chainId"
-      required: true
       description: "The chain ID of the network the operation will be submitted on."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]+$"
-        default: "0x1"
     - name: "context"
-      required: false
-      description: "An object containing context. Must include a policyId and may include webhookData.\n"
+      description: "An object containing context. Must include a policyId and may include webhookData."
       schema:
         type: "object"
         properties:
@@ -789,7 +757,7 @@
             description: "Additional data you wish to include (e.g. proof of humanity)."
   result:
     name: "Response"
-    description: "The response object may be one of two types: - For entrypoint v0.6: an object with properties paymasterAndData and sponsor. - For entrypoint v0.7: an object with properties paymasterData and sponsor.\n"
+    description: "The response object may be one of two types: - For entrypoint v0.6: an object with properties paymasterAndData and sponsor. - For entrypoint v0.7: an object with properties paymasterData and sponsor."
     schema:
       type: "object"
       properties:
@@ -799,7 +767,7 @@
           properties:
             paymasterAndData:
               type: "string"
-              description: "The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field.\n"
+              description: "The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field."
             sponsor:
               type: "object"
               description: "Information about who is sponsoring the user's transaction."
@@ -827,25 +795,30 @@
   examples:
     - name: "pm_getPaymasterDataStub example"
       params:
-        - value:
-            userOperation:
-              sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
-              nonce: "0x3"
-              callData: "0x1234"
-              callGasLimit: "0x5208"
-              verificationGasLimit: "0x5208"
-              preVerificationGas: "0x5208"
-              maxFeePerGas: "0x1"
-              maxPriorityFeePerGas: "0x1"
-        - value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-        - value: "0x1"
-        - value:
+        - name: "userOperation"
+          value:
+            sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+            nonce: "0x3"
+            callData: "0x1234"
+            callGasLimit: "0x5208"
+            verificationGasLimit: "0x5208"
+            preVerificationGas: "0x5208"
+            maxFeePerGas: "0x1"
+            maxPriorityFeePerGas: "0x1"
+        - name: "entryPoint"
+          value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+        - name: "chainId"
+          value: "0x1"
+        - name: "context"
+          value:
             policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
             webhookData: "example context data"
       result:
-        jsonrpc: "2.0"
-        id: 1
-        result:
+        name: "pm_getPaymasterDataStub response"
+        value:
+          jsonrpc: "2.0"
+          id: 1
+          result:
           entrypointV06Response:
             paymasterAndData: "0xabc123"
             sponsor:
