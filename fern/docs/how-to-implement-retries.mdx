@@ -1,0 +1,336 @@
+---
+title: 'Option 1: Alchemy SDK'
+subtitle: >-
+  Learn how to implement retries in your code to handle errors and improve
+  application reliability.
+slug: docs/how-to-implement-retries
+---
+
+
+Alchemy is a powerful platform that provides developers with advanced blockchain tools, such as APIs, monitoring, and analytics, to build their blockchain applications faster and more efficiently. Alchemy's [Elastic Throughput system](/reference/throughput) guarantees a given [throughput](/reference/throughput#what-is-throughput) limit measured in [compute units per second](/reference/throughput#what-are-compute-units-per-second-cups), but you may still hit your throughput capacity in some cases. In this tutorial, we will explore how to implement retries to handle [Alchemy 429 errors](/reference/throughput#error-response).
+
+
+The Alchemy SDK is the easiest way to connect your dApp to the blockchain. It automatically handles retry logic for you. To use the Alchemy SDK, follow these steps:
+
+1. Create a new node.js project and Install the Alchemy SDK using npm or yarn:
+
+<CodeGroup>
+  ```shell npm
+  mkdir my-project
+  cd my-project
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  mkdir my-project
+  cd my-project
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+2. Import and configure the Alchemy SDK with your API key and choice of network.
+
+<CodeGroup>
+  ```javascript javascript
+  // Importing the Alchemy SDK
+  const { Network, Alchemy } = require('alchemy-sdk');
+
+  // Configuring the Alchemy SDK
+  const settings = {
+    apiKey: 'demo', // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  // Creating an instance to make requests
+  const alchemy = new Alchemy(settings);
+  ```
+</CodeGroup>
+
+3. Start making requests to the blockchain:
+
+<CodeGroup>
+  ```javascript javascript
+  // getting the current block number and logging to the console
+  alchemy.core.getBlockNumber().then(console.log);
+  ```
+</CodeGroup>
+
+4. Here's the complete code:
+
+<CodeGroup>
+  ```javascript javascript
+  // Importing the Alchemy SDK
+  const { Network, Alchemy } = require("alchemy-sdk");
+
+  // Configuring the Alchemy SDK
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  // Creating an instance to make requests
+  const alchemy = new Alchemy(settings);
+
+  // getting the current block number and logging to the console
+  alchemy.core.getBlockNumber().then(console.log);
+  ```
+</CodeGroup>
+
+The Alchemy SDK automatically handles retries for you, so you don't need to worry about implementing retry logic.
+
+# Option 2: Exponential Backoff
+
+Exponential backoff is a standard error-handling strategy for network applications. It is a similar solution to retries, however, instead of waiting random intervals, an exponential backoff algorithm retries requests exponentially, increasing the waiting time between retries up to a maximum backoff time.
+
+Here is an example of an exponential backoff algorithm:
+
+1. Make a request.
+2. If the request fails, wait `1 + random_number_milliseconds` seconds and retry the request.
+3. If the request fails, wait `2 + random_number_milliseconds` seconds and retry the request.
+4. If the request fails, wait `4 + random_number_milliseconds` seconds and retry the request.
+5. And so on, up to a maximum\_backoff time...
+6. Continue waiting and retrying up to some maximum number of retries, but do not increase the wait period between retries.
+
+Where:
+
+* The wait time is `min(((2^n)+random_number_milliseconds), maximum_backoff)`, with `n` incremented by 1 for each iteration (request).
+* `random_number_milliseconds` is a random number of milliseconds less than or equal to 1000. This helps to avoid cases in which many clients are synchronized by some situation and all retry at once, sending requests in synchronized waves. The value of `random_number_milliseconds` is recalculated after each retry request.
+* `maximum_backoff` is typically 32 or 64 seconds. The appropriate value depends on the use case.
+* The client can continue retrying after it has reached the `maximum_backoff` time. Retries after this point do not need to continue increasing backoff time. For example, suppose a client uses a `maximum_backoff` time of 64 seconds. After reaching this value, the client can retry every 64 seconds. At some point, clients should be prevented from retrying indefinitely.
+
+To implement exponential backoff in your Alchemy application, you can use a library such as [`retry`](https://www.npmjs.com/package/retry) or [`async-retry`](https://www.npmjs.com/package/async-retry) for handling retries in a more structured and scalable way.
+
+Here's an example implementation of exponential backoff using the [`async-retry`](https://www.npmjs.com/package/async-retry) library in a Node.js application where we call the `eth_blockNumber` API using Alchemy:
+
+<CodeGroup>
+  ```javascript javascript
+  // Setup: npm install [email protected] | npm install async-retry
+
+  // Import required modules
+  const fetch = require("node-fetch");
+  const retry = require("async-retry");
+
+  // Set your API key
+  const apiKey = "demo"; // Replace with your Alchemy API key
+
+  // Set the endpoint and request options
+  const url = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
+  const options = {
+    method: "POST",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ id: 1, jsonrpc: "2.0", method: "eth_blockNumber" }),
+  };
+
+  // Create a function to fetch with retries
+  const fetchWithRetries = async () => {
+    const result = await retry(
+      async () => {
+        // Make the API request
+        const response = await fetch(url, options);
+
+        // Parse the response JSON
+        let json = await response.json();
+
+        // If we receive a 429 error (Too Many Requests), log an error and retry
+        if (json.error && json.error.code === 429) {
+          console.error("HTTP error 429: Too Many Requests, retrying...");
+          throw new Error("HTTP error 429: Too Many Requests, retrying...");
+        }
+
+        // Otherwise, return the response JSON
+        return json;
+      },
+      {
+        retries: 5, // Number of retries before giving up
+        factor: 2, // Exponential factor
+        minTimeout: 1000, // Minimum wait time before retrying
+        maxTimeout: 60000, // Maximum wait time before retrying
+        randomize: true, // Randomize the wait time
+      }
+    );
+
+    // Return the result
+    return result;
+  };
+
+  // Call the fetchWithRetries function and log the result, or any errors
+  fetchWithRetries()
+    .then((json) => console.log(json))
+    .catch((err) => console.error("error:" + err));
+  ```
+</CodeGroup>
+
+In this example, we define a new function called `fetchWithRetries` that uses the `async-retry` library to retry the fetch request with exponential backoff. The retry function takes two arguments:
+
+1. An async function that performs the fetch request and returns a response object or throws an error.
+2. An options object that specifies the retry behavior. We set the number of retries to 5, the exponential factor to 2, and the minimum and maximum wait times to 1 second and 60 seconds, respectively.
+
+Finally, we call the `fetchWithRetries` function and log the result or the error to the console.
+
+# Option 3: Simple Retries
+
+If exponential backoff poses a challenge to you, a simple retry solution is to wait a random interval between 1000 and 1250 milliseconds after receiving a 429 response and sending the request again, up to some maximum number of attempts you are willing to wait.
+
+Here's an example implementation of simple retries in a node.js application where we call the `eth_blocknumber` API using Alchemy:
+
+<CodeGroup>
+  ```javascript javascript
+  // Setup: npm install [email protected]
+
+  // Import required modules
+  const fetch = require("node-fetch");
+
+  // Set your API key
+  const apiKey = "demo"; // Replace with your Alchemy API key
+
+  // Set the endpoint and request options
+  const url = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
+  const options = {
+    method: "POST",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ id: 1, jsonrpc: "2.0", method: "eth_blockNumber" }),
+  };
+
+  const maxRetries = 5; // Maximum number of retries before giving up
+  let retries = 0; // Current number of retries
+
+  // Create a function to make the request
+  function makeRequest() {
+    fetch(url, options)
+      .then((res) => {
+        if (res.status === 429 && retries < maxRetries) {
+          // If we receive a 429 response, wait for a random amount of time and try again
+          const retryAfter = Math.floor(Math.random() * 251) + 1000; // Generate a random wait time between 1000ms and 1250ms
+          console.log(`Received 429 response, retrying after ${retryAfter} ms`);
+          retries++;
+          setTimeout(() => {
+            makeRequest(); // Try the request again after the wait time has elapsed
+          }, retryAfter);
+        } else if (res.ok) {
+          return res.json(); // If the response is successful, return the JSON data
+        } else {
+          throw new Error(`Received ${res.status} status code`); // If the response is not successful, throw an error
+        }
+      })
+      .then((json) => console.log(json)) // Log the JSON data if there were no errors
+      .catch((err) => {
+        if (retries < maxRetries) {
+          console.error(`Error: ${err.message}, retrying...`);
+          retries++;
+          makeRequest(); // Try the request again
+        } else {
+          console.error(`Max retries reached, exiting: ${err.message}`);
+        }
+      });
+  }
+
+  makeRequest(); // Call the function to make the initial request.
+  ```
+</CodeGroup>
+
+* In this example, we define a `maxRetries` constant to limit the number of retries we're willing to wait. We also define a `retries` variable to keep track of how many times we've retried so far.
+
+* We then define the `makeRequest()` function, which is responsible for making the API request. We use the `fetch` function to send the request with the specified `url` and options.
+
+* We then check the response status: if it's a `429 (Too Many Requests)` response and we haven't reached the `maxRetries` limit, we wait a random interval between 1000 and 1250 milliseconds before calling `makeRequest()` again. Otherwise, if the response is `OK`, we parse the JSON response using `res.json()` and log it to the console. If the response status is anything else, we throw an error.
+
+* If an error is caught, we check if we've reached the `maxRetries` limit. If we haven't, we log an error message and call `makeRequest()` again after waiting a random interval between 1000 and 1250 milliseconds. If we have reached the `maxRetries` limit, we log an error message and exit the function.
+
+Finally, we call makeRequest() to start the process.
+
+# Option 4: Retry-After
+
+If you're using HTTP instead of WebSockets, you might come across a 'Retry-After' header in the HTTP response. This header serves as the duration you should wait before initiating a subsequent request. Despite the utility of the 'Retry-After' header, we continue to advise the use of exponential backoff. This is because the 'Retry-After' header only provides a fixed delay duration, while exponential backoff offers a more adaptable delay scheme. By adjusting the delay durations, exponential backoff can effectively prevent a server from being swamped with a high volume of requests in a short time frame.
+
+Here's an example implementation of "Retry-After" in a node.js application where we call the `eth_blocknumber` API using Alchemy:
+
+<CodeGroup>
+  ```go go
+  // Setup: npm install [email protected]
+
+  // Import required modules
+  const fetch = require("node-fetch");
+
+  // Set your API key
+  const apiKey = "demo"; // Replace with your Alchemy API key
+
+  // Set the endpoint and request options
+  const url = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
+  const options = {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ id: 1, jsonrpc: "2.0", method: "eth_blockNumber" }),
+  };
+
+  const maxRetries = 5; // maximum number of retries
+  let retries = 0; // number of retries
+
+  // Create a function to fetch with retries
+  function makeRequest() {
+    fetch(url, options)
+      .then((res) => {
+        if (res.status === 429 && retries < maxRetries) {
+          // check for 429 status code and if max retries not reached
+          const retryAfter = res.headers.get("Retry-After"); // get the value of Retry-After header in the response
+          if (retryAfter) {
+            // if Retry-After header is present
+            const retryAfterMs = parseInt(retryAfter) * 1000; // convert Retry-After value to milliseconds
+            console.log(
+              `Received 429 response, retrying after ${retryAfter} seconds`
+            );
+            retries++;
+            setTimeout(() => {
+              makeRequest(); // call the same function after the delay specified in Retry-After header
+            }, retryAfterMs);
+          } else {
+            // if Retry-After header is not present
+            const retryAfterMs = Math.floor(Math.random() * 251) + 1000; // generate a random delay between 1 and 250 milliseconds
+            console.log(
+              `Received 429 response, retrying after ${retryAfterMs} ms`
+            );
+            retries++;
+            setTimeout(() => {
+              makeRequest(); // call the same function after the random delay
+            }, retryAfterMs);
+          }
+        } else if (res.ok) {
+          // if response is successful
+          return res.json(); // parse the response as JSON
+        } else {
+          throw new Error(`Received ${res.status} status code`); // throw an error for any other status code
+        }
+      })
+      .then((json) => console.log(json)) // log the JSON response
+      .catch((err) => {
+        if (retries < maxRetries) {
+          // if max retries not reached
+          console.error(`Error: ${err.message}, retrying...`);
+          retries++;
+          makeRequest(); // call the same function again
+        } else {
+          // if max retries reached
+          console.error(`Max retries reached, exiting: ${err.message}`);
+        }
+      });
+  }
+
+  makeRequest(); // call the makeRequest function to start the retry loop
+  ```
+</CodeGroup>
+
+* The code starts by defining the API endpoint URL and the request options. It then sets up a function `makeRequest()` that uses `fetch()` to make a POST request to the API.
+* If the response status code is `429 (Too Many Requests)`, the code checks for a `Retry-After` header in the response.
+* If the header is present, the code retries the request after the number of seconds specified in the header.
+* If the header is not present, the code generates a random retry time between 1 and 250ms and retries the request after that time.
+* If the response status code is not `429` and is not `OK`, the code throws an error.
+* If the response is `OK`, the code returns the response JSON. If there is an error, the code catches the error and retries the request if the number of retries is less than the maximum number of retries.
+* If the number of retries is equal to the maximum number of retries, the code logs an error message and exits.
+
+# Conclusion
+
+In conclusion, retries are an important error-handling strategy for network applications that can help improve application reliability and handle errors. In this tutorial, we discussed 4 ways in which we can implement retries namely: Exponential-Backoff, Retry-After, Simple Retries and Alchemy SDK.
+
+By implementing retries in your Alchemy application, you can help ensure that your application can handle errors and continue to function reliably even in the face of unexpected errors and network disruptions.

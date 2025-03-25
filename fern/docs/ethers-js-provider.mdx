@@ -1,0 +1,114 @@
+---
+title: How to Use a Provider in Ethers.js
+subtitle: >-
+  This guide will introduce you to use a Provider in Ethers.js and level up your
+  Web3 stack!
+slug: docs/ethers-js-provider
+---
+
+
+## What is a Provider in Ethers.js?
+
+A Provider is an abstraction to the Ethereum Network that allows developers to connect to a standard Ethereum node permitting read-only access to the blockchain.
+
+Ethers.js also offers providers for different services each connecting to their respected network. This includes the AlchemyProvider, EtherscanProvider, InfuraProvider, CloudflareProvider, PoketProvider and AnkrProvider - all providing a web API for connecting to the blockchain.
+
+### Ethers.js Provider Use Cases
+
+The following consists of potential use cases with Provider within [Ethers.js](/docs/what-is-ethers-js):
+
+#### Account Methods
+
+* provider.**getBalances** - retrieve the balances from specific addresses
+* provider.**getTransactionCount** - retrieve the total number of transactions an address has sent
+
+#### Network Status Methods
+
+* provider.**getGasPrice** - retrieve the gas price for a transaction that is displayed to a user
+* provider.**getNetwork** - retrieve the network to confirm an user can complete a transaction
+
+#### Transactions Methods
+
+* provider.**call** - read from the blockchain and execute smart contracts, but cannot publish to the blockchain.
+* provider.**getTransaction** - retrieve the transaction hash to confirm the completion of an execution by the user.
+
+There are many more use cases that can be explored by visiting the Provider docs, [here](https://docs.ethers.io/v5/single-page/#/v5/api/providers/provider/).
+
+### How to Use a Provider with Ethers.js
+
+The following code snippets require prior installation of ethers and alchemy-SDK.
+
+#### 1. Import ethers using Node.js.
+
+<CodeGroup>
+  ```javascript javascript
+  const { ethers } = require("ethers");
+  ```
+</CodeGroup>
+
+#### 2. Define network configurations via Mainnet.
+
+<CodeGroup>
+  ```javascript javascript
+  const network = "mainnet";
+  ```
+</CodeGroup>
+
+#### 3. Retrieve the API key from Alchemy. For this example, “demo” is used as the API key.
+
+<CodeGroup>
+  ```javascript javascript
+  async function blockNum() {
+      const provider = new ethers.providers.AlchemyProvider(network, 'demo')
+  };
+  ```
+</CodeGroup>
+
+#### 4. Define network configurations via Testnet.
+
+<CodeGroup>
+  ```javascript javascript
+  async function blockNum() {
+  ...
+      const output = await provider.getBlockNumber();
+      console.log(output);
+  };
+  ```
+</CodeGroup>
+
+### How to Use a Provider with the Alchemy SDK
+
+The following code snippets require prior installation of the alchemy-SDK.
+
+#### 1. Import alchemy-sdk
+
+<CodeGroup>
+  ```javascript javascript
+  import { Alchemy } from 'alchemy-sdk';
+  ```
+</CodeGroup>
+
+#### 2. Optional Config object, but defaults to demo api-key and eth-mainnet.
+
+<CodeGroup>
+  ```javascript javascript
+  const settings = {
+      apiKey: 'demo', // Replace with your Alchemy API Key.
+      network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+  ```
+</CodeGroup>
+
+#### 3. Utilize core to refer to all commonly-used Ethers.js Provider methods and Alchemy Enhanced API methods.
+
+<CodeGroup>
+  ```javascript javascript
+  // Access standard Ethers.js JSON-RPC node request
+  alchemy.core.getBlockNumber().then(console.log);
+
+  // Access Alchemy Enhanced API requests
+  alchemy.core.getTokenBalances("0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE").then(console.log);
+  ```
+</CodeGroup>

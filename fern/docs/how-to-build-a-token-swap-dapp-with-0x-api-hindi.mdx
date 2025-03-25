@@ -1,0 +1,982 @@
+---
+title: 9. 0x एपीआई के साथ टोकन स्वैप डीऐप कैसे बनाएं
+subtitle: >-
+  0x स्वैप एपीआई एंडपॉइंट का उपयोग करके टोकन स्वैपिंग डीऐप (एक साधारण
+  Matcha.xyz) बनाने का तरीका जानें। यह ऐप सबसे बड़े DEX इकोसिस्टम(पारिस्थितिकी
+  तंत्र) में लिक्विडिटी(liquidity) एकत्र करता है और उपयोगकर्ता को सर्वोत्तम
+  मूल्य प्रदान करता है।
+slug: docs/how-to-build-a-token-swap-dapp-with-0x-api-hindi
+---
+
+
+क्या आप कभी DAI के लिए ETH को ट्रेड करने के लिए अपने पसंदीदा टोकन ट्रेडिंग डीऐप पर गए हैं और आश्चर्य किया है कि यह आपके लिए सर्वोत्तम मूल्य कैसे प्राप्त करता है?
+
+![312](/images/880f067-Untitled_16.png "Untitled (16).png")
+
+DEX एग्रीगेटर, Matcha.xyz का उपयोग करके WETH\<>DAI में ट्रेडिंग करना।
+
+इसकी संभावना बहुत अधिक है कि यह एक [लिक्विडिटी एग्रीगेटर(liquidity aggregator)](https://docs.0x.org/introduction/introduction-to-0x#makers-and-takers) का उपयोग करता है जो **ऑफ-चेन** (जैसे मार्केट मेकरस, ऑर्डरबुक्स) और **ऑन-चेन** (जैसे DEXs, AMMs) में सभी संभावित कीमतों को इकठा करता है और उपयोगकर्ता के लिए सर्वोत्तम मूल्य को उपलब्ध करता है।
+
+इस ट्यूटोरियल में, हम सीखेंगे कि **[0x एपीआई स्वैप एंडपॉइंट](https://docs.0x.org/0x-api-swap/introduction)** का उपयोग कैसे करें जो उपयोगकर्ताओं को **लिक्विडिटी आपूर्ति में उपलब्ध उद्धरण(quotes) प्राप्त करने की अनुमति देता है** और डिसेंट्रलाइज़्ड एक्सचेंज नेटवर्कस में लेन-देन को विभाजित(split) करने के लिए [स्मार्ट ऑर्डर राउटिंग](https://blog.0xproject.com/0x-apis-smart-order-routing-7af0195515e5) का उपयोग करता है ताकि **कम से कम स्लिपेज भरें**, जिससे ट्रांसएक्शन कॉस्ट कम हो जाए
+
+यह वही एंडपॉइंट है जो मेटामास्क, कॉइनबेस वॉलेट, ज़ैपर और [कई अन्य](https://blog.0x.org/0x-ecosystem-update-18/) प्रमुख वॉलेट्स और एक्सचेंजों में होने वाले स्वैप के पीछे है।
+
+ध्यान दें कि ट्रेड को खोजने और सैटल (settle) करने के लिए हमें कोई स्मार्ट कॉन्ट्रैक्ट लिखने की आवश्यकता नहीं होगी! इसके बजाय, 0x एपीआई वेब3 डेवलपर्स को आसानी से 0x प्रोटोकॉल स्मार्ट कॉन्ट्रैक्ट्स में टैप करने की अनुमति देता है जो एक ट्रेड(व्यापार) को सैटल करने के लिए उपयोग किए जाने वाले सभी logic(तर्क) का ख्याल रखता है, जिससे वेब डेवलपर्स को सर्वोत्तम ट्रेड अनुभव बनाने पर ध्यान केंद्रित करने की अनुमति मिलती है।
+
+इस ट्यूटोरियल के अंत तक, आप निम्न कार्य करना सीखेंगे:
+
+* समझें कि **लिक्विडिटी एकत्रीकरण(Liquidity Aggregation)** क्यों महत्वपूर्ण है
+* क्वेरी करें और एक **ERC20 टोकन सूची** प्रदर्शित करें
+* **0x एपीआई/स्वैप एंडपॉइंट** का प्रयोग करें
+* एक **टोकन भत्ता(allowance)** निर्धारित करें
+* एक **साधारण टोकन स्वैप डीऐप** बनाएं जो **web3.js** का उपयोग करके **मेटामास्क** से कनेक्ट करता है
+
+वीडियो ट्यूटोरियल संस्करण(version) यहाँ है:
+
+## आवश्यक शर्तें
+
+इस शेष ट्यूटोरियल की तैयारी के लिए, आपके पास होना चाहिए:
+
+* `npm` (`npx`) वर्जन 8.5.5
+* `node` वर्जन 16.13.1
+* [मेटामास्क](https://metamask.io/download/)
+
+निम्नलिखित की आवश्यकता नहीं है, लेकिन इनका होना अत्यंत उपयोगी है:
+
+* [कमांड लाइन](https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Understanding_client-side_tools/Command_line) के साथ परिचित होना
+* [जावास्क्रिप्ट](https://www.codecademy.com/learn/introduction-to-javascript) के साथ परिचित होना
+* [विजुअल स्टूडियो कोड(VS Code)](https://code.visualstudio.com/), हमारी अनुशंसित कोडिंग IDE है
+
+यदि आपको कभी सहायता की आवश्यकता हो तो यह रही [GitHub रेपो](https://github.com/0xProject/swap-demo-tutorial)।
+
+अब अपना स्वैप डीऐप(swap dapp) बनाना शुरू करते हैं!
+
+## भाग 1. स्टार्टर कोड से वॉक-थ्रू(Walk-through) करें
+
+सबसे पहले आपको प्रोजेक्ट स्टार्टर कोड को क्लोन(clone) करना होगा। टोकन ट्रेडिंग कार्यक्षमता जोड़ने के लिए हम इस स्टार्टर यूआई पर अपनी बाकि एप्लीकेशन का निर्माण करेंगे।
+
+<CodeGroup>
+  ```shell shell
+  git clone git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-1
+  cd swap-demo-tutorial-part-1
+  ```
+</CodeGroup>
+
+प्रोजेक्ट को अपने पसंदीदा आईडीई में खोलें और स्थानीय डेवलपमेंट सर्वर(local development server) लॉन्च करें। यदि आप [विज़ुअल स्टूडियो कोड](https://code.visualstudio.com/) का उपयोग कर रहे हैं, तो ऐसा करने का एक तरीका [लाइव सर्वर(Live Server)](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) को बाएं हाथ के पैनल पर एक्सटेंशनस से इनस्टॉल(install) करना है। फिर, एक्सप्लोरर विंडो से `index.html` फ़ाइल पर राइट क्लिक करें और डेक्स एग्रीगेटर स्केलेटन(DEX Aggregator Skeleton) को खोलने के लिए `Open with Live Server` पर क्लिक करें।
+
+![702](/images/30c8a8c-Untitled_17.png "Untitled (17).png") ![986](/images/a7f8d56-Untitled_18.png "Untitled (18).png") ![1600](/images/7554059-Untitled_19.png "Untitled (19).png")
+
+कुछ मुख्य विशेषताएं (कोड `index.html` में मिला):
+
+* **Sign-in with Metamask बटन** - जब यह ऐप पूरा हो जाता है, तो इस बटन पर क्लिक करने से उपयोगकर्ता अपने मेटामास्क वॉलेट से जुड़ सकेंगे और "Swap" बटन को सक्षम(enable) कर सकेंगे।
+
+* **Swap Box(स्वैप बॉक्स)**
+
+  * **SELECT A TOKEN** - वर्तमान में जब कर्सर इन पर होवर करता है तो ये अनुभाग(sections) केवल रंग बदलते हैं; अंत तक, उपयोगकर्ता क्लिक कर पाएंगे और स्वैप (Swap) करने के लिए उपलब्ध टोकन की सूची को प्रदर्शित करने में सक्षम होंगे।
+  * **amount** - यह एक इनपुट फॉर्म है जो यूजर को एक नंबर इनपुट करने की अनुमति देता है।
+
+* **Estimated Gas** - स्वैप एंडपॉइंट स्वैप पूरा होने के लिए अनुमानित गैस वापस लौटाएगा। हम उसे यहाँ प्रदर्शित करेंगे।
+
+* **Swap Button** - जैसा कि ऊपर उल्लेख किया गया है, "Swap" बटन वर्तमान में disabled(अक्षम) है, लेकिन जब उपयोगकर्ता मेटामास्क में साइन इन करेगा तो हम इसे enable(सक्षम) कर देंगे।
+
+`index.js` में इन एलिमेंट्स पर नज़र डालें और उनकी `ids`, `class` और `style.css` में उनसे संबंधित स्टाइल पर ध्यान दें।
+
+## भाग 2. मेटामास्क से कनेक्ट करें
+
+अब उपयोगकर्ता को [मेटामास्क](https://metamask.io/) से कनेक्ट करने के लिए सक्षम(enable) करें।
+
+सबसे पहले अपने ब्राउज़र पर [मेटामास्क](https://metamask.io/) डाउनलोड करें। मेटामास्क एक क्रिप्टो वॉलेट है जो आपको ब्लॉकचेन ऐप्स के साथ इंटरैक्ट करने की अनुमति देता है। यह हमारे लिए हमारे धन(funds) को होल्ड (hold) कर के रखेगा जिसका उपयोग हम ट्रेड के लिए करेंगे। इस ऐप में, हम केवल यह चाहते हैं कि उपयोगकर्ताओं के पास मेटामास्क वॉलेट इनस्टॉल होने पर स्वैप करने की क्षमता हो।
+
+अगला, `index.js`, एक `connect()` फ़ंक्शन बनाएं और इसे `login_button` एलिमेंट से कनेक्ट करें। कृपया यह समझने के लिए कमैंट्स को पढ़ें कि हम कैसे जांचते हैं कि मेटामास्क connected(जुड़ा हुआ) है:
+
+<CodeGroup>
+  ```javascript index.js
+  async  function  connect() {
+  //मेटामास्क उपयोगकर्ताओं द्वारा विजिटेड वेबसाइटों में `window.ethereum` के अंदर एक ग्लोबल एपीआई इंजेक्ट करता है। यह एपीआई वेबसाइटों को उपयोगकर्ताओं के इथिरियम खातों का अनुरोध करने की अनुमति देता है, जिस ब्लॉकचेन से उपयोगकर्ता जुड़ा हुआ है उससे डेटा पढ़ता है , और सुझाव देता है कि उपयोगकर्ता संदेशो(messages) और ट्रांसक्शन्स पर हस्ताक्षर करे। प्रोवाइडर ऑब्जेक्ट की उपस्थिति एक एथेरियम उपयोगकर्ता को इंगित(indicate) करती है। इसके बारे में और पढ़ें: https://ethereum.stackexchange.com/a/68294/85979**/
+
+  // जांचें करें क्या मेटामास्क इंस्टॉल्ड (installed) है, अगर यह है, तो खाते से कनेक्ट करने का प्रयास करें
+      if (typeof  window.ethereum !== "undefined") {
+          try {
+              console.log("connecting");
+              // अनुरोध(request) करता है कि उपयोगकर्ता द्वारा पहचाने जाने के लिए एक इथिरियम पता प्रदान करता है। अनुरोध के कारण एक मेटामास्क पॉपअप प्रकट होता है। और पढ़ें: https://docs.metamask.io/guide/rpc-api.html#eth-requestaccounts
+              await  ethereum.request({ method:  "eth_requestAccounts" });
+          } catch (error) {
+          console.log(error);
+          }
+          // यदि connected(जुड़ा हुआ) है, तो बटन को "Connected" में बदलें
+          document.getElementById("login_button").innerHTML = "Connected";
+          // यदि connected(जुड़ा हुआ) है, तो "Swap" बटन को सक्षम करें
+          document.getElementById("swap_button").disabled = false;
+          } 
+          // यदि मेटामास्क का पता नहीं चलता है तो उपयोगकर्ता को मेटामास्क इनस्टॉल करने के लिए कहें
+          else {
+          document.getElementById("login_button").innerHTML =
+              "Please install MetaMask";
+          }
+      }
+  // जब login_button क्लिक किया जाता है तो कनेक्ट फ़ंक्शन को कॉल करें
+  document.getElementById("login_button").onclick = connect;
+  ```
+</CodeGroup>
+
+जब आप LiveServer के साथ `index.html` खोलते हैं, और "Sign-In with Metamask" बटन पर क्लिक करते हैं, तो वह बटन स्वचालित रूप से "Connected" में अपडेट हो जाना चाहिए, जैसा कि नीचे दिखाया गया है:
+
+![1600](/images/1ce2f78-Untitled_20.png "Untitled (20).png")
+
+यदि मेटामास्क नहीं है, तो "Please install Metamask" में बदल जाएगा:
+
+![1600](/images/8f98f06-Untitled_21.png "Untitled (21).png")
+
+बहुत बढ़िया! अब हमारा ऐप यह पता लगा सकता है कि उपयोगकर्ता का वॉलेट कब कनेक्टेड है।
+
+**भाग 2 के लिए अंतिम कोड**
+
+<CodeGroup>
+  ```shell shell
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-2
+  ```
+</CodeGroup>
+
+## भाग 3: टोकन सूची के लिए एक मॉडल बनाएं
+
+अब देखते हैं कि जब कोई उपयोगकर्ता "SELECT A TOKEN" पर क्लिक करता है तो टोकन सूची कैसे बनाई जाती है। इसमें मदद के लिए हम [बूटस्ट्रैप के मोडल कॉम्पोनेन्ट](https://getbootstrap.com/docs/4.0/components/modal/) का उपयोग कर सकते हैं।
+
+उदाहरण मॉडल कोड को [यहाँ से](https://getbootstrap.com/docs/4.0/components/modal/) कॉपी करें, और इसे अंतिम `</div>` के नीचे पेस्ट करें। आप सेव और क्लोज बटन्स को हटा सकते हैं। साथ ही, `id="token_modal"` जोड़ना सुनिश्चित करें ताकि हम इस मोडल को बाद में संदर्भित(reference) कर सकें। मोडल की पहली पंक्ति इस तरह दिखनी चाहिए:
+
+<CodeGroup>
+  ```javascript javascript
+  <div  class="modal"  id="token_modal"  tabindex="-1"  role="dialog">
+  ```
+</CodeGroup>
+
+आपका `index.html` अब ऐसा दिखना चाहिए:
+
+<CodeGroup>
+  ```html index.html
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+      <title>Javascript Test</title>
+      <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+      <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+      <link rel="stylesheet" href="./style.css">
+    </head>
+  <body>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <a class="navbar-brand" href="#">My DEX Aggregator</a>
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <button id="login_button" class="btn btn-outline-primary my-2 my-sm-0" type="submit">Sign in with MetaMask</button>
+            </li>
+        </nav>
+        <div class ="container">
+          <div class="row">
+              <div class="col col-md-6 offset-md-3" id="window">
+                  <h4>Swap</h4>
+                  <div id="form">
+                      <div class="swapbox">
+                          <div class="swapbox_select token_select" id="from_token_select">
+                              SELECT A TOKEN
+                          </div>
+                          <div class="swapbox_select">
+                              <input class="number form-control" placeholder="amount" id="from_amount">
+                          </div>
+                      </div>
+                      <div class="swapbox">
+                          <div class="swapbox_select token_select" id="to_token_select">
+                              SELECT A TOKEN
+                          </div>
+                           <div class="swapbox_select">
+                              <input class="number form-control" placeholder="amount" id="to_amount">
+                          </div>
+                      </div>  
+                      <div class="gas_estimate_label">Estimated Gas: <span id="gas_estimate"></span></div>
+                      <button disabled class="btn btn-large btn-primary btn-block" id="swap_button">Swap</button>                
+                  </div>
+              </div>
+          </div>
+      </div>
+     <!-- यहां नई मोडल बॉडी जोड़ें। ध्यान दें कि हमने id="token_modal" जोड़ा और modal-title को अपडेट किया -->
+      <div class="modal" id="token_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Select a Token</h5>
+              <button id="modal_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>Modal body text goes here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+        <script src="./index.js" type="text/javascript"></script>
+      </body>
+  </html>
+  ```
+</CodeGroup>
+
+अब, हमें अपने मोडल को खोलने का एक तरीका चाहिए जब हम **SELECT A TOKEN** पर क्लिक करते हैं, html एलिमेंट `id='from_token_select'` के साथ।
+
+`index.js` में, `openModal()` नामक एक फ़ंक्शन बनाते हैं जो उस एलिमेंट को क्लिक करने पर मोडल को खोलता है। निम्न पंक्ति जोड़ें:
+
+<CodeGroup>
+  ```javascript index.js
+  document.getElementById("from_token_select").onclick = openModal;
+  ```
+</CodeGroup>
+
+अगला, `openModal()` फ़ंक्शन बनाएँ:
+
+<CodeGroup>
+  ```javascript javascript
+  function  openModal(){
+  document.getElementById("token_modal").style.display = "block";
+  }
+  ```
+</CodeGroup>
+
+अब, जब आप "SELECT A TOKEN" पर क्लिक करते हैं, तो यह मोडल दिखाई देता है:
+
+![1170](/images/6c15a27-Untitled_22.png "Untitled (22).png")
+
+अब मोडल को बंद करने का कोई तरीका नहीं है, तो चलिए उसे जोड़ते हैं। मोडल में पहले से ही एक `modal_close` एलिमेंट `index.html` के अंदर है , यह X है जो शीर्ष दाएं कोने में है। हम इसे एक ऐसे फंक्शन से जोड़ेंगे जो मोडल को बंद कर देगा।
+
+`index.js` में, `closeModal()` नामक एक फ़ंक्शन बनाएं जो उस एलिमेंट को क्लिक करने पर मोडल को बंद कर देता है। निम्न पंक्ति जोड़ें:
+
+<CodeGroup>
+  ```javascript javascript
+  document.getElementById("modal_close").onclick = closeModal;
+  ```
+</CodeGroup>
+
+अगला, `closeModal()` फ़ंक्शन बनाएं:
+
+<CodeGroup>
+  ```javascript javascript
+  function  closeModal(){
+  document.getElementById("token_modal").style.display = "none";
+  }
+  ```
+</CodeGroup>
+
+#### भाग 3 के लिए अंतिम कोड
+
+<CodeGroup>
+  ```shell shell
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-3
+  ```
+</CodeGroup>
+
+## भाग 4: कॉइनगेको(CoinGecko) एपीआई से टोकन सूची प्राप्त करें और प्रदर्शित करें
+
+हमारे पास अभी एक मोडल है, लेकिन अंदर कुछ भी नहीं है। मोडल को पॉप्युलेट करने के लिए ERC20 टोकन की एक सूची प्राप्त करें, ताकि एक उपयोगकर्ता ट्रेड(trade) के लिए एक टोकन का चयन कर सके।
+
+Uniswap के पास [टोकन लिस्ट्स](https://tokenlists.org/) प्रोजेक्ट है, जो ERC20 टोकंस की सूची बनाने के लिए एक मानक(स्टैण्डर्ड) है ताकि उच्च-गुणवत्ता वाले, वैध टोकंस को घोटालों, नकली, और डुप्लीकेट टोकंस से फ़िल्टर किया जा सके। टोकन सूचियों(लिस्ट्स) के महत्व के बारे में अधिक [यहाँ पढ़ें](https://uniswap.org/blog/token-lists)।
+
+कॉइनगेको (CoinGecko) सूची अधिक मजबूत सूची में से एक है, इसलिए हम इस क्वेरी `https://tokens.coingecko.com/uniswap/all.json` का उपयोग करेंगे। हमारा सुझाव यह है की आप सीधे अपने ब्राउज़र में चलाएँ और देखें कि क्या वापस लौटाया गया है। आपको एक JSON ऑब्जेक्ट दिखाई देना चाहिए जिसमें प्रत्येक टोकन का *name(*नाम), *logoURI*, *symbol*(प्रतीक) और *decimals*(दशमलव) शामिल हों। इस डीऐप (dApp) को बनाते समय हम इन सभी मापदंडों(parameters) का उपयोग करेंगे।
+
+![1600](/images/b4fdacd-Untitled_23.png "Untitled (23).png")
+
+अब, हम वास्तव में मोडल को कॉल करने से पहले टोकन सूची को लोड करना चाहते हैं; अन्यथा, उपयोगकर्ता को इसके लोड होने की प्रतीक्षा करनी होगी। हम इसे `init()` फ़ंक्शन में लोड करके ऐसा कर सकते हैं, जो पेज के पहली बार लोड होने पर इनिशियलाइज़ होता है।
+
+`index.js` में, एक `init()` फंक्शन बनाएँ। अंदर, निम्नलिखित fetch(फेच) को CoinGecko API में जोड़ें। साथ ही इसे `index.js` से कॉल करना सुनिश्चित करें, उदाहरण के लिए, हमने इसे हमारे onclick कॉल्स के ऊपर `index.js` फ़ाइल के निचले भाग में जोड़ा है:
+
+<CodeGroup>
+  ```javascript javascript
+  async function init(){
+      console.log("initializing");
+      let response = await fetch('https://tokens.coingecko.com/uniswap/all.json');
+      let tokenListJSON = await response.json();
+      console.log("listing available tokens: ", tokenListJSON);
+  }
+  ...
+
+  // init() कॉल को जोड़े
+  init();
+
+  document.getElementById("login_button").onclick = connect;
+  document.getElementById("from_token_select").onclick = openModal;
+  document.getElementById("to_token_select").onclick = openModal;
+  document.getElementById("modal_close").onclick = closeModal;
+  ```
+</CodeGroup>
+
+अब, जब आप अपनी डीऐप सर्व करते हैं, और इसका निरीक्षण करते हैं, तो आपको टोकन सूची json ऑब्जेक्ट का प्रिंट आउट दिखना चाहिए। यदि आप पहली बार Chrome के Inspect DevTool का उपयोग कर रहे हैं, तो इसके बारे में अधिक जानने के लिए[ इस लेख(article)](https://www.hostinger.com/tutorials/website/how-to-inspect-and-change-style-using-google-chrome) को देखें।
+
+![1404](/images/d8dd7c2-Untitled_24.png "Untitled (24).png")
+
+ध्यान दें कि लौटाई गई टोकन सूची JSON ऑब्जेक्ट में एक टोकंस की(tokens key) होती है, जिसमें 4954 JSON ऑब्जेक्ट्स का एक ऐरे(सरणी) है। हम अपनी टोकन सूची को पॉप्युलेट करने के लिए यहां से जानकारी प्राप्त करेंगे।
+
+![1600](/images/b2aa62a-Untitled_25.png "Untitled (25).png")
+
+अब, अपनी टोकन सूची को सीधे `init()` के अंदर बनाने के बजाय, हम एक नया फ़ंक्शन `listAvailableTokens()` बनाएंगे, सिर्फ जो हमें चाहिए उनकी सूची(लिस्ट) बनाने के लिए - token address, symbol, image, decimals और इसे `init()` से कॉल करेंगे।
+
+निम्नलिखित को `index.js` के अंदर `listAvailableTokens()`में जोड़ें। टिप्पणियों(कमैंट्स) को पढ़ना सुनिश्चित करें:
+
+<CodeGroup>
+  ```javascript javascript
+  async function listAvailableTokens(){
+    console.log("initializing");
+    let response = await fetch('https://tokens.coingecko.com/uniswap/all.json');
+    let tokenListJSON = await response.json();
+    console.log("listing available tokens: ", tokenListJSON);
+    tokens = tokenListJSON.tokens
+    console.log("tokens:", tokens);
+
+    // मोडल के लिए एक टोकन सूची बनाएँ
+    let parent = document.getElementById("token_list");
+    // टोकन सूची JSON ऑब्जेक्ट के अंदर सभी टोकन से लूप करें
+    for (const i in tokens){
+      // सूची में प्रत्येक टोकन के लिए एक पंक्ति बनाएँ
+      let div = document.createElement("div");
+      div.className = "token_row";
+      // प्रत्येक पंक्ति के लिए, टोकन छवि(token image) और प्रतीक(symbol) प्रदर्शित करें
+      let html = `
+      <img class="token_list_img" src="${tokens[i].logoURI}">
+        <span class="token_list_text">${tokens[i].symbol}</span>
+        `;
+      div.innerHTML = html;
+      parent.appendChild(div);
+    }
+  }
+  ```
+</CodeGroup>
+
+इसके अलावा, आइए मोडल बॉडी डमी टेक्स्ट को `"token_list"` एलिमेंट से बदलें जिसे हमने अभी बनाया है:
+
+<CodeGroup>
+  ```javascript javascript
+  <div class="modal" id="token_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Select a Token</h5>
+              <button id="modal_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                < !-- मोडल टेक्स्ट को token_list से बदलें -->
+              <div id="token_list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+  ```
+</CodeGroup>
+
+अंत में, इस स्टाइल को मोडल के लिए `style.css` में जोड़ें ताकि टोकन सूची अनिश्चित काल तक फ्लो(प्रवाहित) न हो, और एक स्क्रॉलबार हो:
+
+<CodeGroup>
+  ```javascript javascript
+  .modal-body{
+  height: 500px;
+  overflow: scroll;
+  }
+  ```
+</CodeGroup>
+
+जब कोई उपयोगकर्ता "SELECT A TOKEN" पर क्लिक करता है और मोडल प्रकट होता है तो अब आपका ऐप इस तरह दिखना चाहिए:
+
+![1600](/images/01aff6a-Untitled_27.png "Untitled (27).png")
+
+<Info>
+  आपको इस सूची में ETH नहीं मिलेगा क्योंकि यह वास्तव में ERC20 टोकन नहीं है। रैप(wrap) करने की ज़रूरत है, WETH। [WETH के बारे में और जानें](https://weth.io/)। कुछ ऐप्स में सभी विकल्प दिखाने के बजाय क्यूरेट की गई सूची होती है।
+</Info>
+
+#### भाग 4 के लिए अंतिम कोड
+
+<CodeGroup>
+  ```shell shell
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-4
+  ```
+</CodeGroup>
+
+## भाग 5: स्वैप बॉक्स में चयनित टोकन छवि(image) और प्रतीक(symbol) प्रदर्शित करें
+
+अब जबकि हमारे पास उपयोगकर्ता के चयन के लिए टोकन की एक सूची है, हम स्वैप बॉक्स में चयनित टोकन छवि और प्रतीक प्रदर्शित करना चाहते हैं।
+
+सबसे पहले, एक `selectToken()` फ़ंक्शन बनाएं। अज्ञात(एनोनिमस) फ़ंक्शन का उपयोग करके `listAvailableTokens()` के नीचे से इसे कॉल करें जब टोकन इंगित(इंडीकेट) करने वाली div पंक्तियों(rows) में से एक को क्लिक किया जाए:
+
+<CodeGroup>
+  ```javascript javascript
+  async function listAvailableTokens(){
+    // ... बाकी का फंक्शन
+      div.innerHTML = html;
+      // टोकन पर क्लिक करने पर selectToken() कॉल किया जाएगा
+      div.onclick = () => {
+        selectToken(tokens[i]);
+      };
+      parent.appendChild(div);
+    }
+  }
+  ```
+</CodeGroup>
+
+इससे पहले कि हम `selectToken()` फ़ंक्शन बनाएं, हमें यह ट्रैक करने का एक तरीका चाहिए कि हम टोकन चयनकर्ता के किस तरफ हैं। क्या हम from-side से हैं या to-side से?
+
+इसे ट्रैक करने के लिए, `index.js` में कोड के शीर्ष पर एक ग्लोबल `currentTrade` ऑब्जेक्ट और `currentSelectSide` वैरिएबल बनाएं:
+
+<CodeGroup>
+  ```javascript javascript
+  // index.js का शीर्ष
+  let  currentTrade = {};
+  let  currentSelectSide;
+  ```
+</CodeGroup>
+
+अब जब हमारे पास यह ग्लोबल ऑब्जेक्ट है, तो हमें यह ट्रैक करना चाहिए कि उपयोगकर्ता from-side पर है या to-side पर यह इस पर निर्भर करता है कि किस token selector(टोकन चयनकर्ता) पर क्लिक किया गया है। इस एनोनिमस फ़ंक्शन को सेट करें जो `"from"` पास करता है जब `"from_token_select"` को index.js के निचले भाग से चुना जाए:
+
+<CodeGroup>
+  ```javascript javascript
+  document.getElementById("from_token_select").onclick = () => {
+  openModal("from");
+  };
+  ```
+</CodeGroup>
+
+और निम्नलिखित कोड के साथ `openModal()` अपडेट करें:
+
+<CodeGroup>
+  ```javascript index.js
+  // index.js
+  function  openModal(side){
+      // स्टोर करें कि क्या उपयोगकर्ता ने एक टोकन को फ्रॉम(from) साइड पर चुना है या टू(to) पर
+      currentSelectSide = side;
+      document.getElementById("token_modal").style.display = "block";
+  }
+  ```
+</CodeGroup>
+
+अब, एक `selectToken()` फंक्शन बनाएं और निम्न कोड जोड़ें:
+
+<CodeGroup>
+  ```javascript javascript
+  function  selectToken(token) {
+      // जब कोई टोकन चुना जाता है, तो स्वचालित रूप से मोडल को बंद कर दें
+      closeModal();
+      // ट्रैक करें कि हम ट्रेड(व्यापार) के किस तरफ हैं - from/to
+      currentTrade[currentSelectSide] = token;
+      // चयनित टोकन लॉग करें
+      console.log("currentTrade:" , currentTrade);
+  }
+  ```
+</CodeGroup>
+
+प्रोग्राम चलाएं और जांचें कि `currentTrade` ठीक से लॉगिंग कर रहा है।
+
+![1306](/images/87cb776-Untitled_28.png "Untitled (28).png")
+
+अब छवि और टोकन प्रतीकों(symbols) को प्रदर्शित करने के लिए।
+
+सबसे पहले, `index.html` में `"from_token_img"`, `"from_token_text"`, `"to_token_img"`, और `"to_token_text"` जोड़ें: `selectToken()` के नीचे एक `renderInterface()` बनाएं और इसे `selectToken()` के अंदर से कॉल करें।
+
+<CodeGroup>
+  ```javascript javascript
+  < !--- SELECT A TOKEN टेक्स्ट को बदलें --->
+  < !-- टोकन से/From token -->
+  <div  class="swapbox_select token_select"  id="from_token_select">
+      <img  class="token_img"  id="from_token_img">
+      <span  id="from_token_text"></span>
+  </div>
+
+  < !-- टोकन के लिए/To token  -->
+  <div  class="swapbox_select token_select"  id="to_token_select">
+      <img  class="token_img"  id="to_token_img">
+      <span  id="to_token_text"></span>
+  </div>
+  ```
+</CodeGroup>
+
+`index.html` में `renderInterface()` के अंदर, हम संबंधित एलिमेंटस को कॉल करके from/to(से/तक) टोकन छवियों और प्रतीक टेक्स्ट सेट करेंगे। याद करें कि logoURI और प्रतीक(symbol) दोनों ही कॉइनगेकोएपीआई(CoinGeckoAPI) द्वारा लौटाए गए हैं:
+
+<CodeGroup>
+  ```javascript javascript
+  function selectToken(token) {
+    closeModal();
+    currentTrade[currentSelectSide] = token;
+    console.log("currentTrade:" , currentTrade);
+    renderInterface();
+  }
+
+  // छवि और टोकन प्रतीकों को प्रदर्शित करने वाला फंक्शन 
+  function renderInterface(){
+    if (currentTrade.from) {
+      console.log(currentTrade.from)
+      //  टोकन छवि  सेट करें
+      document.getElementById("from_token_img").src = currentTrade.from.logoURI;
+       // from टोकन प्रतीक टेक्स्ट सेट करें
+      document.getElementById("from_token_text").innerHTML = currentTrade.from.symbol;
+    }
+    if (currentTrade.to) {
+        // to टोकन छवि को सेट करें
+      document.getElementById("to_token_img").src = currentTrade.to.logoURI;
+        // to टोकन प्रतीक टेक्स्ट को सेट करें
+      document.getElementById("to_token_text").innerHTML = currentTrade.to.symbol;
+    }
+  }
+  ```
+</CodeGroup>
+
+अंत में, `renderInterface()` फ़ंक्शन के आखिर में `selectToken()` जोड़ें:
+
+<CodeGroup>
+  ```javascript javascript
+  function  selectToken(token) {
+      closeModal();
+      currentTrade[currentSelectSide] = token;
+      console.log("currentTrade:" , currentTrade);
+      // स्वैपबॉक्स(swapbox) में टोकन छवि और प्रतीक प्रदर्शित करें
+  }
+  ```
+</CodeGroup>
+
+उपयोगकर्ता अब from और to टोकंस दोनों का चयन कर सकते हैं और साथ ही उस राशि को इनपुट कर सकते हैं जिसे वे हमारे डीऐप में ट्रेड करना चाहते हैं!
+
+![609](/images/3918c84-Untitled_29.png "Untitled (29).png")
+
+#### भाग 5 के लिए अंतिम कोड
+
+<CodeGroup>
+  ```text text
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-5
+  ```
+</CodeGroup>
+
+## **भाग 6: मूल्य प्राप्त करें**
+
+अब जब उपयोगकर्ता अपने टोकंस का चयन कर सकते हैं और ट्रेड के लिए टोकन राशि निर्धारित कर सकते हैं, आइए उन्हें सर्वोत्तम मूल्य खोजने में मदद करें!
+
+डीफाई ट्रेडिंग डीऐपस (DeFi trading dapps) में एक सामान्य कार्यक्षमता जो वास्तव में सहज है, स्वचालित रूप से एक मूल्य उत्पन्न करना जब राशि दर्ज की जाती है और उपयोगकर्ता का कर्सर राशि बॉक्स से फोकस हटाता है। इसे यहां [Matcha.xyz](https://matcha.xyz/) में देखें।
+
+WETH मूल्य दर्ज करने के बाद DAI मूल्य स्वचालित रूप से उत्पन्न होता है: ऐसा करने के लिए, हम `onblur` नामक एक जावास्क्रिप्ट इवेंट को सुन(या लिसन कर) सकते हैं। जब उपयोगकर्ता `"from_amount"` एलिमेंट से फ़ोकस हटाता है, तो इसका उपयोग यहां करें:
+
+![312](/images/65b1778-Untitled_30.png "Untitled (30).png")
+
+<CodeGroup>
+  ```javascript javascript
+  // index.js में सबसे नीचे इसे जोड़ें
+  document.getElementById("from_amount").onblur = getPrice;
+  ```
+</CodeGroup>
+
+### /price vs /quote Endpoints(/कीमत vs /उद्धरण एन्डपॉइंट्स)
+
+अब हमें `getPrice()` नामक एक फ़ंक्शन बनाने की आवश्यकता है। अंदर, हम [GET /swap/v1/price endpoint](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-price) को कॉल करेंगे।
+
+`/price` लगभग `/quote` के समान है, लेकिन कुछ प्रमुख अंतरों के साथ। `/price` एक ट्रांसएक्शन वापस(return) नहीं करता है जिसे ऑन-चेन सबमिट किया जा सके; यह बस हमें वही(same) जानकारी प्रदान करता है। इसे `/quote` के "read-only" संस्करण/वर्जन के रूप में सोचें।
+
+यह इसलिए भी महत्वपूर्ण है क्योंकि `/quote` **उस ऑर्डर को वापस लौटाता है** जिसमें एक **मार्केट मेकर** ने **अपनी संपत्ति को प्रतिबद्ध किया** है। इसलिए यदि हम **`/quote`** को **बहुत अधिक** **पिंग** करते हैं जब हम वास्तव में केवल कीमत मांग रहे होते हैं और **ऑर्डर जमा करने के लिए तैयार नहीं होते** हैं, तो यह **सिस्टम को अवरुद्ध(clog) कर सकता है**!
+
+यहां GET HTTP `/price` रिक्वेस्ट का एक उदाहरण दिया गया है। कॉल लगभग `/quote` के समान है: `https://api.0x.org/swap/v1/price?sellToken=ETH&buyToken=DAI&sellAmount=1000000000000000000`
+
+<Info>
+  यह एपीआई एन्डपॉइंट्स इथिरियम (मेननेट) का उपयोग कर रहा है जैसा कि [https://api.0x.org](https://api.0x.org) द्वारा इंगित/पॉइंट किया गया है \ यहां समर्थित नेटवर्क के लिए सभी एपीआई एंडपॉइंट्स की एक सूची है।
+</Info>
+
+इसे हमारे `index.js` में उपयोग करने के लिए, हमें [qs module](https://www.npmjs.com/package/qs) आयात करने की आवश्यकता है। फ़ाइल के शीर्ष पर `require` कथन जोड़ें:
+
+<CodeGroup>
+  ```javascript javascript
+  const  qs = require('qs');
+  ```
+</CodeGroup>
+
+### ब्राउज़र में नोड मॉड्यूलस का उपयोग करने के लिए Browserify करें
+
+अब, क्योंकि हमने `require` का उपयोग करके एक मॉड्यूल इनस्टॉल किया है, यदि हम अपने `index.html` को अभी लोड करने का प्रयास करते हैं तो हमारा ब्राउज़र एरर दिखाएगा। इसे ठीक करने के लिए, [Browserify](https://browserify.org/) इंस्टॉल करें और निचे दिए गए कोड को टर्मिनल में चलाए:
+
+<CodeGroup>
+  ```shell shell
+  npm install -g browserify`
+  ```
+</CodeGroup>
+
+[npm](https://npmjs.org/) के साथ [qs module(क्यूएस मॉड्यूल)](https://www.npmjs.com/package/qs) मॉड्यूल इनस्टॉल करें:
+
+<CodeGroup>
+  ```shell shell
+  npm i qs
+  ```
+</CodeGroup>
+
+अब main.js से शुरू होने वाले सभी आवश्यक मॉड्यूल को `bundle.js` नामक एक फ़ाइल में ब्रौज़रीफ़ाइ(Browserify) कमांड के साथ बंडल करें(नोट: आपके सेटअप के लिए आपको विशिष्ट रूप से `./index.js` और `./bundle.js` के लिए पथों को स्पष्ट रूप से बताने की आवश्यकता हो सकती है)।
+
+<CodeGroup>
+  ```shell shell
+  browserify index.js --standalone bundle -o bundle.js
+  ```
+</CodeGroup>
+
+<Warning>
+  आगे बढ़ते हुए, सुनिश्चित करें कि जब भी आपको index.html सर्व करने की आवश्यकता हो, एक अद्यतन बंडल.js उत्पन्न करने के लिए Browerify कमांड को फिर से चलाएँ
+</Warning>
+
+और `index.html` में स्क्रिप्ट के src को `src=./index.js` से `src=./bundles.js` में अपडेट करना सुनिश्चित करें:
+
+<CodeGroup>
+  ```javascript javascript
+  < !-- सुनिश्चित करें कि आपकी स्क्रिप्ट अब सही फ़ाइल से स्रोत है --> 
+  <script  src="./bundle.js"  type="text/javascript"></script>
+  ```
+</CodeGroup>
+
+### getPrice () फ़ंक्शन बनाएँ
+
+`index.js` के अंदर, `getPrice()` बनाएं। हम इस फ़ंक्शन में विभिन्न अनुभागों को विभाजित करेंगे और फिर अंत में एक पूर्ण फ़ंक्शन कोड स्निपेट दिखाएंगे।
+
+हम एक `if` स्टेटमेंट जोड़ते हैं क्योंकि हम केवल `/price` क्वेरी चलाना चाहते हैं यदि from और to टोकन दोनों का चयन किया गया है और साथ ही एक from टोकन राशि भी भरी गई है। हम उपयोगकर्ता से इनपुट की गई `amount` भी प्राप्त करते हैं और इसे 10 टोकन से दशमलव संख्या की घात से गुणा करते हैं। । उदाहरण के लिए, यदि उपयोगकर्ता इनपुट करता है कि वे 1 WETH को ट्रेड करना चाहते हैं, तो WETH में 18 दशमलव स्थान हैं। WETH की सबसे छोटी इकाई wei(वे) है। इसलिए वे जिस राशि को ट्रेड करना चाहते हैं वह है (1 x 10 की घात 18) wei(वे)। आप [यहां](https://etherscan.io/token/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) Profile summary(प्रोफ़ाइल सारांश) के अंतर्गत EtherScan पर देखकर दशमलव स्थानों की दोबारा जांच कर सकते हैं।
+
+<CodeGroup>
+  ```javascript javascript
+  async  function  getPrice(){
+      console.log("Getting Price");
+      // from token, to token, और from token amount भरे जाने पर ही मूल्य प्राप्त करें 
+      if (!currentTrade.from || !currentTrade.to || !document.getElementById("from_amount").value) return;
+      // amount(राशि) की गणना टोकन की सबसे छोटी आधार इकाई(base unit) से की जाती है। हम इसे (from amount) x (दशमलव स्थानों की संख्या की घात 10) से गुणा करके प्राप्त करते हैं।
+      let  amount = Number(document.getElementById("from_amount").value * 10 ** currentTrade.from.decimals);
+      ...
+  }
+  ```
+</CodeGroup>
+
+इसके बाद, `getPrice()` के अंदर हम अपना params(पैरमस) सेट करेंगे और उन्हें अपने प्राइस कोट में भरेंगे:
+
+<CodeGroup>
+  ```javascript javascript
+  async  function  getPrice(){
+  ...
+  const params = {
+      sellToken: currentTrade.from.address,
+      buyToken: currentTrade.to.address,
+      sellAmount: amount,
+    }
+    // स्वैप मूल्य प्राप्त(fetch) करें।
+    const response = await fetch(
+      `https://api.0x.org/swap/v1/price?${qs.stringify(params)}`
+      );
+  ...
+  }
+  ```
+</CodeGroup>
+
+और अंत में, response(रिस्पांस) वापस आने के बाद, हम JSON को पार्स(parse) कर देंगे। JSON ऑब्जेक्ट में `buyAmount` और `estimateGas` के लिए key/value पेअर शामिल हैं जिन्हें हम यूआई में उचित रूप से `"to_amount"` और `"gas_estimate"` html एलिमेंटस में सीधे पॉप्युलेट कर सकते हैं:
+
+<CodeGroup>
+  ```javascript javascript
+  async  function  getPrice(){
+  ...
+      // JSON रिस्पांस की प्रतीक्षा(await) करें और पार्स करें
+      swapPriceJSON = await  response.json();
+      console.log("Price: ", swapPriceJSON);
+      //यूआई में buy Amount और estimated gas को भरने के लिए लौटाए गए मूल्यों का उपयोग करें
+      document.getElementById("to_amount").value = swapPriceJSON.buyAmount / (10 ** currentTrade.to.decimals);
+      document.getElementById("gas_estimate").innerHTML = swapPriceJSON.estimatedGas;
+  ...
+  }
+  ```
+</CodeGroup>
+
+अब इसे चलाने के लिए, Browserify कमांड को फिर से चलाना सुनिश्चित करें ताकि अपडेटेड `bundle.js` को उत्पन्न किया जा सके।
+
+आपकी परियोजना को अब to-amount और EstimatedGase(अनुमानित गैस) को स्वतः भर देना चाहिए!
+
+![598](/images/af39914-Untitled_31.png "Untitled (31).png")
+
+#### भाग 6 के लिए अंतिम कोड
+
+<CodeGroup>
+  ```shell shell
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-6
+  ```
+</CodeGroup>
+
+## भाग 7. Quote(उद्धरण) प्राप्त करें
+
+अब उद्धरण सेटअप प्राप्त करने के लिए!
+
+यहाँ जो बचा है उसके लिए गेमप्लान है:
+
+* ✅ मेटामास्क कनेक्ट होने पर ही "swap" बटन को सक्षम करें
+* ⚪ उद्धरण(quote) प्राप्त करने के लिए उपयोगकर्ता के मेटामास्क खाते के पते का उपयोग करें
+* ⚪ एक टोकन भत्ता(token allowance) निर्धारित करें
+* ⚪ स्वैप/swap करें
+
+हमने ऊपर भाग (2. मेटामास्क से कनेक्ट करें) में पहला चरण पूरा कर लिया है। आइए उद्धरण प्राप्त करने के लिए एक फ़ंक्शन बनाएं।
+
+**getQuote() - उद्धरण प्राप्त करने के लिए उपयोगकर्ता के मेटामास्क खाते के पते का उपयोग करें**
+
+यह फ़ंक्शन `getPrice()` के समान होगा, केवल अंतर यह है कि हम एक `takerAddress` पास करेंगे, जो कि वह पता है जो उद्धरण भरेगा। हमारे मामले में, यह हमारा मेटामास्क खाता है। आप [यहां](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote#request) `takerAddress` पैरामीटर के बारे में अधिक पढ़ सकते हैं।
+
+हम `getPrice()` कोड को कॉपी और पेस्ट करेंगे और `getQuote()` में निम्नलिखित संशोधन करेंगे ताकि takerAddress पास और सेट कर सकें:
+
+<CodeGroup>
+  ```javascript javascript
+  // index.js
+
+  // /swap/v1/quote का उपयोग करके quote(उद्धरण) प्राप्त करने का फंक्शन। हम takerAddress के पते के रूप में उपयोग करने के लिए उपयोगकर्ता के मेटामास्क खाते को पास करेंगे
+  async function getQuote(account){
+    console.log("Getting Quote");
+
+    if (!currentTrade.from || !currentTrade.to || !document.getElementById("from_amount").value) return;
+    let amount = Number(document.getElementById("from_amount").value * 10 ** currentTrade.from.decimals);
+
+    const params = {
+      sellToken: currentTrade.from.address,
+      buyToken: currentTrade.to.address,
+      sellAmount: amount,
+      //takerAddress को account(खाते) में सेट करें
+      takerAddress: account,
+    }
+
+    // स्वैप quote(उद्धरण) प्राप्त करें।
+    const response = await fetch(
+      `https://api.0x.org/swap/v1/quote?${qs.stringify(params)}`
+      );
+    
+    swapQuoteJSON = await response.json();
+    console.log("Quote: ", swapQuoteJSON);
+    
+    document.getElementById("to_amount").value = swapQuoteJSON.buyAmount / (10 ** currentTrade.to.decimals);
+    document.getElementById("gas_estimate").innerHTML = swapQuoteJSON.estimatedGas;
+
+    return swapQuoteJSON;
+  }
+  ```
+</CodeGroup>
+
+चरण 2 पूरा हुआ!
+
+* ✅ मेटामास्क कनेक्ट होने पर ही "swap" बटन को सक्षम करें
+* ✅ उद्धरण(quote) प्राप्त करने के लिए उपयोगकर्ता के मेटामास्क खाते के पते का उपयोग करें
+* ⚪ एक टोकन भत्ता(token allowance) निर्धारित करें
+* ⚪ स्वैप/swap करें
+
+**भाग 7 के लिए अंतिम कोड**
+
+<CodeGroup>
+  ```shell shell
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-7
+  ```
+</CodeGroup>
+
+## भाग 8. टोकन भत्ता निर्धारित करें
+
+**एक टोकन भत्ता(token allowance) निर्धारित करें**
+
+यदि आप चाहते हैं कि कोई third-party(तृतीय पक्ष) आपकी ओर से धन स्थानांतरित(move funds) करे तो टोकन भत्ता आवश्यक है। संक्षेप में, आप उन्हें अपने टोकन स्थानांतरित करने की अनुमति दे रहे हैं।
+
+हमारे मामले में, हम चाहते हैं कि [0x एक्सचेंज प्रॉक्सी स्मार्ट कॉन्ट्रैक्ट](https://docs.0x.org/introduction/0x-cheat-sheet#exchange-proxy-addresses) हमारे लिए हमारे ERC20 टोकन को ट्रेड करे, इसलिए हमें इस कॉन्ट्रैक्ट के लिए एक निश्चित राशि(allowance amount) को अपनी ओर से हमारे ERC20 टोकन को स्थानांतरित करने के लिए स्वीकृत करनी होगी।
+
+इसे करने के लिए क्या आवश्यक है:
+
+(i) web3 ऑब्जेक्ट का उपयोग करके ERC20 टोकन के `approve()` मेथड से जुड़ें**(**कनेक्ट करें) (ii) approval amount को `maxApproval` पर सेट करें (iii) `allowanceTarget` को एक अधिकतम राशि के लिए भत्ता देने के लिए `approve()` का उपयोग करें
+
+**(i) web3 ऑब्जेक्ट का उपयोग करके ERC20 टोकन के approve() विधि से जुड़ें**
+
+सभी ERC20 टोकनस को [approve(address spender, uint256 amount)](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20-approve-address-uint256-) फ़ंक्शन लागू करना आवश्यक हैं। यह फ़ंक्शन `amount` को `spender` के भत्ते(allowance) के रूप में सेट करता है कॉल करने वाले के टोकनस पर (अर्थात इनमें से कितने ERC20 टोकन कॉलर की ओर से तृतीय-पक्ष(third-party) स्थानांतरित कर सकते हैं)।
+
+यह एक बूलियन वैल्यू लौटाता है जो बताता है कि ऑपरेशन सफल हुआ या नहीं।
+
+टोकन भत्तों को सेट करने के बारे में [यहाँ](https://docs.0x.org/0x-api-swap/advanced-topics/how-to-set-your-token-allowances) और पढ़ें।
+
+जैसा कि ऊपर [approve(address spender, uint256 amount)](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20-approve-address-uint256-) फ़ंक्शन में देखा गया है, टोकन भत्ते को कॉल करने के लिए, हमें कुछ चीजों की आवश्यकता है:
+
+* **spender address**(खर्च करने वाला पता)- यह 0x एक्सचेंज प्रॉक्सी स्मार्ट कॉन्ट्रैक्ट एड्रेस होगा। हम इसे JSON रिस्पांस(response) से प्राप्त कर सकते हैं क्योंकि हमारे `/quote` क्वेरी में `allowanceTarget` पैरामीटर लौटाया गया है
+* **amount**(राशि) - हम कॉन्ट्रैक्ट को कितना भत्ता(allowance) देना चाहते हैं? इस मामले में, हम max amount (maxApproval) के साथ demo(डेमो) करेंगे; हालाँकि, यदि संभव हो तो हम केवल वही सेट करने की सलाह देंगे जिसकी आपको आवश्यकता है। इसे लागू करने के तरीके के लिए यहां [यह उदाहरण देखें](https://docs.0x.org/0x-api-swap/guides/swap-tokens-with-0x-api#examples) (संकेत, साप्ताहिक चुनौती, संकेत)
+* ****\*\*\*\*****caller****\*\*\*\*****(कॉलर) - उपयोगकर्ता का मेटामास्क खाता कॉलर का पता होगा (उर्फ takerAddress)
+
+**trySwap() का निर्माण करें**
+
+चलिए `trySwap()` का निर्माण शुरू करते हैं और हम हर टुकड़े को रास्ते में समझाएँगे। हम अंत में पूरा कोड पोस्ट करेंगे।
+
+सबसे पहले, takerAddress प्राप्त करें और इसे `getQuote(address)` में पास करें ताकि हम `/quote` रिक्वेस्ट(request) से उपयोग करने के लिए `swapQuoteJSON` वापस प्राप्त कर सकें:
+
+<CodeGroup>
+  ```javascript javascript
+  // index.js
+  async  function  trySwap(){
+    // हाल ही में उपयोग किए गए खाते का पता, यदि कोई हो, जिसे caller(कॉल करने वाले) को एक्सेस करने की अनुमति है
+    let accounts = await ethereum.request({ method: "eth_accounts" });
+    let takerAddress = accounts[0];
+    // हमारे मेटामास्क वॉलेट में सबसे हाल ही में उपयोग किए गए पते को लॉग करें
+    console.log("takerAddress: ", takerAddress);
+      // इसे खाता param के रूप में getQuote() में पास करें जिसे हमने पहले बनाया था। यह एक JSON ऑब्जेक्ट ट्रेड ऑर्डर लौटाएगा।
+  const  swapQuoteJSON = await  getQuote(takerAddress);
+  }
+  ```
+</CodeGroup>
+
+अब आइए ERC20 टोकन के [approve() मेथड](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20-approve-address-uint256-) को कॉल करें। चूँकि ERC20 के कॉन्ट्रैक्ट मेथड्स के साथ इंटरैक्ट करने की आवश्यकता होगी, इसलिए हमें एक web3 ऑब्जेक्ट सेटअप करने की आवश्यकता है।
+
+हमारे लिए एक ERC20 कॉन्ट्रैक्ट के मेथड के साथ बातचीत(इंटरैक्ट) करने के लिए, एक web3 ऑब्जेक्ट बनाने की आवश्यकता है, विशेष रूप से [web3.eth.Contract](https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#web3-eth-contract):
+
+`const ERC20TokenContract = new web3.eth.Contract(erc20abi, fromTokenAddress);`
+
+इस ऑब्जेक्ट को एक `erc20abi` की आवश्यकता है जो एक erc20 कॉन्ट्रैक्ट का json रिप्रजेंटेशन है। ERC20 स्टैण्डर्ड का पालन करने वाले किसी भी टोकन के साथ बातचीत करने के लिए erc20abi हमारा ब्लूप्रिंट है। यह JSON फॉर्मेट(प्रारूप) में दर्शाया गया है। एक त्वरित(quick) सर्च को एक `erc20abi.json` प्राप्त करना चाहिए क्योंकि यह एक स्टैण्डर्ड है। हम [इसे](https://gist.github.com/veox/8800debbf56e24718f9f483e1e40c35c) इस्तेमाल कर रहे हैं।
+
+ऑब्जेक्ट को उस विशिष्ट टोकन पते की भी आवश्यकता होती है जिसके साथ हम बातचीत करने में रुचि रखते हैं, इस मामले में, यह `fromTokenAddress` है क्योंकि हम चाहते हैं कि तृतीय-पक्ष/third-party (यानी 0x स्मार्ट कॉन्ट्रैक्ट) उस टोकन पर एक्ट/कार्य करे जिससे हम ट्रेड करना चाहते हैं।
+
+निम्नलिखित को `trySwap()` में जोड़ें:
+
+<CodeGroup>
+  ```javascript index.js
+  // index.js
+  async  function  trySwap(){
+  ...
+  // erc20abi को json फॉर्मेट में सेटअप करें ताकि हम नीचे दिए गए approve method/मेथड से इंटरैक्ट कर सकें
+  const erc20abi= [{ "inputs": [ { "internalType": "string", "name": "name", "type": "string" }, { "internalType": "string", "name": "symbol", "type": "string" }, { "internalType": "uint256", "name": "max_supply", "type": "uint256" } ], "stateMutability": "nonpayable", "type": "constructor" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "spender", "type": "address" }, { "indexed": false, "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "Approval", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "from", "type": "address" }, { "indexed": true, "internalType": "address", "name": "to", "type": "address" }, { "indexed": false, "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "Transfer", "type": "event" }, { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "spender", "type": "address" } ], "name": "allowance", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "approve", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "account", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "burn", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "account", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "burnFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "decimals", "outputs": [ { "internalType": "uint8", "name": "", "type": "uint8" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "subtractedValue", "type": "uint256" } ], "name": "decreaseAllowance", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "addedValue", "type": "uint256" } ], "name": "increaseAllowance", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "totalSupply", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "recipient", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "transfer", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "sender", "type": "address" }, { "internalType": "address", "name": "recipient", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "transferFrom", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }]
+      // हम जिस टोकन से ट्रेड करना चाहते हैं, उसके लिए approbal amount(अनुमोदन राशि) निर्धारित करें
+      const fromTokenAddress = currentTrade.from.address;
+      
+      // हमारे लिए ERC20 कॉन्ट्रैक्ट के मेथड के साथ बातचीत/interact करने के लिए, एक web3 ऑब्जेक्ट बनाने की आवश्यकता है। इस web3.eth.Contract ऑब्जेक्ट को एक erc20abi की आवश्यकता होती है जिसे हम किसी भी erc20 abi से प्राप्त कर सकते हैं और साथ ही विशिष्ट/specific टोकन पता जिसके साथ हम इंटरैक्ट करने में रुचि रखते हैं, इस मामले में, यह FromTokenAddrss है
+  // इसके बारे में अधिक पढ़ें: https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#web3-eth-contract
+      const  web3 = new  Web3(Web3.givenProvider);
+      const ERC20TokenContract = new web3.eth.Contract(erc20abi, fromTokenAddress);
+      console.log("setup ERC20TokenContract: ", ERC20TokenContract);
+  ...
+  }
+  ```
+</CodeGroup>
+
+**ii) approval amount(अनुमोदन राशि) को maxApproval पर सेट करें**
+
+इस उदाहरण में, हम आपको अधिकतम approval amount(स्वीकृति राशि) निर्धारित करने का तरीका दिखाएंगे। हम [इस उदाहरण](https://docs.0x.org/0x-api-swap/guides/swap-tokens-with-0x-api#sell-100-dai-for-eth) को देखने का सुझाव देतें हैं यह देखने के लिए कि केवल वही सेट कैसे करें जिसकी आवश्यकता है।
+
+वास्तव में बड़ी संख्या बनाने के लिए हम [BigNumber](https://github.com/MikeMcl/bignumber.js/) लाइब्रेरी का उपयोग करेंगे। फिर हम इसे `maxApproval` वैरिएबल पर सेट करते हैं। इसे index.js में trySwap() के नीचे प्लग करें
+
+<CodeGroup>
+  ```javascript javascript
+  // max approval(अधिकतम स्वीकृति) यहां सेट की गई है। बड़ी संख्या को संभालने और खाते को overflow(अतिप्रवाह) बचने के लिए BigNumber का उपयोग करना (https://github.com/MikeMcl/bignumber.js/)
+      const maxApproval = new BigNumber(2).pow(256).minus(1);
+      console.log("approval amount: ", maxApproval);
+  ```
+</CodeGroup>
+
+**(iii)allowanceTarget देने के लिए जो max amount(अधिकतम राशि) का एक allowance/अलाउंस है** **approve() का उपयोग करें**
+
+अब जब हम approve() मेथड और approval amount(अनुमोदन राशि) के साथ इंटरैक्ट कर सकते हैं, तो चलिए इसका उपयोग allowanceTarget (यानी 0x एक्सचेंज प्रॉक्सी स्मार्ट कॉन्ट्रैक्ट एड्रेस) देने के लिए करते हैं, हमारे ERC20 टोकन खर्च करने के लिए एक allowance**(**भत्ता)। हम JSON ऑब्जेक्ट से सीधे `allowanceTarget` पता प्राप्त कर सकते हैं जो हमारे `/quote` रिस्पांस से लौटाया गया है:
+
+<CodeGroup>
+  ```javascript javascript
+  // index.js
+  async  function  trySwap(){
+  ...
+   // allowance target (0x एक्सचेंज प्रॉक्सी) को हमारे टोकन खर्च करने की अनुमति दें। ध्यान दें कि यह एक txn है जो fees/शुल्क लेता है। 
+    const tx = await ERC20TokenContract.methods.approve(
+      swapQuoteJSON.allowanceTarget,
+      maxApproval,
+    )
+    .send({ from: takerAddress })
+    .then(tx => {
+      console.log("tx: ", tx)
+    });
+  ...
+  }
+  ```
+</CodeGroup>
+
+**इसका परीक्षण करें**
+
+अब इसे टेस्ट रन दें!
+
+* from टोकन चुनें (सुनिश्चित करें कि आपके बटुए (wallet) में पर्याप्त टोकन है, अन्यथा आपको एक त्रुटि/error मिलेगी)
+* एक to टोकन का चयन करें
+* from राशि इनपुट करें (सुनिश्चित करें कि आपके बटुए में कम से कम वह राशि है; अन्यथा quote आगे नहीं बढ़ेगा)
+* अपने मेटामास्क वॉलेट को कनेक्ट करें, "Swap" बटन enabled/सक्षम होना चाहिए
+* यदि आप "Swap" पर क्लिक करते हैं, तो आपको मेटामास्क पॉप-अप दिखना चाहिए, जिसमें पूछा गया हो कि क्या आपने allowanceTarget को मंजूरी देतें है, 0x एक्सचेंज प्रॉक्सी कॉन्ट्रैक्ट का पता: `0xdef1c0ded9bec7f1a1670819833240f027b25eff` !
+
+<Info>
+  इस लेन-देन(transaction) के लिए शुल्क की आवश्यकता है। हस्ताक्षर/sign करने से पहले पढ़ें।
+</Info>
+
+![609](/images/88056d3-Untitled_32.png "Untitled (32).png")
+
+लगभग हो गया!
+
+* ✅ मेटामास्क कनेक्ट होने पर ही "swap" बटन को सक्षम करें
+* ✅ उद्धरण(quote) प्राप्त करने के लिए उपयोगकर्ता के मेटामास्क खाते के पते का उपयोग करें
+* ✅ एक टोकन भत्ता(token allowance) निर्धारित करें
+* ⚪ स्वैप/Swap करें
+
+**भाग 8 के लिए अंतिम कोड**
+
+<CodeGroup>
+  ```shell shell
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-8
+  ```
+</CodeGroup>
+
+## भाग 9. स्वैप/Swap करें
+
+अब अंतिम भाग के लिए, Swap करना। यह हिस्सा बहुत सीधा होना चाहिए क्योंकि जो `/quote` से वापस पास किया गया है वह एक JSON ऑब्जेक्ट है जो हस्ताक्षर होने के लिए और ब्लॉकचैन पर एक वैध transaction/लेनदेन के रूप में जमा होने के लिए तैयार है।
+
+इसे `trySwap()` के अंत में जोड़ें:
+
+<CodeGroup>
+  ```javascript javascript
+  // index.js
+  async  function  trySwap(){
+  ...
+      // Swap/स्वैप करें
+      const  receipt = await  web3.eth.sendTransaction(swapQuoteJSON);
+      console.log("receipt: ", receipt);
+  }
+  ```
+</CodeGroup>
+
+हम सीधे `[/उद्धरण` रिस्पांस]\([https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote#response](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote#response)) पास कर सकते हैं क्योंकि इसमें [web3.eth.setTransaction()](https://web3js.readthedocs.io/en/v1.2.11/web3-eth.html#id84) के लिए *from, to, value, gas, data,* जैसे आदि सभी आवश्यक पैरामीटर शामिल हैं।
+
+अब यदि आप एक टोकन पेअर/जोड़ी चुनते हैं (आपके स्वामित्व वाले from टोकन के साथ), from(से) राशि इनपुट करते हैं, और अपने मेटामास्क वॉलेट को कनेक्ट करते हैं, और "Swap" हिट करते हैं, आपको यह दिखना चाहिए जो आपसे पूछे कि क्या आप ट्रेड करना चाहते हैं! और इसके साथ, आपका ऐप पूरा हो गया है!
+
+![595](/images/7077c43-Untitled_33.png "Untitled (33).png")
+
+* ✅ मेटामास्क कनेक्ट होने पर ही "swap" बटन को सक्षम करें
+* ✅ उद्धरण(quote) प्राप्त करने के लिए उपयोगकर्ता के मेटामास्क खाते के पते का उपयोग करें
+* ✅ एक टोकन भत्ता(token allowance) निर्धारित करें
+* 🥳 स्वैप/Swap करें
+
+यदि आप पूरे प्रवाह(flow) से गुजरते हैं, तो आप token allowance(टोकन भत्ते) को approve/स्वीकृत करने और स्वैप करने में सक्षम होंगे और अपने वॉलेट के अंदर अपने नए swapped/स्वैप्पड टोकन प्राप्त करेंगे!
+
+आप अपनी [ट्रांसक्शन/लेन-देन को इथरस्कैन पर भी देख सकते हैं](https://etherscan.io/tx/0x55501496927394ec5072ce287668e2ad4b6db933391e96c561575ea2256a8aaa)!
+
+![1010](/images/b367197-Untitled_34.png "Untitled (34).png")
+
+#### भाग 9 के लिए अंतिम कोड
+
+<CodeGroup>
+  ```shell shell
+  git clone https://github.com/0xProject/swap-demo-tutorial/tree/main/swap-demo-tutorial-part-9
+  ```
+</CodeGroup>
+
+और अधिक जानें
+
+* [Introduction to 0x](https://docs.0x.org/introduction/introduction-to-0x) (0x का परिचय)
+* [Learn more about 0x API /swap](https://docs.0x.org/0x-api-swap/introduction) (0x एपीआई/स्वैप के बारे में अधिक जानें)
+* [0x API References](https://docs.0x.org/0x-api-swap/api-references#introduction) (0x एपीआई संदर्भ)
+* [Guides and Code Examples to Build with 0x](https://docs.0x.org/introduction/guides) (0x के साथ बनाने के लिए मार्गदर्शिकाएँ और कोड उदाहरण)
+
+## चुनौतियों
+
+अब अपने डीऐप को अगले स्तर पर ले जाने के लिए! अपनी समझ का परीक्षण करने के लिए यहां कुछ चुनौतियाँ दी गई हैं! ([यदि आपको सहायता की आवश्यकता हो तो YouTube वीडियो में दिए गए कुछ संकेत हैं](https://www.youtube.com/watch?v=tVvZ1ivp4X0\&t=1s))
+
+* प्रतिशत ब्रेकडाउन दिखाएं जहां `sources` [response param](https://docs.0x.org/0x-api-swap/api-references/get-swap-v1-quote#response-1) का उपयोग करके एक स्वैप प्राप्त किया गया था (उदाहरण: सबसे अच्छी कीमत 50% Uniswap, 50% Kyber से आती है)
+* वर्तमान में हम निर्धारित करते हैं कि टोकन भत्ता/allowance अधिकतम राशि पर सेट है। इसे सुरक्षित होने के लिए बदलें ताकि उपयोगकर्ता केवल आवश्यक राशि को ही approve/स्वीकृत करे।
+* मूल्य की गणना करें जब कोई उपयोगकर्ता नए "to" टोकन डालता है (अभी यह केवल ऑटो-गणना करता है जब उपयोगकर्ता एक नया "from" टोकन दर्ज करता है)
+* $ में अनुमानित गैस दिखाएं
+* लंबी टोकन सूची को फ़िल्टर करें
+* उपयोगकर्ताओं को chains बदलने और एक उचित quote(उद्धरण) प्राप्त करने की अनुमति दें (याद रखें कि टोकन सूची भी बदल जाएगी!)
+
+इस सप्ताह के लिए अपने Proof of Knowledge (ज्ञान का प्रमाण) एनएफटी प्राप्त करने के लिए, इन चुनौतियों पर काम करने के अपने अनुभव को साझा करें: [अल्केमी यूनिवर्सिटी डिस्कॉर्ड](https://university.alchemy.com/discord)
+
+एक बार जब आप अपनी चुनौती पूरी कर लें, तो ट्विटर पर [@AlchemyLearn](https://twitter.com/AlchemyLearn), [@0xProject](https://twitter.com/0xProject), और लेखक [@hey\_its\_jlin](https://twitter.com/hey_its_jlin) को टैग करके इसके बारे में ट्वीट करें!

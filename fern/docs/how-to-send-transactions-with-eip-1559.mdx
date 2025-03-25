@@ -1,0 +1,278 @@
+---
+title: How to Send Transactions with EIP 1559
+subtitle: A guide for sending transactions using EIP-1559 methods.
+slug: docs/how-to-send-transactions-with-eip-1559
+---
+
+
+The London Hardfork introduced a new EIP that modifies how gas estimation and costs work for transactions on Ethereum.
+
+This tutorial will walk you through both the legacy and new ([EIP-1559](https://blog.alchemy.com/blog/eip-1559)) ways to estimate gas and send transactions. To learn more about EIP-1559, check out [this blog post](https://blog.alchemy.com/blog/eip-1559).
+
+***
+
+## Sending transactions before EIP 1559
+
+Before EIP 1559, when you submitted a transaction you also sent a [`gasPrice`](/reference/eth-gasprice), which is an amount you are offering to pay per gas consumed. You probably called [eth\_estimateGas](/reference/eth-estimategas) and [`eth_gasPrice`](/reference/eth-gasprice) to determine an approximate amount that the transaction was going to cost you.
+
+Once you submitted the transaction, miners could decide to include it or not based on your `gasPrice` bid. Miners would prioritize the highest gas prices.
+
+***
+
+## Sending transactions with EIP 1559
+
+With EIP 1559, it's a similar concept but with a few incentive changes in order to more closely align user and miner interests. The total fee (gas \* gasPrice) will be split into a `baseFee` and a `priorityFee`. Every transaction needs to pay the base fee, which is calculated based on how full the previous block was.
+
+Transactions can also offer the miner a `priorityFee` to incentivize the miner to include the transaction in the block. We won't go into the incentive model here, if you want to dive into that check out [this blog post](https://blog.alchemy.com/blog/eip-1559).
+
+***
+
+## Transactions Examples
+
+### Transaction Before EIP 1559
+
+First, let's send a legacy (non-EIP 1559 transaction). The steps below are:
+
+1. Estimate the gas of our call
+2. Get an estimate on what the price per gas should be
+3. Send the transaction.
+
+This example uses [Alchemy's web3 wrapper](https://github.com/alchemyplatform/alchemy-web3).
+
+<CodeGroup>
+  ```javascript Alchemy's web3.js
+  require("dotenv").config();
+  const AlchemyWeb3 = require("@alch/alchemy-web3");
+
+  const { API_URL_HTTP_PROD_GOERLI, PRIVATE_KEY, ADDRESS } = process.env;
+  const toAddress = "0x31B98D14007bDEe637298086988A0bBd31184523";
+  const web3 = AlchemyWeb3.createAlchemyWeb3(API_URL_HTTP_PROD_GOERLI);
+
+  async function signTx(web3, fields = {}) {
+    const nonce = await web3.eth.getTransactionCount(ADDRESS, 'latest');
+
+    const transaction = {
+     'nonce': nonce,
+     ...fields,
+    };
+
+    return await web3.eth.accounts.signTransaction(transaction, PRIVATE_KEY);
+  }
+
+  async function sendTx(web3, fields = {}) {
+    const signedTx = await signTx(web3, fields);
+
+    web3.eth.sendSignedTransaction(signedTx.rawTransaction, function(error, hash) {
+      if (!error) {
+        console.log("Transaction sent!", hash);
+        const interval = setInterval(function() {
+          console.log("Attempting to get transaction receipt...");
+          web3.eth.getTransactionReceipt(hash, function(err, rec) {
+            if (rec) {
+              console.log(rec);
+              clearInterval(interval);
+            }
+          });
+        }, 1000);
+      } else {
+        console.log("Something went wrong while submitting your transaction:", error);
+      }
+    });
+  }
+
+  function sendLegacyTx(web3) {
+    web3.eth.estimateGas({
+      to: toAddress,
+      data: "0xc6888fa10000000000000000000000000000000000000000000000000000000000000003"
+    }).then((estimatedGas) => {
+      web3.eth.getGasPrice().then((price) => {
+        sendTx(web3, {
+          gas: estimatedGas,
+          gasPrice: price,
+          to: toAddress,
+          value: 100,
+        });
+      });
+    });
+  }
+
+  sendLegacyTx(web3);
+  ```
+</CodeGroup>
+
+Your existing code probably looks somewhat different, but the idea is the same. Here is the output:
+
+<CodeGroup>
+  ```javascript output
+  Transaction sent! 0x8612c1c1a20e2f2512df43f62d3b1f91bfc86c577a72dc1b7d3ad0cc49bb97a8
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  {
+    transactionHash: '0x8612c1c1a20e2f2512df43f62d3b1f91bfc86c577a72dc1b7d3ad0cc49bb97a8',
+    blockHash: '0x930486f72436f6e8203474794f2dbbdee42c57846e848f54e75fd0a02103cea6',
+    blockNumber: 9058813,
+    contractAddress: null,
+    cumulativeGasUsed: 1849069,
+    effectiveGasPrice: '0x3b9aca08',
+    from: '0x52b9234231d1459aaa6a9f79e7b7af7464c4f587',
+    gasUsed: 21000,
+    logs: [],
+    logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    status: true,
+    to: '0x31b98d14007bdee637298086988a0bbd31184523',
+    transactionIndex: 14,
+    type: '0x0'
+  }
+  ```
+</CodeGroup>
+
+### EIP 1559 Transaction Example (Minimal Changes)
+
+The smallest possible change we can make to the original code is to simply remove the `gasPrice` field on the transaction. So our calling code will look like this:
+
+<CodeGroup>
+  ```javascript Alchemy's web3.js
+  function sendMinimalLondonTx(web3) {
+    web3.eth.estimateGas({
+      to: toAddress,
+      data: "0xc6888fa10000000000000000000000000000000000000000000000000000000000000003"
+    }).then((estimatedGas) => {
+      sendTx(web3, {
+        gas: estimatedGas,
+        to: toAddress,
+        value: 100,
+      });
+    });
+  }
+
+  sendMinimalLondonTx(web3);
+  ```
+</CodeGroup>
+
+In this case, Alchemy will fill in reasonable defaults for the new London transaction fields. Notice how we have removed the `getGasPrice` call. The output looks pretty similar:
+
+<CodeGroup>
+  ```javascript output
+  Transaction sent! 0xb49dbe2ae38664f3881c33ad067d30fb27717709d800b0b87fd9d4a57479a775
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  Attempting to get transaction receipt...
+  {
+    blockHash: '0x87ff71d0431cc4e271b44f72a0aa235822c35ee20e8eb8ebaf64916141ce7a91',
+    blockNumber: 9058915,
+    contractAddress: null,
+    cumulativeGasUsed: 583419,
+    effectiveGasPrice: '0x3b9aca08',
+    from: '0x52b9234231d1459aaa6a9f79e7b7af7464c4f587',
+    gasUsed: 21000,
+    logs: [],
+    logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    status: true,
+    to: '0x31b98d14007bdee637298086988a0bbd31184523',
+    transactionHash: '0xb49dbe2ae38664f3881c33ad067d30fb27717709d800b0b87fd9d4a57479a775',
+    transactionIndex: 9,
+    type: '0x0'
+  }
+  ```
+</CodeGroup>
+
+***
+
+## Add `maxPriorityFeePerGas` field only
+
+The closest analogy to the `gas`:`gasPrice` combination is `gas`:`maxPriorityFeePerGas`. Since the baseFee needs to be paid regardless, we can just submit a bid on the "tip" for the miner. Our calling code becomes:
+
+<CodeGroup>
+  ```javascript Alchemy's web3.js
+  function sendOnlyMaxPriorityFeePerGasLondonTx(web3) {
+    web3.eth.estimateGas({
+      to: toAddress,
+      data: "0xc6888fa10000000000000000000000000000000000000000000000000000000000000003"
+    }).then((estimatedGas) => {
+      web3.eth.getMaxPriorityFeePerGas().then((price) => {
+        sendTx(web3, {
+          gas: estimatedGas,
+          maxPriorityFeePerGas: price,
+          to: toAddress,
+          value: 100,
+        });
+      });
+    });
+  }
+
+  sendOnlyMaxPriorityFeePerGasLondonTx(web3);
+  ```
+</CodeGroup>
+
+Note that we have substituted the `web3.eth.getGasPrice()` call in the legacy code with `web3.eth.getMaxPriorityFeePerGas()`. I won't bore you with the output, it looks the same. Check it out here [here](/reference/eth-maxpriorityfeepergas).
+
+***
+
+## Add maxFeePerGas field only (a la [Eth Gas Station](https://ethgasstation.info))
+
+If you are accustomed to using a fee estimator like Eth Gas Station, then, instead of providing only the tip you will provide only the `maxFeePerGas` field, which is the base fee plus tip. You can take the output of your API call to Eth Gas Station or another estimator and plug it in like so:
+
+<CodeGroup>
+  ```javascript Alchemy's web3.js
+  web3.eth.estimateGas({
+    to: toAddress,
+    data: "0xc6888fa10000000000000000000000000000000000000000000000000000000000000003"
+  }).then((estimatedGas) => {
+    ethGasStationCall().then((price) => {
+      sendTx(web3, {
+        gas: estimatedGas,
+        maxFeePerGas: price,
+        to: toAddress,
+        value: 100,
+      });
+    });
+  });
+  ```
+</CodeGroup>
+
+***
+
+## Viewing the baseFee
+
+When you send an EIP 1559 transaction you will *always* be charged the `baseFee`. You can view the baseFee for the current block with:
+
+<CodeGroup>
+  ```javascript Alchemy's web3.js
+  web3.eth.getBlock("pending").then((block) => console.log(block.baseFeePerGas));
+  ```
+</CodeGroup>
+
+Which returns a hex:
+
+<CodeGroup>
+  ```shell shell
+  0x8
+  ```
+</CodeGroup>
+
+***
+
+## What is the difference between `effectiveGasPrice`, `cumulativeGasUsed`, and `gasUsed`?
+
+**`effectiveGasPrice`** is the price per gas at the time of your transaction, so the total gas cost of your transaction is `effectiveGasPrice` \* `gasUsed`. The `effectiveGasPrice` can be calculated by taking the minimum of `(baseFeeForBlock` + `maxTipPerGas)` and `maxFeePerGas`.
+
+**`cumulativeGasUsed`** is the sum of `gasUsed` by this specific transaction plus the `gasUsed` in all preceding transactions in the same block. So if you're looking at the last transaction in a given block, the `cumulativeGasUsed` would be all gas used by the entire block.
+
+**`gasUsed`** is the total amount of gas used by this specific transaction.
+
+***
+
+## Building a more sophisticated estimate of maxPriorityFeePerGas
+
+Alchemy has exposed the [`eth_maxPriorityFeePerGas`](/reference/maxpriorityfeepergas) method so that you can pretty much call that and not worry too much about fee calculations. However, you might want to make your own calculations, similar to how you might currently offer a "low", "medium", and "high" fee (like what [Eth Gas Station](https://ethgasstation.info) offers).
+
+To do this, you can use the [eth\_feeHistory](/reference/eth-feehistory) API, which returns detailed information on historical fees for blocks, allowing you to build a better estimate. We will not go into detail on that here.
+
+**If you're interested in learning more, or have feedback, suggestions, or questions, reach out to us on** [**Discord**](https://alchemy.com/discord)**! Get started with Alchemy today by** [**signing up for free**](https://alchemy.com/?r=affiliate:5494a54b-6ae1-4d33-9016-c331c0dcdc1f)**.**

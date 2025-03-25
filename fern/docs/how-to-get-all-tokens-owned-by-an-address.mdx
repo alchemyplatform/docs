@@ -1,0 +1,573 @@
+---
+title: How to Get All Tokens Owned by an Address
+subtitle: >-
+  Learn how to get balances of all tokens owned by an address using the Alchemy
+  Token API.
+slug: docs/how-to-get-all-tokens-owned-by-an-address
+---
+
+
+<Info>
+  This tutorial uses the **[alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances)** endpoint.
+</Info>
+
+If you just need the script for this tutorial refer to the below Recipe or continue reading for more
+
+💹
+
+Script to get all the tokens owned by an address
+
+Open Recipe
+
+Most dapps, whether they are exchanges, DeFi protocols, wallets, or analytics platforms, require that their users are able to view all their tokens and token balances at one place.
+
+![359](/images/52d3572-4225.png "$4225.png")
+
+Digital asset wallet interface that shows the token balances of multiple cryptocurrencies.
+
+To get all the tokens owned by a wallet on Ethereum, you would typically have to index the entire blockchain since genesis, track all ERC-20 contracts, and compute token balances of wallets.
+
+This process typically requires a massive amount of engineering resources and time.
+
+However, this effort can be bypassed by using [Alchemy's Token API](/reference/token-api) to get the balances of all tokens owned by a wallet address.
+
+### About this Tutorial
+
+***
+
+We will write a simple script in Node to get the balances of the top 100 tokens (by volume) on the Ethereum blockchain using [a free Alchemy developer account](https://alchemy.com/?a=645c54745b) and Alchemy's Token API.
+
+## Creating the Token Balances Script
+
+***
+
+### Step 1: Install Node and npm
+
+In case you haven't already, [install node and npm](https://nodejs.org/en/download/) on your local machine.
+
+Make sure that node is at least **v14 or higher** by typing the following in your terminal:
+
+<CodeGroup>
+  ```shell shell
+  node -v
+  ```
+</CodeGroup>
+
+### Step 2: Create an Alchemy app
+
+***
+
+In case you haven't already, [sign up for a free Alchemy account](https://alchemy.com/?a=645c54745b).
+
+![880](/images/6fad4ae-Alc_signUp.png "Alc_signUp.png")
+
+Alchemy's account dashboard where developers can create a new app on the Ethereum blockchain.
+
+Next, navigate to the [Alchemy Dashboard](https://dashboard.alchemyapi.io/) and create a new app.
+
+Make sure you set the chain to Ethereum and the network to Mainnet.
+
+Once the app is created, click on your app's *View Key* button on the dashboard.
+
+Take note of the **HTTP URL**.
+
+The URL will be in this form: `https://eth-mainnet.g.alchemy.com/v2/xxxxxxxxx`
+
+You will need this later.
+
+***
+
+### Step 3: Create a node project
+
+Let's now create an empty repository and install all node dependencies.
+
+To make requests to the Token API, use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
+
+You can also use `axios` or `fetch` alternatively.
+
+<CodeGroup>
+  ```shell Alchemy Web3 (Recommended)
+  mkdir token-balances && cd token-balances
+  npm init -y
+  npm install --save alchemy-sdk
+  touch main.js
+  ```
+
+  ```shell axios
+  mkdir token-balances && cd token-balances
+  npm init -y
+  npm install --save axios
+  touch main.js
+  ```
+
+  ```shell Fetch
+  mkdir token-balances && cd token-balances
+  npm init -y
+  npm i [email protected]
+  touch main.js
+  ```
+</CodeGroup>
+
+This will create a repository named `token-balances` that holds all your files and dependencies.
+
+Next, open this repo in your favorite code editor.
+
+We will be writing all our code in the `main.js` file.
+
+### Step 4: Get token balances of an address
+
+To get token balances, you will use the `getTokenBalances` method.
+
+This method takes one argument:
+
+1. `DATA`: The wallet address of which we want to get token balances.
+
+Add the following code to the `main.js` file.
+
+<CodeGroup>
+  ```javascript Alchemy SDK (Recommended)
+  // Setup: npm install alchemy-sdk
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  const config = {
+    apiKey: "<-- ALCHEMY API KEY -->",
+    network: Network.ETH_MAINNET,
+  };
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    // Wallet address
+    const address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
+
+    // Get token balances
+    const balances = await alchemy.core.getTokenBalances(address);
+
+    console.log(`The balances of ${address} address are:`, balances);
+  };
+
+  const runMain = async () => {
+    try {
+      await main();
+      process.exit(0);
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+  };
+
+  runMain();
+  ```
+
+  ```javascript Axios
+  const axios = require("axios");
+
+  // Wallet address
+  const address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
+
+  // Alchemy URL --> Replace with your API key at the end
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/<ALCHEMY-API-KEY>`;
+
+  // Data for making the request to query token balances
+  const data = JSON.stringify({
+    jsonrpc: "2.0",
+    method: "alchemy_getTokenBalances",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    params: [`${address}`],
+    id: 42,
+  });
+
+  // config object for making a request with axios
+  const config = {
+    method: "post",
+    url: baseURL,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: data,
+  };
+
+  // Make the request and print the formatted response:
+  axios(config)
+    .then((response) => console.log(response["data"]["result"]))
+    .catch((error) => console.log("error", error));
+  ```
+
+  ```javascript Fetch
+  // importing fetch for making requests
+  const fetch = require("node-fetch");
+
+  // ALCHEMY URL --> Replace with your API Key at the end
+  const url = "https://eth-mainnet.g.alchemy.com/v2/<ALCHEMY-API-KEY>";
+
+  let WETHContractAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+
+  // REQUEST OPTIONS
+  const options = {
+    method: "POST",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({
+      id: 1,
+      jsonrpc: "2.0",
+      method: "alchemy_getTokenMetadata",
+      params: [WETHContractAddress],
+    }),
+  };
+
+  // MAKE THE REQUEST AND PRINT THE RESPONSE
+  fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => console.log(json))
+    .catch((err) => console.error("error:" + err));
+  ```
+</CodeGroup>
+
+Run the script using:
+
+<CodeGroup>
+  ```shell shell
+  node main.js
+  ```
+</CodeGroup>
+
+You should obtain an output that looks something like this:
+
+```
+The balances of 0xd8da6bf26964af9d7eed9e03e53415d37aa96045 address are: {
+  address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
+  tokenBalances: [
+    {
+      contractAddress: '0x000000a1a6cb569ee64e1f8c3529390113e34cf8',
+      tokenBalance: '0x000000000000000000000000000000000000000078b2ef682a5071579d3e6b16'
+    },
+    {
+      contractAddress: '0x0027449bf0887ca3e431d263ffdefb244d95b555',
+      tokenBalance: '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+    }
+```
+
+***
+
+### Step 5: Add metadata and parse API output
+
+The output generated in the previous step is not very human-readable. It only gives us information that tells us the contract address of the token and the balance in its smallest unit.
+
+To get more relevant information about the token such as name, symbol, and the number of decimals, we need to leverage another method called `getTokenMetadata`.
+
+The [alchemy\_getTokenMetadata](/reference/alchemy-gettokenmetadata) method takes a single argument of the contract address and returns data in the following format:
+
+<CodeGroup>
+  ```json gettokenmetadata.json
+  {  
+      decimals: 6,  
+      logo: 'https://static.g.alchemy.com/images/assets/825.png',  
+      name: 'Tether',  
+      symbol: 'USDT'
+  }
+  ```
+</CodeGroup>
+
+We will use this method in conjunction with `getTokenBalances` method, to write code that does the following:
+
+1. Remove all tokens with zero balances.
+2. Loop through all tokens and extract metadata using the `getTokenMetadata` method.
+3. Convert token balances to a human-readable number.
+4. Print the token's name, balance, and symbol to the console.
+
+<Info>
+  The `tokenBalance` returned by the Token API is usually a number with several digits.
+
+  In this case `4929853276` for USDT.
+
+  Every ERC20 token has a metadata information called "[decimals](https://medium.com/@jgm.orinoco/understanding-erc-20-token-contracts-a809a7310aa5)" which denotes the divisibility of a token (ranges from 0 to 18).
+
+  For USDT, the value of "decimals" is 6.
+
+  The response returned by [alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances) is as below.\\
+
+  `tokenBalance = no. of tokens (quantity) * Math.pow(10, 6)`
+
+  Hence, the actual quantity of the USDT token in this case will be
+
+  `4929853276/10^6 = 4,929.853276`
+
+  The same operation needs to be done to obtain the actual quantity for any token.
+
+  We show the calculation in the code below
+</Info>
+
+Replace the contents of `main.js` with the following:
+
+<CodeGroup>
+  ```javascript Alchemy Web3 (Recommended)
+  // Setup: npm install alchemy-sdk
+  import { Alchemy, Network } from "alchemy-sdk";
+
+  const config = {
+    apiKey: "<-- ALCHEMY APP API KEY -->",
+    network: Network.ETH_MAINNET,
+  };
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    // Wallet address
+    const address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
+
+    // Get token balances
+    const balances = await alchemy.core.getTokenBalances(address);
+
+    // Remove tokens with zero balance
+    const nonZeroBalances = balances.tokenBalances.filter((token) => {
+      return token.tokenBalance !== "0";
+    });
+
+    console.log(`Token balances of ${address} \n`);
+
+    // Counter for SNo of final output
+    let i = 1;
+
+    // Loop through all tokens with non-zero balance
+    for (let token of nonZeroBalances) {
+      // Get balance of token
+      let balance = token.tokenBalance;
+
+      // Get metadata of token
+      const metadata = await alchemy.core.getTokenMetadata(token.contractAddress);
+
+      // Compute token balance in human-readable format
+      balance = balance / Math.pow(10, metadata.decimals);
+      balance = balance.toFixed(2);
+
+      // Print name, balance, and symbol of token
+      console.log(`${i++}. ${metadata.name}: ${balance} ${metadata.symbol}`);
+    }
+  };
+
+  const runMain = async () => {
+    try {
+      await main();
+      process.exit(0);
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+  };
+
+  runMain();
+  ```
+
+  ```javascript Axios
+  // importing axios for making requests
+  const axios = require("axios");
+
+  // Wallet address
+  const address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+
+  // Alchemy URL --> Replace with your API key at the end
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/<YOUR-API-KEY>`;
+
+  // Data for making the request to query token balances
+  const data = JSON.stringify({
+    jsonrpc: "2.0",
+    method: "alchemy_getTokenBalances",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    params: [`${address}`],
+    id: 42,
+  });
+
+  // config object for making a request with axios
+  const config = {
+    method: "post",
+    url: baseURL,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: data,
+  };
+
+  async function main() {
+    // fetching the token balances
+    let response = await axios(config);
+    response = response["data"];
+
+    // Getting balances from the response
+    const balances = response["result"];
+
+    // Remove tokens with zero balance
+    const nonZeroBalances = await balances.tokenBalances.filter((token) => {
+      return token.tokenBalance !== "0";
+    });
+
+    console.log(`Token balances of ${address}: \n`);
+
+    // Counter for SNo of final output
+    let i = 1;
+
+    // Loop through all tokens with non-zero balance
+    for (let token of nonZeroBalances) {
+      // Get balance of token
+      let balance = token.tokenBalance;
+
+      // options for making a request to get the token metadata
+      const options = {
+        method: "POST",
+        url: baseURL,
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        data: {
+          id: 1,
+          jsonrpc: "2.0",
+          method: "alchemy_getTokenMetadata",
+          params: [token.contractAddress],
+        },
+      };
+
+      // getting the token metadata
+      const metadata = await axios.request(options);
+
+      // Compute token balance in human-readable format
+      balance = balance / Math.pow(10, metadata["data"]["result"].decimals);
+      balance = balance.toFixed(2);
+
+      // Print name, balance, and symbol of token
+      console.log(
+        `${i++}. ${metadata["data"]["result"].name}: ${balance} ${
+          metadata["data"]["result"].symbol
+        }`
+      );
+    }
+  }
+
+  main();
+  ```
+
+  ```javascript Fetch
+  // importing fetch for making requests
+  const fetch = require("node-fetch");
+
+  // Address of which we want to find token balances
+  let address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+
+  // Alchemy URL for making requests --> Replace with your API Key at the end
+  const url =
+    "https://eth-mainnet.g.alchemy.com/v2/<YOUR-API-KEY>";
+  const options = {
+    method: "POST",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({
+      id: 1,
+      jsonrpc: "2.0",
+      method: "alchemy_getTokenBalances",
+      params: [address],
+    }),
+  };
+
+  async function main() {
+    // fetching the token balances
+    let res = await fetch(url, options);
+    let response = await res.json();
+
+    // Getting balances from the response
+    const balances = response["result"];
+
+    // Remove tokens with zero balance
+    const nonZeroBalances = await balances.tokenBalances.filter((token) => {
+      return token.tokenBalance !== "0";
+    });
+
+    console.log(`Token balances of ${address}: \n`);
+
+    // Counter for SNo of final output
+    let i = 1;
+
+    // Loop through all tokens with non-zero balance
+    for (let token of nonZeroBalances) {
+
+      // Get balance of token
+      let balance = token.tokenBalance;
+
+      // request options for making a request to get tokenMetadata
+      const options = {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          id: 1,
+          jsonrpc: "2.0",
+          method: "alchemy_getTokenMetadata",
+          params: [token.contractAddress],
+        }),
+      };
+
+      // parsing the response and getting metadata from it
+      let res2 = await fetch(url, options);
+      let metadata = await res2.json();
+      metadata = metadata["result"];
+
+      // Compute token balance in human-readable format
+      balance = balance / Math.pow(10, metadata.decimals);
+      balance = balance.toFixed(2);
+
+      // Print name, balance, and symbol of token
+      console.log(`${i++}. ${metadata.name}: ${balance} ${metadata.symbol}`);
+    }
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+Run the script again using:
+
+<CodeGroup>
+  ```shell shell
+  node main.js
+  ```
+</CodeGroup>
+
+You should obtain an output that looks something like this:
+
+```
+Token balances of 0xd8da6bf26964af9d7eed9e03e53415d37aa96045 
+
+1. Tether: 0.10 USDT
+2. USD Coin: 5.00 USDC
+3. WETH: 0.05 WETH
+4. ApeCoin: 1.00 APE
+5. Mirror Protocol: 0.00 MIR
+6. Shiba Inu: 3.14 SHIB
+7. Dai: 764324.64 DAI
+8. Loopring: 1000.32 LRC
+9. SushiSwap: 0.00 SUSHI
+10. Axie Infinity: 0.02 AXS
+11. Ethereum Name Service: 1143.54 ENS
+12. OMG Network: 123638.06 OMG
+13. Basic Attention Token: 17.47 BAT
+14. dYdX: 0.52 DYDX
+15. Mask Network: 1.00 MASK
+16. 1inch Network: 5.00 1INCH
+17. Livepeer: 2.26 LPT
+18. Request: 126.00 REQ
+19. HEX: 100.00 HEX
+```
+
+## Conclusion
+
+***
+
+Congratulations! You now know how to use the [Alchemy Token API](/reference/token-api) to get all tokens and token balances of any address on the Ethereum blockchain.
+
+If you enjoyed this tutorial on how to get all tokens owned by an address, give us a tweet [@AlchemyPlatform](https://twitter.com/AlchemyPlatform), or shoutout feedback to the authors [@rounak\_banik](https://twitter.com/Rounak_Banik) and [@ankg404](https://twitter.com/ankg404)!
+
+Don't forget to join our [Discord server](https://www.alchemy.com/discord) to meet other blockchain devs, builders, and entrepreneurs.
+
+Ready to start using the Alchemy Token API?
+
+[Create a free Alchemy account ](https://alchemy.com/?a=645c54745b)and share your project with us!

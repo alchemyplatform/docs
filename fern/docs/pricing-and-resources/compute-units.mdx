@@ -1,0 +1,17 @@
+_Check out [Compute Unit Costs](ref:compute-unit-costs) for a breakdown of costs for each method._
+
+# What are Compute Units?
+
+Compute units are a measure of the total computational resources your apps are using on Alchemy. You can think of this as how you would pay Amazon for compute usage on AWS. Some queries are lightweight and fast to run (e.g., eth_blockNumber) and others can be more intense (e.g., large eth_getLogs queries). Each method is assigned a quantity of compute units, derived from global average durations of each method.
+
+# Why use Compute Units?
+
+We're obsessed with providing the most developer-friendly experience across our platform, and this doesn't stop at pricing. Pricing on compute units allows us to provide developers with the most fair and transparent pricing possible. No more over-paying for simple requests, you only pay for what you use, period.
+
+# What are CUPS (Compute Units Per Second)?
+
+Each application has reserved dedicated [Throughput](ref:throughput), measured in Compute Units per Second. Applications can greatly exceed their dedicated throughputs based off of elastic demand in our system.
+
+Since each request is weighted differently, we base this on the total compute units used rather than the number of requests. For example, if you send one eth_blockNumber (10 CUs), two eth_getLogs (75 CUs), and two eth_call(26 CUs) requests in the same second, you will have a total of 212 CUPS. Note that even if your application limit is 200 CUPS, this throughput will likely be allowed still by the system.
+
+If you are experiencing throughput errors, or want create a more robust and reliable experience for your users, we recommend [implementing retries](ref:throughput).
