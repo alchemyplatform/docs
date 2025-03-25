@@ -1,0 +1,82 @@
+---
+title: Best Practices for Key Security and Management
+subtitle: Learn about the best practices for security and management of your keys.
+slug: docs/best-practices-for-key-security-and-management
+---
+
+
+This guide is dedicated to key security and management while working with APIs. We'll discuss the different methods to authenticate your API requests, their levels of security and ease of use, and provide some best practice recommendations.
+
+## API Key Authentication Methods
+
+![](/images/ec60f77-visual.png)
+
+There are three different methods to authenticate your API requests using Alchemy:
+
+1. **Using API Key in URL (Path Parameter)**: This is the easiest method to use, but it is also the least secure. The API key is directly included in the request URL, which makes it vulnerable to exposure in server logs, browser history and cached data. An example of URL based request is:
+
+   <CodeGroup>
+     ```javascript cURL
+     curl -X POST https://eth-mainnet.g.alchemy.com/v2/demo \
+     -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
+     ```
+   </CodeGroup>
+
+2. **[Using API Key in Request Header](/docs/how-to-use-api-keys-in-http-headers)**: This method offers enhanced security compared to including the API key in the URL. The API key is embedded within HTTP `Authorization` header as a bearer token, it reduces the security risk as most logging libraries strip the `Authorization` header and browsers do not log headers to history. To learn more about how this approach works and how to implement it, check out our guide on [sending header-based API requests](/docs/how-to-use-api-keys-in-http-headers). Below is an example request using this method:
+
+   <CodeGroup>
+     ```javascript cURL
+     curl -X POST https://eth-mainnet.g.alchemy.com/v2/ \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer demo" \
+     -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
+     ```
+   </CodeGroup>
+
+3. **[Using JWT Tokens](/docs/how-to-use-jwts-for-api-requests)**: JSON Web Tokens (JWTs) are a more secure and flexible method for authorizing API requests. They provide the ability to generate an unlimited number of keys and set custom expiration periods. However, they are also the most difficult to implement and require running your own backend server. To learn about how this approach works and how to implement it, check out our guide on [using JWT tokens for API requests](/docs/how-to-use-jwts-for-api-requests). Below you can find an example request using JWT:
+
+   <CodeGroup>
+     ```javascript cURL
+     curl -X POST https://eth-mainnet.g.alchemy.com/v2/ \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjAxZDFlMTZiLTNlYTEtNDI3NC04NDFiLWJlMDZhYzVlMTM0YiJ9.eyJpYXQiOjE2OTA5MDM5ODYsImV4cCI6MTY5MDkwNzU4Nn0.fBwFry4kC9W3rCLO-tZOvMZR3B5QZf9Y7Rn2nxfB0Rw1Qmq893ymZgWjEuylSHEN2EVbr40AICBSoigGsqseWmZ11WHxT-nBTqWcV5FP9IiAocaJLXa3xO_RQD4R0NyoHU_vpv1fFrj2LNjJm2sFDSu4y2Gn2W2wRBDSL8C7jVE9OqZ3sSgmmoIpwFWrU74cPnDmygBA2I-_x1G30pI74Ha1Ea3AsFxsipoWxrj_7UISYviGKbxzy_U3TzGIWDmG_gJHXy0hiZXvi6iYlh-3x6VfQFDx5_J-zx8k48ER4hi31EroB_vSjM0YGV_KUXWj2PBOsy65o4RnkQ5pgmPy3g" \
+     -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
+     ```
+   </CodeGroup>
+
+***
+
+## Best Option Based on Situation
+
+Different situations call for different methods of API key use:
+
+* **Frontend Exposure (e.g., DApp UI)**: If you are exposing keys to the frontend, it's better to use JWTs with very short expiration periods. JWTs reduce the lifetime of validity in the frontend by enabling backends to push new keys regularly. This means that even if a key is stolen, it will expire quickly.
+
+* **Backend Service Use**: If you are using the key in a backend service where it won't be exposed, the minimum security recommendation is to use API keys in the request headers. Headers offer better security than URLs, as many servers log URLs by default but do not log headers.
+
+***
+
+## Key Rotation
+
+Key rotation is an important part of secure key management:
+
+**JWTs**: When using JWTs, you need to rotate the tokens before they expire. If you don't, your project will stop working when the token expires.
+
+**API Keys**: With API keys, if you suspect that your key has been leaked, you should immediately generate a new one. Regardless of leakage suspicion, it is recommended to rotate the API key annually as a best practice.
+
+***
+
+## JWT Expiration Times
+
+The expiration time of JWTs depends on the project and the desired level of security. In general, shorter expiration times increase the security of your JWTs. This is because even if a token is stolen, it will become useless after a short period of time. However, shorter expiration times also mean you will need to manage frequent token rotations.
+
+***
+
+## Using Proper Permissions
+
+When creating an API key through the security console, it's important that you assign proper permissions and an expiry date for your API key. For example, if you are creating an API key that will only be used for making JSON-RPC & NFT API requests, only select that particular permission, so it cannot be used for any other activity. It's also recommended to set an expiry date which will force you to rotate the key after the expiration period.
+
+![](/images/a452d0e-image.png)
+
+By understanding these best practices for key security and management, you can make better decisions about how to secure your API keys and manage them effectively. Remember, the goal is to choose the right balance between convenience and security that suits your specific needs.

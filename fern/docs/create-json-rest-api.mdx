@@ -1,0 +1,204 @@
+---
+title: How to create a JSON REST API for Ethereum
+subtitle: >-
+  Use ExpressJS to create a server with endpoints for HTTP verbs. Parse JSON
+  input with  and test with axios library.
+slug: docs/create-json-rest-api
+---
+
+
+Let's create our own **JSON REST API** for [Ethereum](/docs/what-is-ethereum)!
+
+Essentially, this means we'll create a server that will respond to certain HTTP verbs:
+
+* **GET** - Get a resource or a list of resources
+* **POST** - Create a new resource
+* **PUT** - Update a resource
+* **DELETE** - Delete a resource
+
+## Setting Up 📦
+
+Create a new folder for this project. Call it whatever you like!
+
+Once you've created the folder, navigate to it in the terminal and create a `package.json`. You can do so with:
+
+```
+npm init -y
+```
+
+👆🏼 This will create a new `package.json` where we can install all our dependencies. Next, install [expressjs](https://expressjs.com/en/api.html). This library will help us quickly spin up REST endpoints:
+
+```
+npm install express
+```
+
+## The Server 💻
+
+Let's create the server now! Create a new folder inside the project called `server` and add an `index.js` inside of it.
+
+Afterward, your directory structure should look like this:
+
+```
+node_modules
+server
+  index.js
+package.json
+package-lock.json
+```
+
+Now inside the `index.js` file, let's create our REST API. First, let's try to respond to a simple `GET` request.
+
+### The GET Request
+
+Let's get a simple "Hello World" example working. Copy the following code into your `index.js` file:
+
+<CodeGroup>
+  ```javascript javascript
+  const express = require('express');
+  const app = express();
+  const port = 3000;
+
+  app.get('/', (req, res) => {
+    res.send("Hello World");
+  });
+
+  app.listen(port, () => {
+    console.log(`Listening at http://localhost:${port}`);
+  });
+  ```
+</CodeGroup>
+
+👆🏼 This will respond to a `GET` request at the base route `/` with the raw string "Hello World". You can test this out by running the server with `node`:
+
+```
+node index
+```
+
+This should log `"Listening at http://localhost:3000"`. If you go to that [localhost URL](http://localhost:3000) you should find the message "Hello World" waiting for you.
+
+<Info>
+  A tip! Use the [nodemon](https://www.npmjs.com/package/nodemon) package to run your server and you won't need to restart the server every time you change your code. **Nodemon will do this for you!**
+</Info>
+
+Next, let's change what we're returning in `app.get` to be some **resource**:
+
+<CodeGroup>
+  ```javascript javascript
+  const things = [];
+  app.get('/', (req, res) => {
+    res.send(things);
+  });
+  ```
+</CodeGroup>
+
+👆🏼 Now we should return `things` instead of "Hello World". Test it out!
+
+### The POST Request
+
+Next, let's **create a thing**!
+
+First, we'll need to add an endpoint to our server which will take user input to create a new `thing`.
+
+In addition to our `app.get` endpoint, let's add an `app.post` endpoint:
+
+<CodeGroup>
+  ```javascript javascript
+  // be sure to include this line so express will parse JSON input
+  app.use(express.json());
+
+  app.post('/', (req, res) => {
+    things.push(req.body);
+    res.send(things);
+  });
+  ```
+</CodeGroup>
+
+👆🏼 This **POST** endpoint will allow us to take the **body** of the request and push it onto our `things` array. Then it will send a response with all of the `things` included.
+
+<Info>
+  Be sure to include the `app.use` line. This is using [express middleware](http://expressjs.com/en/guide/using-middleware.html) which will know how to properly handle a JSON request.
+</Info>
+
+OK, now we have our **POST** endpoint set up. Let's make a request to our server!
+
+## Making the Request
+
+Next, let's create a new top-level folder called `scripts` and add a `create.js` inside of it. Your directory structure should look like this afterward:
+
+```
+node_modules
+scripts
+  create.js
+server
+  index.js
+package.json
+package-lock.json
+```
+
+Let's install the `axios` library to easily run our POST request:
+
+```
+npm install axios
+```
+
+Inside of this `create.js` let's add the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const newThing = { name: "Thing1" }
+
+  axios.post('http://localhost:3000/', newThing).then((response) => {
+    console.log(response.data);
+  });
+  ```
+</CodeGroup>
+
+👆🏼 Here we are creating a new thing and POSTing it to our server running at port 3000.
+
+For this step, you'll need to keep the server running on port 3000 while also running the `create.js` script. Navigate to the `/scripts` folder in your terminal and run:
+
+```
+node create
+```
+
+Did it work? If it did, you should have created a new thing and received in the response. Run it again, and you get two things! 🎉
+
+## Challenge 1: Customize 🎨
+
+Customize the REST API. Can you turn the `thing` resource into something you would actually want to create a server around?
+
+You could use the dictionary example from our first week, or TODOs, or a game, or virtual currency! Whatever you like, this is *your REST API*!
+
+Be sure to give the resource some additional properties other than a `name`!
+
+## Challenge 2: DELETE Request ⚔️
+
+For this challenge, you will need to implement a **DELETE** method on the API.
+
+The express library has a [delete method](http://expressjs.com/en/4x/api.html#app.delete.method) on the `app` which you can use to create the endpoint on the server.
+
+Then you will want to create a new script that you will use to delete one of the things on the server. Axios also has a [delete method](https://github.com/axios/axios#axiosdeleteurl-config-1) you can use to run the request.
+
+Something to think about: how should you identify the resource? 🤔
+
+Perhaps each resource could have a specific `id` property to identify it by! 💡
+
+<Warning>
+  Every time you restart the server, the variables stored in memory will be re-initialized unless you store it to your file system or some other kind of database.
+</Warning>
+
+## Challenge 3: PUT Request ⚔️
+
+For this challenge, you will need to implement a **PUT** method on the API. The **PUT** method should **update a particular resource**. Once again, you'll want a way to identify which resource you are referring to so the server knows which one to update!
+
+The express library has a [put method](http://expressjs.com/en/4x/api.html#app.put.method) on the `app` which you can use to create the endpoint on the server.
+
+Then you will want to create a new script that you will use to delete one of the things on the server. Axios also has a [put method](https://github.com/axios/axios#axiosputurl-data-config-1) you can use to run the request.
+
+Then you will want to create a new script that you will use to update one of the things on your server.
+
+## Learn More About Ethereum
+
+Alchemy University offers [free web3 development bootcamps that explain Ethereum in-depth](https://university.alchemy.com/ethereum) and help developers master the fundamentals of web3 technology. Sign up for free, and start building today!

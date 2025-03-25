@@ -1,0 +1,171 @@
+---
+title: Setting up an Eth 2.0 Staking Validator with Prysm
+subtitle: >-
+  A quick guide to setting up your Eth2 node or validator on Prysm with Alchemy
+  as your web3 provider.
+slug: docs/setting-up-an-eth-20-staking-validator-with-prysm
+---
+
+
+This guide assumes you have already generated your validator keys and have submitted your initial 32 Eth to the beacon chain. If you have not done so, [please follow this guide](/docs/running-an-eth20-staking-node-or-validator-with-alchemy).
+
+To learn more about Prysm, check out their [Eth2 Documentation](https://docs.prylabs.network/docs/getting-started).
+
+<Info>
+  The instructions below were adopted from the [Prysm Getting Started Guide](https://docs.prylabs.network/docs/mainnet/joining-eth2).
+</Info>
+
+***
+
+## Running an Eth2 node
+
+## 1. Get Prysm
+
+Follow [this guide](https://docs.prylabs.network/docs/install/install-with-script/) to install Prysm using an installation script, or if you prefer [Docker](https://docs.docker.com/get-docker/) check out [these instructions](https://docs.prylabs.network/docs/install/install-with-docker/).
+
+## 2. Connect eth2 node to eth1 node (Alchemy)
+
+During the transition period from eth1 to eth2, beacon nodes will need to monitor the eth1 chain for data. Additionally, eth2 validators are required to "burn" 32 of their ETH into an eth1 smart contract in order to become validators, which requires a connection to an eth1 node.
+
+This is where you can connect your eth2 node to the Alchemy mainnet or Goerli testnet.
+
+All you have to do is specify the `--http-web3provider` flag to your Alchemy HTTP endpoint when running your Prysm node:
+
+### Using the Prysm installation script:
+
+<CodeGroup>
+  ```shell Mainnet
+  ./prysm.sh beacon-chain --http-web3provider=https://eth-mainnet.g.alchemy.com/v2/YOUR-API-KEY
+  ```
+
+  ```shell Testnet
+  ./prysm.sh beacon-chain --http-web3provider=https://eth-goerli.g.alchemy.com/v2/YOUR-API-KEY --pyrmont
+  ```
+</CodeGroup>
+
+### Using Docker:
+
+<CodeGroup>
+  ```shell Mainnet
+  docker run -it -v $HOME/.eth2:/data -p 4000:4000 -p 13000:13000 -p 12000:12000/udp --name beacon-node \
+   gcr.io/prysmaticlabs/prysm/beacon-chain:stable \
+   --datadir=/data \
+   --rpc-host=0.0.0.0 \
+   --monitoring-host=0.0.0.0 \
+   --http-web3provider=https://eth-mainnet.g.alchemy.com/v2/YOUR-API-KEY
+  ```
+
+  ```shell Testnet
+  docker run -it -v $HOME/.eth2:/data -p 4000:4000 -p 13000:13000 -p 12000:12000/udp --name beacon-node \
+   gcr.io/prysmaticlabs/prysm/beacon-chain:stable \
+   --datadir=/data \
+   --rpc-host=0.0.0.0 \
+   --monitoring-host=0.0.0.0 \
+   --http-web3provider=https://eth-mainnet.g.alchemy.com/v2/YOUR-API-KEY
+   --pyrmont
+  ```
+</CodeGroup>
+
+Congrats! Now you've officially started running an eth2 Beacon node! 🎉
+
+***
+
+## Running an eth 2.0 validator
+
+Complete steps 1 and 2 from above.
+
+### For Testnet Validators
+
+If you want to be a validator in the Pyrmont eth2 testnet prior to jumping into the mainnet, you'll still need to stake 32 testnet ETH. You can request testnet ETH by joining the [Prysm discord server](https://discord.com/invite/hmq4y2P) or requesting from a [faucet](https://goerli-faucet.slock.it).
+
+## 1. Follow the [official eth2 onboarding](https://launchpad.ethereum.org/overview)
+
+The Eth2 Launchpad has a [step by step process](https://launchpad.ethereum.org/overview) for establishing your validatorr:
+
+* [**For Eth2 mainnet**](https://launchpad.ethereum.org/overview)
+* [**For Prymont testnet**](https://pyrmont.launchpad.ethereum.org/overview)
+
+## 2. [Import validator accounts into Prysm](https://docs.prylabs.network/docs/mainnet/joining-eth2#step-5-import-your-validator-accounts-into-prysm)
+
+Copy the path to the `validator_keys` folder under the `eth2.0-deposit-cli` directory you created during the onboarding process. For example, if your eth2.0-deposit-cli installation is in your `$HOME` (or `%LOCALAPPDATA%` on Windows) directory, you can then run the following commands for your operating system.
+
+**Using the Prysm installation script:**
+
+<CodeGroup>
+  ```shell Mainnet
+  ./prysm.sh validator accounts import --keys-dir=$HOME/eth2.0-deposit-cli/validator_keys
+  ```
+
+  ```shell Testnet
+  ./prysm.sh validator accounts import --keys-dir=$HOME/eth2.0-deposit-cli/validator_keys --pyrmont
+  ```
+</CodeGroup>
+
+**Using Docker**
+
+<CodeGroup>
+  ```shell Mainnet
+  docker run -it -v $HOME/eth2.0-deposit-cli/validator_keys:/keys \
+   -v $HOME/Eth2Validators/prysm-wallet-v2:/wallet \
+   --name validator \
+   gcr.io/prysmaticlabs/prysm/validator:stable \
+   accounts import --keys-dir=/keys --wallet-dir=/wallet
+  ```
+
+  ```shell Testnet
+  docker run -it -v $HOME/eth2.0-deposit-cli/validator_keys:/keys \
+    -v $HOME/Eth2Validators/prysm-wallet-v2:/wallet \
+    --name validator \
+    gcr.io/prysmaticlabs/prysm/validator:stable \
+    accounts import --keys-dir=/keys --wallet-dir=/wallet --pyrmont
+  ```
+</CodeGroup>
+
+## 3. Run your validator
+
+In a separate terminal window (from your beacon node), start running the validator using the command below:
+
+**Using the Prysm installation script**
+
+<CodeGroup>
+  ```shell Mainnet
+  ./prysm.sh validator
+  ```
+
+  ```shell Testnet
+  ./prysm.sh validator --pyrmont
+  ```
+</CodeGroup>
+
+**Using Docker**
+
+<CodeGroup>
+  ```shell Mainnet
+  docker run -it -v $HOME/Eth2Validators/prysm-wallet-v2:/wallet \
+   -v $HOME/Eth2:/validatorDB \
+   --network="host" --name validator \
+   gcr.io/prysmaticlabs/prysm/validator:stable \
+   --beacon-rpc-provider=127.0.0.1:4000 \
+   --wallet-dir=/wallet \
+   --datadir=/validatorDB
+  ```
+
+  ```shell Testnet
+  docker run -it -v $HOME/Eth2Validators/prysm-wallet-v2:/wallet \
+    -v $HOME/Eth2:/validatorDB \
+    --network="host" --name validator \
+    gcr.io/prysmaticlabs/prysm/validator:stable \
+    --beacon-rpc-provider=127.0.0.1:4000 \
+    --wallet-dir=/wallet \
+    --datadir=/validatorDB \
+    --pyrmont
+  ```
+</CodeGroup>
+
+## 4. Be ready for your validator assignment
+
+Keep both terminal windows running so that your validator can receive tasks and execute validator responsibilities. You should already be aware of all the responsibilities and [staking logistics](https://docs.ethhub.io/ethereum-roadmap/ethereum-2.0/proof-of-stake/#staking-logistics) for being a validator.
+
+You can check the status of your validator using block explorers like [beaconcha.in](https://beaconcha.in).
+
+**You are now officially an Ethereum 2.0 validator, congrats!** 🎉

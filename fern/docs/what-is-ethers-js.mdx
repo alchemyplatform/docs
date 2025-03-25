@@ -1,0 +1,111 @@
+---
+title: What is Ethers.js?
+subtitle: >-
+  Web3 development consists of leveraging resources that empower the development
+  cycle and strengthen your toolkit for building decentralized applications
+  (dApps). This article will introduce you to Ethers.js, a prominent set of
+  tools that interact with the blockchain and accelerate your journey into
+  building dApps.
+slug: docs/what-is-ethers-js
+---
+
+
+Web3 development consists of leveraging resources that empower the development cycle and strengthen your toolkit for building decentralized applications (dApps). This article will introduce you to Ethers.js, a prominent set of tools that interact with the blockchain and accelerate your journey into building dApps.
+
+We’ll also cover the [Alchemy SDK](/reference/alchemy-sdk-quickstart) because it’s built on top of Ethers.js and provides a strict superset of functionality, meaning it provides all the same functionality to Ethers.js, but adds more features. The SDK’s superset of features include [Alchemy’s Enhanced and NFT APIs](/reference/enhanced-apis-overview), robust [WebSockets](/reference/sdk-websockets-endpoints), and quality-of-life improvements.
+
+## What is Ethers.js?
+
+Ethers.js is a compact library designed to enable developers to interact with the Ethereum blockchain. Since its inception, the Ethers JavaScript library has provided features that permit developers to enhance their development.
+
+Available to use with JavaScript and TypeScript, this tiny 284 kb (uncompressed) library provides classes that structure the Application Programming Interface (API) and serve as abstractions for specific components that interact with the blockchain. This includes three important concepts:
+
+* **[Provider](/docs/ethers-js-provider)** - a node provider that grants read and write access to the blockchain.
+* **[Signer](/docs/ethers-js-signer)** - an Ethereum account that allows for transactions to be signed.
+* **[Contract](/docs/ethers-js-contract)** - an Ethers.js object that represents a specific deployed on-chain contract.
+
+Each class of the API plays a vital role in the overall functionality of Ethers.js, so let’s understand and break down how each one works.
+
+### How is Ethers.js different from making JSON-RPC requests?
+
+The primary difference between raw JSON-RPC requests and ethers.js is that standard JSON-RPC requests require a lot of templated code and a generic HTTP library to make requests and receive responses, whereas Ethers.js is a simpler library that allows you to make JSON-RPC requests in JavaScript where each request is a single function call.
+
+The JSON-RPC is a standardized remote procedure call used to interact with the blockchain. It allows for a developer to interact with an Ethereum node via HTTP and Web Sockets. For instance, sending a JSON-RPC request to a node allows you to request the latest block on a blockchain, or the details of a transaction. This is the most popular format to interact with the Ethereum blockchain.
+
+### Ethers.js vs. JSON-RPC Code Comparison
+
+The following is a code comparison to demonstrate the differences between a JSON-RPC request and Ethers.js.
+
+#### JSON-RPC: Input
+
+The JSON-RPC request requires more structure and outputs the result in a specific JSON format.
+
+<CodeGroup>
+  ```javascript javascript
+  import fetch from 'node-fetch'
+  async function main() {
+
+     const req = {
+             method: 'eth_blockNumber',
+             params: [],
+             id: 0,
+             jsonrpc: '2.0',
+         }
+    
+         const url = 'https://eth-mainnet.g.alchemy.com/v2/demo'
+
+     const res = await fetch(url, {method: 'POST', body: JSON.stringify(req), headers: {'Content-Type': 'application/json'}})
+     const data = await res.json()
+     console.log(data)
+  }
+  main().then().catch((err) => console.log(err))
+  ```
+</CodeGroup>
+
+#### JSON-RPC: Output
+
+<CodeGroup>
+  ```json json
+  { jsonrpc: '2.0', id: 0, result: '0xf3ac26' }
+  ```
+</CodeGroup>
+
+#### Ethers.js: Input
+
+The Ether.js example shows limited code (i.e. provides more abstraction) and outputs a specific result.
+
+<CodeGroup>
+  ```javascript javascript
+  const ethers = require("ethers");
+
+  async function blockNum() {
+    const provider = new ethers.providers.AlchemyProvider(null, 'demo')
+    const txn = await provider.send("eth_blockNumber");
+    console.log(txn);
+  };
+
+  blockNum()
+  ```
+</CodeGroup>
+
+#### Ethers.js: Output
+
+<CodeGroup>
+  ```json json
+  0xf3acad
+  ```
+</CodeGroup>
+
+## What is the relationship between ethers.js and the Alchemy SDK?
+
+The [Alchemy SDK](/reference/alchemy-sdk-quickstart) is an extensive, comprehensive and powerful JavaScript SDK built on top of Ethers.js to enable developers to interact with the blockchain while guaranteeing best-in-class node reliability, scalability, and data correctness.
+
+By providing all the similar functionalities offered by Ethers.js, this new web3 developer tool provides additional capabilities such as the Enhanced and NFT APIs, robust WebSockets support, and quality-of-life improvements.
+
+### What makes the Alchemy SDK so special?
+
+The Alchemy SDK compacts all the functionalities into five different namespaces and also supports various Ether.js objects which in turn simplify the entire development process.
+
+For developers who are interested but currently using Ethers.js, you can replace the Ethers.js Provider object with alchemy.core to enable the full support of the Alchemy SDK.
+
+Interested to learn more? Take a look through the [Quickstart](/reference/alchemy-sdk-quickstart) and start building today!

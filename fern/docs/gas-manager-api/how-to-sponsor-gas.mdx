@@ -1,0 +1,99 @@
+Gas fees are a significant barrier to entry for new users of your app. With the Gas Manager, you can remove this barrier by sponsoring gas fees for your users' transactions, allowing users to transact without a holding the native gas token of the chain. 
+
+We make it easy for you to sponsor gas for any transaction: you don’t need to hold any tokens, we front the gas for you and add it to your monthly bill.
+
+## How to sponsor gas on EVM Networks
+
+> 📘 
+> 
+> **Using React or Vanilla JS?** Use our [Account Kit SDK](https://accountkit.alchemy.com/) to create and use wallets. The SDK handles all complexity for you, making development faster and easier. We provide an [SDK](https://github.com/alchemyplatform/aa-sdk) in React, Vanilla Typescript, and (soon) Java.
+
+If you want to use APIs directly, follow these steps.
+
+### 1. Create a Gas Manager Policy
+
+A gas manager policy defines which transactions are eligible for gas sponsorship. You can customize the policy with the following rules:
+
+- **Spending rules**: limit the amount of money or the number of user ops that can be sponsored by this policy
+- **Custom rules**: make a request to your server to verify sponsorship eligibility.
+  - **URL**: the URL the Gas Manager will make a POST request to
+  - **Sponsor on error or timeout**: when selected, the userOp will be sponsored in the event of an error or timeout.  
+    See [Create policy](create-policy)  for details on request payload and expected response.
+- **Allowlist**: restrict wallet addresses that are eligible for sponsorship. The policy will only sponsor gas for UOs that were sent by addresses on this list.
+- **Blocklist**: ban certain addresses from receiving sponsorship under this policy
+- **Sponsorship expiry period**: this is the period for which the Gas Manager signature (paymaster data) will remain valid once it is generated.
+
+To learn more about policy configuration, refer to the guide on [setting up a gas manager policy](doc:setup-a-gas-manager-policy).
+
+Once you have decided on policy rules for your app, create a policy in the [Gas Manager dashboard](https://dashboard.alchemy.com/gas-manager/policy/create/?a=api-docs) or through the [Gas Manager Admin APIs](ref:create-policy).
+
+Now you should have a Gas policy created with a policy id you can use to sponsor gas for your users.
+
+### 2. Get Gas Manager's signature
+
+When sending a userOperation, you can specify the `paymaster` and `paymasterData` fields in the `userOp` object. These fields are related to the signature of the Gas Manager that will sponsor the user operation. 
+
+You can get these fields through [`alchemy_requestGasAndPaymasterAndData`](ref:alchemy-requestgasandpaymasteranddata) using your gas policy id, the API key of the app associated with the policy, and a userOperation. The Gas Manager signature will be generated if and only if the userOperation satisfies the rules defined in your gas policy.
+
+### 3. Send the sponsored userOperation
+
+Once you get the `paymaster` and `paymasterData` fields, you can use them in your userOperation when you call [`eth_sendUserOperation`](ref:eth-senduseroperation). The Gas Manager will pay for the gas of the userOperation when it is mined. 
+
+## How to sponsor gas on Solana
+
+### 1. Create a Gas Manager policy
+
+A gas manager policy defines which transactions are eligible for gas sponsorship. You can customize the policy with the following rules:
+
+- **Spending rules**: limit the amount of money or the number of transactions that can be sponsored by this policy
+- **Custom rules**: make a request to your server to verify sponsorship eligibility.
+  - **URL**: the URL the Gas Manager will make a POST request to
+  - **Sponsor on error or timeout**: when selected, the transaction will be sponsored in the event of an error or timeout. 
+
+> 📘 
+> 
+> To create a Gas Manager policy for Solana, contact us at [account-abstraction@alchemy.com](mailto:account-abstraction@alchemy.com).
+
+### 2. Prepare a Serialized Solana Transaction
+
+Here’s an example of creating a serialized transfer transaction using javascript:
+
+```javascript javasc
+
+const instructions = [
+    solanaWeb3.SystemProgram.transfer({
+      fromPubkey: from,
+      toPubkey: to,
+      lamports: amount,
+    })
+  ];
+
+const recentBlockHash = await connection.getLatestBlockhash();
+  const message = new solanaWeb3.TransactionMessage({
+    payerKey: new solanaWeb3.PublicKey("Amh6quo1FcmL16Qmzdugzjq3Lv1zXzTW7ktswyLDzits"), // Set this to an address different than any other address included in the tx. This field will be updated by the alchemy_requestFeePayer API in Step 3. 
+    recentBlockhash: recentBlockhash,
+    instructions,
+  }).compileToV0Message();
+
+  const transaction = new solanaWeb3.VersionedTransaction(message);
+  const serializedTx = Buffer.from(transaction.serialize()).toString("base64");
+```
+
+- **Notes**:
+  - The `payerKey` field should be set to an address that is different than any other address included in the tx.
+
+### 3. Request gas sponsorship for the Serialized Transaction
+
+To sponsor gas on Solana, 1) the `payerKey` field of the transaction needs to be set to the feePayer wallet that will pay for the gas, 2) the feePayer wallet needs to sign the transaction. 
+
+You can get the `feePayer` address and the feePayer signature through [alchemy_requestFeePayer](ref:alchemy-requestfeepayer) using your gas policy id and the serialized transaction. The Gas Manager will update the `feePayer` and add the signature to the `serializedTransaction` if and only the transaction satisfies the rules defined in your policy.
+
+### 4. Sign and broadcast the Transaction
+
+Here is an example of signing and broadcasting a transaction using javascript:
+
+```javascript
+const tx = VersionedTransaction.deserialize(decodeBase64(serializedTx));
+tx.sign([keypair]);
+const signature = await connection.sendRawTransaction(tx.serialize());
+```

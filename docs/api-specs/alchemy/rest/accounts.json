@@ -1,0 +1,572 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "👤 Smart Wallets",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.g.alchemy.com/signer/v1"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/signup": {
+      "post": {
+        "summary": "Create Wallet",
+        "description": "Enables the creation of a Smart Wallet using Alchemy Signer. It allows applications to authenticate users and facilitate signature operations on their behalf. A Smart Wallet is either an on-chain Modular Account with Alchemy Signer as the owner, a standalone EOA signer managed through Alchemy Signer, or a standalone Solana Wallet managed through the Alchemy Signer.\n",
+        "tags": [
+          "Wallets API Endpoints"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": [
+            "javascript",
+            "curl",
+            "python",
+            "go"
+          ]
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "Optional. Used for user authentication when passkey is not provided. Specifies the user's email address."
+                  },
+                  "passkey": {
+                    "type": "object",
+                    "description": "Optional. Used for authentication when email is not provided. Enables passkey-based authentication.",
+                    "properties": {
+                      "challenge": {
+                        "type": "string",
+                        "description": "A challenge string for passkey authentication."
+                      },
+                      "attestation": {
+                        "type": "object",
+                        "description": "Provides attestation details required for passkey authentication.",
+                        "properties": {
+                          "credentialId": {
+                            "type": "string",
+                            "description": "The credential ID used for attestation."
+                          },
+                          "clientDataJson": {
+                            "type": "string",
+                            "description": "JSON data from the client used for attestation."
+                          },
+                          "attestationObject": {
+                            "type": "string",
+                            "description": "The attestation object received during the authentication process."
+                          },
+                          "transports": {
+                            "type": "array",
+                            "description": "Transport protocols used during attestation.",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "targetPublicKey": {
+                    "type": "string",
+                    "description": "Authentication of a client is done via an HPKE flow that allows the client and TEE to exchange an encrypted bundle without revealing it to a middleman (you, us, or Turnkey). The targetPublicKey is the public key that the client uses to decrypt the shared secret.\n\nSee more in the [Turnkey Docs](https://docs.turnkey.com/embedded-wallets/sub-organization-auth).\n"
+                  },
+                  "expirationSeconds": {
+                    "type": "string",
+                    "description": "Optional. Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).\n"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet creation response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orgId": {
+                      "type": "string",
+                      "description": "The organization ID associated with the user and application, enabling the management of Smart Wallets."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "createAccount"
+      }
+    },
+    "/auth": {
+      "post": {
+        "summary": "Send Auth Email",
+        "description": "Sends a user an email containing a magic link for authentication, allowing them to complete the login process and access their Smart Wallet through a secure, simple email verification method. Developers can customize the appearance and content of the authentication email through Alchemy dashboard to align with their application's branding and user experience requirements.\n",
+        "tags": [
+          "Wallets API Endpoints"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": [
+            "javascript",
+            "curl",
+            "python",
+            "go"
+          ]
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "The email address of the user requesting access. This is where the authentication email, containing the magic link, will be sent.",
+                    "type": "string"
+                  },
+                  "targetPublicKey": {
+                    "type": "string",
+                    "description": "Authentication of a client is done via an HPKE flow that allows the client and TEE to exchange an encrypted bundle without revealing it to a middleman (you, us, or Turnkey). The targetPublicKey is the public key that the client uses to decrypt the shared secret.\n\nSee more in the [Turnkey Docs](https://docs.turnkey.com/embedded-wallets/sub-organization-auth).\n"
+                  },
+                  "expirationSeconds": {
+                    "type": "string",
+                    "description": "Optional. Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).\n"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication email sent successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orgId": {
+                      "description": "The organization ID associated with the user and the application, facilitating the authentication process within the context of the user's application.",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "sendEmailAuth"
+      }
+    },
+    "/whoami": {
+      "post": {
+        "summary": "Authenticate User",
+        "description": "Authenticates a user and returns their identity and wallet information, enabling the application to grant the user access to their Smart Wallet functionalities. This endpoint is used to confirm user authentication via email or passkey, thereby authorizing them to perform actions as the owner of a smart account or to conduct transactions as an EOA signer. It ensures that only authenticated users can access and manage their wallets.\n",
+        "tags": [
+          "Wallets API Endpoints"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": [
+            "javascript",
+            "curl",
+            "python",
+            "go"
+          ]
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stampedRequest": {
+                    "description": "A stamped [Turnkey Whoami Request](https://docs.turnkey.com/api#tag/Sessions/operation/GetWhoami).\n",
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "description": "Generated by the turnkey client, but will be ignored on our end."
+                      },
+                      "body": {
+                        "type": "string",
+                        "description": "JSON stringified request body."
+                      },
+                      "stamp": {
+                        "type": "object",
+                        "description": "A JSON-encoded object containing stamping information.\n",
+                        "properties": {
+                          "stampHeaderName": {
+                            "type": "string",
+                            "description": "For WebAuthN based stamps, this should be `X-Stamp-Webauthn`. For all other stamps, this should be `X-Stamp`.\n"
+                          },
+                          "stampHeaderValue": {
+                            "type": "string",
+                            "description": "The stamp over the request body. See the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps) for information on the format of this value.\n"
+                          }
+                        },
+                        "required": [
+                          "stampHeaderName",
+                          "stampHeaderValue"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "body",
+                      "stamp"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User authentication successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "description": "The authenticated user's email address.",
+                      "type": "string"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "description": "A unique identifier for the authenticated user."
+                    },
+                    "orgId": {
+                      "description": "The organization ID associated with the authenticated user's account.",
+                      "type": "string"
+                    },
+                    "address": {
+                      "type": "string",
+                      "description": "The Ethereum address of the user's signer. Essential for executing transactions and managing the wallet."
+                    },
+                    "solanaAddress": {
+                      "type": "string",
+                      "description": "The Solana address of the user's signer. Required for Solana transactions and wallet management."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "authUser"
+      }
+    },
+    "/lookup": {
+      "post": {
+        "summary": "Get User",
+        "description": "Enables applications to query the existence of a user wallet based on an email address.\n",
+        "tags": [
+          "Wallets API Endpoints"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": [
+            "javascript",
+            "curl",
+            "python",
+            "go"
+          ]
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "The email address of the user to look up. This is used to verify if an associated account exists within the system.",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Query successful. Returns organization ID if an account exists for the provided email address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orgId": {
+                      "description": "The organization ID associated with the user. This ID is returned if an account exists for the given email address. If no account is found, this value will be null. The response is intentionally limited to this information to protect user privacy and security.\n",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getUser"
+      }
+    },
+    "/sign-payload": {
+      "post": {
+        "summary": "Sign Message",
+        "description": "Allows for the signing of arbitrary payloads using the authenticated user's signer. The payload to be signed should be included within the body of a stamped request, ensuring the integrity and authenticity of the message to be signed. This operation is important for executing transactions and interactions on the blockchain that require verified signatures from the user's wallet.\n",
+        "tags": [
+          "Wallets API Endpoints"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": [
+            "javascript",
+            "curl",
+            "python",
+            "go"
+          ]
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stampedRequest": {
+                    "description": "A stamped request that includes the payload to be signed. The payload is part of the stamped request's body, which should conform to the structure outlined in the Turnkey API documentation for signing raw payloads.\n\nBecause users are given wallets for both Ethereum and Solana, it's possible to request signatures for both chains. The following is an example of the payload structure for signing bytes on Ethereum and Solana:\n\nSigning bytes for Ethereum:\n```\n{\n  organizationId: this.user.orgId,\n  type: \"ACTIVITY_TYPE_SIGN_RAW_PAYLOAD_V2\",\n  timestampMs: Date.now().toString(),\n  parameters: {\n    encoding: \"PAYLOAD_ENCODING_HEXADECIMAL\",\n    hashFunction: \"HASH_FUNCTION_NO_OP\",\n    payload: msg,\n    signWith: this.user.address,\n  },\n}\n```\n\nSigning bytes for Solana:\n```\n{\n  organizationId: this.user.orgId,\n  type: \"ACTIVITY_TYPE_SIGN_RAW_PAYLOAD_V2\",\n  timestampMs: Date.now().toString(),\n  parameters: {\n    encoding: \"PAYLOAD_ENCODING_HEXADECIMAL\",\n    hashFunction: \"HASH_FUNCTION_NOT_APPLICABLE\",\n    payload: msg,\n    signWith: this.user.solanaAddress,\n  },\n}\n```\n\nFor more details on the parameters of the request body, see [Turnkey's API Reference](https://docs.turnkey.com/api#tag/Signing/operation/SignRawPayload).\n",
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "description": "Generated by the turnkey client, but will be ignored on our end."
+                      },
+                      "body": {
+                        "type": "string",
+                        "description": "JSON stringified request body."
+                      },
+                      "stamp": {
+                        "type": "object",
+                        "description": "A JSON-encoded object containing stamping information.\n",
+                        "properties": {
+                          "stampHeaderName": {
+                            "type": "string",
+                            "description": "For WebAuthN based stamps, this should be `X-Stamp-Webauthn`. For all other stamps, this should be `X-Stamp`.\n"
+                          },
+                          "stampHeaderValue": {
+                            "type": "string",
+                            "description": "The stamp over the request body. See the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps) for information on the format of this value.\n"
+                          }
+                        },
+                        "required": [
+                          "stampHeaderName",
+                          "stampHeaderValue"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "body",
+                      "stamp"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message signing successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "signature": {
+                      "type": "string",
+                      "description": "The signature generated for the specified payload."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "signMessage"
+      }
+    },
+    "/account/authenticator": {
+      "post": {
+        "summary": "Register New Authenticator",
+        "description": "Enables users to register a new authenticator with their wallet, supporting enhanced security and multi-device accessibility. Currently, this functionality supports adding a new passkey as an authenticator, facilitating secure login across different devices.\n",
+        "tags": [
+          "Wallets API Endpoints"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": [
+            "javascript",
+            "curl",
+            "python",
+            "go"
+          ]
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stampedAddAuthenticatorRequest": {
+                    "description": "A stamped request that specifies the details of the new authenticator to be registered. This ensures the integrity of the request and confirms the user's intent to add a new authentication method to their wallet. The body of this request must match [Turnkey's Create Authenticators Request Body](https://docs.turnkey.com/api#tag/Authenticators/operation/CreateAuthenticators).\n",
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "description": "Generated by the turnkey client, but will be ignored on our end."
+                      },
+                      "body": {
+                        "type": "string",
+                        "description": "JSON stringified request body."
+                      },
+                      "stamp": {
+                        "type": "object",
+                        "description": "A JSON-encoded object containing stamping information.\n",
+                        "properties": {
+                          "stampHeaderName": {
+                            "type": "string",
+                            "description": "For WebAuthN based stamps, this should be `X-Stamp-Webauthn`. For all other stamps, this should be `X-Stamp`.\n"
+                          },
+                          "stampHeaderValue": {
+                            "type": "string",
+                            "description": "The stamp over the request body. See the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps) for information on the format of this value.\n"
+                          }
+                        },
+                        "required": [
+                          "stampHeaderName",
+                          "stampHeaderValue"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "body",
+                      "stamp"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticator registration successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "ok",
+                      "description": "A confirmation message indicating the successful registration of the new authenticator."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "registerNewAuthenticator"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "An API key that will be supplied in a named header.",
+        "x-default": "Bearer API_KEY"
+      }
+    },
+    "schemas": {
+      "SignedTurnkeyRequest": {
+        "type": "object",
+        "description": "The signed request object containing session information. It is used to ensure the integrity and authenticity of requests to our API. For detailed steps on how to create a stamped request refer to the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps).\n",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Generated by the turnkey client, but will be ignored on our end."
+          },
+          "body": {
+            "type": "string",
+            "description": "JSON stringified request body."
+          },
+          "stamp": {
+            "type": "object",
+            "description": "A JSON-encoded object containing stamping information.\n",
+            "properties": {
+              "stampHeaderName": {
+                "type": "string",
+                "description": "For WebAuthN based stamps, this should be `X-Stamp-Webauthn`. For all other stamps, this should be `X-Stamp`.\n"
+              },
+              "stampHeaderValue": {
+                "type": "string",
+                "description": "The stamp over the request body. See the [Turnkey Stamps Documentation](https://docs.turnkey.com/api-design/stamps) for information on the format of this value.\n"
+              }
+            },
+            "required": [
+              "stampHeaderName",
+              "stampHeaderValue"
+            ]
+          }
+        },
+        "required": [
+          "url",
+          "body",
+          "stamp"
+        ]
+      }
+    }
+  }
+}

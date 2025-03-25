@@ -1,0 +1,452 @@
+---
+title: How to Airdrop NFTs
+subtitle: Learn how to airdrop NFTs using both on-chain and off-chain implementations
+slug: docs/how-to-airdrop-nfts
+---
+
+
+One of the most common but effective ways of marketing your NFT project is by airdropping NFTs to influencers and backers/community members of another NFT project (which may or may not be owned by you).
+
+Airdropping has also shown application in projects which want to reward existing members with even more utility.
+
+![750](/images/dcb51bb-Untitled.png "Untitled.png")
+
+Gutter Cat Gang NFT holders were able to mint Gutter Dogs and Gutter Rats for free
+
+In this article, we will explore how to go about creating the two most common types of airdrops:
+
+* The on-chain direct mint and transfer drop
+* The off-chain allowlist
+
+We will build the former using Solidity and standard [OpenZeppelin ERC721 contracts](https://docs.openzeppelin.com/contracts/4.x/erc721). For the latter, we will employ digital signatures and the [OpenZeppelin ECDSA library](https://docs.openzeppelin.com/contracts/2.x/api/cryptography#ECDSA).
+
+Finally, we will also write a script that leverages the \[Alchemy NFT API]\[./] to get a list of all wallets that own an NFT of a particular collection.
+
+## Part 1: Direct Mint and Transfer
+
+In the direct mint and transfer model, the creator of the project mints the NFTs directly to a certain selection of wallets.
+
+### Step 1: Install Node and npm
+
+If you haven't already, [install node and npm](https://nodejs.org/en/download/) on your local machine.
+
+Make sure that node is at least v14 or higher by typing the following in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  node -v
+  ```
+</CodeGroup>
+
+### Step 2: Create a Hardhat project
+
+We're going to set up our project using [Hardhat](https://hardhat.org/), the industry-standard development environment for Ethereum smart contracts. Additionally, we'll also install [OpenZeppelin](https://www.openzeppelin.com/) contracts.
+
+***To set up Hardhat, run the following commands in your terminal:***
+
+<CodeGroup>
+  ```bash bash
+  mkdir nft-airdrop && cd nft-airdrop
+  npm init -y
+  npm install --save-dev hardhat
+  npx hardhat
+  ```
+</CodeGroup>
+
+Choose `Create a Javascript project` from the menu and accept all defaults. To ensure everything is installed correctly, run the following command in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat test
+  ```
+</CodeGroup>
+
+***To install OpenZeppelin:***
+
+<CodeGroup>
+  ```bash bash
+  npm install @openzeppelin/contracts
+  ```
+</CodeGroup>
+
+### Step 3: Write the smart contract
+
+Let’s now write a basic NFT smart contract that has built-in airdrop functionality . To do this, we will use the function `airdropNfts`, which mints NFTs to a list of wallet addresses.
+
+Open the project in your favorite code editor (e.g., VS Code), and create a new file called `NFTAirdrop.sol` in the `contracts` folder. Add the following code to this file:
+
+<CodeGroup>
+  ```sol NFTAirdrop.sol
+  //SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.4;
+
+  import "hardhat/console.sol";
+  import "@openzeppelin/contracts/utils/Counters.sol";
+  import "@openzeppelin/contracts/access/Ownable.sol";
+  import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+
+  contract NFTAirdrop is ERC721Enumerable, Ownable {
+      using Counters for Counters.Counter;
+      
+      Counters.Counter private _tokenIds;
+      
+      constructor() ERC721("NFT Aidrop Demo", "NAD") {
+          console.log("Contract has been deployed!");
+      }
+
+      // Airdrop NFTs
+      function airdropNfts(address[] calldata wAddresses) public onlyOwner {
+
+          for (uint i = 0; i < wAddresses.length; i++) {
+              _mintSingleNFT(wAddresses[i]);
+          }
+      }
+      
+      function _mintSingleNFT(address wAddress) private {
+          uint newTokenID = _tokenIds.current();
+          _safeMint(wAddress, newTokenID);
+          _tokenIds.increment();
+      }
+  }
+  ```
+</CodeGroup>
+
+Notice that `airdropNfts` has been marked as `onlyOwner`. This means that only the owner/creator of the contract will be able to call this function.
+
+Compile the contract and make sure everything is working by running:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat compile
+  ```
+</CodeGroup>
+
+### Step 4: Create the Airdrop Script
+
+Next, let’s write a script that allows us to mint and airdrop NFTs from the contract above. To do this, create a new file called `run.js`in the `scripts` folder, then add the following code:
+
+<CodeGroup>
+  ```javascript run.js
+  const { ethers } = require("hardhat");
+  const hre = require("hardhat");
+
+  async function main() {
+
+    // Define a list of wallets to airdrop NFTs
+    const airdropAddresses = [
+      '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+      '0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc',
+      '0x90f79bf6eb2c4f870365e785982e1f101e93b906',
+      '0x15d34aaf54267db7d7c367839aaf71a00a2c6a65',
+      '0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc',
+    ];
+
+    const factory = await hre.ethers.getContractFactory("NFTAirdrop");
+    const [owner] = await hre.ethers.getSigners();
+    const contract = await factory.deploy();
+
+    await contract.deployed();
+    console.log("Contract deployed to: ", contract.address);
+    console.log("Contract deployed by (Owner): ", owner.address, "\n");
+
+    let txn;
+    txn = await contract.airdropNfts(airdropAddresses);
+    await txn.wait();
+    console.log("NFTs airdropped successfully!");
+
+    console.log("\nCurrent NFT balances:")
+    for (let i = 0; i < airdropAddresses.length; i++) {
+      let bal = await contract.balanceOf(airdropAddresses[i]);
+      console.log(`${i + 1}. ${airdropAddresses[i]}: ${bal}`);
+    }
+
+  }
+
+  main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+  ```
+</CodeGroup>
+
+Note that in this script, we are airdropping NFTs to a specific list of addresses. However, if you'd like to airdrop to existing holders of an NFT collection, check out the [section below](#airdrop-to-holders-of-another-collection).
+
+Run the script using the following command:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat run scripts/run.js
+  ```
+</CodeGroup>
+
+You should see output that looks something like this:
+
+<CodeGroup>
+  ```bash bash
+  Contract has been deployed!
+  Contract deployed to:  0x5FbDB2315678afecb367f032d93F642f64180aa3
+  Contract deployed by (Owner):  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 
+
+  NFTs airdropped successfully!
+
+  Current NFT balances:
+  1. 0x70997970c51812dc3a010c7d01b50e0d17dc79c8: 1
+  2. 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc: 1
+  3. 0x90f79bf6eb2c4f870365e785982e1f101e93b906: 1
+  4. 0x15d34aaf54267db7d7c367839aaf71a00a2c6a65: 1
+  5. 0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc: 1
+  ```
+</CodeGroup>
+
+Notice that every wallet we marked as eligible to receive an airdrop now has an NFT balance of 1. The owner/creator of the project was responsible for minting all the NFTs as well as paying the gas fees associated with it.
+
+## Part 2: Off-chain Allowlist
+
+The on-chain direct mint and transfer method works well in situations where you need to airdrop sporadically or to only a few wallets. If you plan on distributing NFTs to hundreds or thousands of wallets, this method may not be the best approach.
+
+It can be costly to mint a large number of NFTs yourself, and even if you have the budget, you may still hit Ethereum's block limits while trying to mint thousands of NFTs at once.
+
+Fortunately, an affordable and effective design is employed by large projects that use off-chain allowlists. In an off-chain allowlist model, the project's creator stores a list of wallets eligible for an airdrop in an off-chain database.
+
+Wallets that belong to the off-chain database can then interact with the NFT contract and mint the NFTs themselves, thereby saving the creator gas fees associated with minting.
+
+### Step 1: Write the smart contract
+
+Let’s write a smart contract that can operate with an off-chain allowlist. In the `contracts` folder of your existing project, create a new file called `NftAllowlist.sol` and add the following code:
+
+<CodeGroup>
+  ```sol NftAllowlist.sol
+  //SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.4;
+
+  import "hardhat/console.sol";
+  import "@openzeppelin/contracts/utils/Counters.sol";
+  import "@openzeppelin/contracts/access/Ownable.sol";
+  import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+  import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
+  contract NFTAllowlist is ERC721Enumerable, Ownable {
+      using Counters for Counters.Counter;
+      
+      Counters.Counter private _tokenIds;
+
+      // Signature tracker
+      mapping(bytes => bool) public signatureUsed;
+      
+      constructor() ERC721("NFT Allowlist Demo", "NAD") {
+          console.log("Contract has been deployed!");
+      }
+
+      // Allowlist addresses
+      function recoverSigner(bytes32 hash, 
+  													 bytes memory signature) 
+  						 public pure returns (address) {
+  		    bytes32 messageDigest = keccak256(
+  	        abi.encodePacked(
+  	          "\x19Ethereum Signed Message:\n32", 
+              hash
+  	        )
+  		    );
+  		    return ECDSA.recover(messageDigest, signature);
+  		}
+
+      // Airdrop mint
+      function claimAirdrop(uint _count, bytes32 hash, bytes memory signature) public {
+          require(recoverSigner(hash, signature) == owner(), "Address is not allowlisted");
+          require(!signatureUsed[signature], "Signature has already been used.");
+
+          for (uint i = 0; i < _count; i++) {
+              _mintSingleNFT();
+          }
+
+          signatureUsed[signature] = true;
+      }
+      
+      function _mintSingleNFT() private {
+          uint newTokenID = _tokenIds.current();
+          _safeMint(msg.sender, newTokenID);
+          _tokenIds.increment();
+      }
+  }
+  ```
+</CodeGroup>
+
+The main function that allows off-chain allowlisting functionality is the `recoverSigner` function, which checks who has signed a particular message.
+
+To learn more about how this works in detail, check out our article on [How to Create an Off-Chain NFT Allowlist](/docs/how-to-create-an-off-chain-nft-allowlist).
+
+Compile the contract and make sure everything is working by running:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat compile
+  ```
+</CodeGroup>
+
+### Step 2: Create the Off-Chain Allowlist
+
+Now, let’s write a script that lets allowlisted addresses to claim their NFTs . To do this, create a new file called `runAllowlist.js` in the `scripts` folder, then add the following code:
+
+<CodeGroup>
+  ```javascript runAllowlist.js
+  const { ethers } = require("hardhat");
+  const hre = require("hardhat");
+
+  async function main() {
+
+    const [owner, address1, address2] = await hre.ethers.getSigners();
+
+    // Define a list of allowlisted wallets
+    const allowlistedAddresses = [
+      address1.address,
+      address2.address,
+    ];
+
+    // Select an allowlisted address to mint NFT
+    const selectedAddress = address1.address;
+
+    // Define wallet that will be used to sign messages
+    const walletAddress = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266'; // owner.address
+    const privateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+    const signer = new ethers.Wallet(privateKey);
+    console.log("Wallet used to sign messages: ", signer.address, "\n");
+
+    let messageHash, signature;
+
+    // Check if selected address is in allowlist
+    // If yes, sign the wallet's address
+    if (allowlistedAddresses.includes(selectedAddress)) {
+      console.log("Address is allowlisted! Minting should be possible.");
+
+      // Compute message hash
+      messageHash = ethers.utils.id(selectedAddress);
+      console.log("Message Hash: ", messageHash);
+
+      // Sign the message hash
+      let messageBytes = ethers.utils.arrayify(messageHash);
+      signature = await signer.signMessage(messageBytes);
+      console.log("Signature: ", signature, "\n");
+    }
+
+    const factory = await hre.ethers.getContractFactory("NFTAllowlist");
+    const contract = await factory.deploy();
+
+    await contract.deployed();
+    console.log("Contract deployed to: ", contract.address);
+    console.log("Contract deployed by (Owner/Signing Wallet): ", owner.address, "\n");
+
+    recover = await contract.recoverSigner(messageHash, signature);
+    console.log("Message was signed by: ", recover.toString());
+
+    let txn;
+    txn = await contract.connect(address1).claimAirdrop(2, messageHash, signature);
+    await txn.wait();
+    console.log("NFTs minted successfully!");
+
+  }
+
+  main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+  ```
+</CodeGroup>
+
+Again, note that we are only allowlisting default Hardhat wallet addresses. In case you want to allowlist wallets that hold NFTs from another collection, check out the [section below](#airdrop-to-holders-of-another-collection).
+
+Run the script using the following command:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat run scripts/runAllowlist.js
+  ```
+</CodeGroup>
+
+You should see output that looks something like this:
+
+<CodeGroup>
+  ```bash bash
+  Wallet used to sign messages:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 
+
+  Address is allowlisted! Minting should be possible.
+  Message Hash:  0x52d01c65d2e6acff550def14b5ce5bf353ac7ad53b132fc531c5d085d77c4ee3
+  Signature:  0x55d2baf93dff9184dea51cc81c7837c0d65e01962d7292f03afa80cedf3dcdb948ada6cae3bc49ae56d3546019ebd62cc56efe1ef9c946a7c4fe66f21596e6c91c 
+
+  Contract has been deployed!
+  Contract deployed to:  0x5FbDB2315678afecb367f032d93F642f64180aa3
+  Contract deployed by (Owner/Signing Wallet):  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 
+
+  Message was signed by:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  NFTs minted successfully!
+  ```
+</CodeGroup>
+
+Notice that we did not store allowlisted wallets on-chain. Instead, we stored them locally and performed the following steps:
+
+1. Check if the selected wallet is allowlisted.
+2. If yes, sign the hashed version of the wallet’s public address using a secret private key.
+3. Pass the hashed address and the signature to the minting function of the smart contract.
+4. In the minting function, recover the signer and check if the signer is the owner of the smart contract. If yes, allow mint. Else, return an error.
+
+Also, note that the address that makes the claim also mints the NFT. Therefore, minting costs are spread across the entire community rather than applied only to the NFT creator.
+
+## Airdrop to holders of another collection
+
+Now that you know how to airdrop NFTs to a particular set of wallets, it is worthwhile spending some time deciding which wallets to airdrop to. Besides friends, investors, and early community members, a common group to airdrop NFTs to are holders of a popular NFT collection (like Cryptopunks or Bored Ape Yacht Club).
+
+Getting a list of all wallets that hold an NFT of a particular collection is extremely simple using Alchemy's NFT API. [Sign up for a free Alchemy account](https://alchemy.com/?a=63bb2620e6), and use the following code snippet to get a list of all wallets that have a BAYC NFT.
+
+<CodeGroup>
+  ```javascript javascript
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  const config = {
+      apiKey: "<-- ALCHEMY API KEY -->",
+      network: Network.ETH_MAINNET,
+  };
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+
+      // BAYC contract address
+      const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
+
+      // Block number or height
+      const block = "15753215";
+
+      // Get owners 
+      const owners = await alchemy.nft.getOwnersForContract(address, false, block);
+      console.log(owners);
+  };
+
+  const runMain = async () => {
+      try {
+          await main();
+          process.exit(0);
+      } catch (error) {
+          console.log(error);
+          process.exit(1);
+      }
+  };
+
+  runMain();
+  ```
+</CodeGroup>
+
+To learn more about creating an Alchemy App, and accessing the NFT API using the Alchemy SDK, check out our article on [How to get NFT Owners at a Specific Block Height](/docs/how-to-get-nft-owners-at-a-specific-block-height).
+
+## Conclusion
+
+Congratulations! You now know how to conduct airdrops using on-chain direct mint and transfer method and the off-chain allowlists method.
+
+If you enjoyed this tutorial about creating on-chain allowlists, tweet us at [@AlchemyPlatform](https://twitter.com/AlchemyPlatform) and give us a shoutout!
+
+Don't forget to join our [Discord server](https://www.alchemy.com/discord) to meet other blockchain devs, builders, and entrepreneurs!
+
+Ready to start building your NFT collection?
+
+[Create a free Alchemy account](https://alchemy.com/?a=545d6054ba) and do share your project with us!

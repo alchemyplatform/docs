@@ -1,0 +1,88 @@
+---
+title: How to Handle Checksum Addresses
+subtitle: >-
+  Learn what checksum addresses in Ethereum are, why they exist, and how to
+  handle them using the ethers library.
+slug: docs/how-to-handle-checksum-addresses
+---
+
+
+One of the more non-user friendly aspects of working with Ethereum and similar web3 environments is the 40-character hexadecimal string that is used to represent a wallet (or an *account*) on the blockchain.
+
+The creators of Ethereum had never envisioned using hexadecimal strings to identify entities on the blockchain. Instead, they had hoped that a system like ENS where user-readable names like *vitalik.eth* would become the norm.
+
+Although ENS names are gaining more popularity and support by the day, the fact remains that a vast majority of users continue to use their hexadecimal addresses to conduct transactions on public blockchains.
+
+The complexity of remembering and typing out addresses, as well as the irreversible nature of web3 transactions led to the creation of checksum addresses as a moderate fail safe for human errors.
+
+In this short tutorial, we will cover what checksum addresses are, how they work, and how to handle them using the ethers library.
+
+## What are checksum addresses?
+
+As you may already know, Ethereum addresses are represented as 40-character hexadecimal strings. Checksummed addresses are a special version of Ethereum addresses that add an element of case sensitivity.
+
+If you check your wallet address on a wallet like MetaMask, you will see that some letters are capitalized whereas some aren't. This is the checksum validation in play, and certain letters are capitalized in this way to prevent user errors from conducting transactions that cannot be reversed.
+
+Computing the checksum of an address is fairly simple.
+
+1. Convert the original Ethereum address into lowercase.
+2. Compute the SHA-3 hash of the lowercases address.
+3. Take the first 40 characters of the hash (which is a 64-character hexadecimal string) and replace the corresponding characters in the original lowercase address. If a character in the hash is a letter (A-F), then the corresponding character in the address should be uppercase. If a character in the hash is a number (0-9), then the corresponding character in the address should be left as lowercase.
+4. The final result is the checksummed version of the address.
+
+## Handling checksum addresses with ethers
+
+Fortunately for us, we don't need to perform the aforementioned steps by hand. The ethers library gives us a very convenient function to convert an all-lowercase wallet address into its checksummed version. It also allows us to detect addresses that are invalid checksums.
+
+Following is a node script demonstrating both the aforementioned functionalities:
+
+<CodeGroup>
+  ```javascript Checksum
+  const ethers = require('ethers');
+
+  // All lowercase address
+  const address = '0xc361fc33b99f88612257ac8cc2d852a5cee0e217'
+
+  // Convert to checksum version
+  let checksum = ethers.utils.getAddress(address)
+  console.log("Checksum address:", checksum)
+
+  // Invalid checksum
+  const invalid = "0xc361fc33b99F88612257ac8cc2D852A5CEe0E217"
+  checksum = ethers.utils.getAddress(invalid);
+  ```
+</CodeGroup>
+
+Upon running this script, you should see output that looks like this:
+
+```
+Checksum address: 0xc361Fc33b99F88612257ac8cC2d852A5CEe0E217
+/Users/rounakbanik/alchemy-tut/nft-collection/node_modules/@ethersproject/logger/lib/index.js:247
+        throw this.makeError(message, code, params);
+        ^
+
+Error: bad address checksum (argument="address", value="0xc361fc33b99F88612257ac8cc2D852A5CEe0E217", code=INVALID_ARGUMENT, version=address/5.7.0)
+    at Logger.makeError (/Users/rounakbanik/alchemy-tut/nft-collection/node_modules/@ethersproject/logger/lib/index.js:238:21)
+    at Logger.throwError (/Users/rounakbanik/alchemy-tut/nft-collection/node_modules/@ethersproject/logger/lib/index.js:247:20)
+    at Logger.throwArgumentError (/Users/rounakbanik/alchemy-tut/nft-collection/node_modules/@ethersproject/logger/lib/index.js:250:21)
+    at Object.getAddress (/Users/rounakbanik/alchemy-tut/nft-collection/node_modules/@ethersproject/address/lib/index.js:80:20)
+    at Object.<anonymous> (/Users/rounakbanik/alchemy-tut/nft-collection/checksum.js:12:25)
+    at Module._compile (internal/modules/cjs/loader.js:1068:30)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1097:10)
+    at Module.load (internal/modules/cjs/loader.js:933:32)
+    at Function.Module._load (internal/modules/cjs/loader.js:774:14)
+    at Function.executeUserEntryPoint [as runMain] (internal/modules/run_main.js:72:12) {
+  reason: 'bad address checksum',
+  code: 'INVALID_ARGUMENT',
+  argument: 'address',
+  value: '0xc361fc33b99F88612257ac8cc2D852A5CEe0E217'
+}
+```
+
+As expected, ethers was able to give us a checksummed version of an all-lowercase address and correctly identify an address that had an invalid checksum.
+
+## Conclusion
+
+UX revolving around Ethereum wallets and wallet addresses still leave a lot to desire. Although solutions like ENS are catchup quick, the vast majority of transactions that take place on the blockchain do so using hexadecimal addresses.
+
+Although it is strongly suggested that you copy-paste wallet addresses, and never type them by hand, solutions like checksum allow us to have a failsafe that prevents irreversible transactions taking place involving wrongly-typed addresses.

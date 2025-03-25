@@ -1,0 +1,1045 @@
+{
+	"openrpc": "1.2.4",
+	"info": {
+		"title": "Alchemy Bundler API JSON-RPC Specification",
+		"description": "A specification of the standard JSON-RPC methods for the Alchemy Bundler API.",
+		"version": "0.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://eth-mainnet.g.alchemy.com/v2/",
+			"name": "Ethereum Mainnet"
+		},
+		{
+			"url": "https://eth-sepolia.g.alchemy.com/v2/",
+			"name": "Ethereum Sepolia"
+		},
+		{
+			"url": "https://eth-holesky.g.alchemy.com/v2/",
+			"name": "Ethereum Holesky"
+		},
+		{
+			"url": "https://opt-mainnet.g.alchemy.com/v2/",
+			"name": "Optimism Mainnet"
+		},
+		{
+			"url": "https://polygon-mainnet.g.alchemy.com/v2/",
+			"name": "Polygon Mainnet"
+		},
+		{
+			"url": "https://polygon-amoy.g.alchemy.com/v2/",
+			"name": "Polygon Amoy"
+		},
+		{
+			"url": "https://arb-mainnet.g.alchemy.com/v2/",
+			"name": "Arbitrum Mainnet"
+		},
+		{
+			"url": "https://arb-sepolia.g.alchemy.com/v2/",
+			"name": "Arbitrum Sepolia"
+		},
+		{
+			"url": "https://arbnova-mainnet.g.alchemy.com/v2/",
+			"name": "Arbitrum Nova"
+		},
+		{
+			"url": "https://berachain-bartio.g.alchemy.com/v2/",
+			"name": "Berachain Bartio"
+		},
+		{
+			"url": "https://zora-mainnet.g.alchemy.com/v2/",
+			"name": "Zora Mainnet"
+		},
+		{
+			"url": "https://zora-sepolia.g.alchemy.com/v2/",
+			"name": "Zora Sepolia"
+		},
+		{
+			"url": "https://polynomial-mainnet.g.alchemy.com/v2/",
+			"name": "Polynomial Mainnet"
+		},
+		{
+			"url": "https://polynomial-sepolia.g.alchemy.com/v2/",
+			"name": "Polynomial Sepolia"
+		},
+		{
+			"url": "https://base-mainnet.g.alchemy.com/v2/",
+			"name": "Base Mainnet"
+		},
+		{
+			"url": "https://base-sepolia.g.alchemy.com/v2/",
+			"name": "Base Sepolia"
+		},
+		{
+			"url": "https://frax-mainnet.g.alchemy.com/v2/",
+			"name": "Frax Mainnet"
+		},
+		{
+			"url": "https://frax-sepolia.g.alchemy.com/v2/",
+			"name": "Frax Sepolia"
+		},
+		{
+			"url": "https://anime-sepolia.g.alchemy.com/v2/",
+			"name": "Anime Sepolia"
+		},
+		{
+			"url": "https://race-mainnet.g.alchemy.com/v2/",
+			"name": "Race Mainnet"
+		},
+		{
+			"url": "https://shape-mainnet.g.alchemy.com/v2/",
+			"name": "Shape Mainnet"
+		},
+		{
+			"url": "https://worldchain-mainnet.g.alchemy.com/v2/",
+			"name": "Worldchain Mainnet"
+		},
+		{
+			"url": "https://ink-mainnet.g.alchemy.com/v2/",
+			"name": "Ink Mainnet"
+		},
+		{
+			"url": "https://ink-sepolia.g.alchemy.com/v2/",
+			"name": "Ink Sepolia"
+		}
+	],
+	"methods": [
+		{
+			"name": "eth_estimateUserOperationGas",
+			"summary": "Estimates the gas values for a UserOperation.",
+			"params": [
+				{
+					"name": "UserOperation",
+					"required": true,
+					"description": "The UserOperation object (v0.6 or v0.7) with optional gas fields.",
+					"schema": {
+						"oneOf": [
+							{
+								"type": "object",
+								"properties": {
+									"sender": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "The account making the operation"
+									},
+									"nonce": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Anti-replay parameter; used as salt for first-time account creation"
+									},
+									"initCode": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
+									},
+									"callData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Encoded data for the primary function call or operation"
+									},
+									"callGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for the main execution call"
+									},
+									"verificationGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for verification"
+									},
+									"preVerificationGas": {
+										"type": "string",
+										"description": "Gas for pre-verification execution and calldata"
+									},
+									"maxFeePerGas": {
+										"type": "string",
+										"description": "Maximum fee per gas (EIP-1559)"
+									},
+									"maxPriorityFeePerGas": {
+										"type": "string",
+										"description": "Max priority fee per gas (EIP-1559)"
+									},
+									"signature": {
+										"type": "string",
+										"description": "Data passed during verification",
+										"pattern": "^0x[0-9a-fA-F]*$"
+									},
+									"paymasterAndData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Paymaster address and extra data"
+									}
+								}
+							},
+							{
+								"type": "object",
+								"properties": {
+									"sender": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Account initiating operation"
+									},
+									"nonce": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Account nonce or creation salt"
+									},
+									"initCode": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Initialization code (for new accounts)"
+									},
+									"callData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for operation call"
+									},
+									"callGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for call"
+									},
+									"verificationGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for verification"
+									},
+									"maxFeePerGas": {
+										"type": "string",
+										"description": "Max fee per gas (EIP-1559)"
+									},
+									"maxPriorityFeePerGas": {
+										"type": "string",
+										"description": "Priority fee per gas (EIP-1559)"
+									},
+									"paymaster": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Paymaster contract address"
+									},
+									"paymasterData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for paymaster"
+									},
+									"paymasterVerificationGasLimit": {
+										"type": "string"
+									},
+									"factory": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+									},
+									"factoryData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for the account factory (only if the account factory exists)"
+									},
+									"preVerificationGas": {
+										"type": "string",
+										"description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+									},
+									"paymasterPostOpGasLimit": {
+										"type": "string",
+										"description": "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+									},
+									"signature": {
+										"type": "string",
+										"description": "Data passed into the account along with the nonce during the verification step"
+									}
+								}
+							}
+						]
+					}
+				},
+				{
+					"name": "Entrypoint address",
+					"required": true,
+					"description": "The entrypoint address through which the operation is sent.",
+					"schema": {
+						"title": "hex encoded address",
+						"type": "string",
+						"pattern": "^0x[0-9a-fA-F]{40}$"
+					}
+				}
+			],
+			"result": {
+				"name": "Gas estimation",
+				"description": "Gas values estimated for the UserOperation.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"entrypointV06Response": {
+							"type": "object",
+							"title": "Entrypoint v0.6 Response",
+							"properties": {
+								"preVerificationGas": {
+									"title": "hex encoded 256 bit unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$",
+									"description": "Gas overhead of this UserOperation."
+								},
+								"verificationGasLimit": {
+									"title": "hex encoded 256 bit unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$",
+									"description": "Actual gas used by the validation of this UserOperation."
+								},
+								"callGasLimit": {
+									"title": "hex encoded 256 bit unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$",
+									"description": "Value used by inner account execution."
+								}
+							}
+						},
+						"entrypointV07Response": {
+							"type": "object",
+							"title": "Entrypoint v0.7 Response",
+							"properties": {
+								"preVerificationGas": {
+									"title": "hex encoded 256 bit unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$",
+									"description": "Gas overhead of this UserOperation."
+								},
+								"verificationGasLimit": {
+									"title": "hex encoded 256 bit unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$",
+									"description": "Actual gas used by the validation of this UserOperation."
+								},
+								"callGasLimit": {
+									"title": "hex encoded 256 bit unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$",
+									"description": "Value used by inner account execution."
+								},
+								"paymasterVerificationGasLimit": {
+									"title": "hex encoded 256 bit unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$",
+									"description": "Value used by the paymaster during verification."
+								}
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "eth_estimateUserOperationGas example",
+					"params": [
+						{
+							"name": "UserOperation",
+							"value": {
+								"sender": "0x...",
+								"nonce": "0x...",
+								"callData": "0x..."
+							}
+						},
+						{
+							"name": "Entrypoint address",
+							"value": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+						}
+					],
+					"result": {
+						"name": "Gas estimation",
+						"value": {
+							"jsonrpc": "2.0",
+							"id": 1,
+							"result": null,
+							"preVerificationGas": "0x1",
+							"verificationGasLimit": "0x1",
+							"callGasLimit": "0x1",
+							"paymasterVerificationGasLimit": "0x1"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "eth_getUserOperationByHash",
+			"summary": "Return a UserOperation based on a userOpHash.",
+			"params": [
+				{
+					"name": "userOpHash",
+					"required": true,
+					"description": "The userOpHash of the UserOperation to retrieve.",
+					"schema": {
+						"title": "32 byte hex value",
+						"type": "string",
+						"pattern": "^0x[0-9a-f]{64}$"
+					}
+				}
+			],
+			"result": {
+				"name": "UserOperation",
+				"description": "The UserOperation object.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"entrypointV06Response": {
+							"type": "object",
+							"properties": {
+								"sender": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "The account making the operation"
+								},
+								"nonce": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+									"description": "Anti-replay parameter; used as salt for first-time account creation"
+								},
+								"initCode": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
+								},
+								"callData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Encoded data for the primary function call or operation"
+								},
+								"callGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for the main execution call"
+								},
+								"verificationGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for verification"
+								},
+								"preVerificationGas": {
+									"type": "string",
+									"description": "Gas for pre-verification execution and calldata"
+								},
+								"maxFeePerGas": {
+									"type": "string",
+									"description": "Maximum fee per gas (EIP-1559)"
+								},
+								"maxPriorityFeePerGas": {
+									"type": "string",
+									"description": "Max priority fee per gas (EIP-1559)"
+								},
+								"signature": {
+									"type": "string",
+									"description": "Data passed during verification",
+									"pattern": "^0x[0-9a-fA-F]*$"
+								},
+								"paymasterAndData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Paymaster address and extra data"
+								}
+							}
+						},
+						"entrypointV07Response": {
+							"type": "object",
+							"properties": {
+								"sender": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "Account initiating operation"
+								},
+								"nonce": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+									"description": "Account nonce or creation salt"
+								},
+								"initCode": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Initialization code (for new accounts)"
+								},
+								"callData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Data for operation call"
+								},
+								"callGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for call"
+								},
+								"verificationGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for verification"
+								},
+								"maxFeePerGas": {
+									"type": "string",
+									"description": "Max fee per gas (EIP-1559)"
+								},
+								"maxPriorityFeePerGas": {
+									"type": "string",
+									"description": "Priority fee per gas (EIP-1559)"
+								},
+								"paymaster": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "Paymaster contract address"
+								},
+								"paymasterData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Data for paymaster"
+								},
+								"paymasterVerificationGasLimit": {
+									"type": "string"
+								},
+								"factory": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+								},
+								"factoryData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Data for the account factory (only if the account factory exists)"
+								},
+								"preVerificationGas": {
+									"type": "string",
+									"description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+								},
+								"paymasterPostOpGasLimit": {
+									"type": "string",
+									"description": "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+								},
+								"signature": {
+									"type": "string",
+									"description": "Data passed into the account along with the nonce during the verification step"
+								}
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "eth_getUserOperationByHash example",
+					"params": [
+						{
+							"name": "userOpHash",
+							"value": "0x77c0b560eb0b042902abc5613f768d2a6b2d67481247e9663bf4d68dec0ca122"
+						}
+					],
+					"result": {
+						"name": "UserOperation",
+						"value": {
+							"jsonrpc": "2.0",
+							"id": 1,
+							"result": null,
+							"sender": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+							"nonce": 1,
+							"initCode": "0x",
+							"callData": "0x",
+							"callGasLimit": "0x0",
+							"verificationGasLimit": "0x0",
+							"preVerificationGas": "0x0",
+							"maxFeePerGas": "0x0",
+							"maxPriorityFeePerGas": "0x0",
+							"paymasterAndData": "0x",
+							"signature": "0x",
+							"entryPoint": "0x",
+							"blockNumber": "0x",
+							"blockHash": "0x",
+							"transactionHash": "0x"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "eth_getUserOperationReceipt",
+			"summary": "Get the UserOperationReceipt based on the userOpHash.",
+			"params": [
+				{
+					"name": "userOpHash",
+					"required": true,
+					"description": "The userOpHash of the UserOperation to get the receipt for.",
+					"schema": {
+						"title": "32 byte hex value",
+						"type": "string",
+						"pattern": "^0x[0-9a-f]{64}$"
+					}
+				}
+			],
+			"result": {
+				"name": "UserOperationReceipt",
+				"description": "UserOperationReceipt object representing the outcome of a UserOperation.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"entrypointV06Response": {
+							"type": "object",
+							"properties": {
+								"sender": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "The account making the operation"
+								},
+								"nonce": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+									"description": "Anti-replay parameter; used as salt for first-time account creation"
+								},
+								"initCode": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
+								},
+								"callData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Encoded data for the primary function call or operation"
+								},
+								"callGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for the main execution call"
+								},
+								"verificationGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for verification"
+								},
+								"preVerificationGas": {
+									"type": "string",
+									"description": "Gas for pre-verification execution and calldata"
+								},
+								"maxFeePerGas": {
+									"type": "string",
+									"description": "Maximum fee per gas (EIP-1559)"
+								},
+								"maxPriorityFeePerGas": {
+									"type": "string",
+									"description": "Max priority fee per gas (EIP-1559)"
+								},
+								"signature": {
+									"type": "string",
+									"description": "Data passed during verification",
+									"pattern": "^0x[0-9a-fA-F]*$"
+								},
+								"paymasterAndData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Paymaster address and extra data"
+								}
+							}
+						},
+						"entrypointV07Response": {
+							"type": "object",
+							"properties": {
+								"sender": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "Account initiating operation"
+								},
+								"nonce": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+									"description": "Account nonce or creation salt"
+								},
+								"initCode": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Initialization code (for new accounts)"
+								},
+								"callData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Data for operation call"
+								},
+								"callGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for call"
+								},
+								"verificationGasLimit": {
+									"type": "string",
+									"description": "Gas allocated for verification"
+								},
+								"maxFeePerGas": {
+									"type": "string",
+									"description": "Max fee per gas (EIP-1559)"
+								},
+								"maxPriorityFeePerGas": {
+									"type": "string",
+									"description": "Priority fee per gas (EIP-1559)"
+								},
+								"paymaster": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "Paymaster contract address"
+								},
+								"paymasterData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Data for paymaster"
+								},
+								"paymasterVerificationGasLimit": {
+									"type": "string"
+								},
+								"factory": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$",
+									"description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+								},
+								"factoryData": {
+									"title": "hex encoded bytes",
+									"type": "string",
+									"pattern": "^0x[0-9a-f]*$",
+									"description": "Data for the account factory (only if the account factory exists)"
+								},
+								"preVerificationGas": {
+									"type": "string",
+									"description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+								},
+								"paymasterPostOpGasLimit": {
+									"type": "string",
+									"description": "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+								},
+								"signature": {
+									"type": "string",
+									"description": "Data passed into the account along with the nonce during the verification step"
+								}
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "eth_getUserOperationReceipt example",
+					"params": [
+						{
+							"name": "userOpHash",
+							"value": "0x93c06f3f5909cc2b192713ed9bf93e3e1fde4b22fcd2466304fa404f9b80ff90"
+						}
+					],
+					"result": {
+						"name": "UserOperationReceipt",
+						"value": {
+							"jsonrpc": "2.0",
+							"id": 1,
+							"result": null,
+							"userOpHash": "0x77c0b560eb0b042902abc5613f768d2a6b2d67481247e9663bf4d68dec0ca122",
+							"entryPoint": "0xc944E90C64B2c07662A292be6244BDf05Cda44a7",
+							"sender": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+							"nonce": 42,
+							"paymaster": "0x7A0A0d159218E6a2f407B99173A2b12A6DDfC2a6",
+							"actualGasCost": 21000,
+							"actualGasUsed": 314159,
+							"success": true,
+							"reason": "",
+							"logs": [],
+							"receipt": {
+								"transactionHash": "0x8fc90a6c3ee3001cdcbbb685b4fbe67b1fa2bec575b15b0395fea5540d0901ae",
+								"blockHash": "0x58a945e1558810523df00490ff28cbe111b37851c44679ce5be1eeaebb4b4907",
+								"blockNumber": "0xeb8822",
+								"transactionIndex": "0x4e"
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "eth_sendUserOperation",
+			"summary": "Sends a UserOperation to the given EVM network.",
+			"params": [
+				{
+					"name": "UserOperation",
+					"required": true,
+					"description": "The UserOperation object (v0.6 or v0.7).",
+					"schema": {
+						"oneOf": [
+							{
+								"type": "object",
+								"properties": {
+									"sender": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "The account making the operation"
+									},
+									"nonce": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Anti-replay parameter; used as salt for first-time account creation"
+									},
+									"initCode": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
+									},
+									"callData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Encoded data for the primary function call or operation"
+									},
+									"callGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for the main execution call"
+									},
+									"verificationGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for verification"
+									},
+									"preVerificationGas": {
+										"type": "string",
+										"description": "Gas for pre-verification execution and calldata"
+									},
+									"maxFeePerGas": {
+										"type": "string",
+										"description": "Maximum fee per gas (EIP-1559)"
+									},
+									"maxPriorityFeePerGas": {
+										"type": "string",
+										"description": "Max priority fee per gas (EIP-1559)"
+									},
+									"signature": {
+										"type": "string",
+										"description": "Data passed during verification",
+										"pattern": "^0x[0-9a-fA-F]*$"
+									},
+									"paymasterAndData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Paymaster address and extra data"
+									}
+								}
+							},
+							{
+								"type": "object",
+								"properties": {
+									"sender": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Account initiating operation"
+									},
+									"nonce": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Account nonce or creation salt"
+									},
+									"initCode": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Initialization code (for new accounts)"
+									},
+									"callData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for operation call"
+									},
+									"callGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for call"
+									},
+									"verificationGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for verification"
+									},
+									"maxFeePerGas": {
+										"type": "string",
+										"description": "Max fee per gas (EIP-1559)"
+									},
+									"maxPriorityFeePerGas": {
+										"type": "string",
+										"description": "Priority fee per gas (EIP-1559)"
+									},
+									"paymaster": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Paymaster contract address"
+									},
+									"paymasterData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for paymaster"
+									},
+									"paymasterVerificationGasLimit": {
+										"type": "string"
+									},
+									"factory": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+									},
+									"factoryData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for the account factory (only if the account factory exists)"
+									},
+									"preVerificationGas": {
+										"type": "string",
+										"description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+									},
+									"paymasterPostOpGasLimit": {
+										"type": "string",
+										"description": "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+									},
+									"signature": {
+										"type": "string",
+										"description": "Data passed into the account along with the nonce during the verification step"
+									}
+								}
+							}
+						]
+					}
+				},
+				{
+					"name": "Entrypoint address",
+					"required": true,
+					"description": "The entrypoint address through which the operation is sent.",
+					"schema": {
+						"title": "hex encoded address",
+						"type": "string",
+						"pattern": "^0x[0-9a-fA-F]{40}$"
+					}
+				}
+			],
+			"result": {
+				"name": "userOpHash",
+				"description": "The calculated userOpHash for the UserOperation.",
+				"schema": {
+					"title": "hex encoded 256 bit unsigned integer",
+					"type": "string",
+					"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
+				}
+			},
+			"examples": [
+				{
+					"name": "eth_sendUserOperation example",
+					"params": [
+						{
+							"name": "UserOperation",
+							"value": {
+								"sender": "0x...",
+								"nonce": "0x...",
+								"callData": "0x..."
+							}
+						},
+						{
+							"name": "Entrypoint address",
+							"value": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+						}
+					],
+					"result": {
+						"name": "userOpHash",
+						"value": {
+							"jsonrpc": "2.0",
+							"id": 1,
+							"result": "0x1234...5678"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "eth_supportedEntryPoints",
+			"summary": "Returns an array of the entryPoint addresses supported by the client.",
+			"params": [],
+			"result": {
+				"name": "Supported entryPoints",
+				"description": "Array of supported entryPoint addresses.",
+				"schema": {
+					"type": "array",
+					"items": {
+						"title": "hex encoded address",
+						"type": "string",
+						"pattern": "^0x[0-9a-fA-F]{40}$"
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "eth_supportedEntryPoints example",
+					"params": [],
+					"result": {
+						"name": "Supported entryPoints",
+						"value": {
+							"jsonrpc": "2.0",
+							"id": 1,
+							"result": [
+								"0xcd01C8aa8995A59eB7B2627E69b40e0524B5ecf8",
+								"0x7A0A0d159218E6a2f407B99173A2b12A6DDfC2a6"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "rundler_maxPriorityFeePerGas",
+			"summary": "Returns a fee per gas that is an estimate of the priority fee for Rundler endpoints.",
+			"params": [],
+			"result": {
+				"name": "Estimated priority fee",
+				"description": "The estimated priority fee per gas.",
+				"schema": {
+					"title": "hex encoded 256 bit unsigned integer",
+					"type": "string",
+					"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
+				}
+			},
+			"examples": [
+				{
+					"name": "rundler_maxPriorityFeePerGas example",
+					"params": [],
+					"result": {
+						"name": "Estimated priority fee",
+						"value": {
+							"jsonrpc": "2.0",
+							"id": 1,
+							"result": "0xb1770efb14906e509893b6190359658208ae64d0c56e22f748a1b0869885559e"
+						}
+					}
+				}
+			]
+		}
+	]
+}

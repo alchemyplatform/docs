@@ -1,0 +1,64 @@
+---
+title: Memory
+subtitle: Learn about the differences between the  and  storage options in Solidity
+slug: docs/what-is-the-difference-between-memory-and-calldata-in-solidity
+---
+
+
+In Solidity, there are three different data locations where variables can be stored: [storage](/docs/when-to-use-storage-vs-memory-vs-calldata-in-solidity#when-to-use-storage), [memory](/docs/when-to-use-storage-vs-memory-vs-calldata-in-solidity#when-to-use-memory), and [calldata](/docs/when-to-use-storage-vs-memory-vs-calldata-in-solidity#when-to-use-calldata). While `memory` and `calldata` may seem similar at first glance, they serve very different purposes and have important distinctions.
+
+
+Memory is a temporary data storage location that is used to hold data during the execution of a function. Memory is cleared once the function execution is complete. It is similar to the temporary memory storage used in a computer's RAM.
+
+Memory is useful for storing variables that are only needed temporarily during the execution of a function. These variables may include function arguments, local variables, and dynamic arrays that are created during the execution of a function.
+
+When declaring a variable in Solidity, you must specify its data location. To store a variable in memory, you use the keyword `"memory"`. Here is an example:
+
+<CodeGroup>
+  ```sol sol
+  function addNumbers(uint a, uint b) public pure returns (uint) {
+    uint c = a + b;
+    return c;
+  }
+  ```
+</CodeGroup>
+
+In this example, variables "a", "b", and "c" are all stored in memory because they are temporary variables that are only needed during the execution of the function.
+
+# Calldata
+
+Calldata is also a temporary data storage location, but it is used to hold function arguments that are passed in from an external caller, such as a user or another contract. Calldata is read-only and cannot be modified by the function.
+
+Calldata is useful for passing large amounts of data to a function without having to copy the data into memory, which can be expensive in terms of gas usage. By using `calldata`, you can avoid the overhead of copying data into `memory` and reduce the amount of gas needed to execute the function.
+
+To store a variable in `calldata`, you use the keyword `"calldata"`. Here is an example:
+
+<CodeGroup>
+  ```sol sol
+  function transfer(address recipient, uint amount) public {
+    // send tokens to the recipient
+  }
+  ```
+</CodeGroup>
+
+In this example, the `"recipient"` and `"amount"` variables are stored in `calldata` because they are function arguments passed in from an external caller.
+
+One key difference between `memory` and `calldata` is that `memory` can be modified by the function, while `calldata` cannot. This means that if you want to modify a function argument, you must first copy it into memory. Here is an example:
+
+<CodeGroup>
+  ```sol sol
+  function addOne(uint[] calldata numbers) public pure returns (uint[] memory) {
+    uint[] memory newNumbers = new uint[](numbers.length);
+    for (uint i = 0; i < numbers.length; i++) {
+      newNumbers[i] = numbers[i] + 1;
+    }
+    return newNumbers;
+  }
+  ```
+</CodeGroup>
+
+In this example, the `"numbers"` variable is stored in `calldata` because it is a function argument passed in from an external caller. The function loops through the `"numbers"` array and adds 1 to each element, storing the modified values in a new array called `"newNumbers"`. Because we need to modify the data in `"numbers"`, we first copy it into memory in another variable called `"newNumbers"`.
+
+# Conclusion
+
+In summary, `memory` and `calldata` are both temporary data storage locations in Solidity, but they have important differences. Memory is used to hold temporary variables during function execution, while Calldata is used to hold function arguments passed in from an external caller. Calldata is read-only and cannot be modified by the function, while Memory can be modified. If you need to modify function arguments that are stored in `calldata`, you must first copy them into `memory`.
