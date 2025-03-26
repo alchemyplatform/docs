@@ -10,25 +10,207 @@ hide-feedback: true
     background-color: rgba(var(--background), 1);
     z-index: 0;
   }
-  
-  .hero {
-    background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/landing.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    h4 {
-      color: #65636D;
-    }
+
+  .fern-header-searchbar {
+    display: none !important;
   }
-  :is(.dark) .hero {
-    background-image: linear-gradient(#020617 0%, #02061794 100%), url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/landing.png');
-    h4 {
-      color:rgb(210, 210, 210) !important;
+
+  .landing {
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 6.25rem 0.625rem;
+      z-index: 1;
+
+      @media (min-width: 768px) {
+        padding: 6.25rem 1.25rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        line-height: 2.75rem;
+        font-weight: 400;
+        color: var(--grayscale-12);
+        margin-bottom: 1rem;
+
+        @media (min-width: 768px) {
+          font-size: 4rem;
+          line-height: 4.4rem;
+        }
+      }
+
+      h4 {
+        color: var(--grayscale-11);
+        font-size: 1.5rem;
+        line-height: 2.25rem;
+        font-weight: 400;
+        margin-bottom: 2rem;
+      }
+    }
+
+    .search {
+      padding: 1.875rem 3.75rem 1.25rem 3.75rem;
+      border-radius: 1.5rem !important;
+      background-color: var(--accent-a3) !important;
+      backdrop-filter: blur(3px) !important;
+      max-width: 62.5rem;
+      align-self: center;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 4rem;
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+
+      .search-options {
+        padding-top: 0.625rem;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+
+        p {
+          padding-right: 0.625rem;
+          text-shadow: none !important;
+        }
+
+        button {
+          color: var(--accent-9) !important;
+          font-size: 1rem;
+        }
+      }
+
+      div.search-input-container > button {
+        background-color: var(--accent-1) !important;
+        width: 100%;
+        svg {
+          color: var(--accent-9);
+        }
+      }
+    }
+
+    .gradient {
+      padding: 1.25rem 3rem;
+      border-radius: 0.47rem !important;
+
+      p {
+        color: white !important;
+        font-weight: 600;
+        font-size: 0.875rem !important;
+      }
+
+      &:hover {
+        background: linear-gradient(90deg, #5f1c96, #000, #5f1c96, #000);
+        background-size: 400% 400%;
+        animation: animate-gradient 15s ease infinite !important;
+        box-shadow: 0px 0px 20px 0px rgba(81, 103, 255, 0.5);
+      }
+    }
+
+    .search-input-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.25rem;
+      bottom: 0;
+      transform: translateY(185%);
+      color: #3b82f6;
+      pointer-events: none;
     }
   }
 
-  h2 {
-    margin-block: 64px;
+  :is(.dark) .landing {
+    .search {
+      background-color: rgba(255, 255, 255, 0.10) !important;
+    }
+
+    div.search-input-container {
+      button {
+        color: #0500197d;
+      }
+      kbd.fern-kbd {
+        background-color: white;
+        border-color: #14003527;
+        color: #020008e0;
+      }
+    }
+  }
+  
+  .hero {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: -15rem;
+    z-index: -1;
+    opacity: 1;
+
+    /* Linear gradient mask */
+    &:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(rgb(var(--background)) 25%, rgba(var(--background), 20%) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Latitudal lines that animate */
+    &:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-hor-solid.svg');
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      z-index: -1;
+      animation: moveUp 12s linear infinite;
+    }
+
+    /* Longitudal lines */
+    .vertical-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-vert-solid.svg');
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      z-index: -2;
+    }
+  }
+
+  :is(.dark) .hero-background {
+    &:before {
+      background-image: linear-gradient(rgb(var(--background)) 25%, rgba(var(--background), 70%) 100%);
+    }
+  }
+  
+  @keyframes moveUp {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-25%);
+    }
   }
 
   .content {
@@ -36,28 +218,156 @@ hide-feedback: true
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-radius: 70px;
-    padding: 100px 50px;
-    box-shadow: 0px -18px 40px 8px rgba(117, 152, 240, 0.1);
+    border-radius: 6.25rem;
+    padding: 6.25rem 3.125rem;
+    box-shadow: 0px -4.56rem 4.56rem 0px rgba(117, 152, 240, 0.09), 0px -1.125rem 2.5rem 0px rgba(117, 152, 240, 0.10);
     margin-bottom: 0;
-    z-index: 0;
+    z-index: 2;
     position: relative;
+    background-color: rgba(var(--background), 1);
 
     @media (min-width: 1024px) {
-      padding: 100px 100px;
+      padding: 5.5rem 0;
     }
 
     @media (max-width: 768px) {
-      padding: 100px 10px;
+      padding: 6.25rem 0.625rem;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      line-height: 2.75rem;
+      font-weight: 400;
+      margin-bottom: 3rem;
+
+      @media (max-width: 768px) {
+        margin-block: 1.25rem;
+      }
+    }
+
+    .main-cards {
+      max-width: 62.5rem;
+      align-self: center;
+      margin-bottom: 10.25rem;
+
+      @media (max-width: 768px) {
+        margin-bottom: 3.75rem;
+      }
+
+      .fern-card {
+        text-align: left;
+
+        img {
+          height: 15.375rem;
+          object-fit: cover;
+          padding-top: 1.25rem;
+          align-self: center;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .font-semibold {
+          font-size: 1.5rem;
+          margin-bottom: 0.625rem;
+          font-weight: 500;
+        }
+      }
+
+      .beginner .fern-card .items-start:before {
+        content: "Beginner";
+        background-color: #eff4f9;
+        color: #475569;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 400;
+      }
+
+      .advanced .fern-card {
+        background: linear-gradient(43.83deg, #1e204c 2.24%, #5c5fa7 118.17%);
+        
+        .items-start:before {
+          content: "Advanced";
+          background-color: #eff4f9;
+          color: #475569;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          margin-bottom: 1.25rem;
+          font-size: 0.875rem;
+          font-weight: 400;
+        }
+        
+        p {
+          color: #e2e8f0;
+        }
+        
+        .font-semibold {
+          color: white;
+        }
+      }
+    }
+
+    .use-cases {
+      > div {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem 0.625rem;
+        padding-bottom: 1.25rem;
+        align-self: center;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 87.5rem;
+
+        .fern-card {
+          flex: 0 1 100%;
+          min-width: 12.5rem;
+          padding: 1.25rem;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          text-align: left;
+
+          @media (min-width: 768px) {
+            flex: 0 1 calc(33.33% - 0.625rem);
+          }
+
+          .t-default.text-base.font-semibold {
+            font-weight: 500 !important;
+          }
+
+          .t-muted {
+            font-size: 0.875rem !important;
+          }
+
+          .items-start:before {
+            position: absolute;
+            top: 0.9375rem;
+            right: 0.9375rem;
+            content: "🕐 5 min";
+            background-color: #eff4f9;
+            color: #475569;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 400;
+          }
+        }
+      }
     }
   }
+
   :is(.dark) .content {
-    box-shadow: 0px -6px 50px 12px #ffffff38;
+    box-shadow: 0px -73px 73px 0px rgba(117, 152, 240, 0.09), 0px -18px 40px 0px rgba(117, 152, 240, 0.10);
   }
 
-  .main-cards {
-    padding-left: 20px;
-    padding-right: 20px;
+  .main-cards {s
     max-width: 1000px;
     align-self: center;
     margin-bottom: 164px;
@@ -108,7 +418,6 @@ hide-feedback: true
         color: white;
       }
     }
-
   }
 
   .use-cases > div {
@@ -197,102 +506,101 @@ hide-feedback: true
 </style>
 
 <div class="landing">
-<div class="hero">
-<h1>Alchemy Documentation</h1>
-<br />
-<h4 class="t-muted">All the resources you need to build onchain apps.</h4>
-<br />
-<a href="/get-started">
-  <button id="get-started-button" class="fern-button filled gradient">
-    Get Started
-  </button>
-</a>
-<br />
-<br />
-<div class="search">
-  <div class="search-input-container">
-    <SearchBar />
+  <div class="hero">
+    <div class="hero-background">
+      <div class="vertical-bg"></div>
+    </div>
+    <h1>Alchemy Documentation</h1>
+    <h4 class="t-muted ">All the resources you need to build onchain apps.</h4>
+    <a class="get-started-anchor" href="/get-started">
+      <button id="get-started-button" class="fern-button filled gradient">
+        Get started
+      </button>
+    </a>
+    <div class="search">
+      <div class="search-input-container">
+        <SearchBar />
+      </div>
+      <div class="search-options">
+        <p class="t-muted">Popular searches</p>
+        <button class="fern-button minimal">Transfers API</button>
+        <button class="fern-button minimal">How to send transactions</button>
+        <button class="fern-button minimal">NFT smart contract</button>
+      </div>
+    </div>
   </div>
-  <div class="search-options">
-    <p class="t-muted">Popular searches</p>
-    <button class="fern-button minimal">Transfers API</button>
-    <button class="fern-button minimal">How to send transactions</button>
-    <button class="fern-button minimal">NFT smart contract</button>
+
+  <div class="content">
+    <h2>What are you building?</h2>
+
+    <div class="main-cards px-4">
+      <CardGroup cols={2}>
+        <div class="beginner">
+          <Card
+            title="Build an onchain app"
+            href="/"
+            className="before:content-['Beginner'] before:bg-[#eff4f9] before:text-[#475569] before:px-2 before:py-1 before:rounded before:mb-5 before:text-sm before:font-normal"
+          >
+            Jump into building an app on our supported chains.
+            
+            <img src="../assets/stack.png" class="card-image" />
+          </Card>
+        </div>
+        <div class="advanced">
+          <Card
+            title="Build your own chain"
+            href="/"
+            className="bg-gradient-to-br from-[#1e204c] to-[#5c5fa7] text-white before:content-['Advanced'] before:bg-[#eff4f9] before:text-[#475569] before:px-2 before:py-1 before:rounded before:mb-5 before:text-sm before:font-normal"
+          >
+            Deploy and get access to millions of developers.
+            
+            <img src="../assets/diagram.png" class="card-image" />
+          </Card>
+        </div>
+      </CardGroup>
+    </div>
+
+    <h2>Use cases for every builder</h2>
+    <br />
+    <div class="use-cases">
+      <CardGroup cols={1}>
+        <Card
+          title="JSON RPC"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Supernode.svg" />}
+          href="/"
+          className="flex-1 min-w-[200px] p-5 h-full flex flex-col text-left md:w-1/3 before:content-['🕐_5_min'] before:absolute before:top-4 before:right-4 before:bg-[#eff4f9] before:text-[#475569] before:px-2 before:py-1 before:rounded before:text-sm before:font-normal"
+        >
+          Use our Node API to start reading and writing to the blockchain—scale infinitely.
+        </Card>
+        <Card
+          title="Onboard users"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />}
+          href="/"
+        >
+          Your complete toolkit to build embedded wallets—powered by smart accounts.
+        </Card>
+        <Card
+          title="Stream events"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Webhooks.svg" />}
+          href="/"
+        >
+          Get consistent push notifications and subscribe to ongoing onchain data.
+        </Card>
+        <Card
+          title="Index data"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Index.svg" />}
+          href="/"
+        >
+          Ship faster with a custom API for your onchain data. Reduce data lag by up to 50%. Backfill data up to 5x faster.
+        </Card>
+        <Card
+          title="Cheaper, faster, safer transactions"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />}
+          href="/"
+        >
+          Your complete toolkit to build embedded wallets—powered by smart accounts.
+        </Card>
+      </CardGroup>
+    </div>
   </div>
-</div>
-</div>
-
-<div class="content">
-<h2>What are you building?</h2>
-<br />
-
-<div class="main-cards">
-<CardGroup cols={2}>
-  <div class="beginner">
-    <Card
-      title="Build an onchain app"
-      href="/"
-    >
-      Jump into building an app on our supported chains.
-      
-      <img src="../assets/stack.png" class="card-image" />
-    </Card>
-  </div>
-  <div class="advanced">
-    <Card
-      title="Build your own chain"
-      href="/"
-    >
-      Deploy and get access to millions of developers.
-      
-      <img src="../assets/diagram.png" class="card-image" />
-    </Card>
-  </div>
-</CardGroup>
-</div>
-
-<h2>Use cases for every builder</h2>
-<br />
-<div class="use-cases">
-  <CardGroup cols={1}>
-    <Card
-      title="JSON RPC"
-      icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Supernode.svg" />}
-      href="/"
-    >
-      Use our Node API to start reading and writing to the blockchain—scale infinitely.
-    </Card>
-    <Card
-      title="Onboard users"
-      icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />}
-      href="/"
-    >
-      Your complete toolkit to build embedded wallets—powered by smart accounts.
-    </Card>
-    <Card
-      title="Stream events"
-      icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Webhooks.svg" />}
-      href="/"
-    >
-      Get consistent push notifications and subscribe to ongoing onchain data.
-    </Card>
-    <Card
-      title="Index data"
-      icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Index.svg" />}
-      href="/"
-    >
-      Ship faster with a custom API for your onchain data. Reduce data lag by up to 50%. Backfill data up to 5x faster.
-    </Card>
-    <Card
-      title="Cheaper, faster, safer transactions"
-      icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />}
-      href="/"
-    >
-      Your complete toolkit to build embedded wallets—powered by smart accounts.
-    </Card>
-  </CardGroup>
-</div>
-
-</div>
-
 </div>
