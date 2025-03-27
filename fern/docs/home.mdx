@@ -128,15 +128,12 @@ hide-feedback: true
     border-radius: 1.5rem !important;
     background-color: var(--accent-a3) !important;
     backdrop-filter: blur(3px) !important;
-    max-width: 62.5rem;
     align-self: center;
     margin-left: auto;
     margin-right: auto;
     margin-top: 4rem;
-
-    @media (max-width: 768px) {
-      display: none;
-    }
+    max-width: 62.5rem;
+    width: 100%;
 
     .search-options {
       padding-top: 0.625rem;
@@ -165,27 +162,21 @@ hide-feedback: true
     }
   }
 
-  .gradient {
+  #get-started-button {
     padding: 1.25rem 3rem;
     border-radius: 0.47rem !important;
-
+    background-color: var(--grayscale-12) !important;
+    transition: box-shadow 0.2s ease-in-out;
+    
     p {
-      color: white !important;
+      color: var(--grayscale-1) !important;
       font-weight: 600;
       font-size: 0.875rem !important;
     }
 
     &:hover {
-      background: linear-gradient(90deg, #5f1c96, #000, #5f1c96, #000);
-      background-size: 400% 400%;
-      animation: animate-gradient 15s ease infinite !important;
       box-shadow: 0px 0px 20px 0px rgba(81, 103, 255, 0.5);
     }
-  }
-
-  .search-input-container {
-    position: relative;
-    width: 100%;
   }
 
   .search-icon {
@@ -265,20 +256,31 @@ hide-feedback: true
         }
       }
 
-      .beginner .fern-card .items-start:before {
-        content: "Beginner";
-        background-color: var(--grayscale-3);
-        color: var(--grayscale-11);
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        margin-bottom: 1.25rem;
-        font-size: 0.875rem;
-        font-weight: 400;
+      .beginner-card .fern-card {
+        .items-start:before {
+          content: "Beginner";
+          background-color: var(--grayscale-3);
+          color: var(--grayscale-11);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          margin-bottom: 1.25rem;
+          font-size: 0.875rem;
+          font-weight: 400;
+        }
       }
 
-      .advanced .fern-card {
+      .advanced-card .fern-card {
         background: linear-gradient(43.83deg, var(--accent-11) 2.24%, var(--accent-12) 118.17%);
-        
+
+        .t-default {
+          color: var(--grayscale-1) !important;
+        }
+
+        .t-muted {
+          color: var(--grayscale-4) !important;
+          text-shadow: none !important;
+        }
+
         .items-start:before {
           content: "Advanced";
           background-color: var(--grayscale-3);
@@ -350,25 +352,12 @@ hide-feedback: true
   .fern-card {
     text-align: left;
   }
-
   
   :is(.dark) #get-started-button {
     background-color: white !important;
-    > p {
-      color: black !important;
-    }
-  }
-  :is(.dark) #get-started-button:hover {
-    background: linear-gradient(90deg,rgb(188, 124, 240), #ffffff, rgb(196, 145, 239), #ffffff);
-    background-size: 400% 400%;
-    animation: animate-gradient 23s ease infinite !important;
-    box-shadow: 0px 0px 20px 0px rgba(162, 172, 241, 0.63);
   }
 
   @media (max-width: 768px) {
-    .search {
-      display: none;
-    }
     .main-cards {
       margin-bottom: 60px;
     }
@@ -377,7 +366,7 @@ hide-feedback: true
     }
   }
 
-  /* Hide Radix popper content wrapper */
+  /* Hide all anchor links on the homepage */
   [data-radix-popper-content-wrapper] {
     display: none !important;
   }
@@ -392,7 +381,7 @@ hide-feedback: true
     <h1>Alchemy Documentation</h1>
     <h4 class="t-muted ">All the resources you need to build onchain apps.</h4>
     <a class="get-started-anchor" href="/get-started">
-      <button id="get-started-button" class="fern-button filled gradient">
+      <button id="get-started-button" class="fern-button filled">
         Get started
       </button>
     </a>
@@ -414,7 +403,7 @@ hide-feedback: true
 
     <div class="main-cards px-4">
       <CardGroup cols={2}>
-        <div class="beginner">
+        <div class="beginner-card">
           <Card
             title="Build an onchain app"
             href="/"
@@ -423,7 +412,7 @@ hide-feedback: true
             <img src="../assets/stack.png" class="card-image" />
           </Card>
         </div>
-        <div class="advanced">
+        <div class="advanced-card">
           <Card
             title="Build your own chain"
             href="/"
