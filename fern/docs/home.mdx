@@ -167,15 +167,171 @@ hide-feedback: true
     border-radius: 0.47rem !important;
     background-color: var(--grayscale-12) !important;
     transition: box-shadow 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
     
     p {
       color: var(--grayscale-1) !important;
       font-weight: 600;
       font-size: 0.875rem !important;
+      position: relative;
+      z-index: 2;
+    }
+
+    &:before, &:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 120px;
+      height: 120px;
+      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-button-blur.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &:before {
+      left: 35%;
+      transform: translate(-50%, -50%);
+    }
+
+    &:after {
+      right: 35%;
+      transform: translate(50%, -50%);
     }
 
     &:hover {
       box-shadow: 0px 0px 20px 0px rgba(81, 103, 255, 0.5);
+
+      &:before {
+        opacity: 0.5;
+        animation: 
+          slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalLeft 4s ease-in-out infinite,
+          fadeEdges 6s ease-in-out infinite;
+        animation-fill-mode: both;
+      }
+
+      &:after {
+        opacity: 0.5;
+        animation: 
+          slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalRight 4s ease-in-out infinite,
+          fadeEdges 6s ease-in-out infinite;
+        animation-delay: 0.5s;
+        animation-fill-mode: both;
+      }
+    }
+  }
+
+  @keyframes slideBlurLeft {
+    0%, 100% {
+      left: 25%;
+    }
+    33% {
+      left: 65%;
+    }
+    40% {
+      left: 62%;
+    }
+    60% {
+      left: 68%;
+    }
+    66% {
+      left: 65%;
+    }
+  }
+
+  @keyframes slideBlurRight {
+    0%, 100% {
+      right: 25%;
+    }
+    33% {
+      right: 65%;
+    }
+    40% {
+      right: 62%;
+    }
+    60% {
+      right: 68%;
+    }
+    66% {
+      right: 65%;
+    }
+  }
+
+  @keyframes floatVerticalLeft {
+    0%, 100% {
+      transform: translate(-50%, -60%);
+    }
+    25% {
+      transform: translate(-50%, -45%);
+    }
+    50% {
+      transform: translate(-50%, -55%);
+    }
+    75% {
+      transform: translate(-50%, -40%);
+    }
+  }
+
+  @keyframes floatVerticalRight {
+    0%, 100% {
+      transform: translate(50%, -60%);
+    }
+    25% {
+      transform: translate(50%, -45%);
+    }
+    50% {
+      transform: translate(50%, -55%);
+    }
+    75% {
+      transform: translate(50%, -40%);
+    }
+  }
+
+  @keyframes fadeEdges {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    33%, 66% {
+      opacity: 0.5;
+    }
+  }
+
+  :is(.dark) #get-started-button {
+    background-color: white !important;
+
+    &:hover {
+      &:before {
+        opacity: 0.5;
+        animation: 
+          slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalLeft 4s ease-in-out infinite,
+          fadeEdgesDark 6s ease-in-out infinite;
+        animation-fill-mode: both;
+      }
+
+      &:after {
+        opacity: 0.5;
+        animation: 
+          slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalRight 4s ease-in-out infinite,
+          fadeEdgesDark 6s ease-in-out infinite;
+        animation-delay: 0.5s;
+        animation-fill-mode: both;
+      }
+    }
+  }
+
+  @keyframes fadeEdgesDark {
+    0%, 100% {
+      opacity: 0.1;
+    }
+    33%, 66% {
+      opacity: 0.3;
     }
   }
 
@@ -353,10 +509,6 @@ hide-feedback: true
     text-align: left;
   }
   
-  :is(.dark) #get-started-button {
-    background-color: white !important;
-  }
-
   @media (max-width: 768px) {
     .main-cards {
       margin-bottom: 60px;
