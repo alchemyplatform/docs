@@ -7,7 +7,7 @@ slug: docs/1-execute-a-user-operation
 ---
 
 
-<Info>
+<Info title = "Want a Video Walkthrough?">
   Check out this [YouTube video of an implementation](https://www.youtube.com/watch?v=NM04uxcCOEw) of this step!
 </Info>
 
@@ -33,11 +33,11 @@ In your codebase we recommend you start by installing these contracts: [https://
 
 Deploying the EntryPoint is your first step, you'll find that in the repository under `@account-abstraction/contracts/core/EntryPoint.sol`.
 
-<Warning>
+<Warning title = "OpenZeppelin Contracts Dependency">
   Until [OpenZeppelin is included as a dependency](https://github.com/eth-infinitism/account-abstraction/pull/402) in this package, you'll need to install it as well. Again, with npm you can do like this: `npm i @openzeppelin/[email protected]`
 </Warning>
 
-<Warning>
+<Warning title = "Large Contract Size">
   When deploying this contract, you may get an error saying the contract code size is too large. You'll need to set the compiler settings to use the optimizer at 1000 runs. See [here for Hardhat](https://hardhat.org/hardhat-runner/docs/guides/compile-contracts#configuring-the-compiler) and [here for Foundry](https://book.getfoundry.sh/reference/config/solidity-compiler#optimizer)
 </Warning>
 
@@ -100,7 +100,7 @@ The last thing you should notice is that the result of the call should be the `a
   ```
 </CodeGroup>
 
-<Info>
+<Info title = "How do you want your account to work?">
   You have a ton of flexibility here! Are there other constructor arguments you would like to pass to your account? The `_owner` seems helpful here, but it's entirely up to you how you would like to implement your account. Your welcome to also name the function `createAccount` like we did, but that's completely up to you. Additionally, here we chose the `CREATE` opcode, which will deploy the address using the `hash(factory, nonce)` but maybe you would prefer to use `CREATE2`? Perhaps something to come back to, later on!
 </Info>
 
@@ -174,7 +174,7 @@ First, you'll need to deploy the `AccountFactory`, since we'll need its address 
 
 Once you have these two pieces, combine them! The calldata should be the factory address plus the encoded calldata to send along to the factory (be careful here if you're using strings to slice off the `0x` from the encoded calldata, so you don't end up with `0x{factory}0x{calldata}`, but rather `0x{factory}{calldata}`)
 
-<Info>
+<Info title = "Who is the owner?">
   You may be asking yourself "who is the owner" of the smart account? And really, you get to decide! With AA we gain flexibility to programmatically decide what privileges each key has, and what kind of cryptography we use to verify that key.
 
   In my example above we just provided an `address` as the owner, and in a future step we'll do a ECDSA recover to validate a signature on-chain. It's useful to keep in mind that this could instead be **many** keys and any type of cryptography to validate the signature.
@@ -235,8 +235,3 @@ The `entryPoint.handleOps` method takes two arguments: an array of user ops and 
 
 If they have been, you are ready to move onto step 2!
 
-***
-
-What’s Next
-
-* [2. Build a Paymaster](/docs/2-build-a-paymaster)

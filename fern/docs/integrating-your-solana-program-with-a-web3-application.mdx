@@ -1,5 +1,5 @@
 ---
-title: 2. Setup Your Application
+title: How to Integrate a Solana Program with a Web3 Application
 subtitle: >-
   This tutorial walks through creating a frontend application that will read and
   write data from your very first Solana Program using Phantom and Alchemy. It’s
@@ -7,7 +7,7 @@ subtitle: >-
 slug: docs/integrating-your-solana-program-with-a-web3-application
 ---
 
-
+# 1. Introduction
 Congrats on making it this far! You’ve already deployed your Solana program, and now we’ll build a frontend application that will interact with the program to allow you write and update a message you’ll store on the Solana blockchain! By the end of this tutorial, you’ll know how to connect your web3 app to a user’s Phantom Wallet and use your previously deployed Solana program to store a message that anyone can change. And we’re going to get through it together!
 
 Like before, you can find the finished product [here](https://github.com/alchemyplatform/solana-hello-world) on Github, and the visual below is what you're gonna build:.
@@ -16,6 +16,7 @@ Like before, you can find the finished product [here](https://github.com/alchemy
 
 You’ll see that each step of this tutorial corresponds to a git commit, like a progress checkpoint to help guide you through. If you have questions at any point feel free to reach out in the [Alchemy Discord](https://discord.com/invite/gWuC7zB) or post questions in our [Discussion Forum](/discuss)! You ready? Let’s go 😎!
 
+# 2. Setup Your Application
 
 ## Creating the Application
 
@@ -225,7 +226,7 @@ One more [git commit](https://github.com/alchemyplatform/solana-hello-world/comm
 
 Alright! Let’s add a way for users to connect to your application using their wallet. A reminder, most people in the Solana ecosystem use Phantom as their wallet of choice. When a wallet connects to an application, it’s giving the app permission to send transaction on its behalf. To send transactions on behalf of our users, we’ll need our Alchemy RPC URL again.
 
-<Info>
+<Info title="Forgot to get an Alchemy account and Phantom wallet?">
   You should have an Alchemy account and Phantom wallet from the previous tutorials! If you didn’t make them, you can go [here](https://dashboard.alchemy.com/signup/?a=d0c917f7ef) to create an Alchemy Account, and follow this [setup](/docs/how-to-setup-your-solana-development-environment#3-install-your-phantom-wallet) tutorial to download Phantom.
 </Info>
 
@@ -237,7 +238,7 @@ We’ll use our Alchemy RPC URL as an [environment variable](https://nextjs.org/
   ```
 </CodeGroup>
 
-<Info>
+<Info title="Why are we making a special file for our Alchemy RPC URL?">
   Eventually, you’re going to want to push your code to a Github repository, you don’t want to hardcode private information like your Alchemy RPC URL in your application. Otherwise, someone can find it and then spam your connection if they’re not very nice. So instead, we use `.env.local` to hide your Alchemy RPC URL and its API KEY. And thanks to your `app/.gitignore` file, this specific file `.emv.local` won’t ever be pushed to Github. Problem solved!
 </Info>
 
@@ -270,7 +271,7 @@ Walking through this line-by-line:
 * We then create some constants to denote the `commitmentLevel` we’ll look for in our `connection` to the Solana blockchain through our Alchemy RPC URL `endpoint`.
 * Lastly, we’ll add constants from the IDL we imported earlier to have easy access to our `helloWorldprogramId` and `helloWorldprogramInterface`. We’ll keep them in the same file, and they’ll be useful when we make calls to our Solana program in the next step.
 
-<Info>
+<Info title="What is a commitment level?">
   The commitment describes how finalized a block containing transactions is at that point in time. You may know that blockchains are just a chain of bundles of transactions, called blocks. Before being appended to the chain to be read by applications, blocks that require confirmation from nodes in the network, which takes time. The commitment level determines how many nodes in the network need to confirm the block before it’s ready to be read through a client for a web3 application. The more nodes that confirmed, the more likely the block was truly appended to the blockchain.
 
   Essentially, it’s a tradeoff how fast vs. safe you want your application to be when it comes to reading transactions from Solana, where `processed` is fastest and `finalized` is most safe. Typically, people go in the middle with `confirmed`, but for this application we can use `processed`.You can read more [here](https://docs.solana.com/developing/clients/jsonrpc-api#configuring-state-commitment) about this!

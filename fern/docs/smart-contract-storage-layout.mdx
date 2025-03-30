@@ -95,8 +95,7 @@ Because of the immense storage size a contract’s storage can be considered vir
 A simple visualization of this idea is show here:
 
 ![1999](/images/e316e25-diagram-mapping-contract-state-variables-to-storage-slots.jpeg "diagram-mapping-contract-state-variables-to-storage-slots.jpeg")
-
-Diagram of how state variables are mapped to storage slots.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how state variables are mapped to storage slots.</div>
 
 Here we can see how variables a, b and c get mapped from their declaration order to their storage slots. To see how the storage variables actually get encoded and stored in the slots at the binary level we need to dig a little deeper and understand the concepts of endian-ness, byte-packing and byte-padding.
 
@@ -109,8 +108,7 @@ Big-endian → last byte of binary representation of data type is stored first L
 For example take the hexadecimal number 0x01e8f7a1, a hexadecimal representation of the decimal number 32044961. How is this value stored in memory? Visually it will look like one of the diagrams below depending on the endian-ness.
 
 ![1670](/images/a21dcf5-diagram-of-big-endian-and-little-endian-storage-layouts-in-solidity-smart-contracts.jpeg "diagram-of-big-endian-and-little-endian-storage-layouts-in-solidity-smart-contracts.jpeg")
-
-Diagram of how computers store multi-byte values in memory.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how computers store multi-byte values in memory.</div>
 
 ### How is Endian-ness used in Ethereum?
 
@@ -127,8 +125,7 @@ Diagram of how computers store multi-byte values in memory.
 Many variable types are smaller than the 32 byte slot size, eg: bool, uint8, address. Here is a diagram of what it looks like when we want to store state variables of types requiring less than 32 bytes of memory:
 
 ![1999](/images/89ce3ce-diagram-of-how-the-ethereum-virtual-machine-pads-state-variables-that-need-less-than-32-bytes-of-memory.jpeg "diagram-of-how-the-ethereum-virtual-machine-pads-state-variables-that-need-less-than-32-bytes-of-memory.jpeg")
-
-Diagram of how variables that require less than 32 bytes of memory are stored.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how variables that require less than 32 bytes of memory are stored.</div>
 
 Due to EVM padding, developer’s can directly address the state variables a and c at the cost of wasting a lot of expensive storage memory. The EVM stores the variables in a way that minimizes the cost of reading/writing the values at the expense of the amount of memory used.
 
@@ -138,7 +135,7 @@ An example of this is shown in the **PackedContract** below which is just a reor
 
 ![1999](/images/058295a-diagram-of-a-packed-contract-example-where-variables-are-packed-into-storage-slots-to-reduce-storage-memory.jpeg "diagram-of-a-packed-contract-example-where-variables-are-packed-into-storage-slots-to-reduce-storage-memory.jpeg")
 
-Diagram of how the Ethereum Virtual Machine packs variables into storage slots to reduce how much storage memory is used.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how the Ethereum Virtual Machine packs variables into storage slots to reduce how much storage memory is used.</div>
 
 The EVM will pack variables within a slot starting at the right of the slot, moving left for each subsequent state variable that can be packed into the same slot. Here we can see that the variables a and c have been packed into storage slot 0. Because the size of variable b cannot fit into the remaining space in slot 0, the EVM assigns variable b to slot 1.
 
@@ -151,8 +148,7 @@ The storage gas savings of tightly packing variables can significantly increase 
 In scenarios where we have a group of variables that logically belong together and are often read and written as unit, we can define a [user-defined type](https://www.alchemy.com/overviews/solidity-struct) via Solidity’s struct keyword and apply the above knowledge of byte-packing to get the most efficient gas-usage regarding storage usage and reading and writing of storage variables.
 
 ![1999](/images/3e9dfc1-diagram-of-how-user-defined-structrs-are-packed-and-stored-in-smart-contract-storage-memory.jpeg "diagram-of-how-user-defined-structrs-are-packed-and-stored-in-smart-contract-storage-memory.jpeg")
-
-Diagram of how structs are packed and stored in smart contract storage memory.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how structs are packed and stored in smart contract storage memory.</div>
 
 Now we have the benefit of tight byte-packing and grouped reading/writing of the state variable someStruct.
 
@@ -163,8 +159,7 @@ Now we have the benefit of tight byte-packing and grouped reading/writing of the
 For example, the storage layout of the state variables in the following contract:
 
 ![1999](/images/c9c107b-diagram-of-how-statically-sized-variables-are-stored-in-smart-contract-storage-memory.jpeg "diagram-of-how-statically-sized-variables-are-stored-in-smart-contract-storage-memory.jpeg")
-
-Diagram of how statically-sized state variables are stored in storage slots.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how statically-sized state variables are stored in storage slots.</div>
 
 ## How are dynamically-sized state variables stored in smart contract memory?
 
@@ -181,8 +176,7 @@ For a dynamically-sized array, the marker slot also stores the array’s length.
 For example:
 
 ![1999](/images/388c33b-diagram-of-how-dynamically-sized-variables-are-stored-in-storage-memory-using-keccak256-hashing.jpeg "diagram-of-how-dynamically-sized-variables-are-stored-in-storage-memory-using-keccak256-hashing.jpeg")
-
-Diagram of how dynamically-sized state variables are stored in storage slots using marker slots and keccak256 hashes.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how dynamically-sized state variables are stored in storage slots using marker slots and keccak256 hashes.</div>
 
 ## How are mappings stored in smart contract storage?
 
@@ -197,5 +191,4 @@ For [mappings](https://www.alchemy.com/overviews/solidity-mapping), the marker s
 Here is an diagram depicting how mappings are stored in memory:
 
 ![1999](/images/c4ba494-diagram-of-how-mappings-are-stored-in-storage-memory-using-keccak256-hashing.jpeg "diagram-of-how-mappings-are-stored-in-storage-memory-using-keccak256-hashing.jpeg")
-
-Diagram of how mappings are stored in smart contract storage slots.
+<div align="center" style="color: gray; font-style: italic;">Diagram of how mappings are stored in smart contract storage slots.</div>

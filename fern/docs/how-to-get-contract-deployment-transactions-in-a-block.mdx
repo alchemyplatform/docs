@@ -1,22 +1,42 @@
 ---
-title: Introduction
+title: How to Get Contract Deployment Transactions in a Block
 subtitle: Learn how to get all the contract creation transactions from a block
 slug: docs/how-to-get-contract-deployment-transactions-in-a-block
 ---
 
 
-### Don’t have an API key?
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>API Key Banner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+    <div class="wrapper_body_cmn_out">
+        <div class="api_key_instruct_ban">
+            <div class="api_key_instruct_ban_lft">
+                <h3>Don't have an API key?</h3>
+                <p>Sign up to get access.</p>
+            </div>
+            <div class="api_key_instruct_ban_rtt">
+                <a href="https://dashboard.alchemy.com/signup/?a=contract-deploys" class="gt_startd_vbtn">Get started for free</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 
-Sign up to get access.
-
-[Get started for free](https://dashboard.alchemy.com/signup/?a=contract-deploys)
-
-<Info>
+<Info title = "API Endpoint">
   This tutorial uses the [getBlockWithTransactions](/reference/sdk-getblockwithtransactions) and [getBlock](/reference/sdk-getblock) endpoints.
 </Info>
 
 ***
 
+# Introduction
 
 A transaction that represents the creation of a new smart contract is called a ***contract deployment transaction***. These transactions provide valuable information about the creation of new contracts, such as the address of the contract, the code, and the parameterss passed to the contract's constructor. Apps like **Opensea** use contract deployment transactions to monitor the deployment of new NFT contracts on the network.
 
@@ -43,8 +63,7 @@ Make sure that node is at least **v14 or higher** by typing the following in you
 In case you haven't already, [sign up for a free Alchemy account](https://dashboard.alchemy.com/signup/?a=contract-deploys).
 
 ![2880](/images/06c375a-Screenshot_2022-11-04_at_10.36.40_PM.png "Screenshot 2022-11-04 at 10.36.40 PM.png")
-
-Alchemy's account dashboard where developers can create a new app on the Ethereum blockchain.
+<div align="center" style="color: gray; font-style: italic;">Alchemy's account dashboard where developers can create a new app on the Ethereum blockchain.</div>
 
 Next, navigate to the [Alchemy Dashboard](https://dashboard.alchemy.com/signup/?a=contract-deploys) and [create a new app](/reference/alchemy-quickstart-guide). Make sure you set the chain to Ethereum and the network to Mainnet. Once the app is created, click on your app's *View Key* button on the dashboard. Take note of the **API KEY**.
 
@@ -76,7 +95,7 @@ We will look at two ways in which we can find the contract deployment transactio
 * The first approach uses the fact that there is no `to` address for a contract deployment transaction. This is true because when a contract is deployed, it does not have an address yet, as it does not exist on the blockchain. Therefore, the `to` field in the transaction is set to `null`.
 * The second approach identifies a contract deployment transaction by looking at the type of `OPCODE` for the transaction. If the `type` is `CREATE` or `CREATE2` then it is a contract deployment transaction, otherwise not.
 
-<Info>
+<Info title = "CREATE and CREATE2">
   CREATE and CREATE2 are OPCODES that are observed during a contract deployment.
 
   CREATE is the original way of creating a new smart contract. It deploys a smart contract by creating a new contract address. The contract address is determined by the contract creator's address and the nonce of the creator's account.

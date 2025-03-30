@@ -7,23 +7,26 @@ slug: docs/how-to-get-token-balance-for-an-address
 ---
 
 
-<Info>
+<Info title = "API Endpoint">
   This tutorial uses the **[alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances)** endpoint.
 </Info>
 
 If you just need the script for this tutorial refer to the below Recipe:
 
-💹
-
-Script to get token balance for an address
-
-Open Recipe
+<Card
+title="Script to get token balance for an address"
+iconPosition="center" 
+href="https://alchemy-docs.readme.io/v1.0/recipes/script-to-get-token-balance-for-an-address"
+slug = "script-to-get-token-balance-for-an-address">
+Open Recipe >
+</Card>
 
 The token balances for a user address is a critical data point for almost any web3 use case - be it DeFi platforms, wallets, analytics, exchanges, and many others. A common use case would be displaying the balances as below in your wallet app.
 
-![359](/images/04db97a-token.png "token.png")
-
-Sample wallet screen displaying coin balances
+<div align="center">
+  <img src="/images/04db97a-token.png" alt="359" title="token.png"/>
+</div>
+<div align="center" style="color: gray; font-style: italic;">Sample wallet screen displaying coin balances</div>
 
 To fetch this data you have 2 options:
 
@@ -43,7 +46,7 @@ When querying the token balance for a user, you should have couple of key parame
 
 For this particular example we're going to fetch the USDT balance for address [`0x00000000219ab540356cbb839cbe05303d7705fa`](https://etherscan.io/address/0x00000000219ab540356cbb839cbe05303d7705fa) (fun fact: this address has the highest ETH balance among all addresses! )
 
-<Check>
+<Check title = "No-Code Example">
   For a no-code view of the API request, check out the [composer tool](https://composer.alchemyapi.io/?share=eJwti8EOgjAQRP9lzx6WllLKTSEePRkvQMy2rGKgxSBGjfHfbYyTOcwk773B9XQJUOAKAi_PaR5_2.PST92OPEMBNLqe.et45mU.DRw2NFJwfIMVXGkmf6DxHl9RAz7xH5EYsipFqTJnbS6Ns4xKouy0RnWi6NZN5Lt1meitUXklmJWQJARmscakyugykVUuE3a6gRbazxfzpDNj)
 </Check>
 
@@ -380,7 +383,7 @@ Understanding the API Response:
 
 The `tokenBalance` in its raw form as returned by [alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances) is the number in terms of the [smallest unit of the token](https://docs.ethhub.io/guides/a-straightforward-guide-erc20-tokens/). In the code below, we do a bit of calculation to get the clear quantity of the token in decimal units.
 
-<Info>
+<Info title = "The Calculation of tokenBalance">
   The tokenBalance returned by the API is usually a number with several digits (in this case `4929853276` for USDT) Every ERC20 token has a metadata information called "[decimals](https://medium.com/@jgm.orinoco/understanding-erc-20-token-contracts-a809a7310aa5)" which denotes the divisibility of a token (ranges from 0 to 18). For USDT, the value of "decimals" is 6. The response returned by Alchemy's [alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances) API is as below\\
 
   `tokenBalance = no. of tokens (quantity) * Math.pow(10, 6)` Hence, the actual quantity of the USDT token, in this case, will be `4929853276/10^6 = 4,929.853276` The same operation needs to be done to obtain the actual quantity for any token. We show the calculation in the code below.

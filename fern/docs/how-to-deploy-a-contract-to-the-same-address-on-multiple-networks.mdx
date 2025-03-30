@@ -1,11 +1,10 @@
 ---
-title: Overview
+title: How to Deploy a Contract to the Same Address on Multiple Networks
 subtitle: >-
   This two-part tutorial will explore two ways you can deterministically deploy
   a contract across multiple networks.
 slug: docs/how-to-deploy-a-contract-to-the-same-address-on-multiple-networks
 ---
-
 
 [**How to deploy a contract to the same address on multiple networks**](/docs/how-to-deploy-a-contract-to-the-same-address-on-multiple-networks) **(Part 1)** [**Create2: An alternative to deriving contract addresses**](/docs/create2-an-alternative-to-deriving-contract-addresses) **(Part 2)**
 
@@ -17,6 +16,7 @@ However, perhaps you want to deploy your contract across multiple networks with 
 
 In the image above, transactions A and B are identical and so will deploy the contract to the same address on both networks. In transaction C, however, the nonce is different and thus changes the deployed contract address. Now that we know what conditions need to be satisfied to deploy deterministically, let's deploy some contracts!
 
+# Overview
 
 * [**Prerequisites**](##prerequisites)
 
@@ -88,7 +88,7 @@ In this tutorial, we will deploy deterministically to the following test network
   Whenever possible, use the Sepolia testnet as all other current POW testnets will be depreciated post-merge.
 </Check>
 
-<Warning>
+<Warning title = "Choosing a testnet">
   While you can use the Goerli testnet, we caution against it as the Ethereum Foundation has announced that [Goerli will soon be deprecated](https://www.alchemy.com/blog/goerli-faucet-deprecation).
 
   We therefore recommend using [Sepolia](https://www.alchemy.com/overviews/sepolia-testnet) as Alchemy has full Sepolia support and a free [Sepolia faucet](https://sepoliafaucet.com/) also.
@@ -128,7 +128,9 @@ To create a new wallet address, open MetaMask, click your **profile icon > Creat
 
 ![](/images/afe16d7-MetaMask-create-account-set.png "MetaMask-create-account-set.png")
 
-<Warning />
+<Warning>
+Once you add an account there is no way to remove it
+</Warning>
 
 If you want to remove the account later, you can use the method in **Option 2** and **Import Account** instead.
 
@@ -792,6 +794,13 @@ If successful, your vault contract will deploy on each testnet to the same addre
 
 <Check>
   To check the status of your deployment, search the following blockchain explorers for your contract address:
+  - [Goerli Etherscan](https://goerli.etherscan.io/)
+
+  - [Polyscan Mumbai](https://mumbai.polygonscan.com/)
+
+  - [Arbitrum Goerli](https://goerli-rollup-explorer.arbitrum.io)
+
+  - [Optimism Goerli](https://optimistic.etherscan.io/)
 </Check>
 
 At this point in the tutorial, we've deployed a contract on each test network to the same address. Having set the nonces, we can guarantee this result. However, there are some downsides to this method:
@@ -989,9 +998,3 @@ If successful, you will see the withdraw event in console:
   0.001ETH Withdrawn!
   ```
 </CodeGroup>
-
-***
-
-What’s Next
-
-* [Create2: An alternative to deriving contract addresses](/docs/create2-an-alternative-to-deriving-contract-addresses)

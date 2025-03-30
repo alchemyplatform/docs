@@ -1,5 +1,5 @@
 ---
-title: 'Method 1: Filter by smart contract account addresses'
+title: How to Use Custom Webhooks for Mined User Operations?
 subtitle: >-
   Learn how to stream real-time alerts for mined User Operation with Custom
   Webhooks + variables
@@ -12,12 +12,13 @@ Using [Custom Webhooks with variables](/reference/custom-webhook-variables) you 
 
 ### Don't know what User Operation are? Find out more about our account abstraction services [here](/docs/account-abstraction-overview)!
 
-<Info>
+<Info title = "UserOperationEvent">
   This will only work for entrypoints that emit the UserOperationEvent (defined by the EF [here](https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/interfaces/IEntryPoint.sol)). The event signature for user operations is
 </Info>
 
 **This article will explain 2 different methods for setting up notifications for mined userOperations.**
 
+# Method 1: Filter by smart contract account addresses
 
 To receive notifications for every userOp transaction sent from a list of sender (smart contract account) addresses, you can create a graphQL query that filters data using 2 log topics:
 
@@ -47,11 +48,18 @@ curl --request POST \
      --data '{"items":["0x000000000000000000000000365dF858bdb4C81dD5854B8ef30a6D1CB0Ea4d75"]}'
 ```
 
-<Info />
+<Info title = "Non-empty variables + auth token">
+- When creating a variable, you must use a non-empty list of items. If needed, you can use a dummy address
+- Get your auth token from the [webhooks dashboard](https://dashboard.alchemy.com/webhooks)
+</Info>
+
 
 2. **[Create](/reference/create-webhook) a new custom webhook that filters by topic 0 and topic 2 (event signature and sender addr). You can use the create webhook endpoint or dashboard.**
 
-<Warning />
+<Warning title = "Match variable name + network">
+- The variable name must match the name you used in step 1
+- Select the network you will be sending user ops on - if you are sending on multiple networks, you will need multiple separate webhooks
+</Warning>
 
 For example:
 
@@ -105,13 +113,13 @@ curl --request PATCH \
 '
 ```
 
-<Warning>
+<Warning title ="Address variable format">
   The addresses must be in byte32 hex format, so you will likely need to convert from the SCA sender address format used in the userOp signature. For example, you can use [web3.js padLeft](https://web3js.readthedocs.io/en/v1.2.11/web3-utils.html#padleft):
 </Warning>
 
 This query will send you push notifications for every user operation event that has a sender address in the uoSenderAddr variables list you created!
 
-<Info>
+<Info title = "Only receive webhooks for non-empty data">
   If you would like to only receive webhooks for non-empty queries, rather than for every block, follow [these](/reference/custom-webhooks-faq#how-do-i-receive-webhooks-for-only-non-empty-results-ie-turn-off-the-heartbeat-mechanism-described-abovedont-receive-a-webhook-for-every-block) instructions to set the `skip_empty_messages`param to true in your query.
 </Info>
 
@@ -137,12 +145,17 @@ curl --request POST \
      --header 'content-type: application/json' \
      --data '{"items":["0xec8f905f6cf36caaea521c041c60adbff4e004269e09e81759aa307d269b5324"]}'
 ```
-
-<Info />
+<Info title = "Non-empty variables + auth token">
+- When creating a variable, you must use a non-empty list of items. If needed, you can use a dummy address 
+- Get your auth token from the [webhooks dashboard](https://dashboard.alchemy.com/webhooks)
+</Info>
 
 2. **[Create](/reference/create-webhook) a new Custom Webhook that filters by the topic 0 and topic 1 (event signature and user op hash)**
 
-<Warning />
+<Warning title = "Match variable name + network">
+- ensure variable name matches the name you used in step 1 
+- select you have selected the network you will be sending user ops on 
+</Warning>
 
 For example:
 

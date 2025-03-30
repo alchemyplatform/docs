@@ -19,7 +19,7 @@ Until [Alchemy Notify](https://alchemy.com/notify?r=affiliate:ba2189be-b27d-4ce9
 
 With Alchemy, sending real-time push notifications to your users for critical events such as [dropped & pending](/docs/ethereum-transactions-pending-mined-dropped-replaced), wallet activity, and even gas price changes is straightforward, easy, and reliable.
 
-<Info>
+<Info title = "Alchemy Notify v1 vs v2">
   Learn about [the differences between Alchemy Notify v1 and v2](https://alchemy.com/blog/launching-notify-v2-with-improvements-to-reliability-scalability-and-security) in our announcement.
 </Info>
 
@@ -56,7 +56,7 @@ Here's what we'll use for our architecture:
 * [Subscription API](/reference/subscription-api) to communicate between the client and server.
 * [Alchemy Notify](https://alchemy.com/notify?r=affiliate:ba2189be-b27d-4ce9-9d52-78ce131fdc2d) to monitor an address and send a push notification when there is a new activity.
 
-<Info>
+<Info title = "Tutorial using mainnet or testnet">
   If you don't want to spend real (mainnet) Ethereum to try out this tutorial, you can follow the same process using the [Goerli testnet](https://www.alchemy.com/overviews/goerli-faucet) and [get Goerli ETH from a faucet](https://goerlifaucet.com/), so you can send transactions to and from your target address for testing without paying for gas.
 </Info>
 
@@ -131,7 +131,7 @@ There are two ways to create and modify notifications:
 
 For our example, we’ll work with both! Let’s start by looking at the dashboard.
 
-<Info>
+<Info title = "Create Alchemy Account">
   If you don’t already have one, you’ll first need to [create an account on Alchemy](https://alchemy.com/?r=affiliate:ba2189be-b27d-4ce9-9d52-78ce131fdc2d). The free version will work fine for getting started.
 </Info>
 
@@ -145,8 +145,7 @@ Here you’ll see the different kinds of notifications you can set up:
 * Gas Price
 
 ![1600](/images/d8fbdd1-Untitled_1.png "Untitled (1).png")
-
-Alchemy Notify API dashboard where web3 developers can create new webhooks.
+<div align="center" style="color: gray; font-style: italic;">Alchemy Notify API dashboard where web3 developers can create new webhooks.</div>  
 
 For our example, we’ll use the [Address Activity](https://docs.alchemy.com/alchemy/guides/using-notify#address-activity) notification.
 
@@ -159,8 +158,7 @@ Alchemy sends all the relevant details to this webhook. Your server needs to sim
 #### a) Create a notification by clicking “Create Webhook” within "Address Activity"
 
 ![1600](/images/6829dd3-Untitled_1.jpg "Untitled (1).jpg")
-
-Notify API dashboard showing how to create a new webhook based on address activity.
+<div align="center" style="color: gray; font-style: italic;">Notify API dashboard showing how to create a new webhook based on address activity.</div>  
 
 #### b) Enter the webhook URL
 
@@ -183,22 +181,19 @@ Make sure the app selected is on the Ethereum network you want to test on; if yo
 #### e) Click “Create Webhook”
 
 ![1189](/images/c93cc75-Screenshot_2022-05-10_at_2.07.41_PM_1.png "Screenshot 2022-05-10 at 2.07.41 PM (1).png")
-
-Alchemy address activity webhook interface with the chain, network, webhook URL, and Ethereum address filled in.
+<div align="center" style="color: gray; font-style: italic;">Alchemy address activity webhook interface with the chain, network, webhook URL, and Ethereum address filled in.</div>  
 
 ### 3. Insert the Alchemy Webhook ID and Auth Key
 
 Find your webhook ID in the panel area of the webhook you created.
 
 ![739](/images/20bb4f0-Screenshot_2022-05-10_at_2.10.19_PM.png "Screenshot 2022-05-10 at 2.10.19 PM.png")
-
-Where to find the webhook ID.
+<div align="center" style="color: gray; font-style: italic;">Where to find the webhook ID.</div>  
 
 Find the auth token on the top right of the notify page on your dashboard.
 
 ![1190](/images/43fb17f-Screenshot_2022-05-10_at_2.13.50_PM.png "Screenshot 2022-05-10 at 2.13.50 PM.png")
-
-Where to find the Auth Key for the Alchemy Notify API.
+<div align="center" style="color: gray; font-style: italic;">Where to find the Auth Key for the Alchemy Notify API.</div>  
 
 Open the `server.js` file and change lines 37 and 43 in server.js to reflect your particular Alchemy webhook ID and auth token.
 
@@ -245,22 +240,19 @@ That’s all it takes!
 If you now go to your Heroku deployment URL (e.g. [http://xxxxxxxxx.herokuapp.com/](http://xxxxxxxxx.herokuapp.com/)), your dApp looks like this:
 
 ![1309](/images/001807b-Untitled_2.png "Untitled (2).png")
-
-Example Heroku deployment URL after the Heroku app was deployed.
+<div align="center" style="color: gray; font-style: italic;">Example Heroku deployment URL after the Heroku app was deployed.</div>  
 
 ### 5. Add an Address via API
 
 Click “Enable Ethereum” to connect to MetaMask and select a wallet you want to connect to from the drop-down menu.
 
 ![1459](/images/1882710-Untitled_3.png "Untitled (3).png")
-
-Enable Ethereum and connect to MetaMask.
+<div align="center" style="color: gray; font-style: italic;">Enable Ethereum and connect to MetaMask.</div>  
 
 And now click “Enable Notifications on this address” to register the address:
 
 ![911](/images/396bc2c-Untitled_4.png "Untitled (4).png")
-
-A confirmation message that the Ethereum wallet address was added to notifications.
+<div align="center" style="color: gray; font-style: italic;">A confirmation message that the Ethereum wallet address was added to notifications.</div>  
 
 Confirm the wallet address was added to the notification in the Alchemy Dashboard.
 
@@ -268,7 +260,7 @@ Confirm the wallet address was added to the notification in the Alchemy Dashboar
 
 And now, with everything in place, you can test out your dApp!
 
-<Info>
+<Info title = "Heroku Command">
   If you face any issues in Step 5 or 6 and the behavior is not as expected, you can use the command `heroku logs -t` to view the heroku logs for debugging.
 </Info>
 
@@ -281,8 +273,7 @@ With everything in place, send a small amount of test net ETH to the address, an
 Then, the webhook’s messages will show up on your front end.
 
 ![867](/images/12e6cf3-Screenshot_2022-05-10_at_2.23.03_PM.png "Screenshot 2022-05-10 at 2.23.03 PM.png")
-
-Example Ethereum address notification displayed in a dApp.
+<div align="center" style="color: gray; font-style: italic;">Example Ethereum address notification displayed in a dApp.</div>  
 
 Congratulations on your dApp deployment!
 
@@ -300,7 +291,7 @@ The server will be a simple Express node.js server, and it will do three things:
 2. Interact with the Alchemy Notify API to set up/modify notifications
 3. Create a webhook URL to receive real-time notifications from Alchemy\\
 
-<Info>
+<Info title = "Environment Specifics">
   This code, with some customization for your specific on-premise server, AWS, or other hosting providers, can be run to power the tutorial. You will need to install express, path, socket.io, and node-fetch into your environment.
 </Info>
 
@@ -629,8 +620,7 @@ Here is the entire sample index.html client that we built:
 That’s all it takes! With a quick build and deploy, our dApp looks like this:
 
 ![1309](/images/b7645f4-Untitled_6.png "Untitled (6).png")
-
-An example of a dApp with real-time transaction notifications.
+<div align="center" style="color: gray; font-style: italic;">An example of a dApp with real-time transaction notifications.</div>  
 
 <Info>
   You can deploy the above code on your provider of choice like AWS, Digital Ocean or Heroku. For the purposes of this section, we've deployed to Heroku.
@@ -641,28 +631,24 @@ An example of a dApp with real-time transaction notifications.
 Click “Enable Ethereum” to connect to MetaMask and select a wallet you want to connect to from the drop-down menu.
 
 ![1459](/images/ef2371f-Untitled_7.png "Untitled (7).png")
-
-Connecting the dApp frontend to MetaMask and selecting a wallet.
+<div align="center" style="color: gray; font-style: italic;">Connecting the dApp frontend to MetaMask and selecting a wallet.</div>  
 
 And now click “Enable Notifications on this address” to register our address:
 
 ![911](/images/01934a7-Untitled_8.png "Untitled (8).png")
-
-Confirmation message that notifications were enabled for the selected address.
+<div align="center" style="color: gray; font-style: italic;">Confirmation message that notifications were enabled for the selected address.</div>  
 
 Now, confirm the wallet address has been added to the notification in your Dashboard.
 
 ![1600](/images/f157b4f-Untitled_9.png "Untitled (9).png")
-
-Alchemy Dashboard with the Ethereum address listed underneath a webhook that monitors address activity.
+<div align="center" style="color: gray; font-style: italic;">Alchemy Dashboard with the Ethereum address listed underneath a webhook that monitors address activity.</div>  
 
 ### 10. Test your notifications
 
 Now, send a small amount of testnet ETH to your address, to get a notification from the client with all the necessary details.
 
 ![867](/images/75414d0-Screenshot_2022-05-10_at_2.23.03_PM_1.png "Screenshot 2022-05-10 at 2.23.03 PM (1).png")
-
-Example notification that is received when ETH was sent to a monitored Ethereum address.
+<div align="center" style="color: gray; font-style: italic;">Example notification that is received when ETH was sent to a monitored Ethereum address.</div>  
 
 This is a simple example, but there are many ways you can expand on this to build a dApp that is real-time responsive for your users.
 

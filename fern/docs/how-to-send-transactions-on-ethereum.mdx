@@ -44,6 +44,9 @@ Okay, now that we have a few of these questions out of the way, let's move on to
 
 <Info>
   This guide assumes you have an Alchemy account, an Ethereum address or Metamask wallet, Node.js, and npm installed. If not, follow these steps:
+1. [Create a free Alchemy account](https://dashboard.alchemyapi.io/signup?referral=affiliate:9efcc9a2-ef89-4a2b-a5f3-1dd52ad32c4c)
+2. [Create a Metamask account](https://metamask.io) (or get an Ethereum account)
+3. [Follow these steps to install NodeJs and NPM] (doc:how-to-set-up-core-web3-developer-tools)
 </Info>
 
 ## Steps to Sending Your Transaction
@@ -52,7 +55,7 @@ Okay, now that we have a few of these questions out of the way, let's move on to
 
 Navigate to your [Alchemy Dashboard](https://dashboard.alchemyapi.io) and create a new app, choosing Sepolia for your network. (In practice, you could use any testnet of your choice, but for this guide, we're sticking to Sepolia.)
 
-<Warning>
+<Warning title = "Choosing a testnet"> 
   While you can use the Goerli testnet, we caution against it as the Ethereum Foundation has announced that [Goerli will soon be deprecated](https://www.alchemy.com/blog/goerli-faucet-deprecation).
 
   We therefore recommend using [Sepolia](https://www.alchemy.com/overviews/sepolia-testnet) as Alchemy has full Sepolia support and a free [Sepolia faucet](https://sepoliafaucet.com/) also.
@@ -88,7 +91,7 @@ Run the following command in your project directory:
 
 We'll use a `.env` file to safely store our API key and private key.
 
-<Info>
+<Info title = ".env">
   We make a .env file to securely store private environmental variables in our local machine that we may access from other files (some of which we can make public).
 
   If you want to check out how `dotenv` actually works in the context of a conventional NodeJS server file, check out this helpful [video](https://www.youtube.com/watch?v=5WFyhsnU4Ik)!
@@ -173,8 +176,15 @@ Now, before we jump into running this code, let's talk about some of the compone
 
 * `sendTransaction`: Once we have a signed transaction, we can send it off to be included in a subsequent block by using `sendTransaction`
 
-<Info>
-  There are two main types of transactions that can be sent in Ethereum.
+<Info title = "A Note on data"> 
+There are two main types of transactions that can be sent in Ethereum.
+
+- **Balance transfer**: Send eth from one address to another. No `data` field is required, however, if you'd like to send additional information alongside your transaction, you can include that information in HEX format in this field.
+  - For example, let's say we wanted to write the hash of an IPFS document to the Ethereum chain in order to give it an immutable timestamp. Our data field should then look like `data: toHex(‘IPFS hash‘)`. And now anyone can query the chain and see when that document was added.
+
+- **Smart contact transaction**: Execute some smart contract code on the chain. In this case, the `data` field should contain the smart function you wish to execute, alongside any parameters.
+For a practical example, check out Step 6 in this tutorial: [Interacting with a smart contract](interacting-with-a-smart-contract#step-6-update-the-message)
+
 </Info>
 
 ### 7. Run the code using `node sendTx.js`

@@ -1,5 +1,5 @@
 ---
-title: 2. Creating Your Project
+title: Hello World Solana Program
 subtitle: >-
   This tutorial walks through writing, building, deploying, and testing your
   very first Solana Program using Anchor and Alchemy. It’s the best way to
@@ -7,11 +7,13 @@ subtitle: >-
 slug: docs/hello-world-solana-program
 ---
 
+# 1. Introduction
 
 Welcome! If you’re looking to deploy your first smart contract and build your first web3 app on Solana, you’ve come to right place. By the end of this tutorial, you’ll have created a Solana program that stores a message that anyone can change, and you’ll have deployed it to the official Solana devnet. And we’re going to get through it together!
 
 You can find the finished product [here](https://github.com/alchemyplatform/solana-hello-world) on Github. You’ll see that each step of this tutorial corresponds to a git commit, like a progress checkpoint to help guide you through. If you have questions at any point feel free to reach out in the [Alchemy Discord](https://discord.com/invite/gWuC7zB) or post questions in our [Discussion Forum](/discuss)! You ready? Let’s go 😎!
 
+# 2. Creating Your Project
 
 First, make sure you have [Alchemy](https://alchemy.com/?a=ff124aa9e9), a Phantom Wallet, JavaScript, Rust, the Solana CLI, and Anchor set up by following our [How to Set Up Your Solana Development Environment](/docs/how-to-setup-your-solana-development-environment) tutorial.
 
@@ -39,7 +41,7 @@ This [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/2
 
 We’ll be making change step-by-step in `programs/solana-hello-world/src/lib.rs`. First, we’re going to to define the schema for the message we want to display and be editable on our app. This message is going to be data stored in a Solana account.
 
-<Info>
+<Info title="What is a Solana Account?">
   An account stores data in Solana. In reality, everything is an account in Solana - programs, wallets, NFTs, etc. They each have a unique address that can be used by programs to access that data. You can read more [here](https://solanacookbook.com/core-concepts/accounts.html#facts).
 </Info>
 
@@ -67,7 +69,7 @@ This [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/9
 
 Now that we’ve defined the Message account, we can implement instructions as part our the Solana program. We’re going implement two instructions - one to create the first message, and one to update that message.
 
-<Info>
+<Info title= "What is a Solana Program?">
   Programs are smart contracts in Solana. Programs can create, retrieve, update, and delete data but they must access that data on the blockchain through accounts. Programs themselves cannot directly store data - they are stateless.
 </Info>
 
@@ -105,7 +107,7 @@ Let’s walk through each line of this struct:
 
 * There’s also the `'info` which is a [Rust lifetime](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html), or essentially a generic which in this case represents an AccountInfo class - a struct that contains the fields of account, listed here. No need to worry about this deeply yet.
 
-<Info>
+<Info title="What is the System Program?">
   The is an executable account that is responsible for creating new accounts, allocating account data, assigning accounts to the programs that own them, and more. It is Solana’s core program. You can read more [here](https://docs.solana.com/developing/runtime-facilities/programs#system-program).
 </Info>
 
@@ -242,7 +244,7 @@ Finally, we can write:
   ```
 </CodeGroup>
 
-<Info>
+<Info title="What is --provider.cluster?">
   It’s a flag that overrides the same variable in the `Anchor.toml` file to use the Alchemy RPC URL. Since you might push that file publicly in your Github repository, we don’t want you to reveal your API KEY that’s in the RPC URL - that’s your private connection to Solana that should be kept secret!
 
   We’re working with the Anchor team to be able to easily deploy with Alchemy directly from the `Anchor.toml` file. Until then, you can manually override that flag using the command above.
@@ -276,7 +278,7 @@ The first two imports are from Anchor and we’ll use them to define a provider 
 
 As for the third import, remember when we ran `Anchor Build` and it made that `target` file? One of the most useful things in there is the IDL file, which is located at `target/idl/solana_hello_world.json`. We’re going to use it to make well-formatted calls to our deployed Solana program!
 
-<Info>
+<Info title="What is an IDL?">
   IDL stands for “Interface Description Language” and is essentially the API structure for our Solana program, defining the structure of how to call that method on our deployed Program. If you’ve ever used ABIs in EVM chains like Ethereum or Polygon, it’s pretty similar. It will be used to feed our client later as we interact with our Solana program through Javascript tests and later a full-fledged website!
 </Info>
 
