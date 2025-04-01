@@ -10,35 +10,85 @@ header#fern-header {
   background-color: #020617;
 }
 
-/* Sign in to Alchemy button */
+/* SIGN IN TO ALCHEMY BUTTON */
 header#fern-header a.fern-button.filled.normal.primary {
   height: 2.5rem !important;
   padding: 0.4rem 1.5rem !important;
-  background: linear-gradient(90deg, #000, #000) !important;
-  background-size: 100% 100% !important;
+  background-color: var(--grayscale-12) !important;
+  transition: box-shadow 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
 }
+
+header#fern-header a.fern-button.filled.normal.primary span {
+  z-index: 1;
+}
+
 header#fern-header a.fern-button.filled.normal.primary:hover {
-  background: linear-gradient(90deg, #5f1c96, #000, #5f1c96, #000) !important;
-  background-size: 400% 400% !important;
-  animation: animate-gradient 15s ease infinite !important;
-  box-shadow: 0px 0px 20px 0px rgba(81, 103, 255, 0.5) !important;
+  box-shadow: 0px 0px 1.25rem 0px rgba(81, 103, 255, 0.5);
+}
+
+header#fern-header a.fern-button.filled.normal.primary:before,
+header#fern-header a.fern-button.filled.normal.primary:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 7.5rem;
+  height: 7.5rem;
+  background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-button-blur.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+header#fern-header a.fern-button.filled.normal.primary:before {
+  left: 35%;
+  transform: translate(-50%, -50%);
+}
+header#fern-header a.fern-button.filled.normal.primary:after {
+  right: 35%;
+  transform: translate(50%, -50%);
+}
+header#fern-header a.fern-button.filled.normal.primary:hover:before {
+  opacity: 0.5;
+  animation: 
+    slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    floatVerticalLeft 4s ease-in-out infinite,
+    fadeEdges 6s ease-in-out infinite;
+  animation-fill-mode: both;
+}
+header#fern-header a.fern-button.filled.normal.primary:hover:after {
+  opacity: 0.5;
+  animation: 
+    slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    floatVerticalRight 4s ease-in-out infinite,
+    fadeEdges 6s ease-in-out infinite;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
 }
 
 :is(.dark) header#fern-header a.fern-button.filled.normal.primary {
-  background: linear-gradient(90deg, #fff, #fff) !important;
+  background-color: white !important;
   color: black !important;
 }
-:is(.dark) header#fern-header a.fern-button.filled.normal.primary:hover {
-  background: linear-gradient(
-    90deg,
-    rgb(188, 124, 240),
-    #ffffff,
-    rgb(196, 145, 239),
-    #ffffff
-  ) !important;
-  background-size: 400% 400% !important;
-  animation: animate-gradient 23s ease infinite !important;
-  box-shadow: 0px 0px 20px 0px rgba(162, 172, 241, 0.63) !important;
+:is(.dark) header#fern-header a.fern-button.filled.normal.primary:hover:before {
+  opacity: 0.5;
+  animation: 
+    slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    floatVerticalLeft 4s ease-in-out infinite,
+    fadeEdgesDark 6s ease-in-out infinite;
+  animation-fill-mode: both;
+}
+:is(.dark) header#fern-header a.fern-button.filled.normal.primary:hover:after {
+  opacity: 0.5;
+  animation: 
+    slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    floatVerticalRight 4s ease-in-out infinite,
+    fadeEdgesDark 6s ease-in-out infinite;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
 }
 
 .fern-header-right-menu .fern-button.filled svg {
@@ -112,18 +162,91 @@ header#fern-header a.fern-button.filled.normal.primary:hover {
   }
 }
 
-
-@keyframes animate-gradient {
-  0% {
-    background-position: 0% 50%;
+/* ----- HERO BUTTON ANIMATIONS ----- */
+@keyframes slideBlurLeft {
+  0%, 100% {
+    left: 25%;
   }
-  50% {
-    background-position: 100% 50%;
+  33% {
+    left: 65%;
   }
-  100% {
-    background-position: 0% 50%;
+  40% {
+    left: 62%;
+  }
+  60% {
+    left: 68%;
+  }
+  66% {
+    left: 65%;
   }
 }
+
+@keyframes slideBlurRight {
+  0%, 100% {
+    right: 25%;
+  }
+  33% {
+    right: 65%;
+  }
+  40% {
+    right: 62%;
+  }
+  60% {
+    right: 68%;
+  }
+  66% {
+    right: 65%;
+  }
+}
+
+@keyframes floatVerticalLeft {
+  0%, 100% {
+    transform: translate(-50%, -60%);
+  }
+  25% {
+    transform: translate(-50%, -45%);
+  }
+  50% {
+    transform: translate(-50%, -55%);
+  }
+  75% {
+    transform: translate(-50%, -40%);
+  }
+}
+
+@keyframes floatVerticalRight {
+  0%, 100% {
+    transform: translate(50%, -60%);
+  }
+  25% {
+    transform: translate(50%, -45%);
+  }
+  50% {
+    transform: translate(50%, -55%);
+  }
+  75% {
+    transform: translate(50%, -40%);
+  }
+}
+
+@keyframes fadeEdges {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  33%, 66% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeEdgesDark {
+  0%, 100% {
+    opacity: 0.1;
+  }
+  33%, 66% {
+    opacity: 0.3;
+  }
+}
+
 
 .fern-anchor {
   border-radius: 50% !important;
