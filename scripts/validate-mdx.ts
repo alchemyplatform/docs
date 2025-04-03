@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 
 /**
  * Recursively finds all MD and MDX files in a directory and its subdirectories
@@ -21,10 +21,18 @@ const findMdxFiles = (dir: string): string[] => {
   return files;
 };
 
-const validateMarkdown = async () => {
+const validateMarkdown = async (directory: string) => {
+  if (!directory) {
+    throw new Error("❌ Directory is required");
+  }
+
+  if (!existsSync(directory)) {
+    throw new Error(`❌ Directory ${directory} does not exist`);
+  }
+
   const { compile } = await import("@mdx-js/mdx"); // dynamic import to avoid commonjs issues
 
-  const mdxFiles = findMdxFiles("src/markdown");
+  const mdxFiles = findMdxFiles(directory);
 
   const errors: string[] = [];
   await Promise.all(
@@ -46,4 +54,6 @@ const validateMarkdown = async () => {
   console.info("✅ Successfully validated all markdown files");
 };
 
-validateMarkdown();
+const directory = "fern/docs";
+
+validateMarkdown(directory);
