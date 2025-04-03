@@ -4,9 +4,11 @@
   "description": "API Specs and content files for Alchemy's documentation",
   "license": "MIT",
   "scripts": {
-    "build": "./scripts/build.sh",
+    "generate:rest": "./scripts/generate-open-api.sh",
+    "generate:rpc": "ts-node ./scripts/generate-rpc.ts",
+    "generate": "pnpm run generate:rest & pnpm run generate:rpc",
     "clean": "rm -rf build",
-    "validate:rest": "./scripts/build-open-api.sh --validate-only",
+    "validate:rest": "./scripts/generate-open-api.sh --validate-only",
     "validate:mdx": "ts-node ./scripts/validate-mdx.ts",
     "validate:rpc": "ts-node ./scripts/validate-rpc.ts",
     "validate": "pnpm run validate:rest & pnpm run validate:rpc & pnpm run validate:mdx",
