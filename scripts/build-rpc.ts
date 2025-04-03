@@ -6,7 +6,7 @@ import {
 } from "../src/utils/generateRpcSpecs";
 
 const schemasRoot = "src/openrpc";
-const outputRoot = "docs/api-specs";
+const outputRoot = "build/api-specs";
 
 // generate chains OpenRPC specs
 const allChainsDir = `${schemasRoot}/chains`;

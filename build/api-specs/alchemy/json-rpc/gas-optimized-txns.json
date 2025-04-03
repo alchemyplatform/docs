@@ -1,0 +1,210 @@
+{
+  "openrpc": "1.2.4",
+  "info": {
+    "title": "Alchemy Gas Optimized Transactions API JSON-RPC Specification",
+    "description": "A specification of the standard JSON-RPC methods for Gas Optimized Transactions API.",
+    "version": "0.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://eth-mainnet.g.alchemy.com/v2/",
+      "name": "Mainnet"
+    },
+    {
+      "url": "https://eth-sepolia.g.alchemy.com/v2/",
+      "name": "Sepolia"
+    }
+  ],
+  "methods": [
+    {
+      "name": "alchemy_getGasOptimizedTransactionStatus",
+      "summary": "Returns the progression/status of transactions sent via alchemy_sendGasOptimizedTransaction.",
+      "params": [
+        {
+          "name": "transactionId",
+          "required": true,
+          "description": "The `transactionId` returned from `alchemy_sendGasOptimizedTransaction`.",
+          "schema": {
+            "title": "hex encoded bytes (any case)",
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]*$"
+          }
+        }
+      ],
+      "result": {
+        "name": "Gas-optimized transaction status",
+        "description": "Shows whether the bundle is in progress, complete, or abandoned.",
+        "schema": {
+          "oneOf": [
+            {
+              "title": "Not Found (null)",
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jobStatus": {
+                  "type": "string",
+                  "enum": [
+                    "IN_PROGRESS",
+                    "COMPLETE",
+                    "ABANDONED",
+                    "UNSPECIFIED"
+                  ],
+                  "description": "The current status of the job."
+                },
+                "transactionHashesAttempted": {
+                  "type": "array",
+                  "description": "An array of currently submitted transaction hashes (32 bytes).",
+                  "items": {
+                    "title": "32 byte hex value (any case)",
+                    "type": "string",
+                    "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                  }
+                },
+                "minedTransactionHash": {
+                  "type": "string",
+                  "description": "The hash of the mined transaction if one has confirmed."
+                },
+                "transactionHashWithErrors": {
+                  "type": "array",
+                  "description": "An array of objects describing any errors that occurred with individual transactions.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "hash": {
+                        "title": "32 byte hex value (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX][0-9A-Fa-f]{64}$",
+                        "description": "Hash of the transaction that had errors."
+                      },
+                      "errors": {
+                        "type": "array",
+                        "description": "Array of error objects.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "integer",
+                              "description": "Error code."
+                            },
+                            "message": {
+                              "type": "string",
+                              "description": "Error message."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "name": "alchemy_getGasOptimizedTransactionStatus example",
+          "params": [
+            {
+              "name": "transactionId",
+              "value": "0x000C"
+            }
+          ],
+          "result": {
+            "name": "Gas-optimized transaction status",
+            "value": {
+              "jsonrpc": "2.0",
+              "id": 1,
+              "result": {
+                "jobStatus": "COMPLETE",
+                "transactionHashesAttempted": [],
+                "minedTransactionHash": "0xe25749c12ae2a27d7613874b59a3e6d39b6a046c9086a477e99adabc4b85a4ed"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "alchemy_sendGasOptimizedTransaction",
+      "summary": "Submits a bundle of identical transactions, each individually with a range of different gas values.",
+      "params": [
+        {
+          "name": "rawTransactions",
+          "required": true,
+          "description": "An array of signed transaction hex strings (1–20 items).",
+          "schema": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "title": "hex encoded bytes (any case)",
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]*$"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "Gas-optimized transaction submission",
+        "description": "Response includes a tracking ID and an array of transaction hashes.",
+        "schema": {
+          "oneOf": [
+            {
+              "title": "Not Found (null)",
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "trackingId": {
+                  "title": "hex encoded bytes (any case)",
+                  "type": "string",
+                  "pattern": "^0x[0-9a-fA-F]*$",
+                  "description": "A transaction ID you can use to track status via alchemy_getGasOptimizedTransactionStatus."
+                },
+                "transactionHashes": {
+                  "type": "array",
+                  "description": "An array of currently submitted transaction hashes.",
+                  "items": {
+                    "title": "32 byte hex value (any case)",
+                    "type": "string",
+                    "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "name": "alchemy_sendGasOptimizedTransaction example",
+          "params": [
+            {
+              "name": "rawTransactions",
+              "value": [
+                "0xf86f808504a817c80082520894ad7efae03cbfe7d275f09831c8563f6292f6b8da80..."
+              ]
+            }
+          ],
+          "result": {
+            "name": "Gas-optimized transaction submission",
+            "value": {
+              "jsonrpc": "2.0",
+              "id": 1,
+              "result": {
+                "trackingId": "0x23e6bda",
+                "transactionHashes": [
+                  "0xa62e963baeb768933d302aaaff68e51e8510a305ef92e530b22609c73f848178"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

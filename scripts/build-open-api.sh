@@ -6,7 +6,7 @@ lint_failed=0
 
 for file in src/openapi/*; do
   if [ -f "$file" ]; then
-    filename="docs/api-specs/alchemy/rest/$(basename "$file" .yaml).json"
+    filename="build/api-specs/alchemy/rest/$(basename "$file" .yaml).json"
     (
       if ! pnpm exec redocly bundle "$file" --dereferenced --output "$filename" --ext json --remove-unused-components || \
          ! pnpm exec redocly lint "$filename" --format json; then
