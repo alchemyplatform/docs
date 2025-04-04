@@ -31,8 +31,6 @@ export const generateChainRpcSpec = async (
   const base = getOpenRpcBase(schemaDir);
 
   const doc: OpenrpcDocument = {
-    "x-generated-warning":
-      "⚠️ This file is auto-generated. Do not edit manually",
     $schema: "https://meta.open-rpc.org/",
     openrpc: "1.2.4",
     ...base,
@@ -67,8 +65,6 @@ export const generateAlchemyRpcSpec = async (
   const base = getOpenRpcBase(schemaDir);
 
   const doc: OpenrpcDocument = {
-    "x-generated-warning":
-      "⚠️ This file is auto-generated. Do not edit manually",
     $schema: "https://meta.open-rpc.org/",
     openrpc: "1.2.4",
     ...base,
