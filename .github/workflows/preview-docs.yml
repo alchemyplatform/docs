@@ -13,6 +13,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set Build Comment to In Progress
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workspace = process.env.GITHUB_WORKSPACE;
+            const { updatePreviewComment } = await import(`${workspace}/scripts/preview-comment.js`);
+
+            await updatePreviewComment({
+              github,
+              context,
+              status: 'building',
+            });
+
       - name: Generate Preview
         uses: ./.github/actions/publish-fern
         id: preview
@@ -29,8 +42,10 @@ jobs:
           script: |
             const workspace = process.env.GITHUB_WORKSPACE;
             const { updatePreviewComment } = await import(`${workspace}/scripts/preview-comment.js`);
+
             await updatePreviewComment({
               github,
               context,
-              previewUrl: '${{ steps.preview.outputs.url }}'
+              previewUrl: '${{ steps.preview.outputs.url }}',
+              status: ${{ steps.preview.outcome }},
             });
