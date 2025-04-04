@@ -8,7 +8,7 @@ const commentTitle = "🌿 Documentation Preview";
  * @param {string} previewUrl - The URL of the documentation preview
  * @param {string} previousUrl - The URL of the previous successful preview build
  */
-const getCommentBody = (status, previewUrl) => {
+const getCommentBody = (status = "success", previewUrl = "") => {
   const timeUTC = new Date().toLocaleString("en-US", {
     month: "short",
     day: "numeric",
@@ -34,8 +34,8 @@ const getCommentBody = (status, previewUrl) => {
     skipped: "",
   };
 
-  const statusMessage = statusDisplay[status] || statusDisplay.success;
-  const previewLink = previewDisplay[status] || previewDisplay.success;
+  const statusMessage = statusDisplay[status];
+  const previewLink = previewDisplay[status];
 
   const headerRow = `## ${commentTitle}\n\n`;
   const tableHeader = `| Name | Status | Preview | Updated (UTC) |\n`;
@@ -63,9 +63,9 @@ const updatePreviewComment = async ({
   const { repo, issue } = context;
 
   const allComments = await github.rest.issues.listComments({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: context.issue.number,
+    owner: repo.owner,
+    repo: repo.repo,
+    issue_number: issue.number,
   });
 
   const existingComment = allComments.data.find((comment) =>
