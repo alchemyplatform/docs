@@ -43,8 +43,12 @@ for file in src/openapi/*; do
         fi
       else
         # Run both bundle and lint when validate-only is false
-        if ! pnpm exec redocly bundle "$file" --dereferenced --output "$filename" --ext json --remove-unused-components || \
-           ! pnpm exec redocly lint "$filename" --format json; then
+        if ! pnpm exec redocly bundle "$file" --dereferenced --output "$filename" --ext json --remove-unused-components; then
+          exit 1
+        fi
+        # Add warning message to the JSON file
+        jq '{"x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually"} + .' "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename" || exit 1
+        if ! pnpm exec redocly lint "$filename" --format json; then
           exit 1
         fi
       fi
