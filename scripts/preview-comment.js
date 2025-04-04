@@ -8,7 +8,7 @@ const commentTitle = "🌿 Documentation Preview";
  * @param {string} previewUrl - The URL of the documentation preview
  * @param {string} previousUrl - The URL of the previous successful preview build
  */
-const getCommentBody = (status, previewUrl, previousUrl = "") => {
+const getCommentBody = (status, previewUrl) => {
   const timeUTC = new Date().toLocaleString("en-US", {
     month: "short",
     day: "numeric",
@@ -26,16 +26,12 @@ const getCommentBody = (status, previewUrl, previousUrl = "") => {
     skipped: "⏭️ Skipped",
   };
 
-  const previousDisplay = previewUrl
-    ? `[🗃️ Previous Build](${previousUrl})`
-    : "";
-
   const previewDisplay = {
     success: `[🔗 Visit Preview](${previewUrl})`,
-    failure: previousDisplay,
+    failure: "",
     building: "🏗️ Building...",
-    cancelled: previousDisplay,
-    skipped: previousDisplay,
+    cancelled: "",
+    skipped: "",
   };
 
   const statusMessage = statusDisplay[status] || statusDisplay.success;
@@ -76,13 +72,9 @@ const updatePreviewComment = async ({
     comment.body.includes(commentTitle),
   );
 
-  if (existingComment) {
-    const commentBody = getCommentBody(
-      status,
-      previewUrl,
-      existingComment.body,
-    );
+  const commentBody = getCommentBody(status, previewUrl);
 
+  if (existingComment) {
     await github.rest.issues.updateComment({
       owner: repo.owner,
       repo: repo.repo,
@@ -90,8 +82,6 @@ const updatePreviewComment = async ({
       body: commentBody,
     });
   } else {
-    const commentBody = getCommentBody(status, previewUrl);
-
     await github.rest.issues.createComment({
       owner: repo.owner,
       repo: repo.repo,
