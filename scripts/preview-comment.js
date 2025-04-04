@@ -19,7 +19,11 @@ const updatePreviewComment = async ({ github, context, previewUrl }) => {
     hour12: true,
   });
 
-  const commentBody = `## ${commentTitle}\n\n| Name | Preview | Updated (UTC) |\n| :--- | :------ | :------ |\n| **Alchemy Docs** | [🔗 Visit Preview](${previewUrl}) | ${timeUTC} |\n\n>`;
+  const headerRow = `## ${commentTitle}\n\n`;
+  const tableHeader = `| Name | Status | Preview | Updated (UTC) |\n`;
+  const tableDivider = `| :--- | :------ | :------ | :------ |\n`;
+  const tableContent = `| **Alchemy Docs** | ✅ Ready | [🔗 Visit Preview](${previewUrl}) | ${timeUTC} |\n\n>`;
+  const commentBody = headerRow + tableHeader + tableDivider + tableContent;
 
   const allComments = await github.rest.issues.listComments({
     owner: context.repo.owner,
