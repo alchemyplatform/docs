@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 # Parse command line arguments
 validate_only=false
 while getopts "v-:" opt; do
