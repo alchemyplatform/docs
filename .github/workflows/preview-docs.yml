@@ -5,52 +5,22 @@ on: pull_request
 jobs:
   run:
     runs-on: ubuntu-22.04
-    permissions: write-all
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # TODO: Uncomment this once new docs dir in aa-sdk is merged
-      # - name: Download aa-sdk docs
-      #   run: |
-      #     mkdir -p account-kit
-      #     curl -L https://api.github.com/repos/alchemyplatform/aa-sdk/tarball/main -o aa-sdk.tar.gz
-      #     tar xzf aa-sdk.tar.gz --strip-components=2 -C account-kit "*/docs"
-      #     rm aa-sdk.tar.gz
-
-      - name: Install Fern
-        run: npm install -g fern-api
-
-      - name: Start deployment
-        uses: bobheadxi/deployments@v1
-        id: start-deploy
+      - name: Generate Preview
+        uses: ./.github/actions/publish-fern
+        id: preview
         with:
-          step: start
-          token: ${{ github.token }}
-          env: docs-preview
+          github-token: ${{ github.token }}
+          fern-token: ${{ secrets.FERN_TOKEN }}
+          environment: docs-preview
           ref: ${{ github.head_ref }}
-
-      - name: Generate preview URL
-        id: generate-docs
-        env:
-          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
-        run: |
-          OUTPUT=$(fern generate --docs --preview 2>&1) || true
-          echo "$OUTPUT"
-          URL=$(echo "$OUTPUT" | grep -oP 'Published docs to \K.*(?= \()')
-          echo "preview_url=$URL" >> $GITHUB_OUTPUT
-
-      - name: Update deployment status
-        uses: bobheadxi/deployments@v1
-        id: finish-deploy
-        if: always()
-        with:
-          step: finish
-          token: ${{ github.token }}
-          status: ${{ job.status }}
-          deployment_id: ${{ steps.start-deploy.outputs.deployment_id }}
-          env_url: ${{ steps.generate-docs.outputs.preview_url }}
-          env: docs-preview
+          preview: "true"
 
       - name: Comment Preview URL in PR
         uses: actions/github-script@v7
@@ -61,5 +31,5 @@ jobs:
             await updatePreviewComment({
               github,
               context,
-              previewUrl: '${{ steps.generate-docs.outputs.preview_url }}'
+              previewUrl: '${{ steps.preview.outputs.url }}'
             });

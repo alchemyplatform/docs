@@ -9,14 +9,18 @@ jobs:
   run:
     runs-on: ubuntu-22.04
     if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/heads/main') && github.run_number > 1 }}
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Fern
-        run: npm install -g fern-api
-
-      - name: Publish Docs
-        env:
-          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
-        run: fern generate --docs --log-level debug
+      - name: Publish Documentation
+        uses: ./.github/actions/publish-fern
+        id: publish
+        with:
+          github-token: ${{ github.token }}
+          fern-token: ${{ secrets.FERN_TOKEN }}
+          environment: docs-production
+          ref: ${{ github.ref }}
