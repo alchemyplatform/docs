@@ -4,7 +4,7 @@ const commentTitle = "🌿 Documentation Preview";
 
 /**
  * Generates the body of a PR comment for a documentation preview
- * @param {string} status - The status of the preview
+ * @param {string} status - The outcome of the preview step - `success`, `failure`, `building`, `cancelled`, or `skipped`
  * @param {string} previewUrl - The URL of the documentation preview
  * @param {string} previousUrl - The URL of the previous successful preview build
  */
@@ -57,8 +57,8 @@ const getCommentBody = (status, previewUrl) => {
 const updatePreviewComment = async ({
   github,
   context,
-  previewUrl,
   status = "success",
+  previewUrl,
 }) => {
   const { repo, issue } = context;
 
