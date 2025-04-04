@@ -18,15 +18,12 @@ jobs:
       #     tar xzf aa-sdk.tar.gz --strip-components=2 -C account-kit "*/docs"
       #     rm aa-sdk.tar.gz
 
-      - name: Install Fern
-        run: npm install -g fern-api
-
       - name: Generate preview URL
         id: generate-docs
         env:
           FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
         run: |
-          OUTPUT=$(fern generate --docs --preview 2>&1) || true
+          OUTPUT=$(pnpm run fern:preview 2>&1) || true
           echo "$OUTPUT"
           URL=$(echo "$OUTPUT" | grep -oP 'Published docs to \K.*(?= \()')
           echo "preview_url=$URL" >> $GITHUB_OUTPUT
