@@ -20,7 +20,6 @@ docs/
 ### Prerequisites
 
 - [pnpm](https://pnpm.io/)
-- [Fern CLI](https://buildwithfern.com/learn/cli-reference/overview)
 
 ### Installation
 
@@ -42,7 +41,7 @@ docs/
 Start the development server:
 
 ```bash
-fern docs dev
+pnpm dev
 ```
 
 This will start a local server with live reloading. Visit `http://localhost:3000` to view the documentation.
