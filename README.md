@@ -44,7 +44,7 @@ Start the development server:
 pnpm dev
 ```
 
-This will start a local server with live reloading. Visit `http://localhost:3000` to view the documentation.
+This will start a local server with live reloading. Visit `http://localhost:3020` to view the documentation.
 
 ### Building API Specs
 
