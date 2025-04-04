@@ -5,14 +5,14 @@ This repository contains the documentation for Alchemy's APIs and services. The 
 ## Project Structure
 
 ```
-docs/
+/
 ├── src/
 │   ├── openapi/     # REST API definitions (OpenAPI)
 │   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
 ├── fern/
 │   ├── docs/        # Written documentation (MDX)
 │   └── docs.yml     # Navigation and structure config
-└── docs/            # Generated documentation - Do NOT make changes here
+└── docs/            # Generated files - Do NOT make changes here
 ```
 
 ## Getting Started
