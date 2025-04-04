@@ -20,7 +20,7 @@ docs/
 ### Prerequisites
 
 - [pnpm](https://pnpm.io/)
-- [Fern CLI](https://buildwithfern.com/docs/cli)
+- [Fern CLI](https://buildwithfern.com/learn/cli-reference/overview)
 
 ### Installation
 
