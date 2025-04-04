@@ -5,15 +5,13 @@ import type {
   OpenrpcDocument,
   SchemaComponents,
 } from "@open-rpc/meta-schema";
-import {
-  dereferenceDocument,
-  validateOpenRPCDocument,
-} from "@open-rpc/schema-utils-js";
+import { dereferenceDocument } from "@open-rpc/schema-utils-js";
 import { readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
 
 import type { DerefedOpenRpcDoc } from "../types/openRpc";
+import { validateRpcSpec } from "./validateRpcSpec";
 
 /**
  * Retrieves components (schemas) from a YAML file and returns them in OpenRPC Components format.
@@ -98,46 +96,6 @@ export const getOpenRpcBase = (schemaDir: string) => {
   const baseRaw = readFileSync(`${schemaDir}/base.yaml`).toString();
 
   return yaml.load(baseRaw) as OpenRpcBase;
-};
-
-interface ValidationError {
-  keyword: string;
-  dataPath: string;
-  schemaPath: string;
-  params: Record<string, unknown>;
-  message: string;
-}
-/**
- * Validates an OpenRPC document against the OpenRPC meta schema.
- * @param spec - The OpenRPC document to validate
- * @throws Error if validation fails, with details about the errors found
- */
-export const validateRpcSpec = (spec: DerefedOpenRpcDoc) => {
-  const validation = validateOpenRPCDocument(spec);
-
-  if (validation !== true) {
-    const errorMessageMatch = validation.message.match(/\[[\s\S]*\]/);
-    let validationErrors: ValidationError[] = [];
-
-    if (errorMessageMatch) {
-      try {
-        validationErrors = JSON.parse(errorMessageMatch[0]);
-      } catch (e) {
-        console.error(e);
-        throw new Error("Failed to parse validation errors. Check console");
-      }
-    }
-
-    const error = {
-      title: spec.info.title,
-      errorType: validation.name,
-      validationErrors,
-    };
-
-    throw new Error(
-      `Validation errors found in ${spec.info.title}:\n  ${JSON.stringify(error, null, 2)}`,
-    );
-  }
 };
 
 /**

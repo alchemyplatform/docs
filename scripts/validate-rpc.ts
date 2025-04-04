@@ -1,8 +1,9 @@
 import { existsSync, readFileSync } from "fs";
 
 import { findFilesOfType } from "../src/utils/findFilesOfType";
+import { validateRpcSpec } from "../src/utils/validateRpcSpec";
 
-const validateMarkdown = async (directory: string) => {
+const validateOpenRpcSpecs = async (directory: string) => {
   if (!directory) {
     throw new Error("❌ Directory is required");
   }
@@ -11,15 +12,13 @@ const validateMarkdown = async (directory: string) => {
     throw new Error(`❌ Directory ${directory} does not exist`);
   }
 
-  const { compile } = await import("@mdx-js/mdx"); // dynamic import to avoid commonjs issues
-
-  const mdxFiles = findFilesOfType(directory, /\.mdx?$/);
+  const openRpcFiles = findFilesOfType(directory, /\.json$/);
 
   const errors: string[] = [];
   await Promise.all(
-    mdxFiles.map(async (file) => {
+    openRpcFiles.map(async (file) => {
       try {
-        await compile(readFileSync(file));
+        validateRpcSpec(JSON.parse(readFileSync(file, "utf8")));
       } catch (error) {
         if (error instanceof Error) {
           errors.push(`❌ Error validating ${file}: ${error.message}`);
@@ -32,9 +31,11 @@ const validateMarkdown = async (directory: string) => {
     throw new Error(errors.join("\n"));
   }
 
-  console.info("✅ Successfully validated all markdown files");
+  const lastPartOfDirectory = directory.split("/").pop();
+  console.info(
+    `✅ Successfully validated ${lastPartOfDirectory} OpenRPC specs`,
+  );
 };
 
-const directory = "fern/docs";
-
-validateMarkdown(directory);
+validateOpenRpcSpecs("build/api-specs/alchemy/json-rpc");
+validateOpenRpcSpecs("build/api-specs/chains");
