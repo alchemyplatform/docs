@@ -1,4 +1,4 @@
-name: PR Validation
+name: Validate Docs on PR
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ jobs:
         uses: ./.github/actions/setup-pnpm
 
       - name: Validate REST API specs
-        run: ./scripts/build-open-api.sh
+        run: pnpm run generate:rest
 
   rpc-specs:
     name: JSON-RPC Specs
@@ -26,7 +26,7 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
       - name: Validate RPC specs
-        run: pnpm exec ts-node ./scripts/build-rpc.ts
+        run: pnpm run generate:rpc
 
   markdown-files:
     name: Markdown Files
@@ -37,4 +37,17 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
       - name: Validate markdown files
-        run: pnpm exec ts-node ./scripts/validate-mdx.ts
+        run: pnpm run validate:mdx
+
+  fern-check:
+    name: Fern Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Fern
+        run: npm install -g fern-api
+
+      - name: Check API is valid
+        run: fern check
