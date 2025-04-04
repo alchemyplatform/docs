@@ -42,7 +42,7 @@ docs/
 Start the development server:
 
 ```bash
-fern docs dev
+pnpm dev
 ```
 
 This will start a local server with live reloading. Visit `http://localhost:3000` to view the documentation.

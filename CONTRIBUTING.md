@@ -43,7 +43,7 @@ Account Kit documentation is maintained in the [aa-sdk repository](https://githu
 ## Making Changes
 
 1. Make your changes
-2. Test locally using `fern docs dev`
+2. Test locally using `pnpm dev`
 3. Commit your changes
 4. Push to your fork
 5. Create a pull request to the upstream
