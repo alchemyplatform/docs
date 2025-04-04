@@ -1,41 +1,17 @@
 # Contributing to Alchemy Docs
 
-Thank you for your interest in contributing to Alchemy's documentation! This guide will help you get started.
+Thank you for your interest in contributing to Alchemy's documentation! This guide will help you get started with the contribution process.
 
 ## Getting Started
 
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/docs.git`
-3. Install dependencies: `pnpm install`
-4. Create a new branch: `git checkout -b feature/your-feature-name`
-
-## Project Structure
-
-```
-docs/
-├── src/
-│   ├── openapi/     # REST API definitions (OpenAPI)
-│   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
-├── fern/
-│   ├── docs/        # Written documentation (MDX)
-│   └── docs.yml     # Navigation and structure config
-└── docs/            # Generated documentation - Do NOT make changes here
-```
-
-## Development
-
-### Local Development
-
-1. Start the development server:
-
+3. Set up the upstream repository:
    ```bash
-   fern docs dev
+   git remote add upstream https://github.com/alchemyplatform/docs.git
    ```
-
-2. Generate the documentation:
-   ```bash
-   pnpm run generate
-   ```
+4. Install dependencies: `pnpm i`
+5. Create a new branch: `git checkout -b feature/your-feature-name`
 
 ### Documentation Types
 
@@ -55,6 +31,7 @@ docs/
 **JSON-RPC APIs (OpenRPC)**
 
 - Location: `src/openrpc/`
+- Define APIs following the [OpenRPC Specification](https://spec.open-rpc.org/)
 - Structure:
   - `alchemy/`: Alchemy-specific APIs
   - `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
@@ -67,13 +44,43 @@ Account Kit documentation is maintained in the [aa-sdk repository](https://githu
 
 1. Make your changes
 2. Test locally using `fern docs dev`
-3. Commit your changes:
-   ```bash
-   git add .
-   git commit -m "docs: brief description of changes"
-   ```
+3. Commit your changes
 4. Push to your fork
-5. Create a Pull Request
+5. Create a pull request to the upstream
+
+## Keeping Your Fork Updated
+
+To keep your fork up-to-date with the original repository:
+
+```bash
+# Fetch changes from the original repository
+git fetch upstream
+
+# Checkout your main branch
+git checkout main
+
+# Merge changes from the original repository
+git merge upstream/main
+
+# Push the updated main branch to your fork
+git push origin main
+```
+
+## Pull Request Guidelines
+
+- Ensure your PR addresses a specific issue or adds a specific feature
+- Include a clear description of the changes
+- Reference any related issues in your PR description
+- Ensure all checks pass before submitting
+- Follow the existing code style and formatting
+
+## Code of Conduct
+
+By participating in this project, you agree to abide by our Code of Conduct. Please be respectful and considerate of differing viewpoints and experiences.
+
+## Questions?
+
+If you have any questions or need help, please open an issue in the repository.
 
 ## Resources
 
