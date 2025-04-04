@@ -1,134 +1,82 @@
-Contribution guide for our new [docs repository](https://github.com/alchemyplatform/docs) powered by [Fern](https://buildwithfern.com/)!
+# Contributing to Alchemy Docs
 
----
+Thank you for your interest in contributing to Alchemy's documentation! This guide will help you get started.
 
-## 📁 Repo Structure Overview
+## Getting Started
 
-Our documentation is organized clearly:
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/docs.git`
+3. Install dependencies: `pnpm install`
+4. Create a new branch: `git checkout -b feature/your-feature-name`
 
-- **`src`**
-  - `openapi/`: YAML definitions for REST APIs (OpenAPI).
-  - `openrpc/`: JSON-RPC API specifications (OpenRPC).
-- **`fern`**
-  - Contains configuration (`docs.yml`) for navigation and structure + markdown (MDX) files for written docs (`docs/`)
-- **`scripts`**
-  - Scripts for building and validating documentation and APIs (`build.sh`, TypeScript validations).
-- **`custom-app`** _(rarely used)_
-  - Frontend source code for custom UI components.
-- **`docs`** _(auto-generated)_
-  - Output directory for compiled docs (`pnpm run build`).
-- **Miscellaneous Files**
-  - Project management files (`README.md`, `package.json`, etc.).
+## Project Structure
 
----
-
-## ✏️ Updating Written Docs
-
-### Editing Markdown (MDX) Files
-
-- **Location:** `fern/docs`
-- **Steps:**
-  1. Find or create the relevant file.
-  2. Edit with markdown ([reference](https://buildwithfern.com/learn/docs/content/write-markdown)).
-  3. Update navigation (`docs.yml`) if adding new pages.
-
----
-
-## ⚙️ Updating API Specifications
-
-### REST APIs (OpenAPI)
-
-- **Location:** `src/openapi/`
-- Define APIs using YAML ([OpenAPI Spec](https://spec.openapis.org/oas/latest.html)).
-- Update navigation (`docs.yml`) if adding new API.
-
-### JSON-RPC APIs (OpenRPC)
-
-- **Location:** `src/openrpc/`
-- Divided into:
-  - **Alchemy-specific APIs:** (`alchemy/`)
-    - `_shared/components.yaml`: Common types (address, blockTag).
-    - `<api-name>/base.yaml`: General API info and server urls.
-    - `<api-name>/methods.yaml`: API methods ([OpenRPC Spec](https://spec.open-rpc.org/)).
-  - **Chain-specific APIs:** (`chains/`)
-    - Organized by chain (e.g., `ethereum/`):
-      - `methods/`: Method definitions ([OpenRPC Spec](https://spec.open-rpc.org/)).
-      - `components/`: Supporting components.
-      - `base.yaml`: General chain info and server urls.
-- Update navigation (`docs.yml`) if adding new APIs.
-
----
-
-## :1728952592-account-kit: Updating Account Kit Docs
-
-<aside>
-💡
-
-Account Kit docs are maintained in a separate repo! Their content is managed in [**aa-sdk**](https://github.com/alchemyplatform/aa-sdk)
-
-</aside>
-
-**Docs Content**
-
-To add or modify written pages:
-
-- Add/edit markdown files in the `pages/` directory
-- Update the `navigation` section in `docs.yml`
-- Reference markdown files from `pages/` by path using `../account-kit/pages/`
-
-To add new images:
-
-- Place image files in the `images/` directory
-- Reference images from the `images/` directory in markdown using `images/account-kit/filename.png`
-
-**SDK References**
-
-SDK References are automatically generated from relevant projects within the monorepo via `fern-gen`. In the root, run `yarn fern:gen`
-
-**See the [README here](https://github.com/alchemyplatform/aa-sdk/blob/ds/fern-compatible-docs/docs/README.md) for more info**
-
----
-
-## 🚧 Building & Previewing
-
-- **Build locally:**
-
-```bash
-pnpm run build
+```
+docs/
+├── src/
+│   ├── openapi/     # REST API definitions (OpenAPI)
+│   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
+├── fern/
+│   ├── docs/        # Written documentation (MDX)
+│   └── docs.yml     # Navigation and structure config
+└── docs/            # Generated documentation - Do NOT make changes here
 ```
 
-- **Preview locally:**
+## Development
 
-```bash
-fern docs dev
-```
+### Local Development
 
----
+1. Start the development server:
 
-## 🚀 Committing & Publishing
+   ```bash
+   fern docs dev
+   ```
 
-Follow this version control workflow:
+2. Generate the documentation:
+   ```bash
+   pnpm run generate
+   ```
 
-1. **Create Branch:**
+### Documentation Types
 
-```bash
-git checkout -b feature/update-docs-<topic>
-```
+#### Written Documentation
 
-1. **Commit Changes:**
+- Located in `fern/docs/`
+- Written in MDX format
+- Update `docs.yml` when adding/moving pages
 
-```bash
-git add .
-git commit -m "Update docs for [topic]: [brief description]"
-```
+#### API Documentation
 
-1. **Open PR:** Clearly describe your changes. Fern provides a live preview.
-2. **Merge & Deploy:** After review, merge PR to deploy.
+**REST APIs (OpenAPI)**
 
----
+- Location: `src/openapi/`
+- Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
 
-## 📖 Helpful Resources
+**JSON-RPC APIs (OpenRPC)**
 
-- [Fern Docs](https://buildwithfern.com/learn)
-- [OpenAPI Spec](https://swagger.io/specification/)
-- [OpenRPC Spec](https://spec.open-rpc.org/)
+- Location: `src/openrpc/`
+- Structure:
+  - `alchemy/`: Alchemy-specific APIs
+  - `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
+
+### Account Kit Documentation
+
+Account Kit documentation is maintained in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/ds/fern-compatible-docs/docs/README.md) for contribution guidelines.
+
+## Making Changes
+
+1. Make your changes
+2. Test locally using `fern docs dev`
+3. Commit your changes:
+   ```bash
+   git add .
+   git commit -m "docs: brief description of changes"
+   ```
+4. Push to your fork
+5. Create a Pull Request
+
+## Resources
+
+- [Fern Documentation](https://buildwithfern.com/learn)
+- [OpenAPI Specification](https://swagger.io/specification/)
+- [OpenRPC Specification](https://spec.open-rpc.org/)
