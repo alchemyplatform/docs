@@ -2,6 +2,8 @@
 
 This repository contains the documentation for Alchemy's APIs and services. The documentation is built using [Fern](https://buildwithfern.com/), a modern documentation platform.
 
+The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
+
 ## Project Structure
 
 ```
