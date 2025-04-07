@@ -4,11 +4,19 @@ on: pull_request
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions: write-all
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # TODO: Uncomment this once new docs dir in aa-sdk is merged
+      # - name: Download aa-sdk docs
+      #   run: |
+      #     mkdir -p account-kit
+      #     curl -L https://api.github.com/repos/alchemyplatform/aa-sdk/tarball/main -o aa-sdk.tar.gz
+      #     tar xzf aa-sdk.tar.gz --strip-components=2 -C account-kit "*/docs"
+      #     rm aa-sdk.tar.gz
 
       - name: Install Fern
         run: npm install -g fern-api
@@ -21,10 +29,15 @@ jobs:
           OUTPUT=$(fern generate --docs --preview 2>&1) || true
           echo "$OUTPUT"
           URL=$(echo "$OUTPUT" | grep -oP 'Published docs to \K.*(?= \()')
-          echo "Preview URL: $URL"
-          echo "🌿 Preview your docs: $URL" > preview_url.txt
+          echo "preview_url=$URL" >> $GITHUB_OUTPUT
 
-      - name: Comment URL in PR
-        uses: thollander/actions-comment-pull-request@v2.4.3
+      - name: Comment Preview URL in PR
+        uses: actions/github-script@v7
         with:
-          filePath: preview_url.txt
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## 🌿 Documentation Preview\n\n| Name | Preview | Updated (UTC) |\n| :--- | :------ | :------ |\n| **Alchemy Docs** | [🔗 Visit Preview](${{ steps.generate-docs.outputs.preview_url }}) | ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) + ' |\n\n>'
+            });

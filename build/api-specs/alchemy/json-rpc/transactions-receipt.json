@@ -1,0 +1,232 @@
+{
+  "x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
+  "$schema": "https://meta.open-rpc.org/",
+  "openrpc": "1.2.4",
+  "info": {
+    "title": "Alchemy Transactions Receipt API JSON-RPC Specification",
+    "description": "A specification of the standard JSON-RPC methods for Transactions Receipt API.",
+    "version": "0.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://eth-mainnet.g.alchemy.com/v2/",
+      "name": "Mainnet"
+    },
+    {
+      "url": "https://eth-sepolia.g.alchemy.com/v2/",
+      "name": "Sepolia"
+    }
+  ],
+  "methods": [
+    {
+      "name": "alchemy_getTransactionReceipts",
+      "summary": "An enhanced API that gets all transaction receipts for a given block by number or block hash.",
+      "params": [
+        {
+          "name": "blockNumber",
+          "required": false,
+          "description": "The block number you want to get transaction receipts for, in hex. One of blockNumber or blockHash must be provided.",
+          "schema": {
+            "title": "hex encoded unsigned integer (any case)",
+            "type": "string",
+            "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+          }
+        },
+        {
+          "name": "blockHash",
+          "required": false,
+          "description": "The block hash you want to get transaction receipts for, in hex. One of blockNumber or blockHash must be provided.",
+          "schema": {
+            "title": "32 byte hex value (any case)",
+            "type": "string",
+            "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+          }
+        }
+      ],
+      "result": {
+        "name": "Transaction receipts",
+        "description": "A list of transaction receipt objects for each transaction in this block.",
+        "schema": {
+          "oneOf": [
+            {
+              "title": "Not Found (null)",
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "receipts": {
+                  "type": "array",
+                  "description": "Array of transaction receipt objects.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "blockHash": {
+                        "title": "32 byte hex value (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                      },
+                      "blockNumber": {
+                        "title": "hex encoded unsigned integer (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                      },
+                      "transactionIndex": {
+                        "title": "hex encoded unsigned integer (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                      },
+                      "transactionHash": {
+                        "title": "32 byte hex value (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                      },
+                      "from": {
+                        "title": "hex encoded address",
+                        "type": "string",
+                        "pattern": "^0x[0-9a-fA-F]{40}$"
+                      },
+                      "to": {
+                        "title": "hex encoded address",
+                        "type": "string",
+                        "pattern": "^0x[0-9a-fA-F]{40}$"
+                      },
+                      "cumulativeGasUsed": {
+                        "title": "hex encoded unsigned integer (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                      },
+                      "gasUsed": {
+                        "title": "hex encoded unsigned integer (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                      },
+                      "contractAddress": {
+                        "title": "hex encoded address",
+                        "type": "string",
+                        "pattern": "^0x[0-9a-fA-F]{40}$"
+                      },
+                      "logs": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "blockHash": {
+                              "title": "32 byte hex value (any case)",
+                              "type": "string",
+                              "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                            },
+                            "blockNumber": {
+                              "title": "hex encoded unsigned integer (any case)",
+                              "type": "string",
+                              "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                            },
+                            "transactionIndex": {
+                              "title": "hex encoded unsigned integer (any case)",
+                              "type": "string",
+                              "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                            },
+                            "address": {
+                              "title": "hex encoded address",
+                              "type": "string",
+                              "pattern": "^0x[0-9a-fA-F]{40}$"
+                            },
+                            "logIndex": {
+                              "title": "hex encoded unsigned integer (any case)",
+                              "type": "string",
+                              "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                            },
+                            "data": {
+                              "type": "string"
+                            },
+                            "removed": {
+                              "type": "boolean"
+                            },
+                            "topics": {
+                              "type": "array",
+                              "description": "Zero to four 32-byte topics, any hex case.",
+                              "items": {
+                                "title": "32 byte hex value (any case)",
+                                "type": "string",
+                                "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                              }
+                            },
+                            "transactionHash": {
+                              "title": "32 byte hex value (any case)",
+                              "type": "string",
+                              "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                            }
+                          }
+                        }
+                      },
+                      "logsBloom": {
+                        "title": "256 hex encoded bytes (any case)",
+                        "type": "string",
+                        "pattern": "^0x[0-9a-fA-F]{512}$"
+                      },
+                      "root": {
+                        "title": "32 byte hex value (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX][0-9A-Fa-f]{64}$"
+                      },
+                      "status": {
+                        "type": "integer",
+                        "enum": [0, 1],
+                        "description": "Transaction status; 0 = failure, 1 = success."
+                      },
+                      "effectiveGasPrice": {
+                        "title": "hex encoded unsigned integer (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                      },
+                      "type": {
+                        "title": "hex encoded unsigned integer (any case)",
+                        "type": "string",
+                        "pattern": "^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "name": "alchemy_getTransactionReceipts example (by blockNumber)",
+          "params": [
+            {
+              "name": "blockNumber",
+              "value": "0xF1D1C6"
+            }
+          ],
+          "result": {
+            "name": "Transaction receipts",
+            "value": {
+              "receipts": [
+                {
+                  "blockHash": "0x18760312114f3fdf11f9d5846245995835aa59994d5fc4203faee52d2f7eaabe",
+                  "blockNumber": "0xF1D1C6",
+                  "transactionIndex": "0x0",
+                  "transactionHash": "0x4c32db860a0b1fd4514b94c2c75a76d4924cebaebd62d2f622105e0fc863cfb2",
+                  "from": "0x0049d82d5a59bbdb24fe2e8eb4733ecf20df1886",
+                  "to": "0x66c4289252b6f1d8d7b241495e60f93c2820c9b1",
+                  "cumulativeGasUsed": "0x5208",
+                  "gasUsed": "0x5208",
+                  "contractAddress": null,
+                  "logs": [],
+                  "logsBloom": "0x0...",
+                  "root": null,
+                  "status": 1,
+                  "effectiveGasPrice": "0x1e8480",
+                  "type": "0x2"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
