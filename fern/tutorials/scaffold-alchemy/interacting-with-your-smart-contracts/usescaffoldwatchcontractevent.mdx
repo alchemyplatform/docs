@@ -7,23 +7,21 @@ slug: "docs/usescaffoldwatchcontractevent"
 
 Use this hook to subscribe to events emitted by your smart contract, and receive real-time updates when these events are emitted.
 
-<CodeGroup>
-  ```ts ts
-  useScaffoldWatchContractEvent({
-    contractName: "YourContract",
-    eventName: "GreetingChange",
-    // The onLogs function is called whenever a GreetingChange event is emitted by the contract.
-    // Parameters emitted by the event can be destructed using the below example
-    // for this example: event GreetingChange(address greetingSetter, string newGreeting, bool premium, uint256 value);
-    onLogs: logs => {
-      logs.map(log => {
-        const { greetingSetter, value, premium, newGreeting } = log.args;
-        console.log("📡 GreetingChange event", greetingSetter, value, premium, newGreeting);
-      });
-    },
-  });
-  ```
-</CodeGroup>
+```ts ts
+useScaffoldWatchContractEvent({
+  contractName: "YourContract",
+  eventName: "GreetingChange",
+  // The onLogs function is called whenever a GreetingChange event is emitted by the contract.
+  // Parameters emitted by the event can be destructed using the below example
+  // for this example: event GreetingChange(address greetingSetter, string newGreeting, bool premium, uint256 value);
+  onLogs: logs => {
+    logs.map(log => {
+      const { greetingSetter, value, premium, newGreeting } = log.args;
+      console.log("📡 GreetingChange event", greetingSetter, value, premium, newGreeting);
+    });
+  },
+});
+```
 
 This example subscribes to the `GreetingChange` event emitted by the `YourContract` smart contract and logs the parameters from the event to the console when it's emitted.
 
