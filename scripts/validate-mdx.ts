@@ -35,6 +35,6 @@ const validateMarkdown = async (directory: string) => {
   console.info("✅ Successfully validated all markdown files");
 };
 
-const directory = "fern/docs";
+const directory = "fern";
 
 validateMarkdown(directory);
