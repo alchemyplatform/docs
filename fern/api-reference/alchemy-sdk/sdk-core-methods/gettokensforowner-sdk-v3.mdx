@@ -1,0 +1,170 @@
+---
+title: "getTokensForOwner - SDK"
+description: "Returns the tokens that the specified address owns, along with the amount of each token and the relevant metadata."
+url: "https://docs.alchemy.com/reference/gettokensforowner-sdk-v3"
+slug: "reference/gettokensforowner-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns the tokens that the specified address owns, along with the amount of each token and the relevant metadata.
+
+# Parameters
+
+| Name            | Type     | Description                                            |
+| --------------- | -------- | ------------------------------------------------------ |
+| `addressOrName` | `string` | The owner address to get the tokens with balances for. |
+| `options?`      | `string` | Additional options to pass to the request.             |
+
+### `GetTokensForOwnerOptions` parameters
+
+| Parameters          | Type     | Description                                                                                                                          |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `contractAddresses` | `string` | `optional` List of contract addresses to filter by. Options include: "DEFAULT\_TOKENS", "erc20". If omitted, it defaults to `erc20`. |
+| `pageKey`           | `string` | Optional page key to use for pagination.                                                                                             |
+
+# Response
+
+| Parameters                           | Type     | Description                                                               |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------- |
+| `Promise<GetTokensForOwnerResponse>` | `object` | Returns the tokens that the specified address owns and relevant metadata. |
+
+### `GetTokensForOwnerResponse` response parameters
+
+| Property  | Type               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pageKey` | `string`           | `optional` Page key for the next page of results, if one exists.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `tokens`  | `array of objects` | Owned tokens for the provided addresses along with relevant metadata. The following parameters are associated with the `OwnedToken` object: 1. **`balance`** - `string` The formatted value of the balance field as a hex string. This value is undefined if the error field is present or if the `decimals` field = `undefined`. 2. **`contractAddress`** - `string` The contract address of the token. 3. **`decimals`** - `number` The number of decimals of the token. It is `undefined` if not defined in the contract and unavailable from other sources. 4. **`error`** - `string` Error from fetching the token balances. None of the other fields will be defined if this field is defined. 5. **`logo`** - `string` URL link to the token's logo. It is undefined if the logo is not available. 6. **`name`** - `string` The token's name. It is undefined if the name is not defined in the contract and is unavailable from other sources. 7. **`rawBalance`** - `string`The raw value of the balance field as a hex string. 8. **`symbol`** - `string` The token's symbol. It is undefined if the symbol is not defined in the contract and unavailable from other sources. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getTokensForOwner` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getTokensForOwner.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "demo", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    //Define the owner address or name
+    const ownerAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    
+    //The response returns the tokens the address owns and relevant metadata.
+    let response = await alchemy.core.getTokensForOwner(ownerAddress)
+    
+    //Logging the response to the console
+    console.log(response)
+  };
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "tokens": [
+          {
+              "contractAddress": "0x006b05751a9b7aafd6e0dd251a14e463c94e9dfc",
+              "rawBalance": "59061420000000000000000000",
+              "decimals": 0,
+              "name": "",
+              "symbol": "",
+              "balance": "59061420000000000000000000"
+          },
+          {
+              "contractAddress": "0x011de7ae82cabe65824114110773096181bb0215",
+              "rawBalance": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+              "decimals": 18,
+              "name": "$ get-usdc.com",
+              "symbol": "Visit https://get-usdc.com to get rewards",
+              "balance": "115792089237316195423570985008687907853269984665640564039457.584007913129639935"
+          },
+          {
+              "contractAddress": "0x9412796c9c9def387626825a76b7ccebf28ab42c",
+              "rawBalance": "0",
+              "decimals": 18,
+              "name": "PulseX",
+              "symbol": "PULSE",
+              "balance": "0.0"
+          },
+          {
+              "contractAddress": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
+              "rawBalance": "163283668535754919854895611",
+              "decimals": 18,
+              "logo": "https://static.alchemyapi.io/images/assets/5994.png",
+              "name": "Shiba Inu",
+              "symbol": "SHIB",
+              "balance": "163283668.535754919854895611"
+          },
+          {
+              "contractAddress": "0x981dc247745800bd2ca28a4bf147f0385eaa0bc0",
+              "rawBalance": "8880000000000000000",
+              "decimals": 18,
+              "logo": "https://static.alchemyapi.io/images/assets/22651.png",
+              "name": "NutsDAO",
+              "symbol": "NUTS",
+              "balance": "8.88"
+          },
+          {
+              "contractAddress": "0x98976a6dfaaf97b16a4bb06035cc84be12e79110",
+              "rawBalance": "500000000000000000",
+              "decimals": 18,
+              "name": "MYOUToken",
+              "symbol": "MYOU",
+              "balance": "0.5"
+          }
+      ],
+      "pageKey": "0x98976a6dfaaf97b16a4bb06035cc84be12e79110"
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getTokensForOwner` method using the code sandbox below:
+
+# Use Cases
+
+Here are some possible use cases for the `getTokensForOwner` method:
+
+* **Portfolio Management**: The `getTokensForOwner` method allows developers to build applications that help users manage their crypto portfolios. By querying the tokens owned by a specific address, developers can provide users with an overview of their token holdings, including the token balances and associated metadata.
+* **Token Listings**: Platforms that list tokens or marketplaces can utilize the `getTokensForOwner` method to gather information about the tokens owned by an address. This data can display the tokens available for trade or sale, including their attributes, prices, and other relevant details.
+* **Automated Tasks**: Blockchain developers often need to automate certain tasks based on token ownership. By using the `getTokensForOwner` method, developers can programmatically check if an address owns specific tokens and perform actions accordingly. For example, triggering events or executing smart contract functions based on token ownership
+
+# Related Methods
+
+Here are some methods related to the`getTokensForOwner` method:
+
+* [getTokenBalances](/reference/gettokenbalances): Returns the ERC-20 token balances for a specific owner address.

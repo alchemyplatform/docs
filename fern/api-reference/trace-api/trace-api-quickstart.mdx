@@ -1,0 +1,214 @@
+---
+title: "Trace API Quickstart"
+description: "The Trace API provides insights into transaction processing and on-chain activity."
+url: "https://docs.alchemy.com/reference/trace-api-quickstart"
+slug: "reference/trace-api-quickstart"
+---
+
+
+To use the Trace API your Alchemy plan must be set to the Growth or Enterprise tiers. Upgrade [your plan](https://dashboard.alchemyapi.io/settings/billing) for access.
+
+### Don’t have an API key?
+
+Sign up or upgrade your plan for access.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=e8cafd6dd9)
+
+## Introduction
+
+The Trace API methods provide full externality trace functions on transactions executed in the Ethereum chain. Filtering is simple by using just the `address` information. The returned information includes the execution of the following:
+
+* `CREATE`
+* `SUICIDE`
+* Variants of the `CALL`
+* Input data
+* Output data
+* Gas usage
+* Amount transferred
+* Success status of individual actions
+
+## Trace use cases
+
+Common use cases for the Trace API come in all flavors. Below are popular ones:
+
+| Use case    | Description                                                             | Endpoint                                |
+| ----------- | ----------------------------------------------------------------------- | --------------------------------------- |
+| Trace call  | Executes the given call and returns a number of possible traces for it. | [`trace_call`](/reference/trace-call)   |
+| Trace block | Returns the traces executed in the block.                               | [`trace_block`](/reference/trace-block) |
+| Trace get   | Returns the traces for a transaction by its hash.                       | [`trace_get`](/reference/trace-get)     |
+
+## Trace types
+
+| Type                            | Parameter   | Description                                                                                             | Network Support           |
+| ------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------- | ------------------------- |
+| Transaction Trace               | `trace`     | Trace of your transaction. See [trace actions](/reference/trace-api#opcodes-trace-actions) for details. | Ethereum Mainnet & Goerli |
+| State difference                | `stateDiff` | Ethereum state changed values of a transaction.                                                         | Ethereum Mainnet & Goerli |
+| Virtual Machine Execution Trace | `vmTrace`   | Runs a full trace of the VM's state & subcalls in the transaction.                                      | None                      |
+
+## Trace actions types
+
+### `CREATE`
+
+* Used to create a smart contract.
+
+#### Example response
+
+<CodeGroup>
+  ```json json
+  {
+      "action": {
+        "from": "0x6090a6e47849629b7245dfa1ca21d94cd15878ef",
+        "gas": "0x6a7f1",
+        "init": "0x606060405260405160208061051683398101604052515b60028054600160a060020a03808416600160a060020a0319928316179092556000805433909316929091169190911790554260019081556005805460ff19169091179055346004555b505b6104a6806100706000396000f300606060405236156100885763ffffffff60e060020a60003504166305b34410811461008a5780630b5ab3d5146100ac57806313af4035146100be5780632b20e397146100dc5780633fa4f24514610108578063674f220f1461012a5780638da5cb5b14610156578063b0c8097214610182578063bbe427711461019c578063faab9d39146101b1575bfe5b341561009257fe5b61009a6101cf565b60408051918252519081900360200190f35b34156100b457fe5b6100bc6101d5565b005b34156100c657fe5b6100bc600160a060020a036004351661021d565b005b34156100e457fe5b6100ec6102c3565b60408051600160a060020a039092168252519081900360200190f35b341561011057fe5b61009a6102d2565b60408051918252519081900360200190f35b341561013257fe5b6100ec6102d8565b60408051600160a060020a039092168252519081900360200190f35b341561015e57fe5b6100ec6102e7565b60408051600160a060020a039092168252519081900360200190f35b341561018a57fe5b6100bc60043560243515156102f6565b005b34156101a457fe5b6100bc600435610382565b005b34156101b957fe5b6100bc600160a060020a0360043516610431565b005b60015481565b60055460ff16156101e65760006000fd5b600254604051600160a060020a039182169130163180156108fc02916000818181858888f193505050501561021a5761deadff5b5b565b60005433600160a060020a039081169116146102395760006000fd5b600160a060020a038116151561024f5760006000fd5b600280546003805473ffffffffffffffffffffffffffffffffffffffff19908116600160a060020a03808516919091179092559084169116811790915560408051918252517fa2ea9883a321a3e97b8266c2b078bfeec6d50c711ed71f874a90d500ae2eaf369181900360200190a15b5b50565b600054600160a060020a031681565b60045481565b600354600160a060020a031681565b600254600160a060020a031681565b60005433600160a060020a039081169116146103125760006000fd5b60055460ff1615156103245760006000fd5b8160045410156103345760006000fd5b6004829055600254604051600160a060020a039182169130163184900380156108fc02916000818181858888f193505050501580156103705750805b1561037b5760006000fd5b5b5b5b5050565b60005433600160a060020a0390811691161461039e5760006000fd5b60055460ff1615156103b05760006000fd5b6005805460ff1916905561dead6108fc6103e883810330600160a060020a031631025b604051919004801590920291906000818181858888f1935050505015156103fa5760006000fd5b6040517fbb2ce2f51803bba16bc85282b47deeea9a5c6223eabea1077be696b3f265cf1390600090a16102bf6101d5565b5b5b5b50565b60005433600160a060020a0390811691161461044d5760006000fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0383161790555b5b505600a165627a7a72305820fbfa6f8a2024760ef0e0eb29a332c9a820526e92f8b4fbcce6f00c7643234b140029000000000000000000000000a7f3659c53820346176f7e0e350780df304db179",
+        "value": "0xe4b4b8af6a70000"
+      },
+      "blockHash": "0x6d00f7707938cca36b0730d8f7f090543242002b6fa0fe94bf85b9ab02e6bed6",
+      "blockNumber": 4000036,
+      "result": {
+        "address": "0xfc9779d9a0f2715435a3e8ebf780322145d7546e",
+        "code": "0x606060405236156100885763ffffffff60e060020a60003504166305b34410811461008a5780630b5ab3d5146100ac57806313af4035146100be5780632b20e397146100dc5780633fa4f24514610108578063674f220f1461012a5780638da5cb5b14610156578063b0c8097214610182578063bbe427711461019c578063faab9d39146101b1575bfe5b341561009257fe5b61009a6101cf565b60408051918252519081900360200190f35b34156100b457fe5b6100bc6101d5565b005b34156100c657fe5b6100bc600160a060020a036004351661021d565b005b34156100e457fe5b6100ec6102c3565b60408051600160a060020a039092168252519081900360200190f35b341561011057fe5b61009a6102d2565b60408051918252519081900360200190f35b341561013257fe5b6100ec6102d8565b60408051600160a060020a039092168252519081900360200190f35b341561015e57fe5b6100ec6102e7565b60408051600160a060020a039092168252519081900360200190f35b341561018a57fe5b6100bc60043560243515156102f6565b005b34156101a457fe5b6100bc600435610382565b005b34156101b957fe5b6100bc600160a060020a0360043516610431565b005b60015481565b60055460ff16156101e65760006000fd5b600254604051600160a060020a039182169130163180156108fc02916000818181858888f193505050501561021a5761deadff5b5b565b60005433600160a060020a039081169116146102395760006000fd5b600160a060020a038116151561024f5760006000fd5b600280546003805473ffffffffffffffffffffffffffffffffffffffff19908116600160a060020a03808516919091179092559084169116811790915560408051918252517fa2ea9883a321a3e97b8266c2b078bfeec6d50c711ed71f874a90d500ae2eaf369181900360200190a15b5b50565b600054600160a060020a031681565b60045481565b600354600160a060020a031681565b600254600160a060020a031681565b60005433600160a060020a039081169116146103125760006000fd5b60055460ff1615156103245760006000fd5b8160045410156103345760006000fd5b6004829055600254604051600160a060020a039182169130163184900380156108fc02916000818181858888f193505050501580156103705750805b1561037b5760006000fd5b5b5b5b5050565b60005433600160a060020a0390811691161461039e5760006000fd5b60055460ff1615156103b05760006000fd5b6005805460ff1916905561dead6108fc6103e883810330600160a060020a031631025b604051919004801590920291906000818181858888f1935050505015156103fa5760006000fd5b6040517fbb2ce2f51803bba16bc85282b47deeea9a5c6223eabea1077be696b3f265cf1390600090a16102bf6101d5565b5b5b5b50565b60005433600160a060020a0390811691161461044d5760006000fd5b6000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0383161790555b5b505600a165627a7a72305820fbfa6f8a2024760ef0e0eb29a332c9a820526e92f8b4fbcce6f00c7643234b140029",
+        "gasUsed": "0x52ce0"
+      },
+      "subtraces": 0,
+      "traceAddress": [
+        0
+      ],
+      "transactionHash": "0xc9601ea5ca42e57c3ef1d770ab0b278d6aadf2511a4feb879cba573854443423",
+      "transactionPosition": 70,
+      "type": "create"
+    },
+  ```
+</CodeGroup>
+
+**Create parameter definitions**
+
+| Parameter             | Description                                 | Example                                                              |
+| --------------------- | ------------------------------------------- | -------------------------------------------------------------------- |
+| `from`                | The address that created the contract.      | `0x6090a6e47849629b7245dfa1ca21d94cd15878ef`                         |
+| `gas`                 | Contract gas fee to create the contract.    | `0x6a7f1`                                                            |
+| `init`                | Initialization code to create the contract. | `0x6060604052604051602080610516833981016040...`                      |
+| `value`               | The value sent to the contract.             | `0xe4b4b8af6a7000`                                                   |
+| `blockHash`           | Block hash ID in the transaction.           | `0x6d00f7707938cca36b0730d8f7f090543242002b6fa0fe94bf85b9ab02e6bed6` |
+| `blockNumber`         | Transaction block number.                   | `4000036`                                                            |
+| `address`             | Location address of the new contract.       | `0xfc9779d9a0f2715435a3e8ebf780322145d7546e`                         |
+| `code`                | The contract code.                          | `0x606060405236156100885763ffffffff60e060020...`                     |
+| `gasUsed`             | Required fee (gas) to create the contract.  | `0x52ce0`                                                            |
+| `subtraces`           | Total number of transaction child traces.   | `0`                                                                  |
+| `traceAddress`        | Index of a trace & order of subcalls.       | `0`                                                                  |
+| `transactionHash`     | Hash ID of the transaction.                 | `0xc9601ea5ca42e57c3ef1d770ab0b278d6aadf2511a4feb879cba573854443423` |
+| `transactionPosition` | The transaction position in the block.      | `70`                                                                 |
+| `type`                | Type of operation code (OPCODE).            | `create`                                                             |
+
+### `SUICIDE`
+
+* `SUICIDE` is captured when a smart contract is destroyed. That is when the [selfdestruct](https://solidity-by-example.org/hacks/self-destruct/) function of Solidity is used.
+* `SUICIDE` transfers the contract's balance to the `address` specified in the `selfdestruct` function clearing on-chain memory.
+* The cleared memory is processed as a refund of the total gas cost to complete the transaction.
+
+#### Example response
+
+<CodeGroup>
+  ```json json
+  {
+      "action": {
+        "address": "0x87051f6ba0562fdb0485763562bf34cb2ad705b1",
+        "refundAddress": "0x000000000000000000000000000000000000dead",
+        "balance": "0x0"
+      },
+      "blockHash": "0x6d00f7707938cca36b0730d8f7f090543242002b6fa0fe94bf85b9ab02e6bed6",
+      "blockNumber": 4000036,
+      "result": null,
+      "subtraces": 0,
+      "traceAddress": [
+        1,
+        2,
+        2
+      ],
+      "transactionHash": "0xbc15addb97490a168dc1d099ab8537caf2e4ff7d1deeff6d685d2d594a750037",
+      "transactionPosition": 45,
+      "type": "suicide"
+    },
+  ```
+</CodeGroup>
+
+**SUICIDE parameter definitions**
+
+| Parameter             | Description                                      | Example                                                              |
+| --------------------- | ------------------------------------------------ | -------------------------------------------------------------------- |
+| `address`             | The address of contract to destroy.              | `0x87051f6ba0562fdb0485763562bf34cb2ad705b1`                         |
+| `refundAddress`       | Address to send remainder of contract `balance`. | `0x000000000000000000000000000000000000dead`                         |
+| `blockHash`           | Block hash ID of the transaction.                | `0x6d00f7707938cca36b0730d8f7f090543242002b6fa0fe94bf85b9ab02e6bed6` |
+| `blockNumber`         | Transaction block number.                        | `4000036`                                                            |
+| `result`              | Used for `SELFDESTRUCT` calls.                   | `null`                                                               |
+| `subtraces`           | Total number of transaction child traces.        | `0`                                                                  |
+| `traceAddress`        | Index of the trace & the order of subcalls.      | `1` and `2`                                                          |
+| `transactionHash`     | Hash ID of the transaction.                      | `0xbc15addb97490a168dc1d099ab8537caf2e4ff7d1deeff6d685d2d594a750037` |
+| `transactionPosition` | The position of the transaction in the block.    | `45`                                                                 |
+| `type`                | Type of operation code (OPCODE).                 | `suicide`                                                            |
+
+### `CALL`
+
+* `CALL` is used for transferring ETH between [externally owned accounts](/docs/web3-glossary#externally-owned-account) (EOAs).
+* Also used to `CALL` a smart contract function.
+
+#### Example response
+
+<CodeGroup>
+  ```json json
+  {
+      "action": {
+        "from": "0xbc9f06dd67578b0b8b4d87fda9acde453bc4c067",
+        "callType": "call",
+        "gas": "0x97478",
+        "input": "0xfebefd610000000000000000000000000000000000000000000000000000000000000040cc849afc28894f79411f12309e75c71ded27d1666b75a2423633c204e671cb1e00000000000000000000000000000000000000000000000000000000000000036eaec0ff7c4899bec2db1479d7d195d614ca26819a301523d82daaaaf436122d2ceb36dfa12b359202b4dfd756478988f5023bf7297afa81f563d4b6242e36e707671a8bf38ee483a37feca948997dcfba17b3372e166ba5c824629beeed6b5c",
+        "to": "0x6090a6e47849629b7245dfa1ca21d94cd15878ef",
+        "value": "0x2386f26fc10000"
+      },
+      "blockHash": "0x6d00f7707938cca36b0730d8f7f090543242002b6fa0fe94bf85b9ab02e6bed6",
+      "blockNumber": 4000036,
+      "result": {
+        "gasUsed": "0x7ad71",
+        "output": "0x"
+      },
+      "subtraces": 4,
+      "traceAddress": [],
+      "transactionHash": "0x552b31a3a9c92577d65db62cf9f729e81571e10cad90e356423adcfa2caebacc",
+      "transactionPosition": 71,
+      "type": "call"
+    }
+  ```
+</CodeGroup>
+
+**`CALL` parameter definitions**
+
+| Parameter             | Description                                     | Example                                                              |                                                        |
+| --------------------- | ----------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ |
+| `from`                | Address of the sender.                          | `0xbc9f06dd67578b0b8b4d87fda9acde453bc4c067`                         |                                                        |
+| `callType`            | The type of `CALL`.                             | `call`,`delegatecall`,`callcode` or `staticcall`                     |                                                        |
+| `gas`                 | The gas included in the transaction.            | `0x97478`                                                            |                                                        |
+| `input`               | Specific call function on the contract.         |                                                                      | `0xfebefd61000000000000000000000000000000000000000...` |
+| `to`                  | Address of the receiver.                        | `0x6090a6e47849629b7245dfa1ca21d94cd15878ef`                         |                                                        |
+| `value`               | Transferred value amount.                       | `0x2386f26fc10000`                                                   |                                                        |
+| `blockHash`           | Transaction block hash ID.                      | `0x6d00f7707938cca36b0730d8f7f090543242002b6fa0fe94bf85b9ab02e6bed6` |                                                        |
+| `blockNumber`         | Transaction block number.                       | `4000036`                                                            |                                                        |
+| `gasUsed`             | gas used to execute the transaction.            | `0x7ad71`                                                            |                                                        |
+| `output`              | The result of the smart contract function call. | `0x`                                                                 |                                                        |
+| `subtraces`           | Total number of transaction child traces.       | `4`                                                                  |                                                        |
+| `traceAddress`        | Index of a trace & the order of subcalls.       | `[]`                                                                 |                                                        |
+| `transactionHash`     | Hash ID of the transaction.                     | `0x552b31a3a9c92577d65db62cf9f729e81571e10cad90e356423adcfa2caebacc` |                                                        |
+| `transactionPosition` | The position of the transaction in the block.   | `71`                                                                 |                                                        |
+| `type`                | Type of operation code (OPCODE).                | `call`                                                               |                                                        |
+
+## How to read a `traceAddress`
+
+Traces are structured in a tree format. The `traceAddress` field represents the position of the trace in the tree. Below is a diagram of the `traceAddress` set of tree results:
+
+![768](a0d248e-Docs_-_User_flow_1.png "Docs - User flow (1).png")
+
+Trace tree diagram
+
+## Helpful Resources
+
+* [What are EVM Traces?](/reference/what-are-evm-traces)
+* [Trace API vs. Debug API](/reference/trace-api-vs-debug-api)
+* [trace\_call vs debug\_traceCall](/reference/trace_call-vs-debug_tracecall)

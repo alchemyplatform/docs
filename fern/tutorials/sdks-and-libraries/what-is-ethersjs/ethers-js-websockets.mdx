@@ -1,0 +1,324 @@
+---
+title: "How to Use WebSockets in Ethers.js"
+description: "WebSocket Use Cases with Ethers.js WebSockets are a critical component of the blockchain development workflow as they enable receiving real-time updates from the blockchain. This means that developers are able to leverage WebSockets for a continuous flow of information including the latest mined tra..."
+url: "https://docs.alchemy.com/docs/ethers-js-websockets"
+slug: "docs/ethers-js-websockets"
+---
+
+## WebSocket Use Cases with Ethers.js
+
+WebSockets are a critical component of the blockchain development workflow as they enable receiving real-time updates from the blockchain. This means that developers are able to leverage WebSockets for a continuous flow of information including the latest mined transactions, pending transaction hashes, new header blocks, logs and much more. WebSockets enable creating subscriptions to power common queries to the blockchain, enhancing the development process.
+
+### Ethers.js Subscription Types
+
+1. [Pending Transactions](/reference/alchemy-pendingtransactions): retrieve full transaction objects or hashes that are sent to the network, marked as "pending", based on provided filters.
+2. [Block (newHeads)](/reference/newheads#request): retrieve new blocks that are added to the blockchain.
+3. [Transactions](/reference/newpendingtransactions): retrieve when a specified transaction has been mined.
+4. [Logs](/reference/logs): retrieve logs attached to a new block that match certain topic filters.
+
+### WebSocket Subscription Methods
+
+In order to access these subscriptions, Ethers.js provides seven utility methods that allow you to create, update, delete, and track your existing subscriptions. You’ll manage your subscriptions using these methods.
+
+1. on( eventName, listener ) → this: Add a listener to be triggered for each eventName event.
+2. once( eventName, listener ) → this: Add a listener to be triggered for only the next eventName event, at which time it will be removed.
+3. emit( eventName, …args ) → boolean: Notify all listeners of the eventName event, passing args to each listener. This is generally only used internally.
+4. off( eventName, \[ , listener] ) → this: Remove a listener for the eventName event. If no listener is provided, all listeners for eventName are removed.
+5. removeAllListeners( \[ eventName ] ) → this: Remove all the listeners for the eventName events. If no eventName is provided, all events are removed.
+6. listenerCount( eventName, listener ) → number: Returns the number of listeners for the eventName events. If no eventName is provided, the total number of listeners is returned.
+7. listeners( eventName ) → Array\< Listener >: Returns the list of Listeners for the eventName events.
+
+Read on below for examples on how to use these methods and subscription types.
+
+### What is the Alchemy SDK? Why use it over Ethers.js?
+
+The [Alchemy SDK](/reference/alchemy-sdk-quickstart) is a powerful JavaScript SDK built on top of Ethers.js to enable developers to interact with the blockchain. As a drop-in replacement for Ethers.js, this new tool has identical syntax to Ethers.js WebSockets, but enables additional capabilities such as filtering transactions by the address they were sent to/from, robust and WebSockets that automatically retry when they close.
+
+The Alchemy SDK supports five different namespaces, but for the purpose of this tutorial we’ll focus on alchemy.ws which powers all WebSocket methods.
+
+The Alchemy SDK is identical to the Ethers.js syntax, but provides the following list of more powerful subscription types:
+
+1. [Alchemy Mined Transactions](/reference/alchemy-minedtransactions): retrieve full transaction objects or hashes that are mined on the network, and additionally allows developers to filter based on the address they were sent to / received from.
+2. [Alchemy Pending Transactions](/reference/alchemy-pendingtransactions): retrieve full transaction objects or hashes that are sent to the network, marked as "pending", and additionally allows developers to filter based on the address they were sent to / received from
+3. [Block (newHeads)](/reference/newpendingtransactions): retrieve new blocks that are added to the blockchain.
+4. Transactions: retrieve when a specified transaction has been mined.
+5. [Logs](/reference/logs): retrieve logs attached to a new block that match certain topic filters.
+
+In this tutorial, we’ll review how to build with each one.
+
+## How to Use WebSockets with the Alchemy SDK
+
+The following code snippets will introduce you to WebSockets using the Alchemy SDK to retrieve pending transactions from the ETH Mainnet. This will require prior installation of ethers and alchemy-SDK. Add the following code to main.js.
+
+### 1. Import ethers using Node.js
+
+<CodeGroup>
+  ```javascript javascript
+  const { Alchemy, Network, AlchemySubscription } = require("alchemy-sdk");
+  ```
+</CodeGroup>
+
+### 2. Optional Config object, but defaults to demo api-key and eth-mainnet
+
+<CodeGroup>
+  ```javascript javascript
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+  ```
+</CodeGroup>
+
+### 3. Define the transaction and specify details required of the transaction
+
+<CodeGroup>
+  ```javascript javascript
+  alchemy.ws.on(
+    {
+      method: AlchemySubscription.PENDING_TRANSACTIONS
+    },
+    res => console.log(res)
+  );
+  ```
+</CodeGroup>
+
+### 4. Run this script by running the following command in your terminal
+
+<CodeGroup>
+  ```javascript javascript
+  node main.js
+  ```
+</CodeGroup>
+
+If successful, you should see a stream of transactions as the result. This stream of output indicates the latest (pending) transactions hitting the Ethereum Mainnet. It should look something like this:
+
+<CodeGroup>
+  ```json json
+  {
+    blockHash: null,
+    blockNumber: null,
+    from: '0xcac854aa5c5413cb9fe1e66de82286c2e33e3a17',
+    gas: '0x5208',
+    gasPrice: '0x73ebba85d',
+    maxFeePerGas: '0x73ebba85d',
+    maxPriorityFeePerGas: '0x59682f00',
+    hash: '0xe3fb7d600f6cdd98d48ae65f2d328195f412cb5310aa03572c928057c05b4905',
+    input: '0x',
+    nonce: '0x0',
+    to: '0x4c6b43b8fde0c0def5c4ee54200031803edd2b40',
+    transactionIndex: null,
+    value: '0xdde4e57c19789e0',
+    type: '0x2',
+    accessList: [],
+    chainId: '0x1',
+    v: '0x0',
+    r: '0x5c895ebf2cb0ef4031d9d67739d3465ad3f52f4144df8856253f71026ea0ead1',
+    s: '0x1222ef175c154a68785289cd8c69e5051792b779c1b688a7cc69b12ce6824e5a'
+  }
+  {
+    blockHash: null,
+    blockNumber: null,
+    from: '0x81a817afd694cca3b0b128b957f955ca84bb24a2',
+    gas: '0x249f0',
+    gasPrice: '0x640f4aa43',
+    maxFeePerGas: '0x640f4aa43',
+    maxPriorityFeePerGas: '0xb2d05e00',
+    hash: '0xff9dbd8dd9252adeb76814735cc03e08251f8deb123824bdb99ac182f1422273',
+    input: '0xa9059cbb000000000000000000000000167a9333bf582556f35bd4d16a7e80e191aa64760000000000000000000000000000000000000000000003ba904c3de21f3f0000',
+    nonce: '0x0',
+    to: '0xde7d85157d9714eadf595045cc12ca4a5f3e2adb',
+    transactionIndex: null,
+    value: '0x0',
+    type: '0x2',
+    accessList: [],
+    chainId: '0x1',
+    v: '0x0',
+    r: '0x7cf30ebeb65a2425cfd8bbe00a411f34fa0a9e7d43f12f7512c951a76cd6d8d5',
+    s: '0x41f1201dd0ee9c19b5d43e29671b51eb6d6c972b85c182fa62ac8cd520db4df1'
+  }
+  ```
+</CodeGroup>
+
+***
+
+## How to use the Subscription Methods in the Alchemy SDK
+
+The subscription methods from the Alchemy SDK utilize the same implementation of WebSockets as Ethers.js. That is the identical syntax which can be used in the Alchemy SDK to subscribe to the same events that you will find in Ethers.js.
+
+### Subscription Method - on
+
+The following code snippet will retrieve a stream of transactions pending on the ETH Mainnet.
+
+<CodeGroup>
+  ```javascript javascript
+  // Setup: npm install alchemy-sdk
+  import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+   apiKey: "demo", // Replace with your Alchemy API Key.
+   network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  alchemy.ws.on(
+   {
+     method: AlchemySubscription.PENDING_TRANSACTIONS,
+   },
+   (tx) => console.log(tx)
+  );
+  ```
+</CodeGroup>
+
+### Subscription Method - once
+
+The following code snippet will retrieve a singular transaction pending on the ETH Mainnet, and close the WebSocket afterwards.
+
+<CodeGroup>
+  ```javascript javascript
+  // Setup: npm install alchemy-sdk
+  import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+   apiKey: "demo", // Replace with your Alchemy API Key.
+   network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  alchemy.ws.once(
+   {
+     method: AlchemySubscription.PENDING_TRANSACTIONS,
+   },
+   (tx) => console.log(tx)
+  );
+  ```
+</CodeGroup>
+
+### Subscription Method - off
+
+The following code snippet will remove a specific listener specified by the event name.
+
+<CodeGroup>
+  ```javascript javascript
+  import { Alchemy, Network } from 'alchemy-sdk';
+
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+   apiKey: "demo", // Replace with your Alchemy API Key.
+   network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  const output = await alchemy.ws.off();
+  console.log(output);
+  ```
+</CodeGroup>
+
+### Subscription Method - listeners
+
+The following code snippet will output the listeners specified by the event name.
+
+<CodeGroup>
+  ```javascript javascript
+  import { Alchemy, Network } from 'alchemy-sdk';
+
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+   apiKey: "demo", // Replace with your Alchemy API Key.
+   network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  const output = await alchemy.ws.listeners("block");
+  console.log(output);
+  ```
+</CodeGroup>
+
+### Subscription Method - listenerCount
+
+The following code snippet will output the number of listeners specified by the event name.
+
+<CodeGroup>
+  ```javascript javascript
+  import { Alchemy, Network } from 'alchemy-sdk';
+
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+   apiKey: "demo", // Replace with your Alchemy API Key.
+   network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  const output = await alchemy.ws.listenerCount("block");
+  console.log(output);
+  ```
+</CodeGroup>
+
+### Subscription Method - removeAllListeners
+
+The following code snippet will remove all listeners upon completion of the code.
+
+<CodeGroup>
+  ```javascript javascript
+  import { Alchemy, Network } from 'alchemy-sdk';
+
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+   apiKey: "demo", // Replace with your Alchemy API Key.
+   network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+   console.log("Latest block:", blockNumber)
+  );
+
+  const output = await alchemy.ws.removeAllListeners();
+  console.log(output);
+  ```
+</CodeGroup>

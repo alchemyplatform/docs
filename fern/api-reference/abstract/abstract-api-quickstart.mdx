@@ -1,0 +1,102 @@
+---
+title: "Abstract API Quickstart"
+description: "Get started building on Abstract and using the JSON-RPC API"
+url: "https://docs.alchemy.com/reference/abstract-api-quickstart"
+slug: "reference/abstract-api-quickstart"
+---
+
+
+## Introduction
+
+Abstract is a Layer 2 (L2) network built on top of Ethereum, designed to securely power consumer-facing blockchain applications at scale with low fees and fast transaction speeds.
+
+## What is the Abstract API?
+
+The Abstract API allows interaction with the Abstract network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
+
+```
+mkdir abstract-api-quickstart
+cd abstract-api-quickstart
+npm init --yes
+```
+
+```
+mkdir abstract-api-quickstart
+cd abstract-api-quickstart
+yarn init --yes
+```
+
+This creates a new directory named `abstract-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = `https://abstract-mainnet.g.alchemy.com/v2/${your-api-key}`;
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Abstract mainnet:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the latest block information from Abstract's mainnet outputted to your console:
+
+```
+Latest Block: 0x...
+```
+
+## Next Steps
+
+Congratulations! You've made your first request to the Abstract network. You can now explore the various [JSON-RPC methods available on Abstract](/reference/abstract-api-endpoints) and start building your dApps on this innovative platform.

@@ -1,0 +1,233 @@
+---
+title: "getNftSales - SDK"
+description: "Returns NFT sales that have happened through on-chain marketplaces."
+url: "https://docs.alchemy.com/reference/sdk-getnftsales"
+slug: "reference/sdk-getnftsales"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns NFT sales that have happened through on-chain marketplaces.
+
+# Parameters
+
+| Name      | Type     | Description                                     |
+| --------- | -------- | ----------------------------------------------- |
+| `options` | `object` | The optional parameters to use for the request. |
+
+### `options` parameters
+
+| parameter       | type     | description                                                                                                                                                                                    |
+| --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fromBlock`     | `number` | The block number to start fetching NFT sales data from, i.e.,`latest`.                                                                                                                         |
+| `toBlock`       | `number` | The block number limit to fetch NFT sales data from, i.e.,`latest`                                                                                                                             |
+| `order`         | `string` | Whether to return the results in ascending or descending order by block number. ASCENDING = `asc`, DESCENDING = `desc`.                                                                        |
+| `marketplace`   | `string` | The NFT marketplace to filter sales by. Examples are \[SEAPORT = `seaport`, LOOKSRARE = `looksrare`, X2Y2 = `x2y2`, WYVERN' = `wyvern`, 'CRYPTOPUNKS' = `cryptopunks`, UNKNOWN = `unknown`     |
+| `buyerAddress`  | `string` | The address of the NFT buyer to filter sales by.                                                                                                                                               |
+| `sellerAddress` | `string` | The address of the NFT seller to filter sales by.                                                                                                                                              |
+| `taker`         | `string` | Filter by whether the buyer or seller was the taker in the NFT trade. Defaults to returning both buyer and seller taker trades. Available options are: \[ BUYER = `buyer`, SELLER = `seller`]. |
+| `limit`         | `number` | The maximum number of NFT sales to return.                                                                                                                                                     |
+| `pageKey`       | `string` | Key for pagination to use to fetch results from the next page if available.                                                                                                                    |
+
+# Response
+
+| Property                       | Type   | Description                                                             |
+| ------------------------------ | ------ | ----------------------------------------------------------------------- |
+| `Promise<GetNftSalesResponse>` | object | Returns the NFT sales that have happened through on-chain marketplaces. |
+
+### `Promise<GetNftSalesResponse>` object parameters
+
+| Property   | Type     | Description                                                                                                                                                                                                                                                                               |
+| ---------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nftSales` | `object` | List of NFT sales that match the query.                                                                                                                                                                                                                                                   |
+| `validAt`  | `object` | Block Information of the block as of which the corresponding data is valid. Includes the following properties: - `blockNumber`: The block number the sale information is valid at. - `blockHash`: The block hash. Used to detect reorgs. - `blockTimestamp`: The timestamp for the block. |
+| `pageKey`  | `string` | The page key to use to fetch the next page if more results are available.                                                                                                                                                                                                                 |
+
+### `nftSales` parameters
+
+| Parameter         | Type     | Description                                                                                                                                                                                                 |
+| ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `marketplace`     | `string` | The marketplace the sale took place on. Currently tracked marketplaces are Seaport, Looksrare, X2Y2, Wyvern, Blur and Cryptopunks. For all other marketplaces this field is unknown.                        |
+| `contractAddress` | `string` | The NFT contract address.                                                                                                                                                                                   |
+| `tokenId`         | `string` | The decimal token ID of the NFT being sold.                                                                                                                                                                 |
+| `quantity`        | `string` | The number of tokens sold in the sale as a decimal integer string.                                                                                                                                          |
+| `buyerAddress`    | `string` | The address of the buyer in the NFT sale.                                                                                                                                                                   |
+| `sellerAddress`   | `string` | The address of the seller in the NFT sale.                                                                                                                                                                  |
+| `taker`           | `string` | Whether the price taker in the trade was the buyer or the seller.                                                                                                                                           |
+| `sellerFee`       | `object` | The payment from buyer to the seller. The parameters in this object incude: `amount`: *string*, `symbol`: *string*, `decimals`: *number*, `decimal` ( deprecated ): *number*                                |
+| `protocolFee`     | `object` | The payment from buyer to the marketplace. The parameters in this object include: `amount`: *string*, `symbol`: *string*, `decimals`: *number*, `decimal`( deprecated ): *number*.                          |
+| `royaltyFee`      | `object` | The payment from buyer to the royalty address of the NFT collection. The parameters in this object incude: `amount`: *string*, `symbol`: *string*, `decimals`: *number*, `decimal`( deprecated ): *number*. |
+| `blockNumber`     | `number` | The block number the NFT sale took place in.                                                                                                                                                                |
+| `logIndex`        | `number` | The log number of the sale event emitted within the block.                                                                                                                                                  |
+| `bundleIndex`     | `number` | The index of the token within the bundle of NFTs sold in the sale.                                                                                                                                          |
+| `transactionHash` | `string` | The transactionHash of the NFT sale.                                                                                                                                                                        |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Call the method to return the nft sales data
+      const response = await alchemy.nft.getNftSales()
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "nftSales": [
+          {
+              "marketplace": "cryptopunks",
+              "contractAddress": "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb",
+              "tokenId": "544",
+              "quantity": "1",
+              "buyerAddress": "0x5b098b00621eda6a96b7a476220661ad265f083f",
+              "sellerAddress": "0xc352b534e8b987e036a93539fd6897f53488e56a",
+              "taker": "seller",
+              "sellerFee": {
+                  "amount": "10000000000000000",
+                  "tokenAddress": "0x0000000000000000000000000000000000000000",
+                  "symbol": "ETH",
+                  "decimals": 18
+              },
+              "marketplaceFee": {},
+              "protocolFee": {},
+              "royaltyFee": {},
+              "blockNumber": 3919706,
+              "logIndex": 25,
+              "bundleIndex": 0,
+              "transactionHash": "0xb28b5f2c186bf534e4fc4b8604b1496c9632e42269424f70ef1bdce61ea8ba52"
+          },
+          {
+              "marketplace": "cryptopunks",
+              "contractAddress": "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb",
+              "tokenId": "3134",
+              "quantity": "1",
+              "buyerAddress": "0xc352b534e8b987e036a93539fd6897f53488e56a",
+              "sellerAddress": "0x5b098b00621eda6a96b7a476220661ad265f083f",
+              "taker": "buyer",
+              "sellerFee": {
+                  "amount": "10000000000000000",
+                  "tokenAddress": "0x0000000000000000000000000000000000000000",
+                  "symbol": "ETH",
+                  "decimals": 18
+              },
+              "marketplaceFee": {},
+              "protocolFee": {},
+              "royaltyFee": {},
+              "blockNumber": 3919721,
+              "logIndex": 9,
+              "bundleIndex": 0,
+              "transactionHash": "0x65579455ac3227e7b3db72b4e359e988bb16cae6d26c88818d1a6991b478b274"
+          },
+          {
+              "marketplace": "cryptopunks",
+              "contractAddress": "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb",
+              "tokenId": "5056",
+              "quantity": "1",
+              "buyerAddress": "0x00bd9fd57c423a1b1c969823d409156d90974d77",
+              "sellerAddress": "0xc352b534e8b987e036a93539fd6897f53488e56a",
+              "taker": "buyer",
+              "sellerFee": {
+                  "amount": "100000000000000000",
+                  "tokenAddress": "0x0000000000000000000000000000000000000000",
+                  "symbol": "ETH",
+                  "decimals": 18
+              },
+              "marketplaceFee": {},
+              "protocolFee": {},
+              "royaltyFee": {},
+              "blockNumber": 3919847,
+              "logIndex": 35,
+              "bundleIndex": 0,
+              "transactionHash": "0xd79cca9282c06a0edb8f9426aae734119f0f2ed0d9683dfe3723dc7814f5fccd"
+          },
+          {
+              "marketplace": "cryptopunks",
+              "contractAddress": "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb",
+              "tokenId": "5719",
+              "quantity": "1",
+              "buyerAddress": "0x00bd3a6660309fb9e0129b9b777a9ccb9c2869dc",
+              "sellerAddress": "0x5b098b00621eda6a96b7a476220661ad265f083f",
+              "taker": "buyer",
+              "sellerFee": {
+                  "amount": "40000000000000000",
+                  "tokenAddress": "0x0000000000000000000000000000000000000000",
+                  "symbol": "ETH",
+                  "decimals": 18
+              },
+              "marketplaceFee": {},
+              "protocolFee": {},
+              "royaltyFee": {},
+              "blockNumber": 4367925,
+              "logIndex": 71,
+              "bundleIndex": 0,
+              "transactionHash": "0xe6e1885bd2dd142c63b79df6aca0ad3213e37c3a9f01a550c30fa1b234d3c7f2"
+          }
+      ],
+      "validAt": {
+          "blockNumber": 17736688,
+          "blockHash": "0x09c001045ba91210c239bf53948ce23329306cd64fe9c1618d6b9459ff283817",
+          "blockTimestamp": "2023-07-20T20:13:35Z"
+      },
+      "pageKey": "NDM2ODAyNSw3Miww"
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getNftSales` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getNftSales` method:
+
+* **NFT market analysis**: By using `getNftSales`, users can retrieve data about the sales of various NFTs on the blockchain network. This data can be used to analyze market trends and understand the popularity of specific NFTs. This information can be used by investors and traders to make informed decisions about buying or selling NFTs.
+
+* **Royalty calculation**: NFTs often include royalty clauses that enable creators to receive a percentage of the sale price every time the NFT is sold. `getNftSales` can be used to retrieve information about all the sales of a specific NFT, allowing creators to calculate their royalty payments accurately.
+
+* **Proof of ownership**: `getNftSales` can be used to verify the ownership of an NFT by checking the history of its sales. This can be helpful in cases where the ownership of an NFT is disputed or when verifying the authenticity of an NFT.

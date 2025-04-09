@@ -1,0 +1,114 @@
+---
+title: "getSpamContracts -SDK"
+description: "Returns a list of all spam contracts marked by Alchemy."
+url: "https://docs.alchemy.com/reference/getspamcontracts-sdk-v3"
+slug: "reference/getspamcontracts-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns a list of all spam contracts marked by Alchemy. For details on how Alchemy marks spam contracts, go to [this link](https://docs.alchemy.com/alchemy/enhanced-apis/nft-api/nft-api-faq#nft-spam-classification).
+
+# Response
+
+| Property                            | Type     | Description                          |
+| ----------------------------------- | -------- | ------------------------------------ |
+| `Promise<GetSpamContractsResponse>` | `object` | A list of identified spam contracts. |
+
+### `GetSpamContractsResponse` object properties
+
+| Property            | Type               | Description                                   |
+| ------------------- | ------------------ | --------------------------------------------- |
+| `contractAddresses` | `array of strings` | An array containing a list of spam contracts. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Call the method to return a list of spam contracts
+      const response = await alchemy.nft.getSpamContracts()
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "contractAddresses": [
+          "0x000000000A42C2791eEc307FFf43Fa5c640e3Ef7",
+          "0x000294F162Dc337Cf060AC6e2Cb7Db8c8F544004",
+          "0x000386E3F7559d9B6a2F5c46B4aD1A9587D59Dc3",
+          "0x00050657890966fc261113DBa4c277d9cb204E52",
+          "0x0009498dD5a13679aC11927e4BAE78C154Fcf754",
+          "0x000D398c50EA4D0681E6a224749C94334d606Ba2",
+          "0x000Fb295d38c01051e37e65F3034dD4F02267c96",
+          "0x0015F391949f25c3211063104aD4AFC99210f85c",
+          "0x001757861e8233C5a288411dDbf17378e724DD0C",
+          "0x001AC203aFB48600f5a7D9b524145AC075f648aF",
+          "0x001f561C73555005a7f22e2ae9CB785cf37Cc3B9",
+          "0xfFf9e4b5Cf4b0F0fF83BbA48Ee5A88772Cd258B9"
+      ]
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getSpamContracts` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getSpamContracts` method:
+
+* **Anti-spam measures**: `getSpamContracts` could be used to identify and flag contracts or agreements likely to be spam or fraudulent. For example, a system could use machine learning algorithms to analyze contracts and agreements for patterns and characteristics commonly associated with spam or fraudulent activity.
+
+* **Contract management**: `getSpamContracts` could be used to manage and organize many contracts or agreements. By identifying contracts that are unlikely to be legitimate, the system could prioritize the review and processing of valid contracts.
+
+* **Legal compliance**: `getSpamContracts` could be part of a compliance process to ensure that all contracts and agreements meet legal and regulatory requirements. By identifying potential spam or fraudulent contracts, the system could prevent violations of legal and regulatory frameworks.
+
+# Related Methods
+
+* [isSpamContract](/reference/isspamcontract-sdk) - Returns whether a contract is marked as spam or not by Alchemy.

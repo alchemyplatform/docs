@@ -1,0 +1,403 @@
+---
+title: "Hello World Solana Program"
+description: "This tutorial walks through writing, building, deploying, and testing your very first Solana Program using Anchor and Alchemy. It’s the best way to introduce yourself to Solana development."
+url: "https://docs.alchemy.com/docs/hello-world-solana-program"
+slug: "docs/hello-world-solana-program"
+---
+
+
+# 1. Introduction
+
+Welcome! If you’re looking to deploy your first smart contract and build your first web3 app on Solana, you’ve come to right place. By the end of this tutorial, you’ll have created a Solana program that stores a message that anyone can change, and you’ll have deployed it to the official Solana devnet. And we’re going to get through it together!
+
+You can find the finished product [here](https://github.com/alchemyplatform/solana-hello-world) on Github. You’ll see that each step of this tutorial corresponds to a git commit, like a progress checkpoint to help guide you through. If you have questions at any point feel free to reach out in the [Alchemy Discord](https://discord.com/invite/gWuC7zB) or post questions in our [Discussion Forum](/discuss)! You ready? Let’s go 😎!
+
+# 2. Creating Your Project
+
+First, make sure you have [Alchemy](https://alchemy.com/?a=ff124aa9e9), a Phantom Wallet, JavaScript, Rust, the Solana CLI, and Anchor set up by following our [How to Set Up Your Solana Development Environment](/docs/how-to-setup-your-solana-development-environment) tutorial.
+
+Alright, now we’re going to use Anchor to initialize your project workspace in a directory of choice:
+
+<CodeGroup>
+  ```shell shell
+  anchor init solana-hello-world
+  cd solana-hello-world
+  ```
+</CodeGroup>
+
+This will create a folder with a few different subfolders and files, which you can view with your favorite code editor like VSCode. The most important ones are:
+
+* A `programs` folder for your Solana Hello World program. Quick reminder - in Solana, programs are “smart contracts,” and this folder already contains a template we can mess around with.
+* A `tests`folder to test our Solana program with Javascript. It also contains a template we can use to create tests with.
+* An `Anchor.toml` configuration file that will help you set your program ID, Solana blockchain, and test runs.
+* An 'app' folder where we'll add frontend code in the next tutorial: [Integrating Your Solana Program with a Web3 Application](/docs/integrating-your-solana-program-with-a-web3-application)]
+
+This [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/2957a84b4a0d334da6a2d9127798b31f1df84167?diff=unified) is a checkpoint for you! Your code should match the code in this checkpoint! By now, you should have been able to create your Anchor project and peruse these folders. If so, let’s keep going!
+
+# 3. Building The Hello World Smart Contract
+
+## Defining the Account Data
+
+We’ll be making change step-by-step in `programs/solana-hello-world/src/lib.rs`. First, we’re going to to define the schema for the message we want to display and be editable on our app. This message is going to be data stored in a Solana account.
+
+<Info>
+  An account stores data in Solana. In reality, everything is an account in Solana - programs, wallets, NFTs, etc. They each have a unique address that can be used by programs to access that data. You can read more [here](https://solanacookbook.com/core-concepts/accounts.html#facts).
+</Info>
+
+To do that, Anchor gives us a way to easily define a Solana account in Rust. Let’s add the following code to the bottom of our `lib.rs` file:
+
+<CodeGroup>
+  ```rust rust
+  #[account]
+  pub struct Message {
+      pub author: Pubkey,
+      pub timestamp: i64,
+      pub content: String,
+  }
+  ```
+</CodeGroup>
+
+Let’s walk through each line:
+
+* `#[account]` is a custom [Rust attribute](https://doc.rust-lang.org/reference/attributes.html) that defines a Solana account. Anchor essentially is telling the Rust compiler this is a Solana account. There’s a lot of detail that Anchor abstracts away from us to be able to do this! Pretty cool 😄!
+* `pub struct Message` is a Rust struct that defines the properties of a Message we want our program to interact with. You’ll note we want to store the `content` of the most recent message, the `timestamp` when it was published, and the `author`.
+
+This [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/9e11bbf79f2f0d56743a9b52d7f79d57e9da29c1?diff=unified) is a checkpoint for you to see what should have changed so far! Don’t worry, we have a few more things to do before we’re ready to use our program.
+
+## Defining the Instruction Context
+
+Now that we’ve defined the Message account, we can implement instructions as part our the Solana program. We’re going implement two instructions - one to create the first message, and one to update that message.
+
+<Info>
+  Programs are smart contracts in Solana. Programs can create, retrieve, update, and delete data but they must access that data on the blockchain through accounts. Programs themselves cannot directly store data - they are stateless.
+</Info>
+
+Because Solana programs are stateless, we need to provide relevant context for each of those instructions. To do so, Anchor gives us a way to easily define a context in Rust.
+
+Let’s add the following code to replace the `Initialize{}` struct in our `lib.rs` file with the `CreateMessage` context:
+
+<CodeGroup>
+  ```rust rust
+  #[derive(Accounts)]
+  pub struct CreateMessage<'info> {
+  		#[account(init, payer = author, space = 1000)]
+      pub message: Account<'info, Message>,
+  		#[account(mut)]
+      pub author: Signer<'info>,
+      pub system_program: Program<'info, System>,
+  }
+  ```
+</CodeGroup>
+
+Let’s walk through each line of this struct:
+
+* `#[derive(Accounts)]` is a custom Rust attribute that defines the context for an instruction as a Rust struct. Again, Anchor abstracts a lot away so we can develop faster.
+
+* The `message` property is the actual account that the instruction will create. When we call the instruction, we’re going to pass in a public key to use for this account.
+
+  * The `[account(init, payer = author, space = 1000)]` is an account constraint on this property - it tells Rust that `message` is a Solana account.
+  * The `init` says that this instruction will create the account, through the System Program.
+  * The `payer` says that the `author` property is who will pay to initialize and keep the data on Solana.
+  * The `space` says the big the account data will be in bytes. For sake of simplicity, we’re saying a message can be at most 1000 bytes. Normally we would spend time getting efficient about how much space our data will take up, since it determines how much SOL we have to spend. That is out of the scope of this introductory tutorial, though 🙂.
+
+* The `author` property is the actual sender of the message. It’s a `Signer` account because we will pass in their signature. It’s has a `mutable` account constraint since we will be modifying their balance of SOL when initializing the message account.
+
+* The `system_program` is Solana’s System Program that will initialize the `message` account.
+
+* There’s also the `'info` which is a [Rust lifetime](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html), or essentially a generic which in this case represents an AccountInfo class - a struct that contains the fields of account, listed here. No need to worry about this deeply yet.
+
+<Info>
+  The is an executable account that is responsible for creating new accounts, allocating account data, assigning accounts to the programs that own them, and more. It is Solana’s core program. You can read more [here](https://docs.solana.com/developing/runtime-facilities/programs#system-program).
+</Info>
+
+Similarly, let’s make context for `UpdateMessage`:
+
+<CodeGroup>
+  ```rust rust
+  #[derive(Accounts)]
+  pub struct UpdateMessage<'info> {
+  		#[account(mut)]
+      pub message: Account<'info, Message>,
+  		#[account(mut)]
+      pub author: Signer<'info>,
+  }
+  ```
+</CodeGroup>
+
+For this one, we only need to include `message` and `author`. Note that `message` has a different account constraint - since the instruction using this context will be updating the message, we need to make that account `mutable`.
+
+This [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/44cc2eabb43bfad44be51d003a0deea2d95fb043) is a checkpoint for you to see what should have changed so far! We have one more step - defining the instructions of our Program that will use this context.
+
+## Defining the Instructions
+
+At least, we’ll define two instructions for our Solana program - one to read the message, and one to update the message. Instructions are Rust functions defined within a module with the Rust attribute `#[program]`. The module we created when we initialized Anchor was named the same as our project: `"solana_hello_world"`. Let’s add the following code to replace the `initialize{ctx: Context<Initialize>}` function in our `lib.rs` file with the `create_message` function below:
+
+<CodeGroup>
+  ```rust rust
+  pub fn create_message(ctx: Context<CreateMessage>, content: String) -> Result<()> {
+    let message: &mut Account<Message> = &mut ctx.accounts.message;
+    let author: &Signer = &ctx.accounts.author;
+    let clock: Clock = Clock::get().unwrap();
+    
+    message.author = *author.key;
+    message.timestamp = clock.unix_timestamp;
+    message.content = content;
+    
+    Ok(())
+  }
+  ```
+</CodeGroup>
+
+Let’s walk through each line:
+
+* As inputs to the `create_message` function, we take in the Context `ctx` that we defined in the last section for type `CreateMessage`, and `content` we want for store as the message.
+* The next line initializes a `message` variable by accessing the account that was created as part of this function call through that `init` account constraint in the context. We want a reference to to that account so we use the `&` as a referencer, and we use `mut`to be able to mutate the data.
+* The next line does something similar, initializing the `author` variable as a`Signer` account to save it on the `message` account.
+* The next line creates a timestamp `clock` using Solana’s `Clock` system variable. Don’t worry too much about the syntax here, but it can only work if the System Program is provided.
+* The next line then saves all three variables as properties to the created `message` account. We dereference the `author.key` to store it as a `Pubkey` property in the message.
+* Lastly, `Ok(())`, of the type `ProgramResult`, is the output of an instruction. In Rust, we return `Ok(())` with nothing inside that function, and we don’t need to explicitly say `return` - the last line of a function is used as the return value.
+
+Similarly, let’s define `update_message`:
+
+<CodeGroup>
+  ```rust rust
+  pub fn update_message(ctx: Context<UpdateMessage>, content: String) -> Result<()> {
+    let message: &mut Account<Message> = &mut ctx.accounts.message;
+    let author: &Signer = &ctx.accounts.author;
+    let clock: Clock = Clock::get().unwrap();
+    
+    message.author = *author.key;
+    message.timestamp = clock.unix_timestamp;
+    message.content = content;
+    
+    Ok(())
+  }
+  ```
+</CodeGroup>
+
+Note that this is identical to the `create_message` function! It just uses a difference context type since we’re not initializing a new message, but rather will be pointing to the account containing the current message our Program will be accessing.
+
+This [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/54b772782c7b5e02b1e7dfb868e78d2d2d39abb1) is a checkpoint for you to see what should have changed so far! Congratulations! You’ve written your first Solana program. Now all that’s left is to deploy to the devnet and test it.
+
+You can view the entire `lib.rs` file [here](https://github.com/alchemyplatform/solana-hello-world/blob/main/programs/solana-hello-world/src/lib.rs). If you had any issues with the above steps, copying the contents of this file will get you back on track 😄!
+
+# 4. Build and Deploy Your Solana Program to the Devnet
+
+## Build the Program
+
+Ready to deploy your first ever program 🤩? It’s super easy to do with Anchor. First, we need to build our program. Remember to configure your Solana environment with your Alchemy RPC URL:
+
+<CodeGroup>
+  ```shell shell
+  solana config set --url https://solana-devnet.g.alchemy.com/v2/<YOUR-API-KEY>
+  ```
+</CodeGroup>
+
+In your terminal, go to the top folder of your project `solana-hello-world` and then write:
+
+<CodeGroup>
+  ```shell shell
+  anchor build
+  ```
+</CodeGroup>
+
+This command compiles our program and creates a `target` folder in our project which contains an important file for our testing in the next step. Right now, what you should know is the first time you run `Anchor build`, it generates a public and private key. The public key is the unique identifier of the program when - the **program Id**. Grab that program Id and add it to your `lib.rs` file as the `declare_id!`
+
+<CodeGroup>
+  ```rust rust
+  declare_id!("YOUR-PROGRAM-ID");
+  ```
+</CodeGroup>
+
+Then, open up your `Anchor.toml` file. Change`[programs.localnet]` to `[programs.devnet]`and then change the `solana_hello_world` program Id to the program Id you received when you built the project, and also under `[provider]` change the `cluster` to `“devnet”`:
+
+<CodeGroup>
+  ```toml toml
+  [programs.devnet]
+  solana_hello_world = "YOUR-PROGRAM-ID"
+  ...
+  ...
+  ...
+  [provider]
+  cluster = "devnet"
+  ```
+</CodeGroup>
+
+Alright! now run `Anchor build` again just to make sure! Our program should have compiled with no problems - so it’s time to deploy to the devnet!
+
+## Deploy the Program
+
+Let’s first request some SOL that we’ll use to deploy our program to the devnet:
+
+<CodeGroup>
+  ```shell shell
+  solana airdrop 3
+  ```
+</CodeGroup>
+
+Finally, we can write:
+
+<CodeGroup>
+  ```shell shell
+  anchor deploy --provider.cluster https://solana-devnet.g.alchemy.com/v2/<YOUR-API-KEY>
+  ```
+</CodeGroup>
+
+<Info>
+  It’s a flag that overrides the same variable in the `Anchor.toml` file to use the Alchemy RPC URL. Since you might push that file publicly in your Github repository, we don’t want you to reveal your API KEY that’s in the RPC URL - that’s your private connection to Solana that should be kept secret!
+
+  We’re working with the Anchor team to be able to easily deploy with Alchemy directly from the `Anchor.toml` file. Until then, you can manually override that flag using the command above.
+</Info>
+
+This should have successfully run if you a see a “Deploy success” response in your terminal! Amazing! You deployed your first Solana program! Woohoo!
+
+This [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/34d403b736f2da2e7dcf6bf748ade10a9c866897) is a checkpoint for you to see what should have changed so far! Note that my program Id will be different from yours, and that’s totally normal! Before we wrap up, let’s make sure we can successfully call our deployed program with some tests.
+
+You can view the entire `Anchor.toml` file [here](https://github.com/alchemyplatform/solana-hello-world/blob/main/Anchor.toml). If you had any issues with the above step, copying the contents of this file will get you back on track 😄!
+
+# 5. Test Your Smart Contract
+
+## Setting up the Testing Environment
+
+What’s cool is since we’ve deployed our Solana program to devnet, Anchor will actually be able to run our tests directly on the devnet, not just a local instance of the Solana blockchain!
+
+Because we’re using the mocha framework in Javascript, all our tests are wrapped in the `describe()` function, where our test suite `"solana-hello-world"` will run a set of tests. Each test is an asynchronous function wrapped in `it()`.
+
+Quickly before we write the tests let’s look at the imports. At the top of the screen, you’ll see this:
+
+<CodeGroup>
+  ```typescript typescript
+  import * as anchor from "@project-serum/anchor";
+  import { Program } from "@project-serum/anchor";
+  import { SolanaHelloWorld } from "../target/types/solana_hello_world";
+  ```
+</CodeGroup>
+
+The first two imports are from Anchor and we’ll use them to define a provider object, which essentially is our connection to Solana through 1) an RPC provider and 2) a Solana wallet address. Connection + Wallet = Provider!
+
+As for the third import, remember when we ran `Anchor Build` and it made that `target` file? One of the most useful things in there is the IDL file, which is located at `target/idl/solana_hello_world.json`. We’re going to use it to make well-formatted calls to our deployed Solana program!
+
+<Info>
+  IDL stands for “Interface Description Language” and is essentially the API structure for our Solana program, defining the structure of how to call that method on our deployed Program. If you’ve ever used ABIs in EVM chains like Ethereum or Polygon, it’s pretty similar. It will be used to feed our client later as we interact with our Solana program through Javascript tests and later a full-fledged website!
+</Info>
+
+You’ll see this line right before the tests:
+
+<CodeGroup>
+  ```typescript typescript
+  const program = anchor.workspace.SolanaHelloWorld as Program<SolanaHelloWorld>;
+  ```
+</CodeGroup>
+
+This uses the IDL to essentially create an object that uses both the IDL and Provider to create a custom Javascript API that completely matches our Solana program! This is a very seamless way to interact with our Solana program on behalf of a wallet without needing to know the underlying API! Namely, we can make calls to `create_message()` instruction in our Rust Solana program by calling `program.rpc.createMessage()` in our Javascript tests, and same for `update_message()` connecting to `program.rpc.updateMessage()`! Super cool 👏!
+
+Last thing to mention, at the top of the `describe()` function, we should also add the `assert` library, which will be used to compare our expected values with the ones actually returned from the methods we call on our deployed Solana program. Let’s also delete that template test in favor of the ones we’e about to write.
+
+We now have the pieces we need to write tests as if it were a client making requests to our Solana program through a web3 app. Here’s a [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/4c4ca5b96806ff3bbd163a0c766941024b2a887d?diff=unified) with the latest checkpoint.
+
+## Writing the Tests
+
+First, we’ll test if we can create a message. In your `tests/solana-hello-world.ts` file, adding the following test within the `describe()` function:
+
+<CodeGroup>
+  ```typescript typescript
+  it("Can create a message", async () => {
+      const message = anchor.web3.Keypair.generate();
+      const messageContent = "Hello World!";
+      await program.rpc.createMessage(messageContent, {
+        accounts: {
+          message: message.publicKey,
+          author: provider.wallet.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+        signers: [message],
+      });
+
+      const messageAccount = await program.account.message.fetch(
+        message.publicKey
+      );
+
+      assert.equal(
+        messageAccount.author.toBase58(),
+        provider.wallet.publicKey.toBase58()
+      );
+      assert.equal(messageAccount.content, messageContent);
+      assert.ok(messageAccount.timestamp);
+    });
+  ```
+</CodeGroup>
+
+Let’s walk through line-by-line:
+
+* First, we generated a `Keypair` consisting of a public and private key, where the public key will be used as the accountId for the `message` account that will be created. We then define the content of the message: “Hello World” 😉!
+
+* Then, we use the use the `program` we defined earlier to make a call to the `createMessage` instruction on our deployed Solana program.
+
+  * From the context of our `createMessage` instruction, we need to provide three accounts: the `message` to be created, the `author` of the message (which is , and the Solana `systemProgram`. We input them as their public keys (remember account Id and program Id are both just public keys!)
+  * We also need to provide the `Keypair` for the `message` as a signature. This is because we’re having the account sign to confirm to the System program through this instruction to create the `message` account. We also need the signature from the `author`'s wallet, but Anchor automatically implicitly providers, so we don’t have to!
+
+* After waiting for the instruction to execute, we then access the `message` account on the devnet by reading it from the Solana program we wrote through its public key.
+
+* Lastly, we use the `assert` library to confirm that the data we stored in the account - the `author`, the content of the `message`, and the `timestamp` are are as we expect them to be.
+
+For completeness, we’ll add one more a test to see if we can update the message! Add this below the first test:
+
+<CodeGroup>
+  ```typescript typescript
+  it("Can create and then update a message", async () => {
+      const message = anchor.web3.Keypair.generate();
+      const messageContent = "Hello World!";
+      await program.rpc.createMessage(messageContent, {
+        accounts: {
+          message: message.publicKey,
+          author: provider.wallet.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+        signers: [message],
+      });
+
+      const updatedMessageContent = "Solana is cool!";
+      await program.rpc.updateMessage(updatedMessageContent, {
+        accounts: {
+          message: message.publicKey,
+          author: provider.wallet.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        },
+      });
+
+      const messageAccount = await program.account.message.fetch(
+        message.publicKey
+      );
+
+      assert.equal(
+        messageAccount.author.toBase58(),
+        provider.wallet.publicKey.toBase58()
+      );
+      assert.notEqual(messageAccount.content, messageContent);
+      assert.equal(messageAccount.content, updatedMessageContent);
+      assert.ok(messageAccount.timestamp);
+    });
+  ```
+</CodeGroup>
+
+The first half is identical to our first test, creating a `message` account. We then call the `updateMessage` instruction with a new message content, `updatedMessageContent`, and the relevant accounts as context. We don’t need to provide any other signatures besides the `author`'s wallet, which Anchor does automatically since through context that it is a `Signer`. We then use the `assert` library to check that the message was updated!
+
+Now, all we have to do is run the following to check if these two tests pass!
+
+<CodeGroup>
+  ```shell shell
+  anchor test --provider.cluster https://solana-devnet.g.alchemy.com/v2/<YOUR-API-KEY>
+  ```
+</CodeGroup>
+
+If both pass, then we’ve tested our Solana program works! This is the final [git commit](https://github.com/alchemyplatform/solana-hello-world/commit/473cf4f6c8c015839d2b5680141e4b31c76edd17) checkpoint 🎉!
+
+You can view the entire `solana-hello-world.ts` file [here](https://github.com/alchemyplatform/solana-hello-world/blob/main/tests/solana-hello-world.ts). If you had any issues with the above step, copying the contents of this file will get you back on track 😄!
+
+# 6. You’re Done!
+
+Congratulations! You successfully wrote your first Solana program in Rust, deployed it the Solana devnet, and tested it using JavaScript. Again, here’s the Github [repo](https://github.com/alchemyplatform/solana-hello-world/commit/473cf4f6c8c015839d2b5680141e4b31c76edd17) with all the code we wrote together for your to view. Take a step back and admire how far you’ve come!
+
+You can think of this part of the tutorial as creating the “backend” of your web3 app. Next, we’ll dive into how to use this Solana program with a Phantom Wallet in a frontend application.
+
+Of course, there’s a ton we didn’t cover in detail - rent, account data sizing, error handling, deleting/removing the message, and more about what’s going on under the hood with Anchor. The goal with this tutorial was to get you started, but if you’re interested in going deeper on any of that, let us know in the [Alchemy Discord](https://discord.com/invite/gWuC7zB) or post questions in our [Discussion Forum](/discuss) and we’ll make more tutorials about this!

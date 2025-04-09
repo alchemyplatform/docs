@@ -1,0 +1,138 @@
+---
+title: "getContractMetadata - SDK"
+description: "Get the NFT collection metadata associated with the provided parameters."
+url: "https://docs.alchemy.com/reference/getcontractmetadata-sdk-v3"
+slug: "reference/getcontractmetadata-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+***
+
+# Description
+
+Get the NFT collection metadata associated with the provided parameters.
+
+# Parameters
+
+| Name              | Type     | Description                      |
+| ----------------- | -------- | -------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT. |
+
+# Response
+
+| Property               | Type     | Description                  |
+| ---------------------- | -------- | ---------------------------- |
+| `Promise<NftContract>` | `object` | The NFT collection metadata. |
+
+### `NftContract` response object properties
+
+| Property              | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| --------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tokenType`           | `string` | The type of the token in the contract. Available options are: `ERC721` = "ERC721", `ERC1155` = "ERC1155", `UNKNOWN` = "UNKNOWN"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `address`             | `string` | The address of the NFT contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `name`                | `string` | The name of the contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `symbol`              | `string` | The symbol of the contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `totalSupply`         | `string` | The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `openSeaMetadata`     | `object` | OpenSea's metadata for the contract. Parameters include: 1. `floorPrice?: number`: The floor price of the collection. 2. `collectionName?: string`: The name of the collection on OpenSea. 3. `safelistRequestStatus?: string`: The approval status of the collection on OpenSea. 4. `imageUrl?: string`: The image URL determined by OpenSea. 5. `description?: string`: The description of the collection on OpenSea. 6. `externalUrl?: string`: The homepage of the collection as determined by OpenSea. 7. `twitterUsername?: string`: The Twitter handle of the collection. 8. `discordUrl?: string`: The Discord URL of the collection. 9. ` lastIngestedAt: string`: Timestamp of when Alchemy last ingested the OpenSea metadata. |
+| `contractDeployer`    | `string` | The address that deployed the NFT contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `deployedBlockNumber` | `number` | The block number the NFT contract deployed in.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+
+# Example Request and Response
+
+**Prerequisite**: You must install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the address whose contract metadata you want to fetch
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      //Call the method to fetch metadata
+      const response = await alchemy.nft.getContractMetadata(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "address": "0x61fcE80D72363B731425c3A2A46a1A5fed9814B2",
+      "name": "CyborgMercenariesCm",
+      "symbol": "CYBORG",
+      "totalSupply": "8039",
+      "tokenType": "ERC1155",
+      "contractDeployer": "0xd32bB311467060ceC58Cd6e9b37134CA6d81377F",
+      "deployedBlockNumber": 13950908,
+      "openSeaMetadata": {
+          "floorPrice": 0.001,
+          "collectionName": "Undead Warriors",
+          "collectionSlug": "undeadwarriors",
+          "safelistRequestStatus": "verified",
+          "imageUrl": "https://i.seadn.io/gcs/files/6cd7bec4ad4b280adb53c33c815bd3dc.png?w=500&auto=format",
+          "description": "Core Team\nhttps://opensea.io/theseansneed | https://opensea.io/W3-Freedom | https://opensea.io/Xc4libur\nUndead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.\n\n",
+          "externalUrl": "http://undeadwarriors.io",
+          "twitterUsername": "undead_warriors",
+          "discordUrl": "https://discord.gg/qjZbJMPS86",
+          "bannerImageUrl": "https://i.seadn.io/gcs/files/bbb358656434031a1b9c27873a72b13e.png?w=500&auto=format",
+          "lastIngestedAt": "2023-09-17T10:13:28.000Z"
+      }
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getContractMetadata` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getContractMetadata` method:
+
+* **Querying contract information**: The `getContractMetadata` method can be used to retrieve general information about a smart contract, such as the contract's name, version, and author.
+
+* **Verifying contract authenticity**: The metadata of a smart contract can include a cryptographic hash of the source code used to compile the contract. By retrieving this hash through `getContractMetadata`, users can verify that the deployed contract matches the original source code.
+
+* **Automating contract interactions**: Some smart contracts may include metadata that provides additional information about the contract's functions and parameters. This information can be used to automatically generate code for interacting with the contract, which can save time and reduce errors.
+
+# Related Methods
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

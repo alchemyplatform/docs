@@ -1,0 +1,116 @@
+---
+title: "findContractDeployer -SDK"
+description: "Finds the address that deployed the provided contract and block number it was deployed in."
+url: "https://docs.alchemy.com/reference/sdk-findcontractdeployer"
+slug: "reference/sdk-findcontractdeployer"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Finds the address that deployed the provided contract and the block number it was deployed in.
+
+<Info>
+  This method performs a binary search across all blocks since genesis and can take a long time to complete. This method is a convenience method that will eventually be replaced by a single call to an Alchemy endpoint with this information cached.
+</Info>
+
+# Parameters
+
+| Name              | Type     | Description                                    |
+| ----------------- | -------- | ---------------------------------------------- |
+| `contractAddress` | `string` | The contract address to find the deployer for. |
+
+# Response
+
+| Property                | Type     | Description                                                                                      |
+| ----------------------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `Promise<DeployResult>` | `object` | Returns the address that deployed the provided contract and the block number it was deployed in. |
+
+### `DeployResult` response object parameters
+
+| Property          | Type     | Description                                              |
+| ----------------- | -------- | -------------------------------------------------------- |
+| `deployerAddress` | `string` | The address of the contract deployer, if it is available |
+| `blockNumber`     | `number` | The block number the contract was deployed in            |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `findContractDeployer` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript findContractDeployer.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Assign the contract address to a variable
+      let address = "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+
+      //The response fetches the contract deployer of the above address
+      let response = await alchemy.core.findContractDeployer(address)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+And here is an example of what a successful response to this request might look like:
+
+<CodeGroup>
+  ```shell response
+  {
+    deployerAddress: '0xaba7161a7fb69c88e16ed9f455ce62b791ee4d03',
+    blockNumber: 12287507
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `findContractDeployer` method using the code sandbox below:
+
+# Use Cases
+
+Here are some common use cases for `findContractDeployer` method:
+
+* **Contract verification**: When a new contract is deployed on a blockchain, it is important to verify the identity of the deployer to ensure that the contract was deployed by a trusted source. By using the `findContractDeployer` method, developers can easily verify the deployer of a contract and ensure that the contract is legitimate.
+
+* **Security auditing**: Security auditors can use the `findContractDeployer` method to identify potential security vulnerabilities in a smart contract by analyzing the behavior of the deployer. If the deployer is identified as a potential threat, additional security measures can be implemented to prevent unauthorized access to the contract.
+
+* **Contract management**: Smart contracts are often used to automate business processes and manage digital assets. By using the `findContractDeployer` method, contract managers can identify who has deployed a particular contract and ensure that it is being used in accordance with the terms and conditions agreed upon by all parties.

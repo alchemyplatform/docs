@@ -1,0 +1,84 @@
+---
+title: "Bundler APIs"
+description: "An overview of the concept of Bundler and introduction to Alchemy's custom built Bundler called Rundler."
+url: "https://docs.alchemy.com/docs/bundler-services"
+slug: "docs/bundler-services"
+---
+
+
+<Check>
+  To get started with out Bundler APIs, check out the [Bundler API Quickstart](/reference/bundler-api-quickstart) guide.
+</Check>
+
+## What is a Bundler
+
+The concept of a Bundler is introduced by EIP-4337, which aims to bring Account Abstraction to EVM chains. With the expectation of an increased adoption of Smart Contract Wallets (SCWs) for their user-friendly experience and flexibility, the Bundler plays a vital role. Essentially, it forwards the user operations to the Entrypoint which are then further forwarded to the smart contract accounts for execution.
+
+To gain deeper insights into this topic, explore our [blog post on Account Abstraction](https://www.alchemy.com//blog/account-abstraction).
+
+## Meet Alchemy's Custom Built Rundler
+
+The "Rundler" is a custom-built ERC-4337 Bundler engineered by Alchemy. The design of Rundler focuses on performance and it capitalizes on our years of experience in managing scalable web3 infrastructure. Our team is committed to advancing account abstraction in the web3 ecosystem and is closely collaborating with the ERC-4337 community to address upcoming challenges.
+
+As new features are released, they will be integrated into our products and will be tested under high traffic conditions to ensure robustness. Furthermore, we are planning to open-source the Rundler to allow the wider community to benefit from our expertise and contribute to its continuous development.
+
+<Info>
+  Please note that using [`aa-sdk`](https://accountkit.alchemy.com/overview/getting-started.html) to send `UserOperations` is the easiest way to access our Bundler without directly dealing with the raw APIs.
+</Info>
+
+Here are some resources for you to get started with our Bundler APIs:
+
+* [Bundler API Quickstart](/reference/bundler-api-quickstart): A short guide explaining how you can use Bundler API to send and retrieve user operations.
+* [Bundler API Fee Logic and Request Limits](/reference/bundler-api-fee-logic): Fee logic and request limits for Bundler API.
+
+## Rundler Compatibility
+
+### Minimum Stake
+
+Minimum stake is the minimum amount that Rundler requires a Paymaster or Factory to have staked with the Entrypoint. Here are the minimum stake values for different networks:
+
+**Mainnets:**
+
+* Native token: ETH --> 0.1 ETH
+* Native token: MATIC --> 100 MATIC
+
+**Testnets:**
+
+* Native token: ETH --> 0.1 ETH
+* Native token: MATIC --> 10 MATIC
+
+If a Paymaster or Factory used in the user operation does not have the "minimum stake" amount staked with the Entrypoint, the user operation will be rejected by Rundler.
+
+<Info>
+  If an account want to be allowed to send multiple user operations in the same bundle, it would also have to stake the above specified amounts with Entrypoint.
+</Info>
+
+### Minimum Delay Value
+
+Minimum delay value is the minimum unstake delay value configured for the stake of a paymaster or factory with the Entrypoint. The minimum unstake delay required by Rundler is 1 Day. If a Paymaster or Factory used in the user operation does not have the "minimum delay" value configured with the Entrypoint, the user operation will be rejected by Rundler.
+
+### Parallel Nonces
+
+Parallel Nonces are implemented as part of ERC-4337’s semi-abstracted nonce mechanism. Alchemy’s Rundler supports up to **4 parallel nonces** (default value from ERC-7562; contact Alchemy for customization.) for unstaked senders and **unlimited parallel nonces** for staked senders. Multiple parallel nonces can be included within the same bundle.
+
+Staked senders are subject to ERC-7562 reputation rules. If a sender submits a large number of user operations and subsequently invalidates them all, they may be throttled or banned. Therefore, even for staked senders, it’s recommended to exercise caution.
+
+## Exciting Features Coming Soon
+
+We are continuously striving to enhance and expand our Bundler APIs. Here are some upcoming features we're excited to introduce:
+
+* **Full Alchemy API integrations on `UserOperation` hash:**
+
+  * **Webhooks**: Receive real-time notifications for events related to your user operations.
+  * **Simulation**: Test the execution of user operations before submitting them to the network to ensure they function correctly.
+  * **Subscription**: Subscribe to pending user operations being sent to Bundlers.
+  * **Transfers**: Obtain user operation metadata on asset transfer API requests.
+  * **NFT**: Query NFT data using user operation indices and receive user operation metadata.
+
+Stay tuned for updates and announcements about these exciting features.
+
+***
+
+What’s Next
+
+* [Bundler API Quickstart](/reference/bundler-api-quickstart)

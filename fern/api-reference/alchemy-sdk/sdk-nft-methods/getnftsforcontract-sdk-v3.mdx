@@ -1,0 +1,296 @@
+---
+title: "getNftsForContract -SDK"
+description: "Get all NFTs for a given contract address. This method returns the full NFTs in the contract. To get all NFTs without their associated metadata, use the options parameter."
+url: "https://docs.alchemy.com/reference/getnftsforcontract-sdk-v3"
+slug: "reference/getnftsforcontract-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Get all NFTs for a given contract address.
+
+This method returns the full NFTs in the contract. To get all NFTs without their associated metadata, use the `options` by setting `omitMetadata` to `true`parameter.
+
+# Parameters
+
+| Name              | Type     | Description                               |
+| ----------------- | -------- | ----------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT contract. |
+| `options`         | `object` | The parameters to use for the request.    |
+
+#### `options` parameters
+
+| Property              | Type      | Description                                                                                                                                                                                                                                                                |
+| --------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pageKey?`            | `string`  | Optional page key from an existing `OwnedBaseNftsResponse` or `OwnedNftsResponse` to use for pagination.                                                                                                                                                                   |
+| `pageSize`            | `number`  | Sets the total number of NFTs to return in the response. Defaults to 100. Maximum page size is **100**.                                                                                                                                                                    |
+| `omniMetadata`        | `boolean` | `Optional` boolean flag to omit NFT metadata. Defaults to `false`.                                                                                                                                                                                                         |
+| `tokenUriTimeoutInMs` | `number`  | No set timeout by default - When metadata is requested, this parameter is the timeout (in milliseconds) for the website hosting the metadata to respond. If you want only to access the cache and not live fetch any metadata for cache misses then set this value to `0`. |
+
+# Response
+
+| Property                                                          | Type     | Description               |
+| ----------------------------------------------------------------- | -------- | ------------------------- |
+| `Promise<NftContractNftsResponse \| NftContractBaseNftsResponse>` | `object` | The NFTs for the contract |
+
+## `NftContractNftsResponse` object properties
+
+| Property  | Type               | Description                                                                                                                                     |
+| --------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nfts`    | `array of objects` | An array of objects containing NFTs with their respective metadata.                                                                             |
+| `pageKey` | `string`           | Pagination token that can be passed into another request to fetch the next NFTs. If there is no page key, then there are no more NFTs to fetch. |
+
+### `nfts` properties
+
+| Property          | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | `object` | The NFT's underlying contract and relevant contract metadata. Parameters in the contract include: 1. `address`: `string` The address of the NFT contract. 2. `tokenType`: `object` The type of the token in the contract 3. `name`: `string` The name of the contract. 4. `symbol`: `string` The symbol of the contract. 5. `totalSupply?: string` The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts. 6. `openSeaMetadata: object` OpenSea's metadata for the contract. 7. `contractDeployer?: string` The address that deployed the NFT contract. 8. `deployedBlockNumber?: number`The block number the NFT contract deployed in. 9. `isSpam`: `boolean` Whether the NFT contract is marked as spam. 10. `spamClassifications`: `array` Potential reasons why an NFT Contract was classified as spam. |
+| `tokenId`         | `string` | The unique identifier of the token. This could be in hexadecimal or decimal format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `tokenType`       | `string` | The type of NFT, e.g.,`ERC721`, `ERC1155`, `UNKNOWN`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `name`            | `string` | The NFT name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `description`     | `string` | The NFT description.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `timeLastUpdated` | `string` | When the NFT was last updated in the blockchain. Represented in `ISO-8601` format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `raw`             | `object` | The raw metadata for the NFT based on the metadata URI on the NFT contract. 1. `tokenUri?: string`: The raw token URI on the NFT contract. 2. `metadata: string`: The raw metadata parsed from the raw token URI. 3. `error?: string`: Error message if the raw metadata could not be fetched.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `tokenUri`        | `string` | URIs for accessing the NFT's metadata blob.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `image`           | `object` | Media URLs and information for the NFT. Parameters in this object include: 1. `cachedUrl: string`: URL of the image stored in Alchemy's cache. 2. `thumbnailUrl: string`: URL of a thumbnail-sized image. 3. `pngUrl: string`: URL of the image in `png` format. 4. `contentType: string`: The type of the media image.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `acquiredAt`      | `object` | Time at which the user most recently acquired the NFT. Only available when specifying `orderBy: NftOrdering.TRANSFERTIME` in the request. 1. `blockTimestamp?: string`: Timestamp of the block at which an NFT was last acquired. 2. `blockNumber?: number`: Block number of the block at which an NFT was last acquired.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `collection`      | `object` | Collection metadata for the NFT, if available. Parameters include: 1. `name: string`: The name of the collection. 2. `slug?: string`: The OpenSea human-readable slug of the collection. 3. `externalUrl?: string`: The external URL for the collection. 4. `bannerImageUrl?: string`: The banner image URL for the collection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `mint`            | `object` | Mint information for the NFT. Parameters include: 1. `mintAddress?: string`: The address that the NFT was minted to. 2. `blockNumber?: number`: The block number that the NFT was minted on. 3. `timestamp?: string`: The timestamp the NFT was minted on. 4. `transactionHash?: string`: The transaction hash of the transaction that minted the NFT.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+## `NftContractBaseNftsResponse` object properties
+
+| Property  | Type               | Description                                                                                                                                |
+| --------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `nfts`    | `array of objects` | An array of objects containing NFTs with their respective metadata.                                                                        |
+| `pageKey` | `string`           | Pagination token that can be passed into another request to fetch the next NFTs. If there is no page key, there are no more NFTs to fetch. |
+
+### `nfts` properties
+
+The `nfts` object does not hold any metadata information and only contains the contract address and token ID. This is achieved by setting the `options` **omitMetadata** parameter to `true`.
+
+| Property          | Type     | Description                            |
+| ----------------- | -------- | -------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT.       |
+| `tokenId`         | `string` | The NFT token ID as an integer string. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address whose NFTs you want to fetch
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      //Call the method to fetch metadata
+      const response = await alchemy.nft.getNftsForContract(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "nfts": [
+          {
+              "contract": {
+                  "address": "0x61fcE80D72363B731425c3A2A46a1A5fed9814B2",
+                  "name": "CyborgMercenariesCm",
+                  "symbol": "CYBORG",
+                  "totalSupply": "8039",
+                  "tokenType": "ERC1155",
+                  "contractDeployer": "0xd32bB311467060ceC58Cd6e9b37134CA6d81377F",
+                  "deployedBlockNumber": 13950908,
+                  "openSeaMetadata": {
+                      "floorPrice": 0.001,
+                      "collectionName": "Undead Warriors",
+                      "collectionSlug": "undeadwarriors",
+                      "safelistRequestStatus": "verified",
+                      "imageUrl": "https://i.seadn.io/gcs/files/6cd7bec4ad4b280adb53c33c815bd3dc.png?w=500&auto=format",
+                      "description": "Core Team\nhttps://opensea.io/theseansneed | https://opensea.io/W3-Freedom | https://opensea.io/Xc4libur\nUndead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.\n\n",
+                      "externalUrl": "http://undeadwarriors.io",
+                      "twitterUsername": "undead_warriors",
+                      "discordUrl": "https://discord.gg/qjZbJMPS86",
+                      "bannerImageUrl": "https://i.seadn.io/gcs/files/bbb358656434031a1b9c27873a72b13e.png?w=500&auto=format",
+                      "lastIngestedAt": "2023-09-17T10:13:28.000Z"
+                  },
+                  "spamClassifications": []
+              },
+              "tokenId": "0",
+              "tokenType": "ERC1155",
+              "name": "Undead Warrior #0",
+              "description": "Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.",
+              "tokenUri": "https://ipfs.io/ipfs/QmSodrnHXf2sd3Cd61tzNdn7MpaHqe116KvGx2NS8Qzg1i/0",
+              "image": {
+                  "cachedUrl": "https://nft-cdn.alchemy.com/eth-mainnet/a31b9e2703540f70e3c15478d449162b",
+                  "thumbnailUrl": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/a31b9e2703540f70e3c15478d449162b",
+                  "pngUrl": "https://res.cloudinary.com/alchemyapi/image/upload/convert-png/eth-mainnet/a31b9e2703540f70e3c15478d449162b",
+                  "contentType": "image/png",
+                  "size": 1458749,
+                  "originalUrl": "https://ipfs.io/ipfs/QmeNdyrTRGyVr6YvXPZHy1DPtwq3V8zZGzkzU145r5xcqa/0.png"
+              },
+              "raw": {
+                  "tokenUri": "ipfs://QmSodrnHXf2sd3Cd61tzNdn7MpaHqe116KvGx2NS8Qzg1i/0",
+                  "metadata": {
+                      "date": 1659652582322,
+                      "image": "ipfs://QmeNdyrTRGyVr6YvXPZHy1DPtwq3V8zZGzkzU145r5xcqa/0.png",
+                      "website": "https://undeadwarriors.io",
+                      "dna": "d297klq0913j20c9l51nw51m2h68hgvfa539ut10",
+                      "name": "Undead Warrior #0",
+                      "description": "Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.",
+                      "edition": 0,
+                      "attributes": [
+                          {
+                              "value": "PastHistory",
+                              "trait_type": "Background"
+                          },
+                          {
+                              "value": "Security",
+                              "trait_type": "Rank"
+                          }
+                      ],
+                      "compiler": "Black Badge: V.01A"
+                  }
+              },
+              "collection": {
+                  "name": "Undead Warriors",
+                  "slug": "undeadwarriors",
+                  "externalUrl": "http://undeadwarriors.io",
+                  "bannerImageUrl": "https://i.seadn.io/gcs/files/bbb358656434031a1b9c27873a72b13e.png?w=500&auto=format"
+              },
+              "mint": {},
+              "timeLastUpdated": "2023-09-17T09:58:57.133Z"
+          },
+          {
+              "contract": {
+                  "address": "0x61fcE80D72363B731425c3A2A46a1A5fed9814B2",
+                  "name": "CyborgMercenariesCm",
+                  "symbol": "CYBORG",
+                  "totalSupply": "8039",
+                  "tokenType": "ERC1155",
+                  "contractDeployer": "0xd32bB311467060ceC58Cd6e9b37134CA6d81377F",
+                  "deployedBlockNumber": 13950908,
+                  "openSeaMetadata": {
+                      "floorPrice": 0.001,
+                      "collectionName": "Undead Warriors",
+                      "collectionSlug": "undeadwarriors",
+                      "safelistRequestStatus": "verified",
+                      "imageUrl": "https://i.seadn.io/gcs/files/6cd7bec4ad4b280adb53c33c815bd3dc.png?w=500&auto=format",
+                      "description": "Core Team\nhttps://opensea.io/theseansneed | https://opensea.io/W3-Freedom | https://opensea.io/Xc4libur\nUndead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.\n\n",
+                      "externalUrl": "http://undeadwarriors.io",
+                      "twitterUsername": "undead_warriors",
+                      "discordUrl": "https://discord.gg/qjZbJMPS86",
+                      "bannerImageUrl": "https://i.seadn.io/gcs/files/bbb358656434031a1b9c27873a72b13e.png?w=500&auto=format",
+                      "lastIngestedAt": "2023-09-17T10:13:28.000Z"
+                  },
+                  "spamClassifications": []
+              },
+              "tokenId": "353",
+              "tokenType": "ERC1155",
+              "name": "Undead Warrior #353",
+              "description": "Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.",
+              "tokenUri": "https://ipfs.io/ipfs/QmSodrnHXf2sd3Cd61tzNdn7MpaHqe116KvGx2NS8Qzg1i/353",
+              "image": {
+                  "cachedUrl": "https://nft-cdn.alchemy.com/eth-mainnet/f72c8a8a4aa69dc8ac340a619289451f",
+                  "thumbnailUrl": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/f72c8a8a4aa69dc8ac340a619289451f",
+                  "pngUrl": "https://res.cloudinary.com/alchemyapi/image/upload/convert-png/eth-mainnet/f72c8a8a4aa69dc8ac340a619289451f",
+                  "contentType": "image/png",
+                  "size": 1645083,
+                  "originalUrl": "https://ipfs.io/ipfs/QmeNdyrTRGyVr6YvXPZHy1DPtwq3V8zZGzkzU145r5xcqa/353.png"
+              },
+              "raw": {
+                  "tokenUri": "ipfs://QmSodrnHXf2sd3Cd61tzNdn7MpaHqe116KvGx2NS8Qzg1i/353",
+                  "metadata": {
+                      "date": 1659653043027,
+                      "image": "ipfs://QmeNdyrTRGyVr6YvXPZHy1DPtwq3V8zZGzkzU145r5xcqa/353.png",
+                      "website": "https://undeadwarriors.io",
+                      "dna": "aa09f30b73d7fa23c636ff2734f9e7b48d2ce1b1",
+                      "name": "Undead Warrior #353",
+                      "description": "Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.",
+                      "edition": 353,
+                      "attributes": [
+                          {
+                              "value": "LaunchBay",
+                              "trait_type": "Background"
+                          },
+                          {
+                              "value": "Warrior",
+                              "trait_type": "Rank"
+                          }
+                      ],
+                      "compiler": "Black Badge: V.01A"
+                  }
+              },
+              "collection": {
+                  "name": "Undead Warriors",
+                  "slug": "undeadwarriors",
+                  "externalUrl": "http://undeadwarriors.io",
+                  "bannerImageUrl": "https://i.seadn.io/gcs/files/bbb358656434031a1b9c27873a72b13e.png?w=500&auto=format"
+              },
+              "mint": {},
+              "timeLastUpdated": "2023-09-21T12:33:14.542Z"
+          }
+      ],
+      "pageKey": "0x0162"
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getNftsForContract` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getNftsForContract` method:
+
+* **NFT marketplace integration**: An NFT marketplace could use the `getNftsForContract` method to display all the NFTs associated with a particular contract address. This would allow users to browse and search for NFTs on the marketplace easily.
+
+* **Portfolio tracking**: NFT collectors or investors could use the `getNftsForContract` method to track their NFT holdings associated with a specific contract address. This could be particularly useful for investors who are interested in tracking the performance of specific NFT projects or creators.
+
+* **Gaming applications**: Gaming applications that use NFTs could use the `getNftsForContract` method to retrieve all the NFTs associated with a particular game or game studio. This could help developers create more immersive gaming experiences and reward players with unique NFTs for their in-game achievements.
+
+# Related Methods
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

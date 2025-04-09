@@ -1,0 +1,118 @@
+---
+title: "refreshContract - SDK"
+description: "Triggers a metadata refresh of all NFTs in the provided contract address. This method is useful after an NFT collection is revealed."
+url: "https://docs.alchemy.com/reference/refreshcontract-sdk-v3"
+slug: "reference/refreshcontract-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+Triggers a metadata refresh of all NFTs in the provided contract address. This method is useful after an NFT collection is revealed.
+
+Refreshes are queued on the Alchemy backend and may take time to fully process. To refresh the metadata for a specific token, use the [refreshNftMetadata](/reference/sdk-refreshnftmetadata) method instead.
+
+# Parameters
+
+| Name              | Type     | Description                                 |
+| ----------------- | -------- | ------------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT collection. |
+
+# Response
+
+| Property                         | Type     | Description                         |
+| -------------------------------- | -------- | ----------------------------------- |
+| `Promise<RefreshContractResult>` | `object` | The refresh result response object. |
+
+### `RefreshContractResult` response object properties
+
+| Property          | Type             | Description                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contractAddress` | `string`         | The NFT contract address that was passed in to be refreshed.                                                                                                                                                                                                                                                                                                    |
+| `refreshState`    | `string`         | The current state of the refresh request. The available response options are: 1. DOES\_NOT\_EXIST = 'does\_not\_exist :The provided contract is not an NFT or does not contain metadata. 2. ALREADY\_QUEUED = 'already\_queued': The contract has already been queued for refresh. 3. IN\_PROGRESS = 'in\_progress': The contract is currently being refreshed. |
+| `progress`        | `string \| null` | Percentage of tokens currently refreshed, represented as an integer string. The field can be null if the refresh has not occurred.                                                                                                                                                                                                                              |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address
+      const address = "0x5180db8F5c931aaE63c74266b211F580155ecac8";
+
+      //Call the method to return the refresh result response object
+      const response = await alchemy.nft.refreshContract(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "contractAddress": "0x5180db8f5c931aae63c74266b211f580155ecac8",
+      "refreshState": "in_progress",
+      "progress": null
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `refreshContract` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `refreshContract` method:
+
+* **Marketplace management**: NFT marketplaces can use the `refreshContract` method to ensure that the data for a specific contract is up-to-date, including any changes to the contract's metadata or events. This information is crucial for ensuring that the marketplace accurately reflects the current state of the contract.
+
+* **Contract management**: Developers can use the `refreshContract` method to update the data for a contract they are developing. This can be useful for ensuring that the contract is functioning properly and for identifying any potential issues or bugs.
+
+* **User interface updates**: DApp developers can use the `refreshContract` method to update their user interfaces to reflect any changes to the contract's metadata or events. This can be useful for improving the user experience and ensuring that the DApp is always displaying the most accurate information.
+
+# Related Methods
+
+Here are the methods related to `refreshContract`:
+
+* [refreshNftMetadata](/reference/refreshnftmetadata-sdk): Refreshes the cached metadata for a provided NFT contract address and token id. Returns a boolean value indicating whether the metadata was refreshed.
+
+* [searchContractMetadata](/reference/searchcontractmetadata-sdk): Search for a keyword across the metadata of all ERC-721 and ERC-1155 smart contracts.

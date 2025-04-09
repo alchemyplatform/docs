@@ -1,0 +1,108 @@
+---
+title: "Berachain API Quickstart"
+description: "Get started building on Berachain and using the JSON-RPC API"
+url: "https://docs.alchemy.com/reference/berachain-api-quickstart"
+slug: "reference/berachain-api-quickstart"
+---
+
+
+*To use the Berachain App API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup/?utm_source=docs\&utm_medium=website\&utm_campaign=berachain) first!*
+
+## Introduction
+
+Berachain is an EVM-compatible blockchain designed to provide high performance, scalability, and security for decentralized applications (dApps). Known for its innovative features and efficient transaction processing, Berachain offers a robust environment for deploying Ethereum-based applications.
+
+***
+
+## What is the Berachain App API?
+
+The Berachain App API facilitates interaction with the Berachain network through a collection of JSON-RPC methods. Given its compatibility with the Ethereum ecosystem, developers familiar with Ethereum's JSON-RPC APIs will find working with Berachain both intuitive and straightforward.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Your first step involves selecting a package manager, which will be crucial for managing your project's dependencies. The choice between `npm` and `yarn` depends on your personal preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+To kickstart your project, open your terminal and execute the following commands:
+
+<CodeGroup>
+  ```text npm
+  mkdir berachain-api-quickstart
+  cd berachain-api-quickstart
+  npm init --yes
+  ```
+
+  ```text yarn
+  mkdir berachain-api-quickstart
+  cd berachain-api-quickstart
+  yarn init --yes
+  ```
+</CodeGroup>
+
+This creates a new directory named `berachain-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+For making API requests, we'll use Axios, a widely-used HTTP client. Install Axios with the following command:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Next, create an `index.js` file in your project directory. Paste the following code to send a request to the Berachain network:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = `https://berachain-bartio.g.alchemy.com/v2/${yourAPIKey}`;
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Block Number:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `yourAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+To execute your script and make a request to the Berachain App, run:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the current block number on Berachain App (in hexadecimal format) outputted to your console:
+
+```
+Block Number: 0x6d68e
+```
+
+## Next Steps
+
+Well done! You've just made your first request to the Berachain App API. With this foundation, you can dive deeper into the array of [JSON-RPC methods available on Berachain App](/reference/berachain-api-endpoints) and start building your dApps on it!

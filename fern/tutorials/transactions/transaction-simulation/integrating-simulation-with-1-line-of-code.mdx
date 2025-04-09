@@ -1,0 +1,57 @@
+---
+title: "Integrating Simulation with 1 line of code"
+description: "Learn how to effortlessly integrate Alchemy's Simulation APIs in your code base using just one line of code."
+url: "https://docs.alchemy.com/docs/integrating-simulation-with-1-line-of-code"
+slug: "docs/integrating-simulation-with-1-line-of-code"
+---
+
+
+Implementing Simulation APIs is as easy as adding 1 line to your code base.
+
+If you are already signing transactions via `eth_signTransaction` or any calling any other method that takes an unsigned transaction object, all you need to do is pass the object to `alchemy_simulateAssetChanges`.
+
+## eth\_signTransaction
+
+<CodeGroup>
+  ```json eth_signTransaction
+  {
+    "jsonrpc": "2.0",
+    "method": "eth_signTransaction",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "value": "0x0",
+        "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+Replace `eth_signTransaction` with `alchemy_simulateAssetChanges` to get simulation results.
+
+<CodeGroup>
+  ```json alchemy_simulateAssetChanges
+  {
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "value": "0x0",
+        "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+That's it!
+
+## ethers.js
+
+Coming soon 👀

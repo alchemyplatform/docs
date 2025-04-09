@@ -1,0 +1,106 @@
+---
+title: "How to Send Value from Within a Smart Contract Using Solidity"
+description: "Learn how you can send Ether through a smart contract"
+url: "https://docs.alchemy.com/docs/how-to-send-value-from-within-a-smart-contract-using-solidity"
+slug: "docs/how-to-send-value-from-within-a-smart-contract-using-solidity"
+---
+
+
+# Introduction
+
+Smart contracts are self-executing programs that live on a blockchain and can automate the exchange of assets, data, or other digital information. One of the core features of smart contracts is the ability to send and receive value. This is a powerful capability that enables developers to create sophisticated financial instruments and decentralized applications.
+
+In Solidity, sending value (Ether) from within a smart contract is done using the `call` function. This tutorial will cover the steps required to send value from within a Solidity smart contract using `call`.
+
+# Steps to Send Value from Within a Smart Contract
+
+## Step 1: Add a License and Specify the Solidity Version
+
+It's important to include a license in your Solidity contract to ensure that others know how they can use and modify your code. There are several licenses available, but one of the most popular is the MIT license. Here is an example of how to add the MIT license to your contract:
+
+<CodeGroup>
+  ```sol sol
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
+
+  contract SendValueContract {
+      // contract code here
+  }
+  ```
+</CodeGroup>
+
+* In this example, the `SPDX-License-Identifier` specifies the license for the contract. The MIT license allows others to use, modify, and distribute your code, as long as they include a copy of the license.
+
+* It's also important to specify the version of Solidity that you are using in your contract. This is done using the `pragma` keyword. The version number should be specified in the form of a caret range, which indicates the minimum and maximum compatible versions. For example,` ^0.8.0` indicates that the contract is compatible with any version of Solidity greater than or equal to `0.8.0` and less than `0.9.0`.
+
+Now that we have added the license and specified the Solidity version, we can move on to the next step, which is to write the function that sends value from within the contract.
+
+## Step 2: Implement the Receive Function
+
+In Solidity, you can use the receive function to receive Ether in your contract. It is important to define this function if you want your contract to be able to receive Ether. Here is an example of how to implement the receive function:
+
+<CodeGroup>
+  ```sol sol
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
+
+  contract SendValueContract {
+      receive() external payable {} // The contract can now receive Ether from other EOAs and Smart Contracts
+  }
+  ```
+</CodeGroup>
+
+* In this example, the receive function is defined as `external` and `payable`, which means that it can be called from outside the contract and can receive Ether.
+* You will need to send some Ether to your contract first if you want to send that Ether further to any other EOA or smart contract.
+
+## Step 3: Set the Value to Be Sent
+
+To set the value to be sent, you need to create a variable of type `uint256` to represent the value. For example:
+
+<CodeGroup>
+  ```sol sol
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
+
+  contract SendValueContract {
+      uint256 amount = 1000000000000000000; // 1 ether
+    
+      receive() external payable {}
+  }
+  ```
+</CodeGroup>
+
+In this example, the amount is set to 1 Ether or 1000000000000000000 Wei.
+
+To convert Ether to Wei and vice-versa check out Alchemy's [Ethereum Unit Converter](https://www.alchemy.com/gwei-calculator).
+
+## Step 4: Use `call` Function to Send Value
+
+To send value from within a smart contract, you need to use the `call` function. The `call` function is a low-level function that allows you to execute another contract's code from within your own contract and also send value in the same transaction. It takes a `bytes` parameter that can include the arguments for the function to be called and a `uint256` parameter that specifies the value to be sent but we will not include any function arguments as we just want to send value in this case. Here is an example of how to use the `call` function to send value:
+
+<CodeGroup>
+  ```sol sol
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
+
+  contract SendValueContract {
+      uint256 amount = 1000000000000000000; // 1 ether
+      
+      receive() external payable {}
+
+      function sendPayment(address payable recipient) public {
+          (bool success, ) = recipient.call{value: amount}("");
+          require(success, "Payment failed.");
+      }
+  }
+  ```
+</CodeGroup>
+
+* In this example, `sendPayment()` is a public function that takes an address parameter for the recipient of the payment. Inside the function, the call function is used to send the payment to the recipient.
+* The value field is set to the amount variable that was set in step 3.
+* The `require` statement checks if the payment was successful.
+* Note that the contract will need to have at least 1 Ether to execute the `sendPayment` method in this case, otherwise the transaction will fail.
+
+# Conclusion
+
+Sending value from within a smart contract is an important task that can be used for a variety of purposes. With the `call` function, you can not only send value, but also execute functions of other contracts. By following the steps outlined in this tutorial, you can add payment functionality to your Solidity contracts and start building more complex decentralized applications 🚀

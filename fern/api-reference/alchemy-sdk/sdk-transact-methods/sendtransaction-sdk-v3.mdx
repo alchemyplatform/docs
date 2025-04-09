@@ -1,0 +1,165 @@
+---
+title: "sendTransaction - SDK"
+description: "Submits transaction to the network to be mined. The transaction must be signed, and be valid (i.e. the nonce is correct and the account has sufficient balance to pay for the transaction)."
+url: "https://docs.alchemy.com/reference/sendtransaction-sdk-v3"
+slug: "reference/sendtransaction-sdk-v3"
+---
+
+Submits transaction to the network to be mined. The transaction must be signed, and be valid (i.e. the `nonce` is correct and the account has sufficient balance to pay for the transaction).
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Submits transaction to the network to be mined. The transaction must be signed, and valid (i.e. the `nonce` is correct and the account has sufficient balance to pay for the transaction).
+
+# Parameters
+
+| Name                | Type     | Description                     |
+| ------------------- | -------- | ------------------------------- |
+| `signedTransaction` | `string` | The signed transaction to send. |
+
+# Response
+
+| Property                       | Type     | Description                       |
+| ------------------------------ | -------- | --------------------------------- |
+| `Promise<TransactionResponse>` | `object` | Returns the transaction response. |
+
+### `TransactionResponse` object parameters
+
+| Parameter          | Type               | Description                                                                                                                                                                                                   |
+| ------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `to`               | `string`           | `DATA`, 20 Bytes - The address the transaction is directed to.                                                                                                                                                |
+| `hash`             | `string`           | The transaction hash.                                                                                                                                                                                         |
+| `from`             | `string`           | `DATA`, 20 Bytes - (optional) The address the transaction is sent from.                                                                                                                                       |
+| `blockNumber`      | `number`           | The block number where this log was in. `null` when its pending. `null` when its pending log.                                                                                                                 |
+| `blockHash`        | `string`           | `32 Bytes` - hash of the block where this log was in. null when its pending. `null` when its pending log.                                                                                                     |
+| `gasPrice?`        | `object`           | An object containing the `type` and `hex` parameters of the gasPrice used for each paid gas.                                                                                                                  |
+| `data?`            | `string`           | `DATA` - (optional) Hash of the method signature and encoded parameters. For details see [Ethereum Contract ABI](https://docs.soliditylang.org/en/v0.7.0/abi-spec.html)                                       |
+| `value?`           | `object`           | An object containing the `type` and `hex` parameters of the value sent with this transaction                                                                                                                  |
+| `nonce?`           | `string`           | A nonce is a value that represents the number of transactions sent by the sender's address, ensuring the transactions are processed in order and preventing replay attacks.                                   |
+| `gasLimit?`        | `object`           | An object containing the `type` and `hex` parameters of the the maximum gas allowed.                                                                                                                          |
+| `chainId?`         | `number`           | `optional` the Id of the transaction chain.                                                                                                                                                                   |
+| `timestamp`        | `number`           | `Optional`. Returns only if a transaction has been mined.                                                                                                                                                     |
+| `confirmations`    | `number`           | number of transaction confirmations.                                                                                                                                                                          |
+| `type?`            | `number`           | `Optional` This is the type of transaction.                                                                                                                                                                   |
+| `accessList?`      | `array of strings` | The `accessList` is an optional transaction parameter that specifies addresses and storage keys a transaction interacts with, enabling gas cost optimization and compatibility with future Ethereum upgrades. |
+| `maxPriorityFee?`  | `number`           | This describes the maximum priority fee for this transaction.                                                                                                                                                 |
+| `maxFeePerGas?`    | `number`           | This is the maximum fee per gas for this transaction.                                                                                                                                                         |
+| `raw`              | `string`           | The raw transaction.                                                                                                                                                                                          |
+| `ccipReadEnabled?` | `boolean`          | This specifies if the CCIP read is enabled.                                                                                                                                                                   |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network, Wallet, Utils } = require("alchemy-sdk");
+  const dotenv = require("dotenv");
+  dotenv.config();
+
+  //Replace with your own private key
+  const {PRIVATE_KEY} = process.env;
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+  const wallet = new Wallet(PRIVATE_KEY);
+
+  const main = async () => {
+      // define the transaction
+      const transaction = {
+          to: "0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd",
+          value: Utils.parseEther("0.001"),
+          gasLimit: "21000",
+          maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
+          maxFeePerGas: Utils.parseUnits("20", "gwei"),
+          nonce: await alchemy.core.getTransactionCount(wallet.getAddress()),
+          type: 2,
+          chainId: 5, // Corresponds to ETH_GOERLI
+        };
+
+      const rawTransaction = await wallet.signTransaction(transaction);
+      const response = await alchemy.transact.sendTransaction(rawTransaction)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  { 
+   value: {
+      to: '0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd',
+      value: {
+        "type": "BigNumber",
+        "hex": '0x038d7ea4c68000'
+      },
+      gasLimit: '21000',
+      maxPriorityFeePerGas:  { 
+        "type": "BigNumber",
+        "hex": '0x012a05f200'
+      },
+      maxFeePerGas: {
+        "type": "BigNumber"
+        "hex": '0x04a817c800'
+      },
+      type: 2,
+      chainId: 5
+    }
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `sendTransaction` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `sendTransaction` method:
+
+* **Sending ETH**: `sendTransaction` can be used to send Ether from one Ethereum address to another. This is one of the most common use cases for sendTransaction.
+
+* **Deploying a smart contract**: When you deploy a smart contract to the Ethereum blockchain, you need to send a transaction that includes the bytecode of the contract. `sendTransaction` can be used to send this transaction.
+
+* **Interacting with a smart contract**: Once a smart contract has been deployed, you can interact with it by sending transactions that call its functions. `sendTransaction` can be used to send these transactions.
+
+* **Token transfers**: Tokens on the Ethereum blockchain are often built using smart contracts. `sendTransaction` can be used to transfer tokens from one Ethereum address to another.
+
+# Related Methods
+
+Here are the methods related to `sendTransaction`:
+
+* [sendPrivateTransaction](/reference/sendprivatetransaction-sdk): Used to send a single transaction to Flashbots. Flashbots will attempt to send the transaction to miners for the next 25 blocks.

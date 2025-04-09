@@ -1,0 +1,193 @@
+---
+title: "getNftMetadataBatch - SDK"
+description: "Gets the NFT metadata for multiple NFT tokens."
+url: "https://docs.alchemy.com/reference/sdk-getnftmetadatabatch"
+slug: "reference/sdk-getnftmetadatabatch"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Gets the NFT metadata for multiple NFT tokens.
+
+# Parameters
+
+| Name      | Type     | Description                                   |
+| --------- | -------- | --------------------------------------------- |
+| `tokens`  | `array`  | An array of NFT tokens to fetch metadata for. |
+| `options` | `string` | Configuration options for making the request. |
+
+# Response
+
+| Property          | Type               | Description                                  |
+| ----------------- | ------------------ | -------------------------------------------- |
+| ` Promise<Nft[]>` | `array of objects` | An array of objects containing nft metadata. |
+
+### ` Nft[]` response object parameters
+
+| Property          | Type                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | `object`              | The NFT's underlying contract and relevant contract metadata. Parameters in the contract include: 1. `contractDeployer?`: `string` The address that deployed the NFT contract. 2. `name`: `string` The name of the contract. 3. `symbol`: `string` The symbol of the contract. 4. `totalSupply`: `string` The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts. 5. `tokenType`: `string` The type of the token in the contract. e.g, `ERC721`, `ERC1155`, `UNKNOWN`. |
+| `title`           | `string`              | The NFT title.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `description`     | `string`              | The NFT description.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `timeLastUpdated` | `string`              | When the NFT was last updated in the blockchain. Represented in `ISO-8601` format.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `metadataError`   | `string \| undefined` | Holds an error message if there was an issue fetching metadata.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `rawMetadata`     | `object`              | The raw metadata fetched from the metadata URL specified by the NFT. The field is undefined if Alchemy was unable to fetch metadata.                                                                                                                                                                                                                                                                                                                                                                                       |
+| `tokenURI`        | `object`              | URIs for accessing the NFT's metadata blob.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `media`           | `array`               | URIs for accessing the NFT's media assets.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `spamInfo`        | `object`              | Detailed information on why an NFT was classified as spam.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      
+      //Call the method
+      let response = await alchemy.nft.getNftMetadataBatch(
+          [
+              {
+                contractAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+                tokenId: "3",
+                tokenType: "ERC721"
+              },
+              {
+                contractAddress: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
+                tokenId: "4",
+                tokenType: "ERC721"
+              }
+            ],
+            {
+              tokenUriTimeoutInMs: 5000,
+              refreshCache: true
+            }
+      )
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  [
+    {
+      contract: {
+        address: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d',
+        name: 'BoredApeYachtClub',
+        symbol: 'BAYC',
+        totalSupply: '10000',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0xaba7161a7fb69c88e16ed9f455ce62b791ee4d03',
+        deployedBlockNumber: 12287507
+      },
+      tokenId: '3',
+      tokenType: 'ERC721',
+      title: '',
+      description: '',
+      timeLastUpdated: '2023-02-26T08:28:13.584Z',
+      metadataError: undefined,
+      rawMetadata: {
+        image: 'ipfs://QmYxT4LnK8sqLupjbS6eRvu1si7Ly2wFQAqFebxhWntcf6',
+        attributes: [Array]
+      },
+      tokenUri: {
+        gateway: 'https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/3',
+        raw: 'ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/3'
+      },
+      media: [ [Object] ],
+      spamInfo: undefined
+    },
+    {
+      contract: {
+        address: '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e',
+        name: 'Doodles',
+        symbol: 'DOODLE',
+        totalSupply: '10000',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0x2b3ab8e7bb14988616359b78709538b10900ab7d',
+        deployedBlockNumber: 13430097
+      },
+      tokenId: '4',
+      tokenType: 'ERC721',
+      title: 'Doodle #4',
+      description: 'A community-driven collectibles project featuring art by Burnt Toast. Doodles come in a joyful range of colors, traits and sizes with a collection size of 10,000. Each Doodle allows its owner to vote for experiences and activations paid for by the Doodles Community Treasury. Burnt Toast is the working alias for Scott Martin, a Canadian–based illustrator, designer, animator and muralist.',
+      timeLastUpdated: '2023-02-26T08:28:13.658Z',
+      metadataError: undefined,
+      rawMetadata: {
+        image: 'ipfs://QmcyuFVLbfBmSeQ9ynu4dk67r97nB1abEekotuVuRGWedm',
+        name: 'Doodle #4',
+        description: 'A community-driven collectibles project featuring art by Burnt Toast. Doodles come in a joyful range of colors, traits and sizes with a collection size of 10,000. Each Doodle allows its owner to vote for experiences and activations paid for by the Doodles Community Treasury. Burnt Toast is the working alias for Scott Martin, a Canadian–based illustrator, designer, animator and muralist.',
+        attributes: [Array]
+      },
+      tokenUri: {
+        gateway: 'https://ipfs.io/ipfs/QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/4',
+        raw: 'ipfs://QmPMc4tcBsMqLRuCQtPmPe84bpSjrC3Ky7t3JWuHXYB4aS/4'
+      },
+      media: [ [Object] ],
+      spamInfo: undefined
+    }
+  ]
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getNftMetadataBatch` method using the code sandbox below:
+
+# Use Cases
+
+Here are some use cases for the `getNftMetadataBatch` function:
+
+* **NFT Marketplaces**: An NFT marketplace is a platform where users can buy and sell NFTs. In such platforms, the `getNftMetadataBatch` function can be used to retrieve metadata for multiple NFTs in a single API call. This can improve the platform's performance and user experience, as users can quickly view information about multiple NFTs at once.
+
+* **NFT Galleries**: NFT galleries are websites or apps that showcase a collection of NFTs. With `getNftMetadataBatch`, gallery owners can easily retrieve and display metadata for multiple NFTs, making it easier for visitors to browse and explore the collection.
+
+* **NFT Wallets**: NFT wallets are digital wallets that allow users to store, manage, and trade their NFTs. When users want to view their NFTs, the `getNftMetadataBatch` function can be used to retrieve metadata for all NFTs in the wallet, providing a quick overview of the user's collection.
+
+# Related Methods
+
+Here are the methods related to `getNftMetadataBatch`:
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

@@ -1,0 +1,272 @@
+---
+title: "How to Create a Whale Alert Twitter Bot"
+description: "Learn how to build a Twitter bot that tracks activity on whale wallet addresses on Ethereum. This tutorial also works with Polygon, Arbitrum, and Optimism."
+url: "https://docs.alchemy.com/docs/how-to-create-a-whale-alert-twitter-bot"
+slug: "docs/how-to-create-a-whale-alert-twitter-bot"
+---
+
+
+Whale alerts are an automated way to monitor and track transactions on the blockchain from wallets that own, send, and receive large quantities of cryptocurrencies. This tutorial explains how to track whale events and publish them on Twitter.
+
+The whale alerts we’re going to set up use three components to monitor crypto whale activity and send notifications to Twitter:
+
+1. [Alchemy Notify API](https://alchemy.com/notify?a=9d33de528d) - webhook URLs for Ethereum, Arbitrum, Optimism, or Polygon.
+2. [How to Integrate Alchemy Webhooks with Zapier](doc:how-to-integrate-alchemy-webhooks-with-zapier.md) - a means to connect Alchemy webhooks and 3rd party applications (e.g., Twitter).
+3. Twitter workspace - to receive transaction information and broadcasts it to the user.
+
+\[Using Alchemy Webhooks]\(doc: Using-alchemy-webhooks) and Zapier to alert Twitter when a customized event takes place, you’ll see just how easy it is to set up your own whale alert.
+
+### 1. Create a free Alchemy account and Zapier account
+
+First, we'll set up our integrations and webhooks in Zapier and Alchemy.
+
+To start, create your new accounts:
+
+* A [free Alchemy Account](https://alchemy.com/?a=9d33de528d).
+* A [free Zapier account](https://zapier.com/sign-up).
+
+If you already have these accounts, log in and skip to the next step.
+
+### 2. Create a Zap and a webhook URL
+
+Once you’re on the Zapier dashboard, follow these steps to create a new webhook automation:
+
+1. Click **Create Zap** in the top left corner.
+2. Go to **Trigger Search** and select **Webhooks by Zapier**.
+3. Select **Catch Hook** as the **Trigger Event**.
+4. Click **Continue** to the **Set up trigger** section and copy the **Custom Webhook URL**.
+
+<Info>
+  Zapier's **Catch Hook** trigger event will be used to receive data from tracked events using Alchemy webhooks.
+</Info>
+
+![1600](5bf50df-Untitled_10.png "Untitled (10).png")
+
+Creating a new automation in Zapier with the "Catch Hook" trigger.
+
+Next, let’s create the webhook URL for sending the webhook response from Alchemy to Zapier.
+
+### 3. Create an Alchemy webhook
+
+Create the address activity webhook to track the event data sent to Zapier. If you don't have one, [create a free Alchemy account](https://alchemy.com/?a=9d33de528d).
+
+There are two ways to create the webhook:
+
+* Manually using Alchemy’s [Notify tab within the dashboard](https://dashboard.alchemyapi.io/notify).
+* Programmatically by using Alchemy’s Notify API (recommended for tracking 10+ addresses).
+
+#### Manually create a webhook from the dashboard
+
+1. From the **Ethereum + L2** ecosystem, click the **Notify** tab.
+
+2. Click the **+ Create Webhook** button in the **Address Activity** section.
+
+3. Fill in these fields to create the webhook:
+
+   * Select **Chain** to be **Ethereum**
+   * Select **Network** to be **Mainnet**
+   * Paste the Zapier webhook URL you created in step 2.
+
+4. Paste the wallet address you want to monitor. If you have less than 10 addresses, select the **Add Addresses** button to add them.
+
+Now, for the fun part: adding our whale wallet addresses! For this tutorial, we’ve taken the top wallet address from [whalestats.com](https://www.whalestats.com/analysis-of-the-top-100-eth-wallets/addressList/1), **Cyborg**, to use.
+
+![1485](c33cd4d-Untitled_11.png "Untitled (11).png")
+
+Whale Stats showing the Ethereum wallet address for the "Cyborg" wallet.
+
+Feel free to use any (and as many) of the wallet addresses on the list as you’d like. The Cyborg wallet address is `0x49a2dcc237a65cc1f412ed47e0594602f6141936`.
+
+<Info>
+  To test whether the Alchemy webhook successfully sends requests to Zapier's webhook URL before confirming the creation, click **Test Webhook** next to the webhook URL. Or, if you have already created the webhook and want to test again, click on the three-dot menu next to your webhook and select **Send Test Notification**.
+</Info>
+
+To finish your configuration, Return to Zapier and continue to the **Test trigger** section by clicking **Test trigger**. The configuration is complete if you see a **We found a request** notification.
+
+#### Programmatically create a webhook using Notify API
+
+Creating a webhook using the Notify API is recommended if your webhook is tracking the transfer events for 10 or more Ethereum addresses.
+
+To get started, copy your Alchemy authentication token (`X-Alchemy-Token`) from the upper right corner of your Notify dashboard, under the **AUTH TOKEN** button.
+
+![1600](7d887fa-Untitled_12.png "Untitled (12).png")
+
+Alchemy Notify dashboard for creating new webhooks on Ethereum, Arbitrum, Optimism, and Polygon.
+
+Next, navigate to your command line and type:
+
+<CodeGroup>
+  ```shell shell
+  curl https://dashboard.alchemyapi.io/api/create-webhook \
+  -X POST \
+  -H "X-Alchemy-Token":"<your-X-Alchemy-Token>" \
+  -D '{"network":"ETH_GOERLI","webhook_type":"ADDRESS_ACTIVITY","webhook_url":"<your-Zapier-Webhook-URL>", "addresses":["<your-Ethereum-Address>"]}'
+  ```
+</CodeGroup>
+
+Remember to replace the following placeholders in the script:
+
+* `your-X-Alchemy-Token` with your Alchemy **Auth Key**.
+* `your-Zapier-Webhook-URL` with your Zapier webhook URL.
+* `your-Ethereum-Address` with the wallet address(es) you pasted.
+
+You can add as many Ethereum addresses as you’d like to track their transfer events.
+
+After refreshing, you should see the newly created address activity webhook appear in your Notify dashboard with all your specified parameters.
+
+For more API calls to do things like adding, removing, or updating webhook addresses, please see the [Notify API documentation](https://docs.alchemy.com/alchemy/enhanced-apis/notify-api#network).
+
+### 4. Parse webhook response in Zapier
+
+Now, parse the webhook response from Alchemy to create a Zapier action that sends a Twitter alert with a human-readable message whenever the tracked wallet address sends a transaction.
+
+1. On the Zappier application, under the **Action** section, select **Filter.**
+2. In **Filter setup & testing**, only continue if the **Event Activity From Address** text exactly matches our whale's Ethereum address `0x49a2dcc237a65cc1f412ed47e0594602f6141936`.
+3. If you don't want to use a webhook value, you can search for `fromAddress`.
+
+<Info>
+  If you click **Continue** and find that **Your Zap would not have continued**, don't worry! The test notification was not sent from the whale wallet, so this message is expected.
+</Info>
+
+![1600](b2a04b1-Untitled_13.png "Untitled (13).png")
+
+Zapier automation interface for continuing an event if certain event activity conditions are met.
+
+### 5. Handle alerts for sending tokens
+
+First, log into Twitter or create a new account for your Twitter crypto whale alert bot.
+
+Next, send a tweet if our whale is the sender of a transfer event.
+
+* Click **+** at the bottom.
+* Search for and select **Twitter** in the new **Action** section.
+* For the **Action Event**, choose **Create Tweet.**
+* Click **Continue** and sign in to your Twitter account.
+
+Lastly, we will need to fill out the fields to send our message in the **Set up action** section.
+
+In message text, you can get creative and choose what fields and values you want to send. This tutorial chose the following fields:
+
+1. Event Activity Value
+2. Event Activity Asset
+3. Event Activity to Address
+4. Event Activity Network
+
+You can leave everything else on the default option.
+
+![1600](eb07beb-Untitled_14.png "Untitled (14).png")
+
+Message text for the Twitter whale alert bot that pulls parsed information from Alchemy's Ethereum webhook.
+
+An example tweet using this template would read:
+
+> Whale Alert! A transaction of 1000 ETH was sent to \[wallet address] on the Ethereum network
+
+To finalize your integration:
+
+1. Click **Continue.**
+2. Click **Test and continue**. If no errors pop up, your Twitter whale alert bot works! Your account should have created a tweet.
+3. Publish the Zap.
+
+Whenever the whale wallet sends a transaction, your Twitter bot will tweet out the transaction details.
+
+<Info>
+  You can view the run details of your Zap on the “Zap History” page in the dashboard.
+</Info>
+
+### 6. Handle alerts for receiving tokens
+
+We also want to publish tweets when our whale wallet is on the receiving end of a transaction:
+
+1. Edit the **Continue only if** action.
+2. Click on **Filter Setup & Testing** and press the **+ or** button.
+3. Fill in **Event Activity To Address** (or search for `fromAddress`) (**Text) Exactly matches** our whale Ethereum address (paste it into the last text field.
+
+Now our Zap will run when the Whale Wallet is also a recipient
+
+### 7. Create a “Code by Zapier” action;
+
+As a final step, create a **Code by Zapier** action between the **Only continue if…** and **Create Tweet In Twitter** actions.
+
+You can choose either "Run Python" or "Run Javascript." We chose **Run Javascript**, but the logic works similarly for Python. After clicking **Continue**, set up your input data under **Set up action** as follows:
+
+![1600](a8c4f4e-Untitled_15.png "Untitled (15).png")
+
+Parse through the webhook response again because our current tweet is only created when the whale wallet sends tokens. Therefore, we need to customize them for when the Whale Wallet receives tokens.
+
+In the code block, paste the following code. Read the comments to see what each line means.
+
+<CodeGroup>
+  ```javascript javascript
+  // Since JavaScript is case-sensitive, we will be comparing addresses in upper case const address = "Whale-Wallet-Address".toUpperCase();
+  // Define Account 1 (the whale wallet)
+  let account_1 = "";
+  // Define Account 2 (the user whale wallet is sending to / receiving from)
+  let account_2 = "";
+  // Define to use "to" or "from" in message
+  let t_or_f = "";
+  let f_or_t = "";
+  if (inputData.fromAddress.toUpperCase() == address) {
+      // If Whale is sending, then it is the fromAddress
+      account_1 = inputData.fromAddress;
+      account_2 = inputData.toAddress;
+      t_or_f = "from";
+      f_or_t = "to";
+  } else if (inputData.toAddress.toUpperCase() == address) {
+      // If Whale is receiving, then it is the toAddress
+      account_1 = inputData.toAddress;
+      account_2 = inputData.fromAddress;
+      t_or_f = "to";
+      f_or_t = "from";
+  }
+  // Output the fields to be used in email
+  output = [{account_1: account_1, account_2: account_2, t_or_f: t_or_f, f_or_t: f_or_t}];Crypto Whale Twitter Bot FAQs
+  ```
+</CodeGroup>
+
+<Info>
+  Remember to replace Whale-Wallet-Address with the whale wallet address. When testing the action, don't worry if it doesn't assign anything to the output variables.
+</Info>
+
+Lastly, go to the **Create Tweet In Twitter** action and click on the **Set up action** section.
+
+Replace the generic fields from the webhook response in the message text with the dynamic outputs from the Javascript code, which are customized depending on whether the tracked wallet sent or received tokens:
+
+![1600](c212742-Untitled_16.png "Untitled (16).png")
+
+Click **Continue** and test your action, then **publish**. Congrats! You just successfully created a Twitter whale alert bot!
+
+### Whale Alert Twitter Bot FAQs
+
+The following common questions about creating whale alert bots for Twitter:
+
+### What are whales in crypto?
+
+Whales are big crypto holders, with a lot of a particular cryptocurrency in their wallets and whose large transactions could have ramifications for the market as a whole.
+
+No true criterion exists for determining what is and isn't a whale. Some say Bitcoin whales need at least 1000 coins. Alternatively, the Twitter account @whale\_alert, maintained by whale-alert.io, monitors any wallet with crypto valued over 100k USD.
+
+However you define them, whales are big enough that they can shake things up in the marketplace. For that reason, savvy investors need to monitor these large accounts and their transactions.
+
+### What is a Twitter whale alert?
+
+Twitter whale alerts are custom notifications that broadcast transaction information to Twitter whenever crypto transactions occur on the blockchain from whale wallets.
+
+Whale alerts are a great way to see what influential market movers in crypto are buying and selling.
+
+Users can select multiple wallets to monitor and then get notified on Twitter so they can view and use this data.
+
+### What are the use cases for a Twitter whale alert?
+
+The primary use case for a Twitter whale alert is to help investors and builders track the activities of influential investors as they buy, sell, and move assets between wallets. Looking for clues in whale activities can help web3 participate better and mitigate risk.
+
+For example, whale alerts might help investors:
+
+* Avoid pump and dump schemes where whales artificially increase, causing undue FOMO.
+* Monitor rinse and repeat cycles where whales artificially depress prices by selling lower than market value, so they can create a panic sell-off and buy coins at a lower price.
+
+Whale alerts also can help investors better understand the macro movements of cryptocurrencies and the volatility of markets in general, so they can make smarter investment decisions.
+
+<Info>
+  Just because there is movement from one wallet to another, it doesn’t necessarily indicate a market trend. Sometimes the movement could be between two wallets that have the same owner. For this reason, be cautious solely following whale activity and instead use these alerts in conjunction with other data.
+</Info>

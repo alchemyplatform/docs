@@ -1,0 +1,91 @@
+---
+title: "getMaxPriorityFeePerGas - SDK"
+description: "Returns a fee per gas (in wei) that is an estimate of how much you can pay as a priority fee, or \"tip\", to get a transaction included in the current block. This number is generally used to set the maxPriorityFeePerGas field in a transaction request."
+url: "https://docs.alchemy.com/reference/getmaxpriorityfeepergas-sdk-v3"
+slug: "reference/getmaxpriorityfeepergas-sdk-v3"
+---
+
+Returns a fee per gas (in wei) that is an estimate of how much you can pay as a priority fee, or "tip", to get a transaction included in the current block. This number is generally used to set the `maxPriorityFeePerGas` field in a transaction request.
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns a fee per gas (in `wei`) that is an estimate of how much you can pay as a priority fee, or "tip", to get a transaction included in the current block.
+
+This number is generally used to set the `maxPriorityFeePerGas` field in a transaction request.
+
+# Response
+
+| Property          | Type     | Description              |
+| ----------------- | -------- | ------------------------ |
+| `Promise<number>` | `number` | Returns the fee per gas. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Call the method to display the max priority fee per gas in wei
+      const response = await alchemy.transact.getMaxPriorityFeePerGas()
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  94000000
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getMaxPriorityFeePerGas` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getMaxPriorityFeePerGas` method:
+
+* **Setting optimal gas fees for transactions**: By using the `getMaxPriorityFeePerGas` method, developers can ensure that they set optimal gas fees for their transactions. This can help ensure that transactions are processed quickly and efficiently while minimizing user costs.
+* **Automating gas fee calculations**: Some applications may need to calculate gas fees for transactions automatically. By using the `getMaxPriorityFeePerGas` method, developers can automate this process and ensure that gas fees are always set at the optimal level.
+* **Monitoring network congestion**: The value returned by `getMaxPriorityFeePerGas` can be an indicator of network congestion. Developers can use this information to monitor the network's health and adjust their gas fees accordingly.
+* **Providing transparency to users**: By displaying the current `getMaxPriorityFeePerGas` value to users, developers can provide transparency and help users make informed decisions about their transactions.

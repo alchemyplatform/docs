@@ -1,0 +1,109 @@
+---
+title: "How to Interact with ERC-20 tokens in Solidity"
+description: "Learn how to interact with, and build on top of existing ERC-20 tokens using Solidity"
+url: "https://docs.alchemy.com/docs/how-to-interact-with-erc-20-tokens-in-solidity"
+slug: "docs/how-to-interact-with-erc-20-tokens-in-solidity"
+---
+
+
+# Introduction
+
+One of the greatest benefits of smart contracts, and specifically ERC20 tokens, is their ability to facilitate universal interoperability. This means that any contract on a blockchain can theoretically interact and build on top of any other contract on the same blockchain.
+
+In this tutorial, we will be demonstrating how to interact with ERC20 tokens in Solidity by writing a new smart contract that allows you to get the balance of your USDT and transfer your USDT tokens. By following the steps outlined in this tutorial, you will gain a deeper understanding of how to interact with ERC20 tokens, which will enable you to build more sophisticated decentralized applications on EVM blockchains.
+
+# Interacting with ERC-20 Tokens
+
+## Step 1: Add a License and Specify the Solidity Version
+
+In the first step, we will add a license and specify the Solidity version we are using in our smart contract. To do this, we will use the following code:
+
+<CodeGroup>
+  ```sol sol
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
+  ```
+</CodeGroup>
+
+* In this example, the `SPDX-License-Identifier` specifies the license for the contract. The MIT license allows others to use, modify, and distribute your code, as long as they include a copy of the license.
+
+* It's also important to specify the version of Solidity that you are using in your contract. This is done using the `pragma` keyword. The version number should be specified in the form of a caret range, which indicates the minimum and maximum compatible versions. For example,` ^0.8.0` indicates that the contract is compatible with any version of Solidity greater than or equal to `0.8.0` and less than `0.9.0`.
+
+## Step 2: Define the Interface
+
+In this step, we will define the interface for the ERC-20 token we want to interact with. The interface defines the functions that can be called on the token contract. Here is an example interface for an ERC-20 token:
+
+<CodeGroup>
+  ```sol sol
+  interface IERC20 {
+      function totalSupply() external view returns (uint256);
+      function balanceOf(address account) external view returns (uint256);
+      function transfer(address recipient, uint256 amount) external returns (bool);
+      function allowance(address owner, address spender) external view returns (uint256);
+      function approve(address spender, uint256 amount) external returns (bool);
+      function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+  }
+  ```
+</CodeGroup>
+
+* The `totalSupply` function returns the total number of tokens in existence.
+* The `balanceOf` function returns the balance of a specific account.
+* The `transfer` function allows an account to send tokens to another account.
+* The `allowance` function returns the `amount` of tokens that an approved spender is allowed to spend on behalf of an owner.
+* The `approve` function approves a spender to spend a certain amount of tokens on behalf of the owner.
+* The `transferFrom` function allows a spender to transfer tokens from the owner's account to another account.
+
+An interface is a way of defining a set of functions that another contract should implement. The interface doesn't actually implement any of the functions, it just defines the function signatures. To interact with an ERC20 contract in Solidity you first need to define the interface for that contract, then you can call any of the methods available on that interface from any other contract.
+
+We will use the ERC20 token interface defined above to interact with the USDT token contract because USDT is also an ERC20 token contract so it has all the functions defined in the above interface.
+
+## Step 3: Define the Smart Contract
+
+After you have defined the interface for the ERC20 token contract that you want to interact with, you can start calling any functions in that contract that are defined in the interface.
+
+In our case, we want to call the `balanceOf` and `transfer` functions of the existing ERC20 contract (USDT Contract) through our new contract using the interface we defined.
+
+Here is an example smart contract that allows you to get the balance of your USDT and transfer your USDT tokens:
+
+<CodeGroup>
+  ```sol sol
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
+
+  interface IERC20 {
+      function totalSupply() external view returns (uint256);
+      function balanceOf(address account) external view returns (uint256);
+      function transfer(address recipient, uint256 amount) external returns (bool);
+      function allowance(address owner, address spender) external view returns (uint256);
+      function approve(address spender, uint256 amount) external returns (bool);
+      function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+      event Transfer(address indexed from, address indexed to, uint256 value);
+      event Approval(address indexed owner, address indexed spender, uint256 value);
+  }
+
+  contract MyUSDT {
+      IERC20 public usdt;
+      constructor(address _usdt) {
+          usdt = IERC20(_usdt);
+      }
+      function getUSDTBalance(address account) public view returns (uint256) {
+          return usdt.balanceOf(account);
+      }
+      function transferUSDT(address recipient, uint256 amount) public returns (bool) {
+          require(usdt.transfer(recipient, amount), "Transfer failed");
+          return true;
+      }
+  }
+  ```
+</CodeGroup>
+
+* In this smart contract, we first define an instance of the `IERC20` interface, called `usdt`. We do this by passing the address of the USDT token contract to the constructor.
+* We then define two functions: `getUSDTBalance` and `transferUSDT`.
+* The `getUSDTBalance` function returns the balance of a specified account, it uses the `balanceOf` function defined in the interface using `usdt.balanceOf` to get the balance of the USDT.
+* The `transferUSDT` function transfers USDT tokens to a specified recipient, it uses the `transfer` function defined in the interface using `usdt.transfer` to transfer the USDT tokens.
+* The `getUSDTBalance` function is marked as public and view, which means it can be called by anyone and it doesn't modify the state of the contract.
+* The `transferUSDT` function is marked as public, which means it can be called by anyone, and it uses the `require` statement to make sure the transfer was successful. If the transfer fails, the function will revert and the transfer will not be completed.
+
+# Conclusion
+
+In this tutorial, we demonstrated how to interact with ERC-20 tokens in Solidity by writing a new smart contract that allows you to get the balance of your USDT and transfer your USDT tokens. We walked through the steps of adding a license and specifying the Solidity version, defining the interface and defining the smart contract. By following these steps, you can interact with any ERC-20 token in Solidity.

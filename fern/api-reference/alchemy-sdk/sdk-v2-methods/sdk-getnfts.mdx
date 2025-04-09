@@ -1,0 +1,175 @@
+---
+title: "getNftsForOwner - SDK"
+description: "Get all NFTs for an owner."
+url: "https://docs.alchemy.com/reference/sdk-getnfts"
+slug: "reference/sdk-getnfts"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Get all NFTs for an owner.
+
+This method returns the full NFTs in the contract.
+
+# Parameters
+
+| Name      | Type     | Description                                     |
+| --------- | -------- | ----------------------------------------------- |
+| `owner`   | `string` | The address of the owner.                       |
+| `options` | `string` | The optional parameters to use for the request. |
+
+### `options` parameters
+
+| Parameter              | Type               | Description                                                                                                                                                                                                                                                                   |
+| ---------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contractAddresses?`   | `array of strings` | Optional list of contract addresses to filter the results by. Limit is 45.                                                                                                                                                                                                    |
+| `omitMetadata?`        | `boolean`          | Optional boolean flag to omit NFT metadata. Defaults to `false`.                                                                                                                                                                                                              |
+| `excludeFilters?`      | `string`           | Optional list of filters applied to the query. NFTs that match one or more of these filters are excluded from the response. Available options include: `SPAM`, `AIRDROPS`.                                                                                                    |
+| `includeFilters?`      | `string`           | Optional list of filters applied to the query. NFTs that match one or more of these filters are included in the response. Available options include: `SPAM`, `AIRDROPS`.                                                                                                      |
+| `pageSize?`            | `number`           | Sets the total number of NFTs to return in the response. Defaults to **100**. Maximum page size is **100**.                                                                                                                                                                   |
+| `tokenUriTimeoutInMs?` | `number`           | No set timeout by default - When metadata is requested, this parameter is the timeout (in milliseconds) for the website hosting the metadata to respond. If you want to only access the cache and not live to fetch any metadata for cache misses then set this value to `0`. |
+| `orderBy?`             | `string`           | Order in which to return results. By default, results are ordered by contract address and token ID in lexicographic order. The available option is `TRANSFERTIME`.                                                                                                            |
+| `pageKey?`             | string             | Optional page key to use for pagination.                                                                                                                                                                                                                                      |
+
+# Response
+
+| Property                     | Type     | Description                                  |
+| ---------------------------- | -------- | -------------------------------------------- |
+| `Promise<OwnedNftsResponse>` | `object` | An object containing nfts owned by an owner. |
+
+### `Promise<OwnedNftsResponse>` object parameters
+
+| Property     | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ownedNfts`  | `array`  | The NFTs owned by the provided address. The sub-property of the `ownedNfts` object are: 1. `contract`: The contract object detailing the specifics of the contract for the returned NFT. 2. `tokenId`: The unique identifier of the token. This could be in hexadecimal or decimal format. 3. `tokenType`: This defines the standard of the token. Valid types include 'ERC721' and 'ERC1155'. If the input contract address doesn't support a known NFT standard, the error will be 'NO\_SUPPORTED\_NFT\_STANDARD', or 'NOT\_A\_CONTRACT' if there is no contract deployed at the input address. 4. `title`: This is the name of the NFT asset. 5. `description`: A brief human-readable description of the NFT asset. 6. `timeLastUpdated`: The ISO timestamp of the last cache refresh for the information returned in the metadata field. 7. `metadataError`: A string describing a particular reason that the API was unable to fetch complete metadata for the NFT. 8. `rawMetadata`: The unparsed metadata of the NFT. 9. `tokenUri`: The URI representing the location of the NFT's original metadata blob. 10. `media`: Array of objects holding information about the media assets related to this NFT. 11. `spamInfo`: Object containing information regarding whether the NFT is classified as spam or not. 12. `balance`: The token balance indicating how many units of this NFT the owner holds. 13. `acquiredAt`: Object representing the time and block number when the NFT was most recently acquired ( Only available when specifying `orderBy = TRANSFERTIME` in the request ) - `blockTimestamp`: The timestamp of the block where the NFT was most recently acquired. - `blockNumber`: The number of the block where the NFT was most recently acquired. |
+| `pageKey?`   | `string` | Pagination token that can be passed into another request to fetch the next NFTs. If there is no page key, then there are no more NFTs to fetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `totalCount` | `number` | The total count of NFTs owned by the provided address.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `blockHash`  | `string` | The canonical head block hash of when your request was received.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      let owner  = "vitalik.eth";
+      
+      //Call the method to get the nfts owned by this address
+      let response = await alchemy.nft.getNftsForOwner(owner)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+   {
+        contract: [Object],
+        tokenId: '338',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-25T23:46:06.986Z',
+        metadataError: undefined,
+        rawMetadata: {},
+        tokenUri: [Object],
+        media: [],
+        spamInfo: [Object],
+        balance: 1
+      },
+      {
+        contract: [Object],
+        tokenId: '13581',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-26T06:49:04.094Z',
+        metadataError: 'Failed to get token uri',
+        rawMetadata: [Object],
+        tokenUri: undefined,
+        media: [],
+        spamInfo: [Object],
+        balance: 1
+      },
+      {
+        contract: [Object],
+        tokenId: '25187',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-26T06:49:04.083Z',
+        metadataError: 'Failed to get token uri',
+        rawMetadata: [Object],
+        tokenUri: undefined,
+        media: [],
+        spamInfo: [Object],
+        balance: 1
+      }
+    ],
+    pageKey: 'MHgyMDg2ZjZmOTE2YTZiZjIyOTIwY2I5YjI4ZmM0MTE5Y2UyNDVkZmY0OjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNjI2MzpmYWxzZQ==',
+    totalCount: 586,
+    blockHash: '0x9d03a75a889ed722b3c6a15a12d2dca7dafaaae29055f4dee3800175898c3657'
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getNftsForOwner` method using the code sandbox below:
+
+# Use Cases
+
+The `getNftsForOwner` method can be used to retrieve information about non-fungible tokens (NFTs) owned by a specific address. Some possible use cases for this method include:
+
+* **Displaying NFTs owned by a user**: DApps or marketplaces that display a user's NFT collection can use the `getNftsForOwner` method to retrieve information about the NFTs owned by a specific address. This can be useful for providing a customized view of a user's NFTs and allowing them to easily manage their collection.
+
+* **Tracking NFT ownership**: The `getNftsForOwner` method can be used to track the ownership of specific NFTs over time. This can be useful for tracking the ownership history of rare or valuable NFTs and verifying the authenticity of ownership claims.
+
+* **Verifying ownership in a smart contract**: Smart contracts that require ownership of specific NFTs as a condition for executing certain functions can use the `getNftsForOwner` method to verify that a user owns the required NFTs.
+
+# Related Methods
+
+Here are the methods related to `getNftsForOwner`:
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

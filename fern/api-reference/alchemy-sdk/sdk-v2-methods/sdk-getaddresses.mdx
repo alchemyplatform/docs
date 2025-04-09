@@ -1,0 +1,130 @@
+---
+title: "getAddresses - SDK"
+description: "Get all addresses tracked for the provided AddressActivityWebhook . An Address Activity Webhook tracks ETH , ERC20 , ERC721 , and ERC1155 transfers for the provided addresses. This can be used to notify your app of real-time state changes when your tracked addresses send or receive tokens."
+url: "https://docs.alchemy.com/reference/sdk-getaddresses"
+slug: "reference/sdk-getaddresses"
+---
+
+Get all addresses tracked for the provided `AddressActivityWebhook`.
+
+An Address Activity Webhook tracks `ETH`, `ERC20`, `ERC721`, and `ERC1155` transfers for the provided addresses. This can be used to notify your app of real-time state changes when your tracked addresses send or receive tokens.
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Get all addresses tracked for the provided `AddressActivityWebhook`.
+
+An Address Activity Webhook tracks `ETH`, `ERC20`, `ERC721`, and `ERC1155` transfers for the provided addresses. This can be used to notify your app of real-time state changes when your tracked addresses send or receive tokens.
+
+# Parameters
+
+| Name             | Type     | Description                                                                                                                                                                           |
+| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addressWebhook` | `string` | The Address Activity webhook. Available options are: `MINED_TRANSACTION`,`DROPPED_TRANSACTION`, `ADDRESS_ACTIVITY`, `NFT_ACTIVITY`.                                                   |
+| `options`        | `object` | `Optional` Pagination options when fetching addresses. Parameters include: 1. `limit` - `number` Number of addresses to fetch. 2. `pageKey` - `string` Page cursor for the next page. |
+
+# Response
+
+| Property                           | Type               | Description                            |
+| ---------------------------------- | ------------------ | -------------------------------------- |
+| `Promise<AddressActivityResponse>` | `array of objects` | List of addresses and pagination info. |
+
+### `AddressActivityResponse` parameters
+
+| Property     | Type               | Description                                                |
+| ------------ | ------------------ | ---------------------------------------------------------- |
+| `addresses`  | `array of strings` | List of addresses associated with given webhook.           |
+| `totalCount` | `number`           | The total number of addresses.                             |
+| `pageKey`    | `string`           | `Optional` Page key used to fetch the remaining addresses. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network} = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  // authToken is required to use Notify APIs. Found on the top right corner of
+  // https://dashboard.alchemy.com/notify.
+  const config = {
+      authToken: "your-auth-token                                                                                                                                                                                                            ", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Define the webhooks by fetching all the Webhooks
+      const hooks = await alchemy.notify.getAllWebhooks();
+
+      //Call the method to return the addresses by ID using the webhookId.
+      const addressesById = await alchemy.notify.getAddresses("wh_qv16bt12wbj9kax4", {
+          limit: 3,
+      });
+
+      // Get the addresses by webhooks
+      const addressesByWebhook = await alchemy.notify.getAddresses(
+          hooks.webhooks[3],
+          { limit: 3, pageKey: 1 }
+      );
+
+      //Logging the response to the console
+      console.log(addressesById, addressesByWebhook)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  [
+    {
+      "addresses": [
+        "string"
+      ],
+      "totalCount": 0,
+      "pageKey": "string"
+    }
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getAddresses` method:
+
+* **Monitoring User Balances**: Developers can use Alchemy Notify to monitor user balances for specific Ethereum addresses. `getAddresses` can be used to retrieve the addresses currently being monitored and ensure that the balances of these addresses are up-to-date.
+
+* **Monitoring Smart Contract Events**: Alchemy Notify can also be used to monitor events on smart contracts. Developers can use `getAddresses` to retrieve the addresses currently being monitored and ensure that events from these addresses are being properly received and processed.
+
+* **Tracking Transactions**: Developers can use Alchemy Notify to track transactions on the Ethereum network.`getAddresses` can be used to retrieve the addresses of the wallets or contracts involved in a particular transaction and ensure that the transaction is being tracked properly.
+
+# Related Methods
+
+* [getAllWebhooks](/reference/getallwebhooks-sdk) - Get all webhooks on your team.

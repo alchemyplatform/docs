@@ -1,0 +1,128 @@
+---
+title: "Custom Webhook Variables"
+description: "Understand how Custom Webhook variables work and how to use them"
+url: "https://docs.alchemy.com/reference/custom-webhook-variables"
+slug: "reference/custom-webhook-variables"
+---
+
+
+With GraphQL, Alchemy's Custom Webhook is able to leverage the power of variables to dynamically insert values into a webhook query. In particular, users are able to filter data based on both addresses and log topics via Custom Webhook variables!
+
+<Info>
+  To use a variable, you must first create it using one of the Custom Webhook API methods that allow you to [create](/reference/create-custom-webhook-variable), [read](/reference/read-custom-webhook-variable), [update](/reference/update-custom-webhook-variable), and [destroy](/reference/delete-custom-webhook-variable) Custom Webhook variables!
+</Info>
+
+# Variable Types
+
+Custom Webhook variables can either be a set of `addresses` or `bytes32` objects. This allows developers to either define variables for transaction level filters or logs!
+
+### Example `Address` Typed Variables
+
+Variable Name:`addressVariable`
+
+Variable Value: `{0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1, 0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5, 0x388C818CA8B9251b393131C08a736A67ccB19297 }`
+
+`Address` typed variables can be used in either \[external transaction filters]\(External Transaction Filters) and/or [internal transaction filters](/reference/custom-webhook-filters#internal-transaction-debug-trace-calls-filters-beta).
+
+### Example `Log Topic` Typed Variables
+
+Variable Name:`logTopicVariable`
+
+Variable Value: `{0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, 0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822 }`
+
+`Log Topic` typed variables can be used in only [event log filters](/reference/custom-webhook-filters#eventlog-filters)!
+
+<Info>
+  `Log Topic` typed variables can represent an array of `topic0`, `topic1`, or `topic2` elements.
+</Info>
+
+## How to Use Variables in Custom Webhooks
+
+<Info>
+  At the beginning of each GraphQL query where you want to use a variable, you must declare the variable!
+
+  `query ($addressVariable: [Address!])`
+
+  `query ($addressVariable: [Address!], $logTopicVariable:[Bytes32!]!)`
+</Info>
+
+# Examples Using A Variable:
+
+### Single Variable Custom Webhooks
+
+In this example, we use a variable `addressVar` which is applied to an external transaction filter, specifically within the `from` address parameter.
+
+```
+query ($addressVar: [Address!]) {
+  block {
+    hash
+    number
+    transactions(filter: {addresses: [{from: $addressVar }]}) {
+      hash
+      from {
+        address
+      }
+      to {
+        address
+      }
+      value
+      gas
+      status
+      logs {
+        data
+        topics
+      }
+    }
+  }
+}
+```
+
+### Multi-Variable Custom Webhooks
+
+In this example, we use 2 variables `addressVar` AND `logTopic0` with the former being used in an external transaction filter and the former being applied to the event log filter.
+
+```
+query ($addressVar: [Address!], $logTopic0:[Bytes32!]!) {
+  block {
+    hash
+    number
+    transactions(filter: {addresses: [{to: $addressVar }]}) {
+      hash
+      from {
+        address
+      }
+      to {
+        address
+      }
+      value
+      gas
+      status
+      logs {
+        data
+        topics
+      }
+    }
+    logs(filter: { addresses: [], topics: [$logTopic0, [],[]] }) {
+    topics
+    transaction{
+      hash
+      from {
+        address
+      }
+      to {
+        address
+      }
+      value
+      gas
+      status
+    }
+  }
+  }
+}
+```
+
+# FAQ
+
+### How many elements can I use within a Custom Webhook variable?
+
+Each Custom Webhook variable can contain up to 10 million elements by default!

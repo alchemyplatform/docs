@@ -1,0 +1,585 @@
+---
+title: The Alchemy Developer Hub 
+layout: custom
+hide-feedback: true
+---
+
+<style>
+{`
+  /* ----- GENERAL LAYOUT ----- */
+  .fern-background {
+    background-color: rgba(var(--background), 1);
+    z-index: 0;
+  }
+
+  .fern-header-content {
+    #fern-search-button {
+      display: none !important;
+    }
+  }
+
+  /* ----- HERO TITLE BLOCK ----- */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 6.25rem 0.625rem;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+
+    @media (min-width: 768px) {
+      padding: 6.25rem 1.25rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      line-height: 2.75rem;
+      font-weight: 400;
+      color: var(--grayscale-12);
+      margin-bottom: 1rem;
+      width: fit-content;
+
+      @media (min-width: 768px) {
+        font-size: 4rem;
+        line-height: 4.4rem;
+      }
+    }
+
+    h4 {
+      color: var(--grayscale-11);
+      font-size: 1.5rem;
+      line-height: 2.25rem;
+      font-weight: 400;
+      margin-bottom: 2rem;
+      width: fit-content;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 3rem 0.625rem 4rem;
+
+      h1 {
+        font-size: 2rem;
+        line-height: 2.25rem;
+      }
+
+      h4 {
+        font-size: 1rem;
+        line-height: 1.5rem;
+      }
+    }
+  }
+
+  /* ----- ANIMATED WARPED GRID BACKGROUND ----- */
+  .hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: -15rem;
+    z-index: -1;
+    opacity: 1;
+
+    /* Linear gradient mask */
+    &:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(var(--background) 25%, color-mix(in srgb, var(--background) 0%, transparent) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Latitude lines that animate */
+    &:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-hor-solid.svg');
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      z-index: -1;
+      animation: moveUp 12s linear infinite;
+    }
+
+    /* Longitude lines */
+    .vertical-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-vert-solid.svg');
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      z-index: -2;
+    }
+  }
+
+  :is(.dark) .hero-background {
+    &:before {
+      background-image: linear-gradient(var(--background) 25%, color-mix(in srgb, var(--background) 70%, transparent) 100%);
+    }
+  }
+  
+  @keyframes moveUp {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-25%);
+    }
+  }
+
+  /* ----- CENTERED SEARCH BAR ----- */
+  .search {
+    padding: 1.875rem 3.75rem 1.25rem 3.75rem;
+    border-radius: 1.5rem !important;
+    background-color: var(--accent-a3) !important;
+    backdrop-filter: blur(3px) !important;
+    align-self: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 4rem;
+    max-width: 62.5rem;
+    width: 100%;
+
+    .search-options {
+      padding-top: 0.625rem;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      p {
+        padding-right: 0.625rem;
+        text-shadow: none !important;
+      }
+
+      button {
+        color: var(--accent-9) !important;
+        font-size: 1rem;
+      }
+    }
+
+    div.search-input-container > button {
+      background-color: var(--accent-1) !important;
+      width: 100%;
+      svg {
+        color: var(--accent-9);
+      }
+    }
+  }
+
+  :is(.dark) {
+    .search {
+      background-color: rgba(255, 255, 255, 0.10) !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .search {
+      padding: 1.875rem 1.25rem 1.25rem 1.25rem;
+      margin-top: 2rem;
+      .search-options {
+        gap: 1rem !important;
+
+        p {
+          display: none !important;
+        }
+        
+        button {
+          font-size: 0.75rem;
+          padding: 0 !important;
+        }
+      }
+    }
+  }
+
+  /* ----- GET STARTED BUTTON ----- */
+  /* ----- ANIMATIONS CAN BE FOUND IN styles.css ----- */
+  #get-started-button {
+    padding: 1.25rem 3rem;
+    border-radius: 0.47rem !important;
+    background-color: var(--grayscale-12) !important;
+    transition: box-shadow 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    
+    p {
+      color: var(--grayscale-1) !important;
+      font-weight: 600;
+      font-size: 0.875rem !important;
+      position: relative;
+      z-index: 2;
+    }
+
+    &:before, &:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 7.5rem;
+      height: 7.5rem;
+      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-button-blur.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &:before {
+      left: 35%;
+      transform: translate(-50%, -50%);
+    }
+
+    &:after {
+      right: 35%;
+      transform: translate(50%, -50%);
+    }
+
+    &:hover {
+      box-shadow: 0px 0px 1.25rem 0px rgba(81, 103, 255, 0.5);
+
+      &:before {
+        opacity: 0.5;
+        animation: 
+          slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalLeft 4s ease-in-out infinite,
+          fadeEdges 6s ease-in-out infinite;
+        animation-fill-mode: both;
+      }
+
+      &:after {
+        opacity: 0.5;
+        animation: 
+          slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalRight 4s ease-in-out infinite,
+          fadeEdges 6s ease-in-out infinite;
+        animation-delay: 0.5s;
+        animation-fill-mode: both;
+      }
+    }
+  }
+
+  :is(.dark) #get-started-button {
+    background-color: white !important;
+
+    &:hover {
+      &:before {
+        opacity: 0.5;
+        animation: 
+          slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalLeft 4s ease-in-out infinite,
+          fadeEdgesDark 6s ease-in-out infinite;
+        animation-fill-mode: both;
+      }
+
+      &:after {
+        opacity: 0.5;
+        animation: 
+          slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+          floatVerticalRight 4s ease-in-out infinite,
+          fadeEdgesDark 6s ease-in-out infinite;
+        animation-delay: 0.5s;
+        animation-fill-mode: both;
+      }
+    }
+  }
+
+  /* ----- MAIN CONTENT SECTION ----- */
+  .content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6.25rem;
+    padding: 6.25rem 3.125rem;
+    box-shadow: 0px -4.56rem 4.56rem 0px rgba(117, 152, 240, 0.09), 0px -1.125rem 2.5rem 0px rgba(117, 152, 240, 0.10);
+    margin-bottom: 0;
+    z-index: 2;
+    position: relative;
+    background-color: var(--background);
+
+    @media (min-width: 1024px) {
+      padding: 5.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+      padding: 6.25rem 0.625rem;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      line-height: 2.75rem;
+      font-weight: 400;
+      margin-bottom: 3rem;
+      width: fit-content;
+    }
+
+    /* ----- MAIN CARDS ----- */
+    .main-cards {
+      max-width: 62.5rem;
+      align-self: center;
+      margin-bottom: 10.25rem;
+
+      .fern-card {
+        text-align: left;
+
+        img {
+          height: 15.375rem;
+          object-fit: cover;
+          padding-top: 1.25rem;
+          align-self: center;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .font-semibold {
+          font-size: 1.5rem;
+          margin-bottom: 0.625rem;
+          font-weight: 500;
+        }
+      }
+
+      .beginner-card .fern-card {
+        .items-start:before {
+          content: "Beginner";
+          background-color: var(--accent-3);
+          color: var(--accent-11);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          margin-bottom: 1.25rem;
+          font-size: 0.875rem;
+          font-weight: 400;
+        }
+      }
+
+      .advanced-card .fern-card {
+        background: linear-gradient(43.83deg, var(--accent-11) 2.24%, var(--accent-12) 118.17%);
+
+        .text-body {
+          color: var(--grayscale-1) !important;
+        }
+
+        p {
+          color: var(--grayscale-4) !important;
+          text-shadow: none !important;
+        }
+
+        .items-start:before {
+          content: "Advanced";
+          background-color: var(--accent-3);
+          color: var(--accent-11);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          margin-bottom: 1.25rem;
+          font-size: 0.875rem;
+          font-weight: 400;
+        }
+      }
+    }
+
+    /* ----- USE CASES SECTION ----- */
+    .use-cases {
+      > div {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem 0.625rem;
+        padding-bottom: 1.25rem;
+        align-self: center;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 87.5rem;
+
+        .fern-card {
+          flex: 0 1 100%;
+          min-width: 12.5rem;
+          padding: 1.25rem;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          text-align: left;
+
+          @media (min-width: 768px) {
+            flex: 0 1 calc(33.33% - 0.625rem);
+          }
+
+          .t-default.text-base.font-semibold {
+            font-weight: 500 !important;
+          }
+
+          .t-muted {
+            font-size: 0.875rem !important;
+          }
+
+          .items-start:before {
+            position: absolute;
+            top: 0.9375rem;
+            right: 0.9375rem;
+            content: "🕐 5 min";
+            background-color: #eff4f9;
+            color: #475569;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 400;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .content {
+      padding: 3.125rem 0.625rem;
+      border-radius: 3.125rem;
+
+      h2 {
+        font-size: 1.5rem;
+        line-height: 1.75rem;
+        margin-bottom: 2rem;
+      }
+
+      .main-cards {
+        margin-bottom: 3.75rem;
+
+        .fern-card {
+          padding: 1rem;
+      
+          .font-semibold {
+            font-size: 1.25rem;
+            line-height: 1.5rem;
+          } 
+        }
+      }
+
+      .use-cases {
+        > div {
+          padding-left: 0;
+          padding-right: 0;
+        }
+      }
+    }
+  }
+
+  /* Hide all anchor links on the homepage */
+  [data-radix-popper-content-wrapper]:has(span[id^="radix-"]) {
+    display: none !important;
+  }
+`}
+</style>
+
+<div class="landing">
+  <div class="hero">
+    <div class="hero-background">
+      <div class="vertical-bg"></div>
+    </div>
+    <h1>Alchemy Documentation</h1>
+    <h4 class="t-muted ">All the resources you need to build onchain apps.</h4>
+    <a class="get-started-anchor" href="/get-started">
+      <button id="get-started-button" class="fern-button filled">
+        Get started
+      </button>
+    </a>
+    <div class="search">
+      <div class="search-input-container">
+        <SearchBar />
+      </div>
+      <div class="search-options">
+        <p class="t-muted">Popular searches</p>
+        <button class="fern-button minimal">Transfers API</button>
+        <button class="fern-button minimal">How to send transactions</button>
+        <button class="fern-button minimal">NFT smart contract</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    {/* <h2>What are you building?</h2>
+
+    <div class="main-cards">
+      <CardGroup cols={2}>
+        <div class="beginner-card">
+          <Card
+            title="Build an onchain app"
+            href="/"
+          >
+            Jump into building an app on our supported chains.
+            <img src="../assets/stack.png" class="card-image" />
+          </Card>
+        </div>
+        <div class="advanced-card">
+          <Card
+            title="Build your own chain"
+            href="/"
+          >
+            Deploy and get access to millions of developers.
+            
+            <img src="../assets/diagram.png" class="card-image" />
+          </Card>
+        </div>
+      </CardGroup>
+    </div> */}
+
+    <h2>Use cases for every builder</h2>
+    <div class="use-cases">
+      <CardGroup cols={1}>
+        <Card
+          title="JSON RPC"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Supernode.svg" />}
+          href="/"
+          className="flex-1 min-w-[200px] p-5 h-full flex flex-col text-left md:w-1/3 before:content-['🕐_5_min'] before:absolute before:top-4 before:right-4 before:bg-[#eff4f9] before:text-[#475569] before:px-2 before:py-1 before:rounded before:text-sm before:font-normal"
+        >
+          Use our Node API to start reading and writing to the blockchain—scale infinitely.
+        </Card>
+        <Card
+          title="Onboard users"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />}
+          href="/"
+        >
+          Your complete toolkit to build embedded wallets—powered by smart accounts.
+        </Card>
+        <Card
+          title="Stream events"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Webhooks.svg" />}
+          href="/"
+        >
+          Get consistent push notifications and subscribe to ongoing onchain data.
+        </Card>
+        <Card
+          title="Index data"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Index.svg" />}
+          href="/"
+        >
+          Ship faster with an onchain data API. Reduce data lag by 50%. Backfill data up to 5x faster.
+        </Card>
+        <Card
+          title="Cheaper, faster, safer transactions"
+          icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />}
+          href="/"
+        >
+          Your complete toolkit to build embedded wallets—powered by smart accounts.
+        </Card>
+      </CardGroup>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,115 @@
+---
+title: "Starknet API Quickstart"
+description: "How to get started building on Starknet and using the JSON-RPC API"
+url: "https://docs.alchemy.com/reference/starknet-api-quickstart"
+slug: "reference/starknet-api-quickstart"
+---
+
+
+*To use the Starknet API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup/?a=starknet-docs) first!*
+
+# Introduction
+
+Starknet is a decentralized Validity-Rollup (often referred to as ZK-Rollup). It operates as a Layer 2 network over Ethereum, enabling any app to achieve massive scale without compromising Ethereum's composability and security.
+
+# What is Starknet API?
+
+The Starknet API is a collection of JSON-RPC methods that allow developers to interact with the Starknet network. By using the endpoints provided by the API, developers can access up-to-date network data and submit transactions to it.
+
+# Getting Started Instructions
+
+## 1. Choose a Package Manager (npm or yarn)
+
+Before you begin, you'll need to choose a package manager to manage dependencies in your project. The two most popular package managers for Node.js are `npm` and `yarn`. You can choose the one you're most comfortable with.
+
+### npm
+
+To get started with `npm`, follow the documentation to install Node.js and `npm` for your operating system: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+
+### yarn
+
+To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lang/en/docs/install](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+
+## 2. Set up your project (npm or yarn)
+
+Let's start by setting up a simple Node.js project. Open your terminal and run the following commands:
+
+<CodeGroup>
+  ```text npm
+  mkdir alchemy-starknet-api
+  cd alchemy-starknet-api
+  npm init --yes
+  ```
+
+  ```text yarn
+  mkdir alchemy-starknet-api
+  cd alchemy-starknet-api
+  yarn init --yes
+  ```
+</CodeGroup>
+
+This will create a new directory called `alchemy-starknet-api` and initialize a new Node.js project in it.
+
+## 3. Make Your First Request
+
+To make requests to the Starknet API, you'll need to use an HTTP client. In this guide, we'll use Axios, a popular HTTP client for Node.js. Install Axios as a dependency in your project with the command below:
+
+<CodeGroup>
+  ```Text npm
+  npm install axios
+  ```
+
+  ```Text yarn
+  yarn add axios
+  ```
+</CodeGroup>
+
+Next, let's create a script that will make a request to the `starknet_blockNumber` JSON-RPC method on Starknet. Create a new file called `index.js` in your project directory and add the following code:
+
+<CodeGroup>
+  ```javascript index.js
+  const axios = require('axios');
+
+  const apiKey = 'YOUR_API_KEY'; // Replace with your Alchemy API key
+  const url = `https://starknet-mainnet.g.alchemy.com/v2/${apiKey}`;
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'starknet_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Block Number:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `YOUR_API_KEY` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup/?a=starknet-docs).
+
+## 4. Run Script
+
+To run the script and make the request to the Starknet API, execute the following command in your terminal:
+
+<CodeGroup>
+  ```shell shell
+  node index.js
+  ```
+</CodeGroup>
+
+As a result, should see the current block number on Starknet printed to the console!
+
+<CodeGroup>
+  ```shell shell
+  Block Number: 42390
+  ```
+</CodeGroup>
+
+# Next Steps
+
+Congratulations! You've successfully made your first request to the Starknet API using Alchemy. From here, you can explore the various [JSON-RPC methods available on Starknet](/reference/starknet-getclasshashat) and start building your decentralized applications on it!

@@ -1,0 +1,125 @@
+---
+title: "Ethereum API Quickstart"
+description: "How to get started building on Ethereum and using the JSON-RPC API"
+url: "https://docs.alchemy.com/reference/ethereum-api-quickstart"
+slug: "reference/ethereum-api-quickstart"
+---
+
+
+*To use the Ethereum API you'll need to [create a free Alchemy account](https://alchemy.com/?a=f8afc2202c) first!*
+
+# What is the Ethereum API?
+
+The Ethereum API allows applications to connect to an Ethereum node that is part of the Ethereum blockchain. Developers can interact with on-chain data and send different types of transactions to the network by utilizing the endpoints provided by the API. The API follows a JSON-RPC standard. JSON-RPC is a stateless, lightweight, remote procedure call (RPC) protocol that is commonly used when interacting with Ethereum.
+
+# Getting Started Instructions
+
+## 1. Choose a Package Manager (npm or yarn)
+
+For this guide, we will be using npm or yarn as our package manager to install necessary packages.
+
+### npm
+
+To get started with `npm`, follow the documentation to install Node.js and `npm` for your operating system: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+
+### yarn
+
+To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lang/en/docs/install](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+
+## 2. Set Up Your Project
+
+To kickstart your project, open your terminal and execute the following commands:
+
+<CodeGroup>
+  ```shell npm
+  mkdir ethereum-api-quickstart
+  cd ethereum-api-quickstart
+  npm init --yes
+  ```
+
+  ```shell yarn
+  mkdir ethereum-api-quickstart
+  cd ethereum-api-quickstart
+  yarn init --yes
+  ```
+</CodeGroup>
+
+## 3. Install Axios
+
+For making API requests, we'll use Axios, a widely-used HTTP client. Install Axios with the following command:
+
+<CodeGroup>
+  ```shell npm
+  npm install axios
+  ```
+
+  ```shell yarn
+  yarn add axios
+  ```
+</CodeGroup>
+
+## 4. Make Your First Request
+
+You are all set now to use Ethereum API and make your first request. For instance, let's make a request to `get the latest block`. Create an `index.js` file in your project directory and paste the following code snippet into the file.
+
+<CodeGroup>
+  ```javascript index.js
+  import axios from "axios";
+
+  const url = `https://eth-mainnet.g.alchemy.com/v2/${yourAlchemyAPIKey}`;
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('The latest block number is', parseInt(response.data.result, 16));
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `yourAlchemyAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+You can also make these requests on testnets like `eth-sepolia` or `eth-holesky` by just replacing the request URL:
+
+<CodeGroup>
+  ```text text
+  # Mainnet
+  https://eth-mainnet.g.alchemy.com/v2/
+  # Sepolia Testnet
+  https://eth-sepolia.g.alchemy.com/v2/
+  # Holesky Testnet
+  https://eth-holesky.g.alchemy.com/v2/
+  ```
+</CodeGroup>
+
+## 5. Run Your Script
+
+To execute your script and make a request to the Ethereum network, run:
+
+<CodeGroup>
+  ```shell shell
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the latest block number outputted to your console.
+
+<CodeGroup>
+  ```shell shell
+  The latest block number is 11043912
+  ```
+</CodeGroup>
+
+***
+
+You must not stop here! Want to build your first Dapp and use Ethereum APIs? Head towards Alchemy Tutorials.
+
+[**View**: https://docs.alchemy.com/docs](https://docs.alchemy.com/docs)

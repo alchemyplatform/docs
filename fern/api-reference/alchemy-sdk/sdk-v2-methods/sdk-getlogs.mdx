@@ -1,0 +1,179 @@
+---
+title: "getLogs - SDK"
+description: "Returns an array of logs that match the provided filter."
+url: "https://docs.alchemy.com/reference/sdk-getlogs"
+slug: "reference/sdk-getlogs"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns an array of logs that match the provided filter.
+
+# Parameters
+
+| Name     | Type     | Description                                                           |
+| -------- | -------- | --------------------------------------------------------------------- |
+| `filter` | `object` | The filter object to use. Includes the `fromBlock` and the `toBlock`. |
+
+### `filter` parameters
+
+| Parameter   | Type     | Description                                                                           |
+| ----------- | -------- | ------------------------------------------------------------------------------------- |
+| `fromBlock` | `string` | Either the hex value of a **block number** OR One of the **block tags** listed below. |
+| `toBlock`   | `string` | Either the hex value of a **block number** OR One of the **block tags** listed below: |
+
+* `pending` (Not available on Ethereum) - A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from `local` mempool. Intuitively, you can think of these as blocks that have not been mined yet.
+* `latest` - The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions.
+* `safe` - The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is “unlikely” to be re-orged. **Only available on Ethereum Goerli**.
+* `finalized `- The most recent crypto-economically secure block, that has been accepted by >2/3 of validators. Cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is very unlikely to be re-orged. **Only available on Ethereum Goerli.**
+* `earliest` - The lowest numbered block the client has available. Intuitively, you can think of this as the first block created.
+
+# Response
+
+| Property              | Type    | Description                                                                           |
+| --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| `Promise<Array<Log>>` | `array` | `Array of log objects`, or an empty array if nothing has changed since the last poll. |
+
+### `<Array<Log>>` response object parameters
+
+| Prameter           | Type               | Description                                                                                                                                                                                                                                  |
+| ------------------ | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockHash`        | `string`           | `32 Bytes` - hash of the block where this log was in. null when its pending. `null` when its pending log.                                                                                                                                    |
+| `blockNumber`      | `integer`          | The block number where this log was in. `null` when its pending. `null` when its pending log.                                                                                                                                                |
+| `transactionIndex` | `integer`          | Integer of the transactions index position log was created from. null when its pending log.                                                                                                                                                  |
+| `address`          | `string`           | `20 Bytes` - address from which this log originated.                                                                                                                                                                                         |
+| `logIndex`         | `integer`          | Integer of the log index position in the block. `null` when its pending log.                                                                                                                                                                 |
+| `data`             | `string`           | Contains one or more 32 Bytes non-indexed arguments of the log.                                                                                                                                                                              |
+| `removed`          | `boolean`          | `true` when the log was removed, due to a chain reorganization. `false` if its a valid log.                                                                                                                                                  |
+| `topics`           | `array of strings` | Array of zero to four 32 Bytes DATA of indexed log arguments. **In solidity**: The first topic is the hash of the signature of the event (e.g. Deposit(address,bytes32,uint256)), except you declare the event with the anonymous specifier. |
+| `transactionHash`  | `string`           | Hash of the transactions this log was created from. `null` when its pending log.                                                                                                                                                             |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getLogs` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getlogs.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Initialize variables for the parameters
+      let address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+      let topics =  [ "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" ]
+      let blockHash = "0x49664d1de6b3915d7e6fa297ff4b3d1c5328b8ecf2ff0eefb912a4dc5f6ad4a0"
+      
+      //Call the method to return array of logs
+      let response = await alchemy.core.getLogs(address, topics, blockHash)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+      blockNumber: 16701233,
+      blockHash: '0x2bdfc733ded7277d23e9859455609b5deadc2fe3cc404e25ed6f6667ab271b42',
+      transactionIndex: 25,
+      removed: false,
+      address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
+      data: '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      topics: [
+        '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925',
+        '0x00000000000000000000000015891db79f767e4ace21f4e511cdb72008dc9fca',
+        '0x000000000000000000000000a3a7b6f88361f48403514059f1f16c8e78d60eec'
+      ],
+      transactionHash: '0xe8479758b8dd54f529187da4109898d5e89db2fd2fade7073b24cfe99dcf1d14',
+      logIndex: 40
+    },
+    {
+      blockNumber: 16701233,
+      blockHash: '0x2bdfc733ded7277d23e9859455609b5deadc2fe3cc404e25ed6f6667ab271b42',
+      transactionIndex: 29,
+      removed: false,
+      address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      data: '0x0000000000000000000000000000000000000000000000000000000023c34600',
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+        '0x000000000000000000000000f097b3c3598692811e14a6fe6a4cf030df5d73eb',
+        '0x000000000000000000000000debb5b7df78c148694b9ca1fce6f9b2b0e584899'
+      ],
+      transactionHash: '0xf638486c1a9e76bcb66f92bcf58439dad9c3ea3a2cde41c33769713479148828',
+      logIndex: 41
+    },
+    {
+      blockNumber: 16701233,
+      blockHash: '0x2bdfc733ded7277d23e9859455609b5deadc2fe3cc404e25ed6f6667ab271b42',
+      transactionIndex: 32,
+      removed: false,
+      address: '0x514910771AF9Ca656af840dff83E8264EcF986CA',
+      data: '0x0000000000000000000000000000000000000000000000017085b53104e2e000',
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+        '0x000000000000000000000000dfd5293d8e347dfe59e90efd55b2956a1343963d',
+        '0x000000000000000000000000787afa42f5d0e0b34189ad4d8b47ba87f615b416'
+      ],
+      transactionHash: '0xa5c97ea24020ad959708886007e95df5eb5778c70d1a34e0c3dc18bd7de9225a',
+      logIndex: 42
+    }, ......................
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getLogs` method using the code sandbox below:
+
+# Use Cases
+
+Here are some possible use cases for the `getLogs` method:
+
+* **Event tracking**: `getLogs` can be used to track specific events generated by smart contracts. This is useful for monitoring the state changes of a smart contract and taking action based on those changes.
+
+* **Analytics**: `getLogs` can be used to analyze smart contract data and generate reports or visualizations. For example, you could use `getLogs` to analyze the frequency and volume of trades on a decentralized exchange.
+
+* **Debugging**: `getLogs` can be used to debug smart contracts. If a smart contract is not behaving as expected, you can use `getLogs` to retrieve the events generated by the contract and identify where the issue is occurring.
+
+# Related Methods
+
+Here are the methods related to `getLogs`:
+
+* [getBlock -SDK](/reference/getblock-sdk): Returns the block from the network based on the provided block number or hash.

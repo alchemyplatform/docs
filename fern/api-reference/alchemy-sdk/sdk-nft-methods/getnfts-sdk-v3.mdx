@@ -1,0 +1,323 @@
+---
+title: "getNftsForOwner - SDK"
+description: "Get all NFTs for an owner."
+url: "https://docs.alchemy.com/reference/getnfts-sdk-v3"
+slug: "reference/getnfts-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Get all NFTs for an owner.
+
+This method returns the full NFTs in the contract. To get all NFTs without their associated metadata, use the `options` parameter by setting `omitMetadata` to `true` in the body of the request.
+
+# Parameters
+
+| Name      | Type     | Description                                     |
+| --------- | -------- | ----------------------------------------------- |
+| `owner`   | `string` | The address of the owner.                       |
+| `options` | `string` | The optional parameters to use for the request. |
+
+### `options` parameters
+
+| Parameter              | Type               | Description                                                                                                                                                                                                                                                                    |
+| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `contractAddresses?`   | `array of strings` | `Optional` list of contract addresses to filter the results by. Limit is 45.                                                                                                                                                                                                   |
+| `omitMetadata?`        | `boolean`          | `Optional` boolean flag to omit NFT metadata. Defaults to `false`. To return the response as shown in [OwnedBaseNftsResponse](#ownedbasenftsresponse-object-parameters), set this parameter to `true`.                                                                         |
+| `excludeFilters?`      | `string`           | `Optional` list of filters applied to the query. NFTs that match one or more of these filters are excluded from the response. Available options include: `SPAM`, `AIRDROPS`.                                                                                                   |
+| `includeFilters?`      | `string`           | `Optional` list of filters applied to the query. NFTs that match one or more of these filters are included in the response. Available options include: `SPAM`, `AIRDROPS`.                                                                                                     |
+| `pageSize?`            | `number`           | Sets the total number of NFTs to return in the response. Defaults to **100**. Maximum page size is **100**.                                                                                                                                                                    |
+| `tokenUriTimeoutInMs?` | `number`           | No set timeout by default - When metadata is requested, this parameter is the timeout (in milliseconds) for the website hosting the metadata to respond. If you want only to access the cache and not live to fetch any metadata for cache misses, then set this value to `0`. |
+| `orderBy?`             | `string`           | Order in which to return results. By default, results are ordered by contract address and token ID in lexicographic order. The available option is `TRANSFERTIME`.                                                                                                             |
+| `pageKey?`             | string             | Optional page key to use for pagination.                                                                                                                                                                                                                                       |
+
+# Response
+
+| Property                                              | Type     | Description                                  |
+| ----------------------------------------------------- | -------- | -------------------------------------------- |
+| `Promise<OwnedNftsResponse \| OwnedBaseNftsResponse>` | `object` | An object containing nfts owned by an owner. |
+
+## `OwnedNftsResponse` object properties
+
+| Property     | Type               | Description                                                                                                                                                                                                                               |
+| ------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ownedNfts`  | `array of objects` | The NFTs owned by the provided address.                                                                                                                                                                                                   |
+| `pageKey`    | `string`           | Pagination token that can be passed into another request to fetch the next NFTs. If there is no page key, there are no more NFTs to fetch.                                                                                                |
+| `totalCount` | `number`           | The total count of NFTs owned by the provided address.                                                                                                                                                                                    |
+| `validAt`    | `object`           | The `validAt` object contains the following information: 1. `blockNumber` - The block number the sale information is valid at. 2. `blockHash` - The block hash. Used to detect reorgs. 3. `blockTimestamp` - The timestamp for the block. |
+
+### `ownedNfts` properties
+
+| Property          | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | `object` | The NFT's underlying contract and relevant contract metadata. Parameters in the contract include: 1. `address`: `string` The address of the NFT contract. 2. `tokenType`: `object` The type of the token in the contract 3. `name`: `string` The name of the contract. 4. `symbol`: `string` The symbol of the contract. 5. `totalSupply?: string` The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts. 6. `openSeaMetadata: object` OpenSea's metadata for the contract. 7. `contractDeployer?: string` The address that deployed the NFT contract. 8. `deployedBlockNumber?: number`The block number the NFT contract deployed in. 9. `isSpam`: `boolean` Whether the NFT contract is marked as spam. 10. `spamClassifications`: `array` Potential reasons why an NFT Contract was classified as spam. |
+| `tokenId`         | `string` | The unique identifier of the token. This could be in hexadecimal or decimal format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `tokenType`       | `string` | The type of NFT, e.g.,`ERC721`, `ERC1155`, `UNKNOWN`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `description`     | `string` | The NFT description.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `timeLastUpdated` | `string` | When the NFT was last updated in the blockchain. Represented in `ISO-8601` format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `raw`             | `object` | The raw metadata for the NFT based on the metadata URI on the NFT contract. 1. `tokenUri?: string`: The raw token URI on the NFT contract. 2. `metadata: string`: The raw metadata parsed from the raw token URI. 3. `error?: string`: Error message if the raw metadata could not be fetched.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `tokenUri`        | `string` | URIs for accessing the NFT's metadata blob.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `image`           | `object` | Media URLs and information for the NFT. Parameters in this object include: 1. `cachedUrl: string`: URL of the image stored in Alchemy's cache. 2. `thumbnailUrl: string`: URL of a thumbnail-sized image. 3. `pngUrl: string`: URL of the image in `png` format. 4. `contentType: string`: The type of the media image.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `acquiredAt?`     | `object` | Time at which the user most recently acquired the NFT. Only available when specifying `orderBy: NftOrdering.TRANSFERTIME` in the request. 1. `blockTimestamp?: string`: Timestamp of the block at which an NFT was last acquired. 2. `blockNumber?: number`: Block number of the block at which an NFT was last acquired.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `collection`      | `object` | Collection metadata for the NFT, if available. Parameters include: 1. `name: string`: The name of the collection. 2. `slug?: string`: The OpenSea human-readable slug of the collection. 3. `externalUrl?: string`: The external URL for the collection. 4. `bannerImageUrl?: string`: The banner image URL for the collection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `balance`         | `string` | The token balance indicating how many units of this NFT the owner holds.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `mint`            | `object` | Mint information for the NFT. Parameters include: 1. `mintAddress?: string`: The address that the NFT was minted to. 2. `blockNumber?: number`: The block number that the NFT was minted on. 3. `timestamp?: string`: The timestamp the NFT was minted on. 4. `transactionHash?: string`: The transaction hash of the transaction that minted the NFT.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+## `OwnedBaseNftsResponse` object properties
+
+The `ownedBaseNfts` response object is returned when the `options` parameter `omitMetadata` is set to `true`.
+
+| Property     | Type               | Description                                                                                                                                                                                                                               |
+| ------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ownedNfts`  | `array of objects` | The NFTs owned by the provided address.                                                                                                                                                                                                   |
+| `pageKey`    | `string`           | Pagination token that can be passed into another request to fetch the next NFTs. If there is no page key, there are no more NFTs to fetch.                                                                                                |
+| `totalCount` | `number`           | The total count of NFTs owned by the provided address.                                                                                                                                                                                    |
+| `validAt`    | `object`           | The `validAt` object contains the following information: 1. `blockNumber` - The block number the sale information is valid at. 2. `blockHash` - The block hash. Used to detect reorgs. 3. `blockTimestamp` - The timestamp for the block. |
+
+### `ownedNfts` properties
+
+| Property          | Type     | Description                                                                         |
+| ----------------- | -------- | ----------------------------------------------------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT.                                                    |
+| `tokenId`         | `string` | The unique identifier of the token. This could be in hexadecimal or decimal format. |
+| `balance`         | `string` | The token balance indicating how many units of this NFT the owner holds.            |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm i alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      let owner  = "vitalik.eth";
+      //Define the optional `options` parameters
+      let options = {
+        excludeFilters: "SPAM"
+      };
+      
+      //Call the method to get the nfts owned by this address
+      let response = await alchemy.nft.getNftsForOwner(owner, options);
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "ownedNfts": [
+          {
+              "contract": {
+                  "address": "0x000386E3F7559d9B6a2F5c46B4aD1A9587D59Dc3",
+                  "name": "Bored Ape Nike Club",
+                  "symbol": "BANC",
+                  "tokenType": "ERC721",
+                  "contractDeployer": "0x51D7D428041E23ef51422e110dfEfF906e821CFe",
+                  "deployedBlockNumber": 14276343,
+                  "openSeaMetadata": {
+                      "collectionName": "BoredApeNikeClub",
+                      "collectionSlug": "bored-ape-nike-club-v2",
+                      "safelistRequestStatus": "not_requested",
+                      "imageUrl": "https://i.seadn.io/gae/yJ9DgXqjRwgdCkrQmHj7krCbixM8fPVAyYJWJ5NHXap1L0c3QL5MPvrNT0QDINIStGOK857lOvab8MpNQS9X4pkHPktmhVmN82qoVw?w=500&auto=format",
+                      "description": "COUNTDOWN OVER. MINTING LIVE.\n\n[Mint on the website.](https://nikemetaverse.xyz)\n",
+                      "externalUrl": "https://nikemetaverse.xyz",
+                      "bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format",
+                      "lastIngestedAt": "2023-09-11T13:59:53.000Z"
+                  },
+                  "isSpam": true,
+                  "spamClassifications": [
+                      "OwnedByMostHoneyPots",
+                      "Erc721TooManyOwners",
+                      "Erc721TooManyTokens",
+                      "NoSalesActivity",
+                      "HighAirdropPercent",
+                      "HighHoneyPotPercent",
+                      "HoneyPotsOwnMultipleTokens"
+                  ]
+              },
+              "tokenId": "1",
+              "tokenType": "ERC721",
+              "tokenUri": "http://api.nikeapenft.xyz/ipfs/1",
+              "image": {},
+              "raw": {
+                  "tokenUri": "http://api.nikeapenft.xyz/ipfs/1",
+                  "metadata": {}
+              },
+              "collection": {
+                  "name": "BoredApeNikeClub",
+                  "slug": "bored-ape-nike-club-v2",
+                  "externalUrl": "https://nikemetaverse.xyz",
+                  "bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format"
+              },
+              "mint": {},
+              "timeLastUpdated": "2023-09-20T12:18:35.890Z",
+              "balance": "26",
+              "acquiredAt": {}
+          },
+          {
+              "contract": {
+                  "address": "0x000386E3F7559d9B6a2F5c46B4aD1A9587D59Dc3",
+                  "name": "Bored Ape Nike Club",
+                  "symbol": "BANC",
+                  "tokenType": "ERC721",
+                  "contractDeployer": "0x51D7D428041E23ef51422e110dfEfF906e821CFe",
+                  "deployedBlockNumber": 14276343,
+                  "openSeaMetadata": {
+                      "collectionName": "BoredApeNikeClub",
+                      "collectionSlug": "bored-ape-nike-club-v2",
+                      "safelistRequestStatus": "not_requested",
+                      "imageUrl": "https://i.seadn.io/gae/yJ9DgXqjRwgdCkrQmHj7krCbixM8fPVAyYJWJ5NHXap1L0c3QL5MPvrNT0QDINIStGOK857lOvab8MpNQS9X4pkHPktmhVmN82qoVw?w=500&auto=format",
+                      "description": "COUNTDOWN OVER. MINTING LIVE.\n\n[Mint on the website.](https://nikemetaverse.xyz)\n",
+                      "externalUrl": "https://nikemetaverse.xyz",
+                      "bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format",
+                      "lastIngestedAt": "2023-09-11T13:59:53.000Z"
+                  },
+                  "isSpam": true,
+                  "spamClassifications": [
+                      "OwnedByMostHoneyPots",
+                      "Erc721TooManyOwners",
+                      "Erc721TooManyTokens",
+                      "NoSalesActivity",
+                      "HighAirdropPercent",
+                      "HighHoneyPotPercent",
+                      "HoneyPotsOwnMultipleTokens"
+                  ]
+              },
+              "tokenId": "2",
+              "tokenType": "ERC721",
+              "tokenUri": "http://api.nikeapenft.xyz/ipfs/2",
+              "image": {},
+              "raw": {
+                  "tokenUri": "http://api.nikeapenft.xyz/ipfs/2",
+                  "metadata": {},
+                  "error": "Contract returned a broken token uri"
+              },
+              "collection": {
+                  "name": "BoredApeNikeClub",
+                  "slug": "bored-ape-nike-club-v2",
+                  "externalUrl": "https://nikemetaverse.xyz",
+                  "bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format"
+              },
+              "mint": {},
+              "timeLastUpdated": "2023-09-20T13:13:54.798Z",
+              "balance": "31",
+              "acquiredAt": {}
+          },
+          {
+              "contract": {
+                  "address": "0x000386E3F7559d9B6a2F5c46B4aD1A9587D59Dc3",
+                  "name": "Bored Ape Nike Club",
+                  "symbol": "BANC",
+                  "tokenType": "ERC721",
+                  "contractDeployer": "0x51D7D428041E23ef51422e110dfEfF906e821CFe",
+                  "deployedBlockNumber": 14276343,
+                  "openSeaMetadata": {
+                      "collectionName": "BoredApeNikeClub",
+                      "collectionSlug": "bored-ape-nike-club-v2",
+                      "safelistRequestStatus": "not_requested",
+                      "imageUrl": "https://i.seadn.io/gae/yJ9DgXqjRwgdCkrQmHj7krCbixM8fPVAyYJWJ5NHXap1L0c3QL5MPvrNT0QDINIStGOK857lOvab8MpNQS9X4pkHPktmhVmN82qoVw?w=500&auto=format",
+                      "description": "COUNTDOWN OVER. MINTING LIVE.\n\n[Mint on the website.](https://nikemetaverse.xyz)\n",
+                      "externalUrl": "https://nikemetaverse.xyz",
+                      "bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format",
+                      "lastIngestedAt": "2023-09-11T13:59:53.000Z"
+                  },
+                  "isSpam": true,
+                  "spamClassifications": [
+                      "OwnedByMostHoneyPots",
+                      "Erc721TooManyOwners",
+                      "Erc721TooManyTokens",
+                      "NoSalesActivity",
+                      "HighAirdropPercent",
+                      "HighHoneyPotPercent",
+                      "HoneyPotsOwnMultipleTokens"
+                  ]
+              },
+              "tokenId": "2",
+              "tokenType": "ERC721",
+              "tokenUri": "http://api.nikeapenft.xyz/ipfs/2",
+              "image": {},
+              "raw": {
+                  "tokenUri": "http://api.nikeapenft.xyz/ipfs/2",
+                  "metadata": {}
+              },
+              "collection": {
+                  "name": "BoredApeNikeClub",
+                  "slug": "bored-ape-nike-club-v2",
+                  "externalUrl": "https://nikemetaverse.xyz",
+                  "bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format"
+              },
+              "mint": {},
+              "timeLastUpdated": "2023-09-18T11:02:14.698Z",
+              "balance": "31",
+              "acquiredAt": {}
+          },
+        ],
+      "pageKey": "MHgwMDcwM2Y5YjExZjJhYzAyZDM5MWExMWU3Yjk3YzZlZTgwY2Q4NTYzOjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNTpmYWxzZQ==",
+      "totalCount": 26585,
+      "validAt": {
+          "blockNumber": 18162406,
+          "blockHash": "0x670957987df0a8d0838a05a25d8a1945fbeea24f547a4e59e748c42a12d7cfce",
+          "blockTimestamp": "2023-09-18T11:02:47Z"
+      }
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getNftsForOwner` method using the code sandbox below:
+
+# Use Cases
+
+The `getNftsForOwner` method can be used to retrieve information about non-fungible tokens (NFTs) owned by a specific address. Some possible use cases for this method include:
+
+* **Displaying NFTs owned by a user**: DApps or marketplaces that display a user's NFT collection can use the `getNftsForOwner` method to retrieve information about the NFTs owned by a specific address. This can be useful for providing a customized view of a user's NFTs and allowing them to manage their collection easily.
+
+* **Tracking NFT ownership**: The `getNftsForOwner` method can be used to track the ownership of specific NFTs over time. This can be useful for tracking the ownership history of rare or valuable NFTs and verifying the authenticity of ownership claims.
+
+* **Verifying ownership in a smart contract**: Smart contracts that require ownership of specific NFTs as a condition for executing certain functions can use the `getNftsForOwner` method to verify that a user owns the required NFTs.
+
+# Related Methods
+
+Here are the methods related to `getNftsForOwner`:
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

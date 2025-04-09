@@ -1,0 +1,221 @@
+---
+title: "getContractsForOwner - SDK"
+description: "Gets all NFT contracts held by the specified owner address."
+url: "https://docs.alchemy.com/reference/getcontractsforowner-sdk-v3"
+slug: "reference/getcontractsforowner-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Gets all NFT contracts held by the specified owner address.
+
+# Parameters
+
+| Name      | Type     | Description                                     |
+| --------- | -------- | ----------------------------------------------- |
+| `owner`   | `string` | Address for NFT owner (can be in ENS format!).  |
+| `options` | `string` | The optional parameters to use for the request. |
+
+### `options` parameters
+
+| Parameter         | Type     | Description                                                                                                                                                                  |
+| ----------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `excludeFilters?` | `string` | `Optional` list of filters applied to the query. NFTs that match one or more of these filters are excluded from the response. Available options include: `SPAM`, `AIRDROPS`. |
+| `includeFilters?` | `string` | `Optional` list of filters applied to the query. NFTs that match one or more of these filters are included in the response. Available options include: `SPAM`, `AIRDROPS`.   |
+| `pageSize?`       | `number` | Sets the total number of NFTs to return in the response. Defaults to **100**. Maximum page size is **100**.                                                                  |
+| `orderBy?`        | `string` | Order in which to return results. By default, results are ordered by contract address and token ID in lexicographic order. The available option is `TRANSFERTIME`.           |
+| `pageKey?`        | string   | Optional page key to use for pagination.                                                                                                                                     |
+
+# Response
+
+| Property                                | Type     | Description                                  |
+| --------------------------------------- | -------- | -------------------------------------------- |
+| `Promise<GetContractsForOwnerResponse>` | `object` | An object containing nfts owned by an owner. |
+
+## `GetContractsForOwnerResponse` object properties
+
+| Property     | Type               | Description                                                                                                                                |
+| ------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `contracts`  | `array of objects` | The list of contracts that match the query held by the given address.                                                                      |
+| `pageKey?`   | `string`           | Pagination token that can be passed into another request to fetch the next NFTs. If there is no page key, there are no more NFTs to fetch. |
+| `totalCount` | `number`           | The total count of NFT contracts owned by the provided address.                                                                            |
+
+### `contracts` properties
+
+| Property                 | Type      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tokenType`              | `string`  | The type of the token in the contract. Available options are: `ERC721` = "ERC721", `ERC1155` = "ERC1155", `UNKNOWN` = "UNKNOWN"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `address`                | `string`  | The address of the NFT contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `name`                   | `string`  | The name of the contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `symbol`                 | `string`  | The symbol of the contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `totalSupply`            | `string`  | The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `openSeaMetadata`        | `object`  | OpenSea's metadata for the contract. Parameters include: 1. `floorPrice?: number`: The floor price of the collection. 2. `collectionName?: string`: The name of the collection on OpenSea. 3. `safelistRequestStatus?: string`: The approval status of the collection on OpenSea. 4. `imageUrl?: string`: The image URL determined by OpenSea. 5. `description?: string`: The description of the collection on OpenSea. 6. `externalUrl?: string`: The homepage of the collection as determined by OpenSea. 7. `twitterUsername?: string`: The Twitter handle of the collection. 8. `discordUrl?: string`: The Discord URL of the collection. 9. ` lastIngestedAt: string`: Timestamp of when Alchemy last ingested the OpenSea metadata. |
+| `contractDeployer`       | `string`  | The address that deployed the NFT contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `deployedBlockNumber`    | `number`  | The block number the NFT contract deployed in.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `totalBalance`           | `string`  | The sum of NFT balances across all token IDs held by the owner. This will be equal to the `numDistinctTokensOwned` for non-fungible tokens, but it may be higher if the user holds some fungible ERC1155 tokens.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `numDistinctTokensOwned` | `string`  | Number of distinct token IDs held by the owner. For non-fungible tokens, this will be equal to the `totalBalance`, but it may be lower if the user holds some fungible ERC1155 tokens.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `isSpam`                 | `boolean` | Whether the NFT contract is considered spam.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `displayNft`             | `object`  | Object containing an NFT owned by the owner for this particular contract. Use this to display a sample NFT for the contract. It contains: 1. `tokenId`: A token id of an NFT owned by the owner on the contract. 2. `name?`: The name of the NFT, if available.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `image`                  | `object`  | Object containing different URLs for the NFT media. 1. `cachedUrl: string`: URL of the image stored in Alchemy's cache. 2. `thumbnailUrl: string`: URL of a thumbnail-sized image. 3. `pngUrl: string`: URL of the image in `png` format. 4. `contentType: string`: The type of the media image.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm i alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+
+      const owner = "vitalik.eth"
+
+      //Call the method
+      const response = await alchemy.nft.getContractsForOwner(owner)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "contracts": [
+          {
+              "address": "0x000386E3F7559d9B6a2F5c46B4aD1A9587D59Dc3",
+              "name": "Bored Ape Nike Club",
+              "symbol": "BANC",
+              "tokenType": "ERC721",
+              "contractDeployer": "0x51D7D428041E23ef51422e110dfEfF906e821CFe",
+              "deployedBlockNumber": 14276343,
+              "openSeaMetadata": {
+                  "collectionName": "BoredApeNikeClub",
+                  "collectionSlug": "bored-ape-nike-club-v2",
+                  "safelistRequestStatus": "not_requested",
+                  "imageUrl": "https://i.seadn.io/gae/yJ9DgXqjRwgdCkrQmHj7krCbixM8fPVAyYJWJ5NHXap1L0c3QL5MPvrNT0QDINIStGOK857lOvab8MpNQS9X4pkHPktmhVmN82qoVw?w=500&auto=format",
+                  "description": "COUNTDOWN OVER. MINTING LIVE.\n\n[Mint on the website.](https://nikemetaverse.xyz)\n",
+                  "externalUrl": "https://nikemetaverse.xyz",
+                  "bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format",
+                  "lastIngestedAt": "2023-09-21T15:28:51.000Z"
+              },
+              "totalBalance": "912",
+              "numDistinctTokensOwned": "80",
+              "isSpam": true,
+              "displayNft": {
+                  "tokenId": "1"
+              },
+              "image": {}
+          },
+          {
+              "address": "0x0015F391949f25c3211063104aD4AFC99210f85c",
+              "name": "BAYC Otherside Land",
+              "symbol": "BAYC",
+              "totalSupply": "24",
+              "tokenType": "ERC721",
+              "contractDeployer": "0x4B7A67800712472F5f4a5f580c3B99345DF1CeD6",
+              "deployedBlockNumber": 14669988,
+              "openSeaMetadata": {
+                  "collectionName": "BAYC Otherside Land V3",
+                  "collectionSlug": "bayc-otherside-land-v3-7",
+                  "safelistRequestStatus": "not_requested",
+                  "imageUrl": "https://i.seadn.io/gae/aR91WTPUmY4QBkle9qBum5dfjfCyh9n8zgYWyMAFJ-3vUUdquzasMpYyl2Jr6elxhZlPuI1gzthut99h0Z33F_k-xqev_jGldV7X?w=500&auto=format",
+                  "description": "[Mint on the website](https://baycofficial.xyz)\n\nBAYC Otherside Land is an open world that enables users to build 3D immersive applications on top of several blockchains. In BAYC Otherside Land, users can take advantage of traditional 3D open-world features such as building 3D architectures, hosting virtual meetings, exhibiting NFTs, and more advanced functionality.Details on Twitter @BoredApeYC or PUBLIC MINT NOW LIVE!\n",
+                  "externalUrl": "https://baycofficial.xyz",
+                  "bannerImageUrl": "https://i.seadn.io/gae/buhkgp9EPv2YoCeB9k1XWMX7hkBbkpIFkwOdveTZPsVOuKiANbDBwjvAxSpvxhbh5NxU0Kkjje-3VVWk36z-f4Z5rlmAHZXMeisu?w=500&auto=format",
+                  "lastIngestedAt": "2023-09-21T21:07:17.000Z"
+              },
+              "totalBalance": "17",
+              "numDistinctTokensOwned": "6",
+              "isSpam": true,
+              "displayNft": {
+                  "tokenId": "2"
+              },
+              "image": {}
+          },
+          {
+              "address": "0x0dA763DFc24764275E56D9011A01186fbacF2edf",
+              "name": "VeeCon",
+              "symbol": "VC",
+              "totalSupply": "8",
+              "tokenType": "ERC721",
+              "contractDeployer": "0xDce675fCcE9Cb500B62f69464fE10f2999d77A50",
+              "deployedBlockNumber": 14530344,
+              "openSeaMetadata": {
+                  "collectionName": "Vee Con Tickets Official",
+                  "collectionSlug": "veecontickets-2022",
+                  "safelistRequestStatus": "not_requested",
+                  "imageUrl": "https://i.seadn.io/gae/wPIhTZGy2aMY3rHL6eUUvSansxQqTZwsbnD2Dt7AoW2YQZH-iwiue3Xt6YbO005Z_vwCzyKyVhmHBZ8C4KYttgjmzEpTRc6sAQLWag?w=500&auto=format",
+                  "description": "[Mint on the website](https://veecontickets.xyz)\n\nVeeCon 2022 is a multi-day superconference where only VeeCon NFT ticket holders will experience an extraordinary lineup of content including iconic keynote speeches; innovative and educational talks, panels and Q&A sessions; and many collaborative experiences",
+                  "externalUrl": "https://veecontickets.xyz",
+                  "bannerImageUrl": "https://i.seadn.io/gae/zjaIJ85YSsyeO88fFOegjzeh3lfG8Z0zNYjvjDGrRGpdTyEUw3upA7ZrdRTHbwWu7XVQPheZMOObLKrMWV0mQdbjhZeXiddyKnwLD9E?w=500&auto=format",
+                  "lastIngestedAt": "2023-09-19T03:10:31.000Z"
+              },
+              "totalBalance": "10",
+              "numDistinctTokensOwned": "6",
+              "isSpam": true,
+              "displayNft": {
+                  "tokenId": "18"
+              },
+              "image": {}
+          }
+      ],
+      "pageKey": "75db8160-ea3f-4cb0-9bc4-4663f6a804af",
+      "totalCount": 2207
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getContractsForOwner` method using the code sandbox below:
+
+# Use Cases
+
+Some possible use cases for this method include:
+
+* **Displaying NFT contracts owned by a user**: DApps or marketplaces that display a user's NFT collection can use the `getContractsForOwner` method to retrieve information about the NFTs owned by a specific address. This can be useful for providing a customized view of a user's NFTs and allowing them to manage their collection easily.
+
+* **Verifying ownership in a smart contract**: Smart contracts that require ownership of specific NFTs as a condition for executing certain functions can use the `getContractsForOwner` method to verify that a user owns the required NFTs.
+
+# Related Methods
+
+Here are the methods related to `getContractsForOwner`:
+
+* [getOwnersForContract](/reference/getownersforcontract-sdk): Get the NFTs for a owner.

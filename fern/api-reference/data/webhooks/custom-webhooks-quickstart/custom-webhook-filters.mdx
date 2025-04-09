@@ -1,0 +1,297 @@
+---
+title: "Custom Webhook Filters"
+description: "Understand what filters are available for Custom Webhooks and how to use them"
+url: "https://docs.alchemy.com/reference/custom-webhook-filters"
+slug: "reference/custom-webhook-filters"
+---
+
+
+Alchemy's Custom Webhooks allow you to access any on-chain activity while also precisely defining filters to control your data pipelines. With Alchemy's filters, you are able to set up logic for when you want blockchain data, whether that's for token movement, transactions of interest, or full blocks of data! Additionally, they allow you to easily filter down the data to exactly what you need, saving you on data ingestion costs and reducing infrastructure overhead.
+
+To get started with the filters head over to the [Custom Webhook playground](https://dashboard.alchemy.com/notify) and test them out!
+
+Alchemy's Custom Webhooks currently feature filters on 3 types of on-chain data:
+
+* Events/Logs
+* External Transactions
+* Internal Transactions (Debug trace calls)
+
+## Event/Log Filters
+
+Custom Webhook log/event filters leverage the same semantics as a traditional *eth\_getLogs* RPC call. In particular, we maintain the 2 key fields that *eth\_getLogs* accepts to query for events of interest: an `address` field and a `topics` field
+
+In particular, Custom Webhook log GraphQL objects accept a *BlockLogsFilterCriteria* filter which is comprised of the following objects:
+
+* `addresses: [Address!]` Addresses accepts an array of strings which map to either a single contract address or a list of addresses from which logs should originate. If this list is empty, results will not be filtered by address.
+* `topics: [[Bytes32!]!]` Array of 32 Bytes DATA topics (**up to 4 topics allowed per address**). Topics are order-dependent. Each topic can also be an array of DATA with "or" options.
+
+If you're not familiar with how topic filters work for *eth\_getLogs*, here's [an article](/docs/deep-dive-into-eth_getlogs) to get you up to speed.
+
+<Info>
+  A transaction with topics will be matched by the following topic filters:
+</Info>
+
+### Specifying Addresses within Custom Webhook Event Filters
+
+Let's investigate an example log filter together! In this snippet, we only define a single address of interest, the Bored Ape NFT contract `0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D`. In this example, we set our filter so that we return logs/events only associated with the Bored Ape NFT contract.
+
+```
+# Get all logs emitted by the Bored Ape NFT contract in block 0x4a4d98f90439daaf082642dfbdd0f7b9a36749484582fb3d3e03bd4583da337a
+
+{
+  block(hash: "0x4a4d98f90439daaf082642dfbdd0f7b9a36749484582fb3d3e03bd4583da337a") {
+    logs(filter: {addresses: ["0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"], topics: []}) {
+      topics
+      data
+    }
+  }
+}
+  
+```
+
+<Info>
+  In the case where we would want apply the same filter across a list of contracts, we could simply add more addresses to the address list part of filter!
+</Info>
+
+### Specifying Topics within Custom Webhook Event Filters
+
+Let's investigate an example topc filter together! In this snippet, we only define a single topic of interest, the *transfer* event with a kek hash of `0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef`. In this example, we set our filter so that we return logs/events only associated with the transfer event
+
+```
+# Get all logs associated with a transfer event  in block 0x4a4d98f90439daaf082642dfbdd0f7b9a36749484582fb3d3e03bd4583da337a
+
+{
+  block(hash: "0x4a4d98f90439daaf082642dfbdd0f7b9a36749484582fb3d3e03bd4583da337a") {
+    logs(filter: {addresses: [], topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]}) {
+      topics
+      data
+    }
+  }
+}
+  
+```
+
+## External Transaction Filters
+
+Custom Webhook external transaction filters allow developers to filter on the `to` and `from` addresses associated with each external transaction!
+
+<Info>
+  An external transaction refers to a transaction that is initiated by an external account on the Ethereum network. It involves sending a request to modify the state of the Ethereum blockchain, such as transferring Ether (the native cryptocurrency of Ethereum) or interacting with a smart contract.
+</Info>
+
+In particular, Custom Webhook log GraphQL objects accept a *BlockTransactionsFilterCriteria* filter which is comprised of the following fields!
+
+* `from: [Address!]` The sending party of a transaction
+* `to: [Address!]` The receiving party of a transaction
+
+A transaction from the *BlockTransactionsFilterCriteria* will match if it has a `from` address that is in the list of `from` addresses AND a `to` address that is in the list of `to` addresses provided. Missing or empty lists will be treated as wildcards and will return a match.
+
+### Specifying `from` addresses within Custom Webhook Transaction Filters
+
+Let's investigate an example transaction filter together! In this snippet, we only define a single `from` address of interest `0xc83dad6e38BF7F2d79f2a51dd3C4bE3f530965D6` so that Alchemy sends out webhook emissions only associated with `0xc83dad6e38BF7F2d79f2a51dd3C4bE3f530965D6`
+
+```
+# Filter for transactions originating from 0xc83dad6e38BF7F2d79f2a51dd3C4bE3f530965D6
+{
+  block(hash: "0x49c8fd41516ed8d8ba871c0dadaddb0928d7d03d4de569b2537343080f48c618") {
+    hash
+    number
+    timestamp
+    transactions(filter:
+      {addresses: [
+				{from: ["0xc83dad6e38BF7F2d79f2a51dd3C4bE3f530965D6"]}
+      ]}
+    ) {
+      from {
+        address
+      },
+      to {
+        address
+      }
+      hash,
+      value
+      gas
+      status
+    }
+  }
+}
+```
+
+### Specifying `to` within Custom Webhook Transaction Filters
+
+Let's investigate an example transaction filter together! In this snippet, we only define a single `to` address `0x388C818CA8B9251b393131C08a736A67ccB19297` of interest so that Alchemy sends out webhook emissions only associated with transactions sent to `0x388C818CA8B9251b393131C08a736A67ccB19297`
+
+```
+# Filter for transactions sent to 0x388C818CA8B9251b393131C08a736A67ccB19297
+{
+  block(hash: "0x49c8fd41516ed8d8ba871c0dadaddb0928d7d03d4de569b2537343080f48c618") {
+    hash
+    number
+    timestamp
+    transactions(filter:
+      {addresses: [
+				{to: ["0x388C818CA8B9251b393131C08a736A67ccB19297"]}
+      ]}
+    ) {
+      from {
+        address
+      },
+      to {
+        address
+      }
+      hash,
+      value
+      gas
+      status
+      }
+    }
+  }
+```
+
+### Specifying `from` & `to` within Custom Webhook Transaction Filters
+
+Let's investigate an example transaction filter together! In this snippet, we only define a single `to` address `0xeb83e695adcac2e83f290d2d2815fc58e6491d7a` and a `from` address `0x29469395eaf6f95920e59f858042f0e28d98a20b` so that Alchemy sends out webhook emissions only associated with that `from` and `to` configuration.
+
+```
+{
+  block(hash: "0x49c8fd41516ed8d8ba871c0dadaddb0928d7d03d4de569b2537343080f48c618") {
+    hash
+    number
+    timestamp
+    transactions(filter:
+      {addresses: [
+        {from: ["0xeb83e695adcac2e83f290d2d2815fc58e6491d7a"]},
+				{to: ["0x29469395eaf6f95920e59f858042f0e28d98a20b"]}
+      ]}
+    ) {
+      from {
+        address
+      },
+      to {
+        address
+      }
+      hash,
+      value
+      gas
+      status
+      }
+    }
+  }
+```
+
+## Internal Transaction (Debug trace calls) Filters (BETA)
+
+<Info>
+  An internal transaction refers to a transaction that is triggered as a result of the execution of a smart contract. Unlike external transactions that are initiated by external accounts, internal transactions occur within the context of a specific smart contract and are not directly initiated by external users or applications.
+</Info>
+
+Similar to external transactions, Custom Webhook log GraphQL objects accept a *BlockCallTracesFilterCriteria* filter which is comprised of the following fields!
+
+* `from: [Address!]` The sending party of a transaction
+* `to: [Address!]` The receiving party of a transaction
+
+A transaction from the *BlockCallTracesFilterCriteria* will match if it has a `from` address that is in the list of `from` addresses AND a `to` address that is in the list of `to` addresses provided. Missing or empty lists will be treated as wildcards and will return a match.
+
+### Specifying `from` addresses within Custom Webhook Internal Transaction Filters
+
+```
+# Filter for internal transactions originating from 0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1
+{
+  block {
+    number
+    callTracerTraces (filter: 
+		 {addresses: [
+        {from: ["0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1"], to: []}
+      ]}
+    ){
+      from {
+        address
+      }
+      to {
+        address
+      }
+      type
+      input
+      output
+      value
+      gas
+      gasUsed
+      input
+      output
+      error
+      revertReason
+      subtraceCount
+      traceAddressPath
+    }
+  }
+}
+```
+
+### Specifying `to` addresses within Custom Webhook Internal Transaction Filters
+
+```
+# Filter for internal transactions going to  0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1
+{
+  block {
+    number
+    callTracerTraces (filter: 
+		 {addresses: [
+        {from: [], to: ["0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1"]}
+      ]}
+    ){
+      from {
+        address
+      }
+      to {
+        address
+      }
+      type
+      input
+      output
+      value
+      gas
+      gasUsed
+      input
+      output
+      error
+      revertReason
+      subtraceCount
+      traceAddressPath
+    }
+  }
+}
+```
+
+### Specifying `from` & `to` within Custom Webhook Internal Transaction Filters
+
+```
+{
+  block {
+    number
+    callTracerTraces (filter: 
+		 {addresses: [
+        {from: ["0x29469395eaf6f95920e59f858042f0e28d98a20b"], to: ["0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1"]}
+      ]}
+    ){
+      from {
+        address
+      }
+      to {
+        address
+      }
+      type
+      input
+      output
+      value
+      gas
+      gasUsed
+      input
+      output
+      error
+      revertReason
+      subtraceCount
+      traceAddressPath
+    }
+  }
+}
+```

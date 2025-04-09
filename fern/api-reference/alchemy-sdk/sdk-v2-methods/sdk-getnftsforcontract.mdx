@@ -1,0 +1,247 @@
+---
+title: "getNftsForContract - SDK"
+description: "Get all NFTs for a given contract address. This method returns the full NFTs in the contract. To get all NFTs without their associated metadata, use the options parameter."
+url: "https://docs.alchemy.com/reference/sdk-getnftsforcontract"
+slug: "reference/sdk-getnftsforcontract"
+---
+
+Get all NFTs for a given contract address.
+
+This method returns the full NFTs in the contract. To get all NFTs without their associated metadata, use the `options` parameter.
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Get all NFTs for a given contract address.
+
+This method returns the full NFTs in the contract. To get all NFTs without their associated metadata, use the `options` parameter.
+
+# Parameters
+
+| Name              | Type     | Description                               |
+| ----------------- | -------- | ----------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT contract. |
+| `options`         | `object` | The parameters to use for the request.    |
+
+#### `options` paramters
+
+| Property              | Type      | Description                                                                                                                                                                                                                                                                |
+| --------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pageKey?`            | `string`  | Optional page key from an existing `OwnedBaseNftsResponse` or `OwnedNftsResponse` to use for pagination.                                                                                                                                                                   |
+| `pageSize`            | `number`  | Sets the total number of NFTs to return in the response. Defaults to 100. Maximum page size is **100**.                                                                                                                                                                    |
+| `omniMetadata`        | `boolean` | `Optional` boolean flag to omit NFT metadata. Defaults to `false`.                                                                                                                                                                                                         |
+| `tokenUriTimeoutInMs` | `number`  | No set timeout by default - When metadata is requested, this parameter is the timeout (in milliseconds) for the website hosting the metadata to respond. If you want to only access the cache and not live fetch any metadata for cache misses then set this value to `0`. |
+
+# Response
+
+| Property                           | Type     | Description               |
+| ---------------------------------- | -------- | ------------------------- |
+| `Promise<NftContractNftsResponse>` | `object` | The NFTs for the contract |
+
+### `NftContractNftsResponse` object parameters
+
+| Property  | Type               | Description                                                                                                                                     |
+| --------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nfts`    | `array of strings` | An array of NFTs with metadata.                                                                                                                 |
+| `pageKey` | `string`           | Pagination token that can be passed into another request to fetch the next NFTs. If there is no page key, then there are no more NFTs to fetch. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address whose NFTs you want to fetch
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      //Call the method to fetch metadata
+      const response = await alchemy.nft.getNftsForContract(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    [
+     {
+        contract: [Object],
+        tokenId: '345',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #345',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:14.728Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '346',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #346',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:15.998Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '347',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #347',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:17.183Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '348',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #348',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:19.944Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '349',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #349',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:21.174Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '350',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #350',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:22.455Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '351',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #351',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:23.755Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '352',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #352',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-12T22:59:29.229Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      },
+      {
+        contract: [Object],
+        tokenId: '353',
+        tokenType: 'ERC1155',
+        title: 'Undead Warrior #353',
+        description: 'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.',
+        timeLastUpdated: '2023-02-04T14:55:26.213Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined
+      }
+    ],
+    pageKey: '0x0162'
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getNftsForContract` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getNftsForContract` method:
+
+* **NFT marketplace integration**: An NFT marketplace could use the `getNftsForContract` method to display all the NFTs associated with a particular contract address. This would allow users to easily browse and search for NFTs on the marketplace.
+
+* **Portfolio tracking**: NFT collectors or investors could use the `getNftsForContract` method to track their NFT holdings associated with a specific contract address. This could be particularly useful for investors who are interested in tracking the performance of specific NFT projects or creators.
+
+* **Gaming applications**: Gaming applications that use NFTs could use the `getNftsForContract` method to retrieve all the NFTs associated with a particular game or game studio. This could help developers create more immersive gaming experiences and reward players with unique NFTs for their in-game achievements.
+
+# Related Methods
+
+* [getNftsForContractIterator](/reference/getnftsforcontractiterator-sdk): Fetches all NFTs for a given contract address and yields them in an async iterable.
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.
