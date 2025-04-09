@@ -1,0 +1,113 @@
+---
+title: "getBalance - SDK"
+description: "Returns the balance of a given address as of the provided block."
+url: "https://docs.alchemy.com/reference/getbalance-sdk-v3"
+slug: "reference/getbalance-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns the balance of a given address as of the provided block.
+
+# Parameters
+
+| Name            | Type     | Description                                                                                    |
+| --------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| `addressOrName` | `string` | The address or ENS name of the account to get the balance for.                                 |
+| `blockTag`      | `string` | The optional block number or hash to get the balance for. Defaults to `latest` if unspecified. |
+
+### `blockTag` parameters
+
+* `pending` - A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from local mempool. Intuitively, you can think of these as blocks that have not been mined yet.
+* `latest` - The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions.
+* `safe` - The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is “unlikely” to be re-orged.
+* `finalized `- The most recent crypto-economically secure block, that has been accepted by >2/3 of validators. Cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is very unlikely to be re-orged.
+* `earliest` - The lowest numbered block the client has available. Intuitively, you can think of this as the first block created.
+
+# Response
+
+| Property             | Type     | Description                                                                                                                                               |
+| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Promise<BigNumber>` | `object` | This is an estimate of the balance of gas. Properties returned in this object include: 1. `hex`: `string` This is the hex. 2. `type`: `string` BigNumber. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getBalance` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getbalance.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    	// This response fetches the balance of the given address in the paramter as of the provided block.
+      let response = await alchemy.core.getBalance("vitalik.eth", "latest")
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "type": "BigNumber",
+      "hex": "0x32a24830b63151ab54"
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getBalance` method using the code sandbox below:
+
+# Use Cases
+
+Here are some common use cases for the `getBalance` method:
+
+* **Retrieve balance**: One of the most common use cases for `getBalance` is to retrieve the balance of a particular address on the blockchain.
+
+* **Payment verification**: `getBalance` can also be used to verify that a payment has been made or received.
+
+# Related Methods
+
+Here are the methods related to `getBalance`:
+
+* [getAssetTransfers](/reference/getassettransfers-sdk): Get transactions for specific addresses.

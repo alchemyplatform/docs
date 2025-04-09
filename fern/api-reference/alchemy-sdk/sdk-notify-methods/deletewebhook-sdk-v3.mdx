@@ -1,0 +1,99 @@
+---
+title: "deleteWebhook - SDK"
+description: "Delete the provided webhook."
+url: "https://docs.alchemy.com/reference/deletewebhook-sdk-v3"
+slug: "reference/deletewebhook-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Delete the provided webhook.
+
+# Parameters
+
+| Name      | Type     | Description            |
+| --------- | -------- | ---------------------- |
+| `webhook` | `string` | The webhook to delete. |
+
+# Response
+
+| Property        | Type   | Description      |
+| --------------- | ------ | ---------------- |
+| `Promise<void>` | `void` | Returns nothing. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Setup: npm install alchemy-sdk
+  // Github: https://github.com/alchemyplatform/alchemy-sdk-js
+  import { Alchemy, Network, WebhookType } from "alchemy-sdk";
+
+  // authToken is required to use Notify APIs. Found on the top right corner of
+  // https://dashboard.alchemy.com/notify.
+  const settings = {
+    authToken: "your-notify-auth-token",
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  const minedTxWebhook = await alchemy.notify.createWebhook(
+    "https://webhook.site/your-webhook-url",
+    WebhookType.MINED_TRANSACTION,
+    { appId: "wq9fgv022aff81pg" }
+  );
+
+  //Perform deletion of Webhooks
+  const deleteViaWebhookID = await alchemy.notify.deleteWebhook("wh_qv16bt12wbj9kax4");
+  const deleteMinedTxWebhook = await alchemy.notify.deleteWebhook(minedTxWebhook);
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {}
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `deleteWebhook` method:
+
+* **Updating webhook settings**: If you need to update the URL or other settings of a webhook, you can delete the existing webhook using the`deleteWebhook` method and then create a new one with the updated settings using `createWebhook`.
+
+* **Removing unused webhooks**: If you have created a webhook that is no longer needed, you can delete it using `deleteWebhook` to clean up your API and reduce clutter.
+
+* **Resolving issues with a webhook**: If you are experiencing issues with a webhook, deleting it and creating a new one can help resolve the issue.
+
+* **Revoking access**: If you need to revoke access to your API for a particular webhook, you can delete it using `deleteWebhook`.
+
+# Related Methods
+
+* [createWebhook](/reference/createwebhook-sdk) - Create a new Webhook to track transactions sent by the app associated with the app id.
+* [updateWebhook](/reference/updatewebhook-sdk) - Update a webhook address.

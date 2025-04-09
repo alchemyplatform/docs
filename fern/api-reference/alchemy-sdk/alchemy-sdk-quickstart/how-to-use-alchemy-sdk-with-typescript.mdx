@@ -1,0 +1,153 @@
+---
+title: "How to use Alchemy SDK with Typescript"
+description: "Learn to build using the Alchemy SDK and TypeScript highlighting common errors."
+url: "https://docs.alchemy.com/reference/how-to-use-alchemy-sdk-with-typescript"
+slug: "reference/how-to-use-alchemy-sdk-with-typescript"
+---
+
+
+TypeScript, a popular programming language, extends all the capabilities of JavaScript with the additional features such as static types, object-oriented programming (OOP) and much more. Why does this matter?
+
+These additional features come into play when you’re looking to create a scalable dApp with the best readable code, follow Object-Oriented Programming guidelines or simply write more reliable code. Let’s jump into examples that can take you deeper into this topic.
+
+If you are building your TypeScript project using the Alchemy SDK, you might notice that the code snippets from our docs written in JavaScript output errors. Though the Alchemy SDK, similar to Ethers.js, provides various JavaScript and TypeScript similarities, you’ll need to make a few small changes to configure your code.
+
+In this tutorial, we show you the changes you need to make so that you can utilize the Alchemy SDK in TypeScript. This example will show you how to check for the transaction history of an address on the ETH Mainnet. The following code snippets will include external and ERC-721 token transfers using the Alchemy SDK.
+
+In this section, we dive into the tutorial How to Get Transaction History for an Address on Ethereum to demonstrate how the JavaScript code should be configured to be executed using TypeScript.
+
+The JavaScript code to get transaction history for an address on Ethereum looks like this:
+
+<CodeGroup>
+  ```javascript Alchemy-SDK
+  // Setup: npm install alchemy-sdk
+  import { Alchemy, Network } from "alchemy-sdk";
+
+  const config = {
+    apiKey: "<-- ALCHEMY APP API KEY -->",
+    network: Network.ETH_MAINNET,
+  };
+  const alchemy = new Alchemy(config);
+
+  const data = await alchemy.core.getAssetTransfers({
+    fromBlock: "0x0",
+    fromAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
+    category: ["external", "internal", "erc20", "erc721", "erc1155"],
+  });
+
+  console.log(data);
+  ```
+</CodeGroup>
+
+When you try to execute in a TypeScript file, here are example errors you may have received:
+
+<CodeGroup>
+  ```shell ERROR
+  Top-level 'await' expressions are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', or 'nodenext', and the 'target' option is set to 'es2017' or higher.
+  ```
+</CodeGroup>
+
+Or another error similar to this:
+
+<CodeGroup>
+  ```shell ERROR
+  error TS2769: No overload matches this call.
+    Overload 2 of 2, '(params: AssetTransfersParams): Promise<AssetTransfersResponse>', gave the following error.
+      Type '"external"' is not assignable to type 'AssetTransfersCategory'.
+    Overload 2 of 2, '(params: AssetTransfersParams): Promise<AssetTransfersResponse>', gave the following error.
+      Type '"internal"' is not assignable to type 'AssetTransfersCategory'.
+    Overload 2 of 2, '(params: AssetTransfersParams): Promise<AssetTransfersResponse>', gave the following error.
+      Type '"erc20"' is not assignable to type 'AssetTransfersCategory'.
+    Overload 2 of 2, '(params: AssetTransfersParams): Promise<AssetTransfersResponse>', gave the following error.
+      Type '"erc721"' is not assignable to type 'AssetTransfersCategory'.
+    Overload 2 of 2, '(params: AssetTransfersParams): Promise<AssetTransfersResponse>', gave the following error.
+      Type '"erc1155"' is not assignable to type 'AssetTransfersCategory'.
+  ```
+</CodeGroup>
+
+So what changes need to be made to make it compatible with TypeScript? Here are the two things to consider:
+
+Create an `async()` function: An asynchronous or async function is required alongside await to properly execute the Promise in TypeScript.
+
+Use the `AssetTransfersCategory` package: This package can be imported using the alchemy-sdk for Enumeration. Enums or Enumeration are data types representing constants supported in TypeScript. Unlike the JavaScript example that uses a raw string, TypeScript requires a typed Enum as the input since raw strings are not supported.
+
+JavaScript example requires raw string parameters:
+
+<CodeGroup>
+  ```shell shell
+  category: ["external", "internal", "erc20", "erc721", "erc1155"]
+  ```
+</CodeGroup>
+
+TypeScript example requires `AssetTransfersCategory` to be used instead of raw strings:
+
+<CodeGroup>
+  ```shell shell
+  category: [AssetTransfersCategory.EXTERNAL, AssetTransfersCategory.INTERNAL, AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155]
+  ```
+</CodeGroup>
+
+Getting started: This will require a prior installation of the alchemy-SDK. Add the following code to `main.ts`.
+
+1. Install the Alchemy-SDK using the terminal/command line.
+
+<CodeGroup>
+  ```javascript javascript
+  npm install alchemy-sdk
+  ```
+</CodeGroup>
+
+2. Import Alchemy, Network and AssetTransfersCategory using Alchemy-SDK.
+
+<CodeGroup>
+  ```javascript javascript
+  import { Alchemy, Network, AssetTransfersCategory } from "alchemy-sdk";
+  ```
+</CodeGroup>
+
+3. Optional Config object, but defaults to demo api-key and eth-mainnet.
+
+<CodeGroup>
+  ```javascript javascript
+  const config = {
+    apiKey: "demo", // Replace with your Alchemy API key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(config);
+  ```
+</CodeGroup>
+
+4. Define the transaction and specify the required details to read the transfer.
+
+<CodeGroup>
+  ```javascript javascript
+  const getTransfer = async () => {
+   const data = await alchemy.core.getAssetTransfers({
+     fromBlock: "0x0",
+     fromAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
+     category: [AssetTransfersCategory.EXTERNAL, AssetTransfersCategory.ERC1155],
+   });
+
+   console.log(data);
+  }
+
+  getTransfer();
+  ```
+</CodeGroup>
+
+5. Run this script by running the following command in your terminal:
+
+<CodeGroup>
+  ```javascript javascript
+  ts-node main.ts
+  ```
+</CodeGroup>
+
+## Additional enums
+
+**Are there more enums in the Alchemy SDK that should be used with TypeScript?** Yes!
+
+Here is a short list of enums exported in the Alchemy SDK ready to be used. Each link will direct you to Github highlighting more description for each.
+
+[Network](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/Network.md): The supported networks by Alchemy. [TokenBalanceType](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/TokenBalanceType.md): Token Types for the `getTokenBalances()` endpoint. [NftTokenType](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/NftTokenType.md): An enum for specifying the token type on NFTs. NftSpamClassification: Potential reasons why an NFT contract was classified as spam. [NftFilters](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/NftFilters.md): Enum of NFT filters that can be applied to a getNftsForOwner or a getContractsForOwner request. [NftOrdering](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/NftOrdering.md): Enum of ordering that can be applied to a getNftsForOwner or a getContractsForOwner response. [SortingOrder](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/SortingOrder.md): Enum for representing the supported sorting orders of the API. [NftSaleMarketplace](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/NftSaleMarketplace.md): Enum representing the supported NFT marketplaces by the getNftSales endpoint. [NftSaleTakerType](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/NftSaleTakerType.md): Enum for specifying the taker type for the getNftSales endpoint [RefreshState](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/RefreshState.md): The current state of the NFT contract refresh process. [OpenSeaSafelistRequestStatus](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/OpenSeaSafelistRequestStatus.md): An OpenSea collection's approval status. [AlchemySubscription](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/AlchemySubscription.md): This value is provided in the `method` field when creating an event filter on the Websocket Namespace. [WebhookVersion](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/WebhookVersion.md): The version of the webhook. All newly created webhooks default to V2. [WebhookType](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/WebhookType.md): The type of Webhook. [CommitmentLevel](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/CommitmentLevel.md): Commitment level of the target block with using methods in the DebugNamespace. [DebugTracerType](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/enums/DebugTracerType.md): The type of tracer to use when running debug methods in the DebugNamespace.

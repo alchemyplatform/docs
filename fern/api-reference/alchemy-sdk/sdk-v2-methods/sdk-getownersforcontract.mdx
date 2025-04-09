@@ -1,0 +1,166 @@
+---
+title: "getOwnersForContract - SDK"
+description: "Gets all the owners for a given NFT contract along with the token balance."
+url: "https://docs.alchemy.com/reference/sdk-getownersforcontract"
+slug: "reference/sdk-getownersforcontract"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Gets all the owners for a given NFT contract along with the token balance.
+
+# Parameters
+
+| Name              | Type     | Description                                 |
+| ----------------- | -------- | ------------------------------------------- |
+| `contractAddress` | `string` | The NFT contract to get the owners for.     |
+| `options`         | `object` | Optional parameters to use for the request. |
+
+### `options` paramters
+
+| Parameter           | Type      | Deescription                                                                                         |
+| ------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
+| `withTokenBalances` | `boolean` | Whether to include the token balances per token id for each owner. Defaults to `false` when omitted. |
+| `pageKey?`          | `string`  | `Optional` page key to paginate the next page for large requests.                                    |
+
+# Response
+
+| Property                                                                                         | Type     | Description                                    |
+| ------------------------------------------------------------------------------------------------ | -------- | ---------------------------------------------- |
+| `Promise<GetOwnersForContractResponse> / Promise<GetOwnersForContractWithTokenBalancesResponse>` | `object` | An object containing the owners of a contract. |
+
+### `GetOwnersForContractResponse` parameters
+
+| Property   | Type               | Description                                                                         |
+| ---------- | ------------------ | ----------------------------------------------------------------------------------- |
+| `owner`    | `array of strings` | An array of owner addresses for the provided contract address.                      |
+| `pageKey?` | `string`           | `Optional` Page key that is returned when a collection has more than 50,000 owners. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      //Call the method to fetch the owners for the contract
+      const response = await alchemy.nft.getOwnersForContract(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    owners: [
+      '0x001a61213d72f2f3c95ff743c80f472749ab8ad3',
+      '0x003a1acce28eb335f3ff1e93a5b09cd4b598ef62',
+      '0x00614efd868dabb5f92e15b0440d1f85ac0f9be1',
+      '0x006f48d6ed87efd9e0bc56cc7a8703d0455c2858',
+      '0x008b7903f1f0b825636739c7a3defb7eebc94f1d',
+      '0x008c79f10cbd14070b106b05d5fd494e084ee8a5',
+      '0x037fc3f7f58771cbcc4c32327814769fbf5a8f3f',
+      '0x038080b8bf89847ca926f9731695859d9c55a4c6',
+      '0x03ce01608bf011fdd2b5e81a5c72bb709474e58f',
+      '0x042b19ed48bb70b8e81ac4211a5c9e931a67c9ec',
+      '0x0453666dd9e1a17f8b38cea6d2b9189546263572',
+      '0x047781fd846091ad98efbe64113610d3336c28a7',
+      '0x048299c13f35f13cc465aa787e34e7b5730e037f',
+      '0x04a97c45d5606004231181a472849bcd4f42653a',
+      '0x04d518bb2ca20b5a44f7db207c097289cdb7073b',
+      '0x051c78b4dcbc271f2a5b96a4dd392cafbdf8b8e0',
+      '0x053b009f1a0839e73d041c45355182518fe2a39b',
+      '0x054dc6bde8cf7f912ee4659e2186375d624c1f69',
+      '0x0585363ba152d19b7fb72b889fb9a7cdb82087f1',
+      '0x058abdd94dfd4d20f12ee25acc05fcdb4378051c',
+      '0x05ad2d2a45961ba4e2eab0325f6977b5a2eca86d',
+      '0x05ad4be7fd4d68433df73b9e9a862b0c1e3bfe2b',
+      '0x05c3b4c3e551c20aea7c32dc6f914ab0c86746a0',
+      '0x05d25b0d23093b2b49185a8bf218a0baf9433d0b',
+      '0x05f98985d33976bd1a7d46e24e7ec66325366a2e',
+      '0x063d42b01090cd51783b73ed9fec16d8b4f87567',
+      '0x064823ec7b68ee7954d366c7f0fa5dceb18774ea',
+      '0x0653bff77a1874f9cbc9bb1ab421af0facc6a0e8',
+      '0x0abbd7ac101013d399e0bdb2fa51aef640713787',
+      '0x0ac12fdf2575f15e7c50a2696578534c0070c86d',
+      '0x0ad400e573165902d18c80c32eb8a288c656234f',
+      '0x0afcde756f48b71b590e75dfe5077b04ce547420',
+      '0x0b14d39408fac8e4402f1758ef9a5e6098fc5afe',
+      '0x0b221773b43c02381eddfbff3811a32868d24175',
+      '0x0b282b5b1c6a476d53035168a869cc8a8b6bcb23',
+      '0x0b384d3b3e27d2a12dfb2644e421b6ae16872a82',
+      '0x0b469c12c2d37192ea91a0c81c5f7839eed5ab79',
+      '0x0b4d4723c39bee4eb163ce6584044750c6c8428c',
+      '0x0b6b82f3360d57561268545fb3ad8d30f9e60277',
+      '0x0b79ad573555c0f33543cf1b235da24d948ed04f',
+      '0x0ba01e04f7545bbfc3ab20aa8ee91722fea0a217',
+      ... 1980 more items
+    ]
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getOwnersForContract` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getOwnersForContract` function:
+
+* **Portfolio tracking**: The `getOwnersForContract` method can be used to track a user's portfolio of NFTs from a specific contract. This information can be used to display the user's NFT holdings and their current market value.
+
+* **Marketplace analytics**: NFT marketplaces can use the `getOwnersForContract` method to analyze the ownership distribution of NFTs from a particular contract. This information can be used to identify trends and inform marketplace strategies.
+
+* **Royalty tracking**: Similar to the `getOwnersForNft` method, the `getOwnersForContract` method can be used to track the ownership of NFTs representing intellectual property, such as music or art, and ensure that royalties are paid to the correct parties.
+
+* **Fraud prevention**: The `getOwnersForContract` method can also be used to detect potential fraudulent activity. For example, if a large number of NFTs from a specific contract are being rapidly and frequently transferred to different wallet addresses, it may be a sign of a fraudulent transaction.
+
+# Related Methods
+
+Here are the methods related to `getOwnersForContract`:
+
+* [searchContractMetadata](/reference/searchcontractmetadata-sdk): Search for a keyword across the metadata of all `ERC-721` and `ERC-1155` smart contracts.

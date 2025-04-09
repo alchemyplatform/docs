@@ -1,0 +1,37 @@
+---
+title: "joinSignature"
+description: "Learn about the joinSignature utils method"
+url: "https://docs.alchemy.com/reference/joinsignature"
+slug: "reference/joinsignature"
+---
+
+Learn about the `joinSignature` utils method
+
+# Introduction
+
+The [`joinSignature`](https://docs.ethers.org/v5/api/utils/bytes/#utils-joinSignature) method is used to combine separate parts of an Ethereum signature into a single hex string. The signature parts must be in a specific order for this method to work.
+
+# Usage
+
+This method should be used when you have separate parts of an Ethereum signature and you want to combine them into a single hex string.
+
+Here's a simple code example to demonstrate how to use this method:
+
+<CodeGroup>
+  ```javascript Javascript
+  const { Utils } = require("alchemy-sdk");
+
+  // Expanded-format; this is the format Solidity and other tools often require
+  let expanded = {
+    r: "0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a16",
+    s: "0x3574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e3466",
+    recoveryParam: 0,
+    v: 27,
+  };
+  let flat = Utils.joinSignature(expanded);
+
+  console.log(flat);
+
+  // 0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a163574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e34661b
+  ```
+</CodeGroup>

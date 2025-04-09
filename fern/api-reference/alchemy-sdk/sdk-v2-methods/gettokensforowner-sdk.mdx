@@ -1,0 +1,376 @@
+---
+title: "getTokensForOwner - SDK"
+description: "Returns the tokens that the specified address owns, along with the amount of each token and the relevant metadata."
+url: "https://docs.alchemy.com/reference/gettokensforowner-sdk"
+slug: "reference/gettokensforowner-sdk"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns the tokens that the specified address owns, along with the amount of each token and the relevant metadata.
+
+# Parameters
+
+| Name            | Type                       | Description                                            |
+| --------------- | -------------------------- | ------------------------------------------------------ |
+| `addressOrName` | `string`                   | The owner address to get the tokens with balances for. |
+| `options?`      | `GetTokensForOwnerOptions` | Additional options to pass to the request.             |
+
+### `GetTokensForOwnerOptions` parameters
+
+| Parameters          | Type     | Description                                                                                              |
+| ------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| `contractAddresses` | `string` | `optional` List of contract addresses to filter by. If omitted, it defaults to `TokenBalanceType.ERC20`. |
+| `pageKey`           | `string` | Optional page key to use for pagination.                                                                 |
+
+# Response
+
+| Parameters                           | Type     | Description                                                               |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------- |
+| `Promise<GetTokensForOwnerResponse>` | `object` | Returns the tokens that the specified address owns and relevant metadata. |
+
+### `GetTokensForOwnerResponse` response parameters
+
+| Property  | Type         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pageKey` | `string`     | `optional` Page key for the next page of results, if one exists.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `tokens`  | `OwnedToken` | Owned tokens for the provided addresses along with relevant metadata. The following parameters are associated with the `OwnedToken` object: 1. **`balance`** - `string` The formatted value of the balance field as a hex string. This value is undefined if the error field is present or if the `decimals` field = `undefined`. 2. **`contractAddress`** - `string` The contract address of the token. 3. **`decimals`** - `number` The number of decimals of the token. It is `undefined` if not defined in the contract and unavailable from other sources. 4. **`error`** - `string` Error from fetching the token balances. None of the other fields will be defined if this field is defined. 5. **`logo`** - `string` URL link to the token's logo. It is undefined if the logo is not available. 6. **`name`** - `string` The token's name. It is undefined if the name is not defined in the contract and is unavailable from other sources. 7. **`rawBalance`** - `string`The raw value of the balance field as a hex string. 8. **`symbol`** - `string` The token's symbol. It is undefined if the symbol is not defined in the contract and unavailable from other sources. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getTokensForOwner` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getTokensForOwner.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "demo", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    //Define the owner address or name
+    const ownerAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    
+    //The response returns the tokens the address owns and relevant metadata.
+    let response = await alchemy.core.getTokensForOwner(ownerAddress)
+    
+    //Logging the response to the console
+    console.log(response)
+  };
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+        decimals: 0,
+        logo: undefined,
+        name: '',
+        symbol: '',
+        balance: '59061420000000000000000000'
+      },
+      {
+        contractAddress: '0x01e849040c418c3b7f130351a6e4630c08a7d98e',
+        rawBalance: '3848',
+        decimals: 2,
+        logo: undefined,
+        name: 'UNI',
+        symbol: 'www.uniswap.cab',
+        balance: '38.48'
+      },
+      {
+        contractAddress: '0x6fb3e0a217407efff7ca062d46c26e5d60a14d69',
+        rawBalance: '200162000000000000000000',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/2777.png',
+        name: 'IoTeX',
+        symbol: 'IOTX',
+        balance: '200162.0'
+      },
+      {
+        contractAddress: '0x73dabaff2d1a1fd00cd11998d3cb8d3ae2d2fe8a',
+        rawBalance: '27000000',
+        decimals: 6,
+        logo: undefined,
+        name: 'USDC',
+        symbol: 'USDC',
+        balance: '27.0'
+      },
+      {
+        contractAddress: '0x761d38e5ddf6ccf6cf7c55759d5210750b5d60f3',
+        rawBalance: '1147579083426018352959478600',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/9436.png',
+        name: 'Dogelon Mars',
+        symbol: 'ELON',
+        balance: '1147579083.4260183529594786'
+      },
+      {
+        contractAddress: '0x7a6b87d7a874fce4c2d923b09c0e09e4936bcf57',
+        rawBalance: '7000',
+        decimals: 0,
+        logo: undefined,
+        name: '$ USTBonus.com',
+        symbol: '$ Visit USTBonus.com to claim',
+        balance: '7000'
+      },
+      {
+        contractAddress: '0x7c5cb1220bd293ff9cf903915732e51a71292038',
+        rawBalance: '3500000000000000000000',
+        decimals: 18,
+        logo: undefined,
+        name: 'YottaLing',
+        symbol: 'YTL',
+        balance: '3500.0'
+      },
+      {
+        contractAddress: '0x7cd167b101d2808cfd2c45d17b2e7ea9f46b74b6',
+        rawBalance: '260794140590000000000',
+        decimals: 18,
+        logo: undefined,
+        name: 'USD Coin (Wormhole)',
+        symbol: 'USDC',
+        balance: '260.79414059'
+      },
+      {
+        contractAddress: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
+        rawBalance: '1000000000000000000',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/3890.png',
+        name: 'Polygon',
+        symbol: 'MATIC',
+        balance: '1.0'
+      },
+      {
+        contractAddress: '0x7e7c005c8fcd5e18c03db8014af44ce5837c5f08',
+        rawBalance: '58865000000000000000000000',
+        decimals: 0,
+        logo: undefined,
+        name: '',
+        symbol: '',
+        balance: '58865000000000000000000000'
+      },
+      {
+        contractAddress: '0x82cbd1a309a5de0ba4042f245df075cb55093e53',
+        rawBalance: '666000000000000000000',
+        decimals: 18,
+        logo: undefined,
+        name: 'QUANT',
+        symbol: 'QNT',
+        balance: '666.0'
+      },
+      {
+        contractAddress: '0x85332b222787eacab0fff68cf3b884798823528c',
+        rawBalance: '666',
+        decimals: 0,
+        logo: undefined,
+        name: 'WinETHFree',
+        symbol: 'winethfree.com (Win ETH Free)',
+        balance: '666'
+      },
+      {
+        contractAddress: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
+        rawBalance: '22097520248770066535',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/2308.png',
+        name: 'Single Collateral DAI',
+        symbol: 'SAI',
+        balance: '22.097520248770066535'
+      },
+      {
+        contractAddress: '0x8b3192f5eebd8579568a2ed41e6feb402f93f73f',
+        rawBalance: '6253870435272180982',
+        decimals: 9,
+        logo: 'https://static.alchemyapi.io/images/assets/10498.png',
+        name: 'Saitama',
+        symbol: 'SAITAMA',
+        balance: '6253870435.272180982'
+      },
+      {
+        contractAddress: '0x8b3870df408ff4d7c3a26df852d41034eda11d81',
+        rawBalance: '637762212',
+        decimals: 6,
+        logo: 'https://static.alchemyapi.io/images/assets/10295.png',
+        name: 'IOI Token',
+        symbol: 'IOI',
+        balance: '637.762212'
+      },
+      {
+        contractAddress: '0x8d1c555ec2f99a3d6a82bd3a725b5b65b65d0d69',
+        rawBalance: '100000',
+        decimals: 0,
+        logo: undefined,
+        name: '$ HEXBonus.com',
+        symbol: '$ HEXBonus.com <- Visit to claim!',
+        balance: '100000'
+      },
+      {
+        contractAddress: '0x91bc206f0a1ffbc399b4a20a41324ed1dad2b718',
+        rawBalance: '1000',
+        decimals: 0,
+        logo: undefined,
+        name: 'Bullshit',
+        symbol: 'BSH',
+        balance: '1000'
+      },
+      {
+        contractAddress: '0x938af1975d026d2a657f11dc99c4fb1a4e7116ae',
+        rawBalance: '58865000000000000000000000',
+        decimals: 0,
+        logo: undefined,
+        name: '',
+        symbol: '',
+        balance: '58865000000000000000000000'
+      },
+      {
+        contractAddress: '0x9412796c9c9def387626825a76b7ccebf28ab42c',
+        rawBalance: '0',
+        decimals: 18,
+        logo: undefined,
+        name: 'PulseX',
+        symbol: 'PULSE',
+        balance: '0.0'
+      },
+      {
+        contractAddress: '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
+        rawBalance: '163283668535754919854895611',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/5994.png',
+        name: 'Shiba Inu',
+        symbol: 'SHIB',
+        balance: '163283668.535754919854895611'
+      },
+      {
+        contractAddress: '0x981dc247745800bd2ca28a4bf147f0385eaa0bc0',
+        rawBalance: '8880000000000000000',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/22651.png',
+        name: 'NutsDAO',
+        symbol: 'NUTS',
+        balance: '8.88'
+      },
+      {
+        contractAddress: '0x98976a6dfaaf97b16a4bb06035cc84be12e79110',
+        rawBalance: '500000000000000000',
+        decimals: 18,
+        logo: undefined,
+        name: 'MYOUToken',
+        symbol: 'MYOU',
+        balance: '0.5'
+      },
+      {
+        contractAddress: '0x98a83960c52dc6ccc1765a25361b08b43aa38128',
+        rawBalance: '10000000',
+        decimals: 8,
+        logo: undefined,
+        name: 'Asia Eternal Coin',
+        symbol: 'AE',
+        balance: '0.1'
+      },
+      {
+        contractAddress: '0x993864e43caa7f7f12953ad6feb1d1ca635b875f',
+        rawBalance: '76000000000000000000',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/9638.png',
+        name: 'SingularityDAO',
+        symbol: 'SDAO',
+        balance: '76.0'
+      },
+      {
+        contractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        rawBalance: '0',
+        decimals: 6,
+        logo: 'https://static.alchemyapi.io/images/assets/3408.png',
+        name: 'USD Coin',
+        symbol: 'USDC',
+        balance: '0.0'
+      },
+      {
+        contractAddress: '0xa101e27f06a97985b925e244111b61560ecd97db',
+        rawBalance: '2000000000000000000',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/4534.png',
+        name: 'BITTO',
+        symbol: 'BITTO',
+        balance: '2.0'
+      },
+      {
+        contractAddress: '0xa24a4955ee7aa09a6a9e660f991a49af09460a0d',
+        rawBalance: '1940000000000000',
+        decimals: 9,
+        logo: undefined,
+        name: 'Proof Of UP',
+        symbol: 'PoUP',
+        balance: '1940000.0'
+      },
+      {
+        contractAddress: '0xa47c8bf37f92abed4a126bda807a7b7498661acd',
+        rawBalance: '800000000000000000000',
+        decimals: 18,
+        logo: 'https://static.alchemyapi.io/images/assets/7129.png',
+        name: 'TerraUSD',
+        symbol: 'UST',
+        balance: '800.0'
+      },
+      {
+        contractAddress: '0xa5269a8e31b93ff27b887b56720a25f844db0529',
+        rawBalance: '14967756400731753690911',
+        decimals: 18,
+        logo: undefined,
+        name: 'Morpho-Aave USD Coin Supply Vault',
+        symbol: 'maUSDC',
+        balance: '14967.756400731753690911'
+      }
+    ],
+    pageKey: undefined
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getTokensForOwner` method using the code sandbox below:
+
+# Use Cases
+
+Here are some possible use cases for the `getTokensForOwner` method:
+
+* **Portfolio Management**: The `getTokensForOwner` method allows developers to build applications that help users manage their crypto portfolios. By querying the tokens owned by a specific address, developers can provide users with an overview of their token holdings, including the token balances and associated metadata.
+* **Token Listings**: Platforms that list tokens or marketplaces can utilize the `getTokensForOwner` method to gather information about the tokens owned by an address. This data can display the tokens available for trade or sale, including their attributes, prices, and other relevant details.
+* **Automated Tasks**: Blockchain developers often need to automate certain tasks based on token ownership. By using the `getTokensForOwner` method, developers can programmatically check if an address owns specific tokens and perform actions accordingly. For example, triggering events or executing smart contract functions based on token ownership
+
+# Related Methods
+
+Here are some methods related to the`getTokensForOwner` method:
+
+* [getTokenBalances](/reference/gettokenbalances): Returns the ERC-20 token balances for a specific owner address.

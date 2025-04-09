@@ -1,0 +1,97 @@
+---
+title: "getGasPrice - SDK"
+description: "Returns the best guess of the current gas price to use in a transaction."
+url: "https://docs.alchemy.com/reference/getgasprice-sdk-v3"
+slug: "reference/getgasprice-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns the best guess of the current gas price to use in a transaction.
+
+# Response
+
+| Property             | Type     | Description                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------ |
+| `Promise<BigNumber>` | `object` | Returns an object with the `hex`: *string* and `type`: *BigNumber* |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getGasPrice` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getgasprice.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+
+      //Call the method
+      let response = await alchemy.core.getGasPrice()
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "type": "BigNumber",
+      "hex": "0x04f2d00973"
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getGasPrice` method using the code sandbox below:
+
+# Use Cases
+
+Here are some possible use cases for the `getGasPrice` method:
+
+* **Gas estimation**: Before submitting a transaction to the EVM networks, it's important to estimate the amount of gas that will be required to execute the transaction. `getGasPrice` can be used to retrieve the current gas price and use it to estimate the gas cost of a transaction.
+
+* **Gas price optimization**: Gas prices on the EVM networks can vary widely depending on network congestion and other factors. By using `getGasPrice`, developers can dynamically adjust the gas price of their transactions to optimize for speed and cost.
+
+* **Gas price monitoring**: Gas prices can fluctuate rapidly, and it's important to stay up-to-date on the current market conditions. `getGasPrice` can be used to monitor gas prices and alert developers when prices are high or low.
+
+* **Network analysis**: Gas prices can be an important indicator of network health and congestion. By analyzing historical gas prices using `getGasPrice`, developers can gain insights into network usage patterns and identify potential bottlenecks or congestion points.

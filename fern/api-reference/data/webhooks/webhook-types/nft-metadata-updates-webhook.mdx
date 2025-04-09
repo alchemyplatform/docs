@@ -1,0 +1,121 @@
+---
+title: "NFT Metadata Updates Webhook"
+description: "Get real-time updates when metadata for an NFT is updated"
+url: "https://docs.alchemy.com/reference/nft-metadata-updates-webhook"
+slug: "reference/nft-metadata-updates-webhook"
+---
+
+
+<Info>
+  Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast. More to come soon!
+</Info>
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+# Introduction
+
+The NFT Metadata Updates webhook uses our patent pending metadata freshness technology to allow you to track metadata updates for ERC721 and ERC1155 token contracts on Ethereum and Polygon (Up to 3M contract/tokens per webhook!). This uses on chain and off chain indicators to notify your app when the NFT metadata is updated, such as during a reveal.
+
+# Example Response
+
+When metadata for an NFT (ERC721 or ERC1155) is updated, you receive a response from the webhook that looks like this:
+
+<CodeGroup>
+  ```shell NFT Metadata Updates Response
+  {
+    "webhookId": "wh_yth2f9pn4kw69tav",
+    "id": "whevt_wqaweymxxhiylx5a",
+    "createdAt": "2023-09-18T18:08:13.472Z",
+    "type": "NFT_METADATA_UPDATE",
+    "event": {
+      "network": "MATIC_MAINNET",
+      "contractAddress": "0xb2435253c71fca27be41206eb2793e44e1df6b6d",
+      "tokenId": "15489410",
+      "networkId": 401,
+      "metadataUri": "https://api.planetix.com/api/v1/pix/15489410",
+      "updatedAt": "2023-09-18T18:08:12.349Z",
+      "name": "GE LE#132100186",
+      "imageUri": "https://static.planetix.com/46Sl0KZHaA856srXdxD9AnNC5SbzGvtCeqFZusuS.png",
+      "attributes": [
+        { "traitType": "NFT", "value": "PIX" },
+        { "traitType": "ID", "value": "8c2c2aa9418b3ff" },
+        {
+          "traitType": "Coordinates",
+          "value": "[41.67987855636909,44.78790872934742]"
+        },
+        { "traitType": "Classification", "value": "Capital City Center" },
+        { "traitType": "Tier", "value": "Legendary" },
+        { "traitType": "Country", "value": "GE" }
+      ],
+      "rawMetadata": {
+        "name": "GE LE#132100186",
+        "image": "https://static.planetix.com/46Sl0KZHaA856srXdxD9AnNC5SbzGvtCeqFZusuS.png",
+        "attributes": [
+          { "value": "PIX", "trait_type": "NFT" },
+          { "value": "8c2c2aa9418b3ff", "trait_type": "ID" },
+          {
+            "value": "[41.67987855636909,44.78790872934742]",
+            "trait_type": "Coordinates"
+          },
+          { "value": "Capital City Center", "trait_type": "Classification" },
+          { "value": "Legendary", "trait_type": "Tier" },
+          { "value": "GE", "trait_type": "Country" }
+        ]
+      }
+    }
+  }
+  ```
+</CodeGroup>
+
+# Field Definitions
+
+Below you can find descriptions for each field of the response.
+
+| Field               | Description                                                 | Value                                                                                                                                                                                                                                                                              |
+| ------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `webhookId`         | Unique ID of the webhook destination.                       | `wh_9ov1pxcoll48hkew`                                                                                                                                                                                                                                                              |
+| `id`                | ID of the event.                                            | `whevt_0n4r4tqz9530yciz`                                                                                                                                                                                                                                                           |
+| `createdAt`         | Timestamp when the webhook was created.                     | `2022-10-31T21:20:25.031Z`                                                                                                                                                                                                                                                         |
+| `type`              | Webhook event type.                                         | `NFT_METADATA_UPDATE`                                                                                                                                                                                                                                                              |
+| `event`             | NFT Metadata Updates object.                                | `N/A`                                                                                                                                                                                                                                                                              |
+| `contractAddress`   | The contract ID address.                                    | `0x617913dd43dbdf4236b85ec7bdf9adfd7e35b340`                                                                                                                                                                                                                                       |
+| `tokenId`           | NFT's token ID.                                             | `40060010`                                                                                                                                                                                                                                                                         |
+| `network`           | Name of the network                                         | `MATIC_MAINNET`                                                                                                                                                                                                                                                                    |
+| `metadataUri`       | The URI pointing to the NFT's raw metadata.                 | `https://www.mycryptoheroes.net/metadata/landSector/40060010`                                                                                                                                                                                                                      |
+| `updatedAt`         | NFT's metadata update timestamp.                            | `2022-10-31T21:19:34.769Z`                                                                                                                                                                                                                                                         |
+| `name`              | Name of the NFT.                                            | `MCH Land Sector: #40060010`                                                                                                                                                                                                                                                       |
+| `description`       | NFT description.                                            | `"TRANSFERS FOR THIS ASSET ARE CURRENTLY DISABLED. To enable transfers for this asset, you need to set Art and Nickname inside the MCH World. Land Sectors are unique parts of Land in My Crypto Heroes.This Land Sector gives you partial ownership of FISHER ISLAND 🍇GRAPE🍇."` |
+| `imageUri`          | NFT media URI.                                              | `https://www.mycryptoheroes.net/images/landsectorarts/2000/6_4.png`                                                                                                                                                                                                                |
+| `attributes`        | A list of attributes for the NFT if they exist.             | `N/A`                                                                                                                                                                                                                                                                              |
+| `rawMetadata`       | The updated metadata returned from the `metadataUri` field. | `N/A`                                                                                                                                                                                                                                                                              |
+| `image`             | URI of the NFT media.                                       | `https://www.mycryptoheroes.net/images/landsectorarts/2000/6_4.png`                                                                                                                                                                                                                |
+| `external_url`      | URL ID of the NFT media.                                    | `https://www.mycryptoheroes.net/landSectors/40060010`                                                                                                                                                                                                                              |
+| `home_url`          | NFT homepage URL.                                           | `https://www.mycryptoheroes.net`                                                                                                                                                                                                                                                   |
+| `extra_data`        | List of NFT resources.                                      | `N/A`                                                                                                                                                                                                                                                                              |
+| `default_image_url` | The default URL of the NFT media.                           | `https://www.mycryptoheroes.net/images/landsectorarts/64/6_4.png`                                                                                                                                                                                                                  |
+| `name`              | NFT name.                                                   | `MCH Land Sector: #40060010`                                                                                                                                                                                                                                                       |
+| `description`       | NFT description.                                            | `TRANSFERS FOR THIS ASSET ARE CURRENTLY DISABLED. To enable transfers for this asset, you need to set Art and Nickname inside the MCH World. Land Sectors are unique parts of Land in My Crypto Heroes.This Land Sector gives you partial ownership of FISHER ISLAND 🍇GRAPE🍇.`   |
+| `language`          | NFT default language.                                       | `en-US`                                                                                                                                                                                                                                                                            |
+| `attributes`        | List of attributes for the NFT.                             | `N/A`                                                                                                                                                                                                                                                                              |
+| `volume`            | NFT volume.                                                 | `20`                                                                                                                                                                                                                                                                               |
+| `total_volume`      | NFT volume.                                                 | `900`                                                                                                                                                                                                                                                                              |
+| `type_name`         | NFT type identifier.                                        | `Grape`                                                                                                                                                                                                                                                                            |
+| `transfer`          | NFT transfer status.                                        | `disabled`                                                                                                                                                                                                                                                                         |
+| `rarity`            | NFT character category.                                     | `Epic`                                                                                                                                                                                                                                                                             |
+| `timestamp`         | NFT timestamp update.                                       | `1667251174`                                                                                                                                                                                                                                                                       |
+
+To add/remove addresses from already existing webhooks check out [update webhook addresses](/reference/update-webhook-addresses) endpoint.
+
+# Useful Endpoints
+
+| Endpoint                                                                              | Description                                                                                |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| [Update NFT Metadata Webhook Filters](/reference/update-webhook-nft-metadata-filters) | Add and remove NFT metadata webhook filters.                                               |
+| [Webhook NFT Filters](/reference/webhook-nft-filters)                                 | Paginated endpoint to list all of the NFT filter objects a given webhook is subscribed to. |
+| [Create Webhook](/reference/create-webhook)                                           | This endpoint allows you to create a webhook programatically.                              |
+| [Delete Webhook](/reference/delete-webhook)                                           | Allows you to delete a webhook.                                                            |
+| [Update Webhook](/reference/update-webhook)                                           | Allows you to set status of webhooks to active or inactive.                                |

@@ -1,0 +1,100 @@
+---
+title: "isContractAddress - SDK"
+description: "Checks if the provided address is a smart contract."
+url: "https://docs.alchemy.com/reference/iscontractaddress-sdk-v3"
+slug: "reference/iscontractaddress-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Checks if the provided address is a smart contract.
+
+# Parameters
+
+| Name      | Type     | Description                    |
+| --------- | -------- | ------------------------------ |
+| `address` | `string` | The address to check type for. |
+
+# Response
+
+| Property           | Type      | Description                                                                |
+| ------------------ | --------- | -------------------------------------------------------------------------- |
+| `Promise<boolean>` | `boolean` | Returns true if the provided address is a smart contract, false otherwise. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install [email protected]
+  ```
+
+  ```shell yarn
+  yarn add [email protected]
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make an `isContractAddress` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript isContractAddress.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "demo", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      const result = await alchemy.core.isContractAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"); // Wrapped ETH address
+
+      // Logging the response to the console
+      console.log(result)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  true
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `isContractAddress` method using the code sandbox below:
+
+# Use Cases
+
+Here are some common use cases for the `isContractAddress` method:
+
+* **Verifying the contract status of an address**: It's important to know the type of an address (Externally Owned Address or Contract Address) in many blockchain related operations. This function allows developers to verify if an address is a smart contract.
+
+* **Improving security**: Before interacting with an address, verifying its type can add an extra layer of security to prevent potential exploits ( for example, reentrancy attacks ) or mistakes.
+
+# Related Methods
+
+Here are the methods related to `isContractAddress`:
+
+* [getBalance](/reference/getbalance-sdk): Returns the balance of a given address as of the provided block.

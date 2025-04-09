@@ -1,0 +1,210 @@
+---
+title: "getNftsForContractIterator -SDK"
+description: "Fetches all NFTs for a given contract address and yields them in an async iterable. This method returns the full NFTs in the contract and pages through all page keys until all NFTs have been fetched."
+url: "https://docs.alchemy.com/reference/sdk-getnftsforcontractiterator"
+slug: "reference/sdk-getnftsforcontractiterator"
+---
+
+Fetches all NFTs for a given contract address and yields them in an async iterable.
+
+This method returns the full NFTs in the contract and pages through all page keys until all NFTs have been fetched.
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Fetches all NFTs for a given contract address and yields them in an async iterable.
+
+This method returns the full NFTs in the contract and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the `options` parameter in the body of the request.
+
+# Parameters
+
+| Name              | Type     | Description                                     |
+| ----------------- | -------- | ----------------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT contract.       |
+| `options`         | `object` | The optional parameters to use for the request. |
+
+### `options` paramters
+
+| Property              | Type      | Description                                                                                                                                                                                                                                                                |
+| --------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pageKey?`            | `string`  | Optional page key from an existing `OwnedBaseNftsResponse` or `OwnedNftsResponse` to use for pagination.                                                                                                                                                                   |
+| `pageSize?`           | `number`  | Sets the total number of NFTs to return in the response. Defaults to 100. Maximum page size is **100**.                                                                                                                                                                    |
+| `omniMetadata?`       | `boolean` | Optional boolean flag to omit NFT metadata. Defaults to `false`.                                                                                                                                                                                                           |
+| `tokenUriTimeoutInMs` | `number`  | No set timeout by default - When metadata is requested, this parameter is the timeout (in milliseconds) for the website hosting the metadata to respond. If you want to only access the cache and not live fetch any metadata for cache misses then set this value to `0`. |
+
+# Response
+
+| Property             | Type     | Description               |
+| -------------------- | -------- | ------------------------- |
+| `AsyncIterable<Nft>` | `object` | The NFTs for the contract |
+
+### `AsyncIterable<Nft` response parameters
+
+| Property          | Type                  | Descriptioin                                                                                                                           |
+| ----------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | `string`              | The NFT's underlying contract and relevant contract metadata.                                                                          |
+| `title`           | `string`              | The NFT title.                                                                                                                         |
+| `description`     | `string`              | The NFT description.                                                                                                                   |
+| `timeLastUpdated` | `string`              | When the NFT was last updated in the blockchain. Represented in ISO-8601 format.                                                       |
+| `metadataError`   | `string \| undefined` | Holds an error message if there was an issue fetching metadata.                                                                        |
+| `rawMetadata`     | `object \| undefined` | The raw metadata fetched from the metadata URL specified by the NFT. The field is `undefined` if Alchemy was unable to fetch metadata. |
+| `tokenUri`        | `object \| undefined` | URIs for accessing the NFT's metadata blob                                                                                             |
+| `media`           | `array of strings`    | URIs for accessing the NFT's media assets                                                                                              |
+| `spamInfo`        | `object`              | Detailed information on why an NFT was classified as spam.                                                                             |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address whose NFTs you want to fetch
+      const contractAddress = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
+
+      // create an async generator function that uses the getNftsForContractIterator method
+      async function getNftsForContract() {
+          try {
+              let nfts = [];
+              // Get the async iterable for the contract's NFTs.
+              const nftsIterable = alchemy.nft.getNftsForContractIterator(contractAddress);
+
+              // Iterate over the NFTs and add them to the nfts array.
+              for await (const nft of nftsIterable) {
+                  nfts.push(nft);
+              }
+
+              // Log the NFTs.
+              console.log(nfts);
+          } catch (error) {
+              console.log(error);
+          }
+      }
+
+      // call the async generator function
+      getNftsForContract();
+
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  [
+    {
+      contract: {
+        address: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d',
+        name: 'BoredApeYachtClub',
+        symbol: 'BAYC',
+        totalSupply: '10000',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0xaba7161a7fb69c88e16ed9f455ce62b791ee4d03',
+        deployedBlockNumber: 12287507
+      },
+      tokenId: '98',
+      tokenType: 'ERC721',
+      title: '',
+      description: '',
+      timeLastUpdated: '2023-03-02T17:33:56.703Z',
+      metadataError: undefined,
+      rawMetadata: {
+        image: 'ipfs://Qma1kbYN4LzAK9XvQUNJ6nf79iAd3dM6K87ivm8oLrisVV',
+        attributes: [Array]
+      },
+      tokenUri: {
+        gateway: 'https://alchemy.mypinata.cloud/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/98',
+        raw: 'ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/98'
+      },
+      media: [ [Object] ],
+      spamInfo: undefined
+    },
+    {
+      contract: {
+        address: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d',
+        name: 'BoredApeYachtClub',
+        symbol: 'BAYC',
+        totalSupply: '10000',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0xaba7161a7fb69c88e16ed9f455ce62b791ee4d03',
+        deployedBlockNumber: 12287507
+      },
+      tokenId: '99',
+      tokenType: 'ERC721',
+      title: '',
+      description: '',
+      timeLastUpdated: '2023-03-02T17:33:56.457Z',
+      metadataError: undefined,
+      rawMetadata: {
+        image: 'ipfs://QmWiXSKwbwHkobDdZbDc6t66kf192P33Ru5UJYhL5mPJTk',
+        attributes: [Array]
+      },
+      tokenUri: {
+        gateway: 'https://alchemy.mypinata.cloud/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/99',
+        raw: 'ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/99'
+      },
+      media: [ [Object] ],
+      spamInfo: undefined
+    },
+    ... 9900 more items
+  ]
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getNftsForContractIterator` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getNftsForContractIterator` method:
+
+* **Marketplace platforms**: Marketplace platforms that enable buying and selling of NFTs often require the ability to search for specific NFTs based on contract addresses. The `getNftsForContractIterator` method can be used to retrieve all NFTs associated with a given contract, allowing users to browse and search for NFTs from a particular collection.
+
+* **Wallet applications**: Wallet applications that support NFTs may need to display all the NFTs owned by a user for a particular contract. The `getNftsForContractIterator` method can be used to retrieve all NFTs associated with a specific contract that is owned by a given address.
+
+* **NFT explorer tools**: NFT explorer tools allow users to browse and search for NFTs on the blockchain. These tools often require the ability to query the blockchain for NFTs associated with a specific contract. The `getNftsForContractIterator` method can be used to retrieve all NFTs associated with a given contract, which can then be displayed and searched through an explorer tool.
+
+Overall, `getNftsForContractIterator` is a useful method for any application that involves querying the blockchain for NFTs associated with a particular contract.
+
+# Related Methods
+
+* [getNftsForOwnerIterator](/reference/getnftsforowneriterator-sdk): Fetches all NFTs for a given owner and yields them in an async iterable.
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

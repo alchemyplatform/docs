@@ -1,0 +1,106 @@
+---
+title: "getOwnersForNft - SDK"
+description: "Gets all the owners for a given NFT contract address and token ID."
+url: "https://docs.alchemy.com/reference/sdk-getownersfornft"
+slug: "reference/sdk-getownersfornft"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Gets all the owners for a given NFT contract address and token ID.
+
+# Parameters
+
+| Name              | Type     | Description                      |
+| ----------------- | -------- | -------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT. |
+| `tokenId`         | `string` | Token id of the NFT.             |
+
+# Response
+
+| Property | Type               | Description                                         |
+| -------- | ------------------ | --------------------------------------------------- |
+| `owners` | `array of strings` | An array of owner addresses for the provided token. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address and token Id w
+      const address = "0x5180db8F5c931aaE63c74266b211F580155ecac8";
+      const tokenId = "1590";
+
+      //Call the method to fetch the owners for the collection
+      const response = await alchemy.nft.getOwnersForNft(address, tokenId)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  { owners: [ '0xf5fff32cf83a1a614e15f25ce55b0c0a6b5f8f2c' ] }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getOwnersForNft` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getOwnersForNft` method:
+
+* **Royalty tracking**: NFTs can be used to represent intellectual property, such as music or art. The `getOwnersForNft` method can be used to track the ownership of the NFT and ensure that royalties are paid to the correct parties.
+
+* **Fraud prevention**: The `getOwnersForNft` method can be used to detect potential fraudulent activity. For example, if the ownership of an NFT changes rapidly and frequently, it may be a sign of a fraudulent transaction.
+
+# Related Methods
+
+Here are the methods related to `getOwnersForNft`:
+
+* [getNftMetadataBatch](/reference/getnftmetadatabatch-sdk): Gets the NFT metadata for multiple NFT tokens.
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Gets the metadata associated with a given NFT.

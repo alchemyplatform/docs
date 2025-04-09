@@ -1,0 +1,38 @@
+---
+title: "Debug API Endpoints"
+description: "Chains Supported What exactly is the Debug API? Is this a standard RPC endpoint, or is it something Alchemy has developed? The Debug API is a set of non-standard RPC methods developed by the Go-Ethereum team, not by Alchemy. See https://geth.ethereum.org/docs/rpc/ns-debug . What is the difference be..."
+url: "https://docs.alchemy.com/reference/debug-api-endpoints"
+slug: "reference/debug-api-endpoints"
+---
+
+# Chains Supported
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+## What exactly is the Debug API?
+
+Is this a standard RPC endpoint, or is it something Alchemy has developed?
+
+The Debug API is a set of non-standard RPC methods developed by the Go-Ethereum team, not by Alchemy. See [https://geth.ethereum.org/docs/rpc/ns-debug](https://geth.ethereum.org/docs/rpc/ns-debug).
+
+## What is the difference between the Ethereum Trace API and Debug API?
+
+The [Trace API](/reference/trace-api) , which is supported by Erigon node clients, is equivalent to Geth's [Debug API](/reference/debug-api-quickstart). The Debug API offers more API methods than the Trace API and is more widely used because Geth is a more popular Ethereum node client. To compare the [Trace API vs. Debug API](/reference/trace-api-vs-debug-api), read our API comparison guide.
+
+# Handling Errors
+
+### "execution aborted (timeout = 15s)"
+
+If you get a `-32000` timeout error on a [debug\_traceBlockByNumber](/reference/debug-traceblockbynumber) or [debug\_traceBlockByHash](/reference/debug-traceblockbyhash) call, we recommend fetching the traces by transaction using [debug\_traceTransaction](/reference/debug-tracetransaction) instead of by block. This will give you the same exact data but broken up into smaller requests.
+
+In short:
+
+* all transactions will work with debug\_traceTransaction
+* not all blocks will work with debug\_traceBlockByNumber or debug\_traceBlockByHash - depending on the number of txs in a block we can hit our timeout (15 seconds)
+* when this happen, you just have to trace by transaction instead of by block - this is more granular and does not require tracing all txs in block at once
+
+The reason we have this timeout in place is to protect our nodes from very large requests. Some blocks have a large amount of transactions and could cause the call to hit a timeout.

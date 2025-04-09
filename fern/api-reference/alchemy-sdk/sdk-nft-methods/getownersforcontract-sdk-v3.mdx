@@ -1,0 +1,176 @@
+---
+title: "getOwnersForContract - SDK"
+description: "Gets all the owners for a given NFT contract and the token balance."
+url: "https://docs.alchemy.com/reference/getownersforcontract-sdk-v3"
+slug: "reference/getownersforcontract-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Gets all the owners for a given NFT contract along with the token balance.
+
+Note that token balances are omitted by default. To include token balances for each owner, use [GetOwnersForContractWithTokenBalancesOptions](#getownersforcontractwithtokenbalancesoptions-parameters), which has the `withTokenBalances` field set to `true`.
+
+# Parameters
+
+| Name              | Type     | Description                                 |
+| ----------------- | -------- | ------------------------------------------- |
+| `contractAddress` | `string` | The NFT contract to get the owners for.     |
+| `options`         | `object` | Optional parameters to use for the request. |
+
+### `options` parameters
+
+| Parameter           | Type      | Description                                                                                                                |
+| ------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `withTokenBalances` | `boolean` | Whether to include the token balances per token id for each owner. Defaults to `false` when omitted.                       |
+| `pageKey?`          | `string`  | `Optional` page key to paginate the next page for large requests.                                                          |
+| `includeCount?`     | `boolean` | If true, include the total count of owners in the response. Only applicable when `withTokenBalances` is not set to `true`. |
+
+### `GetOwnersForContractWithTokenBalancesOptions` parameters
+
+| Parameter           | Type      | Description                                                       |
+| ------------------- | --------- | ----------------------------------------------------------------- |
+| `withTokenBalances` | `boolean` | This parameter must be set to `true` to include token balances.   |
+| `pageKey`           | `string`  | `Optional` page key to paginate the next page for large requests. |
+
+# Response
+
+| Property                                                                                   | Type     | Description                                    |
+| ------------------------------------------------------------------------------------------ | -------- | ---------------------------------------------- |
+| `Promise<GetOwnersForContractResponse> \| <GetOwnersForContractWithTokenBalancesResponse>` | `object` | An object containing the owners of a contract. |
+
+## `GetOwnersForContractResponse` object properties
+
+| Property      | Type               | Description                                                                         |
+| ------------- | ------------------ | ----------------------------------------------------------------------------------- |
+| `owner`       | `array of strings` | An array of owner addresses for the provided contract address.                      |
+| `totalCount?` | `number`           | Total count of unique owners. Only present if `includeCount` is true.               |
+| `pageKey?`    | `string`           | `Optional` Page key that is returned when a collection has more than 50,000 owners. |
+
+## `GetOwnersForContractWithTokenBalancesResponse` object properties
+
+| Property   | Type               | Description                                                                         |
+| ---------- | ------------------ | ----------------------------------------------------------------------------------- |
+| `owner`    | `array of objects` | An array of owner addresses for the provided contract address.                      |
+| `pageKey?` | `string`           | `Optional` Page key that is returned when a collection has more than 50,000 owners. |
+
+### `owner` properties
+
+| Property        | Type               | Description                                                                                                                                                                                                                                        |
+| --------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ownerAddress`  | `string`           | The NFT's owner address.                                                                                                                                                                                                                           |
+| `tokenBalances` | `array of objects` | A list of objects containing token balances for the provided NFT contract. The parameters in the object include: 1. `tokenId: string`: The token id owned in the NFT contract. 2. ` balance: string`: The token id balance for the provided owner. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      //Call the method to fetch the owners for the contract
+      const response = await alchemy.nft.getOwnersForContract(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "owners": [
+          "0x001a61213D72F2F3C95Ff743c80f472749AB8ad3",
+          "0x003a1aCce28eb335F3FF1E93A5B09cD4b598EF62",
+          "0x00614Efd868DAbB5f92E15b0440D1F85ac0f9be1",
+          "0x006F48D6eD87eFD9e0BC56cC7a8703D0455C2858",
+          "0x008B7903F1f0B825636739c7a3defb7EEbc94F1D",
+          "0x008c79F10CBd14070b106b05d5Fd494e084EE8A5",
+          "0x00Ce8F7e0EC4F03a821E8CB3D84479D76151D0A9",
+          "0x00f3a0fcC47ba9f7A757C255aaa6A286a524ceF9",
+          "0x016c6422B74463834514394B7207478982139bB4",
+          "0x016DF42305bb3D0E21abF75b456a4Babb1777A4B",
+          "0x01882145348B9908f803740e547EfbaD0983cDcB",
+          "0x018eDC98B3190DbB261E6Ff3858c4BA59c71Ba94",
+          "0x019D99678BD3B9F1157E763398a3Dd62cb760A23",
+          "0x01aE3e9Aa99F080b59D3A02EE40478af8b3d63c1",
+          "0x01E4cF06C6ADb9231a30Ca17f4A62afE23c0A9c1",
+          "0x01E6357045328fA19C11994af6a4500754E6a75b",
+          "0x02070ed234F1a07cA88F6164791e033C97570d96",
+          "0x0207A5cFc75733D82f2dd5A8b6adf78277EF7347",
+          "0x025DCA13f8803Ed01B3Ea717e2Ee9DaF7A383cDa",
+          "0x02B92b2254c27beD8d4268e663200f705bC76E35",
+          "0x02f52b4aF1deCD963a3f0586D28484F530bdC101",
+          "0x02fe09e15f1fEAEf2E4Dd4b7afd5A12630f1fae6",
+          "0x034C8f85476f2D30c946e3CE5929BC24e8D3B04F",
+          "0x037C8b05C9Ffe5e33B99372d17580C0C915AFa60",
+          "0x037FC3F7f58771CbcC4C32327814769FBF5A8F3F",
+          "0x038080B8BF89847Ca926F9731695859d9c55A4C6",
+          "0xffcEBF6Be845b95CFD42e77c65968662BC8F9f2F"
+      ]
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getOwnersForContract` method using the code sandbox below:
+
+# Use Cases
+
+Here are some potential use cases for the `getOwnersForContract` function:
+
+* **Portfolio tracking**: The `getOwnersForContract` method can be used to track a user's portfolio of NFTs from a specific contract. This information can be used to display the user's NFT holdings and their current market value.
+
+* **Marketplace analytics**: NFT marketplaces can use the `getOwnersForContract` method to analyze the ownership distribution of NFTs from a particular contract. This information can be used to identify trends and inform marketplace strategies.
+
+* **Royalty tracking**: Similar to the `getOwnersForNft` method, the `getOwnersForContract` method can be used to track the ownership of NFTs representing intellectual property, such as music or art, and ensure that royalties are paid to the correct parties.
+
+* **Fraud prevention**: The `getOwnersForContract` method can also be used to detect potential fraudulent activity. For example, if many NFTs from a specific contract are being rapidly and frequently transferred to different wallet addresses, it may be a sign of a fraudulent transaction.
+
+# Related Methods
+
+Here are the methods related to `getOwnersForContract`:
+
+* [getOwnersForNft](/reference/getownersfornft-sdk): Gets all the owners for a given NFT contract address and token ID.

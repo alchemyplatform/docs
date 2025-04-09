@@ -1,0 +1,400 @@
+---
+title: "Compute Unit Costs"
+description: "A breakdown of Alchemy's compute unit costs per method, chain, and product."
+url: "https://docs.alchemy.com/reference/compute-unit-costs"
+slug: "reference/compute-unit-costs"
+---
+
+
+### New CU Costs
+
+Build and scale apps with lower CU costs on key APIs
+
+[Get started for free](https://dashboard.alchemy.com/signup/?utm_source=docs\&utm_medium=website\&utm_campaign=build)
+
+# Table of Contents
+
+[What are Compute Units](#what-are-compute-units) [NFT API](/reference/compute-unit-costs#nft-api) [Transfers API](/reference/compute-unit-costs#transfers-api) [Token API](/reference/compute-unit-costs#token-api) [Transact](/reference/compute-unit-costs#transact) [Debug API](/reference/compute-unit-costs#debug-api) [Trace API](/reference/compute-unit-costs#trace-api) [EVM API](/reference/compute-unit-costs#standard-evm-json-rpc-methods-ethereum-polygon-pos-polygon-zkevm-optimism-arbitrum-astar) [Polygon PoS API](/reference/compute-unit-costs#polygon-pos-specific-methods) [Polygon zkEVM API](/reference/compute-unit-costs#polygon-zkevm-specific-methods) [Gas Manager & Bundler APIs](#gas-manager--bundler-apis) [Embedded Account APIs](/reference/compute-unit-costs#embedded-account-apis) [Starknet JSON-RPC APIs](/reference/compute-unit-costs#standard-starknet-json-rpc-methods) [Solana API](/reference/compute-unit-costs#standard-solana-json-rpc-methods) [Notify & Subscription APIs](/reference/compute-unit-costs#notify-and-subscription-apis) [Error Codes](/reference/compute-unit-costs#compute-unit-cost-for-error-codes)
+
+# What are Compute Units?
+
+Compute units (CUs) are the measure of the total computational resources your apps use on our platform. Different methods consume different amounts of CUs based on their complexity. For example, a lightweight query like `eth_blockNumber` uses fewer CUs than a more intensive query like `eth_getLogs`. For more details, please check out the [Compute Units](/reference/compute-units) page.
+
+# What are Throughput Compute Units?
+
+Throughput Compute Units define how often you can run the request within your throughput limits. For example, a 500 CU per second limit would be able to run 50 requests per second that cost 10 throughput CUs. The actual cost of the method is still reflected by the CU amount while the threshold CU allows you to increase the number of requests before you hit your rate limit. If there is no throughput CU listed, it defaults to the actual CU cost.
+
+# NFT API
+
+We want builders to be able to use as much of the NFT API as they need without worrying about throughput. Because of that, we have discounted how NFT API requests count towards your applications’ guaranteed throughput by 6-10x. This means you can make more concurrent NFT API requests, and use the “Throughput CU” below to calculate how much you can use!
+
+| Method                   | CU          | Throughput CU |
+| ------------------------ | ----------- | ------------- |
+| getNFTMetadata           | ~~100~~ 80  | 10            |
+| getContractMetadata      | ~~250~~ 160 | 10            |
+| getCollectionMetadata    | ~~250~~ 240 | 10            |
+| getNFTsForOwner          | ~~600~~ 480 | 100           |
+| getContractsForOwner     | ~~350~~ 320 | 100           |
+| getCollectionsForOwner   | ~~350~~ 360 | 100           |
+| getNFTsForContract       | ~~600~~ 480 | 50            |
+| getOwnersForNFT          | ~~100~~ 80  | 10            |
+| getOwnersForContract     | ~~600~~ 480 | 20            |
+| getFloorPrice            | ~~100~~ 80  | 10            |
+| getNFTSales              | ~~180~~ 160 | 10            |
+| computeRarity            | ~~100~~ 80  | 10            |
+| summarizeNFTAttributes   | ~~100~~ 80  | 10            |
+| isHolderOfContract       | ~~100~~ 80  | 10            |
+| searchContractMetadata   | ~~500~~ 480 | 50            |
+| getNFTMetadataBatch      | ~~600~~ 480 | 100           |
+| getContractMetadataBatch | ~~600~~ 480 | 100           |
+| getSpamContracts         | ~~600~~ 480 | 10            |
+| isSpamContract           | ~~100~~ 80  | 10            |
+| isAirdropNFT             | ~~100~~ 80  | 10            |
+| invalidateContract       | ~~100~~ 80  | 80            |
+| refreshNftMetadata       | ~~50~~ 40   | 10            |
+| reingestContract         | ~~600~~ 480 | 480           |
+| reportSpam               | 0           | 10            |
+
+# 🆕 Solana DAS (NFT/Token) APIs
+
+| Method               | CU  | Throughput CU |
+| -------------------- | --- | ------------- |
+| getAsset             | 80  | 200           |
+| getAssets            | 480 | 200           |
+| getAssetProof        | 160 | 200           |
+| getAssetProofs       | 480 | 200           |
+| getAssetsByAuthority | 480 | 200           |
+| getAssetsByOwner     | 480 | 200           |
+| getAssetsByGroup     | 480 | 200           |
+| getAssetsByCreator   | 480 | 200           |
+| searchAssets         | 480 | 200           |
+| getAssetSignatures   | 160 | 200           |
+| getNftEditions       | 160 | 200           |
+| getTokenAccounts     | 160 | 200           |
+
+# Transfers API
+
+| Method                     | CU          |
+| -------------------------- | ----------- |
+| alchemy\_getAssetTransfers | ~~150~~ 120 |
+
+# Portfolio APIs
+
+| Method                            | CU   |
+| --------------------------------- | ---- |
+| assets/nfts/by-address            | 1000 |
+| assets/nfts/contracts/by-address  | 600  |
+| assets/tokens/by-address          | 360  |
+| assets/tokens/balances/by-address | 200  |
+| /transactions/history/by-address  | 1000 |
+
+# Token API
+
+| Method                     | CU        |
+| -------------------------- | --------- |
+| alchemy\_getTokenBalances  | ~~26~~ 20 |
+| alchemy\_getTokenMetadata  | ~~16~~ 10 |
+| alchemy\_getTokenAllowance | ~~19~~ 20 |
+
+# Prices API
+
+| Method            | CU |
+| ----------------- | -- |
+| tokens/by-symbol  | 40 |
+| tokens/by-address | 40 |
+| tokens/historical | 40 |
+
+# Utility APIs
+
+| Method                          | CU  |
+| ------------------------------- | --- |
+| blocks/by-timestamp             | 10  |
+| alchemy\_getTransactionReceipts | 250 |
+
+# Transact
+
+| Method                                    | CU   |
+| ----------------------------------------- | ---- |
+| alchemy\_sendGasOptimizedTransaction      | 2500 |
+| alchemy\_getGasOptimizedTransactionStatus | 25   |
+| eth\_sendPrivateTransaction               | 250  |
+| eth\_cancelPrivateTransaction             | 250  |
+| alchemy\_simulateAssetChanges             | 2500 |
+| alchemy\_simulateExecution                | 2500 |
+
+# Debug API
+
+| Method                    | CU         | Throughput CU |
+| ------------------------- | ---------- | ------------- |
+| debug\_traceTransaction   | ~~170~~ 40 | 1000          |
+| debug\_traceCall          | ~~170~~ 40 | 1000          |
+| debug\_traceBlockByHash   | ~~170~~ 40 | 1000          |
+| debug\_traceBlockByNumber | ~~170~~ 40 | 1000          |
+
+# Trace API
+
+| Method                         | CU          | Throughput CU |
+| ------------------------------ | ----------- | ------------- |
+| trace\_get                     | ~~17~~ 20   | 20            |
+| trace\_block                   | ~~24~~ 20   | 20            |
+| trace\_transaction             | ~~26~~ 40   | 40            |
+| trace\_call                    | ~~75~~ 40   | 40            |
+| trace\_rawTransaction          | ~~75~~ 40   | 40            |
+| trace\_filter                  | ~~75~~ 40   | 40            |
+| trace\_replayTransaction       | ~~2983~~ 80 | 3000          |
+| trace\_replayBlockTransactions | ~~2983~~ 80 | 3000          |
+
+# Standard EVM JSON-RPC Methods
+
+| Method                                   | CU                          | Throughput CU |
+| ---------------------------------------- | --------------------------- | ------------- |
+| net\_version                             | 0                           |               |
+| eth\_chainId                             | 0                           |               |
+| eth\_syncing                             | 0                           |               |
+| eth\_protocolVersion                     | 0                           |               |
+| net\_listening                           | 0                           |               |
+| eth\_uninstallFilter                     | 10                          |               |
+| eth\_accounts                            | 10                          |               |
+| eth\_blockNumber                         | 10                          |               |
+| eth\_subscribe                           | 10                          |               |
+| eth\_unsubscribe                         | 10                          |               |
+| eth\_feeHistory                          | 10                          |               |
+| eth\_maxPriorityFeePerGas                | 10                          |               |
+| eth\_createAccessList                    | 10                          |               |
+| eth\_getTransactionReceipt               | ~~15~~ 20                   |               |
+| eth\_getUncleByBlockHashAndIndex         | ~~15~~ 20                   |               |
+| eth\_getUncleByBlockNumberAndIndex       | ~~15~~ 20                   |               |
+| eth\_getTransactionByBlockHashAndIndex   | ~~15~~ 20                   |               |
+| eth\_getTransactionByBlockNumberAndIndex | ~~15~~ 20                   |               |
+| eth\_getUncleCountByBlockHash            | ~~15~~ 20                   |               |
+| eth\_getUncleCountByBlockNumber          | ~~15~~ 20                   |               |
+| web3\_clientVersion                      | ~~15~~ 20                   |               |
+| web3\_sha3                               | ~~15~~ 20                   |               |
+| eth\_getBlockByNumber                    | ~~16~~ 20                   |               |
+| eth\_getStorageAt                        | ~~17~~ 20                   |               |
+| eth\_getTransactionByHash                | ~~17~~ 20                   |               |
+| eth\_gasPrice                            | ~~19~~ 20                   |               |
+| eth\_getBalance                          | ~~19~~ 20                   |               |
+| eth\_getCode                             | ~~19~~ 20                   |               |
+| eth\_getFilterChanges                    | 20                          |               |
+| eth\_newBlockFilter                      | 20                          |               |
+| eth\_newFilter                           | 20                          |               |
+| eth\_newPendingTransactionFilter         | 20                          |               |
+| eth\_getBlockTransactionCountByHash      | 20                          |               |
+| eth\_getBlockTransactionCountByNumber    | 20                          |               |
+| eth\_getProof                            | ~~21~~ 20                   |               |
+| eth\_getBlockByHash                      | ~~21~~ 20                   |               |
+| erigon\_forks                            | ~~24~~ 20                   |               |
+| erigon\_getHeaderByHash                  | ~~24~~ 20                   |               |
+| erigon\_getHeaderByNumber                | ~~24~~ 20                   |               |
+| erigon\_getLogsByHash                    | ~~24~~ 20                   |               |
+| erigon\_issuance                         | ~~24~~ 20                   |               |
+| eth\_getTransactionCount                 | ~~26~~ 20                   |               |
+| eth\_call                                | 26                          |               |
+| eth\_getFilterLogs                       | ~~75~~ 60                   |               |
+| eth\_getLogs                             | ~~75~~ 60                   |               |
+| eth\_estimateGas                         | ~~87~~ 20                   |               |
+| eth\_sendRawTransaction                  | ~~250~~ 40                  | 250           |
+| eth\_getBlockReceipts                    | ~~500~~ 20                  | 500           |
+| batch                                    | CU of method # times called |               |
+
+* To view the batch request breakdown in the dashboard, click on "raw request"
+
+# Polygon PoS Specific Methods
+
+| Method                    | CU |
+| ------------------------- | -- |
+| bor\_getAuthor            | 10 |
+| bor\_getCurrentProposer   | 10 |
+| bor\_getCurrentValidators | 10 |
+| bor\_getRootHash          | 10 |
+| bor\_getSignersAtHash     | 10 |
+
+# Polygon zkEVM Specific Methods
+
+| Method                          | CU |
+| ------------------------------- | -- |
+| zkevm\_batchNumber              | 10 |
+| zkevm\_batchNumberByBlockNumber | 10 |
+| zkevm\_consolidatedBlockNumber  | 10 |
+| zkevm\_getBatchByNumber         | 10 |
+| zkevm\_getBroadcastURI          | 10 |
+| zkevm\_isBlockConsolidated      | 10 |
+| zkevm\_isBlockVirtualized       | 10 |
+| zkevm\_verifiedBatchNumber      | 10 |
+| zkevm\_virtualBatchNumber       | 10 |
+| zkevm\_estimateFee              | 40 |
+| zkevm\_estimateGasPrice         | 40 |
+
+# zkSync Era Specific Methods
+
+All zkSync Era specific methods cost 10 CUs, this includes the methods listed below:
+
+* [zks-estimatefee-zksync](/reference/zks-estimatefee-zksync)
+* [zks-estimategasl1tol2-zksync](/reference/zks-estimategasl1tol2-zksync)
+* [zks-getallaccountbalances-zksync](/reference/zks-getallaccountbalances-zksync)
+* [zks-getblockdetails-zksync](/reference/zks-getblockdetails-zksync)
+* [zks-getbridgecontracts-zksync](/reference/zks-getbridgecontracts-zksync)
+* [zks-getbytecodebyhash-zksync](/reference/zks-getbytecodebyhash-zksync)
+* [zks-getl1batchblockrange-zksync](/reference/zks-getl1batchblockrange-zksync)
+* [zks-getl1batchdetails-zksync](/reference/zks-getl1batchdetails-zksync)
+* [zks-getl2tol1logproof-zksync](/reference/zks-getl2tol1logproof-zksync)
+* [zks-getl2tol1msgproof-zksync](/reference/zks-getl2tol1msgproof-zksync)
+* [zks-getmaincontract-zksync](/reference/zks-getmaincontract-zksync)
+* [zks-getproof-zksync](/reference/zks-getproof-zksync)
+* [zks-getrawblocktransactions-zksync](/reference/zks-getrawblocktransactions-zksync)
+* [zks-gettestnetpaymaster-zksync](/reference/zks-gettestnetpaymaster-zksync)
+* [zks-gettransactiondetails-zksync](/reference/zks-gettransactiondetails-zksync)
+* [zks-l1batchnumber-zksync](/reference/zks-l1batchnumber-zksync)
+* [zks-l1chainid-zksync](/reference/zks-l1chainid-zksync)
+
+# Gas Manager & Bundler APIs
+
+Similar to the [NFT API](/reference/compute-unit-costs#nft-api), the Gas Manager & Bundler APIs implement "Throughput CU" to count separately toward your applications' throughput!
+
+| Method                                     | CU         | Throughput CU |
+| ------------------------------------------ | ---------- | ------------- |
+| eth\_sendUserOperation                     | 1000       | 100           |
+| eth\_estimateUserOperationGas              | ~~500~~ 40 | 50            |
+| eth\_getUserOperationByHash                | ~~17~~ 20  | 17            |
+| eth\_getUserOperationReceipt               | ~~15~~ 20  | 15            |
+| eth\_supportedEntryPoints                  | ~~5~~ 10   | 5             |
+| rundler\_maxPriorityFeePerGas              | 10         | 10            |
+| alchemy\_simulateUserOperationAssetChanges | 2500       | 2500          |
+| alchemy\_requestPaymasterAndData           | 1000       | 100           |
+| alchemy\_requestGasAndPaymasterAndData     | 1250       | 125           |
+
+# Embedded Account APIs
+
+Similar to the [NFT API](/reference/compute-unit-costs#nft-api), the Embedded Account APIs implement "Throughput CU" to count separately toward your applications' throughput!
+
+| Method               | CU   | Throughput CU |
+| -------------------- | ---- | ------------- |
+| /signer/auth         | 100  | 50            |
+| /signer/lookup       | 100  | 50            |
+| /signer/signup       | 1000 | 300           |
+| /signer/sign-payload | 6000 | 300           |
+| /signer/whoami       | 100  | 20            |
+
+# Standard Starknet JSON-RPC Methods
+
+| Method                                    | CU          |
+| ----------------------------------------- | ----------- |
+| starknet\_getBlockWithTxHashes            | ~~16~~ 20   |
+| starknet\_getBlockWithTxs                 | ~~16~~ 20   |
+| starknet\_getStateUpdate                  | ~~21~~ 20   |
+| starknet\_getStorageAt                    | ~~17~~ 20   |
+| starknet\_getTransactionByHash            | ~~17~~ 20   |
+| starknet\_getTransactionByBlockIdAndIndex | ~~15~~ 20   |
+| starknet\_getTransactionReceipt           | ~~15~~ 20   |
+| starknet\_getClass                        | ~~19~~ 20   |
+| starknet\_getClassHashAt                  | ~~19~~ 20   |
+| starknet\_getClassAt                      | ~~19~~ 20   |
+| starknet\_getBlockTransactionCount        | 20          |
+| starknet\_call                            | ~~26~~ 20   |
+| starknet\_blockNumber                     | ~~10~~ 20   |
+| starknet\_blockHashAndNumber              | ~~10~~ 20   |
+| starknet\_chainId                         | 0           |
+| starknet\_pendingTransactions             | ~~50~~ 20   |
+| starknet\_syncing                         | 0           |
+| starknet\_getNonce                        | ~~26~~ 20   |
+| starknet\_getEvents                       | ~~75~~ 20   |
+| starknet\_estimateFee                     | ~~87~~ 20   |
+| starknet\_addInvokeTransaction            | ~~250~~ 160 |
+| starknet\_addDeclareTransaction           | ~~250~~ 160 |
+| starknet\_addDeployAccountTransaction     | ~~250~~ 160 |
+| starknet\_estimateMessageFee              | ~~87~~ 20   |
+| starknet\_getBlockWithReceipts            | 20          |
+| starknet\_traceBlockTransactions          | 80          |
+| starknet\_specVersion                     | 10          |
+| starknet\_getTransactionStatus            | 20          |
+| starknet\_simulateTransactions            | 20          |
+
+# Standard Solana JSON-RPC Methods
+
+| Method                            | CU                          |
+| --------------------------------- | --------------------------- |
+| getLeaderSchedule                 | ~~5~~ 20                    |
+| requestAirdrop                    | ~~5~~ 20                    |
+| getVoteAccounts                   | 5                           |
+| getBlockCommitment                | 5                           |
+| getBlocksWithLimit                | ~~5~~ 20                    |
+| getHealth                         | ~~5~~ 20                    |
+| getIdentity                       | ~~5~~ 20                    |
+| getLatestBlockhash                | ~~7~~ 20                    |
+| getSlot                           | ~~7~~ 20                    |
+| getInflationRate                  | ~~8~~ 20                    |
+| getMaxRetransmitSlot              | ~~8~~ 20                    |
+| getRecentPerformanceSamples       | ~~8~~ 20                    |
+| getEpochInfo                      | ~~9~~ 20                    |
+| getTokenAccountBalance            | ~~9~~ 20                    |
+| getBlockTime                      | ~~9~~ 20                    |
+| getHighestSnapshotSlot            | ~~9~~ 20                    |
+| sendTransaction                   | 10                          |
+| getEpochSchedule                  | ~~10~~ 20                   |
+| getStakeActivation                | ~~10~~ 20                   |
+| getMaxShredInsertSlot             | ~~10~~ 20                   |
+| getVersion                        | ~~10~~ 20                   |
+| isBlockhashValid                  | ~~10~~ 20                   |
+| getAccountInfo                    | 10                          |
+| getFeeForMessage                  | ~~10~~ 20                   |
+| getFees                           | ~~10~~ 20                   |
+| getConfirmedBlocks                | ~~10~~ 20                   |
+| getTokenLargestAccounts           | ~~10~~ 20                   |
+| getTokenOwnersByDelegate          | 10                          |
+| getInflationGovernor              | ~~10~~ 20                   |
+| getSlotLeader                     | ~~11~~ 20                   |
+| getMultipleAccounts               | 11                          |
+| minimumLedgerSlot                 | ~~11~~ 20                   |
+| getBlockHeight                    | ~~11~~ 20                   |
+| simulateTransaction               | ~~11~~ 20                   |
+| getFeeCalculatorForBlockhash      | 11                          |
+| getSignatureStatuses              | ~~11~~ 20                   |
+| getRecentBlockhash                | ~~12~~ 10                   |
+| getBlocks                         | ~~12~~ 10                   |
+| getTokenAccountsByOwner           | ~~12~~ 10                   |
+| getMinimumBalanceForRentExemption | ~~12~~ 10                   |
+| getBalance                        | ~~12~~ 10                   |
+| getGenesisHash                    | ~~13~~ 10                   |
+| getBlockProduction                | ~~13~~ 10                   |
+| getTokenSupply                    | ~~14~~ 20                   |
+| getTransactionCount               | 16                          |
+| getSlotLeaders                    | ~~16~~ 20                   |
+| getClusterNodes                   | ~~23~~ 20                   |
+| getSignaturesForAddress           | ~~28~~ 20                   |
+| getFirstAvailableBlock            | ~~33~~ 40                   |
+| getConfirmedSignaturesForAddress2 | ~~35~~ 40                   |
+| getConfirmedTransaction           | ~~38~~ 40                   |
+| getTransaction                    | ~~59~~ 40                   |
+| getBlock                          | ~~66~~ 40                   |
+| getProgramAccounts                | ~~117~~ 20                  |
+| getConfirmedBlock                 | ~~151~~ 40                  |
+| getInflationReward                | ~~341~~ 40                  |
+| getSupply                         | ~~822~~ 160                 |
+| getLargestAccounts                | 3000                        |
+| batch\*                           | CU of method # times called |
+
+* To view the batch request breakdown in the dashboard, click on "raw request"
+
+# Notify and Subscription APIs
+
+Webhook ([Notify API](/reference/notify-api-quickstart)) and WebSocket [WebSocket Subscriptions](/docs/websocket-subscriptions) on Alchemy are priced based on **bandwidth:** the amount of data delivered as part of the subscription.
+
+Each subscription type is priced identically per byte:
+
+| Bandwidth | CU  |
+| --------- | --- |
+| 1 byte    | .04 |
+
+On average, a typical webhook or WebSocket subscription event is about 1000 bytes, so it would consume 40 compute units. Note that this can vary significantly based on the specific event delivered [Subscription API Quickstart](/reference/subscription-api)
+
+# Compute unit cost for error codes
+
+| Error                                        | Compute Units                 |
+| -------------------------------------------- | ----------------------------- |
+| Non-existing methods                         | 0                             |
+| `429`                                        | 0                             |
+| Other `4xx` or `5xx`                         | CU value of specific endpoint |
+| `32600: IP Address not on whitelist`         | 0                             |
+| `32600: App is inactive`                     | 0                             |
+| `32600: Unspecified origin not on whitelist` | 0                             |

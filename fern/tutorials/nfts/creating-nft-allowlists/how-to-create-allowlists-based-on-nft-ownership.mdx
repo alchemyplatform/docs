@@ -1,0 +1,252 @@
+---
+title: "How to Create an NFT Allowlist Based on Ownership"
+description: "Learn how to create on-chain allowlists based on previously owned NFTs"
+url: "https://docs.alchemy.com/docs/how-to-create-allowlists-based-on-nft-ownership"
+slug: "docs/how-to-create-allowlists-based-on-nft-ownership"
+---
+
+
+The most successful NFT PFP projects usually like to reward their community with continuing utility. One of the most common ways of doing this is by allowing existing holders to mint free NFTs from their subsequent collections.
+
+![1024](4b3835a-nft.png "nft.png")
+
+BAYC NFT holders were able to mint MAYC NFTs for free at the time of release
+
+Another fairly common design paradigm is to allow NFT holders of a project you do not own to mint NFTs from your collection for free or at a discounted rate. This is usually done to incentivize some of the most active collectors in the NFT ecosystem to participate in your project.
+
+Fortunately, building allowlists that query ownership data on already deployed contracts is fairly simple on Ethereum and other EVM-based blockchains. In this article, we will write an NFT collectible smart contract using Solidity and Hardhat that allows users to mint NFTs only if they own an NFT from another pre-determined collection.
+
+## Creating the Allowlist Contract
+
+### Step 1: Install Node and npm
+
+In case you haven't already, [install node and npm](https://nodejs.org/en/download/) on your local machine. Make sure that node is at least v14 or higher by typing the following in your terminal:
+
+```
+node -v
+```
+
+### Step 2: Create a Hardhat project
+
+We're going to set up our project using [Hardhat](https://hardhat.org/), the industry-standard development environment for Ethereum smart contracts. Additionally, we'll also install [OpenZeppelin](https://www.openzeppelin.com/) contracts.
+
+***To set up Hardhat, run the following commands in your terminal:***
+
+<CodeGroup>
+  ```bash bash
+  mkdir nft-allowlist && cd nft-allowlist
+  npm init -y
+  npm install --save-dev hardhat
+  npx hardhat
+  ```
+</CodeGroup>
+
+Choose `Create a Javascript project` from the menu and accept all defaults. To ensure everything is installed correctly, run the following command in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat test
+  ```
+</CodeGroup>
+
+***To install OpenZeppelin:***
+
+<CodeGroup>
+  ```bash bash
+  npm install @openzeppelin/contracts
+  ```
+</CodeGroup>
+
+### Step 3: Write the original NFT smart contract
+
+In order to create an NFT smart contract that allows mints based on ownership of another NFT collection, we need to either get the deployed address of the original NFT collection or write one from scratch.
+
+Since we are working in a local development environment, we will do the latter. Create a file called `OGCollection.sol` in the `contracts` folder and add the following code:
+
+<CodeGroup>
+  ```sol OGCollection.sol
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.4;
+
+  import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+  import "@openzeppelin/contracts/utils/Counters.sol";
+
+  contract OGCollection is ERC721 {
+
+  	using Counters for Counters.Counter;
+      Counters.Counter private _tokenIds;
+
+      constructor() ERC721("Original Collection", "OGC") {}
+  		
+  		function mintNft() public {
+  		    uint256 tokenId = _tokenIds.current();
+          _mint(msg.sender, tokenId);
+          _tokenIds.increment();
+  		}
+  }
+  ```
+</CodeGroup>
+
+### Step 4: Write the NFT Smart Contract with Allowlist
+
+Let’s now write an NFT smart contract that allows mint only if a wallet holds an NFT from the OG collection above. In order to do this, we will have to invoke the `balanceOf()` function of `OGCollection` provided to it by OpenZeppelin’s ERC-721 implementation.
+
+To make sure that our contract can actually call the aforementioned function, we need to provide it with the function’s signature. We will do this using Solidity interfaces.
+
+In the `contracts` folder, create a new file called `NftWithAllowlist.sol` and add the following code:
+
+<CodeGroup>
+  ```sol NftWithAllowlist.sol
+  //SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
+
+  import "hardhat/console.sol";
+  import "@openzeppelin/contracts/utils/Counters.sol";
+  import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+  interface OGCollectionInterface {
+      // Define signature of balanceOf
+      function balanceOf(address owner) external view returns (uint256);
+  }
+
+  contract NFTAllowlist is ERC721 {
+      using Counters for Counters.Counter;
+      
+      Counters.Counter private _tokenIds;
+
+      // Deployed address of original collection
+      address public ogContractAddress;
+      OGCollectionInterface ogContract;
+      
+      constructor(address _ogContractAddress) ERC721("NFT Allowlist Demo", "NAD") {
+          ogContractAddress = _ogContractAddress;
+          ogContract = OGCollectionInterface(ogContractAddress);
+      }
+
+      // Presale mint
+      function preSale() public {
+          require(ogContract.balanceOf(msg.sender) > 0, "Don't have NFT from original collection.");
+
+          for (uint i = 0; i < 2; i++) {
+              _mintSingleNFT();
+          }
+
+          console.log("2 NFTs minted using allowlist.");    
+      }
+      
+      function _mintSingleNFT() private {
+          uint newTokenID = _tokenIds.current();
+          _safeMint(msg.sender, newTokenID);
+          _tokenIds.increment();
+      }
+  }
+  ```
+</CodeGroup>
+
+Compile the contracts and make sure everything is working by running:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat compile
+  ```
+</CodeGroup>
+
+### Step 5: Test the allowlist functionality locally
+
+Next, write a script that allows us to test the allowlist locally. To do this, create a new file called run.jsin the scripts folder, then add the following code:
+
+<CodeGroup>
+  ```javascript run.js
+  const hre = require("hardhat");
+
+  async function main() {
+
+      // Get wallet addresses from hardhat
+      const [owner, address1, address2] = await hre.ethers.getSigners();
+
+      // Deploy OG collection and get deployed contract address
+      const ogFactory = await hre.ethers.getContractFactory("OGCollection");
+      const ogContract = await ogFactory.deploy();
+
+      await ogContract.deployed();
+      console.log("OG Collection deployed to: ", ogContract.address, "\n");
+
+      ogContractAddress = ogContract.address
+
+      // Mint OG NFTs to address1
+      let txn;
+      txn = await ogContract.connect(address1).mintNft();
+      await txn.wait()
+      console.log("1 OG NFT minted to ", address1.address);
+
+      // Deploy contract with allowlist 
+      const alFactory = await hre.ethers.getContractFactory("NftWithAllowlist");
+      const alContract = await alFactory.deploy(ogContractAddress);
+
+      await alContract.deployed();
+      console.log("NFT with Allowlist deployed to: ", alContract.address, "\n");
+
+      // Mint NFTs from address1 (has OG NFT)
+      console.log("Minting NFTs from address with OG NFT...")
+      txn = await alContract.connect(address1).preSale();
+      await txn.wait();
+
+      // Mint NFTs from address2 (does not have OG NFT)
+      console.log("\nMinting NFTs from address without OG NFT...")
+      txn = await alContract.connect(address2).preSale();
+      await txn.wait();
+  }
+
+  main()
+      .then(() => process.exit(0))
+      .catch((error) => {
+          console.error(error);
+          process.exit(1);
+      });
+  ```
+</CodeGroup>
+
+Run this script by running the following command in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat run scripts/run.js
+  ```
+</CodeGroup>
+
+You should see output that looks like this:
+
+<CodeGroup>
+  ```bash bash
+  OG Collection deployed to:  0x5FbDB2315678afecb367f032d93F642f64180aa3 
+
+  1 OG NFT minted to  0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+  NFT with Allowlist deployed to:  0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 
+
+  Minting NFTs from address with OG NFT...
+  2 NFTs minted using allowlist.
+
+  Minting NFTs from address without OG NFT...
+  Error: VM Exception while processing transaction: reverted with reason string 'Don't have NFT from original collection.'
+      at NftWithAllowlist.preSale (contracts/NftWithAllowlist.sol:29)
+      at HardhatNode._mineBlockWithPendingTxs (/Users/rounakbanik/alchemy-tut/nft-allowlist-2/node_modules/hardhat/src/internal/hardhat-network/provider/node.ts:1773:23)
+      at HardhatNode.mineBlock (/Users/rounakbanik/alchemy-tut/nft-allowlist-2/node_modules/hardhat/src/internal/hardhat-network/provider/node.ts:466:16)
+      at EthModule._sendTransactionAndReturnHash (/Users/rounakbanik/alchemy-tut/nft-allowlist-2/node_modules/hardhat/src/internal/hardhat-network/provider/modules/eth.ts:1504:18)
+      at HardhatNetworkProvider.request (/Users/rounakbanik/alchemy-tut/nft-allowlist-2/node_modules/hardhat/src/internal/hardhat-network/provider/provider.ts:118:18)
+      at EthersProviderWrapper.send (/Users/rounakbanik/alchemy-tut/nft-allowlist-2/node_modules/@nomiclabs/hardhat-ethers/src/internal/ethers-provider-wrapper.ts:13:20)
+  ```
+</CodeGroup>
+
+Above, you can see that an address with the OG NFT was able to mint but an address without the OG NFT was not.
+
+## Conclusion
+
+Congratulations! You now know how to implement an on-chain NFT allowlist based on previously owned NFTs.
+
+If you enjoyed this tutorial about creating on-chain allowlists, tweet us at [@AlchemyPlatform](https://twitter.com/AlchemyPlatform) and give us a shoutout!
+
+Don't forget to join our [Discord server](https://www.alchemy.com/discord) to meet other blockchain devs, builders, and entrepreneurs!
+
+Ready to start building your NFT collection?
+
+[Create a free Alchemy account](https://alchemy.com/?a=22e42c85f0) and do share your project with us!

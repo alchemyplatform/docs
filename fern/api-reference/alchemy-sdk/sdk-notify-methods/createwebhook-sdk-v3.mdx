@@ -1,0 +1,173 @@
+---
+title: "createWebhook - SDK"
+description: "This endpoint allows you to create a webhook. Note that the webhook will be created in the app network of the provided app id."
+url: "https://docs.alchemy.com/reference/createwebhook-sdk-v3"
+slug: "reference/createwebhook-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+This endpoint allows you to create a webhook.
+
+Note that the webhook will be created in the app network of the provided app id.
+
+# Parameters
+
+| Name     | Type     | Description                                                                                                                                         |
+| -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `url`    | `string` | The URL that the webhook should send events to.                                                                                                     |
+| `type`   | `string` | The type of webhook to create. Available options include: `MINED_TRANSACTION`, `DROPPED_TRANSACTION`, `ADDRESS_ACTIVITY`, `NFT_ACTIVITY`, `GRAPHQL` |
+| `params` | `object` | Params object containing the parameters required to create a webhook depending on the `type` of webhook to be created.                              |
+
+### `params` Parameters
+
+<Info>
+  Include only one of these `params` objects as the third parameter.
+</Info>
+
+| Name                         | Type     | Description                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `TransactionWebhookParams`   | `object` | Used for Mined / Dropped Transaction Webhooks, i.e., `MINED_TRANSACTION` & `DROPPED_TRANSACTION`. Parameters in this object include: 1. `appId` - `string` The app id of the project to create the mined/dropped transaction webhook on.                                                                                                                                       |
+| `AddressWebhookParams`       | `object` | Used for Address Activity Webhooks, i.e., `ADDRESS_ACTIVITY`. Parameters here include: 1. `addresses` - `array of strings` Array of addresses the webhook should track activity for. 2. `network` - `string` Optional network to create the webhook on. If omitted, the webhook will be created on network of the app provided in the api key config.                          |
+| `NftWebhookParams`           | `object` | Used for NFT Filter Webhooks, i.e.,`NFT_ACTIVITY`. Parameters here include: 1. `addresses` - `array of objects` Array of NFT filters the webhook should track containing the `contractAddress` and `tokenId`. 2. `network` - `string` Optional network to create the webhook on. If omitted, the webhook will be created on network of the app provided in the api key config. |
+| `CustomGraphqlWebhookParams` | `object` | Used for Custom Webhooks, i.e.,`GRAPHQL`. Parameters here include: 1. `graphqlQuery` - `string` A valid, stringified GraphQL query that you would like to host on Alchemy 2. `network` - `string` Optional network to create the webhook on. If omitted, the webhook will be created on network of the app provided in the api key config.                                     |
+
+# Response
+
+| Property                             | Type     | Description                    |
+| ------------------------------------ | -------- | ------------------------------ |
+| `Promise<DroppedTransactionWebhook>` | `object` | Returns webhook creation data. |
+
+### `DroppedTransactionWebhook` response object parameters
+
+| Property     | Type      | Description                                                                                                                                                                 |
+| ------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`       | `string`  | Type of webhook. `MINED_TRANSACTION`, `DROPPED_TRANSACTION`, `ADDRESS_ACTIVITY`, `NFT_ACTIVITY`                                                                             |
+| `id`         | `string`  | Unique ID for given webhook.                                                                                                                                                |
+| `network`    | `string`  | Network of webhook. `ETH_MAINNET` `ETH_GOERLI` `ETH_ROPSTEN` `ETH_RINKEBY` `ETH_KOVAN` `MATIC_MAINNET` `MATIC_MUMBAI` `ARB_MAINNET` `ARB_RINKEBY` `OPT_MAINNET` `OPT_KOVAN` |
+| `url`        | `string`  | URL endpoint where webhook is sent                                                                                                                                          |
+| `isActive`   | `boolean` | `true` if webhook is active, `false` if not active.                                                                                                                         |
+| `timeStamp`  | `string`  | Timestamp webhook was created.                                                                                                                                              |
+| `signingKey` | `string`  | Signing key for given webhook.                                                                                                                                              |
+| `version`    | `string`  | Webhook version (v1 or v2).                                                                                                                                                 |
+| `appId`      | `string`  | Only exists for **Mined / Dropped Transactions**. The App ID of the project the webhook is connected to.                                                                    |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Setup: npm install alchemy-sdk
+  // Github: https://github.com/alchemyplatform/alchemy-sdk-js
+  import { Alchemy, Network, WebhookType } from "alchemy-sdk";
+
+  // authToken is required to use Notify APIs. Found on the top right corner of
+  // https://dashboard.alchemy.com/notify.
+  const settings = {
+    authToken: "your-notify-auth-token",
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  const minedTxWebhook = await alchemy.notify.createWebhook(
+    "https://webhook.site/your-webhook-url",
+    WebhookType.MINED_TRANSACTION,
+    { appId: "wq9fgv022aff81pg" }
+  );
+
+  const droppedTxWebhook = await alchemy.notify.createWebhook(
+    "https://webhook.site/your-webhook-url",
+    WebhookType.DROPPED_TRANSACTION,
+    { appId: "wq9fgv022aff81pg" }
+  );
+
+  const addressActivityWebhook = await alchemy.notify.createWebhook(
+    "https://webhook.site/your-webhook-url",
+    WebhookType.ADDRESS_ACTIVITY,
+    {
+      addresses: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96010"],
+      network: Network.ETH_MAINNET,
+    }
+  );
+
+  const customGraphQLWebhook = await alchemy.notify.createWebhook(
+    "https://webhook.site/your-webhook-url",
+    WebhookType.GRAPHQL,
+    {
+      graphqlQuery: "{   block {     # Block hash is a great primary key to use for your data stores!     hash,     number,     timestamp,     # Add smart contract addresses to the list below to filter for specific logs     logs(filter: {addresses: [], topics: []}) {        data,       topics,       index,       account {         address       },       transaction {         hash,         nonce,         index,         from {           address         },         to {           address         },         value,         gasPrice,         maxFeePerGas,         maxPriorityFeePerGas,         gas,         status,         gasUsed,         cumulativeGasUsed,         effectiveGasPrice,         createdContract {           address         }       }     }   } }"
+      network: Network.ETH_MAINNET,
+    }
+  );
+
+  const nftActivityWebhook = await alchemy.notify.createWebhook(
+    "https://webhook.site/your-webhook-url",
+    WebhookType.NFT_ACTIVITY,
+    {
+      filters: [
+        {
+          contractAddress: "0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656",
+          tokenId: "234",
+        },
+      ],
+      network: Network.ETH_MAINNET,
+    }
+  );
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+    "id": "string",
+    "network": "ETH_MAINNET",
+    "type": "MINED_TRANSACTION",
+    "url": "string",
+    "isActive": true,
+    "timeCreated": "string",
+    "signingKey": "string",
+    "version": "string",
+    "appId": "string"
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `createWebhook` method:
+
+* **Notification of a completed transaction**: If you have a web or mobile application that relies on completing transactions, you can use `createWebhook` to notify your application when a transaction is completed. This way, you can provide your users with real-time updates on the status of their transactions.
+
+* **Monitoring data changes**: If you have a database or a system that stores data, you can use `createWebhook` to monitor changes in the data. This can be useful if you need to keep track of updates to customer information, inventory levels, or any other data that is important to your business.
+
+* **Real-time updates for chat applications**: If you have a chat application, you can use `createWebhook` to notify your users in real-time when a new message is received or when a user has joined or left the chat.
+
+# Related Methods
+
+* [updateWebhook](/reference/updatewebhook-sdk): Update a `NftActivityWebhook's` active status or NFT filters.
+
+* [deleteWebhook](/reference/deletewebhook-sdk): Delete a webhook.

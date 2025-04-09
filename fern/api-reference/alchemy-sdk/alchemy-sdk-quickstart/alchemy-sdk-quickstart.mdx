@@ -1,0 +1,209 @@
+---
+title: "Alchemy SDK Quickstart"
+description: "The easiest way to connect your dApp to the blockchain and get the power of Alchemy's infrastructure. Just download, write two lines of code, and go."
+url: "https://docs.alchemy.com/reference/alchemy-sdk-quickstart"
+slug: "reference/alchemy-sdk-quickstart"
+---
+
+
+The Alchemy SDK is the most comprehensive, stable, and powerful Javascript SDK available today to interact with the blockchain.
+
+It supports the exact same syntax and functionality of the Ethers.js AlchemyProvider and WebSocketProvider, making it a 1:1 mapping for anyone using the Ethers.js Provider. However, it adds a significant amount of improved functionality on top of Ethers, such as easy access to Alchemy’s Enhanced and NFT APIs, robust WebSockets, and quality-of life improvements such as automated retries.
+
+The SDK leverages Alchemy's hardened node infrastructure, guaranteeing best-in-class node reliability, scalability, and data correctness, and is undergoing active development by Alchemy's engineers.
+
+# Getting started
+
+Check out the full Github repo here:
+
+[![GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](alchemy-sdk-js.png)](https://github.com/alchemyplatform/alchemy-sdk-js)
+
+[![github.com](favicon.ico)github.com](https://github.com/alchemyplatform/alchemy-sdk-js)
+
+[GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](https://github.com/alchemyplatform/alchemy-sdk-js)
+
+## 1. Install the SDK:
+
+<CodeGroup>
+  ```shell NPM
+  npm install alchemy-sdk
+  ```
+
+  ```text Yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## 2. After installing the app, you can then import and use the SDK:
+
+<CodeGroup>
+  ```javascript SDK.js
+  const { Network, Alchemy } = require('alchemy-sdk');
+
+  // Optional Config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+    apiKey: '<YOUR_API_KEY_HERE>', // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+  ```
+</CodeGroup>
+
+<Warning>
+  The public "demo" API key may be rate limited based on traffic. To create your own API key, **[sign up for an Alchemy account here](https://alchemy.com/?a=SDKquickstart)** and use the key created on your dashboard for the first app.
+</Warning>
+
+The `Alchemy` object returned by `new Alchemy()` provides access to the Alchemy API. An optional config object can be passed in when initializing to set your API key, change the network, or specify the max number of retries.
+
+## 3. Make requests using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript SDK.js
+  import { Network, Alchemy } from 'alchemy-sdk';
+
+  // Optional Config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+    apiKey: 'demo', // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  // Access standard Ethers.js JSON-RPC node request
+  alchemy.core.getBlockNumber().then(console.log);
+
+  // Access Alchemy Enhanced API requests
+  alchemy.core.getTokenBalances("0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE").then(console.log);
+
+  // Access the Alchemy NFT API
+  alchemy.nft.getNftsForOwner('vitalik.eth').then(console.log);
+
+  // Access WebSockets and Alchemy-specific WS methods
+  alchemy.ws.on(
+    {
+      method: 'alchemy_pendingTransactions'
+    },
+    res => console.log(res)
+  );
+  ```
+</CodeGroup>
+
+The Alchemy SDK currently supports five different namespaces, including:
+
+* `core`: All commonly-used Ethers.js Provider methods and Alchemy Enhanced API methods
+* `nft`: All Alchemy NFT API methods
+* `ws`: All WebSockets methods
+* `transact`: All Alchemy Transaction API methods
+* `notify`: CRUD endpoints for modifying Alchemy Notify Webhooks
+
+If you are already using Ethers.js, you should be simply able to replace the Ethers.js Provider object with `alchemy.core` and it should just work.
+
+The Alchemy SDK also supports a number of Ethers.js objects that streamline the development process:
+
+* [`Utils`](https://docs.ethers.io/v5/api/utils/): Equivalent to `ethers.utils`, this provides a number of common Ethers.js utility methods for developers.
+* [`Contract`](https://docs.ethers.io/v5/api/contract/contract/): An abstraction for smart contract code deployed to the blockchain.
+* [`ContractFactory`](https://docs.ethers.io/v5/api/contract/contract-factory/): Allows developers to build a `Contract` object.
+* [`Wallet`](https://docs.ethers.io/v5/api/signer/#Wallet): An implementation of `Signer` that can sign transactions and messages using a private key as a standard Externally Owned Account.
+
+<Info>
+  [If you're looking for more information about accessing any of the Alchemy SDK namespaces, objects, or specific implementation details, go to the link above!](/reference/alchemy-sdk-api-surface-overview)
+</Info>
+
+<Info>
+  To contribute to the Alchemy SDK, visit our [Github](https://github.com/alchemyplatform/alchemy-sdk-js) or click [here](https://github.com/alchemyplatform/aa-sdk/archive/refs/heads/main.zip) to download the files.
+</Info>
+
+## Alchemy SDK Example Requests
+
+<Info>
+  [You can find a long list of examples on how to use the SDK here.](/reference/using-the-alchemy-sdk)
+</Info>
+
+### Getting the NFTs owned by an address
+
+<CodeGroup>
+  ```javascript SDK.js
+  import {  
+    NftExcludeFilters,  
+    Alchemy  
+  } from 'alchemy-sdk';
+
+  const alchemy = new Alchemy();
+
+  // Get how many NFTs an address owns.  
+  alchemy.nft.getNftsForOwner('vitalik.eth').then(nfts => {  
+    console.log(nfts.totalCount);  
+  });
+
+  // Get all the image urls for all the NFTs an address owns.  
+  async function main() {  
+    for await (const nft of alchemy.nft.getNftsForOwnerIterator('vitalik.eth')) {  
+      console.log(nft.media);  
+    }  
+  }
+
+  main();
+
+  // Filter out spam NFTs.  
+  alchemy.nft.getNftsForOwner('vitalik.eth', {  
+    excludeFilters: [NftExcludeFilters.SPAM]  
+  }).then(console.log);
+  ```
+</CodeGroup>
+
+### Getting all the owners of the BAYC NFT
+
+<CodeGroup>
+  ```javascript javascript
+  import {
+    Alchemy
+  } from 'alchemy-sdk';
+
+  const alchemy = new Alchemy();
+
+  // Bored Ape Yacht Club contract address.
+  const baycAddress = '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D';
+
+  async function main() {
+    for await (const nft of alchemy.nft.getNftsForContractIterator(baycAddress, {
+      // Omit the NFT metadata for smaller payloads.
+      omitMetadata: true,
+    })) {
+      await alchemy.nft
+        .getOwnersForNft(nft.contract.address, nft.tokenId)
+        .then((response) =>
+          console.log("owners:", response.owners, "tokenId:", nft.tokenId)
+        );
+    }
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+### Get all outbound transfers to a provided address
+
+<CodeGroup>
+  ```javascript ethers.js
+  import { Alchemy } from 'alchemy-sdk';
+
+  const alchemy = new Alchemy();
+
+  alchemy.core.getTokenBalances('vitalik.eth').then(
+    console.log
+  );
+  ```
+</CodeGroup>
+
+## Questions & Feedback
+
+<Check>
+  We'd love your thoughts on what would improve your web3 dev process the most! If you have 5 minutes, tell us what you want at our [Feature Request feedback form](https://alchemyapi.typeform.com/sdk-feedback) and we'd love to build it for you:
+
+  **[Alchemy SDK Feedback Form](https://alchemyapi.typeform.com/sdk-feedback)**
+</Check>
+
+If you have any questions, issues, or feedback, please file an issue on [GitHub](https://github.com/alchemyplatform/alchemy-sdk-js/issues), or drop us a message on our [Discord](https://discord.com/channels/735965332958871634/983472322998575174) channel for the SDK.
+
+This guide provides you with the code examples to get started with all of the Alchemy SDK. Check out our [Web3 Tutorials Overview](/docs/tutorials-overview) to learn more about building with Alchemy.

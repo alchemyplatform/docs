@@ -1,0 +1,235 @@
+---
+title: "summarizeNftAttributes - SDK"
+description: "Get a summary of attribute prevalence for an NFT collection."
+url: "https://docs.alchemy.com/reference/sdk-summarizenftattributes"
+slug: "reference/sdk-summarizenftattributes"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Get a summary of attribute prevalence for an NFT collection.
+
+# Parameters
+
+| Name              | Type     | Description                              |
+| ----------------- | -------- | ---------------------------------------- |
+| `contractAddress` | `string` | Contract address for the NFT collection. |
+
+# Response
+
+| Property                         | Type               | Description                                  |
+| -------------------------------- | ------------------ | -------------------------------------------- |
+| `Promise<NftAttributesResponse>` | `array of objects` | An array of objects containing nft metadata. |
+
+### `NftAttributesResponse` object parameters
+
+| Property          | Type     | Description                                                                            |
+| ----------------- | -------- | -------------------------------------------------------------------------------------- |
+| `contractAddress` | `string` | The specified NFT contract's address.                                                  |
+| `totalSupply`     | `number` | The specified NFT contract's total supply.                                             |
+| `summary`         | `string` | The attribute prevalence of each trait grouped by the trait type for the provided NFT. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      const collection = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
+
+      //Call the method to fetch a summary a attribute prevalence for an NFT collection.
+      const response = await alchemy.nft.summarizeNftAttributes(collection)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+    summary: {
+      Fur: {
+        Tan: 626,
+        'Death Bot': 175,
+        Trippy: 77,
+        Brown: 1370,
+        Gray: 496,
+        'Golden Brown': 778,
+        Blue: 490,
+        Noise: 155,
+        Zombie: 302,
+        Cream: 636,
+        'Solid Gold': 46,
+        Dmt: 215,
+        Black: 1229,
+        Cheetah: 406,
+        'Dark Brown': 1352,
+        Red: 474,
+        Pink: 511,
+        White: 397,
+        Robot: 265
+      },
+      Eyes: {
+        Heart: 394,
+        Sleepy: 751,
+        Eyepatch: 333,
+        'X Eyes': 243,
+        Zombie: 308,
+        Angry: 432,
+        Coins: 479,
+        'Blue Beams': 49,
+        'Wide Eyed': 549,
+        Hypnotized: 220,
+        Bloodshot: 846,
+        Blindfold: 264,
+        Sunglasses: 352,
+        '3d': 487,
+        Bored: 1714,
+        'Laser Eyes': 69,
+        Cyborg: 108,
+        Crazy: 407,
+        Closed: 710,
+        Sad: 551,
+        Scumbag: 233,
+        Robot: 350,
+        Holographic: 151
+      },
+      Background: {
+        Gray: 1170,
+        Aquamarine: 1266,
+        Blue: 1242,
+        Purple: 1291,
+        Yellow: 1283,
+        'New Punk Blue': 1232,
+        'Army Green': 1243,
+        Orange: 1273
+      },
+      Mouth: {
+        'Phoneme Vuh': 333,
+        Discomfort: 208,
+        'Bored Unshaven Pipe': 101,
+        'Bored Cigarette': 710,
+        Rage: 266,
+        'Bored Bubblegum': 119,
+        'Bored Pizza': 50,
+        Grin: 713,
+        'Bored Party Horn': 88,
+        Bored: 2272,
+        'Bored Unshaven Bubblegum': 65,
+        'Bored Unshaven Cigarette': 438,
+        Jovial: 296,
+        'Tongue Out': 202,
+        'Grin Multicolored': 116,
+        'Small Grin': 272,
+        'Bored Unshaven Party horn': 45,
+        'Phoneme  ooo': 255,
+        'Bored Unshaven': 1551,
+        'Bored Unshaven Pizza': 26,
+        'Bored Unshaven Dagger': 28,
+        'Phoneme Wah': 163,
+        'Phoneme Oh': 237,
+        Dumbfounded: 505,
+        'Bored Pipe': 132,
+        'Grin Gold Grill': 91,
+        'Bored Unshaven Cigar': 94,
+        'Phoneme L': 241,
+        'Bored Unshaven Kazoo': 61,
+        'Grin Diamond Grill': 78,
+        'Bored Dagger': 49,
+        'Bored Cigar': 121,
+        'Bored Kazoo': 74
+      },
+      Hat: {
+        "Trippy Captain's Hat": 65,
+        'Bayc Flipped Brim': 231,
+        'Short Mohawk': 318,
+        Safari: 182,
+        'Cowboy Hat': 354,
+        "Sea Captain's Hat": 304,
+        'Vietnam Era Helmet': 223,
+        'Sushi Chef Headband': 187,
+        'Irish Boho': 225,
+        "Girl's Hair Short": 150,
+        'Laurel Wreath': 72,
+        "Girl's Hair Pink": 105,
+        'Bayc Hat Red': 119,
+        Horns: 252,
+        "Fisherman's Hat": 345,
+        Bowler: 262,
+        'Spinner Hat': 181,
+        'Faux Hawk': 136,
+        "Seaman's Hat": 420,
+        'Ww2 Pilot Helm': 110,
+        'Party Hat 1': 120,
+        'Party Hat 2': 107,
+        Beanie: 578,
+        "King's Crown": 77,
+        'Army Hat': 294,
+        'Commie Hat': 304,
+        'Bunny Ears': 195,
+        'S&m Hat': 235,
+        'Stuntman Helmet': 157,
+        Fez: 377,
+        'Bandana Blue': 89,
+        'Bayc Hat Black': 228,
+        Halo: 324,
+        'Police Motorcycle Helmet': 130,
+        'Prussian Helmet': 130,
+        "Baby's Bonnet": 158
+      }
+    },
+    totalSupply: 10000,
+    contractAddress: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d'
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `summarizeNftAttributes` method using the code sandbox below:
+
+# Use Cases
+
+Here is a potential use case for the `summarizeNftAttributes` method:
+
+* Users can use the `summarizeNftAttributes` method to get an overview of all the traits in an NFT Collection and also find out which traits are rare.

@@ -1,0 +1,477 @@
+---
+title: "How to Get Notifications for NFT Contract Creations in Three Simple Steps"
+description: "Learn how to get real-time notifications about a successful NFT contract mint using Alchemy Notify webhooks"
+url: "https://docs.alchemy.com/docs/get-notifications-for-nft-contract-creations-in-three-simple-steps"
+slug: "docs/get-notifications-for-nft-contract-creations-in-three-simple-steps"
+---
+
+
+If you're the owner or developer of an NFT collection, getting critical updates about your NFT contract interactions can play a crucial role in the success of your NFT collection. Perhaps, you're a passionate NFT collector interested in getting the play-by-play progress of your favorite NFT collection. Regardless of your intentions, tracking smart contract on-chain activities can be arduous without the right tools.
+
+[Notify API](/reference/notify-api-quickstart), available on all ETH test and main networks, provides you with reliable webhook types that allow you to get real-time notifications about your smart contract transactions.
+
+In this article, we'll look at how you can use one of such webhook types, the [NFT Activity Webhook](/reference/nft-activity-webhook), to obtain real-time updates on the NFT collections you're interested in. To use the NFT activity webhook, you’ll need to [create a free alchemy account first](https://dashboard.alchemy.com/signup/?a=c349f62ee4).
+
+## Overview
+
+In three steps, we will create a webhook and test it to get notifications whenever anyone mints a new NFT from our tracked collection.
+
+1. [Set up The Webhook URL](#1-set-up-the-webhook-url)
+2. [Set up the NFT Activity Webhook](#2-set-up-the-nft-activity-webhook)
+3. [Test your Webhook](#3-test-your-webhook)
+
+With the NFT Activity Webhook, you can track the following:
+
+* All NFT transfers (by providing only a webhook URL),
+* All NFT transfers for a particular contract (by providing a webhook URL and an NFT contract address), or
+* A specific NFT (by providing a webhook URL, an NFT contract address, and the token id).
+
+For this article, we will be implementing the second option.
+
+## 1. Set up The Webhook URL
+
+To create the [NFT Activity Webhook](/reference/nft-activity-webhook), we need the following:
+
+* A webhook URL
+* NFT address you want to track
+
+### Getting A Webhook URL
+
+You can use cloud services like Heroku or even ngrok to generate your webhook URL. For this tutorial, we will be using Heroku.
+
+<Info>
+  If you don't have Heroku CLI set up on your local computer, you can [follow our short guide.](/docs/building-a-dapp-with-real-time-transaction-notifications#b-install-heroku-cli-and-verifyinstall-dependencies)
+
+  For `ngrok`, run `ngrok HTTP 80` from your local terminal and copy the resulting URL. If you don't have ngrok installed on your computer, [open an account](https://dashboard.ngrok.com/signup), and follow the installation instructions on your dashboard to set up and connect your ngrok account to your local computer. We also have a [short setup guide](/reference/notify-api-quickstart#test-webhooks-with-ngrok) you can follow.
+</Info>
+
+### Set up your project
+
+1. Create a folder with any name of your choice. In it, we will set up an `index.html` file with a basic setup, as shown below. Don't worry; we will make appropriate edits later.
+
+<CodeGroup>
+  ```html index.html
+  <html>
+      <head></head>
+      <body>
+          <h1>Hi!</h1>
+      </body>
+  </html>
+  ```
+</CodeGroup>
+
+2. Open your folder in your terminal and run `heroku create`. Take note of the URL: [http://xxxxxxxxx.herokuapp.com/](http://xxxxxxxxx.herokuapp.com/) and other generated information, as we'll be using them later. *If you're using an IDE like VSCode, right-click on the folder and open it in the integrated terminal.* Make sure you add `/alchemyhook` as a suffix, e.g., `https://immense-ravine-98866.herokuapp.com/alchemyhook` when using the URL as a webhook URL.
+
+## 2. Set up the NFT Activity Webhook
+
+We will prepare the webhook manually and programmatically so that you can learn both ways.
+
+<Info>
+  You need an alchemy account to use [Notify API](/reference/notify-api-quickstart). If you don't have one, visit [https://www.alchemy.com/](https://dashboard.alchemy.com/signup/?a=c349f62ee4) to sign up. It's fast and easy.
+</Info>
+
+### A) Setting up the NFT Activity Webhook Manually
+
+Head to the [Alchemy Notify Dashboard](https://dashboard.alchemy.com/notify/?a=c349f62ee4) to set up your webhook.
+
+1. In the [Notify dashboard](https://dashboard.alchemy.com/notify/?a=c349f62ee4), click on the ‘create webhook’ button highlighted below:
+
+![1179](1d61a99-Image_11-22-22_at_7.15_AM.jpeg "Image 11-22-22 at 7.15 AM.jpeg")
+
+2. Select the network type of your NFT contract and fill in the boxes with your desired NFT smart contract address(*optional*), token id(*optional*), and the webhook URL we created earlier, as shown below
+
+![1174](1782bfe-Image_12-1-22_at_7.49_PM.jpeg "Image 12-1-22 at 7.49 PM.jpeg")
+
+3. Click on the 'create webhook' button, and your webhook is up and running! Take note of the webhook id as we will be using it to test notifications.
+
+### B) Setting up the NFT Activity Webhook Programmatically
+
+To achieve this, we will:
+
+* Set up basic HTML inputs for the user to submit the following details: `webhook URL and NFT address`.
+* Set up a WebSocket that sends the value of the inputs to the server and displays the result.
+* Start a server and create a function that calls the [createWebhook](/reference/sdk-create-webhook) API endpoint with the inputs' value.
+
+<CodeGroup>
+  ```html index.html
+  <html>
+  <head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // connect to WebSocket server and start listening for notifications
+      let socket = io();
+      // listen for client connections/calls on the WebSocket server 
+      socket.on('addNFTnotif', (notificationBody) => {
+        console.log("got NFT notification", notificationBody);
+        el = document.getElementById('add-notification');
+        el.innerHTML = 'NFT added!: ' + notificationBody;
+        
+      });
+    </script>
+  </head>
+  <body>
+   <!-- Set up basic HTML inputs for the user to submit the following details:
+   `webhook URL and NFT contract address` -->
+    <p>Fill in the inputs below with the desired contract Address and webhook url</p>
+    <input name="contractAddress" placeholder="contract Address" type="text" maxlength="512" id="contractAddress"/>
+    <input name="webhook_url" placeholder="webhook url" type="text" maxlength="512" id="webhook_url"/>
+    <button class="enableHookButton">Create Your NFT Webhook </button>
+
+    <script>
+      //sends the value of the inputs to the server
+      const enableButton = document.querySelector('.enableHookButton');
+      enableButton.addEventListener('click', () => {
+        console.log("Creating NFT Webhook");
+        let contractAddress = document.querySelector('#contractAddress').value;
+        let webhook_url = document.querySelector('#webhook_url').value;
+        let data = 
+        {
+            "network": "ETH_MAINNET",
+            "nft_filters": [
+                 {
+                      "contract_address": contractAddress
+                 }
+            ],
+            "webhook_type": "NFT_ACTIVITY",
+            "webhook_url": webhook_url
+        }
+        if (webhook_url && contractAddress ) {
+          socket.emit('register address', data)
+          alert("Creating NFT Webhook.")
+        }
+        else (
+          alert("Fill all input.")
+        )
+      });
+    </script>
+    <p id="add-notification"></p>
+  </body>
+  </html>
+  ```
+
+  ```javascript server.js
+  const express = require('express')
+  const path = require('path')
+  const socketIO = require('socket.io');
+  const PORT = process.env.PORT || 5000
+  const fetch = require('node-fetch');
+
+  // start the express server with the appropriate routes for our webhook and web requests
+  var app = express()
+    .use(express.static(path.join(__dirname, 'public')))
+    .use(express.json())
+    .post('/alchemyhook', (req, res) => { notificationReceived(req); res.status(200).end() })
+    .get('/*', (req, res) => res.sendFile(path.join(__dirname + '/index.html')))
+    .listen(PORT, () => console.log(`Listening on ${PORT}`))
+
+  // start the websocket server
+  const io = socketIO(app);
+
+  // listen for client connections/calls on the WebSocket server
+  io.on('connection', (socket) => {
+    console.log('Client connected');
+    socket.on('disconnect', () => console.log('Client disconnected'));
+    socket.on('register address', (data) => {
+      addNFTWebhook(data)
+    })
+  });
+
+  async function addNFTWebhook(data) {
+    console.log("adding NFT track");
+
+    try {
+      fetch('https://dashboard.alchemy.com/api/create-webhook', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+        headers: { 'X-Alchemy-Token': 'AUTH_TOKEN'}
+      })
+        .then(res => res.json())
+        .then(json => io.emit('addNFTnotif', JSON.stringify(json)) )
+        .then(json => console.log("Successfully added address:", json))
+        .catch(err => console.log("Error! Unable to add address:", err));
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+  ```
+</CodeGroup>
+
+The resulting webpage will look like the image shown below. We will be testing this after **Step 3**
+
+![](6045610-Screenshot_2022-12-01_at_7.53.48_PM.png "Screenshot 2022-12-01 at 7.53.48 PM.png")
+
+**Tip:** Retrieve your auth token from the Notify Dashboard by clicking the button below:
+
+![1241](6a36c08-Image_11-22-22_at_8.46_AM.jpeg "Image 11-22-22 at 8.46 AM.jpeg")
+
+Now that we have our `create webhook` functionality, let's incorporate more functionalities that will allow the user to begin receiving real-time information from the created `NFT Activity` webhook.
+
+To achieve this, we will:
+
+* Set up an HTML input for the user to submit the webhook id.
+* Create a server function that calls the [Update webhook NFT filters](/reference/update-webhook-nft-filters) API endpoint with the inputs' value. This helps us register the webhook id to our notification setup.
+* Set up a client script that starts listening for notifications and displays the resulting information.
+
+Here's the complete code that implements the above steps:
+
+<Info>
+  Additions for the `index.html` file are lines `9-13`, `28-31`, `36-45` and `70` Additions for the `server.js` file are lines `25-27`, `30-34` and `36-54`
+</Info>
+
+You can also find the entire code in this [git repository.](https://github.com/thestriver/alchemy-nft-activity-webhook)
+
+<CodeGroup>
+  ```html index.html
+  <html>
+  <head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+       // connect to WebSocket server and start listening for notifications
+       let socket = io();
+      let el;
+      let result;
+      socket.on('notification', (notificationBody) => {
+        console.log("got notification");
+        el = document.getElementById('server-notification');
+        el.innerHTML = 'Look what just happened!: ' + notificationBody;
+      });
+      socket.on('addNFTnotif', (notificationBody) => {
+        console.log("got NFT notification", notificationBody);
+        el = document.getElementById('add-notification');
+        el.innerHTML = 'NFT added!: ' + notificationBody; 
+      });
+    </script>
+  </head>
+  <body>
+    <!-- Set up basic HTML inputs for the user to submit the following details: 
+    `webhook URL and NFT contract address` -->
+    <p>Fill in the inputs below with the desired contract Address and webhook url</p>
+    <input name="contractAddress" placeholder="contract Address" type="text" maxlength="512" id="contractAddress"/>
+    <input name="webhook_url" placeholder="webhook url" type="text" maxlength="512" id="webhook_url"/>
+    <button class="enableHookButton">Create Your NFT Webhook </button>
+    <br />
+    <p>Copy the webhook id from your dashboard or from the result of webhook creation after clicking the "Create Your NFT Webhook" button</p>
+    <input name="webhook_id" placeholder="webhook_id" type="text" maxlength="512" id="webhook_id"/>
+    <button class="enableNotificationsButton">Enable Notifications for your webhook</button>
+
+    <script>
+      const enableButton = document.querySelector('.enableHookButton');
+
+      const enableNotificationsButton = document.querySelector('.enableNotificationsButton');
+
+      // when clicked, send request to server to register the connected webhook id with Alchemy
+      enableNotificationsButton.addEventListener('click', () => {
+        let webhook_id = document.querySelector('#webhook_id').value;
+        console.log("listen webhook");
+        socket.emit('listen webhook', webhook_id);
+        alert(" Listening to NFT Webhook.")
+      });
+  		// sends the value of the inputs to the server
+      enableButton.addEventListener('click', () => {
+        console.log("Creating NFT Webhook");
+        let contractAddress = document.querySelector('#contractAddress').value;
+        let webhook_url = document.querySelector('#webhook_url').value;
+        let data = 
+        {
+            "network": "ETH_MAINNET",
+            "nft_filters": [
+                 {
+                      "contract_address": contractAddress
+                 }
+            ],
+            "webhook_type": "NFT_ACTIVITY",
+            "webhook_url": webhook_url
+        }
+        if (webhook_url && contractAddress) {
+          socket.emit('register address', data)
+          alert("Creating NFT Webhook.")
+        }
+        else (
+          alert("Fill all input.")
+        )
+      });
+    </script>
+    <p id="server-notification"></p>
+    <p id="add-notification"></p>
+  </body>
+  </html>
+  ```
+
+  ```javascript server.js
+  const express = require('express')
+  const path = require('path')
+  const socketIO = require('socket.io');
+  const PORT = process.env.PORT || 5000
+  const fetch = require('node-fetch');
+
+  // start the express server with the appropriate routes for our webhook and web requests
+  var app = express()
+    .use(express.static(path.join(__dirname, 'public')))
+    .use(express.json())
+    .post('/alchemyhook', (req, res) => { notificationReceived(req); res.status(200).end() })
+    .get('/*', (req, res) => res.sendFile(path.join(__dirname + '/index.html')))
+    .listen(PORT, () => console.log(`Listening on ${PORT}`))
+
+  // start the websocket server
+  const io = socketIO(app);
+
+  // listen for client connections/calls on the WebSocket server
+  io.on('connection', (socket) => {
+      console.log('Client connected');
+      socket.on('disconnect', () => console.log('Client disconnected'));
+      socket.on('register address', (data) => {
+        addNFTWebhook(data)
+      });
+      socket.on('listen webhook', (webhook_id) => {
+        addHookNotif(webhook_id);
+      });
+  });
+
+  // notification received from Alchemy from the webhook. Let the clients know.
+  function notificationReceived(req) {
+      console.log("notification received!");
+      io.emit('notification', JSON.stringify(req.body));
+  }
+
+  // add an address to a notification in Alchemy
+  async function addHookNotif(id) {
+      console.log("adding address");
+      const body = { webhook_id: id };
+      try {
+        fetch('https://dashboard.alchemy.com/api/update-webhook-nft-filters', {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+          headers: { 'X-Alchemy-Token': 'AUTH_TOKEN'}
+        })
+          .then(res => res.json())
+          .then(json => console.log("Successfully added address:", json))
+          .catch(err => console.log("Error! Unable to add address:", err));
+      }
+      catch (err) {
+        console.error(err);
+      }
+  }
+
+  async function addNFTWebhook(data) {
+    console.log("adding NFT track");
+
+    try {
+      fetch('https://dashboard.alchemy.com/api/create-webhook', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+        headers: { 'X-Alchemy-Token': 'AUTH_TOKEN'}
+      })
+        .then(res => res.json())
+        .then(json => io.emit('addNFTnotif', JSON.stringify(json)) )
+        .then(json => console.log("Successfully added address:", json))
+        .catch(err => console.log("Error! Unable to add address:", err));
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+  ```
+</CodeGroup>
+
+Awesome. We're almost there! Deploy your code to Heroku by running the following code from your command line:
+
+<CodeGroup>
+  ```shell shell
+  git add .                             // to add the latest changes
+  git commit -m "Deploying NFT webhook" // to deploy our entire code
+  git push heroku master                // to push and updates heroku app with the latest changes
+  ```
+</CodeGroup>
+
+Now, head over to your browser and visit the Heroku URL. e.g **[https://immense-ravine-98866.herokuapp.com/](https://immense-ravine-98866.herokuapp.com/)**
+
+![](a52caed-Image_12-1-22_at_7.59_PM.jpeg "Image 12-1-22 at 7.59 PM.jpeg")
+
+## 3. Test your Webhook
+
+1. Fill in the 'create webhook' section with the desired `NFT contract Address and webhook URL` and click the `Create Your NFT Webhook Button`!
+
+2. Now, head to the Notify Dashboard, and you should find your new webhook there. Exciting!
+
+![](f7b94df-Screenshot_2022-12-01_at_8.15.17_PM.png "Screenshot 2022-12-01 at 8.15.17 PM.png")
+
+<Info>
+  **Tip**: Click the ellipsis button on the far right to retrieve your webhook signing key and pause or delete the specific webhook. You can also use the webhook signing key to [validate and secure your dApp integration of Notify API endpoints.](/reference/notify-api-quickstart#webhook-signature--security)
+</Info>
+
+You should also receive a fanciful notification in your browser.
+
+![](7fcde28-Screenshot_2022-12-01_at_8.14.53_PM.png "Screenshot 2022-12-01 at 8.14.53 PM.png")
+
+3. Copy your webhook id from the Notify Dashboard, put it in the "webhook id" input box and click "Enable Notifications to enable notifications.
+
+4. Go back to the Notify Dashboard and send a test notification. To do that, click on the "Send Test Notification" option, as shown below. ![](5641ac0-image.png)
+
+Return to your browser, and voila, you get your first notification!
+
+![](11c59d2-Screenshot_2022-12-01_at_8.17.02_PM.png "Screenshot 2022-12-01 at 8.17.02 PM.png")
+
+Your webhook is ready! Anytime someone mints an NFT successfully from your collection, you get a response like the code snippet below containing critical details about the transaction.
+
+<CodeGroup>
+  ```json json
+  {
+    "webhookId": "wh_8vl4kmswvo8qui15",
+    "id": "whevt_4tjv8ty0ph00qkl7",
+    "createdAt": "2022-12-02T03:19:51.501Z",
+    "type": "NFT_ACTIVITY",
+    "event": {
+      "network": "ETH_MAINNET",
+      "activity": [
+        {
+          "fromAddress": "0x0000000000000000000000000000000000000000",
+          "toAddress": "0x9d88b43ad48bd518eceb00d0b8fcf1da00ea9a01",
+          "contractAddress": "0x3eb0debc2f1fdb613416b3718670f64415c5ff16",
+          "blockNum": "0xf594b8",
+          "hash": "0x415888331511a3db42eba8146b4c425047166a509230f16dd68dc14bf3d93342",
+          "erc721TokenId": "0xd",
+          "category": "erc721",
+          "log": {
+            "address": "0x3eb0debc2f1fdb613416b3718670f64415c5ff16",
+            "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+              "0x0000000000000000000000009d88b43ad48bd518eceb00d0b8fcf1da00ea9a01",
+              "0x000000000000000000000000000000000000000000000000000000000000000d"
+            ],
+            "data": "0x",
+            "blockNumber": "0xf594b8",
+            "transactionHash": "0x415888331511a3db42eba8146b4c425047166a509230f16dd68dc14bf3d93342",
+            "transactionIndex": "0x27",
+            "blockHash": "0xa3a95401bf3ce04a3bfcb37590d60d7c014e7b0f78db61672554a81bb4c923ab",
+            "logIndex": "0x68",
+            "removed": false
+          }
+        }
+      ]
+    }
+  }
+  ```
+</CodeGroup>
+
+### Next Steps
+
+This is just the beginning. You can do so much more with Notify's powerful [NFT Activity Webhook](/reference/nft-activity-webhook).
+
+For example,
+
+* You can integrate these real-time notifications into your dApp as we did with the [Building a dApp with Real-Time Transaction Notifications](/docs/building-a-dapp-with-real-time-transaction-notifications) guide using the Address Activity webhook. This tutorial inspired ours - check it out!
+
+* You can even create a Slack bot that alerts you whenever a new minting notification comes up, as we did with the [How to Create a Whale Alert Slack Bot](/docs/how-to-create-a-whale-alert-slack-bot) guide using the [Address Activity Webhook](/reference/address-activity-webhook).
+
+* You can also create a Twitter bot to alert you in real-time using the [How to Create a Whale Alert Twitter Bot](/docs/how-to-create-a-whale-alert-twitter-bot) tutorial.
+
+The possibilities are endless, and we're excited to see what you build with the [Notify API Endpoints](/reference/notify-api-endpoints).
+
+Feel free to share your end products with us on [Discord](http://alchemy.com/discord).
+
+You can also check out the [Notify API Quickstart](/reference/notify-api-quickstart) page for other webhook types you can integrate into your dApp.

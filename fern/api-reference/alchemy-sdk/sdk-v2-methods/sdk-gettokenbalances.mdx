@@ -1,0 +1,122 @@
+---
+title: "getTokenBalances - SDK"
+description: "Returns the ERC-20 token balances for a specific owner address."
+url: "https://docs.alchemy.com/reference/sdk-gettokenbalances"
+slug: "reference/sdk-gettokenbalances"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns the ERC-20 token balances for a specific owner address.
+
+# Parameters
+
+| Name                             | Type     | Description                                                  |
+| -------------------------------- | -------- | ------------------------------------------------------------ |
+| `addressOrName`                  | `string` | The owner address or ENS name to get the token balances for. |
+| `contractAddresses` ( optional ) | `array`  | List of contract addresses to filter by.                     |
+
+# Response
+
+| Parameter                             | Type     | Description                |
+| ------------------------------------- | -------- | -------------------------- |
+| `Promise<TokenBalancesResponseErc20>` | `object` | The ERC-20 token balances. |
+
+### `TokenBalancesResponseErc20` response object parameters
+
+| Property        | Type     | Description                                                                                                                                                                |
+| --------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `address`       | `string` | Returns the value at this storage position.                                                                                                                                |
+| `tokenBalances` | `array`  | returns an array of token balance objects. Each object contains: `contractAddress`, `tokenBalance`: *hex-encoded*, `error`, One of `tokenBalance` or error will be `null`. |
+| `pageKey?`      | `string` | Applies only to the `erc20` request type. An address to be passed into the `pageKey` of the next request to paginate through an owner's tokens.                            |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getTokenBalances` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript gettokenbalances.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Initialize variables for the parameters
+      let vitalikAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
+      let usdcContract = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+      
+      //Call the method to return the token balances for this address
+      let response = await alchemy.core.getTokenBalances(vitalikAddress, [usdcContract])
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
+    tokenBalances: [
+      {
+        contractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        tokenBalance: '0x0000000000000000000000000000000000000000000000000000000002561840'
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getTokenBalances` method using the code sandbox below:
+
+# Use Cases
+
+For guidance on how to leverage this method, check out the following tutorials:
+
+* [How to Get Token Balance for an Address](/docs/how-to-get-token-balance-for-an-address)
+* [How to Get All Tokens Owned by an Address](/docs/how-to-get-all-tokens-owned-by-an-address)
+
+# Related Methods
+
+Here are the methods related to `getTokenBalances`:
+
+* [getBlock](/reference/getblock-sdk): Returns the block from the network based on the provided block number or hash.
+* [getBalance](/reference/getbalance-sdk): Returns the balance of a given address as of the provided block.

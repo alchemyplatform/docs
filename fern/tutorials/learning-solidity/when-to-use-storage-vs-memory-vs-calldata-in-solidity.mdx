@@ -1,0 +1,81 @@
+---
+title: "When to use Storage vs. Memory vs. Calldata in Solidity"
+description: "Learn about the different data locations in Solidity and when to them"
+url: "https://docs.alchemy.com/docs/when-to-use-storage-vs-memory-vs-calldata-in-solidity"
+slug: "docs/when-to-use-storage-vs-memory-vs-calldata-in-solidity"
+---
+
+
+# Introduction
+
+When working with Solidity, it's important to understand the differences between `storage`, [`memory`, and `calldata`](/docs/what-is-the-difference-between-memory-and-calldata-in-solidity). These are the three different types of data locations that can be used to store and manipulate data within a smart contract.
+
+Memory is used to store temporary data that is needed during the execution of a function. Calldata is used to store function arguments that are passed in from an external caller. Storage is used to store data permanently on the blockchain.
+
+When defining variables in Solidity, you must specify a data location. If you receive a `"TypeError: Data location must be 'storage', 'memory' or 'calldata' for variable, but none was given"` error message, it means that you have not specified a data location for your variable.
+
+# When to use Memory
+
+Memory is used for variables that are only needed temporarily, such as function arguments, local variables, or arrays that are created dynamically during the execution of a function. Once the function execution is complete, the memory space is freed up.
+
+For example, let's say you want to create a function that calculates the sum of an array of integers. You would define the array in memory:
+
+<CodeGroup>
+  ```sol sol
+  function sumArray(uint[] memory array) public pure returns (uint) {
+      uint sum = 0;
+      for (uint i = 0; i < array.length; i++) {
+          sum += array[i];
+      }
+      return sum;
+  }
+  ```
+</CodeGroup>
+
+In this example, the `array` variable is defined in `memory` because it is only needed for the duration of the function execution. Once the function returns, the memory space used by `array` is freed up.
+
+# When to use Calldata
+
+Calldata is used for function arguments that are passed in from an external caller, such as a user or another smart contract. Calldata is read-only, meaning that it cannot be modified by the function.
+
+For example, let's say you want to create a function that verifies whether a given address is the owner of a smart contract. You would define the address in `calldata`:
+
+<CodeGroup>
+  ```sol sol
+  function isOwner(address ownerAddress) public view returns (bool) {
+      return ownerAddress == msg.sender;
+  }
+  ```
+</CodeGroup>
+
+In this example, the `ownerAddress` variable is defined in `calldata` because it is a function argument passed in from an external caller. The function only needs to read the value of `ownerAddress` to compare it to the `msg.sender` value, so it doesn't need to be stored in memory or storage.
+
+The key difference between `memory` and `calldata` is that `memory` is a temporary data storage location that can be modified by a function, while `calldata` is a read-only temporary data storage location used to hold function arguments passed in from an external caller. If you want to understand the difference between `memory` and `calldata` through examples you can check out our guide on [differences between memory and calldata](/docs/what-is-the-difference-between-memory-and-calldata-in-solidity).
+
+# When to use Storage
+
+Storage is used to permanently store data on the blockchain. This data can be accessed and modified by any function within the contract.
+
+For example, let's say you want to create a smart contract that allows users to store their favorite colors. You would define the user's favorite color in storage:
+
+<CodeGroup>
+  ```sol sol
+  contract ColorStorage {
+      mapping(address => string) private favoriteColors;
+      
+      function setFavoriteColor(string calldata color) public {
+          favoriteColors[msg.sender] = color;
+      }
+      
+      function getFavoriteColor(address userAddress) public view returns (string memory) {
+          return favoriteColors[userAddress];
+      }
+  }
+  ```
+</CodeGroup>
+
+In this example, the `favoriteColors` mapping is defined in storage because it needs to permanently store the user's favorite color on the blockchain. The `setFavoriteColor` function modifies the value in storage, while the `getFavoriteColor` function reads the value from storage.
+
+# Conclusion
+
+In summary, `memory` is used for temporary variables that are only needed during the execution of a function, `calldata` is used for function arguments that are passed in from an external caller and cannot be modified, and `storage` is used to permanently store data on the blockchain that can be accessed and modified by any function within the contract.

@@ -1,0 +1,117 @@
+---
+title: "sendPrivateTransaction - SDK"
+description: "Used to send a single transaction to Flashbots. Flashbots will attempt to send the transaction to miners for the next 25 blocks. Returns the transaction hash of the submitted transaction."
+url: "https://docs.alchemy.com/reference/sdk-sendprivatetransaction"
+slug: "reference/sdk-sendprivatetransaction"
+---
+
+Used to send a single transaction to Flashbots. Flashbots will attempt to send the transaction to miners for the next 25 blocks.
+
+Returns the transaction hash of the submitted transaction.
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Used to send a single transaction to Flashbots. Flashbots will attempt to send the transaction to miners for the next 25 blocks.
+
+Returns the transaction hash of the submitted transaction.
+
+# Parameters
+
+| Name                | Type     | Description                                                                                                                                                                                                |
+| ------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `signedTransaction` | `string` | The raw, signed transaction as a hash.                                                                                                                                                                     |
+| `maxBlockNumber`    | `number` | `Optional` Highest block number in which the transaction should be included.                                                                                                                               |
+| `options`           | `object` | Additional options for the request. `fast: boolean`; It determines whether to use fast-mode. Defaults to `false`. See [here](https://docs.flashbots.net/flashbots-protect/rpc/fast-mode) for more details. |
+
+# Response
+
+| Property          | Type     | Description                       |
+| ----------------- | -------- | --------------------------------- |
+| `Promise<string>` | `string` | Returns the transaction response. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  const { Network, Alchemy, Wallet, Utils} = require("alchemy-sdk") 
+  const dotenv = require("dotenv");
+  dotenv.config();
+
+  // Import your keys
+  const { API_KEY, PRIVATE_KEY } = process.env;
+
+  const settings = {
+    apiKey: API_KEY,
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+  const wallet = new Wallet(PRIVATE_KEY);
+
+  //Input your own values for each of the paramters
+  const transaction = {
+    to: "0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd",
+    value: Utils.parseEther("0.001"),
+    gasLimit: "21000",
+    maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
+    maxFeePerGas: Utils.parseUnits("20", "gwei"),
+    nonce: await alchemy.core.getTransactionCount(wallet.getAddress()),
+    type: 2,
+    chainId: 1, // Corresponds to ETH_MAINNET
+  };
+
+  const rawTransaction = await wallet.signTransaction(transaction);
+
+  alchemy.transact.sendPrivateTransaction(rawTransaction).then(console.log);
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    "result": "string"
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `sendPrivateTransaction` method:
+
+* **Private financial transactions**: Businesses may need to conduct private financial transactions with their partners or suppliers. `sendPrivateTransaction` can be used to keep these transactions confidential and secure.
+
+* **Confidential business data**: Companies may need to transmit confidential business data, such as trade secrets or customer information, over the blockchain. `sendPrivateTransaction` can help ensure that this information is kept private and secure.
+
+* **Supply chain management**: Private transactions can be used to manage the supply chain of a product. Companies can use `sendPrivateTransaction` to transmit confidential information about the product's origin, authenticity, and quality to ensure that the product is genuine and meets the required standards.
+
+* **Personal data protection**: Private transactions can be used to store and transmit personal data securely on the blockchain. `sendPrivateTransaction` can help ensure that the data is kept confidential and is not visible to unauthorized parties.
+
+# Related Methods
+
+Here are the methods related to `sendPrivateTransaction`:
+
+* [sendTransaction](/reference/sendtransaction-sdk): Submits transaction to the network to be mined.

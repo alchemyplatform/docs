@@ -1,0 +1,228 @@
+---
+title: "getBlockWithTransactions - SDK"
+description: "Returns the block from the network based on the provided block number or hash. In addition to the transaction hashes included in the block, it also returns the full transaction objects."
+url: "https://docs.alchemy.com/reference/getblockwithtransactions-sdk-v3"
+slug: "reference/getblockwithtransactions-sdk-v3"
+---
+
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=estimateGas)
+
+# Description
+
+Returns the block from the network based on the provided block number or hash. In addition to the transaction hashes included in the block, it also returns the full transaction objects.
+
+# Parameters
+
+| Name                  | Type     | Description                                    |
+| --------------------- | -------- | ---------------------------------------------- |
+| `blockHashOrBlockTag` | `string` | The block number or hash to get the block for. |
+
+# Response
+
+| Property                         | Type     | Description                                                                          |
+| -------------------------------- | -------- | ------------------------------------------------------------------------------------ |
+| `Promise<BlockWithTransactions>` | `object` | Returns a block object with the following fields, or `null` when no block was found. |
+
+### `BlockWithTransactions` response object parameters
+
+| Parameter      | Type               | Description                                                                                           |
+| -------------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
+| `hash`         | `string`           | `32 Bytes` - hash of the block. `null` when its pending block.                                        |
+| `parentHash`   | `string`           | `32 Bytes` - hash of the parent block.                                                                |
+| `number`       | `number`           | the block number. `null` when its pending block.                                                      |
+| `logsBloom`    | `string`           | `256 Bytes` - the bloom filter for the logs of the block. `null` when its pending block.              |
+| `timestamp`    | `number`           | the unix timestamp for when the block was collated.                                                   |
+| `nonce`        | `string`           | 8 Bytes - hash of the generated proof-of-work. `null` when its pending block.                         |
+| `difficulty`   | `number`           | integer of the difficulty for this block.                                                             |
+| `gasLimit`     | `number`           | the maximum gas allowed in this block.                                                                |
+| `gasUsed`      | `number`           | the total used gas by all transactions in this block.                                                 |
+| `size`         | `integer`          | the size of this block in bytes.                                                                      |
+| `miner`        | `string`           | `20 Bytes` - the beneficiary's address to whom the mining rewards were given.                         |
+| `extraData`    | `string`           | Extra data represented in hex string.                                                                 |
+| `transactions` | `array of objects` | Array of transaction objects, or `32 Bytes` transaction hashes depending on the last given parameter. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getBlockWithTransactions` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getblockwithtransactions.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Assign the hash to a variable
+      let txHash = "0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3"
+
+      //Call the method to return the block with transactions
+      let response = await alchemy.core.getBlockWithTransactions(txHash)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "hash": "0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3",
+      "parentHash": "0x6890edf8ad6900a5472c2a7ee3ef795f020ef6f907afb7f4ebf6a92d6aeb1804",
+      "number": 15221026,
+      "timestamp": 1658877717,
+      "nonce": "0xd8c399035d6e6e8f",
+      "difficulty": null,
+      "gasLimit": {
+          "type": "BigNumber",
+          "hex": "0x01ca35d2"
+      },
+      "gasUsed": {
+          "type": "BigNumber",
+          "hex": "0x01ca1ae1"
+      },
+      "miner": "0x52bc44d5378309EE2abF1539BF71dE1b7d7bE3b5",
+      "extraData": "0x6e616e6f706f6f6c2e6f7267",
+      "transactions": [
+          {
+              "hash": "0xba4938ea41154427c8cb424ea89d9f150f139ed10065fe43ce11102dc82e1c37",
+              "type": 2,
+              "accessList": [],
+              "blockHash": "0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3",
+              "blockNumber": 15221026,
+              "transactionIndex": 0,
+              "confirmations": 2718689,
+              "from": "0x91aaE0aAfd9D2d730111b395c6871f248d7Bd728",
+              "gasPrice": {
+                  "type": "BigNumber",
+                  "hex": "0x06ffba9ab3"
+              },
+              "maxPriorityFeePerGas": {
+                  "type": "BigNumber",
+                  "hex": "0x04558d7d33"
+              },
+              "maxFeePerGas": {
+                  "type": "BigNumber",
+                  "hex": "0x0b31856075"
+              },
+              "gasLimit": {
+                  "type": "BigNumber",
+                  "hex": "0x0493ee"
+              },
+              "to": "0x98C3d3183C4b8A650614ad179A1a98be0a8d6B8E",
+              "value": {
+                  "type": "BigNumber",
+                  "hex": "0x00"
+              },
+              "nonce": 117386,
+              "data": "0xce2e62ff00000000000000000000000000000000000000000000000006d37a96c691fec00000000000000000000000000000000000000000000000006c5f2aba0307f8000000000000000000000000000c4a68cf6857cc76fe946d04fe85fac5fae9625e000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000062e07780",
+              "r": "0xc509b635a3a59b03be542d6d9ef898b9b2acc479e8bbae79d20481c5cde53694",
+              "s": "0x35f94c8c184c73f9086ba093147ed705d3240e9caadced2b436eb5fece4674cd",
+              "v": 0,
+              "creates": null,
+              "chainId": 1
+          },
+          {
+              "hash": "0x98cc6b4b66453e184f65728fee265a726b030c5ddcfc1311a01ea5345c3959ab",
+              "type": 2,
+              "accessList": [],
+              "blockHash": "0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3",
+              "blockNumber": 15221026,
+              "transactionIndex": 1,
+              "confirmations": 2718689,
+              "from": "0x5E2B6c6B2240d582995537D3FafdB556E4A3822F",
+              "gasPrice": {
+                  "type": "BigNumber",
+                  "hex": "0x03e860aad6"
+              },
+              "maxPriorityFeePerGas": {
+                  "type": "BigNumber",
+                  "hex": "0x013e338d56"
+              },
+              "maxFeePerGas": {
+                  "type": "BigNumber",
+                  "hex": "0x0538c964e2"
+              },
+              "gasLimit": {
+                  "type": "BigNumber",
+                  "hex": "0x0493ee"
+              },
+              "to": "0x98C3d3183C4b8A650614ad179A1a98be0a8d6B8E",
+              "value": {
+                  "type": "BigNumber",
+                  "hex": "0x00"
+              },
+              "nonce": 40639,
+              "data": "0x49c36c0700000000000000000000000024ee2c6b9597f035088cda8575e9d5e15a84b9df00000000000000000000000000000000000000000000000014626a9f5386a600000000000000000000000000000000000000000040360e6bc85c5c000000000000000000000000000000000000000000000000004059ca9822509c00000000000000000000000000000000000000000000000000000000000000000000000000",
+              "r": "0xdcdb05fe7f32ba447ce9fa56ffd77873542b5a071c044e5011fcd8361f019395",
+              "s": "0x54d2fe30406a3c16261eb0069980b75e824481097dd537057ff88942743b61e3",
+              "v": 0,
+              "creates": null,
+              "chainId": 1
+          },
+      ],
+      "baseFeePerGas": {
+          "type": "BigNumber",
+          "hex": "0x02aa2d1d80"
+      },
+      "_difficulty": {
+          "type": "BigNumber",
+          "hex": "0x2a31d8a2cf4dd7"
+      }
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test out the `getBlockWithTransactions` method using the code sandbox below:
+
+# Use Cases
+
+Here are some possible use cases for this method:
+
+* **Blockchain Explorer**: When building a blockchain explorer, it is important to be able to retrieve detailed information about blocks and their transactions. `getBlockWithTransactions` can be used to fetch this information and display it to users.
+
+* **Smart Contract Verification**: When verifying the correctness of a smart contract execution, it may be necessary to retrieve the block and its transactions that triggered the execution. `getBlockWithTransactions` can be used to fetch this information and verify that the smart contract executed correctly.
+
+* **Payment Processing**: When processing payments on a blockchain, retrieving the block and its transactions that confirm the payment may be necessary. `getBlockWithTransactions` can be used to fetch this information and confirm that the payment was successfully processed.
+
+# Related Methods
+
+Here are the methods related to `getBlockWithTransactions`:
+
+* [getBlock](/reference/getBlock-sdk): Returns the block from the network based on the provided block number or hash.
+* [getBlockNumber](/reference/getblocknumber-sdk): Returns the result of executing the transaction, using call.

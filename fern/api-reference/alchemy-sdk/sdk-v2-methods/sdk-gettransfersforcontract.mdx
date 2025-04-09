@@ -1,0 +1,313 @@
+---
+title: "getTransfersForContract - SDK"
+description: "The getTransfersForContract method gets all NFT transfers for a given NFT contract address."
+url: "https://docs.alchemy.com/reference/sdk-gettransfersforcontract"
+slug: "reference/sdk-gettransfersforcontract"
+---
+
+The `getTransfersForContract` method gets all NFT transfers for a given NFT contract address.
+
+### Don’t have an API key?
+
+Start using this method in your app today.
+
+[Get started for free](https://dashboard.alchemy.com/signup/?a=getTransfersForContract)
+
+# Description
+
+`getTransfersForContract` gets all NFT transfers for a given NFT contract address.
+
+# Parameters
+
+| Name               | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Example                                                      |
+| ------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Contract Address   | `string` | The NFT contract address to get transfers for.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `"0x1F02bF9dDe7C79137a08B2Dd4FC964BfD2499734"`               |
+| Options (Optional) | `object` | An optional object with the following properties: 1. `fromBlock`: Starting block (inclusive) to get transfers from. This can be an integer of the block number, hex string of the block number or a block tag such as `latest`, `earliest` or `finalized`. 2. `toBlock`: Ending block (inclusive) to get transfers from. This can be an integer of the block number, hex string of the block number or a block tag such as `latest`, `earliest` or `finalized`. 3. `order`: Whether to return results in ascending or descending order by block number. Defaults to ascending if omitted. The options are `"asc"` for ascending order and `"desc"` for descending order. 4. `pageKey`: Optional page key from an existing response to use for pagination. | `{ fromBlock: 16564734, toBlock: 16567427, order: "desc", }` |
+
+# Response
+
+The `getTransfersForContract` method returns a `Promise<TransfersNftResponse>` object that contains the NFT transfers for the given NFT contract address.
+
+The returned object has the following fields:
+
+| Property (Field) | Description                                                                                                                      |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `nfts`           | An array of the transfer objects. Each transfer object contains information about the transferred NFT.                           |
+| `pageKey?`       | Optional page key to use to fetch the next group of NFTs. `undefined` if all the transfers are already included in the response. |
+
+Each transfer object has the following fields:
+
+| Property (Field)  | Description                                                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | The address of the NFT contract                                                                                                        |
+| `tokenId`         | The unique identifier of the NFT being transferred.                                                                                    |
+| `tokenType`       | The type of NFT being transferred (`ERC721` or `ERC1155`)                                                                              |
+| `title`           | Title or name of the NFT.                                                                                                              |
+| `description`     | A brief description of the NFT.                                                                                                        |
+| `timeLastUpdated` | When the NFT was last updated in the blockchain. Represented in ISO-8601 format.                                                       |
+| `metadataError?`  | Holds an error message if there was an issue fetching metadata.                                                                        |
+| `rawMetadata?`    | The raw metadata fetched from the metadata URL specified by the NFT. The field is `undefined` if Alchemy was unable to fetch metadata. |
+| `tokenUri?`       | URIs for accessing the NFT's metadata blob.                                                                                            |
+| `media`           | URIs for accessing the NFT's media assets.                                                                                             |
+| `spamInfo?`       | Detailed information on why an NFT was classified as spam. `undefined` if the NFT is not classified as spam.                           |
+| `from`            | The address the NFT was sent from. For minted NFTs, this field is set to `0x0000000000000000000000000000000000000000`.                 |
+| `to`              | The address the NFT was sent or minted to.                                                                                             |
+| `transactionHash` | The transaction hash where the transfer or mint occurred.                                                                              |
+| `blockNumber`     | The block number as a hex string of when the transfer or mint occurred.                                                                |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```text yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getTransfersForContract` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getTransfersForContract.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "demo", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  // Example of using the new getTransfersForContract method
+  const main = async () => {
+    // The nft contract address to get transfers for
+    let contractAddress = "0x1F02bF9dDe7C79137a08B2Dd4FC964BfD2499734";
+
+    // Additional options for the request. (Optional)
+    let options = {
+      /** Starting block (inclusive) to get transfers from. */
+      fromBlock: 16564734,
+      /** Ending block (inclusive) to get transfers from. */
+      toBlock: 16567427,
+      /**
+       * Whether to return results in ascending or descending order by block number.
+       * Defaults to ascending if omitted.
+       */
+      order: "desc",
+    };
+
+    // Calling the getTransfersForContract method
+    let transfers = await alchemy.nft.getTransfersForContract(
+      contractAddress,
+      options
+    );
+
+    // Logging the response to the console
+    console.log(transfers);
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+And here is an example of what a successful response to this request might look like:
+
+<CodeGroup>
+  ```json getTransfersForContract response
+  {
+    "nfts": [
+      {
+        "contract": {
+          "address": "0x1f02bf9dde7c79137a08b2dd4fc964bfd2499734",
+          "name": "Elephants",
+          "symbol": "ELENFT",
+          "totalSupply": "7778",
+          "tokenType": "ERC721",
+          "openSea": {
+            "floorPrice": 0.022,
+            "collectionName": "3L3Phants Official",
+            "safelistRequestStatus": "verified",
+            "imageUrl": "https://i.seadn.io/gcs/files/71dfb6cacb894a713d91f493917fa1b5.png?w=500&auto=format",
+            "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. From the mind of Ic3cream and designed by World Renowned Artist Tornado Toad. Join the Herd today!\n\nEarn $NUT token in our discord now!\n\nhttps://discord.gg/3l3phantsnft",
+            "externalUrl": "http://3l3phants.io",
+            "twitterUsername": "3L3NFT",
+            "discordUrl": "https://discord.gg/3L3phantsnft",
+            "lastIngestedAt": "2023-02-02T08:11:43.000Z"
+          },
+          "contractDeployer": "0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8",
+          "deployedBlockNumber": 15140845
+        },
+        "tokenId": "890",
+        "tokenType": "ERC721",
+        "title": "3L3PHANTS #890",
+        "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+        "timeLastUpdated": "2023-02-04T23:45:33.795Z",
+        "rawMetadata": {
+          "name": "3L3PHANTS #890",
+          "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+          "image": "ipfs://QmTvmGSL6cFxRyoam2vBRgVL8vjcLrzdum14K9qMQ7MP2b",
+          "attributes": [
+            {
+              "value": "Red",
+              "trait_type": "Background"
+            },
+            {
+              "value": "Glowing",
+              "trait_type": "Body"
+            },
+            {
+              "value": "Clubmasters",
+              "trait_type": "Eyes"
+            },
+            {
+              "value": "Shocked",
+              "trait_type": "Mouth"
+            },
+            {
+              "value": "Tie Dye",
+              "trait_type": "Outfit"
+            },
+            {
+              "value": "Double",
+              "trait_type": "Tusks"
+            }
+          ]
+        },
+        "tokenUri": {
+          "raw": "ipfs://QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/890",
+          "gateway": "https://ipfs.io/ipfs/QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/890"
+        },
+        "media": [
+          {
+            "raw": "ipfs://QmTvmGSL6cFxRyoam2vBRgVL8vjcLrzdum14K9qMQ7MP2b",
+            "gateway": "https://nft-cdn.alchemy.com/eth-mainnet/121fdb0563b1917179c9ad7d97ae081f",
+            "thumbnail": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/121fdb0563b1917179c9ad7d97ae081f",
+            "format": "png",
+            "bytes": 199542
+          }
+        ],
+        "from": "0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8",
+        "to": "0x84561625814e1c7e882c1ae20a9d722a8c301f04",
+        "transactionHash": "0x43ff4418ca88d94857f3b687e8ac7450e107c2a36517e8d59a5308dba4acec94",
+        "blockNumber": "0xec8125"
+      },
+      {
+        "contract": {
+          "address": "0x1f02bf9dde7c79137a08b2dd4fc964bfd2499734",
+          "name": "Elephants",
+          "symbol": "ELENFT",
+          "totalSupply": "7778",
+          "tokenType": "ERC721",
+          "openSea": {
+            "floorPrice": 0.022,
+            "collectionName": "3L3Phants Official",
+            "safelistRequestStatus": "verified",
+            "imageUrl": "https://i.seadn.io/gcs/files/71dfb6cacb894a713d91f493917fa1b5.png?w=500&auto=format",
+            "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. From the mind of Ic3cream and designed by World Renowned Artist Tornado Toad. Join the Herd today!\n\nEarn $NUT token in our discord now!\n\nhttps://discord.gg/3l3phantsnft",
+            "externalUrl": "http://3l3phants.io",
+            "twitterUsername": "3L3NFT",
+            "discordUrl": "https://discord.gg/3L3phantsnft",
+            "lastIngestedAt": "2023-02-02T08:11:43.000Z"
+          },
+          "contractDeployer": "0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8",
+          "deployedBlockNumber": 15140845
+        },
+        "tokenId": "3990",
+        "tokenType": "ERC721",
+        "title": "3L3PHANTS #3990",
+        "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+        "timeLastUpdated": "2023-01-07T22:53:31.448Z",
+        "rawMetadata": {
+          "name": "3L3PHANTS #3990",
+          "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+          "image": "ipfs://QmaL3UbrR8T1tz7j8SuYmQxkQJoPXYZeU49YC5DCHphKDg",
+          "attributes": [
+            {
+              "value": "Pink Checkerboard",
+              "trait_type": "Background"
+            },
+            {
+              "value": "Mammoth",
+              "trait_type": "Body"
+            },
+            {
+              "value": "Mad",
+              "trait_type": "Eyes"
+            },
+            {
+              "value": "Tennis Ball",
+              "trait_type": "Item"
+            },
+            {
+              "value": "Lips Open",
+              "trait_type": "Mouth"
+            },
+            {
+              "value": "Green Doctor",
+              "trait_type": "Outfit"
+            },
+            {
+              "value": "Nubs",
+              "trait_type": "Tusks"
+            }
+          ]
+        },
+        "tokenUri": {
+          "raw": "ipfs://QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/3990",
+          "gateway": "https://ipfs.io/ipfs/QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/3990"
+        },
+        "media": [
+          {
+            "raw": "ipfs://QmaL3UbrR8T1tz7j8SuYmQxkQJoPXYZeU49YC5DCHphKDg",
+            "gateway": "https://nft-cdn.alchemy.com/eth-mainnet/8e8706cbd7f6f2b46576dd386410b805",
+            "thumbnail": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/8e8706cbd7f6f2b46576dd386410b805",
+            "format": "png",
+            "bytes": 198447
+          }
+        ],
+        "from": "0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8",
+        "to": "0x6a3623db71c1b3442a94e3fd4655334b48114693",
+        "transactionHash": "0x13f33287ac95893e06cda2cd30c08003808ac46867382d8c92e1c864e4895ec6",
+        "blockNumber": "0xec8131"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## Code Sandbox
+
+You can test the `getTransfersForContract` method using the code sandbox below:
+
+# Use Cases
+
+Some of the use cases for `getTransfersForContract` are:
+
+* **NFT Market Analysis**: An NFT market analysis platform could use the API to gather data on NFT transfers for a specific NFT contract and analyze the demand and supply of that particular NFT.
+
+* **NFT Contract Monitoring**: An NFT contract owner or administrator could use the API to monitor all transfers of their NFT contract and ensure that they are being used in a compliant manner.
+
+* **NFT Trading Platform**: An NFT trading platform could use the API to retrieve information about all transfers of a specific NFT contract and display it to users, allowing them to trade and buy/sell NFTs.
+
+* **NFT Project Tracking**: Investors or fans of a specific NFT project could use the API to track the growth and adoption of the project by monitoring the number and frequency of NFT transfers for the associated NFT contract.
+
+# Related Methods
+
+Here are the methods related to `getTransfersForContract`:
+
+* [`getTransfersForOwner`](/reference/sdk-gettransfersforowner): Returns all NFT transfers for a given owner address.
+
+* [`getMintedNfts`](/reference/sdk-getmintednfts): Returns all the NFTs minted by a specified owner address.

@@ -1,0 +1,82 @@
+---
+title: "How to Create NFT Token-Gated Communities"
+description: "Learn how to use the Alchemy NFT API to verify ownership of an NFT, or grab a complete ownership snapshot for a collection!"
+url: "https://docs.alchemy.com/docs/how-to-create-nft-token-gated-communities-with-the-alchemy-nft-api"
+slug: "docs/how-to-create-nft-token-gated-communities-with-the-alchemy-nft-api"
+---
+
+
+![631](df03e5f-bored_ape_4560.png "bored ape 4560.png")
+
+Bored Ape #4560
+
+One of the most powerful use cases for NFTs is **community building**. As projects like CityDAO, Nouns DAO, and Bored Ape Yacht Club have shown, holding an NFT means far more than owning an expensive profile picture—it means being a member of an organization with social, cultural, and often financial capabilities.
+
+For NFT projects seeking to create communities around their NFTs, one important application is creating **token-gated experiences**—using the security and privacy of public blockchains to create exclusive experiences for their holders. Alchemy's NFT APIs make it fast and easy for developers to create token-gated experiences with just a few lines of code.
+
+# Verifying NFT Ownership
+
+The key to creating a token-gated experience is to *verify that a particular user holds a particular NFT*. Imagine a simple case: we want to create a website accessible only to holders of Bored Apes. We don't care which Ape, as long as it's part of the collection. For this case, Alchemy provides the `isHolderOfCollection` endpoint (called `checkNftOwnership` in the SDK):
+
+<CodeGroup>
+  ```javascript Alchemy SDK
+  // Setup: npm install alchemy-sdk
+  import { Alchemy, Network } from "alchemy-sdk";
+
+  const config = {
+    apiKey: "<-- ALCHEMY APP API KEY -->",
+    network: Network.ETH_MAINNET,
+  };
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    // Check if vitalik.eth owns a Bored Ape.
+    const nfts = await alchemy.nft.checkNftOwnership(
+      "vitalik.eth",
+      ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"]
+    );
+    // Print NFTs
+    console.log(nfts);
+  };
+
+  // Execute the code
+  const runMain = async () => {
+    try {
+      await main();
+      process.exit(0);
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+  };
+  ```
+
+  ```javascript Axios (Javascript)
+  const wallet = "0x994b342Dd87fc825F66E51FfA3EF71aD818B6893"
+  const contractAddress = "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+  const response = await axios.get(
+    `https://eth-mainnet.g.alchemy.com/nft/v2/${API_KEY}/isHolderOfCollection?wallet=${wallet}&contractAddress=${contractAddress}`);
+  ```
+</CodeGroup>
+
+# Grabbing an ownership snapshot for a collection
+
+Beyond verifying ownership for a single user, we might want to grab a full ownership snapshot. For example, suppose we wanted to airdrop a special Bored Ape Love Potion to all of our Bored Ape holders at midnight on Valentine's Day. We can use the `getOwnersForCollection` endpoint to grab a list of *all* addresses that hold a Bored Ape:
+
+<CodeGroup>
+  ```javascript Axios (Javascript)
+  const contractAddress = "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+  const response = await axios.get(
+    `https://eth-mainnet.g.alchemy.com/nft/v2/${API_KEY}/getOwnersForCollection?contractAddress=${contractAddress}`);
+  ```
+</CodeGroup>
+
+By default, this API just returns a list of addresses, without telling us which tokens they own, or how many. Suppose we want to airdrop one Bored Ape Love Potion for *each* Bored Ape user holders. To do this, we can use the `withTokenBalances` param to fetch the exact tokens owned by each address:
+
+<CodeGroup>
+  ```javascript Axios (Javascript)
+  const contractAddress = "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+  const response = await axios.get(
+    `https://eth-mainnet.g.alchemy.com/nft/v2/${API_KEY}/getOwnersForCollection?contractAddress=${contractAddress}&withTokenBalances=true`);
+  ```
+</CodeGroup>

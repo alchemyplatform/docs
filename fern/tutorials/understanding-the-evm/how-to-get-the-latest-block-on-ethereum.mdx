@@ -1,0 +1,88 @@
+---
+title: "How to Get the Latest Block on Ethereum"
+description: "Don't know where to start? This guide will walk you through writing a simple web3 script to get the latest block number from the Ethereum mainnet using Alchemy."
+url: "https://docs.alchemy.com/docs/how-to-get-the-latest-block-on-ethereum"
+slug: "docs/how-to-get-the-latest-block-on-ethereum"
+---
+
+
+<Info>
+  This tutorial uses the **[getBlockNumber](/reference/sdk-getblocknumber)** endpoint.
+</Info>
+
+*This guide assumes you've gone through the [getting started](https://alchemyenterprisegroup.readme.io/docs/alchemy-quickstart-guide) steps and have an [Alchemy account!](https://alchemy.com/?r=affiliate:b92f4e01-cafb-4038-83f4-372a42df5171)*
+
+## 1. From your command line, create a new project directory and `cd` into it:
+
+<CodeGroup>
+  ```shell shell
+  mkdir web3-example
+  cd web3-example
+  ```
+</CodeGroup>
+
+## 2. Install the Alchemy SDK if you have not already
+
+You can use any [web3 library ](/docs/alchemy-quickstart-guide)of your choosing, however there are tons of benefits to using the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```text yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## 3. Create a file named `index.js` and add the following contents:
+
+<CodeGroup>
+  ```javascript index.js
+  // Setup: npm install @alch/alchemy-sdk
+  const { Network, Alchemy } = require("alchemy-sdk");
+
+  // Optional Config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  async function main() {
+    const latestBlock = await alchemy.core.getBlockNumber();
+    console.log("The latest block number is", latestBlock);
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+<Warning>
+  You should ultimately replace `demo` with your Alchemy HTTP API key.
+</Warning>
+
+Unfamiliar with the async stuff? Check out this [Medium post](https://medium.com/better-programming/understanding-async-await-in-javascript-1d81bb079b2c).
+
+## 4. Run it using node
+
+<CodeGroup>
+  ```shell shell
+  node index.js
+  ```
+</CodeGroup>
+
+5. You should now see the latest block number output in your console!
+
+<CodeGroup>
+  ```shell shell
+  The latest block number is 11043912
+  ```
+</CodeGroup>
+
+Woo! Congrats! You just wrote your first web3 script using Alchemy 🎉
+
+Once you complete this tutorial, let us know how your experience was or if you have any feedback by tagging us on Twitter [@alchemyplatform](https://twitter.com/AlchemyPlatform)!
+
+*Not sure what to do next? Build upon your skills learned in this tutorial by checking out our beginner's tutorial for [sending Ethereum transactions using Web3 and Alchemy](https://alchemyenterprisegroup.readme.io/home/docs/how-to-send-transactions-on-ethereum).*
