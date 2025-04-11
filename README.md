@@ -12,9 +12,9 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 │   ├── openapi/     # REST API definitions (OpenAPI)
 │   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
 ├── fern/
-│   ├── docs/        # Written documentation (MDX)
+│   ├── <tab>/       # Written documentation for that tab (MDX)
 │   └── docs.yml     # Navigation and structure config
-└── docs/            # Generated files - Do NOT make changes here
+└── build/           # Generated files - Do NOT make changes here
 ```
 
 ## Getting Started
