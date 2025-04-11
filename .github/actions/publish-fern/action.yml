@@ -55,6 +55,13 @@ runs:
         URL=$(echo "$OUTPUT" | grep -oP 'Published docs to \K.*(?= \()')
         echo "url=$URL" >> $GITHUB_OUTPUT
 
+    - name: Check job status
+      shell: bash
+      if: always()
+      run: |
+        echo "Job Status: ${{ job.status }}"
+        echo "Generate Docs Step Outcome: ${{ steps.generate-docs.outcome }}"
+
     - name: Update deployment status
       uses: bobheadxi/deployments@v1
       if: always()
