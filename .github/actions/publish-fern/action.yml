@@ -61,7 +61,7 @@ runs:
       with:
         step: finish
         token: ${{ inputs.github-token }}
-        status: ${{ job.status }}
+        status: ${{ steps.generate-docs.outcome == 'skipped' && 'cancelled' || steps.generate-docs.outcome }}
         deployment_id: ${{ steps.start-deploy.outputs.deployment_id }}
         env_url: ${{ steps.generate-docs.outputs.url }}
         env: ${{ inputs.environment }}
