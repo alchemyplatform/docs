@@ -1,1207 +1,1345 @@
 {
-  "x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
-  "$schema": "https://meta.open-rpc.org/",
-  "openrpc": "1.2.4",
-  "info": {
-    "title": "Alchemy Transaction Simulation API JSON-RPC Specification",
-    "description": "A specification of the standard JSON-RPC methods for Transaction Simulation API.",
-    "version": "0.0.0"
-  },
-  "servers": [
-    {
-      "url": "https://eth-mainnet.g.alchemy.com/v2/",
-      "name": "Mainnet",
-      "description": "Ethereum Mainnet endpoint for Alchemy Transaction Simulation API"
-    },
-    {
-      "url": "https://eth-sepolia.g.alchemy.com/v2/",
-      "name": "Sepolia"
-    }
-  ],
-  "methods": [
-    {
-      "name": "alchemy_simulateAssetChanges",
-      "summary": "Simulates a transaction and returns a list of asset changes.",
-      "params": [
-        {
-          "name": "transaction",
-          "required": true,
-          "description": "Object describing the transaction to simulate.",
-          "schema": {
-            "type": "object",
-            "required": ["to"],
-            "properties": {
-              "from": {
-                "title": "hex encoded address",
-                "type": "string",
-                "pattern": "^0x[0-9a-fA-F]{40}$"
-              },
-              "to": {
-                "title": "hex encoded address",
-                "type": "string",
-                "pattern": "^0x[0-9a-fA-F]{40}$"
-              },
-              "value": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "data": {
-                "title": "hex encoded bytes (any case)",
-                "type": "string",
-                "pattern": "^0x[0-9a-fA-F]*$"
-              },
-              "gas": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "gasPrice": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "maxFeePerGas": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "maxPriorityFeePerGas": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              }
-            }
-          }
-        }
-      ],
-      "result": {
-        "name": "Simulation result",
-        "description": "The asset changes resulting from the transaction simulation.",
-        "schema": {
-          "title": "SimulateAssetChangesResult",
-          "type": "object",
-          "required": ["changes", "error"],
-          "properties": {
-            "changes": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": [
-                  "assetType",
-                  "changeType",
-                  "from",
-                  "to",
-                  "rawAmount",
-                  "amount",
-                  "symbol",
-                  "decimals",
-                  "contractAddress",
-                  "name",
-                  "logo",
-                  "tokenId"
-                ],
-                "properties": {
-                  "assetType": {
-                    "type": "string",
-                    "enum": [
-                      "NATIVE",
-                      "ERC20",
-                      "ERC721",
-                      "ERC1155",
-                      "SPECIAL_NFT"
-                    ]
-                  },
-                  "changeType": {
-                    "type": "string",
-                    "enum": ["APPROVE", "TRANSFER"]
-                  },
-                  "from": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "address the transaction is sent from"
-                  },
-                  "to": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "address the transaction is directed to"
-                  },
-                  "rawAmount": {
-                    "type": "string"
-                  },
-                  "amount": {
-                    "type": "string"
-                  },
-                  "symbol": {
-                    "type": "string"
-                  },
-                  "decimals": {
-                    "type": ["number", "null"]
-                  },
-                  "contractAddress": {
-                    "type": ["string", "null"]
-                  },
-                  "name": {
-                    "type": ["string", "null"]
-                  },
-                  "logo": {
-                    "type": ["string", "null"]
-                  },
-                  "tokenId": {
-                    "type": ["number", "null"]
-                  }
-                }
-              }
-            },
-            "gasUsed": {
-              "type": "string",
-              "description": "The amount of gas used for the simulation"
-            },
-            "error": {
-              "type": ["string", "null"],
-              "description": "Error message if the transaction would revert, null otherwise"
-            }
-          }
-        }
-      },
-      "examples": [
-        {
-          "name": "Simulate transferring USDC",
-          "params": [
-            {
-              "name": "transaction",
-              "value": {
-                "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-                "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240",
-                "gas": "0x5208",
-                "gasPrice": "0x3b9aca00"
-              }
-            }
-          ],
-          "result": {
-            "name": "Simulation result",
-            "value": {
-              "changes": [
-                {
-                  "assetType": "ERC20",
-                  "changeType": "TRANSFER",
-                  "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-                  "to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
-                  "rawAmount": "1000000",
-                  "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                  "decimals": 6,
-                  "symbol": "USDC",
-                  "name": "USD Coin",
-                  "logo": "https://static.alchemyapi.io/images/assets/3408.png",
-                  "amount": "1",
-                  "tokenId": null
-                }
-              ],
-              "gasUsed": "0x5208",
-              "error": null
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "alchemy_simulateAssetChangesBundle",
-      "summary": "Simulates multiple transactions sequentially and returns a combined list of asset changes.",
-      "params": [
-        {
-          "name": "transactions",
-          "required": true,
-          "description": "An array of 1–2 transaction objects to run in sequence.",
-          "schema": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 2,
-            "items": {
-              "type": "object",
-              "required": ["to"],
-              "properties": {
-                "from": {
-                  "title": "hex encoded address",
-                  "type": "string",
-                  "pattern": "^0x[0-9a-fA-F]{40}$"
-                },
-                "to": {
-                  "title": "hex encoded address",
-                  "type": "string",
-                  "pattern": "^0x[0-9a-fA-F]{40}$"
-                },
-                "value": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "data": {
-                  "title": "hex encoded bytes (any case)",
-                  "type": "string",
-                  "pattern": "^0x[0-9a-fA-F]*$"
-                },
-                "gas": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "gasPrice": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "maxFeePerGas": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "maxPriorityFeePerGas": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "result": {
-        "name": "Simulation result",
-        "description": "The asset changes resulting from the sequential simulation.",
-        "schema": {
-          "title": "SimulateAssetChangesResult",
-          "type": "object",
-          "required": ["changes", "error"],
-          "properties": {
-            "changes": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": [
-                  "assetType",
-                  "changeType",
-                  "from",
-                  "to",
-                  "rawAmount",
-                  "amount",
-                  "symbol",
-                  "decimals",
-                  "contractAddress",
-                  "name",
-                  "logo",
-                  "tokenId"
-                ],
-                "properties": {
-                  "assetType": {
-                    "type": "string",
-                    "enum": [
-                      "NATIVE",
-                      "ERC20",
-                      "ERC721",
-                      "ERC1155",
-                      "SPECIAL_NFT"
-                    ]
-                  },
-                  "changeType": {
-                    "type": "string",
-                    "enum": ["APPROVE", "TRANSFER"]
-                  },
-                  "from": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "address the transaction is sent from"
-                  },
-                  "to": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "address the transaction is directed to"
-                  },
-                  "rawAmount": {
-                    "type": "string"
-                  },
-                  "amount": {
-                    "type": "string"
-                  },
-                  "symbol": {
-                    "type": "string"
-                  },
-                  "decimals": {
-                    "type": ["number", "null"]
-                  },
-                  "contractAddress": {
-                    "type": ["string", "null"]
-                  },
-                  "name": {
-                    "type": ["string", "null"]
-                  },
-                  "logo": {
-                    "type": ["string", "null"]
-                  },
-                  "tokenId": {
-                    "type": ["number", "null"]
-                  }
-                }
-              }
-            },
-            "gasUsed": {
-              "type": "string",
-              "description": "The amount of gas used for the simulation"
-            },
-            "error": {
-              "type": ["string", "null"],
-              "description": "Error message if the transaction would revert, null otherwise"
-            }
-          }
-        }
-      },
-      "examples": [
-        {
-          "name": "Bundle simulation example",
-          "params": [
-            {
-              "name": "transactions",
-              "value": [
-                {
-                  "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-                  "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                  "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
-                },
-                {
-                  "from": "0x1234567890abcdef1234567890abcdef12345678",
-                  "to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
-                  "data": "0x00abcdef"
-                }
-              ]
-            }
-          ],
-          "result": {
-            "name": "Simulation result",
-            "value": {
-              "changes": [
-                {
-                  "assetType": "ERC20",
-                  "changeType": "TRANSFER",
-                  "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-                  "to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
-                  "rawAmount": "1000000",
-                  "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                  "decimals": 6,
-                  "symbol": "USDC",
-                  "name": "USD Coin",
-                  "logo": "https://static.alchemyapi.io/images/assets/3408.png",
-                  "amount": "1",
-                  "tokenId": null
-                }
-              ],
-              "error": null
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "alchemy_simulateExecution",
-      "summary": "Simulates a single transaction's execution and returns decoded traces/logs.",
-      "params": [
-        {
-          "name": "format",
-          "required": true,
-          "description": "Specifies whether to return a 'NESTED' or 'FLAT' call structure.",
-          "schema": {
-            "type": "string",
-            "enum": ["NESTED", "FLAT"]
-          }
-        },
-        {
-          "name": "transaction",
-          "required": true,
-          "description": "Transaction object to simulate.",
-          "schema": {
-            "type": "object",
-            "required": ["to"],
-            "properties": {
-              "from": {
-                "title": "hex encoded address",
-                "type": "string",
-                "pattern": "^0x[0-9a-fA-F]{40}$"
-              },
-              "to": {
-                "title": "hex encoded address",
-                "type": "string",
-                "pattern": "^0x[0-9a-fA-F]{40}$"
-              },
-              "value": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "data": {
-                "title": "hex encoded bytes (any case)",
-                "type": "string",
-                "pattern": "^0x[0-9a-fA-F]*$"
-              },
-              "gas": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "gasPrice": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "maxFeePerGas": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              "maxPriorityFeePerGas": {
-                "title": "hex encoded unsigned integer",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              }
-            }
-          }
-        },
-        {
-          "name": "blockTag",
-          "required": true,
-          "description": "The block context to use: 'latest', 'safe', 'finalized', or 'earliest'.",
-          "schema": {
-            "type": "string",
-            "enum": ["latest", "safe", "finalized", "earliest"]
-          }
-        }
-      ],
-      "result": {
-        "name": "Execution simulation",
-        "description": "The decoded execution traces and logs produced by simulating the transaction.",
-        "schema": {
-          "title": "SimulateExecutionResult",
-          "type": "object",
-          "required": ["calls", "logs", "error"],
-          "properties": {
-            "calls": {
-              "type": "array",
-              "items": {
-                "title": "Call",
-                "type": "object",
-                "required": [
-                  "type",
-                  "from",
-                  "to",
-                  "gas",
-                  "gasUsed",
-                  "input",
-                  "output",
-                  "decoded"
-                ],
-                "properties": {
-                  "type": {
-                    "title": "CallType",
-                    "type": "string",
-                    "enum": ["CALL", "STATICCALL", "DELEGATECALL"]
-                  },
-                  "from": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "Address the transaction is sent from"
-                  },
-                  "to": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "Address the transaction is directed to"
-                  },
-                  "value": {
-                    "description": "Amount in wei to transfer from sender to recipient",
-                    "anyOf": [
-                      {
-                        "title": "hex encoded unsigned integer",
-                        "type": "string",
-                        "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "gas": {
-                    "title": "hex encoded unsigned integer",
-                    "type": "string",
-                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                    "description": "Hex-encoded gas limit"
-                  },
-                  "gasUsed": {
-                    "title": "hex encoded bytes (any case)",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]*$",
-                    "description": "Hex-encoded gas actually used by this call"
-                  },
-                  "input": {
-                    "title": "hex encoded bytes (any case)",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]*$",
-                    "description": "Hex-encoded call data"
-                  },
-                  "output": {
-                    "type": "string",
-                    "description": "Hex-encoded return data"
-                  },
-                  "decoded": {
-                    "anyOf": [
-                      {
-                        "title": "DecodedCall",
-                        "type": "object",
-                        "required": [
-                          "methodName",
-                          "inputs",
-                          "outputs",
-                          "authority"
-                        ],
-                        "properties": {
-                          "methodName": {
-                            "type": "string"
-                          },
-                          "inputs": {
-                            "type": "array",
-                            "items": {
-                              "title": "DecodedCallParam",
-                              "type": "object",
-                              "required": ["name", "type", "value"],
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "anyOf": [
-                                    {
-                                      "title": "hex encoded bytes (any case)",
-                                      "type": "string",
-                                      "pattern": "^0x[0-9a-fA-F]*$"
-                                    },
-                                    {
-                                      "type": "string"
-                                    }
-                                  ],
-                                  "description": "The decoded field value"
-                                }
-                              }
-                            }
-                          },
-                          "outputs": {
-                            "type": "array",
-                            "items": {
-                              "title": "DecodedCallParam",
-                              "type": "object",
-                              "required": ["name", "type", "value"],
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "anyOf": [
-                                    {
-                                      "title": "hex encoded bytes (any case)",
-                                      "type": "string",
-                                      "pattern": "^0x[0-9a-fA-F]*$"
-                                    },
-                                    {
-                                      "type": "string"
-                                    }
-                                  ],
-                                  "description": "The decoded field value"
-                                }
-                              }
-                            }
-                          },
-                          "authority": {
-                            "title": "DecodingAuthority",
-                            "type": "string",
-                            "enum": ["ETHERSCAN"]
-                          }
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "logs": {
-              "type": "array",
-              "items": {
-                "title": "Log",
-                "type": "object",
-                "required": ["topics", "address", "data", "decoded"],
-                "properties": {
-                  "topics": {
-                    "type": "array",
-                    "items": {
-                      "title": "hex encoded bytes (any case)",
-                      "type": "string",
-                      "pattern": "^0x[0-9a-fA-F]*$"
-                    }
-                  },
-                  "address": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$"
-                  },
-                  "data": {
-                    "title": "hex encoded bytes (any case)",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]*$"
-                  },
-                  "decoded": {
-                    "anyOf": [
-                      {
-                        "title": "DecodedLog",
-                        "type": "object",
-                        "required": ["eventName", "inputs", "authority"],
-                        "properties": {
-                          "eventName": {
-                            "type": "string"
-                          },
-                          "inputs": {
-                            "type": "array",
-                            "items": {
-                              "title": "DecodedLogInput",
-                              "type": "object",
-                              "required": ["name", "type", "value", "indexed"],
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "anyOf": [
-                                    {
-                                      "title": "hex encoded bytes (any case)",
-                                      "type": "string",
-                                      "pattern": "^0x[0-9a-fA-F]*$"
-                                    },
-                                    {
-                                      "type": "string"
-                                    }
-                                  ]
-                                },
-                                "indexed": {
-                                  "type": "boolean"
-                                }
-                              }
-                            }
-                          },
-                          "authority": {
-                            "title": "DecodingAuthority",
-                            "type": "string",
-                            "enum": ["ETHERSCAN"]
-                          }
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "error": {
-              "type": ["string", "null"],
-              "description": "If the transaction would revert, error explains the reason"
-            },
-            "revertReason": {
-              "type": "string",
-              "nullable": true,
-              "description": "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
-            }
-          }
-        }
-      },
-      "examples": [
-        {
-          "name": "Uniswap swap example",
-          "params": [
-            {
-              "name": "format",
-              "value": "FLAT"
-            },
-            {
-              "name": "transaction",
-              "value": {
-                "from": "0x0dd7eef07982749410eceaa721cdc8ff3167fc9b",
-                "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
-                "data": "0x5ae401dc00000000000000000000000000000000000000000000000000000000634ef02f...",
-                "gas": "0x22710",
-                "gasPrice": "0x3b9aca00"
-              }
-            },
-            {
-              "name": "blockTag",
-              "value": "latest"
-            }
-          ],
-          "result": {
-            "name": "Execution simulation",
-            "value": {
-              "calls": [
-                {
-                  "type": "CALL",
-                  "from": "0x0dd7eef07982749410eceaa721cdc8ff3167fc9b",
-                  "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
-                  "value": "0x0",
-                  "gas": "0x22710",
-                  "gasUsed": "0x1ab62",
-                  "input": "0x5ae401dc0000000000...",
-                  "output": "0x000000000000000000000000000000000000000000...",
-                  "decoded": {
-                    "authority": "ETHERSCAN",
-                    "methodName": "multicall",
-                    "inputs": [
-                      {
-                        "name": "deadline",
-                        "type": "uint256",
-                        "value": "1666117679"
-                      },
-                      {
-                        "name": "data",
-                        "type": "bytes[]",
-                        "value": "0x04e45aaf000000000000000000000000..."
-                      }
-                    ],
-                    "outputs": [
-                      {
-                        "name": "",
-                        "type": "bytes[]",
-                        "value": "0x000000000000000000000000000000000000000000..."
-                      }
-                    ]
-                  }
-                }
-              ],
-              "logs": [
-                {
-                  "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
-                  "data": "0x0000000000000000000000000000000000000000000000001bc097e5badd8f46",
-                  "topics": [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                    "0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
-                    "0xdd7eef07982749410eceaa721cdc8ff3167fc9b"
-                  ],
-                  "decoded": {
-                    "authority": "ETHERSCAN",
-                    "eventName": "Transfer",
-                    "inputs": [
-                      {
-                        "name": "src",
-                        "type": "address",
-                        "value": "0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
-                        "indexed": true
-                      },
-                      {
-                        "name": "dst",
-                        "type": "address",
-                        "value": "0x0dd7eef07982749410eceaa721cdc8ff3167fc9b",
-                        "indexed": true
-                      },
-                      {
-                        "name": "wad",
-                        "type": "uint256",
-                        "value": "1999765247490887494",
-                        "indexed": false
-                      }
-                    ]
-                  }
-                }
-              ],
-              "error": "",
-              "revertReason": null
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "alchemy_simulateExecutionBundle",
-      "summary": "Simulates multiple transactions sequentially and returns decoded execution traces and logs.",
-      "params": [
-        {
-          "name": "transactions",
-          "required": true,
-          "description": "An array of 1–2 transaction objects to run in sequence.",
-          "schema": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 2,
-            "items": {
-              "type": "object",
-              "required": ["to"],
-              "properties": {
-                "from": {
-                  "title": "hex encoded address",
-                  "type": "string",
-                  "pattern": "^0x[0-9a-fA-F]{40}$"
-                },
-                "to": {
-                  "title": "hex encoded address",
-                  "type": "string",
-                  "pattern": "^0x[0-9a-fA-F]{40}$"
-                },
-                "value": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "data": {
-                  "title": "hex encoded bytes (any case)",
-                  "type": "string",
-                  "pattern": "^0x[0-9a-fA-F]*$"
-                },
-                "gas": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "gasPrice": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "maxFeePerGas": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                },
-                "maxPriorityFeePerGas": {
-                  "title": "hex encoded unsigned integer",
-                  "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "result": {
-        "name": "Execution simulation",
-        "description": "The decoded execution traces and logs from simulating multiple transactions in a bundle.",
-        "schema": {
-          "title": "SimulateExecutionResult",
-          "type": "object",
-          "required": ["calls", "logs", "error"],
-          "properties": {
-            "calls": {
-              "type": "array",
-              "items": {
-                "title": "Call",
-                "type": "object",
-                "required": [
-                  "type",
-                  "from",
-                  "to",
-                  "gas",
-                  "gasUsed",
-                  "input",
-                  "output",
-                  "decoded"
-                ],
-                "properties": {
-                  "type": {
-                    "title": "CallType",
-                    "type": "string",
-                    "enum": ["CALL", "STATICCALL", "DELEGATECALL"]
-                  },
-                  "from": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "Address the transaction is sent from"
-                  },
-                  "to": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "Address the transaction is directed to"
-                  },
-                  "value": {
-                    "description": "Amount in wei to transfer from sender to recipient",
-                    "anyOf": [
-                      {
-                        "title": "hex encoded unsigned integer",
-                        "type": "string",
-                        "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "gas": {
-                    "title": "hex encoded unsigned integer",
-                    "type": "string",
-                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                    "description": "Hex-encoded gas limit"
-                  },
-                  "gasUsed": {
-                    "title": "hex encoded bytes (any case)",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]*$",
-                    "description": "Hex-encoded gas actually used by this call"
-                  },
-                  "input": {
-                    "title": "hex encoded bytes (any case)",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]*$",
-                    "description": "Hex-encoded call data"
-                  },
-                  "output": {
-                    "type": "string",
-                    "description": "Hex-encoded return data"
-                  },
-                  "decoded": {
-                    "anyOf": [
-                      {
-                        "title": "DecodedCall",
-                        "type": "object",
-                        "required": [
-                          "methodName",
-                          "inputs",
-                          "outputs",
-                          "authority"
-                        ],
-                        "properties": {
-                          "methodName": {
-                            "type": "string"
-                          },
-                          "inputs": {
-                            "type": "array",
-                            "items": {
-                              "title": "DecodedCallParam",
-                              "type": "object",
-                              "required": ["name", "type", "value"],
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "anyOf": [
-                                    {
-                                      "title": "hex encoded bytes (any case)",
-                                      "type": "string",
-                                      "pattern": "^0x[0-9a-fA-F]*$"
-                                    },
-                                    {
-                                      "type": "string"
-                                    }
-                                  ],
-                                  "description": "The decoded field value"
-                                }
-                              }
-                            }
-                          },
-                          "outputs": {
-                            "type": "array",
-                            "items": {
-                              "title": "DecodedCallParam",
-                              "type": "object",
-                              "required": ["name", "type", "value"],
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "anyOf": [
-                                    {
-                                      "title": "hex encoded bytes (any case)",
-                                      "type": "string",
-                                      "pattern": "^0x[0-9a-fA-F]*$"
-                                    },
-                                    {
-                                      "type": "string"
-                                    }
-                                  ],
-                                  "description": "The decoded field value"
-                                }
-                              }
-                            }
-                          },
-                          "authority": {
-                            "title": "DecodingAuthority",
-                            "type": "string",
-                            "enum": ["ETHERSCAN"]
-                          }
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "logs": {
-              "type": "array",
-              "items": {
-                "title": "Log",
-                "type": "object",
-                "required": ["topics", "address", "data", "decoded"],
-                "properties": {
-                  "topics": {
-                    "type": "array",
-                    "items": {
-                      "title": "hex encoded bytes (any case)",
-                      "type": "string",
-                      "pattern": "^0x[0-9a-fA-F]*$"
-                    }
-                  },
-                  "address": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$"
-                  },
-                  "data": {
-                    "title": "hex encoded bytes (any case)",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]*$"
-                  },
-                  "decoded": {
-                    "anyOf": [
-                      {
-                        "title": "DecodedLog",
-                        "type": "object",
-                        "required": ["eventName", "inputs", "authority"],
-                        "properties": {
-                          "eventName": {
-                            "type": "string"
-                          },
-                          "inputs": {
-                            "type": "array",
-                            "items": {
-                              "title": "DecodedLogInput",
-                              "type": "object",
-                              "required": ["name", "type", "value", "indexed"],
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "anyOf": [
-                                    {
-                                      "title": "hex encoded bytes (any case)",
-                                      "type": "string",
-                                      "pattern": "^0x[0-9a-fA-F]*$"
-                                    },
-                                    {
-                                      "type": "string"
-                                    }
-                                  ]
-                                },
-                                "indexed": {
-                                  "type": "boolean"
-                                }
-                              }
-                            }
-                          },
-                          "authority": {
-                            "title": "DecodingAuthority",
-                            "type": "string",
-                            "enum": ["ETHERSCAN"]
-                          }
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "error": {
-              "type": ["string", "null"],
-              "description": "If the transaction would revert, error explains the reason"
-            },
-            "revertReason": {
-              "type": "string",
-              "nullable": true,
-              "description": "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
-            }
-          }
-        }
-      },
-      "examples": [
-        {
-          "name": "Bundle simulation example",
-          "params": [
-            {
-              "name": "transactions",
-              "value": [
-                {
-                  "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-                  "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
-                  "data": "0x5ae401dc00000000000000000000000000000000000000000000000000000000634ef02f..."
-                },
-                {
-                  "from": "0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
-                  "to": "0x6b175474e89094c44da98b954eedeac495271d0f",
-                  "data": "0xa9059cbb0000000000000000000000000dd7eef07982749410eceaa721cdc8ff3167fc9b..."
-                }
-              ]
-            }
-          ],
-          "result": {
-            "name": "Execution simulation",
-            "value": {
-              "calls": [
-                {
-                  "type": "CALL",
-                  "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-                  "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45"
-                },
-                {
-                  "type": "CALL",
-                  "from": "0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
-                  "to": "0x6b175474e89094c44da98b954eedeac495271d0f"
-                }
-              ],
-              "logs": [
-                {
-                  "address": "0x6b175474e89094c44da98b954eedeac495271d0f"
-                }
-              ],
-              "error": null,
-              "revertReason": null
-            }
-          }
-        }
-      ]
-    }
-  ]
+	"x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
+	"$schema": "https://meta.open-rpc.org/",
+	"openrpc": "1.2.4",
+	"info": {
+		"title": "Alchemy Transaction Simulation API JSON-RPC Specification",
+		"description": "A specification of the standard JSON-RPC methods for Transaction Simulation API.",
+		"version": "0.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://eth-mainnet.g.alchemy.com/v2/",
+			"name": "Mainnet",
+			"description": "Ethereum Mainnet endpoint for Alchemy Transaction Simulation API"
+		},
+		{
+			"url": "https://eth-sepolia.g.alchemy.com/v2/",
+			"name": "Sepolia"
+		}
+	],
+	"methods": [
+		{
+			"name": "alchemy_simulateAssetChanges",
+			"summary": "Simulates a transaction and returns a list of asset changes.",
+			"params": [
+				{
+					"name": "transaction",
+					"required": true,
+					"description": "Object describing the transaction to simulate.",
+					"schema": {
+						"type": "object",
+						"required": [
+							"to"
+						],
+						"properties": {
+							"from": {
+								"title": "hex encoded address",
+								"type": "string",
+								"pattern": "^0x[0-9a-fA-F]{40}$"
+							},
+							"to": {
+								"title": "hex encoded address",
+								"type": "string",
+								"pattern": "^0x[0-9a-fA-F]{40}$"
+							},
+							"value": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"data": {
+								"title": "hex encoded bytes (any case)",
+								"type": "string",
+								"pattern": "^0x[0-9a-fA-F]*$"
+							},
+							"gas": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"gasPrice": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"maxFeePerGas": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"maxPriorityFeePerGas": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							}
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "Simulation result",
+				"description": "The asset changes resulting from the transaction simulation.",
+				"schema": {
+					"title": "SimulateAssetChangesResult",
+					"type": "object",
+					"required": [
+						"changes",
+						"error"
+					],
+					"properties": {
+						"changes": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"assetType",
+									"changeType",
+									"from",
+									"to",
+									"rawAmount",
+									"amount",
+									"symbol",
+									"decimals",
+									"contractAddress",
+									"name",
+									"logo",
+									"tokenId"
+								],
+								"properties": {
+									"assetType": {
+										"type": "string",
+										"enum": [
+											"NATIVE",
+											"ERC20",
+											"ERC721",
+											"ERC1155",
+											"SPECIAL_NFT"
+										]
+									},
+									"changeType": {
+										"type": "string",
+										"enum": [
+											"APPROVE",
+											"TRANSFER"
+										]
+									},
+									"from": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "address the transaction is sent from"
+									},
+									"to": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "address the transaction is directed to"
+									},
+									"rawAmount": {
+										"type": "string"
+									},
+									"amount": {
+										"type": "string"
+									},
+									"symbol": {
+										"type": "string"
+									},
+									"decimals": {
+										"type": [
+											"number",
+											"null"
+										]
+									},
+									"contractAddress": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"name": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"logo": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"tokenId": {
+										"type": [
+											"number",
+											"null"
+										]
+									}
+								}
+							}
+						},
+						"gasUsed": {
+							"type": "string",
+							"description": "The amount of gas used for the simulation"
+						},
+						"error": {
+							"type": [
+								"string",
+								"null"
+							],
+							"description": "Error message if the transaction would revert, null otherwise"
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "Simulate transferring USDC",
+					"params": [
+						{
+							"name": "transaction",
+							"value": {
+								"from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+								"to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+								"data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240",
+								"gas": "0x5208",
+								"gasPrice": "0x3b9aca00"
+							}
+						}
+					],
+					"result": {
+						"name": "Simulation result",
+						"value": {
+							"changes": [
+								{
+									"assetType": "ERC20",
+									"changeType": "TRANSFER",
+									"from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+									"to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
+									"rawAmount": "1000000",
+									"contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+									"decimals": 6,
+									"symbol": "USDC",
+									"name": "USD Coin",
+									"logo": "https://static.alchemyapi.io/images/assets/3408.png",
+									"amount": "1",
+									"tokenId": null
+								}
+							],
+							"gasUsed": "0x5208",
+							"error": null
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "alchemy_simulateAssetChangesBundle",
+			"summary": "Simulates multiple transactions sequentially and returns a combined list of asset changes.",
+			"params": [
+				{
+					"name": "transactions",
+					"required": true,
+					"description": "An array of 1–2 transaction objects to run in sequence.",
+					"schema": {
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 2,
+						"items": {
+							"type": "object",
+							"required": [
+								"to"
+							],
+							"properties": {
+								"from": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$"
+								},
+								"to": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$"
+								},
+								"value": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"data": {
+									"title": "hex encoded bytes (any case)",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]*$"
+								},
+								"gas": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"gasPrice": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"maxFeePerGas": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"maxPriorityFeePerGas": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								}
+							}
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "Simulation result",
+				"description": "The asset changes resulting from the sequential simulation.",
+				"schema": {
+					"title": "SimulateAssetChangesResult",
+					"type": "object",
+					"required": [
+						"changes",
+						"error"
+					],
+					"properties": {
+						"changes": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"assetType",
+									"changeType",
+									"from",
+									"to",
+									"rawAmount",
+									"amount",
+									"symbol",
+									"decimals",
+									"contractAddress",
+									"name",
+									"logo",
+									"tokenId"
+								],
+								"properties": {
+									"assetType": {
+										"type": "string",
+										"enum": [
+											"NATIVE",
+											"ERC20",
+											"ERC721",
+											"ERC1155",
+											"SPECIAL_NFT"
+										]
+									},
+									"changeType": {
+										"type": "string",
+										"enum": [
+											"APPROVE",
+											"TRANSFER"
+										]
+									},
+									"from": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "address the transaction is sent from"
+									},
+									"to": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "address the transaction is directed to"
+									},
+									"rawAmount": {
+										"type": "string"
+									},
+									"amount": {
+										"type": "string"
+									},
+									"symbol": {
+										"type": "string"
+									},
+									"decimals": {
+										"type": [
+											"number",
+											"null"
+										]
+									},
+									"contractAddress": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"name": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"logo": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"tokenId": {
+										"type": [
+											"number",
+											"null"
+										]
+									}
+								}
+							}
+						},
+						"gasUsed": {
+							"type": "string",
+							"description": "The amount of gas used for the simulation"
+						},
+						"error": {
+							"type": [
+								"string",
+								"null"
+							],
+							"description": "Error message if the transaction would revert, null otherwise"
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "Bundle simulation example",
+					"params": [
+						{
+							"name": "transactions",
+							"value": [
+								{
+									"from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+									"to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+									"data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+								},
+								{
+									"from": "0x1234567890abcdef1234567890abcdef12345678",
+									"to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
+									"data": "0x00abcdef"
+								}
+							]
+						}
+					],
+					"result": {
+						"name": "Simulation result",
+						"value": {
+							"changes": [
+								{
+									"assetType": "ERC20",
+									"changeType": "TRANSFER",
+									"from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+									"to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
+									"rawAmount": "1000000",
+									"contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+									"decimals": 6,
+									"symbol": "USDC",
+									"name": "USD Coin",
+									"logo": "https://static.alchemyapi.io/images/assets/3408.png",
+									"amount": "1",
+									"tokenId": null
+								}
+							],
+							"error": null
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "alchemy_simulateExecution",
+			"summary": "Simulates a single transaction's execution and returns decoded traces/logs.",
+			"params": [
+				{
+					"name": "format",
+					"required": true,
+					"description": "Specifies whether to return a 'NESTED' or 'FLAT' call structure.",
+					"schema": {
+						"type": "string",
+						"enum": [
+							"NESTED",
+							"FLAT"
+						]
+					}
+				},
+				{
+					"name": "transaction",
+					"required": true,
+					"description": "Transaction object to simulate.",
+					"schema": {
+						"type": "object",
+						"required": [
+							"to"
+						],
+						"properties": {
+							"from": {
+								"title": "hex encoded address",
+								"type": "string",
+								"pattern": "^0x[0-9a-fA-F]{40}$"
+							},
+							"to": {
+								"title": "hex encoded address",
+								"type": "string",
+								"pattern": "^0x[0-9a-fA-F]{40}$"
+							},
+							"value": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"data": {
+								"title": "hex encoded bytes (any case)",
+								"type": "string",
+								"pattern": "^0x[0-9a-fA-F]*$"
+							},
+							"gas": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"gasPrice": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"maxFeePerGas": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							},
+							"maxPriorityFeePerGas": {
+								"title": "hex encoded unsigned integer",
+								"type": "string",
+								"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+							}
+						}
+					}
+				},
+				{
+					"name": "blockTag",
+					"required": true,
+					"description": "The block context to use: 'latest', 'safe', 'finalized', or 'earliest'.",
+					"schema": {
+						"type": "string",
+						"enum": [
+							"latest",
+							"safe",
+							"finalized",
+							"earliest"
+						]
+					}
+				}
+			],
+			"result": {
+				"name": "Execution simulation",
+				"description": "The decoded execution traces and logs produced by simulating the transaction.",
+				"schema": {
+					"title": "SimulateExecutionResult",
+					"type": "object",
+					"required": [
+						"calls",
+						"logs",
+						"error"
+					],
+					"properties": {
+						"calls": {
+							"type": "array",
+							"items": {
+								"title": "Call",
+								"type": "object",
+								"required": [
+									"type",
+									"from",
+									"to",
+									"gas",
+									"gasUsed",
+									"input",
+									"output",
+									"decoded"
+								],
+								"properties": {
+									"type": {
+										"title": "CallType",
+										"type": "string",
+										"enum": [
+											"CALL",
+											"STATICCALL",
+											"DELEGATECALL"
+										]
+									},
+									"from": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Address the transaction is sent from"
+									},
+									"to": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Address the transaction is directed to"
+									},
+									"value": {
+										"description": "Amount in wei to transfer from sender to recipient",
+										"anyOf": [
+											{
+												"title": "hex encoded unsigned integer",
+												"type": "string",
+												"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"gas": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Hex-encoded gas limit"
+									},
+									"gasUsed": {
+										"title": "hex encoded bytes (any case)",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]*$",
+										"description": "Hex-encoded gas actually used by this call"
+									},
+									"input": {
+										"title": "hex encoded bytes (any case)",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]*$",
+										"description": "Hex-encoded call data"
+									},
+									"output": {
+										"type": "string",
+										"description": "Hex-encoded return data"
+									},
+									"decoded": {
+										"anyOf": [
+											{
+												"title": "DecodedCall",
+												"type": "object",
+												"required": [
+													"methodName",
+													"inputs",
+													"outputs",
+													"authority"
+												],
+												"properties": {
+													"methodName": {
+														"type": "string"
+													},
+													"inputs": {
+														"type": "array",
+														"items": {
+															"title": "DecodedCallParam",
+															"type": "object",
+															"required": [
+																"name",
+																"type",
+																"value"
+															],
+															"properties": {
+																"name": {
+																	"type": "string"
+																},
+																"type": {
+																	"type": "string"
+																},
+																"value": {
+																	"anyOf": [
+																		{
+																			"title": "hex encoded bytes (any case)",
+																			"type": "string",
+																			"pattern": "^0x[0-9a-fA-F]*$"
+																		},
+																		{
+																			"type": "string"
+																		}
+																	],
+																	"description": "The decoded field value"
+																}
+															}
+														}
+													},
+													"outputs": {
+														"type": "array",
+														"items": {
+															"title": "DecodedCallParam",
+															"type": "object",
+															"required": [
+																"name",
+																"type",
+																"value"
+															],
+															"properties": {
+																"name": {
+																	"type": "string"
+																},
+																"type": {
+																	"type": "string"
+																},
+																"value": {
+																	"anyOf": [
+																		{
+																			"title": "hex encoded bytes (any case)",
+																			"type": "string",
+																			"pattern": "^0x[0-9a-fA-F]*$"
+																		},
+																		{
+																			"type": "string"
+																		}
+																	],
+																	"description": "The decoded field value"
+																}
+															}
+														}
+													},
+													"authority": {
+														"title": "DecodingAuthority",
+														"type": "string",
+														"enum": [
+															"ETHERSCAN"
+														]
+													}
+												}
+											},
+											{
+												"type": "null"
+											}
+										]
+									}
+								}
+							}
+						},
+						"logs": {
+							"type": "array",
+							"items": {
+								"title": "Log",
+								"type": "object",
+								"required": [
+									"topics",
+									"address",
+									"data",
+									"decoded"
+								],
+								"properties": {
+									"topics": {
+										"type": "array",
+										"items": {
+											"title": "hex encoded bytes (any case)",
+											"type": "string",
+											"pattern": "^0x[0-9a-fA-F]*$"
+										}
+									},
+									"address": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$"
+									},
+									"data": {
+										"title": "hex encoded bytes (any case)",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]*$"
+									},
+									"decoded": {
+										"anyOf": [
+											{
+												"title": "DecodedLog",
+												"type": "object",
+												"required": [
+													"eventName",
+													"inputs",
+													"authority"
+												],
+												"properties": {
+													"eventName": {
+														"type": "string"
+													},
+													"inputs": {
+														"type": "array",
+														"items": {
+															"title": "DecodedLogInput",
+															"type": "object",
+															"required": [
+																"name",
+																"type",
+																"value",
+																"indexed"
+															],
+															"properties": {
+																"name": {
+																	"type": "string"
+																},
+																"type": {
+																	"type": "string"
+																},
+																"value": {
+																	"anyOf": [
+																		{
+																			"title": "hex encoded bytes (any case)",
+																			"type": "string",
+																			"pattern": "^0x[0-9a-fA-F]*$"
+																		},
+																		{
+																			"type": "string"
+																		}
+																	]
+																},
+																"indexed": {
+																	"type": "boolean"
+																}
+															}
+														}
+													},
+													"authority": {
+														"title": "DecodingAuthority",
+														"type": "string",
+														"enum": [
+															"ETHERSCAN"
+														]
+													}
+												}
+											},
+											{
+												"type": "null"
+											}
+										]
+									}
+								}
+							}
+						},
+						"error": {
+							"type": [
+								"string",
+								"null"
+							],
+							"description": "If the transaction would revert, error explains the reason"
+						},
+						"revertReason": {
+							"type": "string",
+							"nullable": true,
+							"description": "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "Uniswap swap example",
+					"params": [
+						{
+							"name": "format",
+							"value": "FLAT"
+						},
+						{
+							"name": "transaction",
+							"value": {
+								"from": "0x0dd7eef07982749410eceaa721cdc8ff3167fc9b",
+								"to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+								"data": "0x5ae401dc00000000000000000000000000000000000000000000000000000000634ef02f...",
+								"gas": "0x22710",
+								"gasPrice": "0x3b9aca00"
+							}
+						},
+						{
+							"name": "blockTag",
+							"value": "latest"
+						}
+					],
+					"result": {
+						"name": "Execution simulation",
+						"value": {
+							"calls": [
+								{
+									"type": "CALL",
+									"from": "0x0dd7eef07982749410eceaa721cdc8ff3167fc9b",
+									"to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+									"value": "0x0",
+									"gas": "0x22710",
+									"gasUsed": "0x1ab62",
+									"input": "0x5ae401dc0000000000...",
+									"output": "0x000000000000000000000000000000000000000000...",
+									"decoded": {
+										"authority": "ETHERSCAN",
+										"methodName": "multicall",
+										"inputs": [
+											{
+												"name": "deadline",
+												"type": "uint256",
+												"value": "1666117679"
+											},
+											{
+												"name": "data",
+												"type": "bytes[]",
+												"value": "0x04e45aaf000000000000000000000000..."
+											}
+										],
+										"outputs": [
+											{
+												"name": "",
+												"type": "bytes[]",
+												"value": "0x000000000000000000000000000000000000000000..."
+											}
+										]
+									}
+								}
+							],
+							"logs": [
+								{
+									"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+									"data": "0x0000000000000000000000000000000000000000000000001bc097e5badd8f46",
+									"topics": [
+										"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+										"0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
+										"0xdd7eef07982749410eceaa721cdc8ff3167fc9b"
+									],
+									"decoded": {
+										"authority": "ETHERSCAN",
+										"eventName": "Transfer",
+										"inputs": [
+											{
+												"name": "src",
+												"type": "address",
+												"value": "0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
+												"indexed": true
+											},
+											{
+												"name": "dst",
+												"type": "address",
+												"value": "0x0dd7eef07982749410eceaa721cdc8ff3167fc9b",
+												"indexed": true
+											},
+											{
+												"name": "wad",
+												"type": "uint256",
+												"value": "1999765247490887494",
+												"indexed": false
+											}
+										]
+									}
+								}
+							],
+							"error": "",
+							"revertReason": null
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "alchemy_simulateExecutionBundle",
+			"summary": "Simulates multiple transactions sequentially and returns decoded execution traces and logs.",
+			"params": [
+				{
+					"name": "transactions",
+					"required": true,
+					"description": "An array of 1–2 transaction objects to run in sequence.",
+					"schema": {
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 2,
+						"items": {
+							"type": "object",
+							"required": [
+								"to"
+							],
+							"properties": {
+								"from": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$"
+								},
+								"to": {
+									"title": "hex encoded address",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]{40}$"
+								},
+								"value": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"data": {
+									"title": "hex encoded bytes (any case)",
+									"type": "string",
+									"pattern": "^0x[0-9a-fA-F]*$"
+								},
+								"gas": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"gasPrice": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"maxFeePerGas": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								},
+								"maxPriorityFeePerGas": {
+									"title": "hex encoded unsigned integer",
+									"type": "string",
+									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+								}
+							}
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "Execution simulation",
+				"description": "The decoded execution traces and logs from simulating multiple transactions in a bundle.",
+				"schema": {
+					"title": "SimulateExecutionResult",
+					"type": "object",
+					"required": [
+						"calls",
+						"logs",
+						"error"
+					],
+					"properties": {
+						"calls": {
+							"type": "array",
+							"items": {
+								"title": "Call",
+								"type": "object",
+								"required": [
+									"type",
+									"from",
+									"to",
+									"gas",
+									"gasUsed",
+									"input",
+									"output",
+									"decoded"
+								],
+								"properties": {
+									"type": {
+										"title": "CallType",
+										"type": "string",
+										"enum": [
+											"CALL",
+											"STATICCALL",
+											"DELEGATECALL"
+										]
+									},
+									"from": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Address the transaction is sent from"
+									},
+									"to": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Address the transaction is directed to"
+									},
+									"value": {
+										"description": "Amount in wei to transfer from sender to recipient",
+										"anyOf": [
+											{
+												"title": "hex encoded unsigned integer",
+												"type": "string",
+												"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"gas": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Hex-encoded gas limit"
+									},
+									"gasUsed": {
+										"title": "hex encoded bytes (any case)",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]*$",
+										"description": "Hex-encoded gas actually used by this call"
+									},
+									"input": {
+										"title": "hex encoded bytes (any case)",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]*$",
+										"description": "Hex-encoded call data"
+									},
+									"output": {
+										"type": "string",
+										"description": "Hex-encoded return data"
+									},
+									"decoded": {
+										"anyOf": [
+											{
+												"title": "DecodedCall",
+												"type": "object",
+												"required": [
+													"methodName",
+													"inputs",
+													"outputs",
+													"authority"
+												],
+												"properties": {
+													"methodName": {
+														"type": "string"
+													},
+													"inputs": {
+														"type": "array",
+														"items": {
+															"title": "DecodedCallParam",
+															"type": "object",
+															"required": [
+																"name",
+																"type",
+																"value"
+															],
+															"properties": {
+																"name": {
+																	"type": "string"
+																},
+																"type": {
+																	"type": "string"
+																},
+																"value": {
+																	"anyOf": [
+																		{
+																			"title": "hex encoded bytes (any case)",
+																			"type": "string",
+																			"pattern": "^0x[0-9a-fA-F]*$"
+																		},
+																		{
+																			"type": "string"
+																		}
+																	],
+																	"description": "The decoded field value"
+																}
+															}
+														}
+													},
+													"outputs": {
+														"type": "array",
+														"items": {
+															"title": "DecodedCallParam",
+															"type": "object",
+															"required": [
+																"name",
+																"type",
+																"value"
+															],
+															"properties": {
+																"name": {
+																	"type": "string"
+																},
+																"type": {
+																	"type": "string"
+																},
+																"value": {
+																	"anyOf": [
+																		{
+																			"title": "hex encoded bytes (any case)",
+																			"type": "string",
+																			"pattern": "^0x[0-9a-fA-F]*$"
+																		},
+																		{
+																			"type": "string"
+																		}
+																	],
+																	"description": "The decoded field value"
+																}
+															}
+														}
+													},
+													"authority": {
+														"title": "DecodingAuthority",
+														"type": "string",
+														"enum": [
+															"ETHERSCAN"
+														]
+													}
+												}
+											},
+											{
+												"type": "null"
+											}
+										]
+									}
+								}
+							}
+						},
+						"logs": {
+							"type": "array",
+							"items": {
+								"title": "Log",
+								"type": "object",
+								"required": [
+									"topics",
+									"address",
+									"data",
+									"decoded"
+								],
+								"properties": {
+									"topics": {
+										"type": "array",
+										"items": {
+											"title": "hex encoded bytes (any case)",
+											"type": "string",
+											"pattern": "^0x[0-9a-fA-F]*$"
+										}
+									},
+									"address": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$"
+									},
+									"data": {
+										"title": "hex encoded bytes (any case)",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]*$"
+									},
+									"decoded": {
+										"anyOf": [
+											{
+												"title": "DecodedLog",
+												"type": "object",
+												"required": [
+													"eventName",
+													"inputs",
+													"authority"
+												],
+												"properties": {
+													"eventName": {
+														"type": "string"
+													},
+													"inputs": {
+														"type": "array",
+														"items": {
+															"title": "DecodedLogInput",
+															"type": "object",
+															"required": [
+																"name",
+																"type",
+																"value",
+																"indexed"
+															],
+															"properties": {
+																"name": {
+																	"type": "string"
+																},
+																"type": {
+																	"type": "string"
+																},
+																"value": {
+																	"anyOf": [
+																		{
+																			"title": "hex encoded bytes (any case)",
+																			"type": "string",
+																			"pattern": "^0x[0-9a-fA-F]*$"
+																		},
+																		{
+																			"type": "string"
+																		}
+																	]
+																},
+																"indexed": {
+																	"type": "boolean"
+																}
+															}
+														}
+													},
+													"authority": {
+														"title": "DecodingAuthority",
+														"type": "string",
+														"enum": [
+															"ETHERSCAN"
+														]
+													}
+												}
+											},
+											{
+												"type": "null"
+											}
+										]
+									}
+								}
+							}
+						},
+						"error": {
+							"type": [
+								"string",
+								"null"
+							],
+							"description": "If the transaction would revert, error explains the reason"
+						},
+						"revertReason": {
+							"type": "string",
+							"nullable": true,
+							"description": "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "Bundle simulation example",
+					"params": [
+						{
+							"name": "transactions",
+							"value": [
+								{
+									"from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+									"to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+									"data": "0x5ae401dc00000000000000000000000000000000000000000000000000000000634ef02f..."
+								},
+								{
+									"from": "0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
+									"to": "0x6b175474e89094c44da98b954eedeac495271d0f",
+									"data": "0xa9059cbb0000000000000000000000000dd7eef07982749410eceaa721cdc8ff3167fc9b..."
+								}
+							]
+						}
+					],
+					"result": {
+						"name": "Execution simulation",
+						"value": {
+							"calls": [
+								{
+									"type": "CALL",
+									"from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+									"to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45"
+								},
+								{
+									"type": "CALL",
+									"from": "0x48da0965ab2d2cbf1c17c09cfb5cbe67ad5b1406",
+									"to": "0x6b175474e89094c44da98b954eedeac495271d0f"
+								}
+							],
+							"logs": [
+								{
+									"address": "0x6b175474e89094c44da98b954eedeac495271d0f"
+								}
+							],
+							"error": null,
+							"revertReason": null
+						}
+					}
+				}
+			]
+		}
+	]
 }
