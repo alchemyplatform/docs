@@ -322,3 +322,28 @@ ChainId:
   description: The chain ID of the network the operation will be submitted on.
   pattern: "^0[xX][0-9a-fA-F]+$"
   default: "0x1"
+# ============ EVM Models ==============
+common_request_fields:
+  type: object
+  properties:
+    id:
+      $ref: "#/Id"
+    jsonrpc:
+      $ref: "#/JsonRpc"
+# ============= Token API Methods ===============
+alchemy_getTokenMetadata:
+  allOf:
+    - $ref: "#/common_request_fields"
+    - type: object
+      properties:
+        method:
+          $ref: "#/Method"
+          default: alchemy_getTokenMetadata
+        params:
+          type: array
+          description: "string, 20 Bytes - Singular address for the token contract."
+          minItems: 1
+          maxItems: 1
+          items:
+            type: string
+            default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
