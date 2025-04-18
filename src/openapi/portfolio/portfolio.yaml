@@ -49,7 +49,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -81,7 +81,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -113,7 +113,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -157,7 +157,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -199,10 +199,10 @@ paths:
           - python
           - go
       parameters:
-        - $ref: "#/components/schemas/apiKey"
-        - $ref: "#/components/schemas/networks"
-        - $ref: "#/components/schemas/timestamp"
-        - $ref: "#/components/schemas/direction"
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/networks"
+        - $ref: "#/components/parameters/timestamp"
+        - $ref: "#/components/parameters/direction"
       responses:
         "200":
           description: Successful response
@@ -240,7 +240,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -272,7 +272,7 @@ paths:
           - python
           - go
       parameters:
-        - $ref: "#/components/schemas/apiKey"
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -291,10 +291,7 @@ paths:
 # Common Components for All APIs
 ####################################################
 components:
-  schemas:
-    ####################################################
-    # Common Components
-    ####################################################
+  parameters:
     apiKey:
       name: apiKey
       in: path
@@ -309,18 +306,7 @@ components:
           </style>
           For higher throughput, <span class="custom-style"><a href="https://alchemy.com/?a=docs-demo" target="_blank">create your own API key</a></span>
       required: true
-    # TODO(peter): Annoyingly this doesn't work and defaults to string. Debug this eventually.
-    #
-    #withMetadataField:
-    #  description: 'Boolean - if set to `true`, returns metadata. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`.'
-    #  type: boolean
-    #  default: true
-    #withPrices:
-    #  name: withPrices
-    #  description: 'Boolean - if set to `true`, returns token prices. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`.'
-    #  schema:
-    #    type: boolean
-    #    default: true
+
     networks:
       name: networks
       description: |
@@ -339,6 +325,42 @@ components:
           default: eth-mainnet
       in: query
       required: true
+    #withPrices:
+    #  name: withPrices
+    #  description: 'Boolean - if set to `true`, returns token prices. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`.'
+    #  schema:
+    #    type: boolean
+    #    default: true
+    timestamp:
+      name: timestamp
+      description: Unix or ISO timestamp
+      schema:
+        type: string
+        default: 2025-02-28T19:38:57Z
+      required: true
+      in: query
+    direction:
+      name: direction
+      required: true
+      description: Return the first block "BEFORE" or "AFTER" the provided timestamp
+      schema:
+        type: string
+        enum:
+          - BEFORE
+          - AFTER
+        default: AFTER
+      in: query
+  schemas:
+    ####################################################
+    # Common Components
+    ####################################################
+    # TODO(peter): Annoyingly this doesn't work and defaults to string. Debug this eventually.
+    #
+    #withMetadataField:
+    #  description: 'Boolean - if set to `true`, returns metadata. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`.'
+    #  type: boolean
+    #  default: true
+
     # Networks that NFTs are supported on.
     nftNetworks:
       type: string
@@ -377,25 +399,6 @@ components:
         - abstract-testnet
         - apechain-mainnet
       default: eth-mainnet
-    timestamp:
-      name: timestamp
-      description: Unix or ISO timestamp
-      schema:
-        type: string
-        default: 2025-02-28T19:38:57Z
-      required: true
-      in: query
-    direction:
-      name: direction
-      required: true
-      description: Return the first block "BEFORE" or "AFTER" the provided timestamp
-      schema:
-        type: string
-        enum:
-          - BEFORE
-          - AFTER
-        default: AFTER
-      in: query
     ####################################################
     # Common Requests
     ####################################################
@@ -1199,21 +1202,22 @@ components:
     #     - address
     #     - prices
 
-    HistoricalPriceItem:
-      type: object
-      properties:
-        value:
-          type: string
-          description: Price value as a string.
-          example: "1900.00"
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp of the price data point.
-          example: "2024-01-01T00:00:00Z"
-      required:
-        - value
-        - timestamp
+    # Unused
+    # HistoricalPriceItem:
+    #   type: object
+    #   properties:
+    #     value:
+    #       type: string
+    #       description: Price value as a string.
+    #       example: "1900.00"
+    #     timestamp:
+    #       type: string
+    #       format: date-time
+    #       description: Timestamp of the price data point.
+    #       example: "2024-01-01T00:00:00Z"
+    #   required:
+    #     - value
+    #     - timestamp
 
     ####################################################
     # Utility APIs
