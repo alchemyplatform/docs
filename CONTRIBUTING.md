@@ -27,6 +27,7 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
 
 - Location: `src/openapi/`
 - Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- Tip: Use the **Redocly OpenAPI** VSCode/Cursor extension to enable intellisense and validate OpenAPI specs in real-time.
 
 **JSON-RPC APIs (OpenRPC)**
 
