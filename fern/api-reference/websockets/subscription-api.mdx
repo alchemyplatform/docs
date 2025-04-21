@@ -23,8 +23,8 @@ For a full list of Subscription API endpoints and supported chains see the [Subs
 
 | Subscription Type                                                     | Description                                                                                                            |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| [alchemy_minedTransactions](/reference/alchemy-minedtransactions)     | Emits full transaction objects or hashes that are mined on the network based on provided filters and block tags.       |
-| [alchemy_pendingTransactions](/reference/alchemy-pendingtransactions) | Emits full transaction objects or hashes that are sent to the network, marked as "pending", based on provided filters. |
+| [alchemy\_minedTransactions](/reference/alchemy-minedtransactions)     | Emits full transaction objects or hashes that are mined on the network based on provided filters and block tags.       |
+| [alchemy\_pendingTransactions](/reference/alchemy-pendingtransactions) | Emits full transaction objects or hashes that are sent to the network, marked as "pending", based on provided filters. |
 | [newPendingTransactions](/reference/newpendingtransactions)           | Emits transaction hashes that are sent to the network and marked as "pending".                                         |
 | [newHeads](/reference/newheads)                                       | Emits new blocks that are added to the blockchain.                                                                     |
 | [logs](/reference/logs)                                               | Emits logs attached to a new block that match certain topic filters.                                                   |
@@ -51,69 +51,67 @@ Next, install a command line tool for making WebSocket requests such as [wscat](
   ```shell Shell
   $ wscat -c wss://eth-mainnet.ws.g.alchemy.com/v2/demo
 
-// create subscription
+  // create subscription
 
-> {"id": 1, "method": "eth_subscribe", "params": ["newHeads"]}
+  > {"id": 1, "method": "eth_subscribe", "params": ["newHeads"]}
 
   < {"jsonrpc":"2.0","id":1,"result":"0xcd0c3e8af590364c09d0fa6a1210faf5"}
 
-// incoming notifications
+  // incoming notifications
 
   < {"jsonrpc":"2.0","method":"eth_subscription","params":{"subscription":"0xcd0c3e8af590364c09d0fa6a1210faf5","result":{"difficulty":"0xd9263f42a87",<...>, "uncles":[]}}}
   < {"jsonrpc":"2.0","method":"eth_subscription","params":{"subscription":"0xcd0c3e8af590364c09d0fa6a1210faf5","result":{"difficulty":"0xd90b1a7ad02", <...>, "uncles":["0x80aacd1ea4c9da32efd8c2cc9ab38f8f70578fcd46a1a4ed73f82f3e0957f936"]}}}
 
-// cancel subscription
+  // cancel subscription
 
-> {"id": 1, "method": "eth_unsubscribe", "params": ["0xcd0c3e8af590364c09d0fa6a1210faf5"]}
+  > {"id": 1, "method": "eth_unsubscribe", "params": ["0xcd0c3e8af590364c09d0fa6a1210faf5"]}
 
   < {"jsonrpc":"2.0","id":1,"result":true}
   ```
 
-```javascript Alchemy SDK
-// Setup: npm install alchemy-sdk
-import { Alchemy } from "alchemy-sdk";
+  ```javascript Alchemy SDK
+  // Setup: npm install alchemy-sdk
+  import { Alchemy } from "alchemy-sdk";
 
-// Optional config object, but defaults to demo api-key and eth-mainnet.
-const settings = {
-  apiKey: "demo", // Replace with your Alchemy API Key.
-  network: Network.ETH_MAINNET, // Replace with your network.
-};
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
 
-const alchemy = new Alchemy(settings);
+  const alchemy = new Alchemy(settings);
 
-// Subscription for new blocks on Eth Mainnet.
-alchemy.ws.on("block", (blockNumber) =>
-  console.log("The latest block number is", blockNumber),
-);
+  // Subscription for new blocks on Eth Mainnet.
+  alchemy.ws.on("block", (blockNumber) =>
+    console.log("The latest block number is", blockNumber),
+  );
 
-// Subscription for Alchemy's pendingTransactions Enhanced API
-alchemy.ws.on(
-  {
-    method: "alchemy_pendingTransactions",
-    toAddress: "vitalik.eth",
-  },
-  (tx) => console.log(tx),
-);
-```
-
+  // Subscription for Alchemy's pendingTransactions Enhanced API
+  alchemy.ws.on(
+    {
+      method: "alchemy_pendingTransactions",
+      toAddress: "vitalik.eth",
+    },
+    (tx) => console.log(tx),
+  );
+  ```
 </CodeGroup>
 
 <Warning>
   Though it's currently possible to send all your HTTP requests over Websockets, we discourage our developers from doing so. Instead, you should only send `eth_subscribe` and `eth_unsubscribe` requests to WebSockets.
 
-This is for several reasons:
-
+  This is for several reasons:
 </Warning>
 
 # WebSocket Limits
 
 The following limits apply for WebSocket connections:
 
-- There is a limit of **20,000 WebSocket connections** per API Key as well as **1,000 parallel WebSocket subscriptions** per WebSocket connection, creating a maximum of **20 million subscriptions per application**.
-- The maximum size of a JSON-RPC `batch` request that can be sent over a WebSocket connection is 20
-- Free tier users will be limited to 10 concurrent requests per WebSocket connection.
+* There is a limit of **20,000 WebSocket connections** per API Key as well as **1,000 parallel WebSocket subscriptions** per WebSocket connection, creating a maximum of **20 million subscriptions per application**.
+* The maximum size of a JSON-RPC `batch` request that can be sent over a WebSocket connection is 20
+* Free tier users will be limited to 10 concurrent requests per WebSocket connection.
 
----
+***
 
 # Error Codes
 
@@ -121,8 +119,8 @@ The following limits apply for WebSocket connections:
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `32600`    | `"The maximum batch size that can be sent over a websocket connection is 10. Please decrease the batch size and try again."` | Occurs when user attempts to send high-volume JSON-RPC traffic over Websockets. We recommend this traffic be sent over HTTP instead to optimize server backends. |
 
----
+***
 
 # Example Projects
 
-- [How to Listen to NFT Mints](/docs/how-to-listen-to-nft-mints)
+* [How to Listen to NFT Mints](/docs/how-to-listen-to-nft-mints)
