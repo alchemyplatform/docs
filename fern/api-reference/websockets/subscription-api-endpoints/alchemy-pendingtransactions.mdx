@@ -1,16 +1,17 @@
 ---
 title: "alchemy_pendingTransactions"
-description: "Emits full transaction objects or hashes that are sent to the network, marked as \"pending\", based on provided filters."
+description: 'Emits full transaction objects or hashes that are sent to the network, marked as "pending", based on provided filters.'
 url: "https://docs.alchemy.com/reference/alchemy-pendingtransactions"
 slug: "reference/alchemy-pendingtransactions"
 ---
 
-# alchemy\_pendingTransactions
+# alchemy_pendingTransactions
 
 The `alchemy_pendingTransactions` subscription type subscribes to pending transactions via WebSockets, and filters those transactions based on specified `from` and/or `to` addresses. The subscription will return either full transaction objects or just transaction hashes depending on the request. It will also optionally include re-orged or removed transactions if specified.
 
 <Info>
-  When listening to pending transactions with this endpoint, you will only get pending transactions in Alchemy mempool.
+  When listening to pending transactions with this endpoint, you will only get
+  pending transactions in Alchemy mempool.
 </Info>
 
 # Supported Networks
@@ -23,41 +24,50 @@ A maximum of 1000 addresses can be added in the addresses filter for `alchemy_pe
 
 # Parameters
 
-* `fromAddress` (optional): `string` or \[`array of strings`]
-  * Singular address or array of addresses to receive pending transactions sent **from** this address.
-* `toAddress` (optional): `string` or \[`array of strings`]
-  * Singular address or array of addresses to receive pending transactions **to** this address
-* `hashesOnly` (optional): `boolean` default value is `false`, where the response matches the payload of [eth\_getTransactionByHash](/reference/eth-gettransactionbyhash) . If set to `true`, the payload returned contains *only the hashes of the transactions* that are added to the pending state, which matches the payload of [newPendingTransactions](/reference/newpendingtransactions)
+- `fromAddress` (optional): `string` or \[`array of strings`]
+  - Singular address or array of addresses to receive pending transactions sent **from** this address.
+- `toAddress` (optional): `string` or \[`array of strings`]
+  - Singular address or array of addresses to receive pending transactions **to** this address
+- `hashesOnly` (optional): `boolean` default value is `false`, where the response matches the payload of [eth_getTransactionByHash](/reference/eth-gettransactionbyhash) . If set to `true`, the payload returned contains _only the hashes of the transactions_ that are added to the pending state, which matches the payload of [newPendingTransactions](/reference/newpendingtransactions)
 
-<Info />
+<Info>
+**Note: Parameter Specification**
+
+1. There is an address limit of 1k unique addresses (combination of
+   `fromAddress` and `toAddress` lists)
+2. Excluding all parameters returns the transaction information for all transactions that are added to the pending state.
+3. If `fromAddress` and `toAddress` are both present, then this subscription
+   will include transactions sent from the `fromAddress` OR received by the
+   `toAddress`.
+   </Info>
 
 # Returns
 
 With `hashesOnly` = `true`
 
-* `result`: ***\[string]***- transaction hash for pending transaction
-* `subscription`: ***\[string]*** - subscription ID
+- `result`: **_\[string]_**- transaction hash for pending transaction
+- `subscription`: **_\[string]_** - subscription ID
 
 With `hashesOnly` = `false`
 
-* `result` - ***\[object]*** A transaction object:
+- `result` - **_\[object]_** A transaction object:
 
-  * `blockHash`: `DATA`, 32 Bytes - `null` when it's pending.
-  * `blockNumber`: `QUANTITY` - `null` when it's pending.
-  * `from`: `DATA`, 20 Bytes - address of the sender.
-  * `gas`: `QUANTITY` - gas provided by the sender.
-  * `gasPrice`: `QUANTITY` - gas price provided by the sender in Wei.
-  * `hash`: `DATA`, 32 Bytes - hash of the transaction.
-  * `input`: `DATA` - the data send along with the transaction.
-  * `nonce`: `QUANTITY` - the number of transactions made by the sender prior to this one.
-  * `to`: `DATA`, 20 Bytes - address of the receiver. `null` when it's a contract creation transaction.
-  * `transactionIndex`: `QUANTITY` - `null` when its pending.
-  * `value`: `QUANTITY` - value transferred in Wei.
-  * `v`: `QUANTITY` - ECDSA recovery id
-  * `r`: `DATA`, 32 Bytes - ECDSA signature r
-  * `s`: `DATA`, 32 Bytes - ECDSA signature s
+  - `blockHash`: `DATA`, 32 Bytes - `null` when it's pending.
+  - `blockNumber`: `QUANTITY` - `null` when it's pending.
+  - `from`: `DATA`, 20 Bytes - address of the sender.
+  - `gas`: `QUANTITY` - gas provided by the sender.
+  - `gasPrice`: `QUANTITY` - gas price provided by the sender in Wei.
+  - `hash`: `DATA`, 32 Bytes - hash of the transaction.
+  - `input`: `DATA` - the data send along with the transaction.
+  - `nonce`: `QUANTITY` - the number of transactions made by the sender prior to this one.
+  - `to`: `DATA`, 20 Bytes - address of the receiver. `null` when it's a contract creation transaction.
+  - `transactionIndex`: `QUANTITY` - `null` when its pending.
+  - `value`: `QUANTITY` - value transferred in Wei.
+  - `v`: `QUANTITY` - ECDSA recovery id
+  - `r`: `DATA`, 32 Bytes - ECDSA signature r
+  - `s`: `DATA`, 32 Bytes - ECDSA signature s
 
-* `subscription` - ***\[string]*** subscription ID
+- `subscription` - **_\[string]_** subscription ID
 
 ### Request
 
@@ -66,31 +76,33 @@ With `hashesOnly` = `false`
   // initiate websocket stream first
   wscat -c wss://eth-mainnet.g.alchemy.com/v2/demo
 
-  // then call subscription 
-  {"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions", {"toAddress": ["0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0xdAC17F958D2ee523a2206206994597C13D831ec7"], "hashesOnly": false}]}
-  ```
+// then call subscription
+{"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions", {"toAddress": ["0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0xdAC17F958D2ee523a2206206994597C13D831ec7"], "hashesOnly": false}]}
 
-  ```javascript alchemy-sdk
-  // Installation: npm install alchemy-sdk
-  import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+````
 
-  const settings = {
-    apiKey: "<-- ALCHEMY APP API KEY -->", // Replace with your Alchemy API Key
-    network: Network.ETH_MAINNET, // Replace with your network
-  };
+```javascript alchemy-sdk
+// Installation: npm install alchemy-sdk
+import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
 
-  const alchemy = new Alchemy(settings);
+const settings = {
+  apiKey: "<-- ALCHEMY APP API KEY -->", // Replace with your Alchemy API Key
+  network: Network.ETH_MAINNET, // Replace with your network
+};
 
-  // Subscription for Alchemy's pendingTransactions API
-  alchemy.ws.on(
-    {
-      method: AlchemySubscription.PENDING_TRANSACTIONS,
-      fromAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // Replace with address to recieve pending transactions from this address
-      toAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // Replace with address to send  pending transactions to this address
-    },
-    (tx) => console.log(tx)
-  );
-  ```
+const alchemy = new Alchemy(settings);
+
+// Subscription for Alchemy's pendingTransactions API
+alchemy.ws.on(
+  {
+    method: AlchemySubscription.PENDING_TRANSACTIONS,
+    fromAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // Replace with address to recieve pending transactions from this address
+    toAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // Replace with address to send  pending transactions to this address
+  },
+  (tx) => console.log(tx)
+);
+````
+
 </CodeGroup>
 
 ### Result
@@ -99,29 +111,31 @@ With `hashesOnly` = `false`
   ```javascript results
   {"id":1,"result":"0xf13f7073ddef66a8c1b0c9c9f0e543c3","jsonrpc":"2.0"}
 
-  {
-    "jsonrpc": "2.0",
-    "method": "eth_subscription",
-    "params": {
-      "result": {
-        "blockHash": null,
-        "blockNumber": null,
-        "from": "0x098bdcdc84ab11a57b7c156557dca8cef853523d",
-        "gas": "0x1284a",
-        "gasPrice": "0x6fc23ac00",
-        "hash": "0x10466101bd8979f3dcba18eb72155be87bdcd4962527d97c84ad93fc4ad5d461",
-        "input": "0xa9059cbb00000000000000000000000054406f1ec84f89532f83768f3f159b73b237257f0000000000000000000000000000000000000000000000000000000001c9c380",
-        "nonce": "0x11",
-        "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "transactionIndex": null,
-        "value": "0x0",
-        "type": "0x0",
-        "v": "0x26",
-        "r": "0x93ddd646056f365352f7e53dfe5dc81bde53f5b7c7bbe5deea555a62540d6995",
-        "s": "0x79ed82a681930feb11eb68feccd1df2e53e1b96cf9171ae4ffcf53e9b2a40e8e"
-      },
-      "subscription": "0xf13f7073ddef66a8c1b0c9c9f0e543c3"
-    }
-  }
-  ```
+{
+"jsonrpc": "2.0",
+"method": "eth_subscription",
+"params": {
+"result": {
+"blockHash": null,
+"blockNumber": null,
+"from": "0x098bdcdc84ab11a57b7c156557dca8cef853523d",
+"gas": "0x1284a",
+"gasPrice": "0x6fc23ac00",
+"hash": "0x10466101bd8979f3dcba18eb72155be87bdcd4962527d97c84ad93fc4ad5d461",
+"input": "0xa9059cbb00000000000000000000000054406f1ec84f89532f83768f3f159b73b237257f0000000000000000000000000000000000000000000000000000000001c9c380",
+"nonce": "0x11",
+"to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+"transactionIndex": null,
+"value": "0x0",
+"type": "0x0",
+"v": "0x26",
+"r": "0x93ddd646056f365352f7e53dfe5dc81bde53f5b7c7bbe5deea555a62540d6995",
+"s": "0x79ed82a681930feb11eb68feccd1df2e53e1b96cf9171ae4ffcf53e9b2a40e8e"
+},
+"subscription": "0xf13f7073ddef66a8c1b0c9c9f0e543c3"
+}
+}
+
+```
 </CodeGroup>
+```
