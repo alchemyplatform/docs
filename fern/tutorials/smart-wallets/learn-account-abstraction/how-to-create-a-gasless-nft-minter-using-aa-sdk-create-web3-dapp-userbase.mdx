@@ -5,7 +5,6 @@ url: "https://docs.alchemy.com/docs/how-to-create-a-gasless-nft-minter-using-aa-
 slug: "docs/how-to-create-a-gasless-nft-minter-using-aa-sdk-create-web3-dapp-userbase"
 ---
 
-
 # How to Build a Gasless NFT Minter using Alchemy's Account Abstraction SDK
 
 Ever wanted to drop an NFT collection where your users do not need to pay gas fees or even own a web3 wallet to mint? Well, look no further!
@@ -27,8 +26,8 @@ All of the code in this guide is available in this [Github repo](https://github.
 
 ## Pre-Requisities
 
-* [Node.js](https://nodejs.org/en) version 16.14.0 or higher.
-* This project will make use of Create Web3 Dapp, a web3-enabled wrapper of [Create Next App](https://www.npmjs.com/package/create-next-app). ⚠️ Please note: Create Web3 Dapp ships out of the box using NextJS 13 which means the project's main folder is `/app` instead of `/pages`.
+- [Node.js](https://nodejs.org/en) version 16.14.0 or higher.
+- This project will make use of Create Web3 Dapp, a web3-enabled wrapper of [Create Next App](https://www.npmjs.com/package/create-next-app). ⚠️ Please note: Create Web3 Dapp ships out of the box using NextJS 13 which means the project's main folder is `/app` instead of `/pages`.
 
 ## Step 1: Local Project Setup
 
@@ -40,11 +39,11 @@ Let's get to it! First up, let's set up our local development environment...
 2. Once in the `/my-aa-project` directory, run `npx create-web3-dapp@latest`
 3. For the initialization wizard, please choose the following options:
 
-* Project name: `gasless-nft-minter`
-* Choose how to start: `Boilerplate dapp`
-* Choose Typescript or Javascript: `Typescript`
-* Choose your blockchain development environment: `Skip`
-* Login to your [Alchemy](https://www.alchemy.com/) account (or sign up for one) to acquire an API key
+- Project name: `gasless-nft-minter`
+- Choose how to start: `Boilerplate dapp`
+- Choose Typescript or Javascript: `Typescript`
+- Choose your blockchain development environment: `Skip`
+- Login to your [Alchemy](https://www.alchemy.com/) account (or sign up for one) to acquire an API key
 
 <Warning />
 
@@ -52,10 +51,10 @@ Let's get to it! First up, let's set up our local development environment...
 
 Nice! You just used Create Web3 Dapp to startup your local development environment with important dependencies, out-of-the-box, such as:
 
-* [**viem**](https://viem.sh/): viem delivers a great developer experience through modular and composable APIs, comprehensive documentation, and automatic type safety and inference.
-* [**ConnectKit**](https://docs.family.co/connectkit): ConnectKit is a powerful React component library for connecting a wallet to your dApp. It supports the most popular connectors and chains, and provides a beautiful, seamless experience.
-* **[wagmi](https://wagmi.sh/)**: wagmi is a collection of React Hooks containing everything you need to start working with Ethereum. wagmi makes it easy to "Connect Wallet," display ENS and balance information, sign messages, interact with contracts, and much more — all with caching, request deduplication, and persistence.
-* and more!
+- [**viem**](https://viem.sh/): viem delivers a great developer experience through modular and composable APIs, comprehensive documentation, and automatic type safety and inference.
+- [**ConnectKit**](https://docs.family.co/connectkit): ConnectKit is a powerful React component library for connecting a wallet to your dApp. It supports the most popular connectors and chains, and provides a beautiful, seamless experience.
+- **[wagmi](https://wagmi.sh/)**: wagmi is a collection of React Hooks containing everything you need to start working with Ethereum. wagmi makes it easy to "Connect Wallet," display ENS and balance information, sign messages, interact with contracts, and much more — all with caching, request deduplication, and persistence.
+- and more!
 
 ### ConnectKit Wallet Setup
 
@@ -89,8 +88,10 @@ Your config object should look like this:
       // Required
       appName: "My Gasless NFT Minter",
     })
-  );
-  ```
+
+);
+
+````
 </CodeGroup>
 
 ### Typescript `@common` Setup
@@ -102,13 +103,14 @@ All you need to do:
 1. In your `tsconfig.json` file, replace lines `22-24`, with:
 
 <CodeGroup>
-  ```json json
-  "baseUrl": "./",
-  "paths": {
-      "@common/*": ["common/*"],
-      "@public/*": ["public/*"]
-  }
-  ```
+```json json
+"baseUrl": "./",
+"paths": {
+    "@common/*": ["common/*"],
+    "@public/*": ["public/*"]
+}
+````
+
 </CodeGroup>
 
 2. In your project's root folder, create a new folder called `common`
@@ -119,7 +121,7 @@ Sweet! Now we can create our components in the `/common` folder and easily impor
 
 ### Sponsored Gas Policy Setup
 
-Thanks to Alchemy's [Gas Manager Coverage API](/reference/gas-manager-coverage-api-quickstart), you are able to create gas policies to build applications with "gasless" features - meaning: your users can interact and perform typical web3 actions such as owning, minting, burning and transfering an NFT - *without* users having to pay gas fees. This type of infrastructure can be super powerful depending on your use case.
+Thanks to Alchemy's [Gas Manager Coverage API](/reference/gas-manager-coverage-api-quickstart), you are able to create gas policies to build applications with "gasless" features - meaning: your users can interact and perform typical web3 actions such as owning, minting, burning and transfering an NFT - _without_ users having to pay gas fees. This type of infrastructure can be super powerful depending on your use case.
 
 Since this is an AA-enabled application, users will be represented as smart contract wallets - and we will choose to sponsor the minting of an NFT user operation for them! Let's set up a gas policy to sponsor our users and provide them the greatest UX ever! 🔥
 
@@ -134,9 +136,9 @@ Since this is an AA-enabled application, users will be represented as smart cont
 
 4. For the **Policy details**, fill in the following:
 
-* Policy Name: `Gas Fee Sponsorship for my Gasless NFT Minter App`
-* For App: **Choose the app attached to the Alchemy API key you used in Step #1!**
-* Select `Next`
+- Policy Name: `Gas Fee Sponsorship for my Gasless NFT Minter App`
+- For App: **Choose the app attached to the Alchemy API key you used in Step #1!**
+- Select `Next`
 
 ![ui](rkv3so1kp.png)
 
@@ -144,7 +146,7 @@ Since this is an AA-enabled application, users will be represented as smart cont
 
 ![form](ry8pnj1Ja.png)
 
-* Select `Next`
+- Select `Next`
 
 > Since our app will strictly be on Sepolia, these don't really matter but are still good safeguards to input.
 
@@ -217,11 +219,7 @@ Created PostCSS config file: postcss.config.js
 4. Lastly, copy-paste the following into the very top of your app's `globals.css` file:
 
 <CodeGroup>
-  ```bash bash
-  @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-  ```
+  ```bash bash @tailwind base; @tailwind components; @tailwind utilities; ```
 </CodeGroup>
 
 #### Daisy UI
@@ -231,11 +229,7 @@ Created PostCSS config file: postcss.config.js
 1. Run `npm i -D daisyui@latest`
 2. In your newly-created `tailwind.config.css`, add the following key to the `module.exports` in that file:
 
-<CodeGroup>
-  ```json json
-  plugins: [require("daisyui")],
-  ```
-</CodeGroup>
+<CodeGroup>```json json plugins: [require("daisyui")], ```</CodeGroup>
 
 You're done! Now you have access to cutting-edge styling libraries - this will be great in order to deliver better UX! 🤩
 
@@ -291,42 +285,42 @@ Sweet! You've set up everything needed on the Userbase side, now let's continue 
   } from "react";
   import userbase from "userbase-js";
 
-  interface User {
-    username: string;
-    isLoggedIn: boolean;
-    userId: string;
-    scwAddress?: string;
-  }
+interface User {
+username: string;
+isLoggedIn: boolean;
+userId: string;
+scwAddress?: string;
+}
 
-  interface AuthContextType {
-    user: User | null;
-    login: (user: User) => void;
-    logout: () => void;
-  }
+interface AuthContextType {
+user: User | null;
+login: (user: User) => void;
+logout: () => void;
+}
 
-  const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-  export function useAuth(): AuthContextType {
-    const context = useContext(AuthContext);
-    if (!context) {
-      throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
-  }
+export function useAuth(): AuthContextType {
+const context = useContext(AuthContext);
+if (!context) {
+throw new Error("useAuth must be used within an AuthProvider");
+}
+return context;
+}
 
-  interface AuthProviderProps {
-    children: ReactNode;
-  }
+interface AuthProviderProps {
+children: ReactNode;
+}
 
-  export function AuthProvider({ children }: AuthProviderProps) {
-    const [user, setUser] = useState<User | null>(null);
-    useEffect(() => {
-      userbase
-        .init({
-          appId: process.env.NEXT_PUBLIC_USERBASE_APP_ID!,
-        })
-        .then((session: any) => {
-          // SDK initialized successfully
+export function AuthProvider({ children }: AuthProviderProps) {
+const [user, setUser] = useState<User | null>(null);
+useEffect(() => {
+userbase
+.init({
+appId: process.env.NEXT_PUBLIC_USERBASE_APP_ID!,
+})
+.then((session: any) => {
+// SDK initialized successfully
 
           if (session.user) {
             // there is a valid active session
@@ -362,8 +356,10 @@ Sweet! You've set up everything needed on the Userbase side, now let's continue 
         {children}
       </AuthContext.Provider>
     );
-  }
-  ```
+
+}
+
+````
 </CodeGroup>
 
 #### Use AuthProvider component in `layout.tsx`
@@ -375,17 +371,17 @@ In order for your `AuthProvider` component to take effect on your app, follow th
 3. After `line 10`, add the following:
 
 <CodeGroup>
-  ```javascript javascript
-  chains: [sepolia],
-  ```
+```javascript javascript
+chains: [sepolia],
+````
+
 </CodeGroup>
 
 4. Remember to add the `sepolia` import from wagmi on `line 4`:
 
 <CodeGroup>
-  ```javascript javascript
-  import { WagmiConfig, createConfig, sepolia } from "wagmi";
-  ```
+  ```javascript javascript import {(WagmiConfig, createConfig, sepolia)} from
+  "wagmi"; ```
 </CodeGroup>
 
 > This is to protect our users! We want to only allow use of this app exclusively on the Sepolia test network.
@@ -393,8 +389,7 @@ In order for your `AuthProvider` component to take effect on your app, follow th
 5. Then, add the following import at the top of the file (but not above the `'use client'` statement):
 
 <CodeGroup>
-  ```javascript javascript
-  import { AuthProvider } from "@common/AuthProvider";
+  ```javascript javascript import {AuthProvider} from "@common/AuthProvider";
   ```
 </CodeGroup>
 
@@ -405,17 +400,23 @@ In order for your `AuthProvider` component to take effect on your app, follow th
 <CodeGroup>
   ```javascript javascript
   <html lang="en">
-      <AuthProvider>
-        <WagmiConfig config={config}>
-          <ConnectKitProvider mode="dark">
-            <body>
-              <div style={{ display: "flex", flexDirection: "column", minHeight: "105vh" }}>
-                <div style={{flexGrow: 1}}>{children}</div>
-              </div>
-            </body>
-          </ConnectKitProvider>
-        </WagmiConfig>
-      </AuthProvider>
+    <AuthProvider>
+      <WagmiConfig config={config}>
+        <ConnectKitProvider mode="dark">
+          <body>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "105vh",
+              }}
+            >
+              <div style={{ flexGrow: 1 }}>{children}</div>
+            </div>
+          </body>
+        </ConnectKitProvider>
+      </WagmiConfig>
+    </AuthProvider>
   </html>
   ```
 </CodeGroup>
@@ -448,13 +449,13 @@ Now, let's use NextJS 13 `/app` infrastructure to set up some routes! This secti
   import simpleFactoryAbi from "@common/utils/SimpleAccountFactory.json";
   import userbase from "userbase-js";
 
-  export default function SignupForm() {
-    const { user, login } = useAuth();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
+export default function SignupForm() {
+const { user, login } = useAuth();
+const [username, setUsername] = useState("");
+const [password, setPassword] = useState("");
+const [error, setError] = useState<string | null>(null);
+const [isLoading, setIsLoading] = useState(false);
+const router = useRouter();
 
     useEffect(() => {
       if (user?.isLoggedIn) {
@@ -468,7 +469,7 @@ Now, let's use NextJS 13 `/app` infrastructure to set up some routes! This secti
       try {
         const privKey = secp.utils.randomPrivateKey();
         const privKeyHex = secp.etc.bytesToHex(privKey);
-          
+
         const data = {
           pk: privKeyHex,
         };
@@ -575,8 +576,10 @@ Now, let's use NextJS 13 `/app` infrastructure to set up some routes! This secti
         )}
       </div>
     );
-  }
-  ```
+
+}
+
+````
 </CodeGroup>
 
 There is *quite a bit* going on in this file. Particularly, there are a lot of things we are importing (the next step is setting all of these imports up!). Let's break this file down a bit by looking at some of the imports we haven't seen yet:
@@ -612,7 +615,7 @@ The `handleSignup` function does quite a bit too, let's break it down:
 
 * First, it generates a private key using `@noble/secp256k1`
 * Then it uses that private key to make a call to the server-side of the application (specifically to the `/api/get-signer` endpoint, which we have yet to set up)
-  * The `get-signer` endpoint uses the private key to create a `Signer` object paired with the `SimpleSmartAccountOwner` imported from Alchemy's AA SDK. The endpoint simply returns the address of the signer that will own the smart contract wallet.
+* The `get-signer` endpoint uses the private key to create a `Signer` object paired with the `SimpleSmartAccountOwner` imported from Alchemy's AA SDK. The endpoint simply returns the address of the signer that will own the smart contract wallet.
 * We then do some [viem](https://viem.sh/docs/contract/readContract.html) magic to interface with the [SimpleAccountFactory smart contract](https://sepolia.etherscan.io/address/0x9406Cc6185a346906296840746125a0E44976454) (using the imported `abi`) in order to deterministically read the user's smart contract wallet address, called `userScwAddress`.
 
 > NOTE: We don't the smart contract account just yet! We are just using the [`getAddress`](https://sepolia.etherscan.io/address/0x9406Cc6185a346906296840746125a0E44976454#readContract#F2) function of the SimpleAccountFactory contract
@@ -624,21 +627,22 @@ The `handleSignup` function does quite a bit too, let's break it down:
 * `response2` is an response object we receive back from Userbase. All that's left to do is use it to extract the user's `userId`. Then we create an object of all the user data we have up to this point:
 
 <CodeGroup>
-  ```javascript javascript
-  const userInfo = {
-      username: username,
-      isLoggedIn: true,
-      userId: response2.userId,
-      scwAddress: userScwAddress,
-  };
-  login(userInfo);
-  router.push("/?signup=success");
-  ```
+```javascript javascript
+const userInfo = {
+    username: username,
+    isLoggedIn: true,
+    userId: response2.userId,
+    scwAddress: userScwAddress,
+};
+login(userInfo);
+router.push("/?signup=success");
+````
+
 </CodeGroup>
 
-* `login` is a function we import from our `AuthProvider` - all that passing in the `userInfo` object to it does is make all that user data available all across our app - we will need it!
+- `login` is a function we import from our `AuthProvider` - all that passing in the `userInfo` object to it does is make all that user data available all across our app - we will need it!
 
-* `router.push(/?signup=success)` simply routes the dapp to the `/` route (which is whatever is in `app/page.tsx`)
+- `router.push(/?signup=success)` simply routes the dapp to the `/` route (which is whatever is in `app/page.tsx`)
 
 ### Log In
 
@@ -658,13 +662,13 @@ Now that we've set up a route to sign up, let's also set one up to allow our use
   import userbase from "userbase-js";
   import "../globals.css";
 
-  export default function LoginForm() {
-    const { user, login } = useAuth();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
+export default function LoginForm() {
+const { user, login } = useAuth();
+const [username, setUsername] = useState("");
+const [password, setPassword] = useState("");
+const [error, setError] = useState<string | null>(null);
+const router = useRouter();
+const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
       if (user?.isLoggedIn) {
@@ -765,8 +769,10 @@ Now that we've set up a route to sign up, let's also set one up to allow our use
         )}
       </div>
     );
-  }
-  ```
+
+}
+
+````
 </CodeGroup>
 
 This is a much simpler component than the sign up one we put together above. Let's break anything we haven't seen yet down:
@@ -792,82 +798,83 @@ Phew, authentication can get heavy huh! We're almost there! Let's add some of th
 2. In the newly-created `/utils` folder, create a new file called `SimpleAccountFactory.json` and copy-paste the following:
 
 <CodeGroup>
-  ```json json
-  [
-    {
-      "inputs": [
-        {
-          "internalType": "contract IEntryPoint",
-          "name": "_entryPoint",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "inputs": [],
-      "name": "accountImplementation",
-      "outputs": [
-        {
-          "internalType": "contract SimpleAccount",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "salt",
-          "type": "uint256"
-        }
-      ],
-      "name": "createAccount",
-      "outputs": [
-        {
-          "internalType": "contract SimpleAccount",
-          "name": "ret",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "salt",
-          "type": "uint256"
-        }
-      ],
-      "name": "getAddress",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    }
-  ]
-  ```
+```json json
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract IEntryPoint",
+        "name": "_entryPoint",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "accountImplementation",
+    "outputs": [
+      {
+        "internalType": "contract SimpleAccount",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "salt",
+        "type": "uint256"
+      }
+    ],
+    "name": "createAccount",
+    "outputs": [
+      {
+        "internalType": "contract SimpleAccount",
+        "name": "ret",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "salt",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+````
+
 </CodeGroup>
 
 3. Still in the `/utils` folder, create a new file called `client.ts` and copy-paste the following:
@@ -877,30 +884,32 @@ Phew, authentication can get heavy huh! We're almost there! Let's add some of th
   import { createPublicClient, http } from "viem";
   import { sepolia } from "viem/chains";
 
-  export const publicClient = createPublicClient({
-    chain: sepolia,
-    transport: http(),
-  });
-  ```
+export const publicClient = createPublicClient({
+chain: sepolia,
+transport: http(),
+});
+
+````
 </CodeGroup>
 
 4. Still in the `/utils` folder, create a new file called `Loader.tsx` and copy-paste the following:
 
 <CodeGroup>
-  ```javascript javascript
-  const Loader: React.FC = () => {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-lg text-[#0a0ad0]"></span>
-      </div>
-    );
-  };
+```javascript javascript
+const Loader: React.FC = () => {
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <span className="loading loading-spinner loading-lg text-[#0a0ad0]"></span>
+    </div>
+  );
+};
 
-  export default Loader;
-  ```
+export default Loader;
+````
+
 </CodeGroup>
 
-Now, *one* more contract `abi` to add: that of the actual NFT contract!
+Now, _one_ more contract `abi` to add: that of the actual NFT contract!
 
 5. In the `/utils` folder, create a new file called `NFTContract.json` and copy-paste this JSON:
 
@@ -1440,15 +1449,15 @@ And that's it! 🧙‍♂️
   import { NextRequest, NextResponse } from "next/server";
   import { sepolia } from "viem/chains";
 
-  const ALCHEMY_API_URL = `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`;
+const ALCHEMY_API_URL = `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`;
 
-  const ENTRYPOINT_ADDRESS = process.env
-    .SEPOLIA_ENTRYPOINT_ADDRESS as `0x${string}`;
-  const SIMPLE_ACCOUNT_FACTORY_ADDRESS = process.env
-    .SEPOLIA_SIMPLE_ACCOUNT_FACTORY_ADDRESS as `0x${string}`;
+const ENTRYPOINT_ADDRESS = process.env
+.SEPOLIA_ENTRYPOINT_ADDRESS as `0x${string}`;
+const SIMPLE_ACCOUNT_FACTORY_ADDRESS = process.env
+.SEPOLIA_SIMPLE_ACCOUNT_FACTORY_ADDRESS as `0x${string}`;
 
-  export async function POST(request: NextRequest) {
-    const body = await request.json();
+export async function POST(request: NextRequest) {
+const body = await request.json();
 
     const { pk } = body;
 
@@ -1488,8 +1497,10 @@ And that's it! 🧙‍♂️
     const ownerAddress = (ownerAccount as any).owner.owner.address;
 
     return NextResponse.json({ data: ownerAddress });
-  }
-  ```
+
+}
+
+````
 </CodeGroup>
 
 All this script does is create a `Signer` object, similar to the [ethers.js Signer class](https://docs.ethers.org/v5/api/signer/) that is allowed to sign and submit user operations.
@@ -1502,31 +1513,32 @@ We'll want to build a simple wallet display so that when a user gaslessly mints 
 2. Copy-paste the following code into `route.ts`:
 
 <CodeGroup>
-  ```javascript javascript
-  import { NextRequest, NextResponse } from "next/server";
+```javascript javascript
+import { NextRequest, NextResponse } from "next/server";
 
-  const { Alchemy, Network } = require("alchemy-sdk");
+const { Alchemy, Network } = require("alchemy-sdk");
 
-  const settings = {
-    apiKey: process.env.ALCHEMY_API_KEY,
-    network: Network.ETH_SEPOLIA,
-  };
+const settings = {
+  apiKey: process.env.ALCHEMY_API_KEY,
+  network: Network.ETH_SEPOLIA,
+};
 
-  const alchemy = new Alchemy(settings);
+const alchemy = new Alchemy(settings);
 
-  export async function POST(request: NextRequest) {
-    const body = await request.json();
+export async function POST(request: NextRequest) {
+  const body = await request.json();
 
-    const { address } = body;
-    const nfts = await alchemy.nft.getNftsForOwner(address);
+  const { address } = body;
+  const nfts = await alchemy.nft.getNftsForOwner(address);
 
-    console.log(nfts);
+  console.log(nfts);
 
-    return NextResponse.json({
-      data: nfts,
-    });
-  }
-  ```
+  return NextResponse.json({
+    data: nfts,
+  });
+}
+````
+
 </CodeGroup>
 
 Nice and simple script that uses the Alchemy SDK to fetch a user's NFTs! One more endpoint...
@@ -1554,8 +1566,8 @@ Nice and simple script that uses the Alchemy SDK to fetch a user's NFTs! One mor
   import { encodeFunctionData, parseEther } from "viem";
   import { sepolia } from "viem/chains";
 
-  export async function POST(request: NextRequest) {
-    const body = await request.json();
+export async function POST(request: NextRequest) {
+const body = await request.json();
 
     const { userId, userScwAddress } = body;
     // get user's pk from server
@@ -1602,34 +1614,36 @@ Nice and simple script that uses the Alchemy SDK to fetch a user's NFTs! One mor
     });
 
     return NextResponse.json({ receipt: txReceipt });
-  }
 
-  async function getUser(userId: any) {
-    try {
-      const response = await axios.get(
-        `https://v1.userbase.com/v1/admin/users/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.USERBASE_ACCESS_TOKEN}`,
-          },
-        }
-      );
+}
+
+async function getUser(userId: any) {
+try {
+const response = await axios.get(
+`https://v1.userbase.com/v1/admin/users/${userId}`,
+{
+headers: {
+Authorization: `Bearer ${process.env.USERBASE_ACCESS_TOKEN}`,
+},
+}
+);
 
       console.log(response.data); // The user data will be available here
       return NextResponse.json({ response: response.data });
     } catch (error) {
       console.error("Error fetching user:", error);
     }
-  }
 
-  async function createSigner(USER_PRIV_KEY: any) {
-    const ALCHEMY_API_URL = `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`;
-    const ENTRYPOINT_ADDRESS = process.env
-      .SEPOLIA_ENTRYPOINT_ADDRESS as `0x${string}`;
-    const SIMPLE_ACCOUNT_FACTORY_ADDRESS = process.env
-      .SEPOLIA_SIMPLE_ACCOUNT_FACTORY_ADDRESS as `0x${string}`;
-    const owner: SimpleSmartAccountOwner =
-      LocalAccountSigner.privateKeyToAccountSigner(`0x${USER_PRIV_KEY}`);
+}
+
+async function createSigner(USER_PRIV_KEY: any) {
+const ALCHEMY_API_URL = `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`;
+const ENTRYPOINT_ADDRESS = process.env
+.SEPOLIA_ENTRYPOINT_ADDRESS as `0x${string}`;
+const SIMPLE_ACCOUNT_FACTORY_ADDRESS = process.env
+.SEPOLIA_SIMPLE_ACCOUNT_FACTORY_ADDRESS as `0x${string}`;
+const owner: SimpleSmartAccountOwner =
+LocalAccountSigner.privateKeyToAccountSigner(`0x${USER_PRIV_KEY}`);
 
     const chain = sepolia;
     const provider = new SmartAccountProvider(
@@ -1661,8 +1675,10 @@ Nice and simple script that uses the Alchemy SDK to fetch a user's NFTs! One mor
     });
 
     return signer;
-  }
-  ```
+
+}
+
+````
 </CodeGroup>
 
 #### Get a User's pk from Userbase
@@ -1672,32 +1688,33 @@ Nice and simple script that uses the Alchemy SDK to fetch a user's NFTs! One mor
 3. In the `route.ts` file, copy-paste the following quick script:
 
 <CodeGroup>
-  ```javascript javascript
-  import axios from "axios";
-  import { NextRequest, NextResponse } from "next/server";
+```javascript javascript
+import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 
-  export async function POST(request: NextRequest) {
-    const body = await request.json();
+export async function POST(request: NextRequest) {
+  const body = await request.json();
 
-    const { userId } = body;
+  const { userId } = body;
 
-    try {
-      const response = await axios.get(
-        `https://v1.userbase.com/v1/admin/users/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.USERBASE_ACCESS_TOKEN}`,
-          },
-        }
-      );
+  try {
+    const response = await axios.get(
+      `https://v1.userbase.com/v1/admin/users/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.USERBASE_ACCESS_TOKEN}`,
+        },
+      }
+    );
 
-      console.log(response.data); // The user data will be available here
-      return NextResponse.json({ response: response.data });
-    } catch (error) {
-      console.error("Error fetching user:", error);
-    }
+    console.log(response.data); // The user data will be available here
+    return NextResponse.json({ response: response.data });
+  } catch (error) {
+    console.error("Error fetching user:", error);
   }
-  ```
+}
+````
+
 </CodeGroup>
 
 All in all, your `/api` folder, after this step, should look like this:
@@ -1711,11 +1728,9 @@ You've just set up super powerful API routes in your NextJS 13 project! 💫 You
 1. In your project's `.env.local` file, set up these slate of variables - needed to make your API scripts work:
 
 <CodeGroup>
-  ```javascript javascript
-  SEPOLIA_ENTRYPOINT_ADDRESS=
+  ```javascript javascript SEPOLIA_ENTRYPOINT_ADDRESS=
   SEPOLIA_SIMPLE_ACCOUNT_FACTORY_ADDRESS=
-  SEPOLIA_NFT_ADDRESS=0x5700D74F864CE224fC5D39a715A744f8d1964429
-  ```
+  SEPOLIA_NFT_ADDRESS=0x5700D74F864CE224fC5D39a715A744f8d1964429 ```
 </CodeGroup>
 
 By now, your `.env.local` file should look something like this:
@@ -1724,7 +1739,13 @@ By now, your `.env.local` file should look something like this:
 
 We're almost there!! 🏃‍♂️
 
-<Info />
+<Info>
+  Psst! You should be able to successfully sign up as a user now! The app will
+  break since it won't know where to re-direct state successfully, but feel free
+  to try signing up for an account, then go to Userbase.com and select your
+  `Starter App` - by this point, you should see the user you just created
+  successfully on the Userbase end!
+</Info>
 
 ## Step 7: Set Up Your `/` (Home!) Route
 
@@ -1751,17 +1772,17 @@ Let's do it! 🚴‍♀️
   import WalletDisplay from "@common/WalletDisplay";
   import "./globals.css";
 
-  import { useAuth } from "@common/AuthProvider";
-  import { useRouter } from "next/navigation";
-  import { AvatarGenerator } from "random-avatar-generator";
-  import { useState } from "react";
-  import userbase from "userbase-js";
+import { useAuth } from "@common/AuthProvider";
+import { useRouter } from "next/navigation";
+import { AvatarGenerator } from "random-avatar-generator";
+import { useState } from "react";
+import userbase from "userbase-js";
 
-  export default function Home() {
-    const { user, logout } = useAuth();
-    const router = useRouter();
-    const [walletViewActive, setWalletViewActive] = useState(true);
-    const generator = new AvatarGenerator();
+export default function Home() {
+const { user, logout } = useAuth();
+const router = useRouter();
+const [walletViewActive, setWalletViewActive] = useState(true);
+const generator = new AvatarGenerator();
 
     function handleLogout() {
       try {
@@ -1850,8 +1871,10 @@ Let's do it! 🚴‍♀️
         )}
       </div>
     );
-  }
-  ```
+
+}
+
+````
 </CodeGroup>
 
 By now, your app `/` route should look like this:
@@ -1870,112 +1893,113 @@ You'll notice at this point, your code editor should be complaining that we are 
 2. Open the `WalletDisplay.tsx` file and copy-paste the following:
 
 <CodeGroup>
-  ```javascript javascript
-  import { useAuth } from "@common/AuthProvider";
-  import Loader from "@common/utils/Loader";
-  import { useEffect, useState } from "react";
+```javascript javascript
+import { useAuth } from "@common/AuthProvider";
+import Loader from "@common/utils/Loader";
+import { useEffect, useState } from "react";
 
-  interface Nft {
-    contract: object;
-    tokenId: string;
-    tokenType: string;
-    title: string;
-    description: string;
-    media: object;
+interface Nft {
+  contract: object;
+  tokenId: string;
+  tokenType: string;
+  title: string;
+  description: string;
+  media: object;
+}
+
+interface Data {
+  ownedNfts: Nft[];
+  length: number;
+}
+
+export default function WalletDisplay() {
+  const { user } = useAuth();
+  const [ownedNftsArray, setOwnedNftsArray] = useState<Data | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserNfts();
+  }, []);
+
+  function truncateDescription(description: string, wordCount: number) {
+    const words = description.split(" ");
+    if (words.length > wordCount) {
+      const truncatedWords = words.slice(0, wordCount);
+      return `${truncatedWords.join(" ")} ...`;
+    }
+    return description;
   }
 
-  interface Data {
-    ownedNfts: Nft[];
-    length: number;
+  async function fetchUserNfts() {
+    setIsLoading(true);
+    try {
+      const data = { address: user?.scwAddress };
+      const response = await fetch("/api/get-user-nfts/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const messageResponse = await response.json();
+      console.log(messageResponse.data.ownedNfts);
+      setOwnedNftsArray(messageResponse.data.ownedNfts);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching NFTs:", error);
+    }
   }
 
-  export default function WalletDisplay() {
-    const { user } = useAuth();
-    const [ownedNftsArray, setOwnedNftsArray] = useState<Data | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-      fetchUserNfts();
-    }, []);
-
-    function truncateDescription(description: string, wordCount: number) {
-      const words = description.split(" ");
-      if (words.length > wordCount) {
-        const truncatedWords = words.slice(0, wordCount);
-        return `${truncatedWords.join(" ")} ...`;
-      }
-      return description;
-    }
-
-    async function fetchUserNfts() {
-      setIsLoading(true);
-      try {
-        const data = { address: user?.scwAddress };
-        const response = await fetch("/api/get-user-nfts/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        const messageResponse = await response.json();
-        console.log(messageResponse.data.ownedNfts);
-        setOwnedNftsArray(messageResponse.data.ownedNfts);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching NFTs:", error);
-      }
-    }
-
-    return (
-      <div>
-        {isLoading ? (
-          <div className="flex items-center justify-center mt-[-350px]">
-            <Loader />
-          </div>
-        ) : ownedNftsArray && ownedNftsArray.length >= 1 ? (
-          <div className="flex flex-col items-cente">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mx-12 mb-6">
-              {ownedNftsArray &&
-                Array.isArray(ownedNftsArray) &&
-                ownedNftsArray.map((nft, index) => (
-                  <div
-                    key={index}
-                    className="rounded-lg shadow-xl max-w-[250px] max-h-[600px] overflow-hidden"
-                  >
-                    <figure>
-                      <img
-                        src={
-                          nft.tokenUri.gateway
-                            ? nft.tokenUri.gateway
-                            : nft.tokenUri.raw
-                        }
-                        alt="user nft image"
-                        className="w-full max-h-[300px]"
-                      />
-                    </figure>
-                    <div className="p-4">
-                      <h2 className="text-xl font-semibold mb-2">{nft.title}</h2>
-                      <p className="">
-                        {truncateDescription(nft.description, 25)}
-                      </p>
-                    </div>
+  return (
+    <div>
+      {isLoading ? (
+        <div className="flex items-center justify-center mt-[-350px]">
+          <Loader />
+        </div>
+      ) : ownedNftsArray && ownedNftsArray.length >= 1 ? (
+        <div className="flex flex-col items-cente">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mx-12 mb-6">
+            {ownedNftsArray &&
+              Array.isArray(ownedNftsArray) &&
+              ownedNftsArray.map((nft, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg shadow-xl max-w-[250px] max-h-[600px] overflow-hidden"
+                >
+                  <figure>
+                    <img
+                      src={
+                        nft.tokenUri.gateway
+                          ? nft.tokenUri.gateway
+                          : nft.tokenUri.raw
+                      }
+                      alt="user nft image"
+                      className="w-full max-h-[300px]"
+                    />
+                  </figure>
+                  <div className="p-4">
+                    <h2 className="text-xl font-semibold mb-2">{nft.title}</h2>
+                    <p className="">
+                      {truncateDescription(nft.description, 25)}
+                    </p>
                   </div>
-                ))}
+                </div>
+              ))}
+          </div>
+        </div>
+      ) : (
+        <div>
+          <div className="flex flex-col items-center justify-center mx-8 mt-32 text-black">
+            Your smart contract wallet does not own any NFTs yet! 🤯
+            <div className="flex mt-4">
+              Mint one by selecting the <b>&nbsp;Mint an NFT&nbsp;</b> tab. ⬆️
             </div>
           </div>
-        ) : (
-          <div>
-            <div className="flex flex-col items-center justify-center mx-8 mt-32 text-black">
-              Your smart contract wallet does not own any NFTs yet! 🤯
-              <div className="flex mt-4">
-                Mint one by selecting the <b>&nbsp;Mint an NFT&nbsp;</b> tab. ⬆️
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-  ```
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
 </CodeGroup>
 
 This component will, on-mount, immediately make a call to the `get-user-nfts` endpoint we set up in Step #6, passing the user's smart contract wallet address as an argument. So, every time the page loads, a new query to check the user's smart contract wallet owned NFTs is performed.
@@ -1992,10 +2016,10 @@ This component will, on-mount, immediately make a call to the `get-user-nfts` en
   import { useState } from "react";
   import Confetti from "react-confetti";
 
-  export default function GaslessMinter() {
-    const { user } = useAuth();
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasMinted, setHasMinted] = useState(false);
+export default function GaslessMinter() {
+const { user } = useAuth();
+const [isLoading, setIsLoading] = useState(false);
+const [hasMinted, setHasMinted] = useState(false);
 
     async function handleMint() {
       setIsLoading(true);
@@ -2071,8 +2095,10 @@ This component will, on-mount, immediately make a call to the `get-user-nfts` en
         </div>
       </div>
     );
-  }
-  ```
+
+}
+
+```
 </CodeGroup>
 
 ### Step 9: Mint Your NFT!
@@ -2086,3 +2112,4 @@ Here are some ther optimizations and features you can work on if you want an ext
 * can you deploy this to a production server and share with your friends?
 
 Here is the [Github repo](https://github.com/alchemyplatform/gasless-minter-tutorial) containing all of the code in this tutorial, please feel free to fork and make it your own!
+```
