@@ -12,8 +12,8 @@ const globalRules = {
   "no-nested-ternary": "error",
 };
 
-const tslintConfigs = tseslint.config({
-  name: "TS Eslint Config",
+/** @type {import('eslint').Linter.Config} */
+const baseTsConfig = {
   languageOptions: {
     parser,
     parserOptions: {
@@ -27,8 +27,6 @@ const tslintConfigs = tseslint.config({
     ...tseslint.configs.recommended,
     eslintPrettier,
   ],
-  files: ["**/*.{ts,tsx,mts}"],
-  ignores: ["**/*.mdx/**/*.ts"], // ignore ts blocks in mdx files
   rules: {
     ...globalRules,
     "@typescript-eslint/no-shadow": ["error", { builtinGlobals: false }],
@@ -49,13 +47,33 @@ const tslintConfigs = tseslint.config({
     ],
     "@typescript-eslint/consistent-type-imports": "error",
   },
+};
+
+const tslintConfigs = tseslint.config({
+  ...baseTsConfig,
+  name: "TS Eslint Config",
+  files: ["**/*.{ts,tsx,mts}"],
+  ignores: ["**/*.{md,mdx}/**/*.ts"], // ts blocks in md/mdx files handled by tsSnippetConfig
+});
+
+const tsSnippetConfig = tseslint.config({
+  ...baseTsConfig,
+  name: "TS Snippet Eslint Config",
+  files: ["**/*.{md,mdx}/**/*.ts"], // ts blocks in md/mdx files
+  languageOptions: {
+    ...tslintConfigs.languageOptions,
+  },
+  extends: tslintConfigs.extends,
+  rules: {
+    ...tslintConfigs.rules,
+  },
 });
 
 /** @type {import('eslint').Linter.Config} */
 const jsConfig = {
   name: "JS Eslint Config",
   files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
-  ignores: ["**/dist/**", "**/*.mdx/**/*.js"],
+  ignores: ["**/dist/**", "**/*.{md,mdx}/**/*.js"], // js blocks in md/mdx files handled by jsSnippetConfig
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: "module",
@@ -69,6 +87,21 @@ const jsConfig = {
     ...globalRules,
     ...eslintPrettier.rules,
     "no-shadow": "error",
+  },
+};
+
+/** @type {import('eslint').Linter.Config} */
+const jsSnippetConfig = {
+  name: "JS Snippet Eslint Config",
+  files: ["**/*.{md,mdx}/**/*.js"], // js blocks in md/mdx files
+  languageOptions: {
+    ...jsConfig.languageOptions,
+  },
+  rules: {
+    ...jsConfig.rules,
+    "no-console": "off",
+    "no-unused-vars": "off",
+    "no-undef": "off",
   },
 };
 
@@ -93,4 +126,10 @@ const mdConfig = {
 };
 
 /** @type {import('eslint').Linter.Config[]} */
-export default [jsConfig, ...tslintConfigs, mdConfig];
+export default [
+  jsConfig,
+  jsSnippetConfig,
+  ...tslintConfigs,
+  ...tsSnippetConfig,
+  mdConfig,
+];
