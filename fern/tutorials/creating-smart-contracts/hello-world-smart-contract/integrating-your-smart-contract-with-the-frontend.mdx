@@ -674,20 +674,15 @@ Let's modify _connectWallet_ to the following:
 
 So, what does this giant block of code do exactly?
 
-Well, first, it checks if _window\.Ethereum_ is enabled in your browser.
+Well, first, it checks if *window.Ethereum* is enabled in your browser.
 
 <Info>
-  window\.Ethereum is a global API injected by Metamask and other wallet
-  providers that allows websites to request users' Ethereum accounts. If
-  approved, it can read data from the blockchains the user is connected to, and
-  suggest that the user sign messages and transactions . Check out the [Metamask
-  docs](https://docs.metamask.io/guide/ethereum-provider.html#table-of-contents)
-  for more info!
+  window.Ethereum is a global API injected by Metamask and other wallet providers that allows websites to request users' Ethereum accounts. If approved, it can read data from the blockchains the user is connected to, and suggest that the user sign messages and transactions . Check out the [Metamask docs](https://docs.metamask.io/guide/ethereum-provider.html#table-of-contents) for more info!
 </Info>
 
-If _window\.Ethereum_ is not present, that means Metamask is not installed. This results in a JSON object being returned, where the address returned is an empty string, and the _status_ JSX object relays that the user must install Metamask.
+If *window.Ethereum* is not present, that means Metamask is not installed. This results in a JSON object being returned, where the address returned is an empty string, and the *status* JSX object relays that the user must install Metamask.
 
-Now if _window\.Ethereum_ is present, then that's when things get interesting.
+Now if *window.Ethereum* is present, then that's when things get interesting.
 
 Using a try/catch loop, we'll try to connect to Metamask by calling [window.ethereum.request(\{ method: "eth_requestAccounts" }); ](https://docs.metamask.io/guide/rpc-api.html#eth-requestaccounts)Calling this function will open up Metamask in the browser, whereby the user will be prompted to connect their wallet to your dApp.
 
@@ -850,9 +845,9 @@ function addWalletListener() {
 
 I bet you don't even need our help to understand what's going on here at this point 😉, but for thoroughness purposes, let's quickly break it down:
 
-- First, our function checks if _window\.Ethereum_ is enabled (i.e., Metamask is installed).
-- If it's not, we set our _status_ state variable to a JSX string that prompts the user to install Metamask.
-- If it is enabled, we set up the listener _window\.ethereum.on("accountsChanged")_ on line 3 that listens for state changes in the Metamask wallet, which include when the user connects an additional account to the dApp, switches accounts, or disconnects an account. If at least one account is connected, the _walletAddress_ state variable is updated as the first account in the accounts array returned by the listener. Otherwise, _walletAddress_ is set as an empty string.
+* First, our function checks if *window.Ethereum* is enabled (i.e., Metamask is installed).
+* If it's not, we set our *status* state variable to a JSX string that prompts the user to install Metamask.
+* If it is enabled, we set up the listener *window.ethereum.on("accountsChanged")* on line 3 that listens for state changes in the Metamask wallet, which include when the user connects an additional account to the dApp, switches accounts, or disconnects an account. If at least one account is connected, the *walletAddress* state variable is updated as the first account in the accounts array returned by the listener. Otherwise, *walletAddress* is set as an empty string.
 
 Last but not least, we must call it in our _useEffect_ function:
 
@@ -965,7 +960,7 @@ Let's break down what's happening. First, we set up our *transactions* parameter
 
 * **to** specifies the recipient address (our smart contract)
 * **from** specifies the signer of the transaction, the address variable we passed into our function
-* **data** contains the call to our Hello World smart contract's update method, receiving our message string variable as input. Then, we make an await call, *window\.Ethereum.request*, where we ask Metamask to sign the transaction. Notice that lines 11 and 12 specify our eth method, *eth\_sendTransactionand* passing in our *transactionParameters*.
+* **data** contains the call to our Hello World smart contract's update method, receiving our message string variable as input. Then, we make an await call, *window.Ethereum.request*, where we ask Metamask to sign the transaction. Notice that lines 11 and 12 specify our eth method, *eth\_sendTransactionand* passing in our *transactionParameters*.
 
 At this point, Metamask will open up in the browser and prompt the user to sign or reject the transaction.
 
