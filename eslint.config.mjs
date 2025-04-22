@@ -13,15 +13,45 @@ const globalRules = {
 };
 
 /** @type {import('eslint').Linter.Config} */
-const baseTsConfig = {
+const jsConfig = {
+  name: "JS Eslint Config",
+  files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
+  ignores: ["**/dist/**", "**/*.{md,mdx}/**/*.js"], // js blocks in md/mdx files handled by jsSnippetConfig
   languageOptions: {
-    parser,
-    parserOptions: {
-      project: ["./tsconfig.json"],
-      ecmaVersion: "latest",
-      sourceType: "module",
+    ecmaVersion: 2022,
+    sourceType: "module",
+    globals: {
+      ...globals.browser,
+      ...globals.node,
     },
   },
+  rules: {
+    ...eslint.configs.recommended.rules,
+    ...globalRules,
+    ...eslintPrettier.rules,
+    "no-shadow": "error",
+  },
+};
+
+// Code snippets in markdown files are treated as "virtual" files that exist within the markdown file (as if it were a dir)
+// Use a separate config for these files to disable rules that don't make sense for code snippets
+/** @type {import('eslint').Linter.Config} */
+const jsSnippetConfig = {
+  name: "JS Snippet Eslint Config",
+  files: ["**/*.{md,mdx}/**/*.js"],
+  languageOptions: {
+    ...jsConfig.languageOptions,
+  },
+  rules: {
+    ...jsConfig.rules,
+    "no-console": "off",
+    "no-unused-vars": "off",
+    "no-undef": "off",
+  },
+};
+
+/** @type {import('eslint').Linter.Config} */
+const baseTsConfig = {
   extends: [
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
@@ -54,56 +84,36 @@ const tslintConfigs = tseslint.config({
   name: "TS Eslint Config",
   files: ["**/*.{ts,tsx,mts}"],
   ignores: ["**/*.{md,mdx}/**/*.ts"], // ts blocks in md/mdx files handled by tsSnippetConfig
+  languageOptions: {
+    parser,
+    parserOptions: {
+      project: ["./tsconfig.json"],
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+  },
 });
 
+// Code snippets in markdown files are treated as "virtual files" that exist within the markdown file (as if it were a dir)
+// Use a separate config for these files to disable rules that don't make sense for code snippets
 const tsSnippetConfig = tseslint.config({
   ...baseTsConfig,
   name: "TS Snippet Eslint Config",
   files: ["**/*.{md,mdx}/**/*.ts"], // ts blocks in md/mdx files
   languageOptions: {
-    ...tslintConfigs.languageOptions,
-  },
-  extends: tslintConfigs.extends,
-  rules: {
-    ...tslintConfigs.rules,
-  },
-});
-
-/** @type {import('eslint').Linter.Config} */
-const jsConfig = {
-  name: "JS Eslint Config",
-  files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
-  ignores: ["**/dist/**", "**/*.{md,mdx}/**/*.js"], // js blocks in md/mdx files handled by jsSnippetConfig
-  languageOptions: {
-    ecmaVersion: 2022,
-    sourceType: "module",
-    globals: {
-      ...globals.browser,
-      ...globals.node,
+    parser,
+    parserOptions: {
+      // no project - these files don't exist from the parser's perspective
+      ecmaVersion: "latest",
+      sourceType: "module",
     },
   },
   rules: {
-    ...eslint.configs.recommended.rules,
-    ...globalRules,
-    ...eslintPrettier.rules,
-    "no-shadow": "error",
-  },
-};
-
-/** @type {import('eslint').Linter.Config} */
-const jsSnippetConfig = {
-  name: "JS Snippet Eslint Config",
-  files: ["**/*.{md,mdx}/**/*.js"], // js blocks in md/mdx files
-  languageOptions: {
-    ...jsConfig.languageOptions,
-  },
-  rules: {
-    ...jsConfig.rules,
+    ...baseTsConfig.rules,
+    "@typescript-eslint/no-unused-vars": "off",
     "no-console": "off",
-    "no-unused-vars": "off",
-    "no-undef": "off",
   },
-};
+});
 
 /** @type {import('eslint').Linter.Config} */
 const mdConfig = {
