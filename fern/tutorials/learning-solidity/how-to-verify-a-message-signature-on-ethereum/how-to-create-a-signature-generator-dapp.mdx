@@ -5,6 +5,7 @@ url: "https://docs.alchemy.com/docs/how-to-create-a-signature-generator-dapp"
 slug: "docs/how-to-create-a-signature-generator-dapp"
 ---
 
+
 ## Clone Starter Files
 
 1. First, clone the [signature-generator-app](https://github.com/Chris-Moller/signature-generator-app) repository to get your starter files on your local machine. This repository provides all of the necessary styling and UI. (If you need assistance cloning a repository, checkout [GitHub's documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).)
@@ -18,14 +19,14 @@ In your terminal:
 
 1. Navigate to your local repository with \`cd starter files.
 2. Run `npm install` to install your dependencies.
-3. Run `npm start` to deploy a local development server at `http://localhost:3000/`.
+3. Run `npm start` to deploy a local development server at [http://localhost:3000/](http://localhost:3000/).
 
 At your local server, you should see the front end of our Signature Generator app. It should contain:
 
-- A **Sign Message** component.
-- A **Verify Signature** component.
-- A **Generated Signatures** component.
-- A **Connect Wallet** button.
+* A **Sign Message** component.
+* A **Verify Signature** component.
+* A **Generated Signatures** component.
+* A **Connect Wallet** button.
 
 ![3005](f9ae44f-local-host-start-up.PNG "local-host-start-up.PNG")
 
@@ -33,7 +34,7 @@ The **Generated Signatures** component is complete and displays a list of all th
 
 You will notice that the other buttons don't work yet. Let's move on to the next steps to begin adding some functionality!
 
----
+***
 
 ## Component 1: Connect Wallet Button
 
@@ -42,11 +43,7 @@ Navigate to the `/src/components` folder and open `WalletButton.jsx`. Inside, yo
 We are going to add functionality to each of these empty functions to get our **Connect Wallet** button working.
 
 <Info>
-  You will notice we are importing `useState` and `useEffect`. These are the
-  React hooks we will use to manage the state of our button. For more
-  information about React hooks and components, check out React's documentation:
-  [Introducing Hooks](https://reactjs.org/docs/hooks-intro.html) and [Components
-  and Props](https://reactjs.org/docs/components-and-props.html).
+  You will notice we are importing `useState` and `useEffect`. These are the React hooks we will use to manage the state of our button. For more information about React hooks and components, check out React's documentation: [Introducing Hooks](https://reactjs.org/docs/hooks-intro.html) and [Components and Props](https://reactjs.org/docs/components-and-props.html).
 </Info>
 
 Below is what your `WalletButton.jsx` component should look like:
@@ -56,33 +53,28 @@ Below is what your `WalletButton.jsx` component should look like:
   import { useEffect, useState } from "react";
   import "./styles/WalletButton.css";
 
-const WalletButton = ({ setError }) => {
-const [walletAddress, setWallet] = useState("");
+  const WalletButton = ({ setError }) => {
+    const [walletAddress, setWallet] = useState("");
 
     const connectWallet = async () => {
-
-// Code goes here...
-};
-
+  		// Code goes here...
+    };
+    
     const getConnectedWallet = async () => {
-
-// Code goes here...
-};
+  		// Code goes here...
+    };
 
     const walletConnectHandler = async () => {
-
-// Code goes here...
-};
+  		// Code goes here...
+    };
 
     const addWalletListener = () => {
-
-// Code goes here...
-};
+  		// Code goes here...
+    };
 
     const load = async () => {
-
-// Code goes here...
-};
+  		// Code goes here...
+    };
 
     return (
       <div>
@@ -97,12 +89,10 @@ const [walletAddress, setWallet] = useState("");
         </button>
       </div>
     );
+  };
 
-};
-
-export default WalletButton;
-
-````
+  export default WalletButton;
+  ```
 </CodeGroup>
 
 ### `connectWallet`
@@ -112,39 +102,37 @@ The `connectWallet` function allows us to request a list of account addresses fr
 Copy the following into your `connectWallet` function body:
 
 <CodeGroup>
-```javascript WalletButton.jsx
-const connectWallet = async () => {
-    if (window.ethereum) {
-    // Checks if MetaMask is installed in the browser
-      try {
-        const addressArray = await window.ethereum.request({
-          method: "eth_requestAccounts",
-	// Requests an array of account addresses from the connect MetaMask wallet
-        });
-        const obj = {
-          address: addressArray[0],
-	// Grabs the first address in the array
-        };
-        return obj;
-      } catch (err) {
-        throw err;
+  ```javascript WalletButton.jsx
+  const connectWallet = async () => {
+      if (window.ethereum) {
+      // Checks if MetaMask is installed in the browser
+        try {
+          const addressArray = await window.ethereum.request({
+            method: "eth_requestAccounts",
+  	// Requests an array of account addresses from the connect MetaMask wallet 
+          });
+          const obj = {
+            address: addressArray[0],
+  	// Grabs the first address in the array
+          };
+          return obj;
+        } catch (err) {
+          throw err;
+        }
+      } else {
+        throw new Error(
+          "You must install MetaMask, a virtual Ethereum wallet, in your browser."
+        // If MetaMask is not installed, the function will throw an error and tell the user they first need to install Metamask
+        );
       }
-    } else {
-      throw new Error(
-        "You must install MetaMask, a virtual Ethereum wallet, in your browser."
-      // If MetaMask is not installed, the function will throw an error and tell the user they first need to install Metamask
-      );
-    }
-  };
-````
-
+    };
+  ```
 </CodeGroup>
 
 The above code directs the `connectWallet` function to check whether MetaMask is installed and if so, returns the user’s account address. If MetaMask is not installed, the function will throw an error and let the user know they need to install MetaMask.
 
 <Check>
-  For more detailed descriptions of smaller pieces of code, check out the
-  commented descriptions throughout the examples.
+  For more detailed descriptions of smaller pieces of code, check out the commented descriptions throughout the examples.
 </Check>
 
 ### `getConnectedWallet`
@@ -272,7 +260,7 @@ Below our load function, we add the `useEffect` hook and call `load` inside, lik
 
 Nice going, you just created a functioning **Connect Wallet** button that connects to a MetaMask wallet! We can use this button to connect MetaMask to our signature generator. If you'd like, you can try out the button at your local development server.
 
----
+***
 
 ## Component 2: Signing Messages
 
@@ -285,10 +273,10 @@ To start, navigate to the `SignMessage.jsx` starter file. It should look like th
   import "./styles/SignMessage.css";
   const { ethers } = require("ethers");
 
-const SignMessage = (props) => {
-const messageToSign = async ({ message, setError }) => {
-// Code goes here...
-};
+  const SignMessage = (props) => {
+    const messageToSign = async ({ message, setError }) => {
+  	   // Code goes here...
+    };
 
     const signMessageHandler = async (e) => {
     	   // Code goes here...
@@ -300,37 +288,35 @@ const messageToSign = async ({ message, setError }) => {
           <span>Sign Messages</span>
         </div>
         <form
-
-//Add a pointer to our messageHandler function when a message is submitted
-className="sign-form"
-id="form-submit" >
-
-<div className="form-title-message">
-<span>Message to sign</span>
-</div>
-<textarea
+  	//Add a pointer to our messageHandler function when a message is submitted
+          className="sign-form"
+          id="form-submit"
+        >
+          <div className="form-title-message">
+            <span>Message to sign</span>
+          </div>
+          <textarea
             className="message-input"
             type="text"
             name="message"
             placeholder="Enter a message here..."
           ></textarea>
-</form>
-<div className="alert-div">
-<button
+        </form>
+        <div className="alert-div">
+          <button
             className="sign-message-button"
             form="form-submit"
             type="submit"
           >
-<span>Sign Message</span>
-</button>
-</div>
-</div>
-);
-};
+            <span>Sign Message</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
 
-export default SignMessage;
-
-````
+  export default SignMessage;
+  ```
 </CodeGroup>
 
 ### `messageToSign`
@@ -340,31 +326,30 @@ The `messageToSign` function takes a message from our user text input and our er
 Let's walk through the above step-by-step in the function below. Copy the following into your `messageToSign` function's body:
 
 <CodeGroup>
-```javascript SignMessage.jsx
-const messageToSign = async ({ message, setError }) => {
-    try {
-      if (!window.ethereum)
-        setError("Please connect your wallet before signing a message!");
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-	// First, lets create an Ethers provider instance so we can interact with MetaMask
-      const signer = provider.getSigner();
-	// Then, we retrieve our signer from MetaMask
-      const signatureHash = await signer.signMessage(message);
-	// Generate a unique signature hash from the message we passed in from our form submission and the signer's MetaMask
-      const address = await signer.getAddress();
-	// Also lets grab our signer's Address
-      return {
-        message,
-        signatureHash,
-        address
-      };
-	// Finally, we return an object with the message, signature hash, and address
-    } catch (err) {
-      console.log(err.message);
-    }
-  };
-````
-
+  ```javascript SignMessage.jsx
+  const messageToSign = async ({ message, setError }) => {
+      try {
+        if (!window.ethereum)
+          setError("Please connect your wallet before signing a message!");
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+  	// First, lets create an Ethers provider instance so we can interact with MetaMask
+        const signer = provider.getSigner();
+  	// Then, we retrieve our signer from MetaMask
+        const signatureHash = await signer.signMessage(message);
+  	// Generate a unique signature hash from the message we passed in from our form submission and the signer's MetaMask
+        const address = await signer.getAddress();
+  	// Also lets grab our signer's Address 
+        return {
+          message,
+          signatureHash,
+          address
+        };
+  	// Finally, we return an object with the message, signature hash, and address
+      } catch (err) {
+        console.log(err.message);
+      }
+    };
+  ```
 </CodeGroup>
 
 Now our function does everything we want it to do, except create signature timestamp. We can add a timestamp by creating a date object, such as:
@@ -402,15 +387,13 @@ Now our function does everything we want it to do, except create signature times
           signatureHash,
           address,
           timestamp,
-
-// Then, the timestamp can be added to the returned object
-};
-} catch (err) {
-console.log(err.message);
-}
-};
-
-````
+  	// Then, the timestamp can be added to the returned object
+        };
+      } catch (err) {
+        console.log(err.message);
+      }
+    };
+  ```
 </CodeGroup>
 
 Our function now passes along the user’s message to MetaMask and awaits their signature. It also creates a timestamp and returns all of the values we need for our generated signatures component.
@@ -420,23 +403,22 @@ Our function now passes along the user’s message to MetaMask and awaits their 
 Now, we need to add some responsiveness when the user clicks the **Sign Message** button. To do this, we should add some functionality to the `signMessageHandler` function:
 
 <CodeGroup>
-```javascript SignMessage.jsx
-const signMessageHandler = async (e) => {
-    e.preventDefault();
-    const entry = new FormData(e.target);
-      // first we create a new FormData object which takes the target, or in this case, form entry of the passed in event
-    const sig = await messageToSign({
-      message: entry.get("message"),
-    });
-      // Next we await the promise of our messageToSign function and pass in our form entry message.
-    if (sig) {
-      // Finally, if the signature object is created we use the passed in props to send it over to our generated signatures component
-      props.onSubmit(sig);
-    }
-
-  };
-````
-
+  ```javascript SignMessage.jsx
+  const signMessageHandler = async (e) => {
+      e.preventDefault();
+      const entry = new FormData(e.target);
+        // first we create a new FormData object which takes the target, or in this case, form entry of the passed in event 
+      const sig = await messageToSign({
+        message: entry.get("message"),
+      });
+        // Next we await the promise of our messageToSign function and pass in our form entry message.
+      if (sig) {
+        // Finally, if the signature object is created we use the passed in props to send it over to our generated signatures component
+        props.onSubmit(sig);
+      }
+  	   
+    };
+  ```
 </CodeGroup>
 
 Now, add an `onSubmit` pointer to the `signMessageHandler` function inside the form element:
@@ -446,29 +428,29 @@ Now, add an `onSubmit` pointer to the `signMessageHandler` function inside the f
   import "./styles/SignMessage.css";
   const { ethers } = require("ethers");
 
-const SignMessage = (props) => {
-const messageToSign = async ({ message, setError }) => {
-try {
-if (!window.ethereum)
-setError("Please connect your wallet before signing a message!");
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-const signer = provider.getSigner();
-const signatureHash = await signer.signMessage(message);
-const date = new Date();
-const minutes = date.getMinutes();
-const minutedigit = minutes <= 9 ? '0' + minutes : minutes;
-const seconds = date.getSeconds();
-const seconddigit = seconds <= 9 ? '0' + seconds : seconds;
-const dateFormat =
-date.toDateString().slice(4) +
-" " +
-date.getHours() +
-":" +
-minutedigit +
-":" +
-seconddigit;
-const timestamp = dateFormat.toString();
-const address = await signer.getAddress();
+  const SignMessage = (props) => {
+    const messageToSign = async ({ message, setError }) => {
+      try {
+        if (!window.ethereum)
+          setError("Please connect your wallet before signing a message!");
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const signatureHash = await signer.signMessage(message);
+        const date = new Date();
+        const minutes = date.getMinutes();
+        const minutedigit = minutes <= 9 ? '0' + minutes : minutes;
+        const seconds = date.getSeconds();
+        const seconddigit = seconds <= 9 ? '0' + seconds : seconds;
+        const dateFormat =
+          date.toDateString().slice(4) +
+          " " +
+          date.getHours() +
+          ":" +
+          minutedigit +
+          ":" +
+          seconddigit;
+        const timestamp = dateFormat.toString();
+        const address = await signer.getAddress();
 
         return {
           message,
@@ -523,12 +505,10 @@ const address = await signer.getAddress();
         </div>
       </div>
     );
+  };
 
-};
-
-export default SignMessage;
-
-````
+  export default SignMessage;
+  ```
 </CodeGroup>
 
 Awesome! We can now sign messages and see them in our generated signatures component! Try it out on your local development server.
@@ -544,81 +524,80 @@ In our final step, we need to input an address, message, and signature hash and 
 Navigate to the `VerifySignature.jsx` component, which should look like this (again, functions commented out):
 
 <CodeGroup>
-```javascript VerifySignature.jsx
-import "./styles/VerifySignature.css";
-import SuccessMessage from "./SuccessMessage";
-import ErrorMessage from "./ErrorMessage";
-import { useState } from "react";
-const { ethers } = require("ethers");
-const { hashMessage } = require("@ethersproject/hash");
+  ```javascript VerifySignature.jsx
+  import "./styles/VerifySignature.css";
+  import SuccessMessage from "./SuccessMessage";
+  import ErrorMessage from "./ErrorMessage";
+  import { useState } from "react";
+  const { ethers } = require("ethers");
+  const { hashMessage } = require("@ethersproject/hash");
 
-const VerifyMessage = () => {
-  const [error, setError] = useState();
-  const [success, setSuccess] = useState();
+  const VerifyMessage = () => {
+    const [error, setError] = useState();
+    const [success, setSuccess] = useState();
 
-  const signatureToVerify = async ({ address, message, signature }) => {
-		// Code goes here...
-  };
-  const verifySignatureHandler = async (e) => {
-		// Code goes here...
+    const signatureToVerify = async ({ address, message, signature }) => {
+  		// Code goes here...
+    };
+    const verifySignatureHandler = async (e) => {
+  		// Code goes here...
 
-  };
-  return (
-    <div className="card1">
-      <div className="banner-sign">
-        <span>Verify Signatures</span>
-      </div>
-      <form
-        className="verify-form"
-        id="form-submit2"
-	// Add a pointer to our verifySignatureHandler function when a message is submitted
-      >
-        <div className="form-title-message">
-          <span>Address</span>
+    };
+    return (
+      <div className="card1">
+        <div className="banner-sign">
+          <span>Verify Signatures</span>
         </div>
-        <input
-          className="address-input"
-          type="text"
-          name="address"
-          placeholder="0x..."
-        ></input>
-        <div className="form-title-message">
-          <span>Message</span>
-        </div>
-
-        <textarea
-          className="message-input2"
-          type="text"
-          name="message"
-          placeholder="Enter a message here..."
-        ></textarea>
-        <div className="form-title-message">
-          <span>Signature</span>
-        </div>
-        <input
-          className="signature-input2"
-          type="text"
-          name="signature"
-        ></input>
-      </form>
-      <div className="alert-div">
-        <SuccessMessage message={success}></SuccessMessage>
-        <ErrorMessage message={error}></ErrorMessage>
-        <button
-          className="sign-message-button"
-          type="submit"
-          form="form-submit2"
+        <form
+          className="verify-form"
+          id="form-submit2"
+  	// Add a pointer to our verifySignatureHandler function when a message is submitted
         >
-          <span>Verify Signature</span>
-        </button>
+          <div className="form-title-message">
+            <span>Address</span>
+          </div>
+          <input
+            className="address-input"
+            type="text"
+            name="address"
+            placeholder="0x..."
+          ></input>
+          <div className="form-title-message">
+            <span>Message</span>
+          </div>
+
+          <textarea
+            className="message-input2"
+            type="text"
+            name="message"
+            placeholder="Enter a message here..."
+          ></textarea>
+          <div className="form-title-message">
+            <span>Signature</span>
+          </div>
+          <input
+            className="signature-input2"
+            type="text"
+            name="signature"
+          ></input>
+        </form>
+        <div className="alert-div">
+          <SuccessMessage message={success}></SuccessMessage>
+          <ErrorMessage message={error}></ErrorMessage>
+          <button
+            className="sign-message-button"
+            type="submit"
+            form="form-submit2"
+          >
+            <span>Verify Signature</span>
+          </button>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default VerifyMessage;
-````
-
+  export default VerifyMessage;
+  ```
 </CodeGroup>
 
 ### `signatureToVerify`
@@ -671,7 +650,7 @@ The above can be accomplished in the `verifySignatureHandler` function. Add the 
         message: entry.get("message"),
         signature: entry.get("signature"),
       });
-    // Passes data from our form to the
+    // Passes data from our form to the 
 
       if (verify) {
         setSuccess("Valid signature!");
@@ -680,131 +659,129 @@ The above can be accomplished in the `verifySignatureHandler` function. Add the 
       }
     //Awaits the promise of the signatureToVerify function and sets the correct state
     };
-
-````
+  ```
 </CodeGroup>
 
 Lastly, add an `onSubmit` pointer to our `verifySignatureHandler` function inside our form element:
 
 <CodeGroup>
-```javascript VerifySignature.jsx
-import "./styles/VerifySignature.css";
-import SuccessMessage from "./SuccessMessage";
-import ErrorMessage from "./ErrorMessage";
-import { useState } from "react";
-const { ethers } = require("ethers");
-const { hashMessage } = require("@ethersproject/hash");
+  ```javascript VerifySignature.jsx
+  import "./styles/VerifySignature.css";
+  import SuccessMessage from "./SuccessMessage";
+  import ErrorMessage from "./ErrorMessage";
+  import { useState } from "react";
+  const { ethers } = require("ethers");
+  const { hashMessage } = require("@ethersproject/hash");
 
-const VerifyMessage = () => {
-  const [error, setError] = useState();
-  const [success, setSuccess] = useState();
+  const VerifyMessage = () => {
+    const [error, setError] = useState();
+    const [success, setSuccess] = useState();
 
-  const signatureToVerify = async ({ address, message, signature }) => {
-    try {
-      const signerAddr = ethers.utils.recoverAddress(
-        hashMessage(message),
-        signature
-      );
-      console.log(signerAddr);
-      if (signerAddr !== address) {
+    const signatureToVerify = async ({ address, message, signature }) => {
+      try {
+        const signerAddr = ethers.utils.recoverAddress(
+          hashMessage(message),
+          signature
+        );
+        console.log(signerAddr);
+        if (signerAddr !== address) {
+          return false;
+        }
+        return true;
+      } catch (err) {
+        console.log(err);
         return false;
       }
-      return true;
-    } catch (err) {
-      console.log(err);
-      return false;
-    }
-  };
-  const verifySignatureHandler = async (e) => {
-   const verifySignatureHandler = async (e) => {
-    e.preventDefault();
-    const entry = new FormData(e.target);
-    setSuccess();
-    setError();
-    const verify = await signatureToVerify({
-      address: entry.get("address"),
-      message: entry.get("message"),
-      signature: entry.get("signature"),
-    });
+    };
+    const verifySignatureHandler = async (e) => {
+     const verifySignatureHandler = async (e) => {
+      e.preventDefault();
+      const entry = new FormData(e.target);
+      setSuccess();
+      setError();
+      const verify = await signatureToVerify({
+        address: entry.get("address"),
+        message: entry.get("message"),
+        signature: entry.get("signature"),
+      });
 
-    if (verify) {
-      setSuccess("Valid signature!");
-    } else {
-      setError("Invalid signature!");
-    }
+      if (verify) {
+        setSuccess("Valid signature!");
+      } else {
+        setError("Invalid signature!");
+      }
+  	
+    };
 
-  };
-
-  };
-  return (
-    <div className="card1">
-      <div className="banner-sign">
-        <span>Verify Signatures</span>
-      </div>
-      <form
-        className="verify-form"
-        id="form-submit2"
-	onSubmit={verifySignatureHandler} // <--- add pointer here
-      >
-        <div className="form-title-message">
-          <span>Address</span>
+    };
+    return (
+      <div className="card1">
+        <div className="banner-sign">
+          <span>Verify Signatures</span>
         </div>
-        <input
-          className="address-input"
-          type="text"
-          name="address"
-          placeholder="0x..."
-        ></input>
-        <div className="form-title-message">
-          <span>Message</span>
-        </div>
-
-        <textarea
-          className="message-input2"
-          type="text"
-          name="message"
-          placeholder="Enter a message here..."
-        ></textarea>
-        <div className="form-title-message">
-          <span>Signature</span>
-        </div>
-        <input
-          className="signature-input2"
-          type="text"
-          name="signature"
-        ></input>
-      </form>
-      <div className="alert-div">
-        <SuccessMessage message={success}></SuccessMessage>
-        <ErrorMessage message={error}></ErrorMessage>
-        <button
-          className="sign-message-button"
-          type="submit"
-          form="form-submit2"
+        <form
+          className="verify-form"
+          id="form-submit2"
+  	onSubmit={verifySignatureHandler} // <--- add pointer here
         >
-          <span>Verify Signature</span>
-        </button>
+          <div className="form-title-message">
+            <span>Address</span>
+          </div>
+          <input
+            className="address-input"
+            type="text"
+            name="address"
+            placeholder="0x..."
+          ></input>
+          <div className="form-title-message">
+            <span>Message</span>
+          </div>
+
+          <textarea
+            className="message-input2"
+            type="text"
+            name="message"
+            placeholder="Enter a message here..."
+          ></textarea>
+          <div className="form-title-message">
+            <span>Signature</span>
+          </div>
+          <input
+            className="signature-input2"
+            type="text"
+            name="signature"
+          ></input>
+        </form>
+        <div className="alert-div">
+          <SuccessMessage message={success}></SuccessMessage>
+          <ErrorMessage message={error}></ErrorMessage>
+          <button
+            className="sign-message-button"
+            type="submit"
+            form="form-submit2"
+          >
+            <span>Verify Signature</span>
+          </button>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default VerifyMessage;
-````
-
+  export default VerifyMessage;
+  ```
 </CodeGroup>
 
 Congratulations! You have just completed this tutorial and created a fully functional signature generator and verifier! Try verifying some signatures on your own and, as an experiment, change a single letter of your message to see that the signature becomes invalid.
 
 ![2787](5a4ee6f-Tutorial_complete.PNG "Tutorial complete!.PNG")
 
----
+***
 
 ## What You Learned:
 
 In this tutorial, you learned (and completed) the following things:
 
-- How to sign messages and verify signatures using Ethers.js and Alchemy’s Web3.js
-- How to build a frontend React app and connect it to MetaMask
+* How to sign messages and verify signatures using Ethers.js and Alchemy’s Web3.js
+* How to build a frontend React app and connect it to MetaMask
 
-Feel free to reach out to us in the [Alchemy Discord](https://discord.gg/gWuC7zB) for help or [@AlchemyPlatform](https://twitter.com/AlchemyPlatform?s=20&t=H-ctZCz3615N7nGF3QZGVA) on Twitter and let us know you just finished building your signature generator!
+Feel free to reach out to us in the [Alchemy Discord](https://discord.gg/gWuC7zB) for help or [@AlchemyPlatform](https://twitter.com/AlchemyPlatform?s=20\&t=H-ctZCz3615N7nGF3QZGVA) on Twitter and let us know you just finished building your signature generator!
