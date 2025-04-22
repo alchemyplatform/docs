@@ -175,19 +175,19 @@ export const CustomFooter: React.FC = () => {
             <FooterLeftSideLinks>
               <ChangelogIcon />
               <span>
-                View the <a href="/">changelog</a>
+                View the <a href="https://www.alchemy.com/blog/">changelog</a>
               </span>
             </FooterLeftSideLinks>
             <FooterLeftSideLinks>
               <CommunityIcon />
               <span>
-                Join our <a href="/">community</a>
+                Join our <a href="https://discord.gg/9GnAcXQYZ6/">community</a>
               </span>
             </FooterLeftSideLinks>
             <FooterLeftSideLinks>
               <StatusIcon />
               <span>
-                Check our <a href="/">status</a>
+                Check our <a href="https://status.alchemy.com/">status</a>
               </span>
             </FooterLeftSideLinks>
           </FooterLeftSide>
@@ -195,10 +195,53 @@ export const CustomFooter: React.FC = () => {
             {isDark ? <SuperchargedDark /> : <SuperchargedLight />}
             <span>Sign up for our developer newsletter.</span>
             <SubscribeForm>
-              <InputWrapper>
-                <EmailInput type="email" placeholder="Email address" />
-              </InputWrapper>
-              <SubscribeButton type="submit">Subscribe</SubscribeButton>
+              <form
+                action="https://www.alchemy.com/api/v1/free?nojs=true"
+                method="post"
+              >
+                <input
+                  type="hidden"
+                  name="first_url"
+                  value="https://alchemysupercharged.substack.com/embed"
+                />
+                <input
+                  type="hidden"
+                  name="first_referrer"
+                  value="https://www.alchemy.com/"
+                />
+                <input
+                  type="hidden"
+                  name="current_url"
+                  value="https://alchemysupercharged.substack.com/embed"
+                />
+                <input
+                  type="hidden"
+                  name="current_referrer"
+                  value="https://www.alchemy.com/"
+                />
+                <input
+                  type="hidden"
+                  name="first_session_url"
+                  value="https://alchemysupercharged.substack.com/embed"
+                />
+                <input
+                  type="hidden"
+                  name="first_session_referrer"
+                  value="https://www.alchemy.com/"
+                />
+                <input type="hidden" name="referral_code" />
+                <input type="hidden" name="source" value="embed" />
+                <input type="hidden" name="referring_pub_id" />
+                <input type="hidden" name="additional_referring_pub_ids" />
+                <InputWrapper>
+                  <EmailInput
+                    name="email"
+                    type="email"
+                    placeholder="Email address"
+                  />
+                </InputWrapper>
+                <SubscribeButton type="submit">Subscribe</SubscribeButton>
+              </form>
             </SubscribeForm>
           </FooterRightSide>
         </CommunityLinks>
@@ -206,7 +249,9 @@ export const CustomFooter: React.FC = () => {
           {isDark ? <LogoDark /> : <LogoLight />}
           <p>
             <span>2025 Alchemy Insights, Inc. · </span>
-            <a href="/">Terms of Service</a>
+            <a href="https://www.alchemy.com/terms-conditions/terms/">
+              Terms of Service
+            </a>
           </p>
         </FooterAlchemyCopyright>
       </FooterContainer>
