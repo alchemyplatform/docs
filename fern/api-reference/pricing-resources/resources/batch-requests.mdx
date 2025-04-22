@@ -60,7 +60,7 @@ Batch requests are formatted the same as individual API requests however, the bo
               jsonrpc: '2.0',
           }
 
-      const res = await fetch('https://eth-mainnet.g.alchemy.com/v2/your-api-key \', {method: 'POST', body: JSON.stringify(req), headers: {'Content-Type': 'application/json'}})
+      const res = await fetch('https://eth-mainnet.g.alchemy.com/v2/your-api-key', {method: 'POST', body: JSON.stringify(req), headers: {'Content-Type': 'application/json'}})
       const data = await res.json()
   }
   main().then().catch((err) => console.log(err))
@@ -93,7 +93,7 @@ Batch requests are formatted the same as individual API requests however, the bo
           })
       }
 
-      const res = await fetch('https://eth-mainnet.g.alchemy.com/v2/your-api-key \', {method: 'POST', body: JSON.stringify(reqs), headers: {'Content-Type': 'application/json'}})
+      const res = await fetch('https://eth-mainnet.g.alchemy.com/v2/your-api-key', {method: 'POST', body: JSON.stringify(reqs), headers: {'Content-Type': 'application/json'}})
       const data = await res.json()
   }
 
@@ -129,10 +129,24 @@ Batch Requests are usually for JSON-RPC endpoints, but Alchemy SDK is providing 
   const alchemy = new Alchemy(settings);
 
   // Print NFT metadata returned in the response:
-  alchemy.nft.getNftMetadata([
-    {"0x5180db8F5c931aaE63c74266b211F580155ecac8","1590"},
-    {"0x5280db8F5c931aaE63c74266b211F580155ecac8","1591"}
-  ]).then(console.log);
+  alchemy.nft.getNftMetadata(
+    [
+      {
+        contractAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+        tokenId: "3",
+        tokenType: "ERC721"
+      },
+      {
+        contractAddress: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
+        tokenId: "4",
+        tokenType: "ERC721"
+      }
+    ],
+    {
+      tokenUriTimeoutInMs: 5000,
+      refreshCache: true
+    }
+  ).then(console.log);
   ```
 </CodeGroup>
 
