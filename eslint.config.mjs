@@ -1,7 +1,7 @@
 import eslint from "@eslint/js";
-import markdown from "@eslint/markdown";
 import parser from "@typescript-eslint/parser";
 import eslintPrettier from "eslint-config-prettier";
+import * as mdx from "eslint-plugin-mdx";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -36,19 +36,19 @@ const jsConfig = {
 // Code snippets in markdown files are treated as "virtual" files that exist within the markdown file (as if it were a dir)
 // Use a separate config for these files to disable rules that don't make sense for code snippets
 /** @type {import('eslint').Linter.Config} */
-const jsSnippetConfig = {
-  name: "JS Snippet Eslint Config",
-  files: ["**/*.{md,mdx}/**/*.js"],
-  languageOptions: {
-    ...jsConfig.languageOptions,
-  },
-  rules: {
-    ...jsConfig.rules,
-    "no-console": "off",
-    "no-unused-vars": "off",
-    "no-undef": "off",
-  },
-};
+// const jsSnippetConfig = {
+//   name: "JS Snippet Eslint Config",
+//   files: ["**/*.{md,mdx}/**/*.js"],
+//   languageOptions: {
+//     ...jsConfig.languageOptions,
+//   },
+//   rules: {
+//     ...jsConfig.rules,
+//     "no-console": "off",
+//     "no-unused-vars": "off",
+//     "no-undef": "off",
+//   },
+// };
 
 /** @type {import('eslint').Linter.Config} */
 const baseTsConfig = {
@@ -96,50 +96,69 @@ const tslintConfigs = tseslint.config({
 
 // Code snippets in markdown files are treated as "virtual files" that exist within the markdown file (as if it were a dir)
 // Use a separate config for these files to disable rules that don't make sense for code snippets
-const tsSnippetConfig = tseslint.config({
-  ...baseTsConfig,
-  name: "TS Snippet Eslint Config",
-  files: ["**/*.{md,mdx}/**/*.ts"], // ts blocks in md/mdx files
-  languageOptions: {
-    parser,
-    parserOptions: {
-      // no project - these files don't exist from the parser's perspective
-      ecmaVersion: "latest",
-      sourceType: "module",
-    },
-  },
-  rules: {
-    ...baseTsConfig.rules,
-    "@typescript-eslint/no-unused-vars": "off",
-    "no-console": "off",
-  },
-});
+// const tsSnippetConfig = tseslint.config({
+//   ...baseTsConfig,
+//   name: "TS Snippet Eslint Config",
+//   files: ["**/*.{md,mdx}/**/*.ts"], // ts blocks in md/mdx files
+//   languageOptions: {
+//     parser,
+//     parserOptions: {
+//       // no project - these files don't exist from the parser's perspective
+//       ecmaVersion: "latest",
+//       sourceType: "module",
+//     },
+//   },
+//   rules: {
+//     ...baseTsConfig.rules,
+//     "@typescript-eslint/no-unused-vars": "off",
+//     "no-console": "off",
+//   },
+// });
 
 /** @type {import('eslint').Linter.Config} */
-const mdConfig = {
-  name: "Markdown Eslint Config",
-  files: ["**/*.{md,mdx}"],
-  plugins: {
-    markdown,
-  },
-  processor: "markdown/markdown",
-  languageOptions: {
-    parserOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
-    },
-  },
-  language: "markdown/commonmark",
+// const mdConfig = {
+//   name: "Markdown Eslint Config",
+//   files: ["**/*.{md}"],
+//   plugins: {
+//     markdown,
+//   },
+//   processor: "markdown/markdown",
+//   languageOptions: {
+//     parserOptions: {
+//       ecmaVersion: "latest",
+//       sourceType: "module",
+//     },
+//   },
+//   language: "markdown/commonmark",
+//   rules: {
+//     ...markdown.configs.recommended[0].rules,
+//   },
+// };
+
+const mdxConfig = {
+  name: "MDX Eslint Config",
+  ...mdx.flat,
+  processor: mdx.createRemarkProcessor({
+    lintCodeBlocks: true,
+  }),
+};
+
+const mdxCodeBlocksConfig = {
+  name: "MDX Code Blocks Eslint Config",
+  ...mdx.flatCodeBlocks,
   rules: {
-    ...markdown.configs.recommended[0].rules,
+    ...mdx.flatCodeBlocks.rules,
+    "no-console": "off",
   },
 };
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   jsConfig,
-  jsSnippetConfig,
+  // jsSnippetConfig,
   ...tslintConfigs,
-  ...tsSnippetConfig,
-  mdConfig,
+  // ...tsSnippetConfig,
+  // mdConfig,
+  mdxConfig,
+  mdxCodeBlocksConfig,
 ];
