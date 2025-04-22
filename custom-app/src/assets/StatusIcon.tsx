@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 const StatusIcon: FC = () => {
   return (
@@ -7,15 +7,19 @@ const StatusIcon: FC = () => {
       height="24"
       viewBox="0 0 24 24"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg">
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <foreignObject x="1.39045" y="1.5998" width="21.2381" height="20.2286">
         <div
-          style={{
-            backdropFilter: 'blur(0.6px)',
-            clipPath: 'url(#bgblur_0_9452_35072_clip_path)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(0.6px)',
+              clipPath: 'url(#bgblur_0_9452_35072_clip_path)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter0_i_9452_35072)" data-figma-bg-blur-radius="1.2">
         <mask id="path-1-inside-1_9452_35072" fill="white">
@@ -54,12 +58,15 @@ const StatusIcon: FC = () => {
       </g>
       <foreignObject x="1.39045" y="12.4001" width="21.2381" height="9.42881">
         <div
-          style={{
-            backdropFilter: 'blur(0.6px)',
-            clipPath: 'url(#bgblur_1_9452_35072_clip_path)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(0.6px)',
+              clipPath: 'url(#bgblur_1_9452_35072_clip_path)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter1_i_9452_35072)" data-figma-bg-blur-radius="1.2">
         <mask id="path-3-inside-2_9452_35072" fill="white">
@@ -96,7 +103,8 @@ const StatusIcon: FC = () => {
           width="21.2381"
           height="20.2286"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -138,7 +146,8 @@ const StatusIcon: FC = () => {
           width="21.2381"
           height="9.42881"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -179,7 +188,8 @@ const StatusIcon: FC = () => {
           y1="0.999804"
           x2="6.6513"
           y2="8.18793"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stop-color="#83E9FF" />
           <stop offset="1" stop-color="#8940FF" />
         </linearGradient>
@@ -189,7 +199,8 @@ const StatusIcon: FC = () => {
           y1="6.36552"
           x2="0.153719"
           y2="9.37249"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stop-color="#5498FF" />
           <stop offset="1" stop-color="#8940FF" />
         </linearGradient>
@@ -199,7 +210,8 @@ const StatusIcon: FC = () => {
           y1="10.2073"
           x2="-4.92775"
           y2="21.3691"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0.24238" stop-color="#5498FF" />
           <stop offset="1" stop-color="#A131F9" stop-opacity="0" />
         </linearGradient>
@@ -209,7 +221,8 @@ const StatusIcon: FC = () => {
           y1="15.0058"
           x2="2.25991"
           y2="21.8492"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stop-color="#5498FF" />
           <stop offset="1" stop-color="#8940FF" />
         </linearGradient>

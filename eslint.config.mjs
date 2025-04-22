@@ -28,6 +28,7 @@ const tslintConfigs = tseslint.config({
     eslintPrettier,
   ],
   files: ["**/*.{ts,tsx,mts}"],
+  ignores: ["**/*.mdx/**/*.ts"], // ignore ts blocks in mdx files
   rules: {
     ...globalRules,
     "@typescript-eslint/no-shadow": ["error", { builtinGlobals: false }],
@@ -54,6 +55,7 @@ const tslintConfigs = tseslint.config({
 const jsConfig = {
   name: "JS Eslint Config",
   files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
+  ignores: ["**/dist/**", "**/*.mdx/**/*.js"],
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: "module",

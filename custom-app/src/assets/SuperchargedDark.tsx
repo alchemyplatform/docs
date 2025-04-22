@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 export const SuperchargedDark: FC = () => (
   <svg
@@ -6,7 +6,8 @@ export const SuperchargedDark: FC = () => (
     height="37"
     viewBox="0 0 189 37"
     fill="none"
-    xmlns="http://www.w3.org/2000/svg">
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g opacity="0.49" filter="url(#filter0_f_9470_76536)">
       <path
         d="M72.577 17.6093L87.2166 3.0539C87.3646 2.90673 87.6055 3.07747 87.5157 3.26588L82.7209 13.3239C82.6621 13.4474 82.7521 13.59 82.8889 13.59H92.4443C92.6147 13.59 92.6955 13.8001 92.5689 13.9142L75.0282 29.725C74.8668 29.8706 74.6293 29.6682 74.7475 29.4857L82.0455 18.2144C82.1257 18.0907 82.0367 17.9273 81.8893 17.9273H77.2908H72.7082C72.5422 17.9273 72.4593 17.7264 72.577 17.6093Z"
@@ -44,7 +45,8 @@ export const SuperchargedDark: FC = () => (
         width="25.6781"
         height="31.783"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB">
+        color-interpolation-filters="sRGB"
+      >
         <feFlood flood-opacity="0" result="BackgroundImageFix" />
         <feBlend
           mode="normal"
@@ -64,7 +66,8 @@ export const SuperchargedDark: FC = () => (
         width="28.1309"
         height="34.9082"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB">
+        color-interpolation-filters="sRGB"
+      >
         <feFlood flood-opacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
@@ -98,7 +101,8 @@ export const SuperchargedDark: FC = () => (
         width="19.5715"
         height="26.526"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB">
+        color-interpolation-filters="sRGB"
+      >
         <feFlood flood-opacity="0" result="BackgroundImageFix" />
         <feBlend
           mode="normal"
@@ -150,7 +154,8 @@ export const SuperchargedDark: FC = () => (
         width="82.4317"
         height="32.2301"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB">
+        color-interpolation-filters="sRGB"
+      >
         <feFlood flood-opacity="0" result="BackgroundImageFix" />
         <feColorMatrix
           in="SourceAlpha"
@@ -183,7 +188,8 @@ export const SuperchargedDark: FC = () => (
         cy="0"
         r="1"
         gradientUnits="userSpaceOnUse"
-        gradientTransform="translate(91.516 5.33728) rotate(137.097) scale(24.6315 57.3731)">
+        gradientTransform="translate(91.516 5.33728) rotate(137.097) scale(24.6315 57.3731)"
+      >
         <stop stop-color="#05D5FF" />
         <stop offset="1" stop-color="#363FF9" />
       </radialGradient>
@@ -193,7 +199,8 @@ export const SuperchargedDark: FC = () => (
         cy="0"
         r="1"
         gradientUnits="userSpaceOnUse"
-        gradientTransform="translate(91.516 5.33734) rotate(137.097) scale(24.6315 57.3731)">
+        gradientTransform="translate(91.516 5.33734) rotate(137.097) scale(24.6315 57.3731)"
+      >
         <stop stop-color="#05D5FF" />
         <stop offset="1" stop-color="#363FF9" />
       </radialGradient>
@@ -203,7 +210,8 @@ export const SuperchargedDark: FC = () => (
         cy="0"
         r="1"
         gradientUnits="userSpaceOnUse"
-        gradientTransform="translate(89.7882 3.98951) rotate(136.782) scale(24.0832 56.1378)">
+        gradientTransform="translate(89.7882 3.98951) rotate(136.782) scale(24.0832 56.1378)"
+      >
         <stop stop-color="#05D5FF" />
         <stop offset="1" stop-color="#363FF9" />
       </radialGradient>
