@@ -27,7 +27,12 @@ In particular, Custom Webhook log GraphQL objects accept a *BlockLogsFilterCrite
 If you're not familiar with how topic filters work for *eth\_getLogs*, here's [an article](/docs/deep-dive-into-eth_getlogs) to get you up to speed.
 
 <Info>
-  A transaction with topics will be matched by the following topic filters:
+A transaction with topics will be matched by the following topic filters:
+- `[]` “anything”
+- `[A]` “A in first position (and anything after)”
+- `[[], [B]]` “anything in first position AND B in second position (and anything after)”
+- `[A, B]` “A in first position AND B in second position (and anything after)”
+- `[[A, B], [A, B]]` “(A OR B) in first position AND (A OR B) in second position (and anything after)”
 </Info>
 
 ### Specifying Addresses within Custom Webhook Event Filters
