@@ -1,3 +1,5 @@
+// Using .ts config setup requires jiti to be installed
+// @see https://eslint.org/docs/latest/use/configure/configuration-files#typescript-configuration-files
 import { type ConfigWithExtends } from "@eslint/config-helpers";
 import eslint from "@eslint/js";
 import parser from "@typescript-eslint/parser";
