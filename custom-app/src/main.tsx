@@ -1,8 +1,8 @@
 import './main.css'
-import '@fortawesome/fontawesome-free/css/all.min.css';
+// import '@fortawesome/fontawesome-free/css/all.min.css';
 
-import { createRoot } from 'react-dom/client'
 import React from 'react'
+import { createRoot } from 'react-dom/client'
 
 import { CustomFooter } from './Footer'
 
