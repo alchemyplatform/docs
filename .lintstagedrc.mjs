@@ -2,9 +2,9 @@
  * @type {import('lint-staged').Configuration}
  */
 export default {
-  "*.{js,jsx,ts,tsx,mjs,mts}": [
+  "*.{js,jsx,ts,tsx,mjs,mts,md,mdx}": [
     "eslint --fix --quiet",
     "prettier --write --log-level silent",
   ],
-  "*.{json,mdx,md,yml,yaml}": ["prettier --write --log-level silent"],
+  "*.{json,md,yml,yaml}": ["prettier --write --log-level silent"],
 };
