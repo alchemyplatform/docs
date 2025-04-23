@@ -3,7 +3,7 @@
  */
 export default {
   "*.{js,jsx,ts,tsx,mjs,mts,md,mdx}": [
-    "eslint --fix --quiet",
+    "eslint --fix",
     "prettier --write --log-level silent",
   ],
   "*.{json,md,yml,yaml}": ["prettier --write --log-level silent"],
