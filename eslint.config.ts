@@ -1,19 +1,20 @@
+import { type ConfigWithExtends } from "@eslint/config-helpers";
 import eslint from "@eslint/js";
 import parser from "@typescript-eslint/parser";
 import eslintPrettier from "eslint-config-prettier";
 import * as mdx from "eslint-plugin-mdx";
+import { defineConfig } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-const globalRules = {
+const globalRules: ConfigWithExtends["rules"] = {
   eqeqeq: ["error", "smart"],
   "no-console": ["warn", { allow: ["warn", "error", "info"] }],
   "no-lonely-if": "error",
   "no-nested-ternary": "error",
 };
 
-/** @type {import('eslint').Linter.Config} */
-const jsConfig = {
+const jsConfig: ConfigWithExtends = {
   name: "JS Eslint Config",
   files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
   ignores: ["**/dist/**", "**/*.{md,mdx}/**/*.{js,jsx}"], // js blocks in md/mdx files handled by jsSnippetConfig
@@ -25,10 +26,9 @@ const jsConfig = {
       ...globals.node,
     },
   },
+  extends: [eslint.configs.recommended, eslintPrettier],
   rules: {
-    ...eslint.configs.recommended.rules,
     ...globalRules,
-    ...eslintPrettier.rules,
     "no-shadow": "error",
   },
 };
@@ -51,7 +51,47 @@ const jsConfig = {
 // };
 
 /** @type {import('eslint').Linter.Config} */
-const baseTsConfig = {
+// const baseTsConfig: ConfigWithExtends = {
+//   name: "TS Base Eslint Config",
+//   extends: [
+//     eslint.configs.recommended,
+//     ...tseslint.configs.recommended,
+//     eslintPrettier,
+//   ],
+//   rules: {
+//     ...globalRules,
+//     "@typescript-eslint/no-shadow": ["error", { builtinGlobals: false }],
+//     "@typescript-eslint/no-unused-vars": [
+//       "error",
+//       {
+//         argsIgnorePattern: "^_",
+//         varsIgnorePattern: "^_",
+//         caughtErrorsIgnorePattern: "^_",
+//         destructuredArrayIgnorePattern: "^_",
+//       },
+//     ],
+//     "@typescript-eslint/no-unused-expressions": [
+//       "error",
+//       {
+//         allowTaggedTemplates: true,
+//       },
+//     ],
+//     "@typescript-eslint/consistent-type-imports": "error",
+//   },
+// };
+
+const tslintConfigs = tseslint.config({
+  name: "TS Eslint Config",
+  files: ["**/*.{ts,tsx,mts}"],
+  ignores: ["**/*.{md,mdx}/**/*.{ts,tsx}"], // ts blocks in md/mdx files handled by tsSnippetConfig
+  languageOptions: {
+    parser,
+    parserOptions: {
+      project: ["./tsconfig.json"],
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+  },
   extends: [
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
@@ -77,22 +117,9 @@ const baseTsConfig = {
     ],
     "@typescript-eslint/consistent-type-imports": "error",
   },
-};
+}) as ConfigWithExtends[];
 
-const tslintConfigs = tseslint.config({
-  ...baseTsConfig,
-  name: "TS Eslint Config",
-  files: ["**/*.{ts,tsx,mts}"],
-  ignores: ["**/*.{md,mdx}/**/*.{ts,tsx}"], // ts blocks in md/mdx files handled by tsSnippetConfig
-  languageOptions: {
-    parser,
-    parserOptions: {
-      project: ["./tsconfig.json"],
-      ecmaVersion: "latest",
-      sourceType: "module",
-    },
-  },
-});
+// console.log(tslintConfigs);
 
 // Code snippets in markdown files are treated as "virtual files" that exist within the markdown file (as if it were a dir)
 // Use a separate config for these files to disable rules that don't make sense for code snippets
@@ -135,7 +162,7 @@ const tslintConfigs = tseslint.config({
 //   },
 // };
 
-const mdxConfig = {
+const mdxConfig: ConfigWithExtends = {
   name: "MDX Eslint Config",
   ...mdx.flat,
   processor: mdx.createRemarkProcessor({
@@ -143,17 +170,17 @@ const mdxConfig = {
   }),
 };
 
-const mdxCodeBlocksConfig = {
+const mdxCodeBlocksConfig: ConfigWithExtends = {
   name: "MDX Code Blocks Eslint Config",
   ...mdx.flatCodeBlocks,
   rules: {
+    ...eslint.configs.recommended.rules,
     ...mdx.flatCodeBlocks.rules,
-    "no-console": "off",
+    "no-useless-catch": "off",
   },
 };
 
-/** @type {import('eslint').Linter.Config[]} */
-export default [
+export default defineConfig(
   jsConfig,
   // jsSnippetConfig,
   ...tslintConfigs,
@@ -161,4 +188,4 @@ export default [
   // mdConfig,
   mdxConfig,
   mdxCodeBlocksConfig,
-];
+);
