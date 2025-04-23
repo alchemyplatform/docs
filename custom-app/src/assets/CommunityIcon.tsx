@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 const CommunityIcon: FC = () => {
   return (
@@ -7,15 +7,19 @@ const CommunityIcon: FC = () => {
       height="24"
       viewBox="0 0 24 24"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg">
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <foreignObject x="-3.73842" y="-0.47145" width="21.6779" height="20.2168">
         <div
-          style={{
-            backdropFilter: 'blur(3.68px)',
-            clipPath: 'url(#bgblur_0_9452_35062_clip_path)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(3.68px)',
+              clipPath: 'url(#bgblur_0_9452_35062_clip_path)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter0_i_9452_35062)" data-figma-bg-blur-radius="7.3694">
         <path
@@ -25,12 +29,15 @@ const CommunityIcon: FC = () => {
       </g>
       <foreignObject x="4.29637" y="5.73753" width="20.2171" height="22.043">
         <div
-          style={{
-            backdropFilter: 'blur(3.68px)',
-            clipPath: 'url(#bgblur_1_9452_35062_clip_path)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(3.68px)',
+              clipPath: 'url(#bgblur_1_9452_35062_clip_path)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter1_i_9452_35062)" data-figma-bg-blur-radius="7.3694">
         <path
@@ -40,12 +47,15 @@ const CommunityIcon: FC = () => {
       </g>
       <foreignObject x="0.135118" y="-3.69459" width="27.6078" height="27.6016">
         <div
-          style={{
-            backdropFilter: 'blur(3.68px)',
-            clipPath: 'url(#bgblur_2_9452_35062_clip_path)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(3.68px)',
+              clipPath: 'url(#bgblur_2_9452_35062_clip_path)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter2_i_9452_35062)" data-figma-bg-blur-radius="7.3694">
         <path
@@ -73,12 +83,15 @@ const CommunityIcon: FC = () => {
       </g>
       <foreignObject x="-1.97499" y="6.468" width="19.4973" height="19.4326">
         <div
-          style={{
-            backdropFilter: 'blur(3.68px)',
-            clipPath: 'url(#bgblur_3_9452_35062_clip_path)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(3.68px)',
+              clipPath: 'url(#bgblur_3_9452_35062_clip_path)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter3_i_9452_35062)" data-figma-bg-blur-radius="7.3694">
         <path
@@ -103,7 +116,8 @@ const CommunityIcon: FC = () => {
           width="21.6779"
           height="20.2168"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -143,7 +157,8 @@ const CommunityIcon: FC = () => {
           width="20.2171"
           height="22.043"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -183,7 +198,8 @@ const CommunityIcon: FC = () => {
           width="27.6078"
           height="27.6016"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -223,7 +239,8 @@ const CommunityIcon: FC = () => {
           width="19.4973"
           height="19.4326"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -264,7 +281,8 @@ const CommunityIcon: FC = () => {
           y1="6.89795"
           x2="11.3898"
           y2="12.6203"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0.24238" stop-color="#5498FF" />
           <stop offset="1" stop-color="#A131F9" />
         </linearGradient>
@@ -274,7 +292,8 @@ const CommunityIcon: FC = () => {
           y1="13.1069"
           x2="19.6084"
           y2="16.5754"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0.24238" stop-color="#5498FF" />
           <stop offset="1" stop-color="#A131F9" />
         </linearGradient>
@@ -284,7 +303,8 @@ const CommunityIcon: FC = () => {
           y1="6.24736"
           x2="22.0688"
           y2="8.19666"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stop-color="#5498FF" />
           <stop offset="1" stop-color="#8940FF" />
         </linearGradient>
@@ -294,7 +314,8 @@ const CommunityIcon: FC = () => {
           y1="6.24736"
           x2="22.0688"
           y2="8.19666"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stop-color="#5498FF" />
           <stop offset="1" stop-color="#8940FF" />
         </linearGradient>
@@ -304,7 +325,8 @@ const CommunityIcon: FC = () => {
           y1="13.7305"
           x2="6.94018"
           y2="20.4553"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0.24238" stop-color="#5498FF" />
           <stop offset="1" stop-color="#A131F9" />
         </linearGradient>

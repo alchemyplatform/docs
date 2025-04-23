@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import type { FC } from 'react'
 
 const ChangelogIcon: FC = () => {
   return (
@@ -7,15 +7,19 @@ const ChangelogIcon: FC = () => {
       height="22"
       viewBox="0 0 24 22"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg">
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <foreignObject x="-7.19998" y="-7.9999" width="38.4" height="37.9998">
         <div
-          style={{
-            backdropFilter: 'blur(4.8px)',
-            clipPath: 'url(#bgblur_0_9452_35056_clip_path)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(4.8px)',
+              clipPath: 'url(#bgblur_0_9452_35056_clip_path)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter0_i_9452_35056)" data-figma-bg-blur-radius="9.6">
         <path
@@ -36,11 +40,14 @@ const ChangelogIcon: FC = () => {
       </g>
       <foreignObject x="-8.79995" y="-9.6" width="41.6" height="41.2">
         <div
-          style={{
-            backdropFilter: 'blur(4.8px)',
-            height: '100%',
-            width: '100%'
-          } as React.CSSProperties}></div>
+          style={
+            {
+              backdropFilter: 'blur(4.8px)',
+              height: '100%',
+              width: '100%',
+            } as React.CSSProperties
+          }
+        ></div>
       </foreignObject>
       <g filter="url(#filter1_i_9452_35056)" data-figma-bg-blur-radius="9.6">
         <path
@@ -65,7 +72,8 @@ const ChangelogIcon: FC = () => {
           width="38.4"
           height="37.9998"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -105,7 +113,8 @@ const ChangelogIcon: FC = () => {
           width="41.6"
           height="41.2"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feBlend
             mode="normal"
@@ -139,7 +148,8 @@ const ChangelogIcon: FC = () => {
           width="20.8"
           height="21.9999"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
+          color-interpolation-filters="sRGB"
+        >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
@@ -189,7 +199,8 @@ const ChangelogIcon: FC = () => {
           y1="5.3601"
           x2="24.1126"
           y2="8.32642"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stop-color="#5498FF" />
           <stop offset="1" stop-color="#8940FF" />
         </linearGradient>
@@ -199,7 +210,8 @@ const ChangelogIcon: FC = () => {
           y1="-7.47484"
           x2="32.4731"
           y2="21.9702"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0.24238" stop-color="#5498FF" />
           <stop offset="1" stop-color="#A131F9" stop-opacity="0" />
         </linearGradient>
@@ -209,7 +221,8 @@ const ChangelogIcon: FC = () => {
           y1="-10.6196"
           x2="35.9117"
           y2="23.834"
-          gradientUnits="userSpaceOnUse">
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0.24238" stop-color="#5498FF" />
           <stop offset="1" stop-color="#A131F9" stop-opacity="0" />
         </linearGradient>
