@@ -16,7 +16,7 @@ const globalRules = {
 const jsConfig = {
   name: "JS Eslint Config",
   files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
-  ignores: ["**/dist/**", "**/*.{md,mdx}/**/*.js"], // js blocks in md/mdx files handled by jsSnippetConfig
+  ignores: ["**/dist/**", "**/*.{md,mdx}/**/*.{js,jsx}"], // js blocks in md/mdx files handled by jsSnippetConfig
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: "module",
@@ -83,7 +83,7 @@ const tslintConfigs = tseslint.config({
   ...baseTsConfig,
   name: "TS Eslint Config",
   files: ["**/*.{ts,tsx,mts}"],
-  ignores: ["**/*.{md,mdx}/**/*.ts"], // ts blocks in md/mdx files handled by tsSnippetConfig
+  ignores: ["**/*.{md,mdx}/**/*.{ts,tsx}"], // ts blocks in md/mdx files handled by tsSnippetConfig
   languageOptions: {
     parser,
     parserOptions: {

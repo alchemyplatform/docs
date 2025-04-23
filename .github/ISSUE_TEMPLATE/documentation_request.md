@@ -8,8 +8,8 @@ assignees: ""
 
 **Is this a request for new documentation or updates to existing documentation?**
 
-- [ ] New Documentation
-- [ ] Updates to Existing Documentation
+- \[ \] New Documentation
+- \[ \] Updates to Existing Documentation
 
 **If updating existing documentation, please provide:**
 
