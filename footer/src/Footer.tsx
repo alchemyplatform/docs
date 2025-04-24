@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
+import type { DefaultTheme } from 'styled-components/dist/types.js'
 import ChangelogIcon from './assets/ChangelogIcon.js'
 import CommunityIcon from './assets/CommunityIcon.js'
 import EnvelopeThin from './assets/EnvelopeThin.js'
@@ -18,8 +18,7 @@ const FooterContainer = styled.section`
   justify-content: center;
   gap: 1rem;
   width: 100%;
-  color: ${(props) =>
-    (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569'};
+  color: ${(props) => (props.theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
   font-weight: 400;
 `
 
@@ -30,13 +29,12 @@ const CommunityLinks = styled.div`
   width: 100%;
   max-width: 800px;
   border-top: 1px solid
-    ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
+    ${(props) => (props.theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   border-bottom: 1px solid
-    ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
+    ${(props) => (props.theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   padding-block: 36px;
   a {
-    color: ${(props) =>
-      (props.theme as any).mode === 'dark' ? '#CBD5E0' : '#94a3b8'};
+    color: ${(props) => (props.theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
     text-decoration: underline;
   }
   @media screen and (max-width: 768px) {
@@ -88,9 +86,7 @@ const InputWrapper = styled.div`
     font-family: 'FontAwesome';
     font-weight: 100;
     content: url(${(props) =>
-      EnvelopeThin(
-        (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569',
-      )});
+      EnvelopeThin(props.theme.mode === 'dark' ? '#e2e8f0' : '#475569')});
     position: absolute;
     left: 14px;
     top: 50%;
@@ -104,12 +100,11 @@ const EmailInput = styled.input`
   padding: 10px 10px 10px 40px;
   border-radius: 8px;
   border: 1px solid
-    ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
+    ${(props) => (props.theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   background-color: ${(props) =>
-    (props.theme as any).mode === 'dark' ? '#050d20' : '#fbfdff'};
+    props.theme.mode === 'dark' ? '#050d20' : '#fbfdff'};
   &::placeholder {
-    color: ${(props) =>
-      (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569'};
+    color: ${(props) => (props.theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
   }
 `
 
@@ -169,7 +164,7 @@ export const CustomFooter: React.FC = () => {
     return () => observer.disconnect()
   }, [])
 
-  const theme = {
+  const theme: DefaultTheme = {
     mode: isDark ? 'dark' : 'light',
   }
 
