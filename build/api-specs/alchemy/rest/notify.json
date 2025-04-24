@@ -10,11 +10,6 @@
       "url": "https://dashboard.alchemy.com/api"
     }
   ],
-  "security": [
-    {
-      "ApiKeyAuth": []
-    }
-  ],
   "paths": {
     "/graphql/variables/{variable}": {
       "get": {
@@ -22,6 +17,16 @@
         "description": "This endpoint allows you to read the values within a Custom Webhook variable.\nIt supports pagination with `limit` and `after` (and optionally `pageKey`) query parameters.\n",
         "tags": ["Custom Webhook API Methods"],
         "parameters": [
+          {
+            "name": "X-Alchemy-Token",
+            "in": "header",
+            "required": true,
+            "description": "Alchemy Auth token to use the Notify API.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "your-X-Alchemy-Token"
+          },
           {
             "name": "variable",
             "in": "path",
@@ -1518,14 +1523,6 @@
     }
   },
   "components": {
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-Alchemy-Token",
-        "description": "This is the securitySchemes one"
-      }
-    },
     "schemas": {
       "create_webhook": {
         "type": "object",
