@@ -158,7 +158,9 @@ export const CustomFooter: React.FC = () => {
         <FooterAlchemyCopyright>
           {isDark ? <LogoDark /> : <LogoLight />}
           <p>
-            <span>2025 Alchemy Insights, Inc. · </span>
+            <span>
+              &copy; {new Date().getFullYear()} Alchemy Insights, Inc. ·{' '}
+            </span>
             <a href="https://www.alchemy.com/terms-conditions/terms/">
               Terms of Service
             </a>
