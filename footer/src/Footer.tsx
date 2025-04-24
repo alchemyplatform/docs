@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
-import ChangelogIcon from './assets/ChangelogIcon.tsx'
-import CommunityIcon from './assets/CommunityIcon.tsx'
-import StatusIcon from './assets/StatusIcon.tsx'
-import LogoLight from './assets/LogoLight.tsx'
-import LogoDark from './assets/LogoDark.tsx'
 import React from 'react'
+import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
+import type { DefaultTheme } from 'styled-components/dist/types.js'
+import ChangelogIcon from './assets/ChangelogIcon.js'
+import CommunityIcon from './assets/CommunityIcon.js'
+import LogoDark from './assets/LogoDark.js'
+import LogoLight from './assets/LogoLight.js'
+import StatusIcon from './assets/StatusIcon.js'
 
 const FooterContainer = styled.section`
   padding-block: 44px;
@@ -15,8 +15,7 @@ const FooterContainer = styled.section`
   justify-content: center;
   gap: 1rem;
   width: 100%;
-  color: ${(props) =>
-    (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569'};
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
   font-weight: 400;
 `
 
@@ -27,13 +26,12 @@ const CommunityLinks = styled.div`
   width: 100%;
   max-width: 800px;
   border-top: 1px solid
-    ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
+    ${({ theme }) => (theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   border-bottom: 1px solid
-    ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
+    ${({ theme }) => (theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   padding-block: 36px;
   a {
-    color: ${(props) =>
-      (props.theme as any).mode === 'dark' ? '#CBD5E0' : '#94a3b8'};
+    color: ${({ theme }) => (theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
     text-decoration: underline;
   }
   @media screen and (max-width: 768px) {
@@ -77,6 +75,7 @@ const SubscribeForm = styled.form`
     gap: 1rem;
   }
 `
+
 const FooterAlchemyCopyright = styled.div`
   display: flex;
   justify-content: space-between;
@@ -116,7 +115,7 @@ export const CustomFooter: React.FC = () => {
     return () => observer.disconnect()
   }, [])
 
-  const theme = {
+  const theme: DefaultTheme = {
     mode: isDark ? 'dark' : 'light',
   }
 
@@ -128,19 +127,19 @@ export const CustomFooter: React.FC = () => {
             <FooterLeftSideLinks>
               <ChangelogIcon />
               <span>
-                View the <a href="https://www.alchemy.com/blog/">changelog</a>
+                View the <a href="https://www.alchemy.com/blog">changelog</a>
               </span>
             </FooterLeftSideLinks>
             <FooterLeftSideLinks>
               <CommunityIcon />
               <span>
-                Join our <a href="https://discord.gg/9GnAcXQYZ6/">community</a>
+                Join our <a href="https://discord.gg/9GnAcXQYZ6">community</a>
               </span>
             </FooterLeftSideLinks>
             <FooterLeftSideLinks>
               <StatusIcon />
               <span>
-                Check our <a href="https://status.alchemy.com/">status</a>
+                Check our <a href="https://status.alchemy.com">status</a>
               </span>
             </FooterLeftSideLinks>
           </FooterLeftSide>
