@@ -17,25 +17,25 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
 
 #### Written Documentation
 
-- Located in `fern/docs/`
-- Written in MDX format
-- Update `docs.yml` when adding/moving pages
+* Located in `fern/docs/`
+* Written in MDX format
+* Update `docs.yml` when adding/moving pages
 
 #### API Documentation
 
 **REST APIs (OpenAPI)**
 
-- Location: `src/openapi/`
-- Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- **Tip**: Use the [Redocly VSCode extension](https://marketplace.visualstudio.com/items?itemName=Redocly.openapi-vs-code) to enable OpenAPI spec validation with Intellisense.
+* Location: `src/openapi/`
+* Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+* **Tip**: Use the [Redocly VSCode extension](https://marketplace.visualstudio.com/items?itemName=Redocly.openapi-vs-code) to enable OpenAPI spec validation with Intellisense.
 
 **JSON-RPC APIs (OpenRPC)**
 
-- Location: `src/openrpc/`
-- Define APIs following the [OpenRPC Specification](https://spec.open-rpc.org/)
-- Structure:
-  - `alchemy/`: Alchemy-specific APIs
-  - `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
+* Location: `src/openrpc/`
+* Define APIs following the [OpenRPC Specification](https://spec.open-rpc.org/)
+* Structure:
+  * `alchemy/`: Alchemy-specific APIs
+  * `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
 
 ### Account Kit Documentation
 
@@ -69,11 +69,11 @@ git push origin main
 
 ## Pull Request Guidelines
 
-- Ensure your PR addresses a specific issue or adds a specific feature
-- Include a clear description of the changes
-- Reference any related issues in your PR description
-- Ensure all checks pass before submitting
-- Follow the existing code style and formatting
+* Ensure your PR addresses a specific issue or adds a specific feature
+* Include a clear description of the changes
+* Reference any related issues in your PR description
+* Ensure all checks pass before submitting
+* Follow the existing code style and formatting
 
 ## Creating Issues
 
@@ -89,6 +89,6 @@ If you have any questions or need help, please open an issue in the repository.
 
 ## Resources
 
-- [Fern Documentation](https://buildwithfern.com/learn)
-- [OpenAPI Specification](https://swagger.io/specification/)
-- [OpenRPC Specification](https://spec.open-rpc.org/)
+* [Fern Documentation](https://buildwithfern.com/learn)
+* [OpenAPI Specification](https://swagger.io/specification/)
+* [OpenRPC Specification](https://spec.open-rpc.org/)

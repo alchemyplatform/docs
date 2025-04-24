@@ -14,6 +14,6 @@
 
 <!-- Describe the tests that you ran to verify your changes -->
 
-- \[ \] I have tested these changes locally
-- \[ \] I have run the validation scripts (`pnpm run validate`)
-- \[ \] I have checked that the documentation builds correctly
+* \[ ] I have tested these changes locally
+* \[ ] I have run the validation scripts (`pnpm run validate`)
+* \[ ] I have checked that the documentation builds correctly

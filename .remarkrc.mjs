@@ -11,6 +11,7 @@ export default {
     ["remark-lint-ordered-list-marker-value", "ordered"],
     ["remark-lint-list-item-indent", "one"],
     ["remark-lint-no-duplicate-headings", false],
+    ["remark-lint-no-file-name-irregular-characters", false],
     // TODO: re-enable below rules and fix warnings
     ["remark-lint-no-multiple-toplevel-headings", false], // toplevel headings become H1s in HTML. Multiple H1s are bad for SEO
     ["remark-lint-no-emphasis-as-heading", false],
