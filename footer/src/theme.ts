@@ -1,7 +1,7 @@
 import type { DefaultTheme } from 'styled-components'
 
-const myTheme: DefaultTheme = {
+const theme: DefaultTheme = {
   mode: 'dark',
 }
 
-export { myTheme }
+export { theme }
