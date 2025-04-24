@@ -27,19 +27,20 @@ In particular, Custom Webhook log GraphQL objects accept a *BlockLogsFilterCrite
 If you're not familiar with how topic filters work for *eth\_getLogs*, here's [an article](/docs/deep-dive-into-eth_getlogs) to get you up to speed.
 
 <Info>
-A transaction with topics will be matched by the following topic filters:
-- `[]` “anything”
-- `[A]` “A in first position (and anything after)”
-- `[[], [B]]` “anything in first position AND B in second position (and anything after)”
-- `[A, B]` “A in first position AND B in second position (and anything after)”
-- `[[A, B], [A, B]]` “(A OR B) in first position AND (A OR B) in second position (and anything after)”
+  A transaction with topics will be matched by the following topic filters:
+
+  * `[]` “anything”
+  * `[A]` “A in first position (and anything after)”
+  * `[[], [B]]` “anything in first position AND B in second position (and anything after)”
+  * `[A, B]` “A in first position AND B in second position (and anything after)”
+  * `[[A, B], [A, B]]` “(A OR B) in first position AND (A OR B) in second position (and anything after)”
 </Info>
 
 ### Specifying Addresses within Custom Webhook Event Filters
 
 Let's investigate an example log filter together! In this snippet, we only define a single address of interest, the Bored Ape NFT contract `0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D`. In this example, we set our filter so that we return logs/events only associated with the Bored Ape NFT contract.
 
-```
+```graphql
 # Get all logs emitted by the Bored Ape NFT contract in block 0x4a4d98f90439daaf082642dfbdd0f7b9a36749484582fb3d3e03bd4583da337a
 
 {
@@ -61,7 +62,7 @@ Let's investigate an example log filter together! In this snippet, we only defin
 
 Let's investigate an example topc filter together! In this snippet, we only define a single topic of interest, the *transfer* event with a kek hash of `0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef`. In this example, we set our filter so that we return logs/events only associated with the transfer event
 
-```
+```graphql
 # Get all logs associated with a transfer event  in block 0x4a4d98f90439daaf082642dfbdd0f7b9a36749484582fb3d3e03bd4583da337a
 
 {
@@ -94,7 +95,7 @@ A transaction from the *BlockTransactionsFilterCriteria* will match if it has a 
 
 Let's investigate an example transaction filter together! In this snippet, we only define a single `from` address of interest `0xc83dad6e38BF7F2d79f2a51dd3C4bE3f530965D6` so that Alchemy sends out webhook emissions only associated with `0xc83dad6e38BF7F2d79f2a51dd3C4bE3f530965D6`
 
-```
+```graphql
 # Filter for transactions originating from 0xc83dad6e38BF7F2d79f2a51dd3C4bE3f530965D6
 {
   block(hash: "0x49c8fd41516ed8d8ba871c0dadaddb0928d7d03d4de569b2537343080f48c618") {
@@ -125,7 +126,7 @@ Let's investigate an example transaction filter together! In this snippet, we on
 
 Let's investigate an example transaction filter together! In this snippet, we only define a single `to` address `0x388C818CA8B9251b393131C08a736A67ccB19297` of interest so that Alchemy sends out webhook emissions only associated with transactions sent to `0x388C818CA8B9251b393131C08a736A67ccB19297`
 
-```
+```graphql
 # Filter for transactions sent to 0x388C818CA8B9251b393131C08a736A67ccB19297
 {
   block(hash: "0x49c8fd41516ed8d8ba871c0dadaddb0928d7d03d4de569b2537343080f48c618") {
@@ -156,7 +157,7 @@ Let's investigate an example transaction filter together! In this snippet, we on
 
 Let's investigate an example transaction filter together! In this snippet, we only define a single `to` address `0xeb83e695adcac2e83f290d2d2815fc58e6491d7a` and a `from` address `0x29469395eaf6f95920e59f858042f0e28d98a20b` so that Alchemy sends out webhook emissions only associated with that `from` and `to` configuration.
 
-```
+```graphql
 {
   block(hash: "0x49c8fd41516ed8d8ba871c0dadaddb0928d7d03d4de569b2537343080f48c618") {
     hash
@@ -198,7 +199,7 @@ A transaction from the *BlockCallTracesFilterCriteria* will match if it has a `f
 
 ### Specifying `from` addresses within Custom Webhook Internal Transaction Filters
 
-```
+```graphql
 # Filter for internal transactions originating from 0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1
 {
   block {
@@ -233,7 +234,7 @@ A transaction from the *BlockCallTracesFilterCriteria* will match if it has a `f
 
 ### Specifying `to` addresses within Custom Webhook Internal Transaction Filters
 
-```
+```graphql
 # Filter for internal transactions going to  0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1
 {
   block {
@@ -268,7 +269,7 @@ A transaction from the *BlockCallTracesFilterCriteria* will match if it has a `f
 
 ### Specifying `from` & `to` within Custom Webhook Internal Transaction Filters
 
-```
+```graphql
 {
   block {
     number

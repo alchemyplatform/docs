@@ -26,7 +26,7 @@ To receive notifications for every userOp transaction sent from a list of sender
 
 This will filter events by User Operation Event types. The event signature is the canonical representation of an event's name and its argument types. The user operation event signature is:
 
-```
+```shell
 UserOperationEvent (index_topic_1 bytes32 userOpHash, index_topic_2 address sender, index_topic_3 address paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed)
 ```
 
@@ -40,7 +40,7 @@ Rather than being notified for every single user operation event, you can narrow
 
 1. **Create the sender address topic 2 filter variable using the [create](/reference/create-custom-webhook-variable) method (ex: let’s call this variable $uoSenderAddr) - you only have to do this once! For example:**
 
-```
+```shell
 curl --request POST \
      --url https://dashboard.alchemy.com/api/graphql/variables/uoSenderAddr \
      --header 'X-Alchemy-Token: YOUR_AUTH_TOKEN' \
@@ -58,51 +58,51 @@ curl --request POST \
 2. **[Create](/reference/create-webhook) a new custom webhook that filters by topic 0 and topic 2 (event signature and sender addr). You can use the create webhook endpoint or dashboard.**
 
 <Warning>
-**Match variable name + network**
+  **Match variable name + network**
 
-- The variable name must match the name you used in step 1
-- Select the network you will be sending user ops on - if you are sending on multiple networks, you will need multiple separate webhooks
+  * The variable name must match the name you used in step 1
+  * Select the network you will be sending user ops on - if you are sending on multiple networks, you will need multiple separate webhooks
 </Warning>
 
 For example:
 
-```
+```graphql
 query ($uoSenderAddr:[Bytes32!]!) {
   block {
-		hash
+    hash
     logs(filter: { addresses: [], topics: [["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"], [], $uoSenderAddr] }) {
-	    transaction{
-	      hash
-	      index
-	      from {
-	        address
-	      }
-	      to {
-	        address
-	      }
-	      maxFeePerGas
-	      maxPriorityFeePerGas
-	      gasUsed
-	      cumulativeGasUsed
-	      effectiveGasPrice
-	      logs {
-	        account {
-	          address
-	        }
-	        topics
-	        index
-	      }
-	      type
-	      status
-	    }
-	  }
-	}
+      transaction {
+        hash
+        index
+        from {
+          address
+        }
+        to {
+          address
+        }
+        maxFeePerGas
+        maxPriorityFeePerGas
+        gasUsed
+        cumulativeGasUsed
+        effectiveGasPrice
+        logs {
+          account {
+            address
+          }
+          topics
+          index
+        }
+        type
+        status
+      }
+    }
+  }
 }
 ```
 
 3. **Dynamically add all smart contract account addresses (i.e. any sender addresses) that you expect to interact with your app to the sender address variable using the [update](/reference/update-custom-webhook-variable) method. For example:**
 
-```
+```shell
 curl --request PATCH \
      --url https://dashboard.alchemy.com/api/graphql/variables/uoSenderAddr \
      --header 'X-Alchemy-Token: YOUR_AUTH_TOKEN' \
@@ -147,7 +147,7 @@ As seen in the userOperationEvent signature above, topic 1 is the userOpHash. Yo
 
 1. **Create the user op hash topic 1 filter variable using the [create](/reference/create-custom-webhook-variable) method (ex: let’s call this variable $userOpHash) - you only have to do this once! For example:**
 
-```
+```shell
 curl --request POST \
      --url https://dashboard.alchemy.com/api/graphql/variables/userOpHash \
      --header 'X-Alchemy-Token: YOUR_AUTH_TOKEN' \
@@ -165,45 +165,53 @@ curl --request POST \
 2. **[Create](/reference/create-webhook) a new Custom Webhook that filters by the topic 0 and topic 1 (event signature and user op hash)**
 
 <Warning>
-**Match variable name + network**
+  **Match variable name + network**
 
-- ensure variable name matches the name you used in step 1
-- select you have selected the network you will be sending user ops on
+  * ensure variable name matches the name you used in step 1
+  * select you have selected the network you will be sending user ops on
 </Warning>
 
 For example:
 
-```
-query ($userOpHash:[Bytes32!]!) {
+```graphql
+query GetBlockLogs($userOpHash: [Bytes32!]!) {
   block {
-		hash
-    logs(filter: { addresses: [], topics: [["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"], $userOpHash] }) {
-	    transaction{
-	      hash
-	      index
-	      from {
-	        address
-	      }
-	      to {
-	        address
-	      }
-	      maxFeePerGas
-	      maxPriorityFeePerGas
-	      gasUsed
-	      cumulativeGasUsed
-	      effectiveGasPrice
-	      logs {
-	        account {
-	          address
-	        }
-	        topics
-	        index
-	      }
-	      type
-	      status
-	    }
-	  }
-	}
+    hash
+    logs(
+      filter: {
+        addresses: []
+        topics: [
+          ["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"]
+          $userOpHash
+        ]
+      }
+    ) {
+      transaction {
+        hash
+        index
+        from {
+          address
+        }
+        to {
+          address
+        }
+        maxFeePerGas
+        maxPriorityFeePerGas
+        gasUsed
+        cumulativeGasUsed
+        effectiveGasPrice
+        logs {
+          account {
+            address
+          }
+          topics
+          index
+        }
+        type
+        status
+      }
+    }
+  }
 }
 ```
 
@@ -217,7 +225,7 @@ query ($userOpHash:[Bytes32!]!) {
 
 For example, add to your variable like this:
 
-```
+```js
 const updateVar = await axios.patch('https://dashboard.alchemy.com/api/graphql/variables/userOpHash',
     {
       "add": [
@@ -260,36 +268,46 @@ Note: these addresses will also need to be converted to byte32 hex format
 
 For example:
 
-```
-query ($uoSenderAddr:[Bytes32!]!) {
+```graphql
+query GetBlockLogsBySender($uoSenderAddr: [Bytes32!]!) {
   block {
-		hash
-    logs(filter: { addresses: [], topics: [["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"],[],$uoSenderAddr,["0x0000000000000000000000004Fd9098af9ddcB41DA48A1d78F91F1398965addc"]] }) {
-	    transaction{
-	      hash
-	      index
-	      from {
-	        address
-	      }
-	      to {
-	        address
-	      }
-	      maxFeePerGas
-	      maxPriorityFeePerGas
-	      gasUsed
-	      cumulativeGasUsed
-	      effectiveGasPrice
-	      logs {
-	        account {
-	          address
-	        }
-	        topics
-	        index
-	      }
-	      type
-	      status
-	    }
-	  }
-	}
+    hash
+    logs(
+      filter: {
+        addresses: []
+        topics: [
+          ["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"]
+          []
+          $uoSenderAddr
+          ["0x0000000000000000000000004Fd9098af9ddcB41DA48A1d78F91F1398965addc"]
+        ]
+      }
+    ) {
+      transaction {
+        hash
+        index
+        from {
+          address
+        }
+        to {
+          address
+        }
+        maxFeePerGas
+        maxPriorityFeePerGas
+        gasUsed
+        cumulativeGasUsed
+        effectiveGasPrice
+        logs {
+          account {
+            address
+          }
+          topics
+          index
+        }
+        type
+        status
+      }
+    }
+  }
 }
 ```
