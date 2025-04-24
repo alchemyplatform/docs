@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
-import ChangelogIcon from './assets/ChangelogIcon.tsx'
-import CommunityIcon from './assets/CommunityIcon.tsx'
-import StatusIcon from './assets/StatusIcon.tsx'
-import LogoLight from './assets/LogoLight.tsx'
-import LogoDark from './assets/LogoDark.tsx'
-import SuperchargedDark from './assets/SuperchargedDark.tsx'
-import SuperchargedLight from './assets/SuperchargedLight'
-import EnvelopeThin from './assets/EnvelopeThin.tsx'
 import React from 'react'
+import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
+import ChangelogIcon from './assets/ChangelogIcon.js'
+import CommunityIcon from './assets/CommunityIcon.js'
+import EnvelopeThin from './assets/EnvelopeThin.js'
+import LogoDark from './assets/LogoDark.js'
+import LogoLight from './assets/LogoLight.js'
+import StatusIcon from './assets/StatusIcon.js'
+import SuperchargedDark from './assets/SuperchargedDark.js'
+import SuperchargedLight from './assets/SuperchargedLight.js'
 
 const FooterContainer = styled.section`
   padding-block: 44px;
@@ -18,7 +18,8 @@ const FooterContainer = styled.section`
   justify-content: center;
   gap: 1rem;
   width: 100%;
-  color: ${(props) => ((props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569')};
+  color: ${(props) =>
+    (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569'};
   font-weight: 400;
 `
 
@@ -34,7 +35,8 @@ const CommunityLinks = styled.div`
     ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   padding-block: 36px;
   a {
-    color: ${(props) => ((props.theme as any).mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
+    color: ${(props) =>
+      (props.theme as any).mode === 'dark' ? '#CBD5E0' : '#94a3b8'};
     text-decoration: underline;
   }
   @media screen and (max-width: 768px) {
@@ -86,7 +88,9 @@ const InputWrapper = styled.div`
     font-family: 'FontAwesome';
     font-weight: 100;
     content: url(${(props) =>
-      EnvelopeThin((props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569')});
+      EnvelopeThin(
+        (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569',
+      )});
     position: absolute;
     left: 14px;
     top: 50%;
@@ -104,7 +108,8 @@ const EmailInput = styled.input`
   background-color: ${(props) =>
     (props.theme as any).mode === 'dark' ? '#050d20' : '#fbfdff'};
   &::placeholder {
-    color: ${(props) => ((props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569')};
+    color: ${(props) =>
+      (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569'};
   }
 `
 

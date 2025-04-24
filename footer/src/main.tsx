@@ -4,17 +4,17 @@ import './main.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { CustomFooter } from './Footer'
+import { CustomFooter } from './Footer.js'
 
 const FERN_FOOTER_CONTAINER_ID = 'fern-footer'
 
 const render = async () => {
-  const alchemyFooterId = document.getElementById("alchemy-footer")
+  const alchemyFooterId = document.getElementById('alchemy-footer')
 
   if (!alchemyFooterId) {
     // Create alchemy footer wrapper with a data attribute to help with hydration
     const alchemyContentWrapper = document.createElement('div')
-    alchemyContentWrapper.setAttribute('id', "alchemy-footer")
+    alchemyContentWrapper.setAttribute('id', 'alchemy-footer')
     alchemyContentWrapper.setAttribute('data-react-component', 'true')
 
     // Get or create fern-footer container
@@ -25,14 +25,17 @@ const render = async () => {
       document.body.appendChild(fernFooterContainer)
     }
 
-    fernFooterContainer.insertBefore(alchemyContentWrapper, fernFooterContainer.firstChild)
+    fernFooterContainer.insertBefore(
+      alchemyContentWrapper,
+      fernFooterContainer.firstChild,
+    )
 
     // Use createRoot instead of render for React 18+ compatibility
     const root = createRoot(alchemyContentWrapper)
     root.render(
       <React.StrictMode>
         <CustomFooter />
-      </React.StrictMode>
+      </React.StrictMode>,
     )
 
     // Show the container after rendering
@@ -43,12 +46,13 @@ const render = async () => {
 // Use 'load' event instead of 'DOMContentLoaded' for App Router
 window.addEventListener('load', async () => {
   await render()
-  
+
   // Simplified observer that doesn't rely on hydration count
   new MutationObserver(async (mutations) => {
-    const shouldRender = mutations.some(mutation => 
-      mutation.type === 'childList' && 
-      !document.getElementById('alchemy-footer')
+    const shouldRender = mutations.some(
+      (mutation) =>
+        mutation.type === 'childList' &&
+        !document.getElementById('alchemy-footer'),
     )
     if (shouldRender) {
       await render()
