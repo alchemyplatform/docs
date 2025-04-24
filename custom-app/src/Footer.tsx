@@ -7,7 +7,6 @@ import LogoLight from './assets/LogoLight.tsx'
 import LogoDark from './assets/LogoDark.tsx'
 import SuperchargedDark from './assets/SuperchargedDark.tsx'
 import SuperchargedLight from './assets/SuperchargedLight'
-import EnvelopeThin from './assets/EnvelopeThin.tsx'
 import React from 'react'
 
 const FooterContainer = styled.section`
@@ -18,7 +17,8 @@ const FooterContainer = styled.section`
   justify-content: center;
   gap: 1rem;
   width: 100%;
-  color: ${(props) => ((props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569')};
+  color: ${(props) =>
+    (props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569'};
   font-weight: 400;
 `
 
@@ -34,7 +34,8 @@ const CommunityLinks = styled.div`
     ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   padding-block: 36px;
   a {
-    color: ${(props) => ((props.theme as any).mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
+    color: ${(props) =>
+      (props.theme as any).mode === 'dark' ? '#CBD5E0' : '#94a3b8'};
     text-decoration: underline;
   }
   @media screen and (max-width: 768px) {
@@ -78,53 +79,6 @@ const SubscribeForm = styled.form`
     gap: 1rem;
   }
 `
-
-const InputWrapper = styled.div`
-  display: inline-block;
-  position: relative;
-  &:after {
-    font-family: 'FontAwesome';
-    font-weight: 100;
-    content: url(${(props) =>
-      EnvelopeThin((props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569')});
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-34%);
-    pointer-events: none;
-  }
-`
-
-const EmailInput = styled.input`
-  width: 280px;
-  padding: 10px 10px 10px 40px;
-  border-radius: 8px;
-  border: 1px solid
-    ${(props) => ((props.theme as any).mode === 'dark' ? '#1f2937' : '#e2e8f0')};
-  background-color: ${(props) =>
-    (props.theme as any).mode === 'dark' ? '#050d20' : '#fbfdff'};
-  &::placeholder {
-    color: ${(props) => ((props.theme as any).mode === 'dark' ? '#e2e8f0' : '#475569')};
-  }
-`
-
-const SubscribeButton = styled.button`
-  height: 44px;
-  padding: 12px;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(126deg, #05f 26.26%, #21d6ef 108.32%);
-  font-weight: 600;
-  line-height: 100%;
-  color: #fff;
-  @media screen and (max-width: 768px) {
-    width: 100%;
-  }
-`
-
 const FooterAlchemyCopyright = styled.div`
   display: flex;
   justify-content: space-between;
@@ -196,53 +150,12 @@ export const CustomFooter: React.FC = () => {
             {isDark ? <SuperchargedDark /> : <SuperchargedLight />}
             <span>Sign up for our developer newsletter.</span>
             <SubscribeForm>
-              <form
-                action="https://www.alchemy.com/api/v1/free?nojs=true"
-                method="post"
-              >
-                <input
-                  type="hidden"
-                  name="first_url"
-                  value="https://alchemysupercharged.substack.com/embed"
-                />
-                <input
-                  type="hidden"
-                  name="first_referrer"
-                  value="https://www.alchemy.com/"
-                />
-                <input
-                  type="hidden"
-                  name="current_url"
-                  value="https://alchemysupercharged.substack.com/embed"
-                />
-                <input
-                  type="hidden"
-                  name="current_referrer"
-                  value="https://www.alchemy.com/"
-                />
-                <input
-                  type="hidden"
-                  name="first_session_url"
-                  value="https://alchemysupercharged.substack.com/embed"
-                />
-                <input
-                  type="hidden"
-                  name="first_session_referrer"
-                  value="https://www.alchemy.com/"
-                />
-                <input type="hidden" name="referral_code" />
-                <input type="hidden" name="source" value="embed" />
-                <input type="hidden" name="referring_pub_id" />
-                <input type="hidden" name="additional_referring_pub_ids" />
-                <InputWrapper>
-                  <EmailInput
-                    name="email"
-                    type="email"
-                    placeholder="Email address"
-                  />
-                </InputWrapper>
-                <SubscribeButton type="submit">Subscribe</SubscribeButton>
-              </form>
+              <iframe
+                title="Substack form"
+                src="https://alchemysupercharged.substack.com/embed"
+                width="320"
+                height="280"
+              ></iframe>
             </SubscribeForm>
           </FooterRightSide>
         </CommunityLinks>
