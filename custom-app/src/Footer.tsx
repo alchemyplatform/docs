@@ -5,8 +5,6 @@ import CommunityIcon from './assets/CommunityIcon.tsx'
 import StatusIcon from './assets/StatusIcon.tsx'
 import LogoLight from './assets/LogoLight.tsx'
 import LogoDark from './assets/LogoDark.tsx'
-import SuperchargedDark from './assets/SuperchargedDark.tsx'
-import SuperchargedLight from './assets/SuperchargedLight'
 import React from 'react'
 
 const FooterContainer = styled.section`
@@ -147,8 +145,6 @@ export const CustomFooter: React.FC = () => {
             </FooterLeftSideLinks>
           </FooterLeftSide>
           <FooterRightSide>
-            {isDark ? <SuperchargedDark /> : <SuperchargedLight />}
-            <span>Sign up for our developer newsletter.</span>
             <SubscribeForm>
               <iframe
                 title="Substack form"
