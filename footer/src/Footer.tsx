@@ -3,12 +3,9 @@ import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
 import ChangelogIcon from './assets/ChangelogIcon.js'
 import CommunityIcon from './assets/CommunityIcon.js'
-import EnvelopeThin from './assets/EnvelopeThin.js'
 import LogoDark from './assets/LogoDark.js'
 import LogoLight from './assets/LogoLight.js'
 import StatusIcon from './assets/StatusIcon.js'
-import SuperchargedDark from './assets/SuperchargedDark.js'
-import SuperchargedLight from './assets/SuperchargedLight.js'
 
 const FooterContainer = styled.section`
   padding-block: 44px;
@@ -18,7 +15,7 @@ const FooterContainer = styled.section`
   justify-content: center;
   gap: 1rem;
   width: 100%;
-  color: ${(props) => (props.theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
   font-weight: 400;
 `
 
@@ -29,12 +26,12 @@ const CommunityLinks = styled.div`
   width: 100%;
   max-width: 800px;
   border-top: 1px solid
-    ${(props) => (props.theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
+    ${({ theme }) => (theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   border-bottom: 1px solid
-    ${(props) => (props.theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
+    ${({ theme }) => (theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   padding-block: 36px;
   a {
-    color: ${(props) => (props.theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
+    color: ${({ theme }) => (theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
     text-decoration: underline;
   }
   @media screen and (max-width: 768px) {
@@ -76,52 +73,6 @@ const SubscribeForm = styled.form`
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-  }
-`
-
-const InputWrapper = styled.div`
-  display: inline-block;
-  position: relative;
-  &:after {
-    font-family: 'FontAwesome';
-    font-weight: 100;
-    content: url(${(props) =>
-      EnvelopeThin(props.theme.mode === 'dark' ? '#e2e8f0' : '#475569')});
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-34%);
-    pointer-events: none;
-  }
-`
-
-const EmailInput = styled.input`
-  width: 280px;
-  padding: 10px 10px 10px 40px;
-  border-radius: 8px;
-  border: 1px solid
-    ${(props) => (props.theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
-  background-color: ${(props) =>
-    props.theme.mode === 'dark' ? '#050d20' : '#fbfdff'};
-  &::placeholder {
-    color: ${(props) => (props.theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
-  }
-`
-
-const SubscribeButton = styled.button`
-  height: 44px;
-  padding: 12px;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(126deg, #05f 26.26%, #21d6ef 108.32%);
-  font-weight: 600;
-  line-height: 100%;
-  color: #fff;
-  @media screen and (max-width: 768px) {
-    width: 100%;
   }
 `
 
@@ -176,38 +127,42 @@ export const CustomFooter: React.FC = () => {
             <FooterLeftSideLinks>
               <ChangelogIcon />
               <span>
-                View the <a href="/">changelog</a>
+                View the <a href="https://www.alchemy.com/blog">changelog</a>
               </span>
             </FooterLeftSideLinks>
             <FooterLeftSideLinks>
               <CommunityIcon />
               <span>
-                Join our <a href="/">community</a>
+                Join our <a href="https://discord.gg/9GnAcXQYZ6">community</a>
               </span>
             </FooterLeftSideLinks>
             <FooterLeftSideLinks>
               <StatusIcon />
               <span>
-                Check our <a href="/">status</a>
+                Check our <a href="https://status.alchemy.com">status</a>
               </span>
             </FooterLeftSideLinks>
           </FooterLeftSide>
           <FooterRightSide>
-            {isDark ? <SuperchargedDark /> : <SuperchargedLight />}
-            <span>Sign up for our developer newsletter.</span>
             <SubscribeForm>
-              <InputWrapper>
-                <EmailInput type="email" placeholder="Email address" />
-              </InputWrapper>
-              <SubscribeButton type="submit">Subscribe</SubscribeButton>
+              <iframe
+                title="Substack form"
+                src="https://alchemysupercharged.substack.com/embed"
+                width="320"
+                height="280"
+              ></iframe>
             </SubscribeForm>
           </FooterRightSide>
         </CommunityLinks>
         <FooterAlchemyCopyright>
           {isDark ? <LogoDark /> : <LogoLight />}
           <p>
-            <span>2025 Alchemy Insights, Inc. · </span>
-            <a href="/">Terms of Service</a>
+            <span>
+              &copy; {new Date().getFullYear()} Alchemy Insights, Inc. ·{' '}
+            </span>
+            <a href="https://www.alchemy.com/terms-conditions/terms/">
+              Terms of Service
+            </a>
           </p>
         </FooterAlchemyCopyright>
       </FooterContainer>
