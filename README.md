@@ -6,7 +6,7 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 
 ## Project Structure
 
-```
+```md
 /
 ├── src/
 │   ├── openapi/     # REST API definitions (OpenAPI)
@@ -21,7 +21,7 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 
 ### Prerequisites
 
-- [pnpm](https://pnpm.io/)
+* [pnpm](https://pnpm.io/)
 
 ### Installation
 
@@ -85,9 +85,9 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Resources
 
-- [Fern Documentation](https://buildwithfern.com/learn)
-- [OpenAPI Specification](https://swagger.io/specification/)
-- [OpenRPC Specification](https://spec.open-rpc.org/)
+* [Fern Documentation](https://buildwithfern.com/learn)
+* [OpenAPI Specification](https://swagger.io/specification/)
+* [OpenRPC Specification](https://spec.open-rpc.org/)
 
 ## License
 

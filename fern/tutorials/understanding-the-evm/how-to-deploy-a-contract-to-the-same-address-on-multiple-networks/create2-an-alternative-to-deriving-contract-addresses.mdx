@@ -282,9 +282,11 @@ Inside the `encoder` function, add the following lines:
 
 <CodeGroup>
   ```javascript utils.js
-  const abiCoder = ethers.utils.defaultAbiCoder;
-  const encodedParams = abiCoder.encode(types, values);
-  return encodedParams.slice(2);
+  const encoder = (types, values) => {
+    const abiCoder = ethers.utils.defaultAbiCoder;
+    const encodedParams = abiCoder.encode(types, values);
+    return encodedParams.slice(2);
+  };
   ```
 </CodeGroup>
 
@@ -296,8 +298,10 @@ Inside the function body, add the following:
 
 <CodeGroup>
   ```javascript utils.js
-  const create2Addr = ethers.utils.getCreate2Address(factoryAddress, saltHex, ethers.utils.keccak256(initCode));
-  return create2Addr;
+  const create2Address = (factoryAddress, saltHex, initCode) => {
+    const create2Addr = ethers.utils.getCreate2Address(factoryAddress, saltHex, ethers.utils.keccak256(initCode));
+    return create2Addr;
+  }
   ```
 </CodeGroup>
 
@@ -464,7 +468,7 @@ Now, create a connection to your factory using ethers by adding the following:
 <CodeGroup>
   ```javascript vaultDeploy.js
   const Factory = await ethers.getContractFactory("DeterministicDeployFactory");
-  avconst factory = await Factory.attach(factoryAddr);
+  const factory = await Factory.attach(factoryAddr);
   ```
 </CodeGroup>
 

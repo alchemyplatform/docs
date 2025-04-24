@@ -55,7 +55,7 @@ With `hashesOnly` = `false`
 ### Request
 
 <CodeGroup>
-  ```javascript wscat
+  ```shell wscat
   // initiate websocket stream first
   wscat -c wss://eth-mainnet.g.alchemy.com/v2/demo
 
@@ -63,7 +63,27 @@ With `hashesOnly` = `false`
   {"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_minedTransactions"]}
 
   // to and from filters, hashesOnly = true
-  {"jsonrpc": "2.0", "method": "eth_subscribe","params": ["alchemy_minedTransactions", {"addresses": [{"to": "0x9f3ce0ad29b767d809642a53c2bccc9a130659d7", "from": "0x228f108fd09450d083bb33fe0cc50ae449bc7e11"}, {"to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}],"includeRemoved": false,  "hashesOnly": true}],"id": 1}
+  {
+    "jsonrpc": "2.0",
+    "method": "eth_subscribe",
+    "params": [
+      "alchemy_minedTransactions",
+      {
+        "addresses": [
+          {
+            "to": "0x9f3ce0ad29b767d809642a53c2bccc9a130659d7",
+            "from": "0x228f108fd09450d083bb33fe0cc50ae449bc7e11"
+          },
+          {
+            "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+          }
+        ],
+        "includeRemoved": false,
+        "hashesOnly": true
+      }
+    ],
+    "id": 1
+  }
   ```
 
   ```javascript alchemy-sdk

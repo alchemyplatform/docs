@@ -124,58 +124,43 @@ The server has separate endpoints for each custom webhook and stores the receive
 
   const logs = req.body.event.data.block.logs;
 
-  if (logs.length != 0) {
+  if (logs.length !== 0) {
 
   baycApprovals.push(logs);
 
   }
-
   //responding with status 200
-
   res.send("Success.");
-
   });
 
-  // create a GET  block-info route for the app
-
+  // create a GET block-info route for the app
   app.get("/bayc-approvals", (req, res) => {
 
   res.send(baycApprovals);
-
   });
 
   // create a created-contracts. Used as a webhook URL
-
   app.post("/usdc-approvals", (req, res) => {
 
   const usdcEvents = req.body.event.data.block;
-
   usdcApprovals.push(usdcEvents);
 
-  //responding with status 200
-
+  // responding with status 200
   res.send("Success.");
-
   });
 
   // create a GET created-contracts route for the app.
-
   app.get("/usdc-approvals", (req, res) => {
-
   res.send(usdcApprovals);
-
   });
 
   // create a transactions. Used as a webhook URL
-
   app.post("/aave-token-rewards", (req, res) => {
 
   const aaveEvents = req.body.event.data.block;
-
   aaveRewards.push(aaveEvents);
 
   //responding with status 200
-
   res.send("Success.");
 
   });
@@ -271,7 +256,7 @@ Both NFT and ERC smart contracts emit an **Approval** event when the `approve()`
 In the GraphQL playground, delete the placeholder code and paste the following:
 
 <CodeGroup>
-  ```jsx jsx
+  ```graphql graphql
   {
     block (hash:"0x3673628d8e04b43299e8e704f873a0ce6c1405cde1e3137ad515d442c9a2143f") {
       logs(filter: {addresses: ["0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"], topics: ["0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"]}) {
@@ -378,7 +363,7 @@ Back in the Alchemy Notify dashboard, create a new GraphQL webhook.
 Replace the placeholder code with the following:
 
 <CodeGroup>
-  ```jsx jsx
+  ```graphql graphql
   {
     block(hash: "0xaaf4228db65eab92357c124ff8f8f1c5da72a04da660e147157cd4dfd8eb44d6") {
       logs(filter: {addresses: ["0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"], topics: ["0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"]}) {
@@ -482,7 +467,7 @@ Always verify the webhooks that interact with your dapp.
 Replace the placeholder code with the following:
 
 <CodeGroup>
-  ```jsx jsx
+  ```graphql graphql
   {
     block (hash: "0x8dccbdd2b42f01d42431225ca7badc54a69b057ddf1d80ca0251e1e0fa6d897c") {
       hash,

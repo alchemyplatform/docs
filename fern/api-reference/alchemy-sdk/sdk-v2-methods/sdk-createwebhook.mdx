@@ -120,7 +120,46 @@ The commands for installing it using **npm** or **yarn** are given below:
     "https://webhook.site/your-webhook-url",
     WebhookType.GRAPHQL,
     {
-      graphqlQuery: "{   block {     # Block hash is a great primary key to use for your data stores!     hash,     number,     timestamp,     # Add smart contract addresses to the list below to filter for specific logs     logs(filter: {addresses: [], topics: []}) {        data,       topics,       index,       account {         address       },       transaction {         hash,         nonce,         index,         from {           address         },         to {           address         },         value,         gasPrice,         maxFeePerGas,         maxPriorityFeePerGas,         gas,         status,         gasUsed,         cumulativeGasUsed,         effectiveGasPrice,         createdContract {           address         }       }     }   } }"
+      graphqlQuery: `{
+        block {
+          # Block hash is a great primary key to use for your data stores!
+          hash,
+          number,
+          timestamp,
+          # Add smart contract addresses to the list below to filter for specific logs
+          logs(filter: {addresses: [], topics: []}) {
+            data,
+            topics,
+            index,
+            account {
+              address
+            },
+            transaction {
+              hash,
+              nonce,
+              index,
+              from {
+                address
+              },
+              to {
+                address
+              },
+              value,
+              gasPrice,
+              maxFeePerGas,
+              maxPriorityFeePerGas,
+              gas,
+              status,
+              gasUsed,
+              cumulativeGasUsed,
+              effectiveGasPrice,
+              createdContract {
+                address
+              }
+            }
+          }
+        }
+      }`,
       network: Network.ETH_MAINNET,
     }
   );

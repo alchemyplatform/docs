@@ -45,7 +45,7 @@ When we send a Smart Contract to the EVM we send only the bytecode:
 
 For a contract containing *just the loop code above*, the resulting bytecode can be quite long:
 
-```
+```shell
 6080604052348015600f57600080fd5b5060a58061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063a92100cb14602d575b600080fd5b60336049565b6040518082815260200191505060405180910390f35b6000806000905060008090505b600582101560675781810190506056565b80925050509056fea264697066735822122058d7e11ff1d36fc53779562e305af3c9180b2ab8dccfe6d234fa50420908a5d864736f6c63430006030033
 ```
 
@@ -55,7 +55,7 @@ Some of it is **opcodes** and some of it is **operands**, which are the optional
 
 We can lookup [EVM Operation Codes](https://github.com/crytic/evm-opcodes) and replace the opcode with its name (commonly referred to as a **mnemonic**):
 
-```
+```shell
 PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH1 0xF JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0xA5 DUP1 PUSH2 0x1E PUSH1 0x0 CODECOPY PUSH1 0x0 RETURN INVALID PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH1 0xF JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH1 0x28 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0xA92100CB EQ PUSH1 0x2D JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x33 PUSH1 0x49 JUMP JUMPDEST PUSH1 0x40 MLOAD DUP1 DUP3 DUP2 MSTORE PUSH1 0x20 ADD SWAP2 POP POP PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH1 0x0 DUP1 PUSH1 0x0 SWAP1 POP PUSH1 0x0 DUP1 SWAP1 POP JUMPDEST PUSH1 0x5 DUP3 LT ISZERO PUSH1 0x67 JUMPI DUP2 DUP2 ADD SWAP1 POP PUSH1 0x56 JUMP JUMPDEST DUP1 SWAP3 POP POP POP SWAP1 JUMP INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 PC 0xD7 0xE1 0x1F CALL 0xD3 PUSH16 0xC53779562E305AF3C9180B2AB8DCCFE6 0xD2 CALLVALUE STATICCALL POP TIMESTAMP MULMOD ADDMOD 0xA5 0xD8 PUSH5 0x736F6C6343 STOP MOD SUB STOP CALLER
 ```
 
@@ -69,7 +69,7 @@ Fortunately, the Solidity compiler has an assembly output that can help us take 
 
 For now, let's take a look at one particular section:
 
-```
+```shell
 tag 7               while(i < 5) ...
   JUMPDEST          while(i < 5) ...
   PUSH 5            5
@@ -110,7 +110,7 @@ So if there are no loops in assembly code, how does a `while` loop get compiled 
 
 Let's take a look at this particular section of code:
 
-```
+```shell
   PUSH 5            5
   DUP3              i
   LT                i < 5
@@ -133,7 +133,7 @@ The `ISZERO` here is the condition for which `JUMPI` will jump to the memory loc
 
 If the comparison results in `0`, we'll run the loop code:
 
-```
+```shell
   DUP2              i
   DUP2              sum += i
   ADD               sum += i

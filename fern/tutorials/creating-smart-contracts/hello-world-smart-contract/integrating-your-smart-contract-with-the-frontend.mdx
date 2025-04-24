@@ -5,7 +5,6 @@ url: "https://docs.alchemy.com/docs/integrating-your-smart-contract-with-the-fro
 slug: "docs/integrating-your-smart-contract-with-the-frontend"
 ---
 
-
 You'll need to have finished part 1: [creating and deploying a smart contract](https://docs.alchemy.com/alchemy/tutorials/hello-world-smart-contract), part 2: [interacting with your smart contract](https://docs.alchemy.com/alchemy/tutorials/hello-world-smart-contract/interacting-with-a-smart-contract), and part 3: [submitting your smart contract to Etherscan](https://docs.alchemy.com/alchemy/tutorials/hello-world-smart-contract/submitting-your-smart-contract-to-etherscan) before starting part 4 below.
 
 ## Part 4: Marrying Web2 & Web3: connecting your smart contract to a frontend project
@@ -126,9 +125,12 @@ The next step is to include some of the newly installed dependencies in your `we
 Add the following to the `resolve` object in the file as shown below:
 
 <CodeGroup>
-  ```javascript webpack.config.js
-  fallback: { "http": require.resolve("stream-http"),
-        "https": require.resolve("https-browserify"), "zlib": require.resolve("browserify-zlib")  },
+  ```text webpack.config.js
+    fallback: {
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify'),
+      zlib: require.resolve('browserify-zlib'),
+    },
   ```
 </CodeGroup>
 
@@ -237,9 +239,10 @@ After the state variables, you'll see five un-implemented functions: *useEffect*
 Near the end of this file, we have the UI of our component.
 
 <CodeGroup>
-  ```javascript HelloWorld.js
-  //the UI of our component
-  return (
+  ```jsx HelloWorld.jsx
+  // the UI of our component
+  const HelloWorld = () => {
+    return (
       <div id="container">
         <img id="logo" src={alchemylogo}></img>
         <button id="walletButton" onClick={connectWalletPressed}>
@@ -273,6 +276,7 @@ Near the end of this file, we have the UI of our component.
         </div>
       </div>
     );
+  }
   ```
 </CodeGroup>
 
@@ -404,7 +408,7 @@ Armed with our contract address, ABI, and Alchemy Web3 endpoint, we can use the 
   ```javascript interact.js
   const contractABI = require("../contract-abi.json");
   const alchemyKey = "wss://eth-sepolia.g.alchemy.com/v2/<YOUR-API-KEY>"
-  const contractAddress = <Your-Contract-Address>;
+  const contractAddress = `<Your-Contract-Address>`;
   ```
 </CodeGroup>
 
@@ -427,7 +431,7 @@ To recap, the first 12 lines of your interact.js should now look like this:
   const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
   const web3 = createAlchemyWeb3(alchemyKey); 
   const contractABI = require('../contract-abi.json')
-  const contractAddress = <Your-Contract-Address>;
+  const contractAddress = `<Your-Contract-Address>`;
 
   export const helloWorldContract = new web3.eth.Contract(
     contractABI,
@@ -618,7 +622,7 @@ In our **interact.js** file, let's implement the *connectWallet* function, which
 Let's modify *connectWallet* to the following:
 
 <CodeGroup>
-  ```javascript interact.js
+  ```jsx interact.jsx
   export const connectWallet = async () => {
     if (window.ethereum) {
       try {
@@ -711,7 +715,7 @@ However, have no fear! We easily can easilycan address that (get it? 😅) by im
 Update your getCurrentWalletConnected function in the **interact.js** file to the following:
 
 <CodeGroup>
-  ```javascript interact.js
+  ```jsx interact.jsx
   export const getCurrentWalletConnected = async () => {
     if (window.ethereum) {
       try {
@@ -797,7 +801,7 @@ The final step in our dApp wallet setup is implementing the wallet listener so o
 In your **HelloWorld.js** file, modify your *addWalletListener* function as the following:
 
 <CodeGroup>
-  ```javascript HelloWorld.js
+  ```jsx HelloWorld.jsx
   function addWalletListener() {
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", (accounts) => {
@@ -898,7 +902,7 @@ Now that it has proper input error handling, it's time to sign the transaction v
 If you're already comfortable with traditional Web3 Ethereum transactions, the code we write next will be very familiar. Below your input error-handling code, add the following to *updateMessage*:
 
 <CodeGroup>
-  ```javascript interact.js
+  ```jsx interact.js
   //set up transaction parameters
    const transactionParameters = {
       to: contractAddress, // Required except during contract publications.
@@ -947,7 +951,7 @@ At this point, Metamask will open up in the browser and prompt the user to sign 
 Altogether, our *updateMessage* function should look like this:
 
 <CodeGroup>
-  ```javascript interact.js
+  ```jsx interact.jsx
   export const updateMessage = async (address, message) => {
 
     //input error handling

@@ -67,7 +67,7 @@ Even though we won't be building anything that interfaces with a web3 browser wa
 5. Open your project's `.env.local` file and add the following variable:
 
 <CodeGroup>
-  ```javascript javascript
+  ```env .env
   CONNECT_KIT_PROJECT_ID=<PASTE-YOUR-WALLET-CONNECT-APP-ID-HERE>
   ```
 </CodeGroup>
@@ -77,7 +77,7 @@ Even though we won't be building anything that interfaces with a web3 browser wa
 Your config object should look like this:
 
 <CodeGroup>
-  ```javascript javascript
+  ```ts ts
   const config = createConfig(
     getDefaultConfig({
       // Required API Keys
@@ -88,9 +88,7 @@ Your config object should look like this:
       // Required
       appName: "My Gasless NFT Minter",
     })
-
   );
-
   ```
 </CodeGroup>
 
@@ -169,7 +167,7 @@ In the Alchemy dashboard, where you just created your Gas Manager Policy, you'll
 1. Open your project's `.env.local` file and create the following variable:
 
 <CodeGroup>
-  ```javascript javascript
+  ```env .env
   SEPOLIA_PAYMASTER_POLICY_ID=<COPY-PASTE-YOUR-GAS-POLICY-ID-HERE>
   ```
 </CodeGroup>
@@ -191,15 +189,15 @@ In order for this app to look pretty, let's install [TailwindCSS](https://tailwi
 
 You should see your terminal output:
 
-```
+```shell
 Created Tailwind CSS config file: tailwind.config.js
 Created PostCSS config file: postcss.config.js
 ```
 
-3. Copy-paste the following into your app's newly-created `tailwind.config.css` file:
+3. Copy-paste the following into your app's newly-created `tailwind.config.js` file:
 
 <CodeGroup>
-  ```json json
+  ```js js
   /** @type {import('tailwindcss').Config} */
   module.exports = {
     content: [
@@ -218,7 +216,11 @@ Created PostCSS config file: postcss.config.js
 4. Lastly, copy-paste the following into the very top of your app's `globals.css` file:
 
 <CodeGroup>
-  `bash bash @tailwind base; @tailwind components; @tailwind utilities; `
+  ```css css
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+  ```
 </CodeGroup>
 
 #### Daisy UI
@@ -248,9 +250,11 @@ Let's set up our own authentication with [Userbase](https://userbase.com/)!
 4. Copy the Starter App's `App Id`
 5. Go to your `.env.local` file, create a variable and paste your app id, like this:
 
-```
-NEXT_PUBLIC_USERBASE_APP_ID=<PASTE_YOUR_STARTER_APP_ID>
-```
+<CodeGroup>
+  ```env .env.local
+  NEXT_PUBLIC_USERBASE_APP_ID=<PASTE_YOUR_STARTER_APP_ID>
+  ```
+</CodeGroup>
 
 > Note: In order to expose the app ID value to the client-side, you must add `NEXT_PUBLIC` to the variable.
 
@@ -259,9 +263,11 @@ NEXT_PUBLIC_USERBASE_APP_ID=<PASTE_YOUR_STARTER_APP_ID>
 8. Type in your password and write `get-userbase-user` for the label, then hit `Generate Access Token`
 9. Once you have your access token, go back to your `.env.local` and add a variable again like this:
 
-```
-USERBASE_ACCESS_TOKEN=<PASTE_YOUR_GENERATED_ACCESS_TOKEN>
-```
+<CodeGroup>
+  ```env .env.local
+  USERBASE_ACCESS_TOKEN=<PASTE_YOUR_GENERATED_ACCESS_TOKEN>
+  ```
+</CodeGroup>
 
 Sweet! You've set up everything needed on the Userbase side, now let's continue building our auth implementation! 💪
 
@@ -274,7 +280,7 @@ Sweet! You've set up everything needed on the Userbase side, now let's continue 
 1. In your project's `/common` folder, create a new file called `AuthProvider.tsx` and copy-paste the following:
 
 <CodeGroup>
-  ```javascript javascript
+  ```ts typescript
   import {
     ReactNode,
     createContext,
@@ -370,7 +376,7 @@ In order for your `AuthProvider` component to take effect on your app, follow th
 3. After `line 10`, add the following:
 
 <CodeGroup>
-  ```javascript javascript
+  ```shell javascript
   chains: [sepolia],
   ```
 </CodeGroup>
@@ -378,17 +384,19 @@ In order for your `AuthProvider` component to take effect on your app, follow th
 4. Remember to add the `sepolia` import from wagmi on `line 4`:
 
 <CodeGroup>
-  ````javascript javascript import {(WagmiConfig, createConfig, sepolia)} from
-  "wagmi"; ```
-  </CodeGroup>
+  ```javascript javascript
+    import {WagmiConfig, createConfig, sepolia} from "wagmi";
+  ```
+</CodeGroup>
 
-  > This is to protect our users! We want to only allow use of this app exclusively on the Sepolia test network.
+> This is to protect our users! We want to only allow use of this app exclusively on the Sepolia test network.
 
-  5. Then, add the following import at the top of the file (but not above the `'use client'` statement):
+5. Then, add the following import at the top of the file (but not above the `'use client'` statement):
 
-  <CodeGroup>
-  ```javascript javascript import {AuthProvider} from "@common/AuthProvider";
-  ````
+<CodeGroup>
+  ```javascript javascript
+  import {AuthProvider} from "@common/AuthProvider";
+  ```
 </CodeGroup>
 
 6. Now, wrap your entire `RootLayout` export in the `AuthProvider` component you just imported, it should look like this:
@@ -396,7 +404,7 @@ In order for your `AuthProvider` component to take effect on your app, follow th
 > Remember to remove the `<Navbar>` and `<Footer>` components!
 
 <CodeGroup>
-  ```javascript javascript
+  ```jsx javascript
   <html lang="en">
     <AuthProvider>
       <WagmiConfig config={config}>
@@ -435,7 +443,7 @@ Now, let's use NextJS 13 `/app` infrastructure to set up some routes! This secti
 3. In the `/sign-up/page.tsx` file, copy-paste the following code:
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx tsx
   "use client";
   import "../globals.css";
   import * as secp from "@noble/secp256k1";
@@ -448,12 +456,12 @@ Now, let's use NextJS 13 `/app` infrastructure to set up some routes! This secti
   import userbase from "userbase-js";
 
   export default function SignupForm() {
-  const { user, login } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+    const { user, login } = useAuth();
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
       if (user?.isLoggedIn) {
@@ -650,7 +658,7 @@ Now that we've set up a route to sign up, let's also set one up to allow our use
 2. In the `/login/page.tsx` file, copy-paste the following code:
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx typescript
   "use client";
   import { useAuth } from "@common/AuthProvider";
   import Loader from "@common/utils/Loader";
@@ -710,7 +718,7 @@ Now that we've set up a route to sign up, let's also set one up to allow our use
                 onSubmit={handleLogin}
               >
                 <label
-                  className="block text-center text-gray-700 font-bold mb-2 text-xl text-white"
+                  className="block text-center text-gray-700 font-bold mb-2 text-xl"
                   htmlFor="username"
                 >
                   Login 🧙‍♂️
@@ -891,7 +899,7 @@ Phew, authentication can get heavy huh! We're almost there! Let's add some of th
 4. Still in the `/utils` folder, create a new file called `Loader.tsx` and copy-paste the following:
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx tsx
   const Loader: React.FC = () => {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -1433,7 +1441,7 @@ And that's it! 🧙‍♂️
 4. Inside the `route.ts` of the `/get-signer` folder, copy-paste the following code:
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx typescript
   import { withAlchemyGasManager } from "@alchemy/aa-alchemy";
   import {
     LocalAccountSigner,
@@ -1508,7 +1516,7 @@ We'll want to build a simple wallet display so that when a user gaslessly mints 
 2. Copy-paste the following code into `route.ts`:
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx typescript
   import { NextRequest, NextResponse } from "next/server";
 
   const { Alchemy, Network } = require("alchemy-sdk");
@@ -1545,7 +1553,7 @@ Nice and simple script that uses the Alchemy SDK to fetch a user's NFTs! One mor
 <Warning>Warning: This script is heavy!</Warning>
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx typescript
   import { withAlchemyGasManager } from "@alchemy/aa-alchemy";
   import {
     LocalAccountSigner,
@@ -1682,7 +1690,7 @@ Nice and simple script that uses the Alchemy SDK to fetch a user's NFTs! One mor
 3. In the `route.ts` file, copy-paste the following quick script:
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx typescript
   import axios from "axios";
   import { NextRequest, NextResponse } from "next/server";
 
@@ -1721,45 +1729,46 @@ You've just set up super powerful API routes in your NextJS 13 project! 💫 You
 1. In your project's `.env.local` file, set up these slate of variables - needed to make your API scripts work:
 
 <CodeGroup>
-  ````javascript javascript SEPOLIA_ENTRYPOINT_ADDRESS=
+  ```env env SEPOLIA_ENTRYPOINT_ADDRESS=
   SEPOLIA_SIMPLE_ACCOUNT_FACTORY_ADDRESS=
-  SEPOLIA_NFT_ADDRESS=0x5700D74F864CE224fC5D39a715A744f8d1964429 ```
-  </CodeGroup>
+  SEPOLIA_NFT_ADDRESS=0x5700D74F864CE224fC5D39a715A744f8d1964429
+  ```
+</CodeGroup>
 
-  By now, your `.env.local` file should look something like this:
+By now, your `.env.local` file should look something like this:
 
-  ![env](SJ2ttWey6.png)
+![env](SJ2ttWey6.png)
 
-  We're almost there!! 🏃‍♂️
+We're almost there!! 🏃‍♂️
 
-  <Info>
+<Info>
   Psst! You should be able to successfully sign up as a user now! The app will
   break since it won't know where to re-direct state successfully, but feel free
   to try signing up for an account, then go to Userbase.com and select your
   `Starter App` - by this point, you should see the user you just created
   successfully on the Userbase end!
-  </Info>
+</Info>
 
-  ## Step 7: Set Up Your `/` (Home!) Route
+## Step 7: Set Up Your `/` (Home!) Route
 
-  It must be annoying to not be able to load `localhost:3000/` without any errors or it still displaying old instructions, so let's fix that! 🛠️
+It must be annoying to not be able to load `localhost:3000/` without any errors or it still displaying old instructions, so let's fix that! 🛠️
 
-  We want our home component to do two things:
+We want our home component to do two things:
 
-  1. If the user is not logged in, re-direct to `/login`
-  2. If the user is logged in, display a page where they can toggle either their wallet view (ie, a display to show the currently owned NFTs of the user's smart contract wallet) and a minter view (ie, a display to mint a new NFT to their smart contract wallet)
+1. If the user is not logged in, re-direct to `/login`
+2. If the user is logged in, display a page where they can toggle either their wallet view (ie, a display to show the currently owned NFTs of the user's smart contract wallet) and a minter view (ie, a display to mint a new NFT to their smart contract wallet)
 
-  Let's do it! 🚴‍♀️
+Let's do it! 🚴‍♀️
 
-  ### Setting up the Home Route
+### Setting up the Home Route
 
-  1. First of alll, let's take a quick detour - add `background-color: white;` to the `body` tag inside the `globals.css` file - let's make our app light mode enabled for now! (Remember to save the file!)
-  2. Second, we're going to use the [Random Avatar Generator](https://www.npmjs.com/package/random-avatar-generator) package to give each of our users a cool avatar! Run `npm i random-avatar-generator` in your project terminal
-  3. Now, go to `/app/page.tsx` (this is your app's default component; whenever a user visits the `/` route, this component will render!)
-  4. Copy-paste the following code:
+1. First of alll, let's take a quick detour - add `background-color: white;` to the `body` tag inside the `globals.css` file - let's make our app light mode enabled for now! (Remember to save the file!)
+2. Second, we're going to use the [Random Avatar Generator](https://www.npmjs.com/package/random-avatar-generator) package to give each of our users a cool avatar! Run `npm i random-avatar-generator` in your project terminal
+3. Now, go to `/app/page.tsx` (this is your app's default component; whenever a user visits the `/` route, this component will render!)
+4. Copy-paste the following code:
 
-  <CodeGroup>
-  ```javascript javascript
+<CodeGroup>
+  ```tsx typescript
   "use client";
   import GaslessMinter from "@common/GaslessMinter";
   import WalletDisplay from "@common/WalletDisplay";
@@ -1867,7 +1876,7 @@ You've just set up super powerful API routes in your NextJS 13 project! 💫 You
 
   }
 
-  ````
+  ```
 </CodeGroup>
 
 By now, your app `/` route should look like this:
@@ -1886,7 +1895,7 @@ You'll notice at this point, your code editor should be complaining that we are 
 2. Open the `WalletDisplay.tsx` file and copy-paste the following:
 
 <CodeGroup>
-  ```javascript javascript
+  ```tsx tsx
   import { useAuth } from "@common/AuthProvider";
   import Loader from "@common/utils/Loader";
   import { useEffect, useState } from "react";
@@ -2003,7 +2012,7 @@ This component will, on-mount, immediately make a call to the `get-user-nfts` en
 2. In your `/common` folder, create a new component file called `GaslessMinter.tsx` and copy-paste the following:
 
 <CodeGroup>
-  ```javascript javascript
+  ```jsx javascript
   import { useAuth } from "@common/AuthProvider";
   import { useState } from "react";
   import Confetti from "react-confetti";
@@ -2087,7 +2096,6 @@ This component will, on-mount, immediately make a call to the `get-user-nfts` en
         </div>
       </div>
     );
-
   }
 
   ```
@@ -2104,6 +2112,3 @@ Here are some ther optimizations and features you can work on if you want an ext
 * can you deploy this to a production server and share with your friends?
 
 Here is the [Github repo](https://github.com/alchemyplatform/gasless-minter-tutorial) containing all of the code in this tutorial, please feel free to fork and make it your own!
-
-```
-```

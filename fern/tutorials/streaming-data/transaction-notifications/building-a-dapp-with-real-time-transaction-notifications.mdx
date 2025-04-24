@@ -206,13 +206,15 @@ Open the `server.js` file and change lines 37 and 43 in server.js to reflect you
 
   async function addAddress(new_address) {
     console.log("adding address " + new_address);
-    const body = { webhook_id: <your alchemy webhook id>, addresses_to_add: [new_address], addresses_to_remove: [] };
+    const body = { webhook_id: `<your alchemy webhook id>`, addresses_to_add: [new_address], addresses_to_remove: [] };
     try {
       fetch('https://dashboard.alchemyapi.io/api/update-webhook-addresses', {
         method: 'PATCH',
         body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' },
-        headers: { 'X-Alchemy-Token': <your alchemy token> }
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Alchemy-Token': `<your alchemy token>`
+        },
       })
         .then(res => res.json())
         .then(json => console.log(json));
@@ -392,13 +394,15 @@ When you receive a client request to add an address, you can use the Alchemy API
 
   async function addAddress(new_address) {
     console.log("adding address " + new_address);
-    const body = { webhook_id: <your alchemy webhook id>, addresses_to_add: [new_address], addresses_to_remove: [] };
+    const body = { webhook_id: `<your alchemy webhook id>`, addresses_to_add: [new_address], addresses_to_remove: [] };
     try {
       fetch('https://dashboard.alchemyapi.io/api/update-webhook-addresses', {
         method: 'PATCH',
         body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' },
-        headers: { 'X-Alchemy-Token': <your alchemy token> }
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Alchemy-Token': `<your alchemy token>`
+        },
       })
         .then(res => res.json())
         .then(json => console.log(json));
@@ -426,8 +430,10 @@ For example, here is a quick call to get a list of all our Alchemy webhooks:
     try {
       fetch('https://dashboard.alchemyapi.io/api/team-webhooks', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        headers: { 'X-Alchemy-Token': <your alchemy token> }
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Alchemy-Token': `<your alchemy token>`
+        },
       })
         .then(res => res.json())
         .then(json => console.log(json));
@@ -481,13 +487,15 @@ Here is the entire sample *server.js* we have created together:
   // add an address to a notification in Alchemy
   async function addAddress(new_address) {
     console.log("adding address " + new_address);
-    const body = { webhook_id: <your alchemy webhook id>, addresses_to_add: [new_address], addresses_to_remove: [] };
+    const body = { webhook_id: `<your alchemy webhook id>`, addresses_to_add: [new_address], addresses_to_remove: [] };
     try {
       fetch('https://dashboard.alchemyapi.io/api/update-webhook-addresses', {
         method: 'PATCH',
         body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' },
-        headers: { 'X-Alchemy-Token': <your alchemy token> }
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Alchemy-Token': `<your alchemy token>`
+        },
       })
         .then(res => res.json())
         .then(json => console.log(json));
@@ -534,7 +542,7 @@ First, you'll establish your WebSocket connection with the client, and then, you
 We’ll simply display the contents of the notification in this example, but you’d obviously want to do something more interesting:
 
 <CodeGroup>
-  ```javascript server.js
+  ```html index.html
   <script>
       // connect to WebSocket server and start listening for notifications
       let socket = io();
