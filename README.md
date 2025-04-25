@@ -6,7 +6,7 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 
 ## Project Structure
 
-```md
+```text
 /
 ├── src/
 │   ├── openapi/     # REST API definitions (OpenAPI)
@@ -60,7 +60,7 @@ This will generate all specs as dereferenced json files in the `build/` director
 
 ### Validation
 
-You can validate both specs and MDX using scripts.
+You can validate both OpenAPI and OpenRPC using scripts.
 
 ```bash
 # Validate REST API specs
@@ -69,15 +69,24 @@ pnpm run validate:rest
 # Validate RPC specs
 pnpm run validate:rpc
 
-# Validate markdown files
-pnpm run validate:mdx
-```
-
-Or you can run them together using
-
-```bash
+# Or you can run them together with
 pnpm run validate
 ```
+
+### Linting
+
+The project uses several linting tools to ensure code quality and consistency:
+
+* **ESLint**: For JavaScript and TypeScript code linting
+* **Prettier**: For code formatting
+* **Remark**: For Markdown/MDX linting
+* **TypeScript**: For type checking
+
+You can find the appropriate commands for running each in `package.json`
+
+#### Enforcement
+
+The project uses [Husky](https://typicode.github.io/husky) and [lint-staged](https://github.com/lint-staged/lint-staged) to run linting checks before commits.
 
 ## Contributing
 

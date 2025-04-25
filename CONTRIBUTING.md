@@ -49,6 +49,10 @@ Account Kit documentation is maintained in the [aa-sdk repository](https://githu
 4. Push to your fork
 5. Create a pull request to the upstream
 
+## Markdown Style Guide
+
+This project implements a modified version of the [Markdown Style Guide](https://google.github.io/styleguide/docguide/style.html) which is enforced in Eslint via [remark-lint](https://github.com/remarkjs/remark-lint). Please ensure you abide by the guidelines set there.
+
 ## Keeping Your Fork Updated
 
 To keep your fork up-to-date with the original repository:
@@ -78,10 +82,6 @@ git push origin main
 ## Creating Issues
 
 Unsure how to make changes yourself? Feel free to open an issue using the appropriate template. Please fill out required fields and provide as much detail as possible to ensure contributors can be as helpful as possible.
-
-## Code of Conduct
-
-By participating in this project, you agree to abide by our Code of Conduct. Please be respectful and considerate of differing viewpoints and experiences.
 
 ## Questions?
 
