@@ -41,6 +41,12 @@ paths:
                 solanaRules:
                   description: Rules for "solana" policy type. Empty if `policyType` is not "solana".
                   $ref: "#/components/schemas/SolanaRules"
+                networks:
+                  description: |
+                    Networks for the policy. Example: ["ETH_MAINNET"]. For Solana policies, valid values are "SOLANA_MAINNET" and "SOLANA_DEVNET".
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: Policy created successfully
@@ -145,6 +151,12 @@ paths:
                 solanaRules:
                   $ref: "#/components/schemas/SolanaRules"
                   description: Rules for "solana" policy type. Empty if `policyType` is not "solana".
+                networks:
+                  description: |
+                    Networks for the policy. Example: ["ETH_MAINNET"]. For Solana policies, valid values are "SOLANA_MAINNET" and "SOLANA_DEVNET".
+                  type: array
+                  items:
+                    type: string
       responses:
         "200":
           description: Policy rules replaced successfully
@@ -472,13 +484,6 @@ components:
           required:
             - webhookUrl
             - approveOnFailure
-        networks:
-          description: Networks for the policy
-          type: array
-          items:
-            type: string
-          default:
-            - ETH_MAINNET
       required:
         - startTimeUnix
         - sponsorshipExpiryMs
@@ -506,13 +511,6 @@ components:
           type: string
           description: Unix timestamp of when the policy ends
           default: "1679340742"
-        networks:
-          type: array
-          items:
-            type: string
-          description: List of networks the policy is active on
-          default:
-            - "SOLANA_MAINNET"
 
     Policy:
       type: object
