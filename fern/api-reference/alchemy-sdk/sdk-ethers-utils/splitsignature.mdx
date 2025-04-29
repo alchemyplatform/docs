@@ -1,0 +1,42 @@
+---
+title: splitSignature
+description: Learn about the splitSignature utils method
+subtitle: Learn about the splitSignature utils method
+url: https://docs.alchemy.com/reference/splitsignature
+slug: reference/splitsignature
+---
+
+Learn about the `splitSignature` utils method
+
+# Introduction
+
+The [`splitSignature`](https://docs.ethers.org/v5/api/utils/bytes/#utils-splitSignature) method is used to split an Ethereum signature hex string into separate parts. The signature must be in a specific format for this method to work.
+
+# Usage
+
+This method should be used when you want to split a compact Ethereum signature into its individual components. This can be useful when working with Ethereum signatures in your code, as it allows you to extract the relevant values from a signature for further processing.
+
+Here's a simple code example to demonstrate how to use this method:
+
+<CodeGroup>
+  ```javascript Javascript
+  const { Utils } = require("alchemy-sdk");
+
+  // Flat-format; this is the format provided by JSON-RPC responses
+  let flatSig =
+    "0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a16" +
+    "3574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e3466" +
+    "1b";
+
+  let expandedSig = Utils.splitSignature(flatSig);
+
+  console.log(expandedSig);
+
+  // {
+  //    r: "0x0ba9770fd8778383f6d56faadc71e17b75f0d6e3ff0a408d5e6c4cee3bd70a16",
+  //    s: "0x3574da0ebfb1eaac261698b057b342e52ea53f85287272cea471a4cda41e3466",
+  //    recoveryParam: 0,
+  //    v: 27
+  // }
+  ```
+</CodeGroup>

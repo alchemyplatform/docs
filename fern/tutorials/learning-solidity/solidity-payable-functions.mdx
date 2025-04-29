@@ -1,0 +1,141 @@
+---
+title: What are Payable Functions in Solidity?
+description: Learn about payable functions in Solidity, their importance in handling Ether deposits, and how to create and use them in smart contracts.
+subtitle: Learn about payable functions in Solidity, their importance in handling Ether deposits, and how to create and use them in smart contracts.
+url: https://docs.alchemy.com/docs/solidity-payable-functions
+slug: docs/solidity-payable-functions
+---
+
+# Objectives
+
+By the end of this guide, you should be able to:
+
+* Understand the purpose and usage of payable functions in Solidity
+* Learn how to send Ether to a smart contract
+* Write a payable function in Solidity
+* Create a revertible payable function with conditions
+* Implement custom logic within a payable function
+* Learn about message calls and their relevance in the Ethereum Virtual Machine (EVM)
+
+# Payable Functions
+
+Payable functions in Solidity are functions that let a smart contract accept Ether. They help developers manage incoming Ether and take actions when it's received. For example, a simple payable function can collect Ether donations for a fundraiser. Here's a basic code example:
+
+<CodeGroup>
+  ```sol Fundraiser.sol
+  pragma solidity ^0.8.0;
+
+  contract Fundraiser {
+      function donate() external payable {
+          // Ether is received and stored in the contract's balance
+          // You can perform any other actions with the Ether received here - for example, sending it to some other address etc.
+      }
+  }
+  ```
+</CodeGroup>
+
+In this example, when the `donate` function is called, it accepts Ether sent by the donor and adds it to the contract's balance.
+
+**The keyword *payable* allows someone to send ether to a contract and run code to account for this deposit.**
+
+This code could potentially log an event, modify storage to record the deposit, or it could even revert the transaction if it chooses to do so.
+
+When a developer explicitly marks a [smart contract with the payable type](https://docs.soliditylang.org/en/v0.8.10/types.html?highlight=payable#contract-types), they are saying “I expect ether to be sent to this function”. To understand why this is important, imagine how bad it would be if someone sent ether to a contract and the developer did not write code to handle that event. In that case, it would be highly possible that the ether could be locked forever or never withdrawn by its intended recipient.
+
+# How to Send Ether to a Smart Contract
+
+Sending ether is a native function of [the Ethereum Virtual Machine (EVM)](https://www.alchemy.com/overviews/what-is-the-ethereum-virtual-machine-evm). This is different from any other transfer in the EVM which requires the developer to write custom logic inside a smart contract to handle the transfer (i.e. for NFTs or ERC20s).
+
+When someone sends ether to a smart contract, they do so through a `value` field on the transaction itself. Let’s take a look at what a transaction looks like in JSON:
+
+<CodeGroup>
+  ```json json
+  {
+      "to": "0x5baf84167cad405ce7b2e8458af73975f9489291",
+      "value": "0xb1a2bc2ec50000", // 1 ether 
+      "data": "0xd0e30db0" // deposit() 
+      // ... other properties
+  }
+  ```
+</CodeGroup>
+
+This transaction sends **1 ether** to the address `0x5baf84167cad405ce7b2e8458af73975f9489291`. If this address is a smart contract, it will attempt to parse the calldata (*data*) to figure out which smart contract function this user is attempting to call (in this case it is ***deposit()***).
+
+Depending on whether the function is payable or non-payable, one of two things will happen:
+
+1. If the function is a payable function, then it will run the logic.
+2. If the function is not payable, the transaction will revert and funds will be returned minus the gas cost for the transaction.
+
+# What is an example of a Solidity payable function?
+
+Here is an example of a basic payable function in Solidity with the **deposit** function:
+
+<CodeGroup>
+  ```sol deposit
+  function deposit() payable external {
+      // no need to write anything here!
+  }
+  ```
+</CodeGroup>
+
+Notice, in this case, we didn’t write any code in the **deposit** function body. Writing a payable function alone is enough to receive ether and you may not need to write any logic.
+
+For example, if this was a payable smart contract that was controlled by a charity accepting cryptocurrency donations, perhaps users would just call **deposit** and the charity would eventually be able to withdraw these contributions to an address of their choosing. In that case, it may be better to write a **receive** function:
+
+<CodeGroup>
+  ```sol receive
+  receive() external payable {
+      // this built-in function doesn't require any calldata,
+      // it will get called if the data field is empty and 
+      // the value field is not empty.
+      // this allows the smart contract to receive ether just like a 
+      // regular user account controlled by a private key would.
+  }
+  ```
+</CodeGroup>
+
+# What is an example of a Solidity payable function that can revert?
+
+A ***payable*** smart contract function can revert. Here is an example of a revertible payable function that uses two **require** statements for `msg.value` and `balances[msg.sender]`.
+
+<CodeGroup>
+  ```sol sol
+  mapping(address => uint) balances;
+
+  function deposit() payable external {
+      // deposit sizes are restricted to 1 ether
+      require(msg.value == 1 ether);
+      // an address cannot deposit twice
+      require(balances[msg.sender] == 0);
+      balances[msg.sender] += msg.value;
+  }
+  ```
+</CodeGroup>
+
+If either of the `require` statements are not `true`, the transaction would revert and the sender would receive their funds back.
+
+# Why might we write logic in a payable function?
+
+If we had a smart contract where we needed to keep track of who deposited which ether, we might keep track of that in storage:
+
+<CodeGroup>
+  ```sol sol
+  mapping(address => uint) balances;
+
+  function deposit() payable external {
+      // record the value sent 
+      // to the address that sent it
+      balances[msg.sender] += msg.value;
+  }
+  ```
+</CodeGroup>
+
+The `msg.value` here corresponds with the `value` field encoded in the transaction we looked at in the “how to send ether” section. As a Solidity developer, we can tap into message value to record deposits and map it to some internal balance for the address making this transaction.
+
+# Why is it called msg.value?
+
+In the EVM, interactions with smart contracts are referred to as **message calls**. This is true whether a user is calling a smart contract directly or if a smart contract is calling another smart contract (internal transaction).
+
+# Solidity Payable Functions
+
+In summary, a **payable** function is a function that can receive ether. It provides the developer with the opportunity to respond to an ether deposit for record-keeping or any additional necessary logic.

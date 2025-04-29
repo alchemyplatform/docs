@@ -1,0 +1,146 @@
+---
+title: updateWebhook - SDK
+description: Update a NftActivityWebhook's active status or NFT filters.
+subtitle: Update a NftActivityWebhook's active status or NFT filters.
+url: https://docs.alchemy.com/reference/sdk-updatewebhook
+slug: reference/sdk-updatewebhook
+---
+
+Update a `NftActivityWebhook's` active status or NFT filters.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Update a `NftActivityWebhook's` active status or NFT filters.
+
+# Parameters
+
+| Name         | Type     | Description                                                                                                                                                  |
+| ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `nftWebhook` | `string` | The NFT activity webhook to update, i.e., NFT\_ACTIVITY = `NFT_ACTIVITY`.                                                                                    |
+| `update`     | `object` | Object containing the update. Parameters include: 1. `limit` - `number` Number of addresses to fetch. 2. `pageKey` - `string` Page cursor for the next page. |
+
+### `update` parameters
+
+<Info>
+  Include only one of these `update` objects as the second parameter.
+</Info>
+
+| Name                         | Type     | Description                                                                                                                                                                                                                                                                                               |
+| ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WebhookStatusUpdate`        | `object` | Params object when calling [updateWebhook](/reference/updatewebhook-sdk) to add and remove NFT filters for a `NFT_ACTIVITY`. Parameters here include: 1. `isActive` - `boolean` Whether the webhook is active.                                                                                            |
+| `WebhookAddressUpdate`       | `object` | Params object when calling [updateWebhook](/reference/updatewebhook-sdk) to add and remove NFT filters for a `NFT_ACTIVITY`. Parameters here include: 1. `addAddresses` - `array of strings` The addresses to additionally track. 2. `removeAddresses` - `array of strings` Existing addresses to remove. |
+| `WebhookAddressOverride`     | `object` | Params object when calling [updateWebhook](/reference/updatewebhook-sdk) to add and remove NFT filters for a `NFT_ACTIVITY`. Parameters here include: 1. `newAddresses` - `array of strings` The new addresses to track. Existing addresses will be removed.                                              |
+| `WebhookNftFilterUpdate`     | `object` | Params object when calling [updateWebhook](/reference/updatewebhook-sdk) to add and remove NFT filters for a `NFT_ACTIVITY`. Parameters here include: 1. `addFilters` - `array of strings` The filters to additionally track. 2. `removeFilters` - `array of strings` Existing filters to remove.         |
+| `CustomGraphqlWebhookUpdate` | `object` | Params object when calling [updateWebhook](/reference/updatewebhook-sdk) to update the status for `GRAPHQL`. Parameters here include: 1. `isActive` - `boolean` Whether the webhook is active.                                                                                                            |
+
+# Response
+
+| Property        | Type   | Description       |
+| --------------- | ------ | ----------------- |
+| `Promise<void>` | `void` | Returns undefined |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Setup: npm install alchemy-sdk
+  // Github: https://github.com/alchemyplatform/alchemy-sdk-js
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // authToken is required to use Notify APIs. Found on the top right corner of
+  // https://dashboard.alchemy.com/notify.
+  const settings = {
+    authToken: "your-auth-token",
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(settings);
+
+  const main = async () => {
+      const updateWebhookById = await alchemy.notify.updateWebhook("wh_qv16bt12wbj9kax4", { isActive: false });
+
+    //// Updating Address Activity Webhook: add/remove addresses
+      const updateAddresses = 
+  await alchemy.notify.updateWebhook("wh_qv16bt12wbj9kax4", {
+    addAddresses: [
+      "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96010",
+      "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96011",
+    ],
+    removeAddresses: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96043"],
+  });
+
+    // Updating Address Activity Webhook: replace all addresses
+    const replaceAddresses = 
+  await alchemy.notify.updateWebhook("wh_qv16bt12wbj9kax4", {
+    newAddresses: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96010"],
+  });
+
+    // Updating NFT Filter Webhook: add/remove filters
+    const updateNftFilterWebhook = 
+  await alchemy.notify.updateWebhook("wh_zyhqo5im08n6ougk", {
+    addFilters: [
+      {
+        contractAddress: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+        tokenId: "101",
+      },
+    ],
+    removeFilters: [
+      {
+        contractAddress: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+        tokenId: "24",
+      },
+    ],
+  });
+
+      //Logging the response to the console
+      console.log(updateWebhookByIdById, updateAddresses, updateNftFilterWebhook, replaceAddresses)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  Returns undefined.
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `updateWebhook` method:
+
+* **Changing the endpoint URL**: If you need to update the endpoint URL for an existing webhook, you can use the `updateWebhook` method to change it.
+
+* **Updating the authentication credentials**: If you need to update the authentication credentials for an existing webhook, you can use the `updateWebhook` method to provide new credentials.
+
+* **Modifying the notification format**: If you need to modify the format of the notifications that are sent to the webhook, you can use the `updateWebhook` method to update the payload format.
+
+* **Adding or removing headers**: If you need to add or remove headers to the requests that are sent to the webhook, you can use the `updateWebhook` method to modify the headers.
+
+# Related Methods
+
+* [createWebhook](/reference/createwebhook-sdk) - Create a new Webhook to track transactions sent by the app associated with the app id.

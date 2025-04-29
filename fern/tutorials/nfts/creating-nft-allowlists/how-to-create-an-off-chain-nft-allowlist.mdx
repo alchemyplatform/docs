@@ -1,0 +1,257 @@
+---
+title: How to Create an Off-Chain NFT Allowlist
+description: Learn how to create off-chain allowlists for NFT PFP Projects
+subtitle: Learn how to create off-chain allowlists for NFT PFP Projects
+url: https://docs.alchemy.com/docs/how-to-create-an-off-chain-nft-allowlist
+slug: docs/how-to-create-an-off-chain-nft-allowlist
+---
+
+In a [previous article](/docs/how-to-create-an-on-chain-nft-allowlist), we explored the problems that allowlists solve (namely, generating and streamlining demand in your project) and implemented an on-chain version.
+
+![2392](18b73b3-Mekaverse.png "Mekaverse.png")
+
+Mekaverse, one of the most popular NFT projects in 2021, used off-chain allowlists to streamline demand
+
+Although secure and fully functional, the on-chain solution comes with its caveats. In an on-chain implementation, the project owner (or contract) must upload and store all allowlisted addresses on the blockchain. If your project operates on a platform like Ethereum, this could mean a fortune in gas fees.
+
+Fortunately, you can bypass these fees without compromising on security. This article will explore how to implement and store an allowlist off-chain using digital signatures and [OpenZeppelin’s ECDSA library](https://docs.openzeppelin.com/contracts/2.x/api/cryptography#ECDSA).
+
+## Creating the Off-Chain Allowlist
+
+### Step 1: Install Node and npm
+
+In case you haven't already, [install node and npm](https://nodejs.org/en/download/) on your local machine.
+
+Ensure that node is at least v14 or higher by entering the following command in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  node -v
+  ```
+</CodeGroup>
+
+### Step 2: Create a Hardhat project
+
+We're going to set up our project using [Hardhat](https://hardhat.org/), the industry-standard development environment for Ethereum smart contracts. Additionally, we'll also install [OpenZeppelin](https://www.openzeppelin.com/) contracts.
+
+***To set up Hardhat, run the following commands in your terminal:***
+
+<CodeGroup>
+  ```bash bash
+  mkdir offchain-allowlist && cd offchain-allowlist
+  npm init -y
+  npm install --save-dev hardhat
+  npx hardhat
+  ```
+</CodeGroup>
+
+Choose `Create a Javascript project` from the menu and accept all defaults. To ensure everything is installed correctly, run the following command in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat test
+  ```
+</CodeGroup>
+
+***To install OpenZeppelin:***
+
+<CodeGroup>
+  ```bash bash
+  npm install @openzeppelin/contracts
+  ```
+</CodeGroup>
+
+### Step 3: Write the smart contract
+
+Now, let’s write a basic NFT smart contract that can operate with an off-chain allowlist. To do this, we need two things:
+
+1. A Solidity mapping `signatureUsed` to check if a particular signature has been used before.
+2. A function `recoverSigner` that returns the public address of the wallet used to create a particular signature (or signed message).
+
+Open the project in your favorite code editor (e.g., VS Code), and create a new file called `NFTAllowlist.sol` in the `contracts` folder. Add the following code to this file:
+
+<CodeGroup>
+  ```sol NFTAllowlist.sol
+  //SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.4;
+
+  import "hardhat/console.sol";
+  import "@openzeppelin/contracts/utils/Counters.sol";
+  import "@openzeppelin/contracts/access/Ownable.sol";
+  import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+  import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
+  contract NFTAllowlist is ERC721Enumerable, Ownable {
+      using Counters for Counters.Counter;
+      
+      Counters.Counter private _tokenIds;
+
+      // Signature tracker
+      mapping(bytes => bool) public signatureUsed;
+      
+      constructor() ERC721("NFT Allowlist Demo", "NAD") {
+          console.log("Contract has been deployed!");
+      }
+
+      // Allowlist addresses
+      function recoverSigner(bytes32 hash, 
+  													 bytes memory signature) 
+  						 public pure returns (address) {
+  		    bytes32 messageDigest = keccak256(
+  	        abi.encodePacked(
+  	          "\x19Ethereum Signed Message:\n32", 
+              hash
+  	        )
+  		    );
+  		    return ECDSA.recover(messageDigest, signature);
+  		}
+
+      // Presale mint
+      function preSale(uint _count, bytes32 hash, bytes memory signature) public {
+          require(recoverSigner(hash, signature) == owner(), "Address is not allowlisted");
+          require(!signatureUsed[signature], "Signature has already been used.");
+
+          for (uint i = 0; i < _count; i++) {
+              _mintSingleNFT();
+          }
+
+          signatureUsed[signature] = true;
+      }
+      
+      function _mintSingleNFT() private {
+          uint newTokenID = _tokenIds.current();
+          _safeMint(msg.sender, newTokenID);
+          _tokenIds.increment();
+      }
+  }
+  ```
+</CodeGroup>
+
+Notice that the `preSale` and `recoverSigner` functions take in a `hash` and a `signature` as arguments. The former is the hashed version of any message that we want to sign, and the latter is the hashed message signed using a wallet’s private key. We will generate both these values in the next step.
+
+Compile the contract and make sure everything is working by running:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat compile
+  ```
+</CodeGroup>
+
+### Step 4: Create the Off-Chain Allowlist
+
+Let’s now write a script that allows us to implement an allowlist off-chain. To do this, create a new file called `run.js` in the scripts folder, then add the following code:
+
+<CodeGroup>
+  ```javascript run.js
+  const { ethers } = require("hardhat");
+  const hre = require("hardhat");
+
+  async function main() {
+
+    // Define a list of allowlisted wallets
+    const allowlistedAddresses = [
+      '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+      '0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc',
+      '0x90f79bf6eb2c4f870365e785982e1f101e93b906',
+      '0x15d34aaf54267db7d7c367839aaf71a00a2c6a65',
+      '0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc',
+    ];
+
+    // Select an allowlisted address to mint NFT
+    const selectedAddress = '0x90f79bf6eb2c4f870365e785982e1f101e93b906'
+
+    // Define wallet that will be used to sign messages
+    const walletAddress = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266';
+    const privateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+    const signer = new ethers.Wallet(privateKey);
+    console.log("Wallet used to sign messages: ", signer.address, "\n");
+
+    let messageHash, signature;
+
+    // Check if selected address is in allowlist
+    // If yes, sign the wallet's address
+    if (allowlistedAddresses.includes(selectedAddress)) {
+      console.log("Address is allowlisted! Minting should be possible.");
+
+      // Compute message hash
+      messageHash = ethers.utils.id(selectedAddress);
+      console.log("Message Hash: ", messageHash);
+
+      // Sign the message hash
+      let messageBytes = ethers.utils.arrayify(messageHash);
+      signature = await signer.signMessage(messageBytes);
+      console.log("Signature: ", signature, "\n");
+    }
+
+    const factory = await hre.ethers.getContractFactory("NFTAllowlist");
+    const [owner, address1, address2] = await hre.ethers.getSigners();
+    const contract = await factory.deploy();
+
+    await contract.deployed();
+    console.log("Contract deployed to: ", contract.address);
+    console.log("Contract deployed by (Owner/Signing Wallet): ", owner.address, "\n");
+
+    recover = await contract.recoverSigner(messageHash, signature);
+    console.log("Message was signed by: ", recover.toString());
+
+    let txn;
+    txn = await contract.preSale(2, messageHash, signature);
+    await txn.wait();
+    console.log("NFTs minted successfully!");
+
+  }
+
+  main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+  ```
+</CodeGroup>
+
+Run the script using the following command:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat run scripts/run.js
+  ```
+</CodeGroup>
+
+You should see output that looks something like this:
+
+<CodeGroup>
+  ```bash bash
+  Wallet used to sign messages:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 
+
+  Address is allowlisted! Minting should be possible.
+  Message Hash:  0x52d01c65d2e6acff550def14b5ce5bf353ac7ad53b132fc531c5d085d77c4ee3
+  Signature:  0x55d2baf93dff9184dea51cc81c7837c0d65e01962d7292f03afa80cedf3dcdb948ada6cae3bc49ae56d3546019ebd62cc56efe1ef9c946a7c4fe66f21596e6c91c 
+
+  Contract has been deployed!
+  Contract deployed to:  0x5FbDB2315678afecb367f032d93F642f64180aa3
+  Contract deployed by (Owner/Signing Wallet):  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 
+
+  Message was signed by:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  NFTs minted successfully!
+  ```
+</CodeGroup>
+
+Notice that we did not store allowlisted wallets on-chain. Instead, we stored them locally and performed the following steps:
+
+1. Check if the selected wallet is allowlisted.
+2. If allowlisted, sign the hashed version of the wallet’s public address using a secret private key.
+3. Pass the hashed address and the signature to the minting function of the smart contract.
+4. In the minting function, recover the signer and check if the signer is the owner of the smart contract. If yes, allow mint. Otherwise, return an error.
+
+## Conclusion
+
+Congratulations! You now know how to implement an off-chain NFT allowlist.
+
+If you enjoyed this tutorial about creating on-chain allowlists, tweet us at \[@Alchemy] and give us a shoutout!
+
+Don't forget to join our [Discord server](https://www.alchemy.com/discord) to meet other blockchain devs, builders, and entrepreneurs!
+
+Ready to start building your NFT collection?
+
+[Create a free Alchemy account](https://alchemy.com/?a=63bb2620e6) and do share your project with us!

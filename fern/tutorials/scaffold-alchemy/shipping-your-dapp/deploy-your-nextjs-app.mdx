@@ -1,0 +1,68 @@
+---
+title: Deploy Your NextJS App
+description: "📘 We recommend connecting your GitHub repo to Vercel (through the Vercel UI) so it gets automatically deployed when pushing to main . If you want to deploy directly from the CLI, run this and follow the steps to deploy to Vercel: yarn vercel You might need to log in to Vercel first by running: yarn..."
+subtitle: "📘 We recommend connecting your GitHub repo to Vercel (through the Vercel UI) so it gets automatically deployed when pushing to main . If you want to deploy directly from the CLI, run this and follow the steps to deploy to Vercel: yarn vercel You might need to log in to Vercel first by running: yarn..."
+url: https://docs.alchemy.com/docs/deploy-your-nextjs-app
+slug: docs/deploy-your-nextjs-app
+---
+
+<Info>
+  We recommend connecting your GitHub repo to Vercel (through the Vercel UI) so it gets automatically deployed when pushing to `main`.
+</Info>
+
+If you want to deploy directly from the CLI, run this and follow the steps to deploy to Vercel:
+
+```shell
+yarn vercel
+```
+
+You might need to log in to Vercel first by running:
+
+```shell
+yarn vercel:login
+```
+
+Once you log in (email, GitHub, etc), the default options should work. It'll give you a public URL.
+
+If you want to redeploy to the same production URL you can run:
+
+```shell
+yarn vercel --prod
+```
+
+If you omit the `--prod` flag it will deploy it to a preview/test URL.
+
+**Make sure to check the values of your Scaffold Configuration before deploying your NextJS App.**
+
+## Scaffold App Configuration
+
+You can configure different settings for your dapp at `packages/nextjs/scaffold.config.ts`.
+
+<CodeGroup>
+  ```ts ts
+  export type ScaffoldConfig = {
+    targetNetworks: Chain[];
+    pollingInterval: number;
+    alchemyApiKey: string;
+    walletConnectProjectId: string;
+    onlyLocalBurnerWallet: boolean;
+    walletAutoConnect: boolean;
+    // your dapp custom config, eg:
+    // tokenIcon : string;
+  };
+  ```
+</CodeGroup>
+
+The configuration parameters are described below. Make sure to update the values according to your needs:
+
+#### - targetNetworks
+
+Array of blockchain networks where your dapp is deployed. Use values that are present on chains object from [viem/chains](https://viem.sh/docs/chains/introduction) eg: `targetNetworks: [chains.optimism]`
+
+#### - pollingInterval
+
+The interval in milliseconds at which your front-end application polls the RPC servers for fresh data. *Note that this setting does not affect the local network.*
+
+#### - alchemyApiKey
+
+Default Alchemy API key from Scaffold-Alchemy for local testing purposes. It's recommended to obtain your own API key from the [Alchemy Dashboard](https://dashboard.alchemyapi.io/) and store it in this environment variable: `NEXT_PUBLIC_ALCHEMY_API_KEY` in the `\packages\nextjs\.env.local` file.

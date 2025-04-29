@@ -1,0 +1,37 @@
+---
+title: ERC-4337 Bundle vs. Batch
+description: A batch refers to a group of calls inside a single user operation, whereas a bundle is a group of user ops from different users.
+subtitle: A batch refers to a group of calls inside a single user operation, whereas a bundle is a group of user ops from different users.
+url: https://docs.alchemy.com/docs/erc-4337-bundle-vs-batch
+slug: docs/erc-4337-bundle-vs-batch
+---
+
+## What is a bundle?
+
+A bundle is a group of user operations that a Bundler submits to the Entrypoint contract for routing to the senders' smart contract accounts.
+
+![Diagram of multiple user ops in a single bundle.](8e91713-image.png)
+
+Diagram of multiple user ops in a single bundle.
+
+In most cases, senders are only permitted to include a single user operation in a bundle. An exception to this rule occurs when the sender is [staked with the Entrypoint contract](bundler-services#minimum-stake), in such cases, they can send multiple operations in a single bundle. However, this is not a common for most accounts.
+
+User operations in a bundle are mostly isolated from each other. This means if one user operation fails during its execution function, other operations can still succeed.
+
+## What is a batch (transaction batching)?
+
+Transaction batching is a feature or benefit of Account Abstraction. A batch refers to a group of calls that a smart contract account can make inside a single user operation.
+
+![Diagram of a multiple calls in a single user operation.](c2ebc6a-image.png)
+
+Diagram of a multiple calls in a single user operation.
+
+To use batching, a user must have a Smart Contract Account (SCA) that supports an execute batch function, and they must construct the entire batch before sending the fully constructed (single) user operation to the Bundler.
+
+### What is atomicity?
+
+Atomicity refers to an "all or nothing" property of a group of calls within a batch, provided the smart contract account supports the feature, where if a single call in the batch fails, all the calls in the group will be reverted.
+
+### Does Alchemy's bundler support batching?
+
+Alchemy's [Bundler endpoint](/reference/eth-senduseroperation) does not natively support batching. Batching needs to be handled by the smart contract account itself.

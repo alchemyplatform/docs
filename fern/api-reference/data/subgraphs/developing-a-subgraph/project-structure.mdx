@@ -1,0 +1,218 @@
+---
+title: Project Structure
+description: Understand the project structure of a subgraph and important files (schema.graphql, subgraph.yaml).
+subtitle: Understand the project structure of a subgraph and important files (schema.graphql, subgraph.yaml).
+url: https://docs.alchemy.com/reference/project-structure
+slug: reference/project-structure
+---
+
+# Overview
+
+## Top-level folders
+
+| Name       | Description                                                                 |
+| ---------- | --------------------------------------------------------------------------- |
+| abis/      | Used for .json ABI files.                                                   |
+| build/     | Built assets that are uploaded to IPFS upon deploy                          |
+| generated/ | Generated AssemblyScript types after running `graph codegen`. Do not edit!  |
+| src/       | AssemblyScript handlers and helpers for processing data                     |
+| tests/     | Unit tests powered by [Matchstick](https://github.com/LimeChain/matchstick) |
+
+## Top-level files
+
+| Name           | Description                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------- |
+| networks.json  | Chain-specific metadata (i.e. contract addresses, start blocks). Use with `graph build` or `graph deploy` |
+| schema.graphql | Schema for your GraphQL API                                                                               |
+| subgraph.yaml  | YAML file for all subgraph metadata (i.e. input data sources, triggers, handlers)                         |
+
+# Subgraph Manifest (subgraph.yaml)
+
+The subgraph.yaml file serves as the blueprint for your subgraph. It outlines the input data sources, triggers you'd like to handle, and the handlers that should respond to triggers. By configuring the subgraph.yaml file, you provide all the necessary instructions for Alchemy Subgraphs to index and serve your GraphQL API.
+
+See the [full specification here](https://github.com/graphprotocol/graph-node/blob/master/docs/subgraph-manifest.md).
+
+<CodeGroup>
+  ```yaml subgraph.yaml
+  specVersion: 0.0.5
+  schema:
+    file: ./schema.graphql
+  dataSources:
+    - kind: ethereum
+      name: Comet
+      network: mainnet
+      source:
+        address: "0xc3d688B66703497DAA19211EEdff47f25384cdc3"
+        abi: Comet
+        startBlock: 15331586
+      mapping:
+        kind: ethereum/events
+        apiVersion: 0.0.7
+        language: wasm/assemblyscript
+        entities:
+          - AbsorbCollateral
+          - AbsorbDebt
+          - BuyCollateral
+          - PauseAction
+          - Supply
+          - SupplyCollateral
+          - Transfer
+          - TransferCollateral
+          - Withdraw
+          - WithdrawCollateral
+          - WithdrawReserves
+        abis:
+          - name: Comet
+            file: ./abis/Comet.json
+        eventHandlers:
+          - event: AbsorbCollateral(indexed address,indexed address,indexed address,uint256,uint256)
+            handler: handleAbsorbCollateral
+          - event: AbsorbDebt(indexed address,indexed address,uint256,uint256)
+            handler: handleAbsorbDebt
+          - event: BuyCollateral(indexed address,indexed address,uint256,uint256)
+            handler: handleBuyCollateral
+          - event: PauseAction(bool,bool,bool,bool,bool)
+            handler: handlePauseAction
+          - event: Supply(indexed address,indexed address,uint256)
+            handler: handleSupply
+          - event: SupplyCollateral(indexed address,indexed address,indexed address,uint256)
+            handler: handleSupplyCollateral
+          - event: Transfer(indexed address,indexed address,uint256)
+            handler: handleTransfer
+          - event: TransferCollateral(indexed address,indexed address,indexed address,uint256)
+            handler: handleTransferCollateral
+          - event: Withdraw(indexed address,indexed address,uint256)
+            handler: handleWithdraw
+          - event: WithdrawCollateral(indexed address,indexed address,indexed address,uint256)
+            handler: handleWithdrawCollateral
+          - event: WithdrawReserves(indexed address,uint256)
+            handler: handleWithdrawReserves
+        file: ./src/comet.ts
+  ```
+</CodeGroup>
+
+# GraphQL Schema (schema.graphql)
+
+The schema.graphql file contains the schema for your GraphQL API. See the [GraphQL docs](https://graphql.org/learn/schema/) or [The Graph's docs](https://thegraph.com/docs/en/querying/graphql-api/) for more details.
+
+<CodeGroup>
+  ```graphql schema.graphql
+  type AbsorbCollateral @entity(immutable: true) {
+    id: Bytes!
+    absorber: Bytes! # address
+    borrower: Bytes! # address
+    asset: Bytes! # address
+    collateralAbsorbed: BigInt! # uint256
+    usdValue: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type AbsorbDebt @entity(immutable: true) {
+    id: Bytes!
+    absorber: Bytes! # address
+    borrower: Bytes! # address
+    basePaidOut: BigInt! # uint256
+    usdValue: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type BuyCollateral @entity(immutable: true) {
+    id: Bytes!
+    buyer: Bytes! # address
+    asset: Bytes! # address
+    baseAmount: BigInt! # uint256
+    collateralAmount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type PauseAction @entity(immutable: true) {
+    id: Bytes!
+    supplyPaused: Boolean! # bool
+    transferPaused: Boolean! # bool
+    withdrawPaused: Boolean! # bool
+    absorbPaused: Boolean! # bool
+    buyPaused: Boolean! # bool
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type Supply @entity(immutable: true) {
+    id: Bytes!
+    from: Bytes! # address
+    dst: Bytes! # address
+    amount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type SupplyCollateral @entity(immutable: true) {
+    id: Bytes!
+    from: Bytes! # address
+    dst: Bytes! # address
+    asset: Bytes! # address
+    amount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type Transfer @entity(immutable: true) {
+    id: Bytes!
+    from: Bytes! # address
+    to: Bytes! # address
+    amount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type TransferCollateral @entity(immutable: true) {
+    id: Bytes!
+    from: Bytes! # address
+    to: Bytes! # address
+    asset: Bytes! # address
+    amount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type Withdraw @entity(immutable: true) {
+    id: Bytes!
+    src: Bytes! # address
+    to: Bytes! # address
+    amount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type WithdrawCollateral @entity(immutable: true) {
+    id: Bytes!
+    src: Bytes! # address
+    to: Bytes! # address
+    asset: Bytes! # address
+    amount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+
+  type WithdrawReserves @entity(immutable: true) {
+    id: Bytes!
+    to: Bytes! # address
+    amount: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+  }
+  ```
+</CodeGroup>

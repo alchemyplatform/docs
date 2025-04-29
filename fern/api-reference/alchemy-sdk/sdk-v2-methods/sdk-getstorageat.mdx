@@ -1,0 +1,103 @@
+---
+title: getStorageAt - SDK
+description: Returns the value of the provided position at the provided address, at the provided block in Bytes32 format.
+subtitle: Returns the value of the provided position at the provided address, at the provided block in Bytes32 format.
+url: https://docs.alchemy.com/reference/sdk-getstorageat
+slug: reference/sdk-getstorageat
+---
+
+Returns the value of the provided position at the provided address, at the provided block in `Bytes32` format.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns the value of the provided position at the provided address, at the provided block in `Bytes32` format.
+
+# Parameters
+
+| Parameter       | Type      | Description                                                                                 |
+| --------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `addressOrName` | `string`  | The address or ENS name of the account to get the code for.                                 |
+| `position`      | `integer` | The position of the storage slot to get.                                                    |
+| `blockTag`      | `string`  | The optional block number or hash to get the code for. Defaults to 'latest' if unspecified. |
+
+### `blockTag` parameters
+
+* `pending` - A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from `local` mempool. Intuitively, you can think of these as blocks that have not been mined yet.
+* `latest` - The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions.
+* `safe` - The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is “unlikely” to be re-orged. **Only available on Ethereum Goerli**.
+* `finalized `- The most recent crypto-economically secure block, that has been accepted by >2/3 of validators. Cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is very unlikely to be re-orged. **Only available on Ethereum Goerli.**
+* `earliest` - The lowest numbered block the client has available. Intuitively, you can think of this as the first block created.
+
+# Response
+
+| Property          | Type     | Description                                 |
+| ----------------- | -------- | ------------------------------------------- |
+| `Promise<string>` | `string` | Returns the value at this storage position. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getStorageAt` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getStorageAt.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Initialize variables for the parameters
+      let address = "registrar.firefly.eth"
+      let position =  0
+      
+      //Call the method to get storage
+      let response = await alchemy.core.getStorageAt(address, position)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  0x000000000000000000000000314159265dd8dbb310642f98f50c066173c1259b
+  ```
+</CodeGroup>
+
+# Related Methods
+
+Here are the methods related to `getStorageAt`:
+
+* [getBlock](/reference/getblock-sdk): Returns the block from the network based on the provided block number or hash.

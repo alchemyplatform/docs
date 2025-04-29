@@ -1,0 +1,81 @@
+---
+title: Deploying a Subgraph
+description: Import an existing subgraph or deploy a new subgraph to Alchemy Subgraphs.
+subtitle: Import an existing subgraph or deploy a new subgraph to Alchemy Subgraphs.
+url: https://docs.alchemy.com/reference/deploying-a-subgraph
+slug: reference/deploying-a-subgraph
+---
+
+# Import from The Graph
+
+From your Alchemy Subgraphs dashboard, you can import your existing subgraph from The Graph in 1 click.
+
+# Import from IPFS CID
+
+If you have an existing self-hosted subgraph, you can import via the IPFS CID in 1 click.
+
+# Deploy a Subgraph
+
+From within your subgraph repo, run the following command:
+
+<CodeGroup>
+  ```shell shell
+  cd <SUBGRAPH_DIRECTORY>
+
+  graph deploy <SUBGRAPH_NAME> \
+    --version-label <VERSION_NAME> \
+    --node https://subgraphs.alchemy.com/api/subgraphs/deploy \
+    --deploy-key <DEPLOY_KEY> \
+    --ipfs https://ipfs.satsuma.xyz
+  ```
+</CodeGroup>
+
+## CLI Options
+
+**\<SUBGRAPH\_NAME>** (Required): Specifies a unique name for a new/existing subgraph.
+
+* This name should not include the organization name (e.g. use `mainnet` instead of `syndicate/mainnet`).
+* Valid names are composed of alphanumeric characters, `.`, `-`, and `_`.
+
+**—version-label** (Required):
+
+* Label that will be used as a unique version name for the subgraph.
+* Valid labels are composed of alphanumeric characters, `.`, `-`, and `_`.
+
+**—node** (Required): Always set to [\<https://subgraphs.alchemy.com/api/subgraphs/deploy>](https://app.satsuma.xyz/api/subgraphs/deploy).
+
+**—deploy-key** (Required): API deploy key that you can access from your [Subgraph Dashboard](https://dashboard.alchemy.com/redirect/subgraphs) through the Add Subgraph button or the top of any subgraph's page.
+
+**—ipfs** (Optional): The IPFS node to which the deployment files are uploaded to.
+
+## Suggestions
+
+* We highly recommend using Alchemy Subgraph's IPFS gateway by specifying the `--ipfs` flag.
+* If you're running this from a npm script, make sure to keep your deploy key in a .env file or pass it in dynamically:
+
+  <CodeGroup>
+    ```json package.json
+    {
+      "name": "compound-v3-subgraph",
+      ...
+      "scripts": {
+        "deploy": "graph deploy compound-v3 --version-label $VERSION_LABEL --node https://subgraphs.alchemy.com/api/subgraphs/deploy --deploy-key $DEPLOY_KEY --ipfs https://ipfs.satsuma.xyz",
+      },
+      ...
+    }
+    ```
+
+    ```shell Shell Command
+    DEPLOY_KEY=dummy_key VERSION_LABEL=v0.0.3 npm run deploy
+    ```
+  </CodeGroup>
+
+# Errors
+
+```shell
+Error: ✖ The hosted service is deprecated
+```
+
+Please note that CLI versions after `0.73.0` may introduce a "hosted service is deprecated" error — this is an automatic message and does not apply to Alchemy Subgraphs. If you see this error please change your version to `0.73.0` or earlier as shown below. Contact support with any questions!
+
+`npm i -g @graphprotocol/[email protected]`

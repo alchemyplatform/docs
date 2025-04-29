@@ -1,0 +1,246 @@
+---
+title: getNftsForOwnerIterator - SDK
+description: Fetches all NFTs for a given owner and yields them in an async iterable. This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the options parameter in the body of the request.
+subtitle: Fetches all NFTs for a given owner and yields them in an async iterable. This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the options parameter in the body of the request.
+url: https://docs.alchemy.com/reference/sdk-getnftsforowneriterator
+slug: reference/sdk-getnftsforowneriterator
+---
+
+Fetches all NFTs for a given owner and yields them in an async iterable.
+
+This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the `options` parameter in the body of the request.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Fetches all NFTs for a given owner and yields them in an async iterable.
+
+This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the `options` parameter in the body of the request.
+
+# Parameters
+
+| Name      | Type     | Description                                     |
+| --------- | -------- | ----------------------------------------------- |
+| `owner`   | `string` | The owner of the address.                       |
+| `options` | `object` | The optional parameters to use for the request. |
+
+### `options` paramters
+
+| Property              | Type               | Description                                                                                                                                                                                                                                                                |
+| --------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pageKey?`            | `string`           | Optional page key from an existing `OwnedBaseNftsResponse` or `OwnedNftsResponse` to use for pagination.                                                                                                                                                                   |
+| `contractAddresses`   | `array of strings` | Optional list of contract addresses to filter the results by. Limit is `20`.                                                                                                                                                                                               |
+| `excludeFilters`      | `array of strings` | Optional list of filters applied to the query. NFTs that match one or more of these filters are excluded from the response.                                                                                                                                                |
+| `includeFilters`      | `array of strings` | Optional list of filters applied to the query. NFTs that match one or more of these filters are included in the response.                                                                                                                                                  |
+| ` pageSize`           | number\`           | Sets the total number of NFTs to return in the response. Defaults to 100. Maximum page size is **100**.                                                                                                                                                                    |
+| `omniMetadata`        | `boolean`          | Optional boolean flag to omit NFT metadata. Defaults to `false`.                                                                                                                                                                                                           |
+| `tokenUriTimeoutInMs` | `number`           | No set timeout by default - When metadata is requested, this parameter is the timeout (in milliseconds) for the website hosting the metadata to respond. If you want to only access the cache and not live fetch any metadata for cache misses then set this value to `0`. |
+| `orderBy`             | `string`           | Order in which to return results. By default, results are ordered by contract address and token ID in lexicographic order. `TRANSFERTIME` = "TRANSFERTIME"                                                                                                                 |
+
+# Response
+
+| Property                  | Type     | Description                                  |
+| ------------------------- | -------- | -------------------------------------------- |
+| `AsyncIterable<OwnedNft>` | `object` | An object containing nfts owned by an owner. |
+
+### \``AsyncIterable<OwnedNft>` object properties
+
+| Property    | Type    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ownedNfts` | `array` | The NFTs owned by the provided address. The sub-property of the `ownedNft` object are: 1. `contract`: The contract object detailing the specifics of the contract for the returned NFT. 2. `tokenId`: The unique identifier of the token. This could be in hexadecimal or decimal format. 3. `tokenType`: This defines the standard of the token. Valid types include 'ERC721' and 'ERC1155'. If the input contract address doesn't support a known NFT standard, the error will be 'NO\_SUPPORTED\_NFT\_STANDARD', or 'NOT\_A\_CONTRACT' if there is no contract deployed at the input address. 4. `title`: This is the name of the NFT asset. 5. `description`: A brief human-readable description of the NFT asset. 6. `timeLastUpdated`: The ISO timestamp of the last cache refresh for the information returned in the metadata field. 7. `metadataError`: A string describing a particular reason that the API was unable to fetch complete metadata for the NFT. 8. `rawMetadata`: The unparsed metadata of the NFT. 9. `tokenUri`: The URI representing the location of the NFT's original metadata blob. 10. `media`: Array of objects holding information about the media assets related to this NFT. 11. `spamInfo`: Object containing information regarding whether the NFT is classified as spam or not. 12. `balance`: The token balance indicating how many units of this NFT the owner holds. 13. `acquiredAt`: Object representing the time and block number when the NFT was most recently acquired ( Only available when specifying `orderBy = TRANSFERTIME` in the request ) - `blockTimestamp`: The timestamp of the block where the NFT was most recently acquired. - `blockNumber`: The number of the block where the NFT was most recently acquired. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the owner address whose NFTs you want to fetch
+      const owner = "0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8";
+
+      // create an async generator function that uses the getNftsForOwnerIterator method
+      async function getNftsForOwner() {
+          try {
+              let nfts = [];
+              // Get the async iterable for the owner's NFTs.
+              const nftsIterable = alchemy.nft.getNftsForOwnerIterator(owner);
+
+              // Iterate over the NFTs and add them to the nfts array.
+              for await (const nft of nftsIterable) {
+                  nfts.push(nft);
+              }
+
+              // Log the NFTs.
+              console.log(nfts);
+          } catch (error) {
+              console.log(error);
+          }
+      }
+
+      getNftsForOwner();
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  [
+    {
+      contract: {
+        address: '0x1f02bf9dde7c79137a08b2dd4fc964bfd2499734',
+        name: 'Elephants',
+        symbol: 'ELENFT',
+        totalSupply: '7778',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8',
+        deployedBlockNumber: 15140845
+      },
+      tokenId: '3990',
+      tokenType: 'ERC721',
+      title: '3L3PHANTS #3990',
+      description: '3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time',
+      timeLastUpdated: '2023-02-28T17:51:29.181Z',
+      metadataError: undefined,
+      rawMetadata: {
+        name: '3L3PHANTS #3990',
+        description: '3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time',
+        image: 'ipfs://QmaL3UbrR8T1tz7j8SuYmQxkQJoPXYZeU49YC5DCHphKDg',
+        attributes: [Array]
+      },
+      tokenUri: {
+        gateway: 'https://alchemy.mypinata.cloud/ipfs/QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/3990',
+        raw: 'ipfs://QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/3990'
+      },
+      media: [ [Object] ],
+      spamInfo: undefined,
+      balance: 1
+    },
+    {
+      contract: {
+        address: '0xd4307e0acd12cf46fd6cf93bc264f5d5d1598792',
+        name: 'Base, Introduced',
+        symbol: 'BASEINTRODUCED',
+        totalSupply: '373715',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0x2ea881cecb8b79686a2971c9926e1f92b906b63c',
+        deployedBlockNumber: 16691530
+      },
+      tokenId: '59725',
+      tokenType: 'ERC721',
+      title: 'Base, Introduced 59725',
+      description: 'Meet Base, an Ethereum L2 that offers a secure, low-cost, developer-friendly way for anyone, anywhere, to build decentralized apps.\n' +
+        '\n' +
+        'For the next 5 days, we’ll be evolving the artwork to tell the story of the builders who will help us bring 1B+ people onchain. Check your NFT for the latest evolution every day at 12p ET until 3/6.\n' +
+        '\n' +
+        'Today, we’re telling the story of collaboration. Base is made possible by all of us working together to build an open and decentralized future.\n' +
+        '\n' +
+        'Mint ‘Base, Introduced’ to celebrate the testnet launch and join the broader Base community. We’re excited to build Base together with you.',
+      timeLastUpdated: '2023-02-28T17:51:19.977Z',
+      metadataError: undefined,
+      rawMetadata: {
+        name: 'Base, Introduced 59725',
+        description: 'Meet Base, an Ethereum L2 that offers a secure, low-cost, developer-friendly way for anyone, anywhere, to build decentralized apps.\n' +
+          '\n' +
+          'For the next 5 days, we’ll be evolving the artwork to tell the story of the builders who will help us bring 1B+ people onchain. Check your NFT for the latest evolution every day at 12p ET until 3/6.\n' +
+          '\n' +
+          'Today, we’re telling the story of collaboration. Base is made possible by all of us working together to build an open and decentralized future.\n' +
+          '\n' +
+          'Mint ‘Base, Introduced’ to celebrate the testnet launch and join the broader Base community. We’re excited to build Base together with you.',
+        image: 'ipfs://bafybeiabs6thetplku4hykmcxbzzmqfbkizbflyvwiawbyubam6czl2h7i',
+        properties: [Object]
+      },
+      tokenUri: {
+        gateway: '',
+        raw: 'data:application/json;base64,eyJuYW1lIjogIkJhc2UsIEludHJvZHVjZWQgNTk3MjUiLCAiZGVzY3JpcHRpb24iOiAiTWVldCBCYXNlLCBhbiBFdGhlcmV1bSBMMiB0aGF0IG9mZmVycyBhIHNlY3VyZSwgbG93LWNvc3QsIGRldmVsb3Blci1mcmllbmRseSB3YXkgZm9yIGFueW9uZSwgYW55d2hlcmUsIHRvIGJ1aWxkIGRlY2VudHJhbGl6ZWQgYXBwcy5cblxuRm9yIHRoZSBuZXh0IDUgZGF5cywgd2XigJlsbCBiZSBldm9sdmluZyB0aGUgYXJ0d29yayB0byB0ZWxsIHRoZSBzdG9yeSBvZiB0aGUgYnVpbGRlcnMgd2hvIHdpbGwgaGVscCB1cyBicmluZyAxQisgcGVvcGxlIG9uY2hhaW4uIENoZWNrIHlvdXIgTkZUIGZvciB0aGUgbGF0ZXN0IGV2b2x1dGlvbiBldmVyeSBkYXkgYXQgMTJwIEVUIHVudGlsIDMvNi5cblxuVG9kYXksIHdl4oCZcmUgdGVsbGluZyB0aGUgc3Rvcnkgb2YgY29sbGFib3JhdGlvbi4gQmFzZSBpcyBtYWRlIHBvc3NpYmxlIGJ5IGFsbCBvZiB1cyB3b3JraW5nIHRvZ2V0aGVyIHRvIGJ1aWxkIGFuIG9wZW4gYW5kIGRlY2VudHJhbGl6ZWQgZnV0dXJlLlxuXG5NaW50IOKAmEJhc2UsIEludHJvZHVjZWTigJkgdG8gY2VsZWJyYXRlIHRoZSB0ZXN0bmV0IGxhdW5jaCBhbmQgam9pbiB0aGUgYnJvYWRlciBCYXNlIGNvbW11bml0eS4gV2XigJlyZSBleGNpdGVkIHRvIGJ1aWxkIEJhc2UgdG9nZXRoZXIgd2l0aCB5b3UuIiwgImltYWdlIjogImlwZnM6Ly9iYWZ5YmVpYWJzNnRoZXRwbGt1NGh5a21jeGJ6em1xZmJraXpiZmx5dndpYXdieXViYW02Y3psMmg3aSIsICJwcm9wZXJ0aWVzIjogeyJudW1iZXIiOiA1OTcyNSwgIm5hbWUiOiAiQmFzZSwgSW50cm9kdWNlZCJ9fQ=='
+      },
+      media: [ [Object] ],
+      spamInfo: undefined,
+      balance: 1
+    },
+    {
+      contract: {
+        address: '0xea67b4dd7bacae340bc4e43652044b5cded1963c',
+        name: 'Moonkys',
+        symbol: 'MOONK',
+        totalSupply: '8966',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0x94f65107eb422c67e61588682fcf9d85aac940b8',
+        deployedBlockNumber: 14045176
+      },
+      tokenId: '2378',
+      tokenType: 'ERC721',
+      title: 'Moonky #2378',
+      description: 'A collection of 9000 randomly generated Moonkys, living on ETH Blockchain. All different, All endearing.',
+      timeLastUpdated: '2023-02-28T17:51:26.990Z',
+      metadataError: undefined,
+      rawMetadata: {
+        name: 'Moonky #2378',
+        description: 'A collection of 9000 randomly generated Moonkys, living on ETH Blockchain. All different, All endearing.',
+        image: 'https://ipfs.io/ipfs/QmRmquSbLpiYRd8nCURUmP2fJ9LbaEtG3tJLGGscFp1WAT',
+        attributes: [Array],
+        external_link: 'https://www.moonkys.art'
+      },
+      tokenUri: {
+        gateway: 'https://api.moonkys.art/meta/2378',
+        raw: 'https://api.moonkys.art/meta/2378'
+      },
+      media: [ [Object] ],
+      spamInfo: undefined,
+      balance: 1
+    }
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getNftsForOwnerIterator` method:
+
+* **NFT marketplace platforms**: NFT marketplace platforms can use this method to retrieve a list of all NFTs owned by a user and display them on the user's profile page. This can help users keep track of their NFTs and also make it easier for them to sell or trade their NFTs on the platform.
+
+* **Asset management**: Companies or individuals who own a large number of NFTs can use this function to keep track of their assets on the blockchain. They can use this function to retrieve a list of all the NFTs they own and their corresponding metadata.
+
+* **Gaming platforms**: Gaming platforms that use NFTs as in-game assets can use this function to retrieve a list of all NFTs owned by a player's account. This can be useful for players to keep track of their in-game assets and also for game developers to design games around NFT ownership.
+
+# Related Methods
+
+* [getNftsForContractIterator](/reference/getnftsforcontractiterator-sdk): Fetches all NFTs for a given contract address and yields them in an async iterable.
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

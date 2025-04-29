@@ -1,326 +1,347 @@
 {
-  "x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
-  "$schema": "https://meta.open-rpc.org/",
-  "openrpc": "1.2.4",
-  "info": {
-    "title": "Alchemy User Operation Simulation API JSON-RPC Specification",
-    "description": "A specification of the standard JSON-RPC methods for Alchemy User Operation Simulation API.",
-    "version": "0.0.0"
-  },
-  "servers": [
-    {
-      "url": "https://eth-mainnet.g.alchemy.com/v2/",
-      "name": "Mainnet"
-    },
-    {
-      "url": "https://eth-sepolia.g.alchemy.com/v2/",
-      "name": "Sepolia"
-    }
-  ],
-  "methods": [
-    {
-      "name": "alchemy_simulateUserOperationAssetChanges",
-      "summary": "Simulates user operations and returns a list of asset changes.",
-      "params": [
-        {
-          "name": "UserOperation",
-          "required": true,
-          "description": "User operation to simulate. The signature can be a dummy value; it doesn't need to be valid.",
-          "schema": {
-            "oneOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "sender": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "The account making the operation"
-                  },
-                  "nonce": {
-                    "title": "hex encoded unsigned integer",
-                    "type": "string",
-                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                    "description": "Anti-replay parameter; used as salt for first-time account creation"
-                  },
-                  "initCode": {
-                    "title": "hex encoded bytes",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]*$",
-                    "description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
-                  },
-                  "callData": {
-                    "title": "hex encoded bytes",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]*$",
-                    "description": "Encoded data for the primary function call or operation"
-                  },
-                  "callGasLimit": {
-                    "type": "string",
-                    "description": "Gas allocated for the main execution call"
-                  },
-                  "verificationGasLimit": {
-                    "type": "string",
-                    "description": "Gas allocated for verification"
-                  },
-                  "preVerificationGas": {
-                    "type": "string",
-                    "description": "Gas for pre-verification execution and calldata"
-                  },
-                  "maxFeePerGas": {
-                    "type": "string",
-                    "description": "Maximum fee per gas (EIP-1559)"
-                  },
-                  "maxPriorityFeePerGas": {
-                    "type": "string",
-                    "description": "Max priority fee per gas (EIP-1559)"
-                  },
-                  "signature": {
-                    "type": "string",
-                    "description": "Data passed during verification",
-                    "pattern": "^0x[0-9a-fA-F]*$"
-                  },
-                  "paymasterAndData": {
-                    "title": "hex encoded bytes",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]*$",
-                    "description": "Paymaster address and extra data"
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "sender": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "Account initiating operation"
-                  },
-                  "nonce": {
-                    "title": "hex encoded unsigned integer",
-                    "type": "string",
-                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                    "description": "Account nonce or creation salt"
-                  },
-                  "initCode": {
-                    "title": "hex encoded bytes",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]*$",
-                    "description": "Initialization code (for new accounts)"
-                  },
-                  "callData": {
-                    "title": "hex encoded bytes",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]*$",
-                    "description": "Data for operation call"
-                  },
-                  "callGasLimit": {
-                    "type": "string",
-                    "description": "Gas allocated for call"
-                  },
-                  "verificationGasLimit": {
-                    "type": "string",
-                    "description": "Gas allocated for verification"
-                  },
-                  "maxFeePerGas": {
-                    "type": "string",
-                    "description": "Max fee per gas (EIP-1559)"
-                  },
-                  "maxPriorityFeePerGas": {
-                    "type": "string",
-                    "description": "Priority fee per gas (EIP-1559)"
-                  },
-                  "paymaster": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "Paymaster contract address"
-                  },
-                  "paymasterData": {
-                    "title": "hex encoded bytes",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]*$",
-                    "description": "Data for paymaster"
-                  },
-                  "paymasterVerificationGasLimit": {
-                    "type": "string"
-                  },
-                  "factory": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
-                  },
-                  "factoryData": {
-                    "title": "hex encoded bytes",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]*$",
-                    "description": "Data for the account factory (only if the account factory exists)"
-                  },
-                  "preVerificationGas": {
-                    "type": "string",
-                    "description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
-                  },
-                  "paymasterPostOpGasLimit": {
-                    "type": "string",
-                    "description": "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
-                  },
-                  "signature": {
-                    "type": "string",
-                    "description": "Data passed into the account along with the nonce during the verification step"
-                  }
-                }
-              }
-            ]
-          }
-        },
-        {
-          "name": "entryPoint",
-          "required": true,
-          "description": "EntryPoint address used for simulation. Must be from `supportedEntryPoints`.",
-          "schema": {
-            "title": "hex encoded address",
-            "type": "string",
-            "pattern": "^0x[0-9a-fA-F]{40}$"
-          }
-        },
-        {
-          "name": "blockNumber",
-          "required": false,
-          "description": "Optional block number for context of simulation. Defaults to latest.",
-          "schema": {
-            "title": "hex encoded unsigned integer",
-            "type": "string",
-            "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-          }
-        }
-      ],
-      "result": {
-        "name": "Simulation Result",
-        "description": "Object containing simulated asset changes and any potential errors.",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "changes": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": [
-                  "assetType",
-                  "changeType",
-                  "from",
-                  "to",
-                  "rawAmount",
-                  "amount",
-                  "symbol",
-                  "decimals",
-                  "contractAddress",
-                  "name",
-                  "logo",
-                  "tokenId"
-                ],
-                "properties": {
-                  "assetType": {
-                    "type": "string",
-                    "enum": [
-                      "NATIVE",
-                      "ERC20",
-                      "ERC721",
-                      "ERC1155",
-                      "SPECIAL_NFT"
-                    ]
-                  },
-                  "changeType": {
-                    "type": "string",
-                    "enum": ["APPROVE", "TRANSFER"]
-                  },
-                  "from": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "address the transaction is sent from"
-                  },
-                  "to": {
-                    "title": "hex encoded address",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-fA-F]{40}$",
-                    "description": "address the transaction is directed to"
-                  },
-                  "rawAmount": {
-                    "type": "string"
-                  },
-                  "amount": {
-                    "type": "string"
-                  },
-                  "symbol": {
-                    "type": "string"
-                  },
-                  "decimals": {
-                    "type": ["number", "null"]
-                  },
-                  "contractAddress": {
-                    "type": ["string", "null"]
-                  },
-                  "name": {
-                    "type": ["string", "null"]
-                  },
-                  "logo": {
-                    "type": ["string", "null"]
-                  },
-                  "tokenId": {
-                    "type": ["number", "null"]
-                  }
-                }
-              }
-            },
-            "error": {
-              "type": ["object", "null"],
-              "properties": {
-                "message": {
-                  "type": "string"
-                },
-                "revertReason": {
-                  "type": "string",
-                  "nullable": true,
-                  "description": "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
-                }
-              }
-            }
-          }
-        }
-      },
-      "examples": [
-        {
-          "name": "alchemy_simulateUserOperationAssetChanges example",
-          "params": [
-            {
-              "name": "UserOperation",
-              "value": {
-                "sender": "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81",
-                "nonce": "0x3",
-                "initCode": "0x",
-                "callData": "0xb61d27f600000000000000000000000043f6bfbe9dad44cf0a60570c30c307d949be4cd40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000645c833bfd000000000000000000000000613c64104b98b048b93289ed20aefd80912b3cde0000000000000000000000000000000000000000000000000de123e8a84f9901000000000000000000000000c9371ea30dea5ac745b71e191ba8cde2c4e66df500000000000000000000000000000000000000000000000000000000",
-                "callGasLimit": "0x7A1200",
-                "verificationGasLimit": "0x927C0",
-                "preVerificationGas": "0x15F90",
-                "maxFeePerGas": "0x656703D00",
-                "maxPriorityFeePerGas": "0x13AB6680",
-                "signature": "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c",
-                "paymasterAndData": "0x9db7f05b0eb93eb242b5913596dcfaada756af5c"
-              }
-            },
-            {
-              "name": "entryPoint",
-              "value": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-            },
-            {
-              "name": "blockNumber",
-              "value": "0x113CF6E"
-            }
-          ]
-        }
-      ]
-    }
-  ]
+	"x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
+	"$schema": "https://meta.open-rpc.org/",
+	"openrpc": "1.2.4",
+	"info": {
+		"title": "Alchemy User Operation Simulation API JSON-RPC Specification",
+		"description": "A specification of the standard JSON-RPC methods for Alchemy User Operation Simulation API.",
+		"version": "0.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://eth-mainnet.g.alchemy.com/v2",
+			"name": "Mainnet"
+		},
+		{
+			"url": "https://eth-sepolia.g.alchemy.com/v2",
+			"name": "Sepolia"
+		}
+	],
+	"methods": [
+		{
+			"name": "alchemy_simulateUserOperationAssetChanges",
+			"summary": "Simulates user operations and returns a list of asset changes.",
+			"params": [
+				{
+					"name": "UserOperation",
+					"required": true,
+					"description": "User operation to simulate. The signature can be a dummy value; it doesn't need to be valid.",
+					"schema": {
+						"oneOf": [
+							{
+								"type": "object",
+								"properties": {
+									"sender": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "The account making the operation"
+									},
+									"nonce": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Anti-replay parameter; used as salt for first-time account creation"
+									},
+									"initCode": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
+									},
+									"callData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Encoded data for the primary function call or operation"
+									},
+									"callGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for the main execution call"
+									},
+									"verificationGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for verification"
+									},
+									"preVerificationGas": {
+										"type": "string",
+										"description": "Gas for pre-verification execution and calldata"
+									},
+									"maxFeePerGas": {
+										"type": "string",
+										"description": "Maximum fee per gas (EIP-1559)"
+									},
+									"maxPriorityFeePerGas": {
+										"type": "string",
+										"description": "Max priority fee per gas (EIP-1559)"
+									},
+									"signature": {
+										"type": "string",
+										"description": "Data passed during verification",
+										"pattern": "^0x[0-9a-fA-F]*$"
+									},
+									"paymasterAndData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Paymaster address and extra data"
+									}
+								}
+							},
+							{
+								"type": "object",
+								"properties": {
+									"sender": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Account initiating operation"
+									},
+									"nonce": {
+										"title": "hex encoded unsigned integer",
+										"type": "string",
+										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
+										"description": "Account nonce or creation salt"
+									},
+									"initCode": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Initialization code (for new accounts)"
+									},
+									"callData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for operation call"
+									},
+									"callGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for call"
+									},
+									"verificationGasLimit": {
+										"type": "string",
+										"description": "Gas allocated for verification"
+									},
+									"maxFeePerGas": {
+										"type": "string",
+										"description": "Max fee per gas (EIP-1559)"
+									},
+									"maxPriorityFeePerGas": {
+										"type": "string",
+										"description": "Priority fee per gas (EIP-1559)"
+									},
+									"paymaster": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "Paymaster contract address"
+									},
+									"paymasterData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for paymaster"
+									},
+									"paymasterVerificationGasLimit": {
+										"type": "string"
+									},
+									"factory": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+									},
+									"factoryData": {
+										"title": "hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]*$",
+										"description": "Data for the account factory (only if the account factory exists)"
+									},
+									"preVerificationGas": {
+										"type": "string",
+										"description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+									},
+									"paymasterPostOpGasLimit": {
+										"type": "string",
+										"description": "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+									},
+									"signature": {
+										"type": "string",
+										"description": "Data passed into the account along with the nonce during the verification step"
+									}
+								}
+							}
+						]
+					}
+				},
+				{
+					"name": "entryPoint",
+					"required": true,
+					"description": "EntryPoint address used for simulation. Must be from `supportedEntryPoints`.",
+					"schema": {
+						"title": "hex encoded address",
+						"type": "string",
+						"pattern": "^0x[0-9a-fA-F]{40}$"
+					}
+				},
+				{
+					"name": "blockNumber",
+					"required": false,
+					"description": "Optional block number for context of simulation. Defaults to latest.",
+					"schema": {
+						"title": "hex encoded unsigned integer",
+						"type": "string",
+						"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+					}
+				}
+			],
+			"result": {
+				"name": "Simulation Result",
+				"description": "Object containing simulated asset changes and any potential errors.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"changes": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"assetType",
+									"changeType",
+									"from",
+									"to",
+									"rawAmount",
+									"amount",
+									"symbol",
+									"decimals",
+									"contractAddress",
+									"name",
+									"logo",
+									"tokenId"
+								],
+								"properties": {
+									"assetType": {
+										"type": "string",
+										"enum": [
+											"NATIVE",
+											"ERC20",
+											"ERC721",
+											"ERC1155",
+											"SPECIAL_NFT"
+										]
+									},
+									"changeType": {
+										"type": "string",
+										"enum": [
+											"APPROVE",
+											"TRANSFER"
+										]
+									},
+									"from": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "address the transaction is sent from"
+									},
+									"to": {
+										"title": "hex encoded address",
+										"type": "string",
+										"pattern": "^0x[0-9a-fA-F]{40}$",
+										"description": "address the transaction is directed to"
+									},
+									"rawAmount": {
+										"type": "string"
+									},
+									"amount": {
+										"type": "string"
+									},
+									"symbol": {
+										"type": "string"
+									},
+									"decimals": {
+										"type": [
+											"number",
+											"null"
+										]
+									},
+									"contractAddress": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"name": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"logo": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"tokenId": {
+										"type": [
+											"number",
+											"null"
+										]
+									}
+								}
+							}
+						},
+						"error": {
+							"type": [
+								"object",
+								"null"
+							],
+							"properties": {
+								"message": {
+									"type": "string"
+								},
+								"revertReason": {
+									"type": "string",
+									"nullable": true,
+									"description": "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
+								}
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "alchemy_simulateUserOperationAssetChanges example",
+					"params": [
+						{
+							"name": "UserOperation",
+							"value": {
+								"sender": "0xceb161d3e0B6d01bc0e87ECC27fF9f2E2eCDCD81",
+								"nonce": "0x3",
+								"initCode": "0x",
+								"callData": "0xb61d27f600000000000000000000000043f6bfbe9dad44cf0a60570c30c307d949be4cd40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000645c833bfd000000000000000000000000613c64104b98b048b93289ed20aefd80912b3cde0000000000000000000000000000000000000000000000000de123e8a84f9901000000000000000000000000c9371ea30dea5ac745b71e191ba8cde2c4e66df500000000000000000000000000000000000000000000000000000000",
+								"callGasLimit": "0x7A1200",
+								"verificationGasLimit": "0x927C0",
+								"preVerificationGas": "0x15F90",
+								"maxFeePerGas": "0x656703D00",
+								"maxPriorityFeePerGas": "0x13AB6680",
+								"signature": "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c",
+								"paymasterAndData": "0x9db7f05b0eb93eb242b5913596dcfaada756af5c"
+							}
+						},
+						{
+							"name": "entryPoint",
+							"value": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+						},
+						{
+							"name": "blockNumber",
+							"value": "0x113CF6E"
+						}
+					]
+				}
+			]
+		}
+	]
 }

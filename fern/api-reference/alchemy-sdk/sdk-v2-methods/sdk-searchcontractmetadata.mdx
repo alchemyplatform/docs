@@ -1,0 +1,187 @@
+---
+title: searchContractMetadata - SDK
+description: Search for a keyword across the metadata of all ERC-721 and ERC-1155 smart contracts.
+subtitle: Search for a keyword across the metadata of all ERC-721 and ERC-1155 smart contracts.
+url: https://docs.alchemy.com/reference/sdk-searchcontractmetadata
+slug: reference/sdk-searchcontractmetadata
+---
+
+Search for a keyword across the metadata of all `ERC-721` and `ERC-1155` smart contracts.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Search for a keyword across the metadata of all `ERC-721` and `ERC-1155` smart contracts.
+
+# Parameters
+
+| Name    | Type     | Description                                                         |
+| ------- | -------- | ------------------------------------------------------------------- |
+| `query` | `string` | The search string that you want to search for in contract metadata. |
+
+# Response
+
+| Property                 | Type               | Description                                     |
+| ------------------------ | ------------------ | ----------------------------------------------- |
+| `Promise<NftContract[]>` | `array of objects` | An array of objects returning the nft metadata. |
+
+### `NftContract` response parameters
+
+| Property              | Type     | Description                                                                                                       |
+| --------------------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `tokenType`           | `string` | The type of token in the contract. Options are: `ERC721` = "ERC721", `ERC1155` = "ERC1155", `UNKNOWN` = "UNKNOWN" |
+| `name`                | `string` | The name of the contract.                                                                                         |
+| `symbol`              | `string` | The symbol of the contract.                                                                                       |
+| `totalSupply`         | `string` | The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts.       |
+| `openSea`             | `object` | OpenSea's metadata for the contract.                                                                              |
+| `contractDeployer`    | `string` | The address that deployed the NFT contract.                                                                       |
+| `deployedBlockNumber` | `number` | The block number the NFT contract deployed in.                                                                    |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      const kw = "hair"
+
+      //Call the method to fetch metadata
+      const response = await alchemy.nft.searchContractMetadata(kw)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  [
+    {
+      address: '0x1eac31a0b93e81bd093d116f5d36a83be08f381b',
+      name: 'Sneakr Token',
+      symbol: 'SNKR',
+      totalSupply: '326',
+      tokenType: 'ERC721',
+      openSea: {
+        floorPrice: 1,
+        collectionName: 'SneakrCred Drop 1: EthAIReum',
+        safelistRequestStatus: 'verified',
+        imageUrl: 'https://i.seadn.io/gae/7JKgjQsQP6PNiuuT6J7upfs4Iq3btwg1zFMxpzvW9ZFpGFWrf0i2H08vbG-1glj9ZY9HDUxco5z_xMWc7e_f5myd5A?w=500&auto=format',
+        description: 'The first official Sneakr Drop.',
+        externalUrl: 'https://www.sneakrcred.com',
+        twitterUsername: undefined,
+        discordUrl: undefined,
+        lastIngestedAt: '2023-02-27T00:27:33.000Z'
+      },
+      contractDeployer: '0xccb74148d315b0397da4e3c7482036dbadd762e5',
+      deployedBlockNumber: 9458121
+    },
+    {
+      address: '0x7e2a853626d75321d2b6ed060f6320324d31b7e8',
+      name: 'Happy Little Hairdos',
+      symbol: 'HLHD',
+      totalSupply: '235',
+      tokenType: 'ERC721',
+      openSea: {
+        floorPrice: 0.25,
+        collectionName: 'Happy Little Hairdos',
+        safelistRequestStatus: 'approved',
+        imageUrl: 'https://i.seadn.io/gae/bx3ZIky25jfqxG_ield-BWVNuWvoOLJsqm-1TPN90xVuzyLrEjROQAX_Qf2jgMb5OrCsF_OKaRWq3DEpWztPRK2DriuRMN997kar?w=500&auto=format',
+        description: 'Happy Little Hairdos is a parody collection of 10,000 unique NFTs celebrating the man we all know as the painter with a Fro. Straight from the imagination & hand of artist J.J. Weinberg, what began as a Prismacolor illustration on paper in 2014 & an idea of a ☕ table ???? has found its way onto the blockchain. Weinberg is determined to push the envelope on the connection of the metaverse & the physical world. Let the #FROMO begin!\r\n' +
+          '\r\n' +
+          'Details - www.happylittlehairdos.com\r\n' +
+          '\r\n' +
+          'Highlights\r\n' +
+          '\r\n' +
+          'Art / Print quality images 3000x3000k (Set to print at 10”x10” 300 dpi)\r\n' +
+          'Coffee table book featuring “Curated Cuts” & randomly chosen HLHD’s\r\n' +
+          'Infinite “Bob”jects\r\n' +
+          'Early access to merch via the Fromo Boutique\r\n' +
+          '“Curated Cuts for a Cause” the rarity’s for charity on these special tokens outside of the 10K\r\n' +
+          'Access to Alexander Bill’s “ART”cade\r\n' +
+          'Special token access to commissioned work by the artist & derivative license\r\n' +
+          'Joy of Minting mini-series\r\n' +
+          'Special thanks @cheforche - IG @jjweinberg - IG',
+        externalUrl: 'https://www.happylittlehairdos.com',
+        twitterUsername: 'happylittlehair',
+        discordUrl: 'https://discord.gg/kWFU5xP74W',
+        lastIngestedAt: '2023-02-23T04:54:27.000Z'
+      },
+      contractDeployer: '0x5582809dd5d7b8848397c6033d8a41e4b06f8ded',
+      deployedBlockNumber: 12885162
+    },
+    {
+      address: '0x82cb9d20862641301c987f0b096086d32bc11b65',
+      name: 'AStrandOfHair',
+      symbol: 'ASOH',
+      totalSupply: '10358',
+      tokenType: 'ERC721',
+      openSea: {
+        floorPrice: 0,
+        collectionName: 'AStrandOfHair',
+        safelistRequestStatus: 'approved',
+        imageUrl: 'https://i.seadn.io/gcs/files/5aa37f4f867ad6f1d5ab710f67f6cfdd.jpg?w=500&auto=format',
+        description: "It's a metaverse built by wizards. From just a strand of hair to the entire world. We are not just a meme, we are a culture strongly rooted by our community. ",
+        externalUrl: 'https://astrandofhair.xyz/',
+        twitterUsername: 'Hair_xyz',
+        discordUrl: undefined,
+        lastIngestedAt: '2023-02-23T08:27:10.000Z'
+      },
+      contractDeployer: '0xc4c2a776a352a8994be83d2ef2bb4a9604dc6e97',
+      deployedBlockNumber: 15210942
+    }, ....
+   }
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `searchContractMetadata` method:
+
+* **Finding relevant smart contracts**: If you are looking for a particular smart contract to interact with on a blockchain network, you can use `searchContractMetadata` to find contracts that match certain metadata criteria, such as contract name, author, or version.
+
+* **Analyzing smart contract usage**: Blockchain networks allow for the deployment of multiple instances of the same smart contract, each with its own metadata. `searchContractMetadata` can be used to analyze metadata from various instances of a particular contract to gain insights into its usage patterns and adoption rates.
+
+* **Auditing smart contracts**: Smart contracts are self-executing and can be complex, making them susceptible to bugs and vulnerabilities. `searchContractMetadata` can be used to audit the metadata associated with a particular smart contract to ensure that it is trustworthy and secure.
+
+# Related Methods
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.
+
+* [getNftMetadataBatch](/reference/getnftmetadatabatch-sdk): Gets the NFT metadata for multiple NFT tokens.

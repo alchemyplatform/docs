@@ -1,0 +1,143 @@
+---
+title: What is a blockchain?
+description: A blockchain is a network of computers that agree upon a common state of data. It is a decentralized system that is resistant to censorship and control.
+subtitle: A blockchain is a network of computers that agree upon a common state of data. It is a decentralized system that is resistant to censorship and control.
+url: https://docs.alchemy.com/docs/what-is-a-blockchain
+slug: docs/what-is-a-blockchain
+---
+
+The purpose of a blockchain is to have a **network of computers agree upon a common state of data**; plain and simple. *Any* person or organization should be able to *participate* in this process. *No* person or organization should be able to *control* this process.
+
+<Info>
+  Generally the term [consensus](/docs/what-are-blockchain-consensus-mechanisms) is defined as the process of a network coming to an agreement on the state of the data. You'll hear this word quite often in regards to blockchain!
+</Info>
+
+👆🏼 So there you have it!
+
+The high-level goals of blockchain.
+
+Not so bad, huh?
+
+Let's explore this further with the most common use-case for blockchains: **cryptocurrency** - an on and off-hot topic in today's modern age!
+
+Access [the slides here](https://docs.google.com/presentation/d/e/2PACX-1vS8uFYWDOWjitlYdZYejLNv7q2DWVzgA98J3pUdpBXPPpHB9aS7vriM-FISSUHu4IROjX-fIXPCD0I7/pub?start=false\&loop=false\&delayms=3000).
+
+## Why is blockchain needed for cryptocurrency?
+
+To understand why blockchain is needed for digital currencies let's imagine a naive digital currency without blockchain.
+
+Let's take a spreadsheet and give all our friends some money:
+
+| Name    | Balance |
+| ------- | ------- |
+| Alice   | 10      |
+| Bob     | 10      |
+| Charlie | 10      |
+
+Sweet! Everyone starts with 10 money.
+
+Now Alice wants to buy something from Bob, so she pays him 5 money.
+
+She tells you (the bookkeeper) to transfer 5 monies over to Bob.
+
+**Sure thing**, you say:
+
+| Name    | Balance |
+| ------- | ------- |
+| Alice   | 5       |
+| Bob     | 15      |
+| Charlie | 10      |
+
+☑️ Excellent! Everyone's balances are updated.
+
+At this point you might be thinking "There really isn't much to this whole digital currency thing!".
+
+Or, *more likely*, you're considering all the problems with this scenario:
+
+1. Alice, Bob, and Charlie need to **trust** that you won't cheat them. As the bookkeeper you need to be resistant to bribes!
+2. Alice, Bob, and Charlie need a way to easily view their balance that is widely available and up-to-date.
+3. Alice, Bob, and Charlie invite more friends into your currency circle and quickly the bookkeeping becomes too much for you to handle. 😵
+
+We know how to solve **problems #2 and #3** with our **programming skills**! We can build a website with an awesome UI and an API for making transactions! 👨‍💻👩‍💻
+
+But what about **problem #1**? How do we solve for **trust**? 🤔
+
+This was a problem that perplexed Cryptography enthusiasts for years.
+
+Deep down, many self-proclaimed **Cypherpunks** felt as though the solution was somewhere in the land of [cryptographic technology](/docs/public-key-cryptography), yet nobody was able to create a foolproof system.
+
+In, 2008, such a system was imagined. A person or persons, under the pseudonym **Satoshi Nakamoto** released a [whitepaper for Bitcoin](https://bitcoin.org/bitcoin.pdf), which described a system to create a peer-to-peer network for exchanging value.
+
+This system would combine years of cryptographic research and game theoretical financial incentives to create a secure, scalable network. The paper describes [a chain of blocks](/docs/bitcoin-genesis-block) tied together cryptographically using [Proof-of-Work](/docs/proof-of-work). This would later be coined the **blockchain**.
+
+To tie it all together, blockchain was invented to solve for **trust**. To create a system that is completely neutral and resistant to any censorship or bribe.
+
+## What are smart contract blockchains?
+
+[Smart Contract blockchains](/docs/what-is-ethereum) provide developers with a way to decentralize where the code runs. In this way, code can truly become a public resource. This means [code can run without any direct ownership](/docs/smart-contract-communication), making it censorship resistant and transparently verifiable.
+
+One important point to drill home is that the decentralization isn't about the code itself, but how the code is executed. For example, let's take a quick glance at some Solidity smart contract code:
+
+<CodeGroup>
+  ```solidity solidity
+  // this data structure will keep track of which address has a balance
+  mapping(address => uint) balances;
+
+  function transfer(address to, uint amount) external {
+    // subtract the amount from the sender's balance
+    balances[msg.sender] -= amount;
+
+    // add the amount to the recipient's balance
+    balances[to] += amount;
+  }
+  ```
+</CodeGroup>
+
+👆🏼This function is the bread and butter of ERC20 tokens, which we'll talk about later in the course.
+
+You'll see there's nothing special about the `transfer` function here from a programming standpoint. Coming from other languages this code may look quite familiar.
+
+The key difference which makes this code a **smart contract** is when you take this code, compile it and deploy it to a [decentralized](/docs/what-are-blockchain-networks) blockchain. When you do that, the code becomes publicly available on the blockchain and the nodes in the network will enforce the logic of the code through the financial incentives of the blockchain protocol.
+
+Don't worry if that sounds a bit complicated at the moment!
+
+A key takeaway here is that a smart contract is a [code](/docs/how-does-solidity-work) that will always run the way it is programmed. We'll take this one step at a time and you'll soon see how blockchains enforce those rules.
+
+## What are cryptographic hash functions?
+
+**A cryptographic hash function is a function that takes an input of any size and turns it into a fixed-size output, and has five specific properties: deterministic, pseudorandom, one-way, fast to compute, and collision-resistant.**
+
+Before diving any further we must understand the cryptographic hash function. Let's break this term down a bit.
+
+Let's imagine a hash function that takes an input of any size and returns a fixed 32-byte output:
+
+| Input           | Input Size    | Output    | Output Size |
+| --------------- | ------------- | --------- | ----------- |
+| 52              | 8 bytes       | 0x41cf... | 32 bytes    |
+| "happy times"   | 22 bytes      | 0xd6bf... | 32 bytes    |
+| monalisa.jpg    | 875000 bytes  | 0x7cde... | 32 bytes    |
+| worldseries.mp4 | 1.6e+10 bytes | 0x9c0e... | 32 bytes    |
+
+These inputs get larger from top to bottom but they always map to an output of 32 bytes. There are many different [algorithms for hash functions](/docs/hashing-algorithm) which could take these inputs and create outputs of fixed sizes.
+
+### Five Properties of Cryptographic Hash Functions
+
+The specific types of hash functions we are going to focus on are **cryptographic** hash functions. These hash functions need five specific properties. They must be:
+
+* 🔮 **Deterministic** - One specific input always maps to the **same** specific output
+* 🎲 **Pseudorandom** - It is not possible to guess the output based on the output of similar inputs
+* ➡️ **One-way** - If someone gives you a new output, you could not determine an input without guessing
+* 🏎 **Fast to Compute** - It must be a quick calculation for a computer
+* 💥 **Collision-resistant** - The chance of a collision should be infinitesimally small
+
+**Challenge Yourself**: Try using this [sha256 online](https://emn178.github.io/online-tools/sha256) tool. Can you prove to yourself each one of these properties?
+
+With a secure cryptographic hash function, you can create a unique, fixed-size representation of an input regardless of its size. For blockchains, this feature is critically important for saving space. In many cases blockchains and smart contracts will not need to store an input, they can just store the hash output.
+
+Cryptographic Hash Functions will also be super important for the first successful blockchain consensus mechanism we'll talk about: **proof of work**.
+
+## Learn More About Blockchains with Alchemy University
+
+This article is based on the blockchain section of [Alchemy University's free, 7-week Ethereum Developer Bootcamp](https://university.alchemy.com/ethereum).
+
+To learn more about blockchains and cryptography, sign up today!

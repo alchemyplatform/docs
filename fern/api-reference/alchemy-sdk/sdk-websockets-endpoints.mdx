@@ -1,0 +1,252 @@
+---
+title: SDK WebSockets Endpoints
+description: How to use WebSockets with the Alchemy SDK
+subtitle: How to use WebSockets with the Alchemy SDK
+url: https://docs.alchemy.com/reference/sdk-websockets-endpoints
+slug: reference/sdk-websockets-endpoints
+---
+
+# Available Subscription Types
+
+| Subscription Type            | Description                                                                                                            |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Alchemy Mined Transactions   | Emits full transaction objects or hashes that are mined on the network based on provided filters and block tags.       |
+| Alchemy Pending Transactions | Emits full transaction objects or hashes that are sent to the network, marked as "pending", based on provided filters. |
+| block (newHeads)             | Emits new blocks that are added to the blockchain.                                                                     |
+| transactions                 | Emitted when a specified transaction has been mined.                                                                   |
+| logs                         | Emits logs attached to a new block that match certain topic filters.                                                   |
+
+# What are WebSockets and how do they differ from HTTP?
+
+WebSockets is a bidirectional communication protocol that maintains a network connection between a server and a client. Unlike HTTP, with WebSockets clients don't need to continuously make requests when they want information.
+
+Instead, an open WebSocket connection can push network updates to clients by allowing them to subscribe to certain network states, such as new transactions or blocks being added to the blockchain.
+
+***
+
+# Getting Started
+
+The [Alchemy SDK](/reference/alchemy-sdk-quickstart) is the easiest way to start using WebSockets. It exposes WebSockets support via the [Ethers.js syntax](https://docs.ethers.io/v5/single-page/#/v5/api/providers/provider/-%23-Provider--event-methods). In addition, it exposes an additional Enhanced APIs created by Alchemy.
+
+See an example below:
+
+<CodeGroup>
+  ```javascript alchemy-sdk
+  // Setup: npm install alchemy-sdk
+  import { Alchemy, AlchemySubscription } from "alchemy-sdk";
+
+  // Optional config object, but defaults to demo api-key and eth-mainnet.
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+
+  // Subscription for new blocks on Eth Mainnet.
+  alchemy.ws.on("block", (blockNumber) =>
+    console.log("The latest block number is", blockNumber)
+  );
+
+  // Subscription for Alchemy's pendingTransactions Enhanced API
+  alchemy.ws.on(
+    {
+      method: AlchemySubscription.PENDING_TRANSACTIONS,
+      toAddress: "vitalik.eth",
+    },
+    (tx) => console.log(tx)
+  );
+  ```
+</CodeGroup>
+
+<Check>
+  [The Alchemy SDK](/reference/alchemy-sdk-quickstart) automatically adds retry handling for WebSocket failures with no configuration necessary.
+</Check>
+
+# Alchemy SDK's Subscription Methods
+
+These are the methods that you can call to begin a subscription. For types of events you can subscribe to, see [Alchemy SDK's Subscription Types](#alchemy-sdks-subscription-types).
+
+The Alchemy SDK's WebSockets is built on top of [Ethers.js](https://docs.ethers.io/v5/single-page/#/v5/api/providers/provider/-%23-Provider--event-methods)'s implementation of WebSockets, so the majority of the syntax will be identical.
+
+| Subscription Method                                     | Description                                                                                                                       |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `alchemy.ws.on( eventName , listener ) ⇒ this`          | Add a listener to be triggered for each eventName event.                                                                          |
+| `alchemy.ws.once( eventName , listener ) ⇒ this`        | Add a listener to be triggered for only the next eventName event, at which time it will be removed.                               |
+| `alchemy.ws.emit( eventName , ...args ) ⇒ boolean`      | Notify all listeners of the eventName event, passing args to each listener. This is generally only used internally.               |
+| `alchemy.ws.off( eventName [ , listener ] ) ⇒ this`     | Remove a listener for the eventName event. If no listener is provided, all listeners for eventName are removed.                   |
+| `alchemy.ws.removeAllListeners( [ eventName ] ) ⇒ this` | Remove all the listeners for the eventName events. If no eventName is provided, all events are removed.                           |
+| `alchemy.ws.listenerCount( [ eventName ] ) ⇒ number`    | Returns the number of listeners for the eventName events. If no eventName is provided, the total number of listeners is returned. |
+| `alchemy.ws.listeners( eventName ) ⇒ Array< Listener >` | Returns the list of Listeners for the eventName events.                                                                           |
+
+# SDK Subscription Types Support by Chain
+
+| Chain                                                    | Mined Transactions | Pending Transactions | transactions | block (newHeads) | logs |
+| -------------------------------------------------------- | ------------------ | -------------------- | ------------ | ---------------- | ---- |
+| [Ethereum](/reference/websockets)                        | ❌                  | ✅                    | ✅            | ✅                | ✅    |
+| [Polygon](/reference/websockets-polygon)                 | ❌                  | ✅                    | ✅            | ✅                | ✅    |
+| [Arbitrum](/reference/websockets-arbitrum)               | ❌                  | ❌                    | ❌            | ✅                | ✅    |
+| [Optimism](/reference/websockets-optimism)               | ❌                  | ❌                    | ❌            | ✅                | ✅    |
+| [Polygon zkEVM](/reference/polygon-zkevm-api-quickstart) | ❌                  | ❌                    | ❌            | ❌                | ❌    |
+
+# Alchemy SDK's Subscription Types
+
+## `block (newHeads)`
+
+Emitted when a new block is mined.
+
+<CodeGroup>
+  ```javascript alchemy-sdk
+  import { Alchemy } from "alchemy-sdk";
+  const alchemy = new Alchemy();
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+    console.log("Latest block:", blockNumber)
+  );
+  ```
+</CodeGroup>
+
+## `AlchemySubscription.MINED_TRANSACTIONS`
+
+Emitted when a transaction is confirmed onto the blockchain. Alchemy's custom implementation of this endpoint allows you to filter based on `fromAddress` or `toAddress`, the address a transaction was sent to or received from.
+
+<CodeGroup>
+  ```javascript alchemy-sdk
+  import { Alchemy, AlchemySubscription } from "alchemy-sdk";
+  const alchemy = new Alchemy();
+
+  // Subscription for Alchemy's Mined Transactions  API
+  alchemy.ws.on(
+    {
+      method: AlchemySubscription.MINED_TRANSACTIONS,
+      addresses: [
+        {
+          from: "0x473780deaf4a2ac070bbba936b0cdefe7f267dfc",
+          to: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        },
+        {
+          to: "0x473780deaf4a2ac070bbba936b0cdefe7f267dfc",
+        },
+      ],
+      includeRemoved: true,
+      hashesOnly: false,
+    },
+    (tx) => console.log(tx)
+  );
+  ```
+</CodeGroup>
+
+## `AlchemySubscription.PENDING_TRANSACTIONS`
+
+Emitted when a new transaction enters the memory pool. Alchemy's custom implementation of this endpoint allows you to filter based on `fromAddress` or `toAddress`, the address a transaction was sent to or received from.
+
+<Info>
+  If you were previously using the `newPendingTransactions` method on either Web3.js or Ethers.js, you should use `alchemy_pendingTransactions`. It's a strict superset of the functionality of `newPendingTransactions`, and functions identically if you don't pass in a `fromAddress` or `toAddress` filter.
+</Info>
+
+<CodeGroup>
+  ```javascript alchemy-sdk
+  import { Alchemy, AlchemySubscription } from "alchemy-sdk";
+  const alchemy = new Alchemy();
+
+  // Subscription for Alchemy's pendingTransactions API
+  alchemy.ws.on(
+    {
+      method: AlchemySubscription.PENDING_TRANSACTIONS,
+      toAddress: "vitalik.eth",
+      fromAddress: "vitalik.eth",
+    },
+    (tx) => console.log(tx)
+  );
+  ```
+</CodeGroup>
+
+## `transactions`
+
+Emitted when a specified transaction has been mined.
+
+<CodeGroup>
+  ```javascript alchemy-sdk
+  import { Alchemy } from "alchemy-sdk";
+  const alchemy = new Alchemy();
+
+  const txHash = "0xfc89ec10998a74c37a107535ca1cf8714edad409bff40d6da9e8a436cef6daad";
+
+  // Subscription for a specific transaction to be mined
+  alchemy.ws.on(
+    txHash,
+    (tx) => console.log(tx)
+  );
+  ```
+</CodeGroup>
+
+## `logs`
+
+A filter is an object, representing a contract log Filter, which has the optional properties address (the source contract) and topics (a topic-set to match).
+
+If address is unspecified, the filter matches any contract address.
+
+<CodeGroup>
+  ```javascript alchemy-sdk
+  import { Alchemy } from "alchemy-sdk";
+  const alchemy = new Alchemy();
+
+  // This filter could also be generated with the Contract or
+  // Interface API. If address is not specified, any address
+  // matches and if topics is not specified, any log matches
+  const filter = {
+    address: "dai.tokens.ethers.eth",
+    topics: [
+      utils.id("Transfer(address,address,uint256)")
+    ]
+  }
+  alchemy.ws.on(filter, (log, event) => {
+    // Emitted whenever a DAI token transfer occurs
+  })
+
+  // Notice this is an array of topic-sets and is identical to
+  // using a filter with no address (i.e. match any address)
+  const topicSets = [
+    utils.id("Transfer(address,address,uint256)"),
+    null,
+    [
+      hexZeroPad(myAddress, 32),
+      hexZeroPad(myOtherAddress, 32)
+    ]
+  ]
+  alchemy.ws.on(topicSets, (log, event) => {
+    // Emitted any token is sent TO either address
+  })
+  ```
+</CodeGroup>
+
+***
+
+# Subscription Type Support Per Chain
+
+For the latest Alchemy support by chain for certain WebSockets requests, check our [Feature Support By Chain article here](/reference/feature-support-by-chain).
+
+***
+
+# WebSocket Limits
+
+The following limits apply for WebSocket connections:
+
+* There is a limit of **20,000 WebSocket connections** per API Key as well as **1,000 parallel WebSocket subscriptions** per WebSocket connection, creating a maximum of **20 million subscriptions per application**.
+* The maximum size of a JSON-RPC `batch` request that can be sent over a WebSocket connection is 20
+* Free tier users will be limited to 10 concurrent requests per WebSocket connection.
+
+***
+
+# Error Codes
+
+| Error Code | Error Message                                                                                                                | Solution                                                                                                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `32600`    | `"The maximum batch size that can be sent over a websocket connection is 10. Please decrease the batch size and try again."` | Occurs when user attempts to send high-volume JSON-RPC traffic over Websockets. We recommend this traffic be sent over HTTP instead to optimize server backends. |
+
+***
+
+# Example Projects
+
+* [How to Listen to NFT Mints](/docs/how-to-listen-to-nft-mints)

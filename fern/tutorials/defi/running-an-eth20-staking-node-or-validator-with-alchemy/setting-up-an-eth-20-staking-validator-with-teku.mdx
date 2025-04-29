@@ -1,0 +1,229 @@
+---
+title: Setting up an Eth 2.0 Staking Validator with Teku
+description: A quick guide to setting up your Eth2 node or validator on Teku with Alchemy as your web3 provider.
+subtitle: A quick guide to setting up your Eth2 node or validator on Teku with Alchemy as your web3 provider.
+url: https://docs.alchemy.com/docs/setting-up-an-eth-20-staking-validator-with-teku
+slug: docs/setting-up-an-eth-20-staking-validator-with-teku
+---
+
+This guide assumes you have already generated your validator keys and have submitted your initial 32 Eth to the beacon chain. If you have not done so, [please follow this guide](/docs/running-an-eth20-staking-node-or-validator-with-alchemy).
+
+To learn more about Teku, check out their [Eth2 Documentation](https://docs.teku.consensys.net/en/latest/).
+
+<Info>
+  The instructions below were adopted from the [Teku Getting Started Guide](https://docs.teku.consensys.net/en/latest/HowTo/Get-Started/Installation-Options/Run-Docker-Image/).
+</Info>
+
+***
+
+## Running an Eth 2.0 validator
+
+### 1. Install Teku
+
+You can find the full installation guide for Teku on the [Teku how-to page.](https://docs.teku.consensys.net/en/latest/HowTo/Get-Started/Installation-Options/Install-Binaries/)
+
+<CodeGroup>
+  ```shell shell
+  brew tap ConsenSys/teku
+  brew install teku
+  ```
+</CodeGroup>
+
+### 2. Run the beacon chain client
+
+You can run just the beacon chain and point your eth1 endpoint to the alchemy url for your app. Make sure your network matches the network that you are trying to connect to:
+
+* Pyrmont -> eth-goerli
+* Mainnet -> eth-mainnet
+
+<Warning>
+  While you can use the Goerli testnet, we caution against it as the Ethereum Foundation has announced that [Goerli will soon be deprecated](https://www.alchemy.com/blog/goerli-faucet-deprecation).
+
+  We therefore recommend using [Sepolia](https://www.alchemy.com/overviews/sepolia-testnet) testnet as Alchemy has full Sepolia support and a free [Sepolia faucet](https://sepoliafaucet.com/) also.
+</Warning>
+
+<CodeGroup>
+  ```shell shell
+  teku --network=pyrmont --eth1-endpoints=<ALCHEMY API ENDPOINT HERE> \
+  --metrics-enabled --rest-api-enabled
+  ```
+</CodeGroup>
+
+For example:
+
+<CodeGroup>
+  ```shell Mainnet
+  teku --network=mainnet --eth1-endpoints=https://eth-mainnet.g.alchemy.com/v2/<ALCHEMY API KEY> \
+  --metrics-enabled --rest-api-enabled
+  ```
+
+  ```shell Testnet
+  teku --network=pyrmont --eth1-endpoints=https://eth-goerli.g.alchemy.com/v2/<ALCHEMY API KEY> \
+  --metrics-enabled --rest-api-enabled
+  ```
+</CodeGroup>
+
+### 3. Run your validator
+
+In a separate terminal window (from your beacon node), start running the validator using the command below:
+
+Copy the full path of your keys from when you set up [your initial deposit](./). In the previous guide, the path for the keys was saved in
+
+`/Users/dubash/Downloads/eth2deposit-cli-256ea21-darwin-amd64/validator_keys/`
+
+<CodeGroup>
+  ```shell Mainnet
+  teku validator-client --network=mainnet --beacon-node-api-endpoint=http://192.10.10.101:5051 \
+  --validator-keys=eth2deposit:validator/passwords
+  ```
+
+  ```shell Testnet
+  teku validator-client --network=pyrmont --beacon-node-api-endpoint=http://192.10.10.101:5051 \
+  --validator-keys=validator/keys:validator/passwords
+  ```
+</CodeGroup>
+
+At this point you are up and running and ready for the validator assignment!
+
+***
+
+## Running beacon chain and validator using Docker
+
+You can run both the beacon chain and validator using docker and docker compose. [Full instructions can be found here](https://docs.teku.consensys.net/en/latest/HowTo/Get-Started/Installation-Options/Run-Docker-Image/). This will require you to have [Docker Compose](https://docs.docker.com/compose/).
+
+### 1. Creating your docker-compose file
+
+Create a docker compose file in the location you want to run your validator:
+
+<CodeGroup>
+  ```shell shell
+  touch docker-compose.yml
+  ```
+</CodeGroup>
+
+### 2. Copy your key
+
+Copy the full path of your keys from when you set up [your initial deposit](/docs). In the previous guide, the example path for the keys were saved in:
+
+`~/Downloads/eth2deposit-cli-256ea21-darwin-amd64/validator_keys/`as a file called `keystore-m_12381_3600_0_0_0-1629939192.json`
+
+In this folder, you will find your keys in a `json` format. Let's make a copy of this and rename it to a `txt` format
+
+<CodeGroup>
+  ```shell shell
+  cp keystore-m_12381_3600_0_0_0-1629939192.json keystore-m_12381_3600_0_0_0-1629939192.txt
+  ```
+</CodeGroup>
+
+Now we have two files in our folder, one with a `json` extension and one with a `txt`.
+
+We'll then create a folder called `teku` in our `validator_keys` directory. In this teku folder, we'll create a subfolder called `validator` and then create two new folders underneath validator. One called `keys` and one called `passwords`. The `.json` keys file will go in the keys folder and the `.txt` file will go into the passwords folder like below:
+
+![1154](2331ee9-keystore.png "keystore.png")
+
+Finally, we'll copy the **absolute path** of our teku folder by running:
+
+<CodeGroup>
+  ```shell shell
+  $> pwd
+  /Users/dubash/Downloads/eth2deposit-cli-256ea21-darwin-amd64/validator_keys/teku
+  ```
+</CodeGroup>
+
+We'll use this path in our `docker-compose` in our volumes location on line 33. In addition, we'll use our **Alchemy endpoint as our eth1 provider** (line25).
+
+<CodeGroup>
+  ```dockerfile Mainnet
+  version: '3.4'
+  services:
+    besu_node:
+      image: hyperledger/besu:latest
+      command: ["--network=goerli",
+                "--data-path=/opt/besu/data/data",
+                "--host-allowlist=*",
+                "--sync-mode=FAST",
+                "--rpc-http-enabled",
+                "--rpc-http-cors-origins=*",
+                "--rpc-http-api=ETH,NET,CLIQUE,DEBUG,MINER,NET,PERM,ADMIN,EEA,TXPOOL,PRIV,WEB3"]
+      volumes:
+        - ./besu:/opt/besu/data
+      ports:
+        # Map the p2p port(30303) and RPC HTTP port(8545)
+        - "8545:8545"
+        - "30303:30303"
+
+    teku_node:
+      environment:
+        - "JAVA_OPTS=-Xmx4g"
+      image: consensys/teku:latest
+      command: ["--network=pyrmont",
+                "--data-base-path=/opt/teku/data",
+                "--eth1-endpoint=https://eth-mainnet.g.alchemy.com/v2/<YOUR ALCHEMY API KEY>",
+                "--validator-keys=/opt/teku/data/:/opt/teku/data/",
+                "--p2p-port=9000",
+                "--rest-api-enabled=true",
+                "--rest-api-docs-enabled=true"]
+      depends_on:
+        - besu_node
+      volumes:
+        - /Users/dubash/Downloads/eth2deposit-cli-256ea21-darwin-amd64/validator_keys/teku:/opt/teku/data
+      ports:
+        # Map the p2p port(9000) and REST API port(5051)
+        - "9000:9000"
+        - "5051:5051"
+  ```
+
+  ```dockerfile Testnet
+  version: '3.4'
+  services:
+    besu_node:
+      image: hyperledger/besu:latest
+      command: ["--network=goerli",
+                "--data-path=/opt/besu/data/data",
+                "--host-allowlist=*",
+                "--sync-mode=FAST",
+                "--rpc-http-enabled",
+                "--rpc-http-cors-origins=*",
+                "--rpc-http-api=ETH,NET,CLIQUE,DEBUG,MINER,NET,PERM,ADMIN,EEA,TXPOOL,PRIV,WEB3"]
+      volumes:
+        - ./besu:/opt/besu/data
+      ports:
+        # Map the p2p port(30303) and RPC HTTP port(8545)
+        - "8545:8545"
+        - "30303:30303"
+
+    teku_node:
+      environment:
+        - "JAVA_OPTS=-Xmx4g"
+      image: consensys/teku:latest
+      command: ["--network=pyrmont",
+                "--data-base-path=/opt/teku/data",
+                "--eth1-endpoint=https://eth-goerli.alchemyapi.io/v2/<YOUR ALCHEMY API KEY>",
+                "--validator-keys=/opt/teku/data/:/opt/teku/data/",
+                "--p2p-port=9000",
+                "--rest-api-enabled=true",
+                "--rest-api-docs-enabled=true"]
+      depends_on:
+        - besu_node
+      volumes:
+        - ~/Downloads/eth2deposit-cli-256ea21-darwin-amd64/validator_keys:/opt/teku/data
+      ports:
+        # Map the p2p port(9000) and REST API port(5051)
+        - "9000:9000"
+        - "5051:5051"
+  ```
+</CodeGroup>
+
+Finally, run `docker compose up`!
+
+***
+
+## Running your validator assignment
+
+### Be ready for your validator assignment
+
+Keep both terminal windows running so that your validator can receive tasks and execute validator responsibilities. You should already be aware of all the responsibilities and [staking logistics](https://docs.ethhub.io/ethereum-roadmap/ethereum-2.0/proof-of-stake/#staking-logistics) for being a validator.
+
+You can check the status of your validator using block explorers like [beaconcha.in](https://beaconcha.in).
+
+**You are now officially an Ethereum 2.0 validator, congrats!** 🎉

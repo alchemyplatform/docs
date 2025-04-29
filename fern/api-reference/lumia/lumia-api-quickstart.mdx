@@ -1,0 +1,102 @@
+---
+title: Lumia API Quickstart
+description: Get started building on Lumia and using the JSON-RPC API
+subtitle: Get started building on Lumia and using the JSON-RPC API
+url: https://docs.alchemy.com/reference/lumia-api-quickstart
+slug: reference/lumia-api-quickstart
+---
+
+## Introduction
+
+Lumia is the first next-gen, ultra capital efficient, hyper-liquid zkEVM utilising cutting edge tech stack: PolygonCDK, AvailDA and (redundancy) private DAC, Polygon AggLayer, Gevolut, custom AVS', Chain Abstraction, Account Abstraction and more, thanks to co-development efforts between GatewayFM (RaaS) and Lumia's tech team.
+
+## What is the Lumia API?
+
+The Lumia API allows interaction with the Lumia network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
+
+```shell
+mkdir lumia-api-quickstart
+cd lumia-api-quickstart
+npm init --yes
+```
+
+```shell
+mkdir lumia-api-quickstart
+cd lumia-api-quickstart
+yarn init --yes
+```
+
+This creates a new directory named `lumia-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = 'https://lumia-prism.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Lumia mainnet:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the latest block information from Lumia's mainnet outputted to your console:
+
+```shell
+Latest Block: 0x...
+```
+
+## Next Steps
+
+Congratulations! You've made your first request to the Lumia network. You can now explore the various [JSON-RPC methods available on Lumia](/reference/lumia-api-endpoints) and start building your dApps on this innovative platform.

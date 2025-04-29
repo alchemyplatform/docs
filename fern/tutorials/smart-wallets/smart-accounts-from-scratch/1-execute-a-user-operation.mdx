@@ -1,0 +1,241 @@
+---
+title: 1. Execute a User Operation
+description: "Step 1 in the 'Smart Accounts From Scratch' Series: Let's execute a user operation!"
+subtitle: "Step 1 in the 'Smart Accounts From Scratch' Series: Let's execute a user operation!"
+url: https://docs.alchemy.com/docs/1-execute-a-user-operation
+slug: docs/1-execute-a-user-operation
+---
+
+<Info>
+  Check out this [YouTube video of an implementation](https://www.youtube.com/watch?v=NM04uxcCOEw) of this step!
+</Info>
+
+Ok, let's execute a user operation! Sounds simple, right? 😄
+
+Well, there are a few things we'll need to do to make this work:
+
+1. **Deploy the EntryPoint** - we'll [use this one](https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/core/EntryPoint.sol)!
+
+2. **Build the Account Contract** - we'll build an **AccountFactory** which deploys an account that implements [this interface](https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/interfaces/IAccount.sol)
+
+3. **Build & Send the UserOp**
+
+   1. **Top Fields** - we'll focus on four fields: `sender`, `nonce`, `initCode`, `callData`
+   2. **Pre-Fund the Account** - the account will need to pay for gas costs for now!
+   3. **...other fields** - there's several other fields in the userop we'll need to fill in, but we don't need to be precise with these for now!
+
+For this first step, we can deploy these to a local blockchain network to keep things simple! Later on, we'll deploy these to a testnet, so keep that in mind.
+
+## Deploy the EntryPoint
+
+In your codebase we recommend you start by installing these contracts: [https://github.com/eth-infinitism/account-abstraction](https://github.com/eth-infinitism/account-abstraction) (if you're using `npm` you can do `npm i @account-abstraction/[email protected]`).
+
+Deploying the EntryPoint is your first step, you'll find that in the repository under `@account-abstraction/contracts/core/EntryPoint.sol`.
+
+<Warning>
+  Until [OpenZeppelin is included as a dependency](https://github.com/eth-infinitism/account-abstraction/pull/402) in this package, you'll need to install it as well. Again, with npm you can do like this: `npm i @openzeppelin/[email protected]`
+</Warning>
+
+<Warning>
+  When deploying this contract, you may get an error saying the contract code size is too large. You'll need to set the compiler settings to use the optimizer at 1000 runs. See [here for Hardhat](https://hardhat.org/hardhat-runner/docs/guides/compile-contracts#configuring-the-compiler) and [here for Foundry](https://book.getfoundry.sh/reference/config/solidity-compiler#optimizer)
+</Warning>
+
+Once you have an address for this smart contract on your local blockchain, we can move onto the next task!
+
+✅ **Task 1/4**: Did you deploy the EntryPoint?
+
+## Build the Account Contract
+
+Ok, next you'll need to put on your Solidity hat! 🎩
+
+We're going to be making two smart contracts: the `Account` and the `AccountFactory`. First, let's focus on the factory! We mentioned you'll be working closely with the EntryPoint. Here's our first look! We need to find the spot where the EntryPoint is creating the smart account. Here it is: [https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/core/EntryPoint.sol#L337-L348](https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/core/EntryPoint.sol#L337-L348)
+
+Specifically, this line:
+
+<CodeGroup>
+  ```sol sol
+  senderCreator.createSender{gas : opInfo.mUserOp.verificationGasLimit}(initCode);
+  ```
+</CodeGroup>
+
+Is calling out to `senderCreator` to create the smart contract. Well, let's take a look at `senderCreator` then! Here it is: [https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/core/SenderCreator.sol](https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/core/SenderCreator.sol)
+
+This code looks pretty low-level, but we should take a close look at it:
+
+<CodeGroup>
+  ```sol sol
+  function createSender(bytes calldata initCode) external returns (address sender) {
+    // the first 20 bytes of the initCode is the factory address
+    address factory = address(bytes20(initCode[0 : 20]));
+    // the rest of the bytes are the calldata we're sending to the factory
+    bytes memory initCallData = initCode[20 :];
+    bool success;
+    /* solhint-disable no-inline-assembly */
+    assembly {
+      // make the call to the factory, sending the calldata from the initCode 
+      success := call(gas(), factory, 0, add(initCallData, 0x20), mload(initCallData), 0, 32)
+      // read the sender address as the return value
+      sender := mload(0)
+    }
+    if (!success) {
+      sender = address(0);
+    }
+  }
+  ```
+</CodeGroup>
+
+First, notice that the `factory` address is the first 20 bytes of the `initCode`. We'll be creating this `initCode` ourselves later, so it's important to keep that in mind. The rest of the `initCode` is the `initCallData` which gets sent to the factory inside of the assembly block. The important thing to notice there is that there is no standard method to call on the factory. Instead, the contract forwards all of the calldata along to the factory, meaning we'll need to decide which method we want to call ourselves.
+
+The last thing you should notice is that the result of the call should be the `address` of the newly created smart account. This is expected by the EntryPoint, so we'll need to make sure to return it. So, then, maybe our factory looks something like this:
+
+<CodeGroup>
+  ```sol sol
+  contract AccountFactory {
+      function createAccount(address _owner) public returns (address) {
+          Account newAccount = new Account(_owner);
+          return address(newAccount);
+      }
+  }
+  ```
+</CodeGroup>
+
+<Info>
+  You have a ton of flexibility here! Are there other constructor arguments you would like to pass to your account? The `_owner` seems helpful here, but it's entirely up to you how you would like to implement your account. Your welcome to also name the function `createAccount` like we did, but that's completely up to you. Additionally, here we chose the `CREATE` opcode, which will deploy the address using the `hash(factory, nonce)` but maybe you would prefer to use `CREATE2`? Perhaps something to come back to, later on!
+</Info>
+
+Once you have decided what your factory looks like, it's time to make your `Account`. The Account smart contract will need to take in the constructor arguments you specified in your factory.
+
+Additionally, it will need to implement the account interface here: [https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/interfaces/IAccount.sol](https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/interfaces/IAccount.sol) - specifically the `validateUserOp` method. For now, let's keep it simple! Return `0` so that the EntryPoint knows the user op it sent is valid, and can be executed.
+
+Lastly, let's create some kind of a public state change so we can easily check that the user operation executed as we expected! Here is the `Account` as I'm picturing it:
+
+<CodeGroup>
+  ```sol sol
+  contract Account is IAccount {
+      address public owner;
+      uint256 public count;
+
+      constructor(address _owner) {
+          owner = _owner;
+      }
+
+      function validateUserOp(UserOperation calldata, bytes32, uint256) external pure returns (uint256 validationData) {
+          // typically here we'd check this signature
+          return 0;
+      }
+
+      // this is our state changing function, which could be called anything
+      function execute() external {
+          count++;
+      }
+  }
+  ```
+</CodeGroup>
+
+Again, feel free to challenge yourself and make your own changes to this account! Just hold off on validating the user operation for now, we'll do that in a future step.
+
+✅ **Task 2/4**: Did you build both your Account and AccountFactory, and do they compile?
+
+## Build & Send the UserOp
+
+Phew, we made it to the last step of this task! Great work. This one is going to be real satisfying once we get it working. The goal here is to make that state change on your smart account using a user operation.
+
+Before we dive in, let's just take a look at all the fields of a user operation:
+
+<CodeGroup>
+  ```js js
+  const fields = {
+    // these fields matter for this step
+    initCode,
+    sender,
+    nonce,
+    callData,
+      
+    // from here down we'll fill in estimates or 0x
+    callGasLimit,
+    verificationGasLimit,
+    preVerificationGas,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+    paymasterAndData,
+    signature,
+  }
+  ```
+</CodeGroup>
+
+It sure seems like a lot of fields! Fortunately, we'll only worry about the first four fields, everything else we'll fill in with gas estimates or `"0x"` for now.
+
+### InitCode
+
+It's worth having a section specifically to talk about the `initCode` field. When we took a look at this field in the `SenderCreator` contract we saw that the first 20 bytes are the factory address, followed by the calldata to be sent to the factory. So let's go ahead and write the code to figure out what our `initCode` will be!
+
+First, you'll need to deploy the `AccountFactory`, since we'll need its address as the first 20 bytes. After that, you'll need to encode the `calldata` for the factory's method for creating the account. In the example we posted above we used `createAccount`. So for me the calldata will be the keccak hash of `createAccount(address)` plus the `address` we want to use for the owner, padded to 32 bytes. Most libraries (i.e. `viem`, `ethers`) have methods to help you encode function data so you don't need to do this manually.
+
+Once you have these two pieces, combine them! The calldata should be the factory address plus the encoded calldata to send along to the factory (be careful here if you're using strings to slice off the `0x` from the encoded calldata, so you don't end up with `0x{factory}0x{calldata}`, but rather `0x{factory}{calldata}`)
+
+<Info>
+  You may be asking yourself "who is the owner" of the smart account? And really, you get to decide! With AA we gain flexibility to programmatically decide what privileges each key has, and what kind of cryptography we use to verify that key.
+
+  In my example above we just provided an `address` as the owner, and in a future step we'll do a ECDSA recover to validate a signature on-chain. It's useful to keep in mind that this could instead be **many** keys and any type of cryptography to validate the signature.
+</Info>
+
+### Sender
+
+An interesting artifact of the way the EntryPoint is constructed is that we'll need to pre-calculate the `sender` address to be provided in the user operation. There's two ways we can do this:
+
+1. **Calculate it locally** - We can calculate it locally, ideally using a library (`ethers` and `viem` both have methods for getting a contract address, with both `CREATE` and `CREATE2`). If you used `CREATE` like we did, then you'll need to include the factory's nonce in the calculation to get the sender address (it is `hash(deployer + nonce)`. The first time you deploy a smart account, the nonce to use in the address calculation will be `1` and will increase by `1` each time you deploy another contract.
+2. **Ask the EntryPoint** - The `EntryPoint` has a public method called `getSenderAddress` where you can pass the `initCode` and get back the `sender` address.
+
+### Nonce
+
+Another really interesting aspect of the EntryPoint is its internal nonce management functions, which can be found here: [https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/core/NonceManager.sol](https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/core/NonceManager.sol)
+
+Each sender can have many nonces, which allows for transactions with different keys not to require sequential ordering, while still providing the replay protection. For our nonce, let's just a key of `0`. So in order to retrieve the `nonce` for our sender we can call out to the entryPoint `entryPoint.getNonce(sender, 0);`
+
+### CallData
+
+Finally, it's time to encode what we actually want to do with the smart account! Similar to the second part of the `initCode`, you'll likely want to use a library to encode this calldata for you. In the `Account` we showed above, this would be the calldata to call the state changing function `execute()`.
+
+### Pre-Fund the Account
+
+After you calculate the `sender` address, you'll need to pre-fund this address with some ether on the EntryPoint. The EntryPoint uses this deposited ether for gas fees, so we'll need to make sure there is ether there before we try to execute a user operation. To do this you can call `entryPoint.depositTo(sender, { value: 1 ether })`
+
+### Other User Op Fields
+
+As mentioned above the rest of the user operation fields can be filled in with either `0x` or estimates, here they are:
+
+<CodeGroup>
+  ```js js
+  const fields = {
+    sender,
+    nonce,
+    initCode,
+    callData,
+    callGasLimit: 200_000,
+    verificationGasLimit: 200_000,
+    preVerificationGas: 50_000,
+    maxFeePerGas: ethers.parseUnits("10", "gwei"),
+    maxPriorityFeePerGas: ethers.parseUnits("5", "gwei"), 
+    paymasterAndData: "0x", // we're not using a paymaster, for now
+    signature: "0x", // we're not validating a signature, for now
+  }
+  ```
+</CodeGroup>
+
+At this point, you should have a user operation ready to be sent to the entry point!
+
+✅ **Task 3/4**: Did you fill out all the fields in your user operation?
+
+## Ship it! 🚢
+
+The `entryPoint.handleOps` method takes two arguments: an array of user ops and an address as the beneficiary to receive fees. Simply pass in the user operation we created as the only element in the ops array and set a beneficiary, and you should be good to go! Wait for the transaction to be included and then go check to see if `sender` address has code deployed to it. If you kept your state variables public, check to see if they have been affected as you would expect.
+
+✅ **Task 4/4**: Was your state change successfully initiated from the user operation?
+
+If they have been, you are ready to move onto step 2!
+
+***
+
+What’s Next
+
+* [2. Build a Paymaster](/docs/2-build-a-paymaster)

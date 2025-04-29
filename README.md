@@ -2,24 +2,26 @@
 
 This repository contains the documentation for Alchemy's APIs and services. The documentation is built using [Fern](https://buildwithfern.com/), a modern documentation platform.
 
+The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
+
 ## Project Structure
 
-```
-docs/
+```text
+/
 ├── src/
 │   ├── openapi/     # REST API definitions (OpenAPI)
 │   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
 ├── fern/
-│   ├── docs/        # Written documentation (MDX)
+│   ├── <tab>/       # Written documentation for that tab (MDX)
 │   └── docs.yml     # Navigation and structure config
-└── docs/            # Generated documentation - Do NOT make changes here
+└── build/           # Generated files - Do NOT make changes here
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- [pnpm](https://pnpm.io/)
+* [pnpm](https://pnpm.io/)
 
 ### Installation
 
@@ -44,7 +46,7 @@ Start the development server:
 pnpm dev
 ```
 
-This will start a local server with live reloading. Visit `http://localhost:3000` to view the documentation.
+This will start a local server with live reloading. Visit `http://localhost:3020` to view the documentation.
 
 ### Building API Specs
 
@@ -58,7 +60,7 @@ This will generate all specs as dereferenced json files in the `build/` director
 
 ### Validation
 
-You can validate both specs and MDX using scripts.
+You can validate both OpenAPI and OpenRPC using scripts.
 
 ```bash
 # Validate REST API specs
@@ -67,15 +69,24 @@ pnpm run validate:rest
 # Validate RPC specs
 pnpm run validate:rpc
 
-# Validate markdown files
-pnpm run validate:mdx
-```
-
-Or you can run them together using
-
-```bash
+# Or you can run them together with
 pnpm run validate
 ```
+
+### Linting
+
+The project uses several linting tools to ensure code quality and consistency:
+
+* **ESLint**: For JavaScript and TypeScript code linting
+* **Prettier**: For code formatting
+* **Remark**: For Markdown/MDX linting
+* **TypeScript**: For type checking
+
+You can find the appropriate commands for running each in `package.json`
+
+#### Enforcement
+
+The project uses [Husky](https://typicode.github.io/husky) and [lint-staged](https://github.com/lint-staged/lint-staged) to run linting checks before commits.
 
 ## Contributing
 
@@ -83,10 +94,10 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Resources
 
-- [Fern Documentation](https://buildwithfern.com/learn)
-- [OpenAPI Specification](https://swagger.io/specification/)
-- [OpenRPC Specification](https://spec.open-rpc.org/)
+* [Fern Documentation](https://buildwithfern.com/learn)
+* [OpenAPI Specification](https://swagger.io/specification/)
+* [OpenRPC Specification](https://spec.open-rpc.org/)
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the CC-BY-4.0 License - see the LICENSE file for details.

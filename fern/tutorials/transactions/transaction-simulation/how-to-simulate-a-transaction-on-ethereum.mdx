@@ -1,0 +1,102 @@
+---
+title: How to simulate a transaction on Ethereum
+description: Learn how to simulate your transactions on the Ethereum network using Alchemy's Simulation APIs
+subtitle: Learn how to simulate your transactions on the Ethereum network using Alchemy's Simulation APIs
+url: https://docs.alchemy.com/docs/how-to-simulate-a-transaction-on-ethereum
+slug: docs/how-to-simulate-a-transaction-on-ethereum
+---
+
+## Introduction
+
+Understanding the impact of a transaction before execution is important in today's crypto landscape. With Alchemy's Simulation APIs, you can empower your dapp users to see exactly what a transaction will do, providing a clear picture and protecting them from potential scams. This tutorial will guide you on how to simulate Ethereum transactions using these powerful APIs. Let's get started.
+
+## Table of Contents
+
+1. [Understanding the Transaction Object](#Understanding-the-Transaction-Object)
+2. [Simulating a Transaction with Alchemy](#Simulating-a-Transaction-with-Alchemy)
+3. [Conclusion](#conclusion)
+
+## Understanding the Transaction Object
+
+The transaction object is the main part of Ethereum transactions. This object contains the details of the transaction that you're trying to execute or simulate. Here are the primary parameters of this object:
+
+* `from`: This is the address from which you are sending the transaction.
+* `to`: This is the address to which you are sending the transaction.
+* `value`: The amount of ether to send, represented in wei (1 ETH = 1e18 wei).
+* `data`: The data field is a hexadecimal string that holds the contract interaction details, such as the function to call and parameter information.
+
+For instance, consider the following example of a transaction object:
+
+<CodeGroup>
+  ```json json
+  {
+    "from": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "value": "0x0",
+    "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+  }
+  ```
+</CodeGroup>
+
+Alchemy's simulation API method called [`alchemy_simulateAssetChanges`](/reference/alchemy-simulateassetchanges) accept this transaction object as input to simulate the given transaction and measure its impact before it's executed on-chain.
+
+## Simulating a Transaction with Alchemy
+
+Simulating a transaction using Alchemy's simulation APIs is a straightforward process. It involves sending a transaction object to [`alchemy_simulateAssetChanges`](/reference/alchemy-simulateassetchanges) API method for the transaction to be simulated. Here's how:
+
+<CodeGroup>
+  ```json json
+  {
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "value": "0x0",
+        "data": "0x3d7403a30000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000b4e6577206d657373616765000000000000000000000000000000000000000000"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+When you send this request, it will provide a simulation of the transaction, showing you the result without affecting the actual Ethereum network. For example:
+
+<CodeGroup>
+  ```json json
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "ERC20",
+          "changeType": "TRANSFER",
+          "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+          "to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
+          "rawAmount": "1000000",
+          "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          "tokenId": null,
+          "decimals": 6,
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+          "amount": "1"
+        }
+      ],
+      "gasUsed": "0xbd81",
+      "error": null
+    }
+  }
+  ```
+</CodeGroup>
+
+Here the result is telling us that the transaction is an ERC20 transfer, it's transferring 1 USDC from the `from` address to the `to` address. It is also giving us some additional information about the transfer like the gas used for transaction and decimals, symbol, name, logo link of the ERC20 token being transferred.
+
+## Conclusion
+
+That's all there is to it! By simply sending a transaction object to [`alchemy_simulateAssetChanges`](/reference/alchemy-simulateassetchanges) API method, you can simulate the given transaction on the Ethereum network without executing it.
+
+Alchemy's simulation APIs are a powerful tool to understand and predict the impact of your transactions, helping you build safer and more efficient decentralized applications.

@@ -1,0 +1,106 @@
+---
+title: refreshNftMetadata -SDK
+description: Refreshes the cached metadata for a provided NFT contract address and token id. Returns a boolean value indicating whether the metadata was refreshed.
+subtitle: Refreshes the cached metadata for a provided NFT contract address and token id. Returns a boolean value indicating whether the metadata was refreshed.
+url: https://docs.alchemy.com/reference/sdk-refreshnftmetadata
+slug: reference/sdk-refreshnftmetadata
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Refreshes the cached metadata for a provided NFT contract address and token id. Returns a boolean value indicating whether the metadata was refreshed.
+
+This method is useful when you want to refresh the metadata for an NFT that has been updated since the last time it was fetched.
+
+<Info>
+  Note that the backend only allows one refresh per token every 15 minutes, globally for all users. The last refresh time for an NFT can be accessed on the `Nft.timeLastUpdated` field.
+</Info>
+
+To trigger a refresh for all NFTs in a contract, use [refreshContract](/reference/refreshcontract-sdk) instead.
+
+# Parameters
+
+| Name              | Type     | Description                      |
+| ----------------- | -------- | -------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT. |
+| `tokenId`         | `string` | Token id of the NFT.             |
+
+# Response
+
+| Property           | Type      | Description                  |
+| ------------------ | --------- | ---------------------------- |
+| `Promise<boolean>` | `boolean` | specifies `true` or `false`. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      const contractAddress = "0x06012c8cf97bead5deae237070f9587f8e7a266d";
+      const tokenId = "1";
+      //Call the method
+      let response = await alchemy.nft.refreshNftMetadata(contractAddress, tokenId)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  false
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `refreshNftMetadata` method:
+
+* **Updating NFT information**: NFT owners can use the `refreshNftMetadata` method to update the metadata associated with their NFT. For example, they can update the name, description, image, or other attributes.
+
+* **Correcting errors**: Sometimes errors can occur in the metadata associated with an NFT. For example, the wrong image may have been uploaded or the description may contain a typo. The `refreshNftMetadata` method can be used to correct these errors.
+
+* **Improving NFT marketability**: The metadata associated with an NFT can have a significant impact on its marketability. By updating the metadata, NFT owners can improve the chances of their NFTs being sold or traded.
+
+# Related Methods
+
+Here are some methods that are similar to the `refreshNftMetadata` method:
+
+* [refreshContract](/reference/refreshcontract-sdk) - Triggers a metadata refresh of all NFTs in the provided contract address.

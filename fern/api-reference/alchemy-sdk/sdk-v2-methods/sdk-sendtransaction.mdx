@@ -1,0 +1,139 @@
+---
+title: sendTransaction - SDK
+description: Submits transaction to the network to be mined. The transaction must be signed, and be valid (i.e. the nonce is correct and the account has sufficient balance to pay for the transaction).
+subtitle: Submits transaction to the network to be mined. The transaction must be signed, and be valid (i.e. the nonce is correct and the account has sufficient balance to pay for the transaction).
+url: https://docs.alchemy.com/reference/sdk-sendtransaction
+slug: reference/sdk-sendtransaction
+---
+
+Submits transaction to the network to be mined. The transaction must be signed, and be valid (i.e. the `nonce` is correct and the account has sufficient balance to pay for the transaction).
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Submits transaction to the network to be mined. The transaction must be signed, and valid (i.e. the `nonce` is correct and the account has sufficient balance to pay for the transaction).
+
+# Parameters
+
+| Name                | Type     | Description                     |
+| ------------------- | -------- | ------------------------------- |
+| `signedTransaction` | `string` | The signed transaction to send. |
+
+# Response
+
+| Property                       | Type     | Description                       |
+| ------------------------------ | -------- | --------------------------------- |
+| `Promise<TransactionResponse>` | `object` | Returns the transaction response. |
+
+### `TransactionResponse`. object parameters
+
+| Property        | Type     | Description                                                                                                 |
+| --------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `hash`          | `string` | The transaction hash.                                                                                       |
+| `from`          | `string` | `20 Bytes`. The `from` address.                                                                             |
+| `blockNumber?`  | `number` | The block number where this log was in. null when its pending. `null` when its pending log.                 |
+| `blockHash?`    | `string` | `32 Bytes` - hash of the block where this log was in. `null` when its pending. `null` when its pending log. |
+| `timestamp?`    | `number` | `Optional`. Returns only if a transaction has been mined.                                                   |
+| `confirmations` | `number` | number of transaction confirmations.                                                                        |
+| `raw`           | `string` | Raw value.                                                                                                  |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network, Wallet, Utils } = require("alchemy-sdk");
+  const dotenv = require("dotenv");
+  dotenv.config();
+
+  //Replace with your own private key
+  const {PRIVATE_KEY} = process.env;
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+  const wallet = new Wallet(PRIVATE_KEY);
+
+  const main = async () => {
+      // define the transaction
+      const transaction = {
+          to: "0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd",
+          value: Utils.parseEther("0.001"),
+          gasLimit: "21000",
+          maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
+          maxFeePerGas: Utils.parseUnits("20", "gwei"),
+          nonce: await alchemy.core.getTransactionCount(wallet.getAddress()),
+          type: 2,
+          chainId: 5, // Corresponds to ETH_GOERLI
+        };
+
+      const rawTransaction = await wallet.signTransaction(transaction);
+      const response = await alchemy.transact.sendTransaction(rawTransaction)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  { 
+   value: {
+      to: '0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd',
+      value: BigNumber { _hex: '0x038d7ea4c68000', _isBigNumber: true },
+      gasLimit: '21000',
+      maxPriorityFeePerGas: BigNumber { _hex: '0x012a05f200', _isBigNumber: true },
+      maxFeePerGas: BigNumber { _hex: '0x04a817c800', _isBigNumber: true },
+      type: 2,
+      chainId: 5
+    }
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `sendTransaction` method:
+
+* **Sending ETH**: `sendTransaction` can be used to send Ether from one Ethereum address to another. This is one of the most common use cases for sendTransaction.
+
+* **Deploying a smart contract**: When you deploy a smart contract to the Ethereum blockchain, you need to send a transaction that includes the bytecode of the contract. `sendTransaction` can be used to send this transaction.
+
+* **Interacting with a smart contract**: Once a smart contract has been deployed, you can interact with it by sending transactions that call its functions. `sendTransaction` can be used to send these transactions.
+
+* **Token transfers**: Tokens on the Ethereum blockchain are often built using smart contracts. `sendTransaction` can be used to transfer tokens from one Ethereum address to another.
+
+# Related Methods
+
+Here are the methods related to `sendTransaction`:
+
+* [sendPrivateTransaction](/reference/sendprivatetransaction-sdk): Used to send a single transaction to Flashbots. Flashbots will attempt to send the transaction to miners for the next 25 blocks.

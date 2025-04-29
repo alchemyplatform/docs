@@ -1,0 +1,111 @@
+---
+title: getTokenMetadata - SDK
+description: Returns metadata for a given token contract address.
+subtitle: Returns metadata for a given token contract address.
+url: https://docs.alchemy.com/reference/sdk-gettokenmetadata
+slug: reference/sdk-gettokenmetadata
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns metadata for a given token contract address.
+
+# Parameters
+
+| Name      | Type     | Description                               |
+| --------- | -------- | ----------------------------------------- |
+| `address` | `string` | The contract address to get metadata for. |
+
+# Response
+
+| Parameters                       | Type     | Description                                         |
+| -------------------------------- | -------- | --------------------------------------------------- |
+| `Promise<TokenMetadataResponse>` | `object` | Returns metadata for a given token contract address |
+
+### `TokenMetadataResponse` object parameters
+
+| Property   | Type     | Description                                                                                                      |
+| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| `name`     | `string` | The token's name, `null` if not defined in the contract and not available from other sources.                    |
+| `symbol`   | `string` | The token's symbol. `null` if not defined in the contract and not available from other sources.                  |
+| `decimals` | `number` | The number of decimals of the token. `null` if not defined in the contract and not available from other sources. |
+| `logo`     | `string` | URL of the token's logo image. `null` if not available.                                                          |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getTokenMetadata` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript gettokenmetadata.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Initialize variables for the parameters
+      const usdcContract = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+      
+      //Call the method to retrieve the token metadata
+      let response = await alchemy.core.getTokenMetadata(usdcContract)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    decimals: 6,
+    logo: 'https://static.alchemyapi.io/images/assets/3408.png',
+    name: 'USD Coin',
+    symbol: 'USDC'
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some possible use cases for the `getTokenMetadata` method:
+
+* **Displaying Token Information**: DApps and other blockchain applications often need to display information about a particular token. By using `getTokenMetadata`, developers can easily retrieve information such as the token name, symbol, and decimal places for display in their application.
+
+# Related Methods
+
+Here are the methods related to `getTokenMetadata`:
+
+* [getTokenBalances](/reference/gettokenbalances): Returns the ERC-20 token balances for a specific owner address.
+* [getFeeData](/reference/getfeedata-sdk): Returns the recommended fee data to use in a transaction. For an EIP-1559 transaction, the `maxFeePerGas` and `maxPriorityFeePerGas` should be used.

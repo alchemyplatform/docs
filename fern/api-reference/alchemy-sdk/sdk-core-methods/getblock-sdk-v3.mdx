@@ -1,0 +1,165 @@
+---
+title: getBlock - SDK
+description: Returns the block from the network based on the provided block number or hash.
+subtitle: Returns the block from the network based on the provided block number or hash.
+url: https://docs.alchemy.com/reference/getblock-sdk-v3
+slug: reference/getblock-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns the block from the network based on the provided block number or hash. Transactions on the block are represented as an array of transaction hashes. To get the full transaction details on the block, use [getBlockWithTransactions](/reference/sdk-getblockwithtransactions) instead.
+
+# Parameters
+
+| Name                  | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockHashOrBlockTag` | `string` | The block hash or one of the following block tags: - `pending`: A sample next block built by the client on top of latest and containing the set of transactions usually taken from local mempool. Intuitively, you can think of this as block that have not been mined yet. - `latest`: The most recent block in the chain observed by the client, this block may be re-orged out of the chain even under normal conditions. - `earliest`: The lowest numbered block the client has available. Intuitively, you can think of this as the first block created. |
+
+# Response
+
+| Property         | Type     | Description                                                                         |
+| ---------------- | -------- | ----------------------------------------------------------------------------------- |
+| `Promise<Block>` | `object` | Returns a block object with the following fields or `null` when no block was found. |
+
+### `Block` response object parameters
+
+| Parameter      | Type        | Description                                                                                                                                                                 |
+| -------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hash`         | `string`    | `32 Bytes` - hash of the block. `null` when its pending block.                                                                                                              |
+| `parentHash`   | `string`    | `32 Bytes` - hash of the parent block.                                                                                                                                      |
+| `number`       | `number`    | The block number. `null` when it's pending block.                                                                                                                           |
+| `timestamp`    | `number`    | The unix timestamp for when the block was collated.                                                                                                                         |
+| `nonce`        | `string`    | A nonce is a value that represents the number of transactions sent by the sender's address, ensuring the transactions are processed in order and preventing replay attacks. |
+| `difficulty`   | `number`    | Integer of the difficulty for this block.                                                                                                                                   |
+| `gasLimit`     | `BigNumber` | The maximum gas allowed in this block.                                                                                                                                      |
+| `gasUsed`      | `BigNumber` | The total used gas by all transactions in this block.                                                                                                                       |
+| `miner`        | `string`    | `20 Bytes` - the address of the beneficiary to whom the mining rewards were given.                                                                                          |
+| `extraData`    | `string`    | Some extra data if existing in hex.                                                                                                                                         |
+| `transactions` | `array`     | An arrray containing transactions.                                                                                                                                          |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getBlock` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getblock.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "alchemy-replit", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    // using the block tag "latest" to get the latest block 
+    // could've used a block hash to get a particualr block as well
+    let blockTagOrHash = "latest"
+
+    let response = await alchemy.core.getBlock(blockTagOrHash);
+
+    // logging the response to the console
+    console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "hash": "0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3",
+      "parentHash": "0x6890edf8ad6900a5472c2a7ee3ef795f020ef6f907afb7f4ebf6a92d6aeb1804",
+      "number": 15221026,
+      "timestamp": 1658877717,
+      "nonce": "0xd8c399035d6e6e8f",
+      "difficulty": null,
+      "gasLimit": {
+          "type": "BigNumber",
+          "hex": "0x01ca35d2"
+      },
+      "gasUsed": {
+          "type": "BigNumber",
+          "hex": "0x01ca1ae1"
+      },
+      "miner": "0x52bc44d5378309EE2abF1539BF71dE1b7d7bE3b5",
+      "extraData": "0x6e616e6f706f6f6c2e6f7267",
+      "transactions": [
+          "0xba4938ea41154427c8cb424ea89d9f150f139ed10065fe43ce11102dc82e1c37",
+          "0x98cc6b4b66453e184f65728fee265a726b030c5ddcfc1311a01ea5345c3959ab",
+          "0x2cbb4968cce66c73f2755fe7ef177981962afa7943f658b323e61850f31e4163",
+          "0x85cd0a68df54ddeb40fdccc86262f9480e3b94e934bd105bf59b3c0f991b3e34",
+          "0xc37cecf4880ca1a51a91f3063821c552cdd2966a76bd662ccc18f94311720e26",
+          "0xbd319961c938441c9d5421b27d24e2985c5fb4e3aea3a97e640f672f38b9faaf",
+          "0x177676cf64b7a9cfd6e25b0c6dfe6d94cc5731587e2d5a8c14d4b0dca4633e6d",
+          "0xc7d63e68ea7c1366e891000d71d35aa0c691317a69e498bea0b4736415249812",
+          "0x95ec1381d6eacf757e15aa95c1ea1cdfda71ba8b552349ef7c711b93655b2715",
+          "0x1e403778aee7dad56c20183b818132c39a778a11784861b804d34ac637576780",
+          "0x1ce311d3b5f2f5bd4ffb23dc455cb9cef93208460524c880c0a0b56aeaf0aa8c",
+          "0xed316486d9756d7d46c67e9dc332dcc58a2dd8bfbdfba94816fc617c902dbaf2",
+          "0x57f158e41cf1d91f20527d91fe66c8deb00b4955b00be5bb8b3628191e2e5eb5",
+          "0xb14b4d54b810b6caf5df21aa860e48e68f9c42c4ba7cb7a38d9f83d6b02367bf",
+          "0xd5f1b189446c3e238f54123e36a2dbce831fc83b325e9a1a4704be35b5b8dfb8",
+          "0x8113c2326ecc10901a0ab869635cc9aa6687a4de1f5b6cf05c70297a0743a45b",
+          "0x88c5db5deaf0813acd912dcda4dd00b018fb240dc9b0c70322390700d4a77f12",
+          "0xb4402dc022905cb32c58ba350b14f364751303756c24fd5d40bea4cdb7240337",
+          "0x02ec5bd3bffb4f49ec863b2f803ebd61f979d17e8bfe75861f14fdccda1c6a0f",
+          "0xbd5b2292484b12ec65e7518c2af9fd83df39d77bcf074adc293974ec8e87538e",
+          "0x0b6cdd161684471ddb785c456f534088ce6e6938d521fcd2be43ebe060bbdce9",
+          "0xced37b05ab17208cf15ff66916c92a635cdf1a369a3dc2ccfcac99e07e9ea564",
+          "0x2718f1b2d03925d18e70f43fff42b4b9ff8f656a3bf9cd2b1448236a97b7f7f0",
+          "0xd3cc112ea4b5224e0c67cf7c8db6df4d7d18e76d73467c9015e958083688c4cc",
+          "0x54eebb9e3c3b74e21b2ea5c0e1a8a73ea827eecc78c268cc796c306c4eb59556",
+          "0xc1aa619e47085b6aa98eb16066cc7d12ab9c9911096066e015cd09e50fca38e8",
+          "0xf5719639babe39602e11f01113edfc8830c36d79e38d71dbe94bf00b7fa159e5",
+          "0x2c4a3375971cfb1c727824933bcf289a4a30b5262a909ce92161dc7bd6b08a23",
+          "0x185a6f8ad77508078d9e1dec4f284ae4b3ad64683ca9817f79593f3487e181e4",
+          "0xb68eb4c1fe149693ee04408cd2d34f555af51baacd52aae27b6c13c0ff003e81",
+          "0x00861e23118207ac981a1cd2e30db47cc1c2f1bc071120cb193cc68d13732cb8",
+          "0x258f7a6a4c288cbd75da7a5bef24144ddbe03fbafb4d7ce42c4bf408adc7dde4"
+        ]
+        "baseFeePerGas": {
+          "type": "BigNumber",
+          "hex": "0x02aa2d1d80"
+        },
+        "_difficulty": {
+          "type": "BigNumber",
+          "hex": "0x2a31d8a2cf4dd7"
+       }
+  }
+  ```
+</CodeGroup>
+
+# Related Methods
+
+Here are the methods related to `getBlock`:
+
+* [getBlockWithTransactions](/reference/getblockwithtransactions-sdk): Returns the block from the network based on the provided block number or hash. Includes full transactions from the block.

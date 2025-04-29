@@ -1,0 +1,111 @@
+---
+title: getFeeData - SDK
+description: Returns the recommended fee data to use in a transaction. For an EIP-1559 transaction, the maxFeePerGas and maxPriorityFeePerGas should be used. For legacy transactions and networks which do not support EIP-1559, the gasPrice should be used.
+subtitle: Returns the recommended fee data to use in a transaction. For an EIP-1559 transaction, the maxFeePerGas and maxPriorityFeePerGas should be used. For legacy transactions and networks which do not support EIP-1559, the gasPrice should be used.
+url: https://docs.alchemy.com/reference/sdk-getfeedata
+slug: reference/sdk-getfeedata
+---
+
+Returns the recommended fee data to use in a transaction. For an EIP-1559 transaction, the `maxFeePerGas` and `maxPriorityFeePerGas` should be used.
+
+For legacy transactions and networks which do not support EIP-1559, the `gasPrice` should be used.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns the recommended fee data to use in a transaction. For an EIP-1559 transaction, the `maxFeePerGas` and `maxPriorityFeePerGas` should be used.
+
+For legacy transactions and networks which do not support EIP-1559, the `gasPrice` should be used.
+
+# Response
+
+| Property           | Type     | Description                     |
+| ------------------ | -------- | ------------------------------- |
+| `Promise<FeeData>` | `object` | Returns an object with the fees |
+
+### `FeeData` response object parameters
+
+| Property               | Type              | Description                                                                                                                                   |
+| ---------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maxFeePerGas`         | `number / string` | `BigNumber` - The `maxFeePerGas` to use for a transaction. This is based on the most recent block's baseFee.                                  |
+| `maxPriorityFeePerGas` | `number / string` | `BigNumber` - The `maxPriorityFeePerGas` to use for a transaction. This accounts for the uncle risk and for the majority of current MEV risk. |
+| `gasPrice`             | `number / string` | `BigNumber` - The `gasPrice` to use for legacy transactions or networks which do not support EIP-1559.                                        |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getFeeData` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getfeedata.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+
+      //Call the method to return the recommended fee data to use in a transaction.
+      let response = await alchemy.core.getFeeData()
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    lastBaseFeePerGas: BigNumber { _hex: '0x0d9fbc42bf', _isBigNumber: true },
+    maxFeePerGas: BigNumber { _hex: '0x1b98e0b47e', _isBigNumber: true },
+    maxPriorityFeePerGas: BigNumber { _hex: '0x59682f00', _isBigNumber: true },
+    gasPrice: BigNumber { _hex: '0x0da39585ec', _isBigNumber: true }
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some possible use cases for the `getFeeData` method:
+
+* **Transaction fee estimation**: Developers can use the `getFeeData` method to estimate the fee required for a particular transaction. This information can be used to determine the optimal fee to set for a transaction, given the current network conditions.
+
+* **Gas price monitoring**: The `getFeeData` method can be used to monitor changes in the gas price of a blockchain network over time. This information can be used to adjust gas price strategies for applications, ensuring they stay competitive and cost-effective.
+
+* **Smart contract development**: When developing smart contracts, developers need to ensure that their contracts operate within the gas limits of the network. The `getFeeData` method can be used to calculate the gas costs associated with specific operations, helping developers to optimize their contract code and stay within network constraints.
+
+# Related Methods
+
+Here are the methods related to `getFeeData`:
+
+* [getGasPrice](/reference/getgasprice-sdk): Returns the current price per gas in `wei`.

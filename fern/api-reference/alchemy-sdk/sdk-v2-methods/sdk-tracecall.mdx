@@ -1,0 +1,149 @@
+---
+title: traceCall - SDK
+description: Runs an eth_call with the context of the provided block execution using the final state of the parent block as the base.
+subtitle: Runs an eth_call with the context of the provided block execution using the final state of the parent block as the base.
+url: https://docs.alchemy.com/reference/sdk-tracecall
+slug: reference/sdk-tracecall
+---
+
+Runs an `eth_call` with the context of the provided block execution using the final state of the parent block as the base.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+`traceCall`runs an [`eth_call`](/reference/eth-call) with the context of the provided block execution using the final state of the parent block as the base.
+
+# Parameters
+
+| Name              | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Example                                                                                                                                                                                                             |
+| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `transaction`     | `object` | The transaction to debug trace. This is an object with the following optional properties: 1. `to?`: The address the transaction is directed to. 2. `from?`: The address the transaction is sent from. 3. `gas?`: The gas provided for the transaction execution, as a hex string. 4. `gasPrice?`: The gas price to use as a hex string. 5. `value?`: The value associated with the transaction as a hex string. 6. `data?`: The data associated with the transaction.                                                                                                                                                                                                                                                                                                                                   | `{ "from": "0x6f1FB6EFDf50F34bFA3F2bC0E5576EdD71631638", "to": "0x6b175474e89094c44da98b954eedeac495271d0f", "value": "0x0", "data": "0x70a082310000000000000000000000006E0d01A76C3Cf4288372a29124A26D4353EE51BE"}` |
+| `blockIdentifier` | `object` | The block to debug the transaction in. Can be a block hash, block number hex string, or a commitment level. There are the following commitment levels: 1. `pending`: Sample next block inferred by Alchemy built on top of the latest block. 2. `latest`: The most recent block in the canonical chain observed by Alchemy. 3. `safe`: The most recent crypto-economically secure block that cannot be re-orged outside of manual intervention driven by community coordination. This is only available on Goerli testent. 4. `finalized`: The most recent secure block that has been accepted by >2/3 of validators. This block is very unlikely to be re-orged. This is only available on Goerli testnet. 5. `earliest`: The lowest numbered block available that is usually the first block created. | `0x5568A`, `latest`, `0x04e19fc95ec33e65c667d26a69d66d024732891c13742a345f5001ff900bd60a `etc.                                                                                                                      |
+| `tracer`          | `object` | Tracer type and configuration. This tracer tracks all call frames executed during a transaction, including depth 0. The returned result is a nested list of call frames executed as part of the call. It is an object with the following options: 1. `type`: The type of tracer to use during the execution. The options are [`callTracer`](/reference/debug-tracecall#calltracer) and [`prestateTracer`](/reference/debug-tracecall#prestatetracer) 2. `onlyTopCall?`: Whether to only trace the main (top-level) calls and ignore sub-calls. It is a boolean and defaults to `false`.                                                                                                                                                                                                                 | `{ type: callTracer, onlyTopCall: true }`                                                                                                                                                                           |
+
+# Response
+
+The `traceCall` method returns a response object with the following properties.
+
+| Property (Field) | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| `type`           | The type of call: `CALL` or `CREATE` for the top-level call. |
+| `from`           | From address of the transaction.                             |
+| `to`             | To address of the transaction.                               |
+| `value`          | Amount of value transfer as a hex string.                    |
+| `gas`            | Gas provided for call as a hex string.                       |
+| `gasUsed`        | Gas used during the call as a hex string.                    |
+| `input`          | Call data.                                                   |
+| `output`         | Return data.                                                 |
+| `errror?`        | Optional error field.                                        |
+| `revertReason?`  | Solidity revert reason, if the call reverted.                |
+| `calls?`         | Array of sub-calls executed as part of the original call.    |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```text yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `traceCall` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript traceCall response
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "demo", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  // Example of using the traceCall method
+  const main = async () => {
+    // The transaction to debug trace.
+    let transaction = {
+      from: "0x6f1FB6EFDf50F34bFA3F2bC0E5576EdD71631638",
+      to: "0x6b175474e89094c44da98b954eedeac495271d0f",
+      value: "0x0",
+      data: "0x70a082310000000000000000000000006E0d01A76C3Cf4288372a29124A26D4353EE51BE",
+    };
+
+    // The block to debug the transaction in.
+    let block = "latest";
+
+    // Tracer type and configuration.
+    let tracerConfig = {
+      type: "callTracer",
+      onlyTopCall: true,
+    };
+
+    // Calling the traceCall method
+    let response = await alchemy.debug.traceCall(
+      transaction,
+      block,
+      tracerConfig
+    );
+
+    // Logging the response to the console
+    console.log(response);
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+And here is an example of what a successful response to this request might look like:
+
+<CodeGroup>
+  ```json sendTransaction Response
+  {
+    type: 'CALL',
+    from: '0x6f1fb6efdf50f34bfa3f2bc0e5576edd71631638',
+    to: '0x6b175474e89094c44da98b954eedeac495271d0f',
+    value: '0x0',
+    gas: '0x7fffffffffffac47',
+    gasUsed: '0xa2a',
+    input: '0x70a082310000000000000000000000006e0d01a76c3cf4288372a29124a26d4353ee51be',
+    output: '0x0000000000000000000000000000000000000000000000000858898f93629000'
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Some of the use cases for `traceCall` are:
+
+* **Debugging Contract Issues**: Developers can use the `traceCall` method to diagnose and fix issues with smart contract execution by tracing the flow of execution and the state changes made by the contract.
+
+* **Optimizing Contract Performance**: Developers can use the `traceCall` method to identify and optimize slow or inefficient sections of code by tracing the execution and gas consumption of smart contract calls.
+
+* **Verifying Contract Security**: Security auditors can use the `traceCall` method to verify the security of smart contracts by tracing the execution of malicious inputs and evaluating the contract's response.
+
+* **Improving Contract User Experience**: Developers can use the `traceCall` method to improve the user experience of smart contract interactions by tracing the execution of user inputs and evaluating the contract's response.
+
+# Related Methods
+
+Here are the methods related to `traceCall`:
+
+* [`traceTransaction`](/reference/sdk-tracetransaction): Attempts to run the transaction in the exact same manner as it was executed on the network. It will replay any transaction that may have been executed prior to this one before it and will then attempt to execute the transaction that corresponds to the given hash.
+* [`traceBlock`](/reference/sdk-traceblock): Replays a block that has already been mined.

@@ -1,0 +1,108 @@
+---
+title: isSpamContract - SDK
+description: Returns whether a contract is marked as spam or not by Alchemy.
+subtitle: Returns whether a contract is marked as spam or not by Alchemy.
+url: https://docs.alchemy.com/reference/isspamcontract-sdk-v3
+slug: reference/isspamcontract-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+<Info>
+  Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast. More to come soon!
+</Info>
+
+# Description
+
+Returns whether a contract is marked as spam or not by Alchemy. For more information on how we classify spam, go to our [NFT API FAQ page](https://docs.alchemy.com/alchemy/enhanced-apis/nft-api/nft-api-faq#nft-spam-classification).
+
+# Parameters
+
+| Name              | Type     | Description                    |
+| ----------------- | -------- | ------------------------------ |
+| `contractAddress` | `string` | The contract address to check. |
+
+# Response
+
+| Property                          | Type     | Description                                                   |
+| --------------------------------- | -------- | ------------------------------------------------------------- |
+| `Promise<IsSpamContractResponse>` | `object` | Returns an object containing the spam status of the contract. |
+
+## `IsSpamContractResponse` object properties
+
+| Property         | Type      | Description                                                        |
+| ---------------- | --------- | ------------------------------------------------------------------ |
+| `isSpamContract` | `boolean` | The spam status of the contract. Returns either `true` or `false`. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address
+      const address = "0x000440f08436a7b866d1ae42db5e0be801da722a";
+
+      //Call the method to check if a contract is a spam
+      const response = await alchemy.nft.isSpamContract(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "isSpamContract": false
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `isSpamContract` method:
+
+* **Preventing spam transactions**: If you are building a blockchain-based application or service, you may want to prevent spam transactions from being processed on your network. By checking whether a contract is a spam, you can filter out transactions that are likely to be spam and prevent them from clogging up your network.
+
+* **Improving search results**: If you are building a search engine for smart contracts, you may want to filter out spam contracts from your search results. By using the `isSpamContract` method, you can identify and exclude contracts that are known to be spam.
+
+* **Enhancing security**: If you are building a security system for a smart contract platform, you may want to identify contracts that are known to be malicious or spammy. By using the `isSpamContract` method, you can flag these contracts as high-risk and take additional security measures to protect your platform and users.
+
+# Related Methods
+
+* [getSpamContracts](/reference/getspamcontracts-sdk): Returns a list of all spam contracts marked by Alchemy.

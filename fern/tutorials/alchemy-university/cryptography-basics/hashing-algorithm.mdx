@@ -1,0 +1,58 @@
+---
+title: What is a hashing algorithm?
+description: A hashing algorithm reduces any input to a unique fixed-sized output. Cryptographic hashing algorithms are one-way, produce the same output for the same input, and have rare collisions.
+subtitle: A hashing algorithm reduces any input to a unique fixed-sized output. Cryptographic hashing algorithms are one-way, produce the same output for the same input, and have rare collisions.
+url: https://docs.alchemy.com/docs/hashing-algorithm
+slug: docs/hashing-algorithm
+---
+
+A good hashing algorithm is a function that will take any sized input and reduce it down to a nearly unique fixed-sized output.
+
+Hashing has its uses outside of [cryptography](/docs/public-key-cryptography), most notably for data storage in hash tables (see [hash function](https://en.wikipedia.org/wiki/Hash_function)). For our purposes, we're going to be focused on hashing algorithms that are suitable for cryptography. 🔑
+
+### Cryptographic Hashing Algorithms
+
+Let's take a look at some of the properties of cryptographic hashing algorithms.
+
+1. **Given the same input, they produce the same output**
+
+   For example, no matter how many times I pass `Hello World` into the [SHA256](https://en.wikipedia.org/wiki/SHA-2) hashing algorithm I will always get back `a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e`.
+
+2. **Given a slightly different input, a completely different output is returned**
+
+   In the example above, we used `Hello World`. If we were to change this slightly, the hash produced would look completely different!
+
+   Some examples:
+
+   <CodeGroup>
+     ```javascript javascript
+     sha256("Hello World"); // a591a6…9f146e
+     sha256("hello World"); // db4067…4e7d7e
+     sha256("Hello  World"); // 60ab93…cf11b3
+     sha256("Hello World!"); // 7f83b1…6d9069
+     ```
+   </CodeGroup>
+
+   👆🏼 Whether we added an additional space, exclamation mark, *or even changed capitalization*, the output will always be completely different.
+
+   <Info>
+     The returned results here are shown in hexadecimal format. It's a pretty common standard for displaying data in cryptography for convenience reasons: every two characters represents a byte and it is more compact than a long string of 1s and 0s with binary.
+   </Info>
+
+3. **They should be one-way**
+
+   Starting with an output like `ffd85b0d22019d89837d841224eb51166dbdb43f8f4fbd18baf96c78cd721d4c` you would have no way of finding out what input creates this output. The only thing you could do is **guess**, which is referred to as a brute-force attack. Good luck! That might take you a while.
+
+4. **Collisions should be extremely rare**
+
+   It should nearly impractical to find two inputs that map to the same output. And once again, the only way to do so should be through guessing.
+
+These properties make for some really awesome cryptographic solutions. We'll frequently refer to hashes when discussing [blockchain](/docs/what-is-a-blockchain). Cryptographic hashes are super cool! 😎
+
+<Info>
+  It's fun to try out SHA256. Try typing "SHA256 online" or "SHA256 generator" into Google to find a quick tool that will take messages and return the SHA256 hash. You should be able to come up with the hashes shown in the examples above and create your own!
+</Info>
+
+## Learn More About Hashing
+
+Alchemy University offers [free web3 development bootcamps that explain hashing](https://university.alchemy.com/ethereum) and help developers master the fundamentals of web3 technology. Sign up for free, and start building today!

@@ -1,0 +1,110 @@
+---
+title: Transfers API Quickstart
+description: Quickstart guide for getting transfers and transaction history for contracts and addresses. The Transfers API allows you to easily fetch historical transactions for any address without having to scan the entire chain and index everything for each of your users.
+subtitle: Quickstart guide for getting transfers and transaction history for contracts and addresses. The Transfers API allows you to easily fetch historical transactions for any address without having to scan the entire chain and index everything for each of your users.
+url: https://docs.alchemy.com/reference/transfers-api-quickstart
+slug: reference/transfers-api-quickstart
+---
+
+### New CU Costs
+
+Build and scale apps with lower CU costs on key APIs
+
+[How CU costs work](<https://docs.alchemy.com/reference/compute-unit-costs?utm_source=docs\&utm_medium=website\&utm_campaign=build >)
+
+*To use the Transfers API you'll need to [create a free Alchemy account](https://alchemy.com/?r=affiliate:4cf7f72f-9238-45c4-a230-6840fcd048ae) first!*
+
+## Transfers API Support
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+*NOTE: see the table below for the [types of transfers](#types-of-transfers) supported by each network*
+
+## What are Transfers?
+
+Transfers are a representation of value being exchanged between two accounts. Often times users wish to see the historical transactions associated with a specific account or address. This is currently an extremely challenging and inefficient task, requiring users to scan the entire blockchain and index everything to search for transactions associated with the desired address. However, with the Transfers API users can query all types of historical transactions for a given address in a single request.
+
+## What's an Example Use Case for Transfers?
+
+An example use case for the requesting transfer events would be integrating historical transaction data into your dApp. For instructions on how to do this check out this tutorial on [Integrating Historical Transaction Data into your dApp](/docs/integrating-historical-transaction-data-into-your-dapp).
+
+## Types of Transfers
+
+There are five main types of transfers that are captured when using this API. See below for the types of transfers:
+
+### 1. External Eth Transfers
+
+These are top level transactions that occur with a from address being an external (user created) address. External addresses have private keys and are accessed by users.
+
+### 2. ERC20 Transfers
+
+Event logs for ERC20 transfers.
+
+### 3. ERC721 Transfers
+
+Event logs for ERC721 transfers.
+
+### 4. ERC1155 Transfers
+
+These are event logs for ERC1155 transfers.
+
+### 5. Internal Eth Transfers
+
+These are transfers that occur where the `fromAddress` is an internal (smart contract) address. (ex: a smart contract calling another smart contract or smart contract calling another external address). For a full deep dive into internal transfers check out this article on [What are Internal Transactions?](/docs/what-are-internal-transactions).
+
+<Info>
+  For efficiency, we do not return **internal transfers with 0 value** as they don't provide useful information without digging deeper into the internal transaction itself. If you are interested in these type of events see our **[Trace API](/reference/trace-api-quickstart)**.
+
+  Additionally, we do not include any internal transfers with call type `delegatecall` because although they have a *value* associated with them they do not actually *transfer* that value (see **[Appendix H of the Ethereum Yellow Paper](https://ethereum.github.io/yellowpaper/paper.pdf)** if you're curious).
+
+  We also do not include miner rewards as an internal transfer.
+</Info>
+
+### 6. Special NFT Transfers
+
+The special NFT endpoint allows users to query for NFTs that don't follow any ERC standards. The 2 included NFTs currently are CryptoPunks and CryptoKitties, which both predate current NFT standards.
+
+## Pagination
+
+There are two cases in which pagination will be required:
+
+1. If you have a specific number of responses that you want to receive in a given payload
+2. If you receive a response with more than 1000 results.
+
+In the first case, you should use the `maxCount` parameter in your request to specify the number of responses you wish to receive. If there are more results than specified in `maxCount`, you will receive a value for `pageKey` in your result which you should use to fetch the next response load by putting the returned `pageKey` value in the `pageKey` parameter of your next request. Continue to do so until a `pageKey` is no longer returned (meaning you've fetched all the results).
+
+In the second case, you will also receive a value for `pageKey` in the response, which you should use to fetch the next 1000 (or however many is left) by putting the returned `pageKey` value in the `pageKey` parameter of your next request.
+
+<Warning>
+  Each page key has a TTL (Time to Live) of 10 minutes so if you receive a response with a `pageKey` value you must send the next request (with the `pageKey`) within the 10 minute window, otherwise you will have to restart the entire request cycle.
+</Warning>
+
+## How to get timestamps for a transaction?
+
+A transaction object will have a block number associated with it, the block number is the blockchain's measure of time, however, if you want a standard timestamp you can easily get that by specifying `withMetadata=true` in your `alchemy_getAssetTransfers` \*\*request, or make a second call to `eth_getBlockByNumber`, passing in the `blockNum` field from the `alchemy_getAssetTransfers` \*\*response payload.
+
+<Info>
+  Surprisingly, a block's timestamp is actually the time that the **previous** **block** was mined not the block that the timestamp is contained within. So for Ethereum Mainnet, blocks tend to actually be mined around 14 seconds after their timestamps.
+</Info>
+
+## How are transactions ordered?
+
+By default the Transfers API returns transactions in ascending order so from oldest --> newest transactions. However if you wish to change the order to be from newest --> oldest transactions you can do so by specifying the `order` parameter to `desc`.
+
+## Why does my ERC721 transfer have 0 value?
+
+There are typically two transfers that happen with NFTs:
+
+1. The transfer of the token from the previous owner to the new owner
+2. The purchase or sale of the NFT token (the transfer of value between the new and previous owner) ERC721 token transfers only capture the first type of transfer (token) not the second type (sale). If you want to see the second type and the transaction was made in ETH you'll need to include `external` transfer types in your request. If the transaction was made in another erc20 token you should include `erc20` transfer types in your request.
+
+## What are the different types of block tags?
+
+There are 2 different types of Block tags useful in the `toBlock` field of `getAssetTransfers`
+
+1. `latest` - This refers to the latest block that was mined on the blockchain you're querying i.e. the current head of the blockchain
+2. `indexed` - This tag returns transfers data from our cache which may not be up-to-date with the latest block mined on chain. This is useful in case of network fork or partial outage and your application can tolerate some lag

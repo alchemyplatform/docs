@@ -1,0 +1,117 @@
+---
+title: How to Use a Contract in Ethers.js
+description: This guide will introduce you to use a Contract in Ethers.js and level up your Web3 stack!
+subtitle: This guide will introduce you to use a Contract in Ethers.js and level up your Web3 stack!
+url: https://docs.alchemy.com/docs/ethers-js-contract
+slug: docs/ethers-js-contract
+---
+
+## What is a Contract in Ethers.js?
+
+A Contract is an abstraction to a specific contract on the blockchain. It can be used as a JavaScript/TypeScript object that allows developers to read, write and deploy contracts to and from the blockchain.
+
+### Ethers.js Contract Use Cases
+
+The following consists of potential use cases with Contract within [Ethers.js](/docs/what-is-ethers-js):
+
+* **Creating Instances** - use contract.**attach** to retrieve a new instance of a contract associated with an address. This allows users to interact with multiple identical contracts that inherit from each other and repeat actions.
+* **Properties** - use contract.**address** to retrieve the contract or ensName that created the contract to confirm with the user the validity or security of a specific contract.
+* **Events** - use contract.**queryFilter** to retrieve events that match a specific event a user wants to conduct.
+
+There are many more use cases that can be explored by visiting the Contract docs, [here](https://docs.ethers.io/v5/single-page/#/v5/api/contract/).
+
+## How to Use a Contract with the Alchemy SDK
+
+This example will teach you how to deploy a contract using the Alchemy SDK. Please Note: The following code snippets require prior [installation of the alchemy-SDK](/reference/alchemy-sdk-quickstart).
+
+#### 1. Import Alchemy, Network, Wallet and ContractFactory via alchemy-sdk
+
+<CodeGroup>
+  ```javascript javascript
+  const { Network, Alchemy, Wallet, ContractFactory } = require("alchemy-sdk");
+  ```
+</CodeGroup>
+
+#### 2. Optional Config object, but defaults to demo api-key and eth-mainnet.
+
+<CodeGroup>
+  ```javascript javascript
+  const settings = {
+      apiKey: "demo", // Replace with your Alchemy API Key.
+      network: Network.ETH_MAINNET, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+  ```
+</CodeGroup>
+
+#### 3. Insert the contract abi and bytecode of the smart contract.
+
+* ```md
+  **[Application Binary Interface (ABI)](https://www.alchemy.com/overviews/what-is-an-abi-of-a-smart-contract-examples-and-usage)**: The ability to community and interact with external applications and other smart contracts.
+  ```
+* ```md
+  **[Bytecode](https://docs.alchemy.com/docs/how-to-interpret-binaries-in-solidity)**: The raw data published via a smart contract to the Ethereum blockchain. 
+  ```
+
+<CodeGroup>
+  ```javascript javascript
+  const abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]; // Replace with your Smart Contract’s ABI.
+
+  const bytecode = "...";
+  ```
+</CodeGroup>
+
+#### 4. Locate the private key of your wallet.
+
+<CodeGroup>
+  ```javascript javascript
+  let privateKey = "...";
+  ```
+</CodeGroup>
+
+#### 5. Setup the wallet used to deploy the contract.
+
+<CodeGroup>
+  ```javascript javascript
+  let wallet = new Wallet(privateKey, alchemy);
+  ```
+</CodeGroup>
+
+#### 6. Create an instance of a Contract Factory.
+
+<CodeGroup>
+  ```javascript javascript
+  async function deployContract() {
+
+     // Create an instance of a Contract Factory
+     let factory = new ContractFactory(abi, bytecode, wallet);
+
+  };
+  ```
+</CodeGroup>
+
+#### 7. Create a constructor that will hold “Hello World" as the parameter.
+
+<CodeGroup>
+  ```javascript javascript
+  async function deployContract() {
+    // ...
+     let contract = await factory.deploy("Hello World");
+  };
+  ```
+</CodeGroup>
+
+#### 8. Display the contract address and the transaction hash of the contract deployed.
+
+<CodeGroup>
+  ```javascript javascript
+  async function deployContract() {
+     // ...
+     console.log(contract.address);
+     console.log(contract.deployTransaction.hash);
+
+     await contract.deployed()
+  };
+  ```
+</CodeGroup>

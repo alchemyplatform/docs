@@ -1,0 +1,253 @@
+---
+title: getMintedNfts - SDK
+description: The getMintedNfts method gets all the NFTs minted by a specified owner address.
+subtitle: The getMintedNfts method gets all the NFTs minted by a specified owner address.
+url: https://docs.alchemy.com/reference/sdk-getmintednfts
+slug: reference/sdk-getmintednfts
+---
+
+The `getMintedNfts` method gets all the NFTs minted by a specified owner address.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+`getMintedNfts` gets all the NFTs minted by a specified owner address.
+
+# Parameters
+
+| Name                                                                   | Type                                             | Description                                                                                                                                                                                                                                                                                                                                                                         | Example                                                                                      |
+| ---------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Owner Address                                                          | `string`                                         | Address for the NFT owner (can be in ENS format).                                                                                                                                                                                                                                                                                                                                   | `"vitalik.eth"` or `"0xd8da6bf26964af9d7eed9e03e53415d37aa96045"`                            |
+| Options (Optional): 1. `contractAddresses` 2. `tokenType` 3. `pageKey` | `Object`: 1. \[`string`] 2. `string` 3. `string` | An optional object with the following properties: 1. `contractAddresses`: An array of NFT contract addresses to filter mints by. If omitted, defaults to all contract addresses. 2. `tokenType`: ENUM option to filter mints by `ERC721` vs `ERC1155` contracts. If omitted, defaults to all NFTs. 3. `pageKey`: Optional page key from an existing response to use for pagination. | `{ contractAddresses: ["0x1F02bF9dDe7C79137a08B2Dd4FC964BfD2499734"], tokenType: "ERC721" }` |
+
+# Response
+
+The `getMintedNfts` method returns a `Promise<TransfersNftResponse>` object that contains the NFT mints by the specified owner address.
+
+The returned object has the following fields:
+
+| Property (Field) | Description                                                                                                                      |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `nfts`           | An array of the transfer objects. Each transfer object contains information about the transferred NFT.                           |
+| `pageKey?`       | Optional page key to use to fetch the next group of NFTs. `undefined` if all the transfers are already included in the response. |
+
+Each mint object has the following fields:
+
+| Property (Field)  | Description                                                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | The address of the NFT contract                                                                                                        |
+| `tokenId`         | The unique identifier of the NFT being transferred.                                                                                    |
+| `tokenType`       | The type of NFT being transferred (`ERC721` or `ERC1155`)                                                                              |
+| `title`           | Title or name of the NFT.                                                                                                              |
+| `description`     | A brief description of the NFT.                                                                                                        |
+| `timeLastUpdated` | When the NFT was last updated in the blockchain. Represented in ISO-8601 format.                                                       |
+| `metadataError?`  | Holds an error message if there was an issue fetching metadata.                                                                        |
+| `rawMetadata?`    | The raw metadata fetched from the metadata URL specified by the NFT. The field is `undefined` if Alchemy was unable to fetch metadata. |
+| `tokenUri?`       | URIs for accessing the NFT's metadata blob.                                                                                            |
+| `media`           | URIs for accessing the NFT's media assets.                                                                                             |
+| `spamInfo?`       | Detailed information on why an NFT was classified as spam. `undefined` if the NFT is not classified as spam.                           |
+| `from`            | The address the NFT was sent from. For minted NFTs, this field is set to `0x0000000000000000000000000000000000000000`.                 |
+| `to`              | The address the NFT was sent or minted to.                                                                                             |
+| `transactionHash` | The transaction hash where the transfer or mint occurred.                                                                              |
+| `blockNumber`     | The block number as a hex string of when the transfer or mint occurred.                                                                |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```text yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getMintedNfts` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getMintedNfts.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "demo", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  // Example of using the new getMintedNfts method
+  const main = async () => {
+    // Address for the NFT owner (can be in ENS format).
+    let address = "vitalik.eth";
+
+    // Additional options for the request. (Optional)
+    let options = {
+      /**
+       * List of NFT contract addresses to filter mints by. If omitted, defaults to
+       * all contract addresses.
+       */
+      contractAddresses: ["0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"],
+      /**
+       * Filter mints by ERC721 vs ERC1155 contracts. If omitted, defaults to all
+       * NFTs.
+       */
+      tokenType: "ERC721",
+    };
+
+    // Calling the getMintedNfts method
+    let mintedNfts = await alchemy.nft.getMintedNfts(address, options);
+
+    // Logging the response to the console
+    console.log(mintedNfts);
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+And here is an example of what a successful response to this request might look like:
+
+<CodeGroup>
+  ```json getMintedNfts response
+  {
+      "nfts": [
+          {
+              "contract": {
+                  "address": "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85",
+                  "tokenType": "ERC721",
+                  "openSea": {
+                      "floorPrice": 0.0007,
+                      "collectionName": "ENS: Ethereum Name Service",
+                      "safelistRequestStatus": "verified",
+                      "imageUrl": "https://i.seadn.io/gae/0cOqWoYA7xL9CkUjGlxsjreSYBdrUBE0c6EO1COG4XE8UeP-Z30ckqUNiL872zHQHQU5MUNMNhfDpyXIP17hRSC5HQ?w=500&auto=format",
+                      "description": "Ethereum Name Service (ENS) domains are secure domain names for the decentralized world. ENS domains provide a way for users to map human readable names to blockchain and non-blockchain resources, like Ethereum addresses, IPFS hashes, or website URLs. ENS domains can be bought and sold on secondary markets.",
+                      "externalUrl": "https://ens.domains",
+                      "twitterUsername": "ensdomains",
+                      "lastIngestedAt": "2023-02-03T11:00:29.000Z"
+                  },
+                  "contractDeployer": "0x4fe4e666be5752f1fdd210f4ab5de2cc26e3e0e8",
+                  "deployedBlockNumber": 9380410
+              },
+              "tokenId": "111352653673047713804124050598355152059184664886497242203777472800304891334469",
+              "tokenType": "ERC721",
+              "title": "",
+              "description": "",
+              "timeLastUpdated": "2023-02-07T08:25:55.167Z",
+              "rawMetadata": {},
+              "tokenUri": {
+                  "raw": "https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/0xf62f5e56fe8da20b0f4596383d464ebbaf1968de230cfb3dd53fc91800228f45",
+                  "gateway": "https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/0xf62f5e56fe8da20b0f4596383d464ebbaf1968de230cfb3dd53fc91800228f45"
+              },
+              "media": [],
+              "from": "0x0000000000000000000000000000000000000000",
+              "to": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+              "transactionHash": "0xc5bc4cf983e98ad9708dee356a17196aa367228f9ec87f81e622c81adaa6211e",
+              "blockNumber": "0xe88086"
+          },
+          {
+              "contract": {
+                  "address": "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85",
+                  "tokenType": "ERC721",
+                  "openSea": {
+                      "floorPrice": 0.0007,
+                      "collectionName": "ENS: Ethereum Name Service",
+                      "safelistRequestStatus": "verified",
+                      "imageUrl": "https://i.seadn.io/gae/0cOqWoYA7xL9CkUjGlxsjreSYBdrUBE0c6EO1COG4XE8UeP-Z30ckqUNiL872zHQHQU5MUNMNhfDpyXIP17hRSC5HQ?w=500&auto=format",
+                      "description": "Ethereum Name Service (ENS) domains are secure domain names for the decentralized world. ENS domains provide a way for users to map human readable names to blockchain and non-blockchain resources, like Ethereum addresses, IPFS hashes, or website URLs. ENS domains can be bought and sold on secondary markets.",
+                      "externalUrl": "https://ens.domains",
+                      "twitterUsername": "ensdomains",
+                      "lastIngestedAt": "2023-02-03T11:00:29.000Z"
+                  },
+                  "contractDeployer": "0x4fe4e666be5752f1fdd210f4ab5de2cc26e3e0e8",
+                  "deployedBlockNumber": 9380410
+              },
+              "tokenId": "103040680624633360426956226800459505851045291463662393946817594920946384752224",
+              "tokenType": "ERC721",
+              "title": "",
+              "description": "",
+              "timeLastUpdated": "2023-02-07T08:25:59.882Z",
+              "rawMetadata": {},
+              "tokenUri": {
+                  "raw": "https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/0xe3cef55f7067b9353a1b591cd3ea3af56e998792eb10d19a1b96f0a09917ce60",
+                  "gateway": "https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/0xe3cef55f7067b9353a1b591cd3ea3af56e998792eb10d19a1b96f0a09917ce60"
+              },
+              "media": [],
+              "from": "0x0000000000000000000000000000000000000000",
+              "to": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+              "transactionHash": "0x9f21fad5549aaf94e7731f5c4649353926cf7520b96891b8b511d099020fb887",
+              "blockNumber": "0xf47bcd"
+          },
+          {
+              "contract": {
+                  "address": "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85",
+                  "tokenType": "ERC721",
+                  "openSea": {
+                      "floorPrice": 0.0007,
+                      "collectionName": "ENS: Ethereum Name Service",
+                      "safelistRequestStatus": "verified",
+                      "imageUrl": "https://i.seadn.io/gae/0cOqWoYA7xL9CkUjGlxsjreSYBdrUBE0c6EO1COG4XE8UeP-Z30ckqUNiL872zHQHQU5MUNMNhfDpyXIP17hRSC5HQ?w=500&auto=format",
+                      "description": "Ethereum Name Service (ENS) domains are secure domain names for the decentralized world. ENS domains provide a way for users to map human readable names to blockchain and non-blockchain resources, like Ethereum addresses, IPFS hashes, or website URLs. ENS domains can be bought and sold on secondary markets.",
+                      "externalUrl": "https://ens.domains",
+                      "twitterUsername": "ensdomains",
+                      "lastIngestedAt": "2023-02-03T11:00:29.000Z"
+                  },
+                  "contractDeployer": "0x4fe4e666be5752f1fdd210f4ab5de2cc26e3e0e8",
+                  "deployedBlockNumber": 9380410
+              },
+              "tokenId": "79362104341617195787435013155216554898816343870453146709166302825328240112628",
+              "tokenType": "ERC721",
+              "title": "",
+              "description": "",
+              "timeLastUpdated": "2023-02-07T15:29:43.200Z",
+              "rawMetadata": {},
+              "tokenUri": {
+                  "raw": "https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/0xaf755bf78de2496dbb4f4c665d1437ed11cd5c8835e8e32b16f3bf500cb633f4",
+                  "gateway": "https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/0xaf755bf78de2496dbb4f4c665d1437ed11cd5c8835e8e32b16f3bf500cb633f4"
+              },
+              "media": [],
+              "from": "0x0000000000000000000000000000000000000000",
+              "to": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+              "transactionHash": "0xe3c78eca914f215644922e15d080b4198d552885a64958f4bec6516ace149b43",
+              "blockNumber": "0xf47bcd"
+          }
+      ]
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Some of the use cases for `getMintedNfts` are:
+
+* **NFT Collector Portfolio**: NFT collectors could use the API to retrieve information about all NFTs they have minted and display them as part of their online portfolio.
+
+* **NFT Market Analysis**: An NFT market analysis platform could use the API to gather data on NFTs minted by a specific creator and analyze their popularity and market demand.
+
+* **NFT Creator Monitoring**: NFT contract owners or administrators could use the API to monitor the NFTs minted by a specific creator and ensure that they comply with the rules and regulations set by the NFT contract.
+
+* **NFT Creator Stats**: An NFT creator could use the API to retrieve information about all their NFTs minted and view statistics such as the total number of NFTs minted.
+
+* **NFT Creator Tracking**: Investors or fans of a specific NFT creator could use the API to track their NFT creation activity and stay updated on their latest NFT releases.
+
+# Related Methods
+
+Here are the methods related to `getMintedNfts`:
+
+* [`getTransfersForOwner`](/reference/sdk-gettransfersforowner): Returns all NFT transfers for a given owner address.
+
+* [`getTransfersForContract`](/reference/sdk-gettransfersforcontract): Returns all NFT transfers for a given NFT contract address.

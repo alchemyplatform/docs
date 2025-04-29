@@ -1,0 +1,314 @@
+---
+title: How to Use Custom Webhooks for Mined User Operations?
+description: Learn how to stream real-time alerts for mined User Operation with Custom Webhooks + variables
+subtitle: Learn how to stream real-time alerts for mined User Operation with Custom Webhooks + variables
+url: https://docs.alchemy.com/docs/how-to-use-custom-webhooks-to-get-push-notifications-for-mined-user-operations
+slug: docs/how-to-use-custom-webhooks-to-get-push-notifications-for-mined-user-operations
+---
+
+Using [Custom Webhooks with variables](/reference/custom-webhook-variables) you can receive push notifications for mined UserOperations by creating a simple GraphQL query!
+
+### Don't know what User Operation are? Find out more about our account abstraction services [here](/docs/account-abstraction-overview)!
+
+<Info>
+  This will only work for entrypoints that emit the UserOperationEvent (defined
+  by the EF
+  [here](https://github.com/eth-infinitism/account-abstraction/blob/ver0.6.0/contracts/interfaces/IEntryPoint.sol)).
+  The event signature for user operations is
+</Info>
+
+**This article will explain 2 different methods for setting up notifications for mined userOperations.**
+
+# Method 1: Filter by smart contract account addresses
+
+To receive notifications for every userOp transaction sent from a list of sender (smart contract account) addresses, you can create a graphQL query that filters data using 2 log topics:
+
+1. **Filter by the userOperation event signature hash (topic 0) -** *0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f*
+
+This will filter events by User Operation Event types. The event signature is the canonical representation of an event's name and its argument types. The user operation event signature is:
+
+```shell
+UserOperationEvent (index_topic_1 bytes32 userOpHash, index_topic_2 address sender, index_topic_3 address paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed)
+```
+
+The corresponding hash for this event signature is *0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f,* so we will use that as a topic 0 log filter.
+
+2. **Filter by sender address using a log topic variable (topic 2)**
+
+Rather than being notified for every single user operation event, you can narrow the filter to specific sender addresses using a custom webhook variable for topic 2 (As seen in the user operation event signature above, topic 2 is the sender address). This will allow you to dynamically insert address values into your webhook query and filter by 1M+ sender addresses. You can learn more about variables [here](/reference/custom-webhook-variables).
+
+## Implementation:
+
+1. **Create the sender address topic 2 filter variable using the [create](/reference/create-custom-webhook-variable) method (ex: let’s call this variable $uoSenderAddr) - you only have to do this once! For example:**
+
+```shell
+curl --request POST \
+     --url https://dashboard.alchemy.com/api/graphql/variables/uoSenderAddr \
+     --header 'X-Alchemy-Token: YOUR_AUTH_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '{"items":["0x000000000000000000000000365dF858bdb4C81dD5854B8ef30a6D1CB0Ea4d75"]}'
+```
+
+<Info>
+  **Non-empty variables + auth token**
+
+  * When creating a variable, you must use a non-empty list of items. If needed, you can use a dummy address
+  * Get your auth token from the [webhooks dashboard](https://dashboard.alchemy.com/webhooks)
+</Info>
+
+2. **[Create](/reference/create-webhook) a new custom webhook that filters by topic 0 and topic 2 (event signature and sender addr). You can use the create webhook endpoint or dashboard.**
+
+<Warning>
+  **Match variable name + network**
+
+  * The variable name must match the name you used in step 1
+  * Select the network you will be sending user ops on - if you are sending on multiple networks, you will need multiple separate webhooks
+</Warning>
+
+For example:
+
+```graphql
+query ($uoSenderAddr:[Bytes32!]!) {
+  block {
+    hash
+    logs(filter: { addresses: [], topics: [["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"], [], $uoSenderAddr] }) {
+      transaction {
+        hash
+        index
+        from {
+          address
+        }
+        to {
+          address
+        }
+        maxFeePerGas
+        maxPriorityFeePerGas
+        gasUsed
+        cumulativeGasUsed
+        effectiveGasPrice
+        logs {
+          account {
+            address
+          }
+          topics
+          index
+        }
+        type
+        status
+      }
+    }
+  }
+}
+```
+
+3. **Dynamically add all smart contract account addresses (i.e. any sender addresses) that you expect to interact with your app to the sender address variable using the [update](/reference/update-custom-webhook-variable) method. For example:**
+
+```shell
+curl --request PATCH \
+     --url https://dashboard.alchemy.com/api/graphql/variables/uoSenderAddr \
+     --header 'X-Alchemy-Token: YOUR_AUTH_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "add": [
+    "0x000000000000000000000000365dF858bdb4C81dD5854B8ef30a6D1CB0Ea4d75"
+  ]
+}
+'
+```
+
+<Warning>
+  The addresses must be in byte32 hex format, so you will likely need to convert
+  from the SCA sender address format used in the userOp signature. For example,
+  you can use [web3.js
+  padLeft](https://web3js.readthedocs.io/en/v1.2.11/web3-utils.html#padleft):
+</Warning>
+
+This query will send you push notifications for every user operation event that has a sender address in the uoSenderAddr variables list you created!
+
+<Info>
+  If you would like to only receive webhooks for non-empty queries, rather than
+  for every block, follow
+  [these](/reference/custom-webhooks-faq#how-do-i-receive-webhooks-for-only-non-empty-results-ie-turn-off-the-heartbeat-mechanism-described-abovedont-receive-a-webhook-for-every-block)
+  instructions to set the `skip_empty_messages`param to true in your query.
+</Info>
+
+# Method 2: Filter by userOp hash
+
+If you do not have access to every address you want to receive userOp notifications for, or do not want to filter for every userOp transaction from a list of addresses, you can instead filter transactions by userOp hash. **This will allow you to receive notifications for every userOp transaction with a specified userOp hash.**
+
+Similar to option 1, you will create a graphQL custom webhook query filtered by 2 log topics. You will use a custom webhook variable for userOpHash (topic 1) rather than sender address (topic 2):
+
+1. **Filter by user operation event signature (topic 0)** - 0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f (same as option 1)
+2. **Filter by userOpHash using a log topic variable (topic 1)**
+
+As seen in the userOperationEvent signature above, topic 1 is the userOpHash. You can create a variable for topic 1 (let’s call this $userOpHashFilter) and dynamically add userOpHashes returned by eth\_sendUserOperation to this variable so that you receive mined notifications for every send user operation regardless of sender address.
+
+## Implementation steps:
+
+1. **Create the user op hash topic 1 filter variable using the [create](/reference/create-custom-webhook-variable) method (ex: let’s call this variable $userOpHash) - you only have to do this once! For example:**
+
+```shell
+curl --request POST \
+     --url https://dashboard.alchemy.com/api/graphql/variables/userOpHash \
+     --header 'X-Alchemy-Token: YOUR_AUTH_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '{"items":["0xec8f905f6cf36caaea521c041c60adbff4e004269e09e81759aa307d269b5324"]}'
+```
+
+<Info>
+  **Non-empty variables + auth token**
+
+  * When creating a variable, you must use a non-empty list of items. If needed, you can use a dummy address
+  * Get your auth token from the [webhooks dashboard](https://dashboard.alchemy.com/webhooks)
+</Info>
+
+2. **[Create](/reference/create-webhook) a new Custom Webhook that filters by the topic 0 and topic 1 (event signature and user op hash)**
+
+<Warning>
+  **Match variable name + network**
+
+  * ensure variable name matches the name you used in step 1
+  * select you have selected the network you will be sending user ops on
+</Warning>
+
+For example:
+
+```graphql
+query GetBlockLogs($userOpHash: [Bytes32!]!) {
+  block {
+    hash
+    logs(
+      filter: {
+        addresses: []
+        topics: [
+          ["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"]
+          $userOpHash
+        ]
+      }
+    ) {
+      transaction {
+        hash
+        index
+        from {
+          address
+        }
+        to {
+          address
+        }
+        maxFeePerGas
+        maxPriorityFeePerGas
+        gasUsed
+        cumulativeGasUsed
+        effectiveGasPrice
+        logs {
+          account {
+            address
+          }
+          topics
+          index
+        }
+        type
+        status
+      }
+    }
+  }
+}
+```
+
+3. **Every time you call [eth\_sendUserOperation](/reference/eth-senduseroperation) you will receive a userOpHash in the response. Call the custom webhooks [update](/reference/update-custom-webhook-variable) method and add the returned userOpHash to the variable you created ($userOpHash). You can also delete userOpHashes from the variable using the [update delete](/reference/update-custom-webhook-variable) method.**
+
+<Warning>
+  The user op hashes added to your variable must be in byte32 hex format, so you
+  will likely need to convert. For example, you could use [web3.js
+  padLeft](https://web3js.readthedocs.io/en/v1.2.11/web3-utils.html#padleft):
+</Warning>
+
+For example, add to your variable like this:
+
+```js
+const updateVar = await axios.patch('https://dashboard.alchemy.com/api/graphql/variables/userOpHash',
+    {
+      "add": [
+        convertedUserOpHash
+      ]
+    },
+    {
+      headers: {
+        'X-Alchemy-Token': 'YOUR_ALCH_TOKEN',
+        'content-type': 'application/json'
+      }
+    }
+  );
+```
+
+This query will send you push notifications for every user operation event that has a matching userOpHash in the userOpHashFilter variables list you created.
+
+<Info>
+  If you are sending UOs across multiple chains, you will need a separate
+  webhook for every chain.
+</Info>
+
+# Additional Filters
+
+Optionally, you can filter for events sent using our paymaster. As seen in the user operation event signature, the paymaster address is topic 3. You can add this as a topic log filter in your custom webhook query. See the list of paymaster addresses per chain below:
+
+| Chain           | Paymaster Address                          |
+| --------------- | ------------------------------------------ |
+| Arb Goerli      | 0xC03Aac639Bb21233e0139381970328dB8bcEeB67 |
+| Arb Mainnet     | 0x4Fd9098af9ddcB41DA48A1d78F91F1398965addc |
+| Eth Goerli      | 0xC03Aac639Bb21233e0139381970328dB8bcEeB67 |
+| Eth Mainnet     | 0x4Fd9098af9ddcB41DA48A1d78F91F1398965addc |
+| Eth Sepolia     | 0xC03Aac639Bb21233e0139381970328dB8bcEeB67 |
+| Opt Goerli      | 0xC03Aac639Bb21233e0139381970328dB8bcEeB67 |
+| Opt Mainnet     | 0x4Fd9098af9ddcB41DA48A1d78F91F1398965addc |
+| Polygon Mainnet | 0x4Fd9098af9ddcB41DA48A1d78F91F1398965addc |
+| Polygon Mumbai  | 0xC03Aac639Bb21233e0139381970328dB8bcEeB67 |
+
+Note: these addresses will also need to be converted to byte32 hex format
+
+For example:
+
+```graphql
+query GetBlockLogsBySender($uoSenderAddr: [Bytes32!]!) {
+  block {
+    hash
+    logs(
+      filter: {
+        addresses: []
+        topics: [
+          ["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"]
+          []
+          $uoSenderAddr
+          ["0x0000000000000000000000004Fd9098af9ddcB41DA48A1d78F91F1398965addc"]
+        ]
+      }
+    ) {
+      transaction {
+        hash
+        index
+        from {
+          address
+        }
+        to {
+          address
+        }
+        maxFeePerGas
+        maxPriorityFeePerGas
+        gasUsed
+        cumulativeGasUsed
+        effectiveGasPrice
+        logs {
+          account {
+            address
+          }
+          topics
+          index
+        }
+        type
+        status
+      }
+    }
+  }
+}
+```

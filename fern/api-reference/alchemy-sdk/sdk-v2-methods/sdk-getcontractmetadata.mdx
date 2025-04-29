@@ -1,0 +1,161 @@
+---
+title: getContractMetadata - SDK
+description: Get the NFT collection metadata associated with the provided parameters.
+subtitle: Get the NFT collection metadata associated with the provided parameters.
+url: https://docs.alchemy.com/reference/sdk-getcontractmetadata
+slug: reference/sdk-getcontractmetadata
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Get the NFT collection metadata associated with the provided parameters.
+
+# Parameters
+
+| Name              | Type     | Description                      |
+| ----------------- | -------- | -------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT. |
+
+# Response
+
+| Property               | Type     | Description                  |
+| ---------------------- | -------- | ---------------------------- |
+| `Promise<NftContract>` | `object` | The NFT collection metadata. |
+
+### `NftContract` response object parameters
+
+| Property              | Type     | Descriptioin                                                                                                                    |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `tokenType`           | `string` | The type of the token in the contract. Available options are: `ERC721` = "ERC721", `ERC1155` = "ERC1155", `UNKNOWN` = "UNKNOWN" |
+| `name`                | `string` | The name of the contract.                                                                                                       |
+| `symbol`              | `string` | The symbol of the contract.                                                                                                     |
+| `openSea`             | `object` | OpenSea's metadata for the contract.                                                                                            |
+| `contractDeployer`    | `string` | The address that deployed the NFT contract.                                                                                     |
+| `deployedBlockNumber` | `number` | The block number the NFT contract deployed in.                                                                                  |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the address whose contract metadata you want to fetch
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      //Call the method to fetch metadata
+      const response = await alchemy.nft.getContractMetadata(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+   {
+      contract: {
+        address: '0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d',
+        name: 'BoredApeYachtClub',
+        symbol: 'BAYC',
+        totalSupply: '10000',
+        tokenType: 'ERC721',
+        openSea: [Object],
+        contractDeployer: '0xaba7161a7fb69c88e16ed9f455ce62b791ee4d03',
+        deployedBlockNumber: 12287507
+      },
+      tokenId: '99',
+      tokenType: 'ERC721',
+      title: '',
+      description: '',
+      timeLastUpdated: '2023-03-02T17:33:56.457Z',
+      metadataError: undefined,
+      rawMetadata: {
+        image: 'ipfs://QmWiXSKwbwHkobDdZbDc6t66kf192P33Ru5UJYhL5mPJTk',
+        attributes: [Array]
+      },
+      tokenUri: {
+        gateway: 'https://alchemy.mypinata.cloud/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/99',
+        raw: 'ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/99'
+      },
+      media: [ [Object] ],
+      spamInfo: undefined
+    },
+    ... 9900 more items
+  ]
+  admin@Admins-MBP Alchem % node index.js
+  {
+    address: '0x61fce80d72363b731425c3a2a46a1a5fed9814b2',
+    name: 'CyborgMercenariesCm',
+    symbol: 'CYBORG',
+    totalSupply: '8039',
+    tokenType: 'ERC1155',
+    openSea: {
+      floorPrice: 0.0015,
+      collectionName: 'Undead Warriors',
+      safelistRequestStatus: 'verified',
+      imageUrl: 'https://i.seadn.io/gcs/files/6cd7bec4ad4b280adb53c33c815bd3dc.png?w=500&auto=format',
+      description: 'Core Team\n' +
+        'https://opensea.io/theseansneed | https://opensea.io/W3-Freedom | https://opensea.io/Xc4libur\n' +
+        'Undead Warriors are a collection of NFTs powered by the Undead Coin (UDC) battling the most difficult challenges in the E-Gaming and Web 3 space.\n' +
+        '\n',
+      externalUrl: 'http://undeadwarriors.io',
+      twitterUsername: 'undead_warriors',
+      discordUrl: 'https://discord.gg/qjZbJMPS86',
+      lastIngestedAt: '2023-02-22T03:39:05.000Z'
+    },
+    contractDeployer: '0xd32bb311467060cec58cd6e9b37134ca6d81377f',
+    deployedBlockNumber: 13950908
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getContractMetadata` method:
+
+* **Querying contract information**: The `getContractMetadata` method can be used to retrieve general information about a smart contract, such as the contract's name, version, and author.
+
+* **Verifying contract authenticity**: The metadata of a smart contract can include a cryptographic hash of the source code used to compile the contract. By retrieving this hash through `getContractMetadata`, users can verify that the deployed contract matches the original source code.
+
+* **Automating contract interactions**: Some smart contracts may include metadata that provides additional information about the contract's functions and parameters. This information can be used to automatically generate code for interacting with the contract, which can save time and reduce errors.
+
+# Related Methods
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Get the NFT metadata associated with the provided parameters.

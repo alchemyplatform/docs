@@ -1,0 +1,141 @@
+---
+title: traceTransaction - SDK
+description: Attempts to run the transaction in the exact same manner as it was executed on the network. It will replay any transaction that may have been executed prior to this one before it and will then attempt to execute the transaction that corresponds to the given hash.
+subtitle: Attempts to run the transaction in the exact same manner as it was executed on the network. It will replay any transaction that may have been executed prior to this one before it and will then attempt to execute the transaction that corresponds to the given hash.
+url: https://docs.alchemy.com/reference/tracetransaction-sdk-v3
+slug: reference/tracetransaction-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+`traceTransaction`attempts to run the transaction in the exact same manner as it was executed on the network. It will replay any transaction that may have been executed prior to this one before it and will then attempt to execute the transaction that corresponds to the given hash.
+
+# Parameters
+
+| Name              | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Example                                                              |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `transactionHash` | `string` | The transaction hash of the transaction to trace.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `0x60e07437b027f8b64b409137f75e527583f1139741d311c6969d4efc879d94b8` |
+| `tracer`          | `object` | Tracer type and configuration. This tracer tracks all call frames executed during a transaction, including depth 0. The returned result is a nested list of call frames executed as part of the call. It is an object with the following options: 1. `type`: The type of tracer to use during the execution. The options are [`callTracer`](/reference/debug-tracecall#calltracer) and [`prestateTracer`](/reference/debug-tracecall#prestatetracer) 2. `onlyTopCall?`: Whether to only trace the main (top-level) calls and ignore sub-calls. It is a boolean and defaults to `false`. | `{ type: callTracer, onlyTopCall: true }`                            |
+| `timeout?`        | `string` | A optional duration string of decimal numbers that overrides the default timeout of 5 seconds for JavaScript-based tracing calls. Max timeout is "10s". Valid time units are "ns", "us", "ms", "s" each with optional fraction, such as "300ms" or "2s45ms"                                                                                                                                                                                                                                                                                                                             | `"10s"`, `"300ms"` etc.                                              |
+
+# Response
+
+The `traceTransaction` method returns a `Promise<DebugCallTrace>`response object with the following properties.
+
+| Property        | Type                                        | Description                                                  |
+| --------------- | ------------------------------------------- | ------------------------------------------------------------ |
+| `type`          | `string`                                    | The type of call: `CALL` or `CREATE` for the top-level call. |
+| `from`          | `string`                                    | From address of the transaction.                             |
+| `to`            | `string`                                    | To address of the transaction.                               |
+| `value`         | `string`                                    | Amount of value transfer as a hex string.                    |
+| `gas`           | `string`                                    | Gas provided for call as a hex string.                       |
+| `gasUsed`       | `string`                                    | Gas used during the call as a hex string.                    |
+| `input`         | `string`                                    | Call data.                                                   |
+| `output`        | `string`                                    | Return data.                                                 |
+| `errror?`       | `string`                                    | Optional error field.                                        |
+| `revertReason?` | `string`                                    | Solidity revert reason, if the call reverted.                |
+| `calls?`        | `array of <DebugCallTrace> response object` | Array of sub-calls executed as part of the original call.    |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```text yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `traceTransaction` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getTransaction.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "demo", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  // Example of using the traceTransaction method
+  const main = async () => {
+    // The transaction hash of the transaction to trace.
+    let txHash =
+      "0x45c1b4c9685a0a9312e698ad273802c20f0354a2248f3f20bbd3623ef32f9523";
+
+    // Tracer type and configuration.
+    let tracerConfig = {
+      type: "callTracer",
+      onlyTopCall: true,
+    };
+
+    let timeout = "10s";
+
+    // Calling the traceTransaction method
+    let response = await alchemy.debug.traceTransaction(
+      txHash,
+      tracerConfig,
+      timeout
+    );
+
+    // Logging the response to the console
+    console.log(response);
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+And here is an example of what a successful response to this request might look like:
+
+<CodeGroup>
+  ```json traceTransaction response
+  {
+    type: 'CALL',
+    from: '0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8',
+    to: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    value: '0x0',
+    gas: '0x11def',
+    gasUsed: '0xa281',
+    input: '0xa9059cbb0000000000000000000000006a3623db71c1b3442a94e3fd4655334b4811469300000000000000000000000000000000000000000000000000000000000f4240',
+    output: '0x'
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Some of the use cases for `traceCall` are:
+
+* **Debugging Contract Issues**: Developers can use the `traceTransaction` method to diagnose and fix issues with smart contract execution by tracing the flow of execution and the state changes made by the contract in response to a specific transaction.
+
+* **Optimizing Contract Performance**: Developers can use the `traceTransaction` method to identify and optimize slow or inefficient sections of code by tracing the execution and gas consumption of a specific transaction.
+
+* **Verifying Contract Security**: Security auditors can use the `traceTransaction` method to verify the security of smart contracts by tracing the execution of malicious transactions and evaluating the contract's response.
+
+# Related Methods
+
+Here are the methods related to `traceTransaction`:
+
+* [`traceCall`](/reference/sdk-tracecall): Runs an `eth_call` with the context of the provided block execution using the final state of the parent block as the base.
+
+* [`traceBlock`](/reference/sdk-traceblock): Replays a block that has already been mined.

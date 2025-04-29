@@ -1,0 +1,106 @@
+---
+title: Lens API Quickstart
+description: Get started building on Lens and using the JSON-RPC API
+subtitle: Get started building on Lens and using the JSON-RPC API
+url: https://docs.alchemy.com/reference/lens-api-quickstart
+slug: reference/lens-api-quickstart
+---
+
+## Introduction
+
+Lens Network is a decentralized social media infrastructure built on Ethereum using zkSync's technology. It aims to create open and fair social spaces by leveraging hybrid scaling solutions for high-throughput, low-cost transactions. Lens empowers users with control over their social identity and connections, enabling seamless movement across applications and fostering an environment with reduced censorship and enhanced freedom of expression.
+
+<Info>
+  Please note that we currently only support Lens Sepolia Testnet
+</Info>
+
+## What is the Lens API?
+
+The Lens API allows interaction with the Lens network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
+
+```shell
+mkdir lens-api-quickstart
+cd lens-api-quickstart
+npm init --yes
+```
+
+```shell
+mkdir lens-api-quickstart
+cd lens-api-quickstart
+yarn init --yes
+```
+
+This creates a new directory named `lens-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = 'https://lens-sepolia.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Lens mainnet:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the latest block information from Lens's mainnet outputted to your console:
+
+```shell
+Latest Block: 0x...
+```
+
+## Next Steps
+
+Congratulations! You've made your first request to the Lens network. You can now explore the various [JSON-RPC methods available on Lens](/reference/lens-api-endpoints) and start building your dApps on this innovative platform.

@@ -1,0 +1,56 @@
+---
+title: 4. Ship it to the Testnet
+description: "Step 4 in the Smart Accounts From Scratch Series: Time to send user ops on the Testnet!"
+subtitle: "Step 4 in the Smart Accounts From Scratch Series: Time to send user ops on the Testnet!"
+url: https://docs.alchemy.com/docs/4-ship-it-to-the-testnet
+slug: docs/4-ship-it-to-the-testnet
+---
+
+You made it to step 4, the biggest step, let's go!!! 🚀 In this step we're going to ship our smart account to the testnet, and use a live bundler to get gas estimation costs and to include the user operation transaction on-chain.
+
+## Testnet API Key
+
+We're going to need to interact with a testnet chain and a bundler, so first step is to get an API key from the [alchemy dashboard](https://dashboard.alchemy.com/signup/?a=safs) for Arbitrum Sepolia.
+
+![Grab your API Key for Arbitrum Sepolia here](fb145f7-image.png)
+
+Grab your API Key for Arbitrum Sepolia here
+
+Next, you can get some arbitrum sepolia ETH for gas [at the faucet here](https://arbitrum-faucet.com/).
+
+✅ **Task 1/3**: Do you have an Arbitrum Sepolia API key, and some ether on that network for gas?
+
+## Get Gas Estimates
+
+Now that you have an API key, you're ready to get gas estimates from the bundler API! Let's use `eth_estimateUserOperationGas`: [https://docs.alchemy.com/reference/eth-estimateuseroperationgas](/reference/eth-estimateuseroperationgas)
+
+Take the user operation that you've been creating in the previous steps and make a couple changes:
+
+* Make sure that the \``nonce`, `callGasLimit`, `preVerificationGasLimit`, `maxFeePerGas`, `maxPriorityFeePerGas` are hex strings (i.e. `"0x1234..."`)
+* Make the `signature` a dummy signature, mentioned in the API endpoint: `0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c`
+
+That's it! Go ahead and send your user operation to this endpoint to get back a response which will contain `{ preVerificationGas, verificationGasLimit, callGasLimit }`
+
+Once you get back this response go ahead and replace these values on the user operation, before you send it to `entryPoint.getUserOpHash` and sign it.
+
+✅ **Task 2/3**: Were you able to successfully get the gas values back from `eth_estimateUserOperationGas`?
+
+## Send to the Bundler
+
+Now that we're on the testnet, it's time to send the user operation to a bundler rather than directly to the EntryPoint. For this, you can use the `eth_sendUserOperation` endpoint: [https://docs.alchemy.com/reference/eth-senduseroperation](/reference/eth-senduseroperation)
+
+From that endpoint you'll get back an opHash. We'll need more than that to ensure that the transaction was successful, so it's worth following up with a call to the `eth_getUserOperationByHash` endpoint: [https://docs.alchemy.com/reference/eth-getuseroperationbyhash](/reference/eth-getuseroperationbyhash)
+
+If this endpoint returns a user operation that has a `blockHash` in it, you know it's been successfully included! If not, it will return `null`, and you can retry this call shortly. Once it has been included in a block, go check that your state change was successful on you smart account.
+
+✅ **Task 3/3**: Was your User Operation included in a block?
+
+If it was, you did it! That's AMAZING 🎉 Give yourself a well deserved pat on the back. By now you should have developed a strong understanding of all of the components ERC 4337.
+
+Next, check out the **Account Kit**! This toolset provides a more flexible smart account and abstracts away some of the more difficult things you just learned about. By going through theses exercises you'll be super ready to begin building an Account Abstraction Application for your users with the Account Kit!
+
+***
+
+What’s Next
+
+* [Check out the Account Kit!](https://accountkit.alchemy.com/)

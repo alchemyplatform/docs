@@ -1,0 +1,112 @@
+---
+title: Interface
+description: Learn about the Interface utils method
+subtitle: Learn about the Interface utils method
+url: https://docs.alchemy.com/reference/interface
+slug: reference/interface
+---
+
+Learn about the `Interface` utils method
+
+# Introduction
+
+The [`Interace`](https://docs.ethers.org/v5/api/utils/abi/interface/#Interface--creating) method generates a smart contract interface from a JSON ABI.
+
+# Usage
+
+The interface method is useful when you want to create an instance of a smart contract and call its methods.
+
+Here's an example code:
+
+<CodeGroup>
+  ```javascript Javascript
+  const { Utils } = require("alchemy-sdk");
+
+  let abi = [
+    {
+      constant: true,
+      inputs: [],
+      name: "get",
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+        },
+      ],
+      payable: false,
+      stateMutability: "view",
+      type: "function",
+    },
+  ];
+
+  let contractInterface = new Utils.Interface(abi);
+  console.log(contractInterface);
+
+  /*
+  Output: 
+
+  Interface {
+    fragments: [
+      FunctionFragment {
+        type: 'function',
+        name: 'get',
+        constant: true,
+        inputs: [],
+        outputs: [Array],
+        payable: false,
+        stateMutability: 'view',
+        gas: null,
+        _isFragment: true
+      }
+    ],
+    _abiCoder: AbiCoder { coerceFunc: null },
+    functions: {
+      'get()': FunctionFragment {
+        type: 'function',
+        name: 'get',
+        constant: true,
+        inputs: [],
+        outputs: [Array],
+        payable: false,
+        stateMutability: 'view',
+        gas: null,
+        _isFragment: true
+      }
+    },
+    errors: {},
+    events: {},
+    structs: {},
+    deploy: ConstructorFragment {
+      name: null,
+      type: 'constructor',
+      inputs: [],
+      payable: false,
+      stateMutability: 'nonpayable',
+      gas: null,
+      _isFragment: true
+    },
+    _isInterface: true
+  }
+  */
+  ```
+</CodeGroup>
+
+The code creates an ABI as an array of JSON objects, where each object represents a single function of the smart contract. In this example, the ABI has only one function named "get".
+
+The `contractInterface` object is created by calling the `Interface` method and passing in the ABI array. The output of the `console.log` statement shows that the `contractInterface` object contains several properties:
+
+* `fragments`: an array of the individual functions and constructors in the smart contract.
+
+* `functions`: an object where each key is the encoded function signature and the value is a `FunctionFragment` object that describes the function.
+
+* `events`: an object where each key is the event signature and the value is an `EventFragment` object that describes the event.
+
+* `structs`: an object where each key is the type signature of a struct and the value is a `StructFragment` object that describes the struct.
+
+* `deploy`: a `ConstructorFragment` object that describes the constructor function of the smart contract.
+
+* `_abiCoder`: an `AbiCoder` object that is used for encoding and decoding smart contract data.
+
+* `errors`: an object that contains error messages if any occurred during the creation of the contract interface.
+
+* `_isInterface`: a Boolean that indicates if this object is an instance of Interface.

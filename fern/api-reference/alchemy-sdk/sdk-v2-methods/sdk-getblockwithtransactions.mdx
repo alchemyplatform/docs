@@ -1,0 +1,141 @@
+---
+title: getBlockWithTransactions - SDK
+description: Returns the block from the network based on the provided block number or hash. In addition to the transaction hashes included in the block, it also returns the full transaction objects.
+subtitle: Returns the block from the network based on the provided block number or hash. In addition to the transaction hashes included in the block, it also returns the full transaction objects.
+url: https://docs.alchemy.com/reference/sdk-getblockwithtransactions
+slug: reference/sdk-getblockwithtransactions
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns the block from the network based on the provided block number or hash. In addition to the transaction hashes included in the block, it also returns the full transaction objects.
+
+# Parameters
+
+| Name                  | Type     | Description                                    |
+| --------------------- | -------- | ---------------------------------------------- |
+| `blockHashOrBlockTag` | `string` | The block number or hash to get the block for. |
+
+# Response
+
+| Property                         | Type     | Description                                                                          |
+| -------------------------------- | -------- | ------------------------------------------------------------------------------------ |
+| `Promise<BlockWithTransactions>` | `object` | Returns a block object with the following fields, or `null` when no block was found. |
+
+### `BlockWithTransactions` response object parameters
+
+| Parameter      | Type      | Description                                                                                           |
+| -------------- | --------- | ----------------------------------------------------------------------------------------------------- |
+| `hash`         | `string`  | `32 Bytes` - hash of the block. `null` when its pending block.                                        |
+| `parentHash`   | `string`  | `32 Bytes` - hash of the parent block.                                                                |
+| `number`       | `number`  | the block number. `null` when its pending block.                                                      |
+| `logsBloom`    | `string`  | `256 Bytes` - the bloom filter for the logs of the block. `null` when its pending block.              |
+| `timestamp`    | `number`  | the unix timestamp for when the block was collated.                                                   |
+| `nonce`        | `string`  | 8 Bytes - hash of the generated proof-of-work. `null` when its pending block.                         |
+| `difficulty`   | `number`  | integer of the difficulty for this block.                                                             |
+| `gasLimit`     | `number`  | the maximum gas allowed in this block.                                                                |
+| `gasUsed`      | `number`  | the total used gas by all transactions in this block.                                                 |
+| `size`         | `integer` | the size of this block in bytes.                                                                      |
+| `miner`        | `string`  | `20 Bytes` - the address of the beneficiary to whom the mining rewards were given.                    |
+| `transactions` | `array`   | Array of transaction objects, or `32 Bytes` transaction hashes depending on the last given parameter. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getBlockWithTransactions` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getblockwithtransactions.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Assign the hash to a variable
+      let txHash = "0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3"
+
+      //Call the method to return the block with transactions
+      let response = await alchemy.core.getBlockWithTransactions(txHash)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+        hash: '0x58bbdd890cc828a70cf6d65f103d7723e945197b53da2c263ea6270a82fb2ccb',
+        type: 2,
+        accessList: [],
+        blockHash: '0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3',
+        blockNumber: 15221026,
+        transactionIndex: 57,
+        confirmations: 1477819,
+        from: '0x7abE0cE388281d2aCF297Cb089caef3819b13448',
+        gasPrice: [BigNumber],
+        maxPriorityFeePerGas: [BigNumber],
+        maxFeePerGas: [BigNumber],
+        gasLimit: [BigNumber],
+        to: '0x7BA11217CCd0eD428924295BF7f13D50E75B68A4',
+        value: [BigNumber],
+        nonce: 310301,
+        data: '0x',
+        r: '0x79a3a0a0a9707c3c679e702b115562ce1bc5c8c761891baf05dfae2ddcc38599',
+        s: '0x488153c1dcdb9b03af4199070b67476fa8f24af865e0f448fb7f538b004b0991',
+        v: 1,
+        creates: null,
+        chainId: 1,
+        wait: [Function (anonymous)]
+      }, ............
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some possible use cases for this method:
+
+* **Blockchain Explorer**: When building a blockchain explorer, it is important to be able to retrieve detailed information about blocks and their transactions. `getBlockWithTransactions` can be used to fetch this information and display it to users.
+
+* **Smart Contract Verification**: When verifying the correctness of a smart contract execution, it may be necessary to retrieve the block and its transactions that triggered the execution. `getBlockWithTransactions` can be used to fetch this information and verify that the smart contract executed correctly.
+
+* **Payment Processing**: When processing payments on a blockchain, it may be necessary to retrieve the block and its transactions that confirm the payment. `getBlockWithTransactions` can be used to fetch this information and confirm that the payment was successfully processed.
+
+# Related Methods
+
+Here are the methods related to `getBlockWithTransactions`:
+
+* [getBlock](/reference/getBlock-sdk): Returns the block from the network based on the provided block number or hash.
+* [getBlockNumber](/reference/getblocknumber-sdk): Returns the result of executing the transaction, using call.

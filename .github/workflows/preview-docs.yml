@@ -5,39 +5,51 @@ on: pull_request
 jobs:
   run:
     runs-on: ubuntu-22.04
-    permissions: write-all
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # TODO: Uncomment this once new docs dir in aa-sdk is merged
-      # - name: Download aa-sdk docs
-      #   run: |
-      #     mkdir -p account-kit
-      #     curl -L https://api.github.com/repos/alchemyplatform/aa-sdk/tarball/main -o aa-sdk.tar.gz
-      #     tar xzf aa-sdk.tar.gz --strip-components=2 -C account-kit "*/docs"
-      #     rm aa-sdk.tar.gz
+      - name: Add aa-sdk docs to fern
+        uses: ./.github/actions/insert-wallets-tab
 
-      - name: Install Fern
-        run: npm install -g fern-api
-
-      - name: Generate preview URL
-        id: generate-docs
-        env:
-          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
-        run: |
-          OUTPUT=$(fern generate --docs --preview 2>&1) || true
-          echo "$OUTPUT"
-          URL=$(echo "$OUTPUT" | grep -oP 'Published docs to \K.*(?= \()')
-          echo "preview_url=$URL" >> $GITHUB_OUTPUT
-
-      - name: Comment Preview URL in PR
+      - name: Set Build Comment to In Progress
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '## 🌿 Documentation Preview\n\n| Name | Preview | Updated (UTC) |\n| :--- | :------ | :------ |\n| **Alchemy Docs** | [🔗 Visit Preview](${{ steps.generate-docs.outputs.preview_url }}) | ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) + ' |\n\n>'
+            const workspace = process.env.GITHUB_WORKSPACE;
+            const { updatePreviewComment } = await import(`${workspace}/scripts/preview-comment.js`);
+
+            await updatePreviewComment({
+              github,
+              context,
+              status: 'building',
+            });
+
+      - name: Generate Preview
+        uses: ./.github/actions/publish-fern
+        id: preview
+        with:
+          github-token: ${{ github.token }}
+          fern-token: ${{ secrets.FERN_TOKEN }}
+          environment: docs-preview
+          ref: ${{ github.head_ref }}
+          preview: "true"
+
+      - name: Comment Preview URL in PR
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const workspace = process.env.GITHUB_WORKSPACE;
+            const { updatePreviewComment } = await import(`${workspace}/scripts/preview-comment.js`);
+
+            await updatePreviewComment({
+              github,
+              context,
+              previewUrl: '${{ steps.preview.outputs.url }}',
+              status: '${{ steps.preview.outcome }}',
             });

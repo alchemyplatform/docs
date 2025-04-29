@@ -1,0 +1,91 @@
+---
+title: Querying a Subgraph
+description: Query from your subgraph's production-ready GraphQL API endpoint.
+subtitle: Query from your subgraph's production-ready GraphQL API endpoint.
+url: https://docs.alchemy.com/reference/querying-a-subgraph
+slug: reference/querying-a-subgraph
+---
+
+The HTTP endpoint for GraphQL queries can be found on the subgraph page in the dashboard.
+
+# Authentication and API restrictions
+
+## Rate Limits
+
+GraphQL queries are subject to rate limits set on each organization.
+
+Please check your billing dashboard to see rate limit details for your organization.
+
+## Query keys
+
+All GraphQL queries are authenticated using a query key, which can be created and managed from the main dashboard. Your organization can have multiple query keys with the following settings:
+
+* **Origins**: Permitted origins for queries. Wildcard matching is supported (e.g. `*.alchemy.com`).
+* **Rate limits** (Coming soon): Queries per second allowed per query key.
+
+Example use cases:
+
+* **From your backend** - Create a query key with no origin restrictions and no rate limit.
+* **From your frontend** - Create a query key that allows origins from your domain(s) and has no rate limit.
+* **For your community** - Create a query key with a rate limit and no origin restrictions.
+
+## Using query keys
+
+We currently support two ways of passing in query keys into queries — by path and by header.
+
+**Path**
+
+The query key can be included as part of the URL path. For example:
+
+<CodeGroup>
+  ```bash bash
+  curl -v \
+  	'https://subgraph.satsuma-prod.com/<QUERY_KEY>/<ORGANIZATION>/<SUBGRAPH_NAME>/version/<VERSION_NAME>/api' \
+    --data-raw '{"query":"{entities(first:1){id}}"}'
+  ```
+</CodeGroup>
+
+**Header**
+
+The query key can be attached with a `x-api-key` header. For example:
+
+<CodeGroup>
+  ```bash bash
+  curl -v \
+  	'https://subgraph.satsuma-prod.com/<ORGANIZATION>/<SUBGRAPH_NAME>/version/<VERSION_NAME>/api' \
+    -H 'x-api-key: <QUERY_KEY>' \
+    --data-raw '{"query":"{entities(first:1){id}}"}'
+  ```
+</CodeGroup>
+
+# Indexing Status
+
+We provide an indexing status endpoint for every subgraph version, which you can find in the dashboard.
+
+It returns the following information:
+
+<CodeGroup>
+  ```json json
+  {
+    "data": {
+      "indexingStatusForCurrentVersion": {
+        "subgraph": "QmXqNgptc2b5WzwmFfCu8PxsLgetBe5M8eBKvSyu5jqkei",
+        "synced": true,
+        "health": "healthy",
+        "fatalError": null,
+        "nonFatalErrors": [],
+        "chains": [
+          {
+            "chainHeadBlock": {
+              "number": "17787217"
+            },
+            "latestBlock": {
+              "number": "17787217"
+            }
+          }
+        ]
+      }
+    }
+  }
+  ```
+</CodeGroup>

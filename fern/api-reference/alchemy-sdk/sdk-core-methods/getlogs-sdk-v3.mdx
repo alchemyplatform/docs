@@ -1,0 +1,203 @@
+---
+title: getLogs - SDK
+description: Returns an array of logs that match the provided filter.
+subtitle: Returns an array of logs that match the provided filter.
+url: https://docs.alchemy.com/reference/getlogs-sdk-v3
+slug: reference/getlogs-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns an array of logs that match the provided filter.
+
+# Parameters
+
+| Name     | Type     | Description                                                           |
+| -------- | -------- | --------------------------------------------------------------------- |
+| `filter` | `object` | The filter object to use. Includes the `fromBlock` and the `toBlock`. |
+
+### `filter` parameters
+
+| Parameter   | Type     | Description                                                                           |
+| ----------- | -------- | ------------------------------------------------------------------------------------- |
+| `fromBlock` | `string` | Either the hex value of a **block number** OR One of the **block tags** listed below. |
+| `toBlock`   | `string` | Either the hex value of a **block number** OR One of the **block tags** listed below: |
+
+* `pending` (Not available on Ethereum) - A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from `local` mempool. Intuitively, you can think of these as blocks that have not been mined yet.
+* `latest` - The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions.
+* `safe` - The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is “unlikely” to be re-orged.
+* `finalized `- The most recent crypto-economically secure block, that has been accepted by >2/3 of validators. Cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is very unlikely to be re-orged.
+* `earliest` - The lowest numbered block the client has available. Intuitively, you can think of this as the first block created.
+
+# Response
+
+| Property              | Type    | Description                                                                           |
+| --------------------- | ------- | ------------------------------------------------------------------------------------- |
+| `Promise<Array<Log>>` | `array` | `Array of log objects`, or an empty array if nothing has changed since the last poll. |
+
+### `<Array<Log>>` response object parameters
+
+| Prameter           | Type               | Description                                                                                                                                                                                                                                  |
+| ------------------ | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockHash`        | `string`           | `32 Bytes` - hash of the block where this log was in. null when its pending. `null` when its pending log.                                                                                                                                    |
+| `blockNumber`      | `integer`          | The block number where this log was in. `null` when its pending. `null` when its pending log.                                                                                                                                                |
+| `transactionIndex` | `integer`          | Integer of the transactions index position log was created from. null when its pending log.                                                                                                                                                  |
+| `address`          | `string`           | `20 Bytes` - address from which this log originated.                                                                                                                                                                                         |
+| `logIndex`         | `integer`          | Integer of the log index position in the block. `null` when its pending log.                                                                                                                                                                 |
+| `data`             | `string`           | Contains one or more 32 Bytes non-indexed arguments of the log.                                                                                                                                                                              |
+| `removed`          | `boolean`          | `true` when the log was removed, due to a chain reorganization. `false` if its a valid log.                                                                                                                                                  |
+| `topics`           | `array of strings` | Array of zero to four 32 Bytes DATA of indexed log arguments. **In solidity**: The first topic is the hash of the signature of the event (e.g. Deposit(address,bytes32,uint256)), except you declare the event with the anonymous specifier. |
+| `transactionHash`  | `string`           | Hash of the transactions this log was created from. `null` when its pending log.                                                                                                                                                             |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getLogs` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getlogs.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Initialize variables for the parameters
+      let address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+      let topics =  [ "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" ]
+      let blockHash = "0x49664d1de6b3915d7e6fa297ff4b3d1c5328b8ecf2ff0eefb912a4dc5f6ad4a0"
+      
+      //Call the method to return array of logs
+      let response = await alchemy.core.getLogs(address, topics, blockHash)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  [
+      {
+          "blockNumber": 17944092,
+          "blockHash": "0x5f610d392c3b5823ede49ebc1267dda0043a174684ab9be684e3f6da2a5db683",
+          "transactionIndex": 0,
+          "removed": false,
+          "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "data": "0x00000000000000000000000000000000000000000000000001617eb90b26c000",
+          "topics": [
+              "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c",
+              "0x00000000000000000000000058df81babdf15276e761808e872a3838cbecbcf9"
+          ],
+          "transactionHash": "0x4b561cdef026ccd80c76bddb7d298da791a3601cd399972bde9954c82c3feebe",
+          "logIndex": 0
+      },
+      {
+          "blockNumber": 17944092,
+          "blockHash": "0x5f610d392c3b5823ede49ebc1267dda0043a174684ab9be684e3f6da2a5db683",
+          "transactionIndex": 0,
+          "removed": false,
+          "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "data": "0x00000000000000000000000000000000000000000000000001617eb90b26c000",
+          "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x00000000000000000000000058df81babdf15276e761808e872a3838cbecbcf9",
+              "0x000000000000000000000000cc489c3a61182d9cc019a3a987ec10b51588cf15"
+          ],
+          "transactionHash": "0x4b561cdef026ccd80c76bddb7d298da791a3601cd399972bde9954c82c3feebe",
+          "logIndex": 1
+      },
+      {
+          "blockNumber": 17944092,
+          "blockHash": "0x5f610d392c3b5823ede49ebc1267dda0043a174684ab9be684e3f6da2a5db683",
+          "transactionIndex": 0,
+          "removed": false,
+          "address": "0x645c8FB9e85b652cb6FBcAF18d17E2ADB657D587",
+          "data": "0x0000000000000000000000000000000000000000000000000005749d4fbbd908",
+          "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x000000000000000000000000cc489c3a61182d9cc019a3a987ec10b51588cf15",
+              "0x000000000000000000000000645c8fb9e85b652cb6fbcaf18d17e2adb657d587"
+          ],
+          "transactionHash": "0x4b561cdef026ccd80c76bddb7d298da791a3601cd399972bde9954c82c3feebe",
+          "logIndex": 2
+      },
+      {
+          "blockNumber": 17944092,
+          "blockHash": "0x5f610d392c3b5823ede49ebc1267dda0043a174684ab9be684e3f6da2a5db683",
+          "transactionIndex": 144,
+          "removed": false,
+          "address": "0xB49159aFEB54f8922b0A82a5d58bd4728B8c20bb",
+          "data": "0x00000000000000000000000000000000000000000000000000000016920554d1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000492202cd5376ff1",
+          "topics": [
+              "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822",
+              "0x0000000000000000000000003fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
+              "0x0000000000000000000000003fc91a3afd70395cd496c647d5a6cc9d4b2b7fad"
+          ],
+          "transactionHash": "0x4fb174eb30c8b6a65301bb93809577624b5a04892c5eaecdd46db811d24b59ae",
+          "logIndex": 315
+      },
+      {
+          "blockNumber": 17944092,
+          "blockHash": "0x5f610d392c3b5823ede49ebc1267dda0043a174684ab9be684e3f6da2a5db683",
+          "transactionIndex": 144,
+          "removed": false,
+          "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "data": "0x0000000000000000000000000000000000000000000000000492202cd5376ff1",
+          "topics": [
+              "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65",
+              "0x0000000000000000000000003fc91a3afd70395cd496c647d5a6cc9d4b2b7fad"
+          ],
+          "transactionHash": "0x4fb174eb30c8b6a65301bb93809577624b5a04892c5eaecdd46db811d24b59ae",
+          "logIndex": 316
+      }
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some possible use cases for the `getLogs` method:
+
+* **Event tracking**: `getLogs` can be used to track specific events generated by smart contracts. This is useful for monitoring the state changes of a smart contract and taking action based on those changes.
+
+* **Analytics**: `getLogs` can be used to analyze smart contract data and generate reports or visualizations. For example, you could use `getLogs` to analyze the frequency and volume of trades on a decentralized exchange.
+
+* **Debugging**: `getLogs` can be used to debug smart contracts. If a smart contract is not behaving as expected, you can use `getLogs` to retrieve the events generated by the contract and identify where the issue is occurring.
+
+# Related Methods
+
+Here are the methods related to `getLogs`:
+
+* [getBlock -SDK](/reference/getblock-sdk): Returns the block from the network based on the provided block number or hash.

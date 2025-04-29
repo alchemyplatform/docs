@@ -1,0 +1,32 @@
+---
+title: Direct Database Access
+description: Query your underlying subgraph data via SQL with direct database access.
+subtitle: Query your underlying subgraph data via SQL with direct database access.
+url: https://docs.alchemy.com/reference/direct-database-access
+slug: reference/direct-database-access
+---
+
+# Overview
+
+For Enterprise customers, we offer a read-only user to your subgraph's underlying Postgres database.
+
+**Use cases**
+
+* Powering complex SQL aggregations that are difficult with GraphQL.
+* Powering internal analytics or dashboards.
+
+# Data schema
+
+Every subgraph maps to a Postgres DB schema, and every entity in your subgraph maps to a table in that schema.
+
+Each table row represents a state of a subgraph entity for a specific block range. Any time that your subgraph changes, the subgraph captures a new row.
+
+Every row will have the following columns:
+
+* `block_start_inclusive`
+* `block_end_exclusive`
+
+This allows you to answer complex time-series queries with your subgraph entities. For example:
+
+* You can track how the TVL for a Pool increases over time.
+* You can track total protocol users over time.

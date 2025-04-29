@@ -1,0 +1,115 @@
+---
+title: Polygon zkEVM API Quickstart
+description: How to get started building on Polygon zkEVM and using the JSON-RPC API
+subtitle: How to get started building on Polygon zkEVM and using the JSON-RPC API
+url: https://docs.alchemy.com/reference/polygon-zkevm-api-quickstart
+slug: reference/polygon-zkevm-api-quickstart
+---
+
+*To use the Polygon zkEVM API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup/?a=polygon-zkevm) first!*
+
+# Introduction
+
+Polygon zkEVM is a decentralized Ethereum Layer 2 network that uses cryptographic zero-knowledge proofs to offer validity and quick finality to off-chain transactions. Emulating the Ethereum Virtual Machine (EVM), zkEVM allows for transparent deployment of existing Ethereum smart contracts while enhancing scalability, security, and transaction throughput. By utilizing zkEVM, developers can build decentralized applications with quick finality and improved performance, all within the Ethereum ecosystem.
+
+# What is Polygon zkEVM API?
+
+The Polygon zkEVM API is a collection of JSON-RPC methods that enable developers to interact with the Polygon zkEVM network. Using the endpoints provided by the API, developers can access up-to-date network data and submit transactions to it.
+
+# Getting Started Instructions
+
+## 1. Choose a Package Manager (npm or yarn)
+
+Before you begin, you'll need to choose a package manager to manage dependencies in your project. The two most popular package managers for Node.js are `npm` and `yarn`. You can choose the one you're most comfortable with.
+
+### npm
+
+To get started with `npm`, follow the documentation to install Node.js and `npm` for your operating system: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+
+### yarn
+
+To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lang/en/docs/install](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+
+## 2. Set up your project (npm or yarn)
+
+Let's start by setting up a simple Node.js project. Open your terminal and run the following commands:
+
+<CodeGroup>
+  ```text npm
+  mkdir alchemy-polygon-zkevm-api
+  cd alchemy-polygon-zkevm-api
+  npm init --yes
+  ```
+
+  ```text yarn
+  mkdir alchemy-polygon-zkevm-api
+  cd alchemy-polygon-zkevm-api
+  yarn init --yes
+  ```
+</CodeGroup>
+
+This will create a new directory called `alchemy-polygon-zkevm-api` and initialize a new Node.js project in it.
+
+## 3. Make Your First Request
+
+To make requests to the Polygon zkEVM API, you'll need to use an HTTP client. In this guide, we'll use Axios, a popular HTTP client for Node.js. Install Axios as a dependency in your project with the command below:
+
+<CodeGroup>
+  ```shell npm
+  npm install axios
+  ```
+
+  ```shell yarn
+  yarn add axios
+  ```
+</CodeGroup>
+
+Next, let's create a script that will make a request to the `eth_blockNumber` JSON-RPC method on Polygon zkEVM. Create a new file called `index.js` in your project directory and add the following code:
+
+<CodeGroup>
+  ```javascript index.js
+  const axios = require('axios');
+
+  const apiKey = 'YOUR_API_KEY'; // Replace with your Alchemy API key
+  const url = `https://polygonzkevm-mainnet.g.alchemy.com/v2/${apiKey}`;
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Block Number:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `YOUR_API_KEY` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup/?a=polygon-zkevm).
+
+## 4. Run Script
+
+To run the script and make the request to the Polygon zkEVM API, execute the following command in your terminal:
+
+<CodeGroup>
+  ```shell shell
+  node index.js
+  ```
+</CodeGroup>
+
+As a result, should see the current block number on Polygon zkEVM (in hex format) printed to the console:
+
+<CodeGroup>
+  ```shell shell
+  Block Number: 0x6d68e
+  ```
+</CodeGroup>
+
+# Next Steps
+
+Congratulations! You've successfully made your first request to the Polygon zkEVM API using Alchemy. From here, you can explore the various [JSON-RPC methods available on Polygon zkEVM](/reference/polygon-api-endpoints) and start building your decentralized applications on it!

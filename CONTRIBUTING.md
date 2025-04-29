@@ -17,28 +17,29 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
 
 #### Written Documentation
 
-- Located in `fern/docs/`
-- Written in MDX format
-- Update `docs.yml` when adding/moving pages
+* Located in `fern/docs/`
+* Written in MDX format
+* Update `docs.yml` when adding/moving pages
 
 #### API Documentation
 
 **REST APIs (OpenAPI)**
 
-- Location: `src/openapi/`
-- Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+* Location: `src/openapi/`
+* Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+* **Tip**: Use the [Redocly VSCode extension](https://marketplace.visualstudio.com/items?itemName=Redocly.openapi-vs-code) to enable OpenAPI spec validation with Intellisense.
 
 **JSON-RPC APIs (OpenRPC)**
 
-- Location: `src/openrpc/`
-- Define APIs following the [OpenRPC Specification](https://spec.open-rpc.org/)
-- Structure:
-  - `alchemy/`: Alchemy-specific APIs
-  - `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
+* Location: `src/openrpc/`
+* Define APIs following the [OpenRPC Specification](https://spec.open-rpc.org/)
+* Structure:
+  * `alchemy/`: Alchemy-specific APIs
+  * `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
 
 ### Account Kit Documentation
 
-Account Kit documentation is maintained in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/ds/fern-compatible-docs/docs/README.md) for contribution guidelines.
+Account Kit documentation is maintained in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
 
 ## Making Changes
 
@@ -47,6 +48,10 @@ Account Kit documentation is maintained in the [aa-sdk repository](https://githu
 3. Commit your changes
 4. Push to your fork
 5. Create a pull request to the upstream
+
+## Markdown Style Guide
+
+This project implements a modified version of the [Markdown Style Guide](https://google.github.io/styleguide/docguide/style.html) which is enforced in Eslint via [remark-lint](https://github.com/remarkjs/remark-lint). Please ensure you abide by the guidelines set there.
 
 ## Keeping Your Fork Updated
 
@@ -68,15 +73,15 @@ git push origin main
 
 ## Pull Request Guidelines
 
-- Ensure your PR addresses a specific issue or adds a specific feature
-- Include a clear description of the changes
-- Reference any related issues in your PR description
-- Ensure all checks pass before submitting
-- Follow the existing code style and formatting
+* Ensure your PR addresses a specific issue or adds a specific feature
+* Include a clear description of the changes
+* Reference any related issues in your PR description
+* Ensure all checks pass before submitting
+* Follow the existing code style and formatting
 
-## Code of Conduct
+## Creating Issues
 
-By participating in this project, you agree to abide by our Code of Conduct. Please be respectful and considerate of differing viewpoints and experiences.
+Unsure how to make changes yourself? Feel free to open an issue using the appropriate template. Please fill out required fields and provide as much detail as possible to ensure contributors can be as helpful as possible.
 
 ## Questions?
 
@@ -84,6 +89,6 @@ If you have any questions or need help, please open an issue in the repository.
 
 ## Resources
 
-- [Fern Documentation](https://buildwithfern.com/learn)
-- [OpenAPI Specification](https://swagger.io/specification/)
-- [OpenRPC Specification](https://spec.open-rpc.org/)
+* [Fern Documentation](https://buildwithfern.com/learn)
+* [OpenAPI Specification](https://swagger.io/specification/)
+* [OpenRPC Specification](https://spec.open-rpc.org/)

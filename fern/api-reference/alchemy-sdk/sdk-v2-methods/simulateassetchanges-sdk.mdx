@@ -1,0 +1,154 @@
+---
+title: simulateAssetChanges - SDK
+description: Simulates the asset changes resulting from a single transaction. Returns list of asset changes that occurred during the transaction simulation. Note that this method does not run the transaction on the blockchain.
+subtitle: Simulates the asset changes resulting from a single transaction. Returns list of asset changes that occurred during the transaction simulation. Note that this method does not run the transaction on the blockchain.
+url: https://docs.alchemy.com/reference/simulateassetchanges-sdk
+slug: reference/simulateassetchanges-sdk
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Simulates the asset changes resulting from a single transaction.
+
+Returns list of asset changes that occurred during the transaction simulation. Note that this method does not run the transaction on the blockchain.
+
+# Parameters
+
+| Name               | Type     | Description                                               |
+| ------------------ | -------- | --------------------------------------------------------- |
+| `transaction`      | `object` | The transaction to simulate.                              |
+| `blockIdentifier?` | `string` | Optional block identifier to simulate the transaction in. |
+
+### `transaction` object parameters
+
+| Property    | Type     | Description                                                      |
+| ----------- | -------- | ---------------------------------------------------------------- |
+| `data?`     | `string` | The data associated with the transaction.                        |
+| `from?`     | `string` | The address the transaction is sent from.                        |
+| `gas?`      | `string` | The gas provided for the transaction execution, as a hex string. |
+| `gasPrice?` | `string` | The gas price to use as a hex string.                            |
+| `to`        | `string` | The address the transaction is directed to.                      |
+| `value`     | `string` | The value associated with the transaction as a hex string.       |
+
+# Response
+
+| Property                                | Type     | Description                       |
+| --------------------------------------- | -------- | --------------------------------- |
+| `Promise<SimulateAssetChangesResponse>` | `object` | Returns the transaction response. |
+
+### `SimulateAssetChangesResponse` object parameters
+
+| Property   | Type     | Description                                                                                                                                          |
+| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `changes`  | `array`  | An array of asset changes that resulted from the transaction.                                                                                        |
+| `error?`   | `object` | Optional error field that is present if an error occurred. The available parameter in this error response is: `message`: `string` The error message. |
+| `gasUsed?` | `string` | The amount of gas used by the transaction represented as a hex string. The field is undefined if an error occurred.                                  |
+
+### `changes` array property parameters
+
+| Property           | Type     | Description                                                                                                                                                                                                                                 |
+| ------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `amount?`          | `string` | The amount as an integer string. This value is calculated by applying the decimals field to the `rawAmount` field. Only available on TRANSFER changes for NATIVE and ERC20 assets, or ERC721/ERC1155 disapprove changes (field set to '0'). |
+| `assetType`        | `string` | The type of asset from the transaction.                                                                                                                                                                                                     |
+| `changeType`       | `string` | The type of change from the transaction.                                                                                                                                                                                                    |
+| `contractAddress?` | `string` | The contract address of the asset. Only applicable to ERC20, ERC721, ERC1155, NFT and SPECIAL\_NFT transactions.                                                                                                                            |
+| `decimals?`        | `number` | The number of decimals used by the ERC20 token. Set to 0 for APPROVE changes. Field is undefined if it's not defined in the contract and not available from other sources.                                                                  |
+| `from`             | `string` | The from address.                                                                                                                                                                                                                           |
+| `logo?`            | `string` | URL for the logo of the asset, if available. Only applicable to ERC20 transactions.                                                                                                                                                         |
+| `name?`            | `string` | The name of the asset transferred, if available.                                                                                                                                                                                            |
+| `rawAmount`        | `string` | The raw amount as an integer string. Only available on TRANSFER changes for NATIVE and ERC20 assets, or ERC721/ERC1155 disapprove changes (field set to '0').                                                                               |
+| `symbol?`          | `string` | The symbol of the asset transferred if available.                                                                                                                                                                                           |
+| `to`               | `string` | The to address.                                                                                                                                                                                                                             |
+| `tokenId`          | `string` | The token id of the asset transferred. Only applicable to ERC721, ERC1155 and SPECIAL\_NFT NFTs.                                                                                                                                            |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the transaction hash
+      const trnx = "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b";
+
+      //Call the method to display the transaction based on the transaction hash
+      const response = await alchemy.transact.simulateAssetChanges(trnx)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    changes: [
+      {
+        assetType: 'NATIVE',
+        changeType: 'TRANSFER',
+        from: '0xa7d9ddbe1f17865597fbd27ec712455208b6b76d',
+        to: '0xf02c1c8e6114b1dbe8937a39260b5b0a374432bb',
+        rawAmount: '4290000000000000',
+        contractAddress: undefined,
+        tokenId: undefined,
+        decimals: 18,
+        symbol: 'ETH',
+        name: 'Ethereum',
+        logo: 'https://static.alchemyapi.io/images/network-assets/eth.png',
+        amount: '0.00429'
+      }
+    ],
+    gasUsed: '0x53a0',
+    error: undefined
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `simulateAssetChanges` method:
+
+* **Testing**: Developers can use `simulateAssetChanges` to test their smart contracts before deploying them to a blockchain network. By simulating the changes that would occur, developers can identify potential errors and debug their code.
+
+* **Optimizing asset transactions**: Businesses that regularly perform asset transactions, such as banks or trading firms, can use `simulateAssetChanges` to optimize their transaction strategies. By simulating different transaction scenarios, these firms can identify the most efficient ways to move assets between accounts.
+
+# Related Methods
+
+Here are the methods related to `simulateAssestChanges`:
+
+* [simulateAssetChangesBundle](/reference/simulateassetchangesbundle-sdk): Simulates the asset changes resulting from a list of transactions simulated in sequence.

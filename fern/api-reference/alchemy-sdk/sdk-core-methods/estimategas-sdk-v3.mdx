@@ -1,0 +1,126 @@
+---
+title: estimateGas - SDK
+description: Returns an estimate of the amount of gas that would be required to submit a transaction to the network.
+subtitle: Returns an estimate of the amount of gas that would be required to submit a transaction to the network.
+url: https://docs.alchemy.com/reference/estimategas-sdk-v3
+slug: reference/estimategas-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns an estimate of the amount of gas that would be required to submit a transaction to the network.
+
+An estimate may not be accurate since there could be another transaction on the network that was not accounted for, but after being mined affects the relevant state.
+
+# Parameters
+
+| Name          | Type     | Description                          |
+| ------------- | -------- | ------------------------------------ |
+| `transaction` | `object` | The transaction to estimate gas for. |
+
+### `transaction` object parameters
+
+| Parameter          | Type               | Description                                                                                                                                                                                                   |
+| ------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `to`               | `string`           | `DATA`, 20 Bytes - The address to the transaction is directed to.                                                                                                                                             |
+| `from`             | `string`           | `DATA`, 20 Bytes - (optional) The address the transaction is sent from.                                                                                                                                       |
+| `gasPrice?`        | `number / string`  | `QUANTITY` - (optional) Integer of the gasPrice used for each paid gas.                                                                                                                                       |
+| `data?`            | `string`           | `DATA` - (optional) Hash of the method signature and encoded parameters. For details see [Ethereum Contract ABI](https://docs.soliditylang.org/en/v0.7.0/abi-spec.html)                                       |
+| `value?`           | `number`           | `QUANTITY` - (optional) Integer of the value sent with this transaction                                                                                                                                       |
+| `nonce?`           | `string`           | A nonce is a value that represents the number of transactions sent by the sender's address, ensuring the transactions are processed in order and preventing replay attacks.                                   |
+| `gasLimit?`        | `string`           | the maximum gas allowed.                                                                                                                                                                                      |
+| `chainId?`         | `number`           | `optional` the Id of the transaction chain.                                                                                                                                                                   |
+| `type?`            | `number`           | `Optional` This is the type of transaction.                                                                                                                                                                   |
+| `accessList?`      | `array of strings` | The `accessList` is an optional transaction parameter that specifies addresses and storage keys a transaction interacts with, enabling gas cost optimization and compatibility with future Ethereum upgrades. |
+| `maxPriorityFee?`  | `number`           | This describes the maximum priority fee for this transaction.                                                                                                                                                 |
+| `maxFeePerGas?`    | `number`           | This is the maximum fee per gas for this transaction.                                                                                                                                                         |
+| `ccipReadEnabled?` | `boolean`          | This specifies if the CCIP read is enabled.                                                                                                                                                                   |
+
+# Response
+
+| Property             | Type     | Description                                                                                                                                                                                                                                                                         |
+| -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Promise<BigNumber>` | `object` | Returns an estimate of the amount of gas that would be required to submit the transaction to the network. This is an estimate of the amount of gas required to submit the given transaction to the network. An example of the output is `{ "type": "BigNumber", "hex": "0x6d22" }`. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make an `estimateGas` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript estimateGas.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network, Utils } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "demo", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      const response = await alchemy.core.estimateGas({
+          // Wrapped ETH address
+          to: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          // `function deposit() payable`
+          data: "0xd0e30db0",
+          // 1 ether
+          value: Utils.parseEther("1.0")
+      });
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "type": "BigNumber",
+      "hex": "0x6d22"
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some common use cases for the `estimateGas` method:
+
+* **Optimizing transaction fees**: Gas is the fee paid by the sender of a transaction to compensate the miners for processing it. By estimating the gas required for a transaction beforehand, developers can optimize their transaction fees by choosing the right gas price and limit.
+
+* **Ensuring successful transactions**: If a transaction runs out of gas before it is completed, it will fail and the sender will lose the gas spent on it. By estimating the required gas beforehand, developers can ensure that the transaction has enough gas to complete successfully.
+
+* **Validating transaction parameters**: When submitting a transaction, certain parameters such as the gas limit and gas price must be set correctly to avoid issues such as network congestion or excessive fees. By using `estimateGas`, developers can validate these parameters before submitting the transaction.
+
+# Related Methods
+
+Here are the methods related to `estimateGas`:
+
+* [getBalance](/reference/getbalance-sdk): Returns the balance of a given address as of the provided block.

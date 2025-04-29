@@ -1,0 +1,344 @@
+---
+title: How to Manage a Multichain Project Using Alchemy SDK
+description: Learn how to manage multiple API keys and network endpoints in the same project using Alchemy SDK
+subtitle: Learn how to manage multiple API keys and network endpoints in the same project using Alchemy SDK
+url: https://docs.alchemy.com/reference/how-to-manage-a-multichain-project-using-alchemy-sdk
+slug: reference/how-to-manage-a-multichain-project-using-alchemy-sdk
+---
+
+# Introduction
+
+Web3 development often requires interacting with multiple blockchain networks, each with its own API endpoint and authentication keys. Managing all these connections and ensuring the correct API key and endpoint are used for each chain can be time-consuming and error-prone. Alchemy SDK provides a solution to this problem with its `AlchemyMultiChainClient`, a wrapper around the Alchemy SDK that allows for easy management of multiple chains in a single application. In this tutorial, we'll walk through a demo project that demonstrates how to use the `AlchemyMultiChainClient` to query NFTs for an owner on multiple chains.
+
+# Project Setup
+
+To follow along with this tutorial, you'll need to have [Node.js and npm](https://nodejs.org/en/download/) installed on your machine. You'll also need to clone the demo project from Alchemy's GitHub repository by running the following command in your terminal:
+
+<CodeGroup>
+  ```shell Shell
+  git clone https://github.com/alchemyplatform/alchemy-multichain-demo.git
+  ```
+</CodeGroup>
+
+After cloning the repo, navigate to the project directory and run the following command to install its dependencies:
+
+<CodeGroup>
+  ```shell shell
+  cd alchemy-multichain-demo
+  npm install
+  ```
+</CodeGroup>
+
+Now that we have the demo project set up, we can move on to querying multiple chains.
+
+# Querying Multiple Chains
+
+The `src/index.ts` file contains a simple demo that uses the `AlchemyMultichainClient` class to make requests across multiple chains. Let's walk through the code to understand how it works.
+
+<CodeGroup>
+  ```typescript typescript
+  import { AlchemyMultichainClient } from './alchemy-multichain-client';
+  import { Network } from 'alchemy-sdk';
+
+  async function main() {
+    // Default config to use for all networks.
+    const defaultConfig = {
+      apiKey: 'demo', // TODO: Replace with your Mainnet Alchemy API key.
+      network: Network.ETH_MAINNET
+    };
+    // Include optional setting overrides for specific networks.
+    const overrides = {
+      // TODO: Replace with your API keys.
+      [Network.MATIC_MAINNET]: { apiKey: 'demo', maxRetries: 10 }, // Replace with your Matic Alchemy API key.
+      [Network.ARB_MAINNET]: { apiKey: 'demo' } // Replace with your Arbitrum Alchemy API key.
+    };
+    const alchemy = new AlchemyMultichainClient(defaultConfig, overrides);
+
+    // get NFTs in multiple networks
+    const owner = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045';
+    const mainnetNfts = await alchemy
+      .forNetwork(Network.ETH_MAINNET)
+      .nft.getNftsForOwner(owner, { pageSize: 5 });
+    const maticNfts = await alchemy
+      .forNetwork(Network.MATIC_MAINNET)
+      .nft.getNftsForOwner(owner, { pageSize: 5 });
+
+    console.log('mainnetNfts', mainnetNfts);
+    console.log('maticNfts', maticNfts);
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+First, we import the necessary modules:
+
+<CodeGroup>
+  ```typescript typescript
+  import { AlchemyMultichainClient } from './alchemy-multichain-client';
+  import { Network } from 'alchemy-sdk';
+  ```
+</CodeGroup>
+
+The `AlchemyMultichainClient` class is imported from the `alchemy-multichain-client` file in the same directory, and the `Network` is imported from the Alchemy SDK.
+
+Next, we define the configuration settings for our multichain application. This is done by creating a `defaultConfig` object which contains the default settings that will be used across all networks. In this example, the `defaultConfig` object includes an Alchemy API key and specifies the `ETH_MAINNET` as the default network.
+
+<CodeGroup>
+  ```typescript typescript
+  const defaultConfig = {
+    apiKey: 'demo',
+    network: Network.ETH_MAINNET
+  };
+  ```
+</CodeGroup>
+
+We can also include optional setting overrides for specific networks, if needed. This is done by creating an `overrides` object which maps network IDs to their respective configuration overrides. For example, in the overrides object in the example code below, we are overriding the API key for the `MATIC_MAINNET` and `ARB_MAINNET` networks.
+
+<CodeGroup>
+  ```typescript typescript
+  const overrides = {
+    [Network.MATIC_MAINNET]: { apiKey: 'demo', maxRetries: 10 }, // Replace 'demo' with your Alchemy Matic API key
+    [Network.ARB_MAINNET]: { apiKey: 'demo' } // Replace 'demo' with your Alchemy Arbitrum key
+  };
+  ```
+</CodeGroup>
+
+With the configuration settings defined, we can now create an instance of the `AlchemyMultichainClient` by passing in the `defaultConfig` and `overrides` objects.
+
+<CodeGroup>
+  ```typescript typescript
+  const alchemy = new AlchemyMultichainClient(defaultConfig, overrides);
+  ```
+</CodeGroup>
+
+Once the `AlchemyMultichainClient` instance is created, we can start making requests to different networks using the `forNetwork` method. This method returns a new instance of the `AlchemyMultichainClient` with the specified network settings, so you can chain requests together.
+
+In the example code below, we are using the `forNetwork` method to make requests to the `ETH_MAINNET` and `MATIC_MAINNET` networks to get the NFTs for an owner with a specified wallet address. We are also specifying the pageSize option to limit the number of NFTs returned to 5.
+
+<CodeGroup>
+  ```typescript typescript
+  const owner = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045';
+  const mainnetNfts = await alchemy
+    .forNetwork(Network.ETH_MAINNET)
+    .nft.getNftsForOwner(owner, { pageSize: 5 });
+  const maticNfts = await alchemy
+    .forNetwork(Network.MATIC_MAINNET)
+    .nft.getNftsForOwner(owner, { pageSize: 5 });
+  ```
+</CodeGroup>
+
+Finally, we log the results of our requests to the console.
+
+<CodeGroup>
+  ```typescript typescript
+  console.log('mainnetNfts', mainnetNfts);
+  console.log('maticNfts', maticNfts);
+  ```
+</CodeGroup>
+
+# Testing the Script
+
+To test the script, make sure you have typescript installed by running this command, in the root of terminal:
+
+<CodeGroup>
+  ```shell shell
+  npm install -g typescript
+  ```
+</CodeGroup>
+
+Next, you need to compile your TypeScript file by running the following command:
+
+<CodeGroup>
+  ```shell shell
+  tsc src/index.ts
+  ```
+</CodeGroup>
+
+This will generate a JavaScript file called index.js in the same directory as your index.ts file. You can then run the index.js file using Node.js:
+
+<CodeGroup>
+  ```shell shell
+  node src/index.js
+  ```
+</CodeGroup>
+
+Finally, it will log the `mainnetNfts` and `maticNfts` for the given owner in your terminal 🎉
+
+<CodeGroup>
+  ```shell shell
+  mainnetNfts {
+    ownedNfts: [
+      {
+        contract: [Object],
+        tokenId: '1',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-17T16:10:26.611Z',
+        metadataError: undefined,
+        rawMetadata: {},
+        tokenUri: [Object],
+        media: [],
+        spamInfo: [Object],
+        balance: 26
+      },
+      {
+        contract: [Object],
+        tokenId: '2',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-17T14:43:29.829Z',
+        metadataError: undefined,
+        rawMetadata: {},
+        tokenUri: [Object],
+        media: [],
+        spamInfo: [Object],
+        balance: 31
+      },
+      {
+        contract: [Object],
+        tokenId: '3',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-17T15:55:26.778Z',
+        metadataError: undefined,
+        rawMetadata: {},
+        tokenUri: [Object],
+        media: [],
+        spamInfo: [Object],
+        balance: 18
+      },
+      {
+        contract: [Object],
+        tokenId: '4',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-17T16:06:04.731Z',
+        metadataError: undefined,
+        rawMetadata: {},
+        tokenUri: [Object],
+        media: [],
+        spamInfo: [Object],
+        balance: 33
+      },
+      {
+        contract: [Object],
+        tokenId: '5',
+        tokenType: 'ERC721',
+        title: '',
+        description: '',
+        timeLastUpdated: '2023-02-17T16:05:53.096Z',
+        metadataError: undefined,
+        rawMetadata: {},
+        tokenUri: [Object],
+        media: [],
+        spamInfo: [Object],
+        balance: 33
+      }
+    ],
+    pageKey: 'MHgwMDAzODZlM2Y3NTU5ZDliNmEyZjVjNDZiNGFkMWE5NTg3ZDU5ZGMzOjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwNTpmYWxzZQ==',
+    totalCount: 25853
+  }
+  maticNfts {
+    ownedNfts: [
+      {
+        contract: [Object],
+        tokenId: '2168',
+        tokenType: 'ERC721',
+        title: 'Process Series. Artdrop II. Natalie Portman',
+        description: 'Accursed Share is proud to present Captured Moment: The Master’s Process, the first NFT collection by photographer-to-the-stars Frederic Auerbach. The collection consists of  NFT drops of process and master photos (1/1s) of five A-listers, plus airdrops. The stars in this collection are Benedict Cumberbatch, Natalie Portman, Sharon Stone, Mike Tyson and Zendaya.\n' +
+          '\n' +
+          'The Process Series reveals the delicate behind-the-scenes construction required for the production of a Master work. It includes 1,700 NFTs of 30 unique photographs of different rarity (150, 100, 50, 25, 10, 5). \n' +
+          ' \n' +
+          'For the Master Series, each celebrity will have their own NFT set, including: a dynamic NFT highlighting different aspects of the Master photo by displaying various edits of the image at different times of day; the high-res digital photo NFT of the Master (one per star); a high-res and autographed print of each Master photo, and a unique video NFT of the behind-the-scenes interview detailing Auerbach’s creative approach, from Process to Master.\n' +
+          '\n' +
+          'Artdrop I corresponds to the Process Series. It is a slightly animated video NFT of a process photo of Zendaya’s 2013 Flaunt photoshoot by Frederic Auerbach. \n' +
+          '\n' +
+          'Artdrop I is exclusively for the first 1000 wallets on the whitelist. It is stored on the Polygon blockchain.\n' +
+          '\n' +
+          '\n' +
+          'Credits: Photography: Frederic Auerbach / Filmography: Gary Grenier / Producers: Accursed Share (Mónica Belevan, John Thomas Connor, Marcus de Ataide); André Antonelli, Frederic Auerbach, Eric Holdener / Engineer: Marcus de Ataide \n' +
+          '\n' +
+          'Captured Moment: The Master’s Process is an Accursed Share production, in association with Frederic Auerbach. \n' +
+          '\n' +
+          'Part of the proceeds from this project will be donated to Farm2People, Los Angeles.',
+        timeLastUpdated: '2023-01-31T11:45:48.853Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined,
+        balance: 1
+      },
+      {
+        contract: [Object],
+        tokenId: '1',
+        tokenType: 'ERC1155',
+        title: 'Forgotten Sketch #1',
+        description: '***Minting is currently live here: https://doodlesnft.shop.***  *First time minting of original AI sketches of the Doodles collection.*  Doodles have quickly become one of the most actively traded and highly valued NFT collections on OpenSea.  Before colorful Doodles graced the NFT world, each character first had to be sketched.  For the first time, we are offering exquisite AI-generated sketches of each Doodle in the 10,000-piece collection.  Close inspection of the each detailed drawing will reveal the artistic care and sophisticated AI that went into creating this collection.  Over 100 different AI tools has been used in rendering these one-of-a kind sketches.  No others will be produced like them.  In this public offering, only one minting is available for each unique Doodle, and every owner will receive an individual ERC-721 token with proof of ownership on the Ethereum blockchain.',
+        timeLastUpdated: '2023-02-01T23:58:19.990Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined,
+        balance: 1
+      },
+      {
+        contract: [Object],
+        tokenId: '3232',
+        tokenType: 'ERC721',
+        title: 'Post by @rabbithole.lens',
+        description: "Crypto can be a scary place sometimes. But you're on a journey of a lifetime. The short term challenges don't dictate our destination. \n" +
+          '\n' +
+          'The deeper you go, the brighter it gets.',
+        timeLastUpdated: '2023-02-01T19:24:49.335Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [],
+        spamInfo: undefined,
+        balance: 1
+      },
+      {
+        contract: [Object],
+        tokenId: '1',
+        tokenType: 'ERC1155',
+        title: "Ethereum World's Metaverse Genesis Chest",
+        description: "The Ethereum World's Metaverse Genesis Chest represents the access to an exclusive airdrop within the Ethereum Worlds' ecosystem. Claim your apt and take part in our [metaverse](https://www.ethereumtowers.world/?ps=50).",
+        timeLastUpdated: '2023-02-15T20:49:16.868Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined,
+        balance: 1
+      },
+      {
+        contract: [Object],
+        tokenId: '6702',
+        tokenType: 'ERC721',
+        title: 'Astrobot #6702',
+        description: 'Astrobots arrived on Earth from Deep Space. They can be funny, cute, grumpy or mysterious. BEWARE: not all of them are friendly!',
+        timeLastUpdated: '2023-01-31T10:47:18.461Z',
+        metadataError: undefined,
+        rawMetadata: [Object],
+        tokenUri: [Object],
+        media: [Array],
+        spamInfo: undefined,
+        balance: 1
+      }
+    ],
+    pageKey: 'MHgwMzNmN2IyMGM5Y2ZlNGQwYTQxZDhlMTVkNDVmOGM3OTkzZTRlMzhhOjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMWEyZTpmYWxzZQ==',
+    totalCount: 2497
+  }
+  ```
+</CodeGroup>
+
+# Conclusion
+
+In this tutorial, we have seen how to use the Alchemy SDK with multiple chains in a single application using the `AlchemyMultichainClient` class. We have also seen how to manage the different API keys and endpoints for different chains. With the knowledge gained from this tutorial, you can now start building your own multichain applications using the Alchemy SDK.

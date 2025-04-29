@@ -1,0 +1,127 @@
+---
+title: getBlock -SDK
+description: Returns the block from the network based on the provided block number or hash.
+subtitle: Returns the block from the network based on the provided block number or hash.
+url: https://docs.alchemy.com/reference/sdk-getblock
+slug: reference/sdk-getblock
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns the block from the network based on the provided block number or hash. Transactions on the block are represented as an array of transaction hashes. To get the full transaction details on the block, use [getBlockWithTransactions](/reference/sdk-getblockwithtransactions) instead.
+
+# Parameters
+
+| Name                  | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockHashOrBlockTag` | `string` | The block hash or one of the following block tags: - `pending`: A sample next block built by the client on top of latest and containing the set of transactions usually taken from local mempool. Intuitively, you can think of this as block that have not been mined yet. - `latest`: The most recent block in the chain observed by the client, this block may be re-orged out of the chain even under normal conditions. - `earliest`: The lowest numbered block the client has available. Intuitively, you can think of this as the first block created. |
+
+# Response
+
+| Property         | Type     | Description                                                                         |
+| ---------------- | -------- | ----------------------------------------------------------------------------------- |
+| `Promise<Block>` | `object` | Returns a block object with the following fields or `null` when no block was found. |
+
+### `Block` response object parameters
+
+| Parameter      | Type        | Description                                                                                                                                                                 |
+| -------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hash`         | `string`    | `32 Bytes` - hash of the block. `null` when its pending block.                                                                                                              |
+| `parentHash`   | `string`    | `32 Bytes` - hash of the parent block.                                                                                                                                      |
+| `number`       | `number`    | The block number. `null` when its pending block.                                                                                                                            |
+| `timestamp`    | `number`    | The unix timestamp for when the block was collated.                                                                                                                         |
+| `nonce`        | `string`    | A nonce is a value that represents the number of transactions sent by the sender's address, ensuring the transactions are processed in order and preventing replay attacks. |
+| `difficulty`   | `number`    | Integer of the difficulty for this block.                                                                                                                                   |
+| `gasLimit`     | `BigNumber` | The maximum gas allowed in this block.                                                                                                                                      |
+| `gasUsed`      | `BigNumber` | The total used gas by all transactions in this block.                                                                                                                       |
+| `miner`        | `string`    | `20 Bytes` - the address of the beneficiary to whom the mining rewards were given.                                                                                          |
+| `transactions` | `array`     | An arrray containing transactions.                                                                                                                                          |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getBlock` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getblock.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "alchemy-replit", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+    // using the block tag "latest" to get the latest block 
+    // could've used a block hash to get a particualr block as well
+    let blockTagOrHash = "latest"
+
+    // calling the getBlock method to get the latest block
+    let response = await alchemy.core.getBlock(blockTagOrHash);
+
+    // logging the response to the console
+    console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    hash: '0x92fc42b9642023f2ee2e88094df80ce87e15d91afa812fef383e6e5cd96e2ed3',
+    parentHash: '0x6890edf8ad6900a5472c2a7ee3ef795f020ef6f907afb7f4ebf6a92d6aeb1804',
+    number: 15221026,
+    timestamp: 1658877717,
+    nonce: '0xd8c399035d6e6e8f',
+    difficulty: null,
+    gasLimit: BigNumber { _hex: '0x01ca35d2', _isBigNumber: true },
+    gasUsed: BigNumber { _hex: '0x01ca1ae1', _isBigNumber: true },
+    miner: '0x52bc44d5378309EE2abF1539BF71dE1b7d7bE3b5',
+    extraData: '0x6e616e6f706f6f6c2e6f7267',
+    transactions: [
+      '0xba4938ea41154427c8cb424ea89d9f150f139ed10065fe43ce11102dc82e1c37',
+      '0x98cc6b4b66453e184f65728fee265a726b030c5ddcfc1311a01ea5345c3959ab',
+      '0x2cbb4968cce66c73f2755fe7ef177981962afa7943f658b323e61850f31e4163',
+      '0x34e65a26b58ec93ec3a35c5c3269f1179801604e027cfd6a7cad8bef78e4fe62',
+      '0x745e34c019f924316863e5af9f2cfbe6f660071310054e8331e9dc1fcdfc26a8',
+      ... 253 more items
+    ],
+    baseFeePerGas: BigNumber { _hex: '0x02aa2d1d80', _isBigNumber: true },
+    _difficulty: BigNumber { _hex: '0x2a31d8a2cf4dd7', _isBigNumber: true }
+  }
+  ```
+</CodeGroup> 
+
+# Related Methods
+
+Here are the methods related to `getBlock`:
+
+* [getBlockWithTransactions](/reference/getblockwithtransactions-sdk): Returns the block from the network based on the provided block number or hash. Includes full transactions from the block.

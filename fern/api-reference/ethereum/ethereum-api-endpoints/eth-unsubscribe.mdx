@@ -1,0 +1,60 @@
+---
+title: eth_unsubscribe
+description: Unsubscribe from different Ethereum event types with a regular RPC call with eth_unsubscribe as the method and the subscriptionId as the first parameter.
+subtitle: Unsubscribe from different Ethereum event types with a regular RPC call with eth_unsubscribe as the method and the subscriptionId as the first parameter.
+url: https://docs.alchemy.com/reference/eth-unsubscribe
+slug: reference/eth-unsubscribe
+---
+
+# eth\_unsubscribe
+
+Unsubscribe from different Ethereum event types with a regular RPC call with eth\_unsubscribe as the method and the `subscriptionId` as the first parameter.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this API in your app today. [Get started for free](https://dashboard.alchemy.com/signup/?a=a69baa86fe)
+</Tip>
+
+### Parameters
+
+1. Subscription ID, as previously returned from an [`eth_subscribe`](/reference/eth-subscribe#parameters-1) call.
+
+### Returns
+
+`true` if a subscription was successfully canceled, or `false` if no subscription existed with the given ID.
+
+### Example
+
+#### Request
+
+<CodeGroup>
+  ```shell wscat
+  wscat -c wss://eth-mainnet.g.alchemy.com/v2/<key>
+
+  {"jsonrpc":"2.0", "id": 1, "method": "eth_unsubscribe", "params": ["0x9cef478923ff08bf67fde6c64013158d"]}
+  ```
+
+  ```javascript alchemy-sdk
+  // npm install alchemy-sdk
+  import { Alchemy, Network } from "alchemy-sdk";
+
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+  const alchemy = new Alchemy(settings);
+
+  alchemy.ws.removeAllListeners();
+  ```
+</CodeGroup>
+
+#### Result
+
+<CodeGroup>
+  ```json json
+  {
+      "jsonrpc":"2.0",
+      "id":1,
+      "result":true
+  }
+  ```
+</CodeGroup>

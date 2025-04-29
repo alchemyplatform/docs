@@ -1,0 +1,102 @@
+---
+title: verifyNftOwnership - SDK
+description: Checks that the provided owner address owns one or more of the provided NFTs. Returns a boolean indicating whether the owner's address owns the provided NFT.
+subtitle: Checks that the provided owner address owns one or more of the provided NFTs. Returns a boolean indicating whether the owner's address owns the provided NFT.
+url: https://docs.alchemy.com/reference/sdk-verifynftownership
+slug: reference/sdk-verifynftownership
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Checks that the provided owner address owns one or more of the provided NFTs. Returns a boolean indicating whether the owner's address owns the provided NFT.
+
+# Parameters
+
+| Name              | Type     | Description                                     |
+| ----------------- | -------- | ----------------------------------------------- |
+| `owner`           | `string` | The owner address to check.                     |
+| `contractAddress` | `string` | An NFT contract address to check ownership for. |
+
+# Response
+
+| Property           | Type      | Description                                                             |
+| ------------------ | --------- | ----------------------------------------------------------------------- |
+| `Promise<boolean>` | `boolean` | A boolean indicating whether the owner's address owns the provided NFT. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address and owner
+      const address = "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8";
+      const owner = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
+
+      //Call the method to display the rarity of each attribute of the NFT
+      const response = await alchemy.nft.verifyNftOwnership(owner, address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  false
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `verifyNftOwnership` method:
+
+* **Authenticating ownership during a transaction**: When a user wants to sell their NFT, the `verifyNftOwnership` method can be used to ensure that the seller is the rightful owner of the NFT. This helps prevent fraudulent transactions.
+
+* **Proving ownership for insurance or legal purposes**: In cases where the ownership of an NFT is disputed, the `verifyNftOwnership` method can be used to prove ownership. This can be useful in legal cases or when purchasing insurance for the NFT.
+
+* **NFT lending or borrowing**: NFT owners may want to lend their NFTs to others for a fee or borrow NFTs from others. The `verifyNftOwnership` method can be used to verify ownership before entering into such agreements.
+
+# Related Methods
+
+Here are the methods related to `verifyNftOwnership`:
+
+* [getOwnersForNft](/reference/getownersfornft-sdk): Gets all the owners for a given NFT contract address and token ID.
+
+* [getNftsForOwner](/reference/getnftsforowner-sdk): Get all NFTs for an owner.

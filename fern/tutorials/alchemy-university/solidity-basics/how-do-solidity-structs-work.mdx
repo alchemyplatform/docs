@@ -1,0 +1,210 @@
+---
+title: How do Solidity structs work?
+description: Solidity structs create custom data types for record-keeping, combining with arrays and functions to add, retrieve, and update records. They can be protected by checking msg.sender.
+subtitle: Solidity structs create custom data types for record-keeping, combining with arrays and functions to add, retrieve, and update records. They can be protected by checking msg.sender.
+url: https://docs.alchemy.com/docs/how-do-solidity-structs-work
+slug: docs/how-do-solidity-structs-work
+---
+
+Let's dive into a Solidity-specific data structure, not typically found in other programming languages like `arrays` are... 🤨
+
+## Structs
+
+![structures](Structure-gc58a04cb9_1280.jpg)
+
+Up until now, we've looked at all of the *defined* data types in Solidity. One super cool feature about Solidity is it allows you to define ***your own custom data type*** 🤯.
+
+You can define your own custom data type by creating a **`struct`**. Struct types are typically used to represent a *record*, or a grouping of common data.
+
+The syntax to declare a struct in Solidity [resembles an object declaration in JavaScript](/docs/solidity-vs-javascript):
+
+<CodeGroup>
+  ```solidity solidity
+  struct structName {
+     type1 typeName1;
+     type2 typeName2;
+     type3 typeName3;
+  }
+  ```
+</CodeGroup>
+
+Super easy! 💯 Let's look at a specific use case for structs to help us further understand the concept..
+
+### Struct Use Cases: Library Record Keeping 📚
+
+What if we wanted to have an immutable record of all the library books we cared about? 🤔 Keeping our book records on a centralized server somewhere might not be ideal, since it might be taken down or corrupted by the server admin. In come smart contracts! 💥
+
+We can create a smart contract called `Library` and equip it with all the functionality we'd need to perform detailed record keeping for books. For now, we can just work off of a single assumption / user story:
+
+#### - For each book record I add to my `Library` smart contract, I want to keep track of its `title`, `author` and some sort of `id` for internal record-keeping
+
+The above assumption would mean lines and lines of code... if we didn't have Solidity structs. 😉
+
+So, let's define a [smart contract](/docs/how-does-solidity-work) called `Library` and define a struct called `Book` inside its scope. The `Book` struct should keep track of all the properties we listed in the assumption above:
+
+<CodeGroup>
+  ```solidity solidity
+  contract Library {
+
+      struct Book {
+          string title;
+          string author;
+          uint bookId;
+      }
+
+  }
+  ```
+</CodeGroup>
+
+Great! We've got the base setup done. Any further functionality will be structured around this same `Book` struct and its properties.
+
+A `Book` struct is specific to *one* book... so we need a way to keep track of many of the same type... anything ring a bell here? 🔔 That's right, we can use an array. Let's add it to our `Library`:
+
+<CodeGroup>
+  ```solidity solidity
+  contract Library {
+
+      struct Book {
+          string title;
+          string author;
+          uint bookId;
+      }
+
+      Book[] public books;
+  }
+  ```
+</CodeGroup>
+
+Sweet! An array here will make it super easy to keep indexed track of each `Book` struct, along with each book's specific properties.
+
+What if we want to add a book? We can do so with a function `addBook()`:
+
+<CodeGroup>
+  ```solidity solidity
+  contract Library {
+
+      struct Book {
+          string title;
+          string author;
+          uint bookId;
+      }
+
+      Book[] public books;
+
+      function addBook(string memory _title, string memory _author) public {
+          books.push(Book(_title, _author, books.length));
+      }
+  }
+  ```
+</CodeGroup>
+
+Ok, let's break down the `addBook()` function real quick:
+
+* The `string` parameters use `memory`. This is a requirement of Solidity whenever you use reference types as a parameter, you must precede the parameter with either `memory` or `calldata`. This is just telling the Solidity compiler where the data being passed in lives. Since this is an ephemeral call, we are passing in the value from `memory`.
+
+* We use `books.push()` in order to push a brand new Book struct
+
+* We initialize the struct by calling it exactly like you would a function: `Book(_param1, param2, ...)` - that is the easiest one but you can also initialize structs like so:
+
+<CodeGroup>
+  ```solidity solidity
+      // key value mapping
+      todos.push(Todo({text: _text, completed: false}));
+      
+      // initialize an empty struct in local memory and then update it
+      Todo memory todo;
+      todo.text = _text;
+  ```
+</CodeGroup>
+
+Ok great! We can now add new books to our library and push em to the `books` array for record-keeping. What if we want to retrieve a book from this record? We can add a simple getter and retrieve based on the `bookId`:
+
+<CodeGroup>
+  ```solidity solidity
+  contract Library {
+
+      struct Book {
+          string title;
+          string author;
+          uint bookId;
+      }
+
+      Book[] public books;
+
+      function addBook(string memory _title, string memory _author) public {
+          books.push(Book(_title, _author, books.length));
+      }
+      
+      function get(uint _bookId) public view returns (string memory _title, string memory _author) {
+          return(books[_bookId].title, books[_bookId].author);
+      }
+  }
+  ```
+</CodeGroup>
+
+Awesome! Now anyone can pass in a book id and the smart contract will return that book id's title and author! 💃
+
+One final function to add before we wrap up the awesomeness of structs is `update()`, that way we can update a book title or author for any reason (mainly for an easy example, since we probably wouldn't want to update such a record after it's been sealed!).
+
+**But wait!**
+
+![zelda-navi-wait](giphy.gif)
+
+**One more thing...** notice how all of our functions are `public`? This means anyone could mess with our cool library and we don't want that! Let's make it so that each `Book` holds an `address` property, and ONLY that specific address can perform certain changes in the contract:
+
+Let's add a `registrant` of type `address` on the `Book` struct. Let's also add an `update()` function:
+
+<Info>
+  Be careful! Since we are adding a new property to the `Book` struct, we will have to change any previous calls to `Book` to also account for it! 🚨
+</Info>
+
+<CodeGroup>
+  ```solidity solidity
+  contract Library {
+
+      struct Book {
+          string title;
+          string author;
+          uint bookId;
+          address registrant;
+      }
+
+      Book[] public books;
+
+      function addBook(string memory _title, string memory _author) public {
+          // whoever adds a book, that is the registrant on this book
+          books.push(Book(_title, _author, books.length, msg.sender));
+      }
+      
+      function get(uint _bookId) public view returns (string memory _title, string memory _author) {
+          return(books[_bookId].title, books[_bookId].author);
+      }
+      
+      function update(uint _bookId, string memory _newTitle, string memory _newAuthor) public {
+          // protect our book record by only making
+          // this function available to the original registrant
+          require(msg.sender == books[_bookId].registrant, 'You must have been the one to add the book to change the record!');
+          
+          books[_bookId].title = _newTitle;
+          books[_bookId].author = _newAuthor;
+      }
+  }
+  ```
+</CodeGroup>
+
+Amazing. We've just coded a whole contract that has soooo much functionality in so few lines! 🤯 Plus, it protects our records by checking the `msg.sender` in the `update()` function! 🔐
+
+## Suggested Reading
+
+* [Solidity by Example - Structs](https://solidity-by-example.org/structs/)
+* [Open Source Project By AU Student](https://github.com/chiranz/rps_game/blob/main/contracts/RPSGame.sol)
+
+## Conclusion
+
+Structs are super useful in Solidity. They are a custom data type... so they are fitting for any custom record-keeping needs you might think of! Another example would be a `Player` struct that keeps track of that player's `address`, `level`, etc...
+
+> Want to see a 15-minute run-through of Structs using the same Library example as above? [Here's Al covering Structs at DevConnect 2022 Amsterdam](https://youtu.be/NuGF1wsYxQA?t=9849)? 👀 📽
+
+## Learn More About Ethereum Development
+
+Alchemy University offers [free web3 development bootcamps that explain Solidity structs](https://university.alchemy.com/ethereum) and help developers master the fundamentals of web3 technology. Sign up for free, and start building today!

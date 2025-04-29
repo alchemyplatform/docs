@@ -1,0 +1,108 @@
+---
+title: Soneium API Quickstart
+description: Get started building on Soneium and using the JSON-RPC API
+subtitle: Get started building on Soneium and using the JSON-RPC API
+url: https://docs.alchemy.com/reference/soneium-api-quickstart
+slug: reference/soneium-api-quickstart
+---
+
+*To use the Soneium API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup/) first!*
+
+## Introduction
+
+Soneium is an innovative Ethereum Layer 2 blockchain platform developed by Sony Block Solutions Labs. It aims to integrate Web3 technologies into everyday life, creating an inclusive digital world where everyone can be a creator and innovator. Soneium offers a robust infrastructure for developers to build impactful decentralized applications (dApps) and digital assets, while providing users with a secure and user-friendly environment for interacting with blockchain technology.
+
+***
+
+## What is the Soneium API?
+
+The Soneium API allows interaction with the Soneium network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
+
+<CodeGroup>
+  ```text npm
+  mkdir soneium-api-quickstart
+  cd soneium-api-quickstart
+  npm init --yes
+  ```
+
+  ```text yarn
+  mkdir soneium-api-quickstart
+  cd soneium-api-quickstart
+  yarn init --yes
+  ```
+</CodeGroup>
+
+This creates a new directory named `soneium-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = `https://soneium-minato.g.alchemy.com/v2/${yourAPIKey}`;
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Replace `yourAPIKey` with your actual Alchemy API key from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Soneium network:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the latest block information from Soneium's blockchain outputted to your console:
+
+```shell
+Latest Block: 0x...
+```
+
+## Next Steps
+
+Congratulations! You've made your first request to the Soneium API. You can now explore the various [JSON-RPC methods available on Soneium](/reference/soneium-api-endpoints) and start building your dApps on this innovative platform.

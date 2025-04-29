@@ -1,0 +1,413 @@
+---
+title: How to Interact with ERC-721 Tokens in Solidity
+description: Learn how to interact with, and build on top of existing ERC-721 tokens using Solidity
+subtitle: Learn how to interact with, and build on top of existing ERC-721 tokens using Solidity
+url: https://docs.alchemy.com/docs/how-to-interact-with-erc-721-tokens-in-solidity
+slug: docs/how-to-interact-with-erc-721-tokens-in-solidity
+---
+
+One of the greatest benefits of NFTs (and smart contracts, in general) is universal interoperability. Any contract on a blockchain can theoretically interact and build on top of any other contract on the same blockchain.
+
+![600](713d668-Crypto_Coven.png "Crypto Coven.png")
+
+Crypto Coven NFTs
+
+Interoperability helps NFT collections provide continuing utility to their holders, allows other projects to entice top buyers with discounts and exclusive access, and in some cases allows creators to do damage control for security breaches in the original contract.
+
+In a [previous tutorial](/docs/how-to-create-allowlists-based-on-nft-ownership), we learned how to interact with existing ERC-721 tokens to create custom allowlists. In this tutorial, we will explore a more advanced case. We will write a smart contract using Solidity and Hardhat that allows users who have paid and minted NFTs from a compromised contract to mint the same token IDs from a new contract for free.
+
+## Creating the Interaction Contract
+
+Imagine you are the creator of an NFT project. You launch a collection and your buyers start minting NFTs by paying a certain amount of ETH. However, after a point of time, you realize that you haven't added functionality to your contract to withdraw the ETH that buyers have paid.
+
+You immediately halt any further sales. You decide to launch a new contract but you do not want buyers who have already paid and minted their NFTs to pay a price again. This project will explore how we go about handling this.
+
+## Interacting with other ERC-721 contracts
+
+In order to interact with any ERC-721 contract deployed on the blockchain of your choice, you will need to setup the following in your own contract:
+
+1. Define a Solidity interface that lists all the functions (and their signatures) that you plan on calling.
+2. Define an instance of the interface using the address of the contract you want to interface with.
+3. Call the functions listed in the interface.
+
+A very simple example would look something like this:
+
+<CodeGroup>
+  ```sol sol
+  //SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.9;
+
+  import "@openzeppelin/contracts/access/Ownable.sol";
+  import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+
+  interface OGContractInterface {
+      function functionToCall1() external view returns (uint);
+      function functionToCall2() external view returns (uint);
+      ...
+  }
+
+  contract MyContract is Ownable, ERC721Enumerable {
+
+      // Deployed address of contract we want to interface with
+      address public ogContractAddress;
+      OGCollectionInterface ogContract;
+
+      constructor(address _ogContractAddress) ERC721("My Collection", "MC") {
+
+          // Connect to the original NFT smart contract and get an instance
+          ogContractAddress = _ogContractAddress;
+          ogContract = OGCollectionInterface(ogContractAddress);
+      }
+
+      // Call original contract's methods inside your contract
+      function myFunction() public onlyOwner {
+          ogContract.functionToCall1();
+          ogContract.functionToCall2();
+      }
+  }
+  ```
+</CodeGroup>
+
+In the following sections, we will implement a more concrete solution for the problem highlighted above.
+
+### Step 1: Install Node and npm
+
+In case you haven't already, [install node and npm](https://nodejs.org/en/download/) on your local machine. Make sure that node is at least v14 or higher by typing the following in your terminal:
+
+```shell
+node -v
+```
+
+### Step 2: Create a Hardhat project
+
+We're going to set up our project using [Hardhat](https://hardhat.org/), the industry-standard development environment for Ethereum smart contracts. Additionally, we'll also install [OpenZeppelin](https://www.openzeppelin.com/) contracts.
+
+***To set up Hardhat, run the following commands in your terminal:***
+
+<CodeGroup>
+  ```bash bash
+  mkdir nft-interaction && cd nft-interaction
+  npm init -y
+  npm install --save-dev hardhat
+  npx hardhat
+  ```
+</CodeGroup>
+
+Choose `Create a Javascript project` from the menu and accept all defaults. To ensure everything is installed correctly, run the following command in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat test
+  ```
+</CodeGroup>
+
+***To install OpenZeppelin:***
+
+<CodeGroup>
+  ```bash bash
+  npm install @openzeppelin/contracts
+  ```
+</CodeGroup>
+
+### Step 3: Write the incorrect NFT smart contract
+
+Let's now create the original (but incorrect) NFT smart contract. This contract will have all the basic functionalities expected of an NFT PFP collection except the `withdraw` function.
+
+Open the `nft-interaction` project in your favorite code editor (e.g. VS Code). Create a file named `ICNft.sol` in the `contracts` folder and add the following code:
+
+<CodeGroup>
+  ```sol sol
+  //SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.9;
+
+  import "@openzeppelin/contracts/access/Ownable.sol";
+  import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+
+  contract ICNft is Ownable, ERC721Enumerable {
+
+      uint private _tokenIds;
+
+      uint public constant price = 0.05 ether;
+
+      string public baseTokenURI;
+
+      bool public saleIsActive = true;
+
+      constructor() ERC721("Original Collection", "OGC") {
+      }
+
+      // Set Sale state
+      function setSaleState(bool _activeState) public onlyOwner {
+          saleIsActive = _activeState;
+      }
+
+      // Mint NFTs
+      function mintNfts(uint _count) public payable {
+          require(saleIsActive, "Sale is not currently active!");
+          require(msg.value >= price * _count, "Not enough ether to purchase.");
+
+          for (uint i = 0; i < _count; i++) {
+              _mintSingleNft();
+          }
+      }
+
+      // Mint a single NFT
+      function _mintSingleNft() private {
+          uint newTokenID = _tokenIds;
+          _safeMint(msg.sender, newTokenID);
+          _tokenIds = _tokenIds + 1;
+      }
+
+      // Get tokens of an owner
+      function tokensOfOwner(address _owner) public view returns (uint[] memory) {
+
+          uint tokenCount = balanceOf(_owner);
+          uint[] memory tokensId = new uint256[](tokenCount);
+
+          for (uint i = 0; i < tokenCount; i++) {
+              tokensId[i] = tokenOfOwnerByIndex(_owner, i);
+          }
+          return tokensId;
+      }
+  }
+  ```
+</CodeGroup>
+
+### Step 4: Write the replacement NFT smart contract
+
+Our replacement smart contract will implement all the functionalities of the original smart contract (plus withdrawal) and add a *remint* feature.
+
+Remint will allow users who have NFTs from the original contract to mint the corresponding IDs on the new contract without having to pay the base price. This will be done by calling the `tokensOfOwner` function in the original contract.
+
+To make sure that our contract can actually call the aforementioned function, we need to provide it with the function’s signature. We will do this using Solidity interfaces.
+
+In the `contracts` folder, create another file named `RCNft.sol` and add the following code:
+
+<CodeGroup>
+  ```sol sol
+  //SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.9;
+
+  import "@openzeppelin/contracts/access/Ownable.sol";
+  import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+
+  interface ICCollectionInterface {
+      // Define signature of tokensOfOwner
+      function tokensOfOwner(address _owner) external view returns (uint[] memory);
+
+      // Definte signature of totalSupply
+      function totalSupply() external view returns (uint);
+  }
+
+  contract RCNft is Ownable, ERC721Enumerable {
+
+      uint private _tokenIds;
+
+      uint public constant price = 0.05 ether;
+
+      string public baseTokenURI;
+
+      bool public saleIsActive = false;
+
+      // Mapping that keeps track of all reminted NFTs
+      mapping(uint => bool) private isReminted;
+
+      // Deployed address of original collection
+      address public icContractAddress;
+      ICCollectionInterface icContract;
+
+      constructor(address _icContractAddress) ERC721("Replacement Collection", "RC") {
+
+          // Connect to the original NFT smart contract and get an instance
+          icContractAddress = _icContractAddress;
+          icContract = ICCollectionInterface(icContractAddress);
+
+          // Set current token ID to total supply of old collection 
+          // Done to allow only reminting of NFTs already minted in the old collection
+          _tokenIds = icContract.totalSupply();
+      }
+
+      // Set Sale state
+      function setSaleState(bool _activeState) public onlyOwner {
+          saleIsActive = _activeState;
+      }
+
+      // Mint NFTs
+      function mintNfts(uint _count) public payable {
+          require(saleIsActive, "Sale is not currently active!");
+          require(msg.value >= price * _count, "Not enough ether to purchase.");
+
+          for (uint i = 0; i < _count; i++) {
+              _mintSingleNft();
+          }
+      }
+
+      // Remint NFTs
+      function remintNfts() public {
+
+          uint[] memory ids = icContract.tokensOfOwner(msg.sender);
+
+          // Only remint if it hasn't been done already
+          for (uint i = 0; i < ids.length; i++) {
+              if (!isReminted[ids[i]]) {
+                  _safeMint(msg.sender, ids[i]);
+                  isReminted[ids[i]] = true;
+              }
+          }
+
+      }
+
+      // Mint a single NFT
+      function _mintSingleNft() private {
+          uint newTokenID = _tokenIds;
+          _safeMint(msg.sender, newTokenID);
+          _tokenIds + _tokenIds + 1;
+      }
+
+      // Get tokens of an owner
+      function tokensOfOwner(address _owner) external view returns (uint[] memory) {
+
+          uint tokenCount = balanceOf(_owner);
+          uint[] memory tokensId = new uint256[](tokenCount);
+
+          for (uint i = 0; i < tokenCount; i++) {
+              tokensId[i] = tokenOfOwnerByIndex(_owner, i);
+          }
+          return tokensId;
+      }
+
+      // Withdraw ether
+      function withdraw() public payable onlyOwner {
+          uint balance = address(this).balance;
+          require(balance > 0, "No ether left to withdraw");
+
+          (bool success, ) = (msg.sender).call{value: balance}("");
+          require(success, "Transfer failed.");
+      }
+  }
+  ```
+</CodeGroup>
+
+The contract ensures the following:
+
+1. NFTs that had already been minted in the old collection can only be reminted by existing owners. These NFTs won't be available for public sale.
+2. All NFTs that were not minted in the old collection will be available for public sale and will function as expected.
+
+Compile the contracts and make sure everything is working by running:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat compile
+  ```
+</CodeGroup>
+
+### Step 5: Simulate functionality locally
+
+Let's now simulate our functionality locally. We will write a script that sequentially does the following:
+
+1. Owner deploys the original (incorrect) NFT smart contract
+2. Wallet 1 mints three NFTs (IDs 0, 1, and 2) by paying 0.15 ETH.
+3. Wallet 2 mints two NFTs (IDs 3 and 4) by paying 0.1 ETH.
+4. Owner realizes mistake and halts sales.
+5. Owner deploys the replacement NFT smart contract.
+6. Wallet 2 mints NFTs 3 and 4 from the replacement contract without paying a price.
+
+Create a new file called `run.js` in the scripts folder, and add the following code:
+
+<CodeGroup>
+  ```sol sol
+  const hre = require("hardhat");
+  const { utils } = require("ethers");
+
+  async function main() {
+
+      // Get wallet addresses from hardhat
+      const [owner, address1, address2] = await hre.ethers.getSigners();
+
+      // Deploy OG (incorrect) collection and get deployed contract address
+      const icFactory = await hre.ethers.getContractFactory("ICNft");
+      const icContract = await icFactory.deploy();
+
+      await icContract.deployed();
+      console.log("OG Collection deployed to: ", icContract.address, "\n");
+
+      icContractAddress = icContract.address
+
+      // Mint 3 OG NFTs to address1
+      let txn;
+      txn = await icContract.connect(address1).mintNfts(3, { value: utils.parseEther('0.15') });
+      await txn.wait()
+      console.log("3 OG NFTs minted to ", address1.address);
+
+      // Mint 2 OG NFTs to address2
+      txn = await icContract.connect(address2).mintNfts(2, { value: utils.parseEther('0.10') });
+      await txn.wait()
+      console.log("2 OG NFTs minted to ", address2.address);
+
+      // Freeze sales of OG collection
+      txn = await icContract.setSaleState(false);
+      await txn.wait();
+      console.log("OG Collection sales have been halted");
+
+      // Deploy replacement contract
+      const rcFactory = await hre.ethers.getContractFactory("RCNft");
+      const rcContract = await rcFactory.deploy(icContractAddress);
+
+      await rcContract.deployed();
+      console.log("\nReplacement Collection deployed to: ", rcContract.address, "\n");
+
+      // Remint NFTs belonging to address2
+      txn = await rcContract.connect(address2).remintNfts();
+      await txn.wait()
+      console.log("NFTs reminted to ", address2.address);
+
+      let ids = await rcContract.tokensOfOwner(address2.address);
+      ids = ids.map(x => x.toNumber())
+      console.log("Replacement NFTs reminted:", ids);
+  }
+
+  main()
+      .then(() => process.exit(0))
+      .catch((error) => {
+          console.error(error);
+          process.exit(1);
+      });
+  ```
+</CodeGroup>
+
+Run this script by running the following command in your terminal:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat run scripts/run.js
+  ```
+</CodeGroup>
+
+You should see output that looks like this:
+
+<CodeGroup>
+  ```bash bash
+  OG Collection deployed to:  0x5FbDB2315678afecb367f032d93F642f64180aa3 
+
+  3 OG NFTs minted to  0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+  2 OG NFTs minted to  0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+  OG Collection sales have been halted
+
+  Replacement Collection deployed to:  0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 
+
+  NFTs reminted to  0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+  Replacement NFTs reminted: [ 3, 4 ]
+  ```
+</CodeGroup>
+
+## Conclusion
+
+Congratulations! You now know how to interact with ERC-721 tokens and smart contracts on any EVM-based blockchain using Solidity.
+
+If you enjoyed this tutorial about creating on-chain allowlists, tweet us at [@Alchemy](https://twitter.com/Alchemy) and give us a shoutout!
+
+Don't forget to join our [Discord server](https://www.alchemy.com/discord) to meet other blockchain devs, builders, and entrepreneurs!
+
+Ready to start building your NFT collection?
+
+[Create a free Alchemy account](https://alchemy.com/?a=22e42c85f0) and do share your project with us!

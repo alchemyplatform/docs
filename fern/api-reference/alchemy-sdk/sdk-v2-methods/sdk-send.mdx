@@ -1,0 +1,148 @@
+---
+title: send - SDK
+description: Allows sending a raw message to the Alchemy backend.
+subtitle: Allows sending a raw message to the Alchemy backend.
+url: https://docs.alchemy.com/reference/sdk-send
+slug: reference/sdk-send
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Allows sending a raw message to the Alchemy backend.
+
+# Parameters
+
+| Name     | Type     | Description                                       |
+| -------- | -------- | ------------------------------------------------- |
+| `params` | `array`  | The parameters to pass to the method.             |
+| `method` | `string` | The method to call, e.g., `eth_getBlockByNumber`. |
+
+# Response
+
+| Property       | Type     | Description                                           |
+| -------------- | -------- | ----------------------------------------------------- |
+| `Promise<any>` | `object` | Returns an object corresponding to the method called. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `send` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript send.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      let method  = "eth_getBlockByNumber";
+      let params = ["0xEDD023", false];
+      
+      //Call the method
+      let response = await alchemy.core.send(method, params)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    number: '0xedd023',
+    hash: '0x18760312114f3fdf11f9d5846245995835aa59994d5fc4203faee52d2f7eaabe',
+    transactions: [
+      '0xcbe7ce4c134f142265f66002865b9c70c653f331db166bd04145d017099d32a5',
+      '0xf0605f4c7e07737142a6dfccf44dd77faab6574404bf99faab9e347addeef728',
+      '0xf95639f915762ea2e57f4009595b1d7a00b4e896334695d75ec5e658bf0be6f8',
+      '0x3711b290df2402ce92eac90682c31814b90f89a8ab76878f479b3816455255b9',
+      '0xb903a9bb990b2f0576e84b72c3ba997b0e1e0e35656fcb35388021669ab10939',
+      '0x4bdd80fc079e3ed9f34f3851ac6ec393f80d6029eb0933ecdb317a5ca8929a3a',
+      '0x0b6188fbd2727060e03c657286eecf2819fb114a44a332bea98db5a14389de73',
+      '0x9724e919acff0392810d6cb373ecb315caa2c8ea93af3c2dee20c426ab252834',
+      '0xcbfe9a33127daa41b4254d041f1f44cfde317f011013e5576fb02ba7cf23c96f',
+      '0x0f0d44dbde0b877f8b51ceaebf05f4189afe12da0bf71bb0e85a2969c2c068be',
+      '0x4c9ca3b0ff18af68b11f17e3fcd71308c6dfef625b10f60c953114254a33f280',
+      '0x5ff2f1bbb2adfe70be2616abadf1e5c4840e49e25f8608ec5ebe916bcd9e3d5c',
+      '0x6eb27c6b68c7d0813e4751b245dbe456d3a1aa3522d63adc5a885cc92dfbf694',
+      '0xdaf12541d960f59e07454ed8652751326d8a7f0cd51c80aa658abd0f46b514fe',
+      '0x1666d9a752e1d5b3e59f5c59d0e13b5cfddee4e420d0d0eea170cfa6caca2fd6',
+      '0x3ef79b21db8716ad87fa08976b509ea8c8f9687859052b0dfe4db97fad9ac52f',
+      '0x6954f24dcffff19b99ff20d85a19173871efb1c3f7d07634f0ee894d47f3e306',
+      '0xd77574d4a17e8657b5297ac924803a7e26181abc9d0f7b8610c5dfa7251cbb87',
+      '0xbbd1c5ce3b55fec2153449b98351399e35a279a90961776ffbc47ad51ffece65',
+      '0x47169a29662dee6acb6b7fe3d8cb38f28bc107242d7e08aa6123ab6d5df4b95b',
+      '0x7a00d99e26bda5d9008e3948eb6548f84b19fe86740add3721c2701b0e85c2d8',
+      '0xc5b2f3fba21affb3eb84895551ed25ab497509026b3a6db6df97977c92d313c2',
+      '0x531e9dadda5a6ed8b65e99f342ac7f861173ad6ab261116883ddd124317338b1',
+      '0xe902d41d7600b7ed1bf36aeb0f544eaded9db41148cdd593b9b80c69cc7cd4cb',
+      '0xa3bd42e0a83f8ca5a2c23cb5d195897bfacc8d6897664c51eb7ba150594a003c',
+      '0x5cc61393f3dc49563f73aa6cbee365e8feef77b5b1da152b8c6cca6a39849e14',
+      '0x70e3dac3e3ca3ddd9453d7122f04603901f22ed8d18b001877c4436ecd20e5cd',
+      '0xe081332bc5456121715f91948e59a201555250f756238a7617a90e8f8026d0bd',
+      '0xa903afcd80f69f4beff17735e87c267fb2a653937f96a95c1051782529eeac0b',
+      '0xf54f3420c1f7504d3260d3e9cd48521dc42785317df2f280d63fc614f731008c'
+    ],
+    difficulty: '0x0',
+    extraData: '0x',
+    gasLimit: '0x1c9c380',
+    gasUsed: '0x1d41ca',
+    logsBloom: '0x00020000210008000200000400000001006042000400000000000000041000400020040000043000200a0811000101000a8002000b18200000080000002060000000080000008008280001280400000400000040004002000080080034000450020010020200004010011041000008080000028000000600000001100008408000000000228004280808000000000180008059000110400120284000011030041240210400017000020f0080000064020000200004008001003100022008800840000632000030000100084000000080012000200108010100400102001062000210200800008080000011084000080200001000400000000000088200800000',
+    miner: '0x388c818ca8b9251b393131c08a736a67ccb19297',
+    mixHash: '0x006ff88775a192a1a71dd002325549419f37a2f69732bd3f004d16fb35ac16fc',
+    nonce: '0x0000000000000000',
+    parentHash: '0xdf690ffd33a8715fcd6622426c2b498064e1fd8ed585da053302185f9bd7ad59',
+    receiptsRoot: '0x1086fbfce054458970c81893549fbf0c3861a183f96d2bb2c6e83aec97799aac',
+    sha3Uncles: '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347',
+    size: '0x21d4',
+    stateRoot: '0x562c00e97e229c109f1979bd0bb9836f567f8468c6a535990a0b05e2d4861a3a',
+    timestamp: '0x632bac4b',
+    totalDifficulty: '0xc70d815d562d3cfa955',
+    transactionsRoot: '0x25bc257b1b2393f16a7a0331986c1faa2dcc6b6cdae0be01783734bc70f5eb9b',
+    uncles: [],
+    baseFeePerGas: '0x1deff4daf'
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some possible use cases for the `send` method:
+
+* **Sending Ether**: The `send` method can be used to send Ether from one Ethereum address to another. This is the most common use case for the send function and is used in a wide variety of applications, from simple wallet transfers to complex smart contract interactions.
+
+* **Sending Tokens**: In addition to Ether, the `send` method can also be used to send ERC-20 tokens. This is particularly useful for decentralized applications (dApps) that require the transfer of tokens as part of their functionality.
+
+* **Triggering Smart Contract Interactions**: The `send` method can be used to trigger smart contract interactions, such as executing a function or changing a contract's state. This is a powerful feature that enables developers to build complex dApps that interact with the Ethereum blockchain.

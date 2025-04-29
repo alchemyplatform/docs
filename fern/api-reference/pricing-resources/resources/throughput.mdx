@@ -1,0 +1,136 @@
+---
+title: Throughput
+description: Understand how throughput works on Alchemy and how to handle 429 errors.
+subtitle: Understand how throughput works on Alchemy and how to handle 429 errors.
+url: https://docs.alchemy.com/reference/throughput
+slug: reference/throughput
+---
+
+<Info>
+  Getting hit with rate limits?
+
+  [Talk to our team](https://www.alchemy.com/contact-sales) to increase your throughput.
+</Info>
+
+## What is throughput?
+
+Throughput is a measure of the number of requests your application can send per second. It is often known as the applications "rate limit".
+
+If a large number of requests are sent at the same time, you may hit your throughput capacity. However, under Alchemy's elastic throughput system, users are *guaranteed* their given throughput limit (measured in [compute units per second](/reference/throughput#scroll-what-are-compute-units-per-second-cups)), but will often experience higher throughput in practice.
+
+In most instances, hitting your throughput limit will not affect your user's experience engaging with your application. As long as retries are implemented, the requests will go through in the following second. As a general rule of thumb, if you are experiencing **under 30%** rate limited requests, [using retries](/reference/throughput#retries) is the best solution.
+
+***
+
+## Elastic Throughput
+
+<Check />
+
+***
+
+## Error Response
+
+When you exceed your capacity, you will receive an error response. This response will be different depending on whether you are connecting to Alchemy using HTTP or [WebSockets](/reference/websockets).
+
+<Info>
+  If you would like to test receiving a 429 response, send a POST request to [https://httpstat.us/429](https://httpstat.us/429).
+</Info>
+
+### HTTP
+
+You will receive an HTTP 429 (Too Many Requests) response status code.
+
+### WebSockets
+
+You will receive a JSON-RPC error response with error code 429. For example, the response might be:
+
+<CodeGroup>
+  ```json json
+  {
+    "jsonrpc": "2.0",
+    "error": {
+      "code": 429,
+      "message": "Your app has exceeded its compute units per second capacity. If you have retries enabled, you can safely ignore this message. If not, check out https://docs.alchemy.com/reference/throughput"
+    }
+  }
+  ```
+</CodeGroup>
+
+***
+
+## Retries
+
+There are several options for implementing retries. For a deep dive into each option, check out **[How to Implement Retries](/reference/how-to-implement-retries)**.
+
+All you need to do to easily handle 429 errors is to retry the request. This will ensure a great user experiences with any API even if you aren't hitting rate limits. Once you've implemented retries, [test out the behavior](/reference/throughput#test-rate-limits-retries) to make sure they work as expected.
+
+### Option 1: Alchemy SDK
+
+[Alchemy SDK](/reference/alchemy-sdk-quickstart) is an Ethers.js wrapper that automatically handles retry logic for you. It's the easiest way to build retry logic into all of your requests.
+
+### Option 2: `Retry-After`
+
+If you are using HTTP and not WebSockets you may receive a `Retry-After` header in the HTTP response. This indicates how long you should wait before making a follow-up request. We still recommend using [exponential backoff ](/reference/throughput#option-4-exponential-backoff)since `Retry-After` only accepts an integer number of seconds.
+
+### Option 3: Simple Retries
+
+If [exponential backoff](/reference/throughput#option-3-exponential-backoff) poses an challenge to you, a simple retry solution is to wait a random interval between 1000 and 1250 milliseconds after receiving a `429` response, and sending the request again, up to some maximum number of attempts you are willing to wait.
+
+### Option 4: Exponential Backoff
+
+Exponential backoff is a standard error-handling strategy for network applications. It is a similar solution to retries, however, instead of waiting random intervals, an exponential backoff algorithm retries requests exponentially, increasing the waiting time between retries up to a maximum backoff time.
+
+#### Example Algorithm:
+
+1. Make a request.
+2. If the request fails, wait 1 + `random_number_milliseconds` seconds and retry the request.
+3. If the request fails, wait 2 + `random_number_milliseconds` seconds and retry the request.
+4. If the request fails, wait 4 + `random_number_milliseconds` seconds and retry the request.
+5. And so on, up to a `maximum_backoff` time.
+6. Continue waiting and retrying up to some maximum number of retries, but do not increase the wait period between retries.
+
+where:
+
+* The wait time is `min(((2^n)+random_number_milliseconds), maximum_backoff)`, with `n` incremented by 1 for each iteration (request).
+* `random_number_milliseconds` is a random number of milliseconds less than or equal to 1000. This helps to avoid cases in which many clients are synchronized by some situation and all retry at once, sending requests in synchronized waves. The value of `random_number_milliseconds` is recalculated after each retry request.
+* `maximum_backoff` is typically 32 or 64 seconds. The appropriate value depends on the use case.
+
+The client can continue retrying after it has reached the `maximum_backoff` time. Retries after this point do not need to continue increasing backoff time. For example, suppose a client uses a `maximum_backoff` time of 64 seconds. After reaching this value, the client can retry every 64 seconds. At some point, clients should be prevented from retrying indefinitely.
+
+***
+
+## Test Throughput & Retries
+
+To test out your implementation of retries, we created a test app on each network with a low throughput of 50 Compute Units/Second. The same key can be used across all the blockchains we support. Feel free to make requests to this test app on any of the networks using the following API keys:
+
+### Ethereum Mainnet, Polygon Mainnet (and other mainnets)
+
+#### HTTP
+
+[https://eth-mainnet.g.alchemy.com/v2/J038e3gaccJC6Ue0BrvmpjzxsdfGly9n](https://eth-mainnet.g.alchemy.com/v2/J038e3gaccJC6Ue0BrvmpjzxsdfGly9n)
+
+#### WebSocket
+
+[wss://eth-mainnet.g.alchemy.com/v2/J038e3gaccJC6Ue0BrvmpjzxsdfGly9n]()
+
+### Ethereum Goerli, Polygon Mumbai (and other testnets)
+
+<Warning>
+  While you can use the Goerli testnet, we caution against it as the Ethereum Foundation has announced that [Goerli will soon be deprecated](https://www.alchemy.com/blog/goerli-faucet-deprecation).
+
+  We therefore recommend using [Sepolia](https://www.alchemy.com/overviews/sepolia-testnet) testnet as Alchemy has full Sepolia support and a free [Sepolia faucet](https://sepoliafaucet.com/) also.
+</Warning>
+
+#### HTTP
+
+[https://eth-goerli.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO](https://eth-goerli.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO)
+
+#### WebSocket
+
+[\<wss://eth-goerli.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO>]()
+
+***
+
+## Final Tips
+
+Use a different key for each part of your project (e.g., frontend, backend, development) to isolate throughput usage to each use case. This also splits monitoring across different parts of your project, making it easier to debug issues and monitor usage.

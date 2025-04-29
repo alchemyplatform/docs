@@ -1,0 +1,146 @@
+---
+title: waitForTransaction - SDK
+description: Returns a promise which will not resolve until specified transaction hash is mined.If confirmations is 0, this method is non-blocking, and if the transaction has not been mined returns null . Otherwise, this method will block until the transaction has confirmed blocks mined on top of the block in wh...
+subtitle: Returns a promise which will not resolve until specified transaction hash is mined.If confirmations is 0, this method is non-blocking, and if the transaction has not been mined returns null . Otherwise, this method will block until the transaction has confirmed blocks mined on top of the block in wh...
+url: https://docs.alchemy.com/reference/waitfortransaction-sdk-v3
+slug: reference/waitfortransaction-sdk-v3
+---
+
+Returns a promise which will not resolve until specified transaction hash is mined.If `confirmations` is 0, this method is non-blocking, and if the transaction has not been mined returns `null`. Otherwise, this method will block until the transaction has confirmed blocks mined on top of the block in which it was mined.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns a promise which will not resolve until the specified transaction hash is mined.
+
+If `confirmations` is 0, this method is non-blocking, and if the transaction has not been mined returns `null`. Otherwise, this method will block until the transaction has confirmed blocks mined on top of the block in which it was mined.
+
+# Parameters
+
+| Name              | Type     | Description                                                         |
+| ----------------- | -------- | ------------------------------------------------------------------- |
+| `transactionHash` | `string` | The hash of the transaction to wait for.                            |
+| `confirmations`   | `number` | `Optional` The number of blocks to wait for.                        |
+| `timeout`         | `number` | `Optional` The maximum time to wait for the transaction to confirm. |
+
+# Response
+
+| Property                              | Type     | Description                     |
+| ------------------------------------- | -------- | ------------------------------- |
+| `Promise<TransactionReceipt \| null>` | `object` | Returns the transaction status. |
+
+### `TransactionReceipt` response object parameters
+
+| Property             | Type               | Description                                                                                              |
+| -------------------- | ------------------ | -------------------------------------------------------------------------------------------------------- |
+| `to`                 | `string`           | `20 Bytes` - address of the receiver. `null` when its a contract creation transaction                    |
+| `from`               | `string`           | `20 Bytes` - address of the sender.                                                                      |
+| `contractAddress`    | `string`           | `20 Bytes` - The contract address created, if the transaction was a contract creation, otherwise `null`. |
+| `transactionIndex`   | `number`           | Integer of the transactions index position log was created from. `null` when its pending log.            |
+| `root?`              | `string`           | `32 bytes` of post-transaction stateroot (pre Byzantium).                                                |
+| `gasUsed`            | `number \| string` | The amount of gas used by this specific transaction alone                                                |
+| `logsBloom`          | `string`           | `256 Bytes` - Bloom filter for light clients to quickly retrieve related logs.                           |
+| `blockHash`          | `string`           | `32 Bytes` - hash of the block where this log was in. null when its pending. null when its pending log.  |
+| `transactionHash`    | `string`           | `32 Bytes` - hash of the transaction                                                                     |
+| `logs`               | `array`            | Array of log objects, which this transaction generated.                                                  |
+| `blockNumber`        | `number`           | The block number where this log was in. `null` when its pending. `null` when its pending log.            |
+| `confirmations`      | `number`           | Describes the number of confirmations.                                                                   |
+| `cummulativeGasUsed` | `number \| string` | The total amount of gas used when this transaction was executed in the block.                            |
+| `effectiveGasPrice`  | `number \| string` | Effective gas price used.                                                                                |
+| `byzantium`          | `boolean`          | specifies `true` or `falsle`.                                                                            |
+| `type`               | `number`           | Describes the type.                                                                                      |
+| `status?`            | `number`           | Either **1** (success) or **0** (failure)                                                                |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network, Wallet, Utils } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the transaction hash
+      const txHash = "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b";
+
+      //Call the method
+      const response = await alchemy.transact.waitForTransaction(txHash)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "to": "0xF02c1c8e6114b1Dbe8937a39260b5b0a374432bB",
+      "from": "0xa7d9ddBE1f17865597fBD27EC712455208B6B76d",
+      "contractAddress": null,
+      "transactionIndex": 65,
+      "gasUsed": {
+          "type": "BigNumber",
+          "hex": "0x53a0"
+      },
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "blockHash": "0x1d59ff54b1eb26b013ce3cb5fc9dab3705b415a67127a003c3e61eb445bb8df2",
+      "transactionHash": "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b",
+      "logs": [],
+      "blockNumber": 6139707,
+      "confirmations": 12049691,
+      "cumulativeGasUsed": {
+          "type": "BigNumber",
+          "hex": "0x20ec2d"
+      },
+      "effectiveGasPrice": {
+          "type": "BigNumber",
+          "hex": "0x04a817c800"
+      },
+      "status": 1,
+      "type": 0,
+      "byzantium": true
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `waitForTransaction` method:
+
+* **Ensuring transaction execution**: When sending a transaction to the Ethereum network, there is no guarantee that the transaction will be executed immediately. `waitForTransaction` can be used to ensure that the transaction is mined and executed before moving on to the next step in the program.
+
+* **Waiting for contract deployment**: When deploying a new smart contract to the Ethereum network, it may take some time for the contract to be deployed and ready for use. `waitForTransaction` can be used to wait for the contract deployment transaction to be confirmed before interacting with the contract.
+
+* **Checking transaction status**: `waitForTransaction` can be used to check the status of a transaction and ensure that it was successfully mined and confirmed by the network. This is useful for ensuring that funds were successfully transferred, or for verifying that a contract function was executed as expected.

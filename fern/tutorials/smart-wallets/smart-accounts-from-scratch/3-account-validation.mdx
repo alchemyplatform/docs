@@ -1,0 +1,81 @@
+---
+title: 3. Account Validation
+description: "Step 3 in the 'Smart Accounts From Scratch' Series: Let's validate the user operation signature!"
+subtitle: "Step 3 in the 'Smart Accounts From Scratch' Series: Let's validate the user operation signature!"
+url: https://docs.alchemy.com/docs/3-account-validation
+slug: docs/3-account-validation
+---
+
+If we take a look at the smart account from step 1, there's nothing stopping anyone from using the smart account. We'll want to create some way to actually validate each user operation and say "yes, this is signature proves they're able to run this operation against this account". We had an `owner` in the constructor of the smart account in step 1, let's see if we can put it to use now!
+
+## OpenZeppelin ECDSA
+
+OpenZeppelin provides an audited utility library for elliptic curve digital signature algorithm (ECDSA) operations. Here is the library at version 4.9.5: [https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.5/contracts/utils/cryptography/ECDSA.sol](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.5/contracts/utils/cryptography/ECDSA.sol)
+
+For this step, we'll need to install OpenZeppelin's contract library (if you're using npm you can do `npm i @openzeppelin/[email protected]`). Then, in your smart account, you can import the ECDSA utility from `/contracts/utils/cryptography/ECDSA.sol`.
+
+✅ **Task 1/3**: Are you ready to import the OpenZeppelin ECDSA util into your contract?
+
+## ECDSA Validation of a String
+
+Ok, let's take a look at how we can use this library in our smart account! First, let's just try something simple, a verification of a string value:
+
+<CodeGroup>
+  ```sol sol
+  contract Account is IAccount {
+  		// ...
+      function validateUserOp(UserOperation calldata op, bytes32, uint256)
+          external
+          view
+          returns (uint256 validationData)
+      {
+          address recovered = ECDSA.recover(ECDSA.toEthSignedMessageHash(keccak256("wee")), op.signature);
+          return recovered == owner ? 0 : 1;
+      }
+     	// ...
+  }
+  ```
+</CodeGroup>
+
+In this example, we are checking to see if the owner signed a message `"wee"` and, if they did, returning a `0` indicating that this is a valid signature.
+
+Now when sending the user operation, we would need to sign the message `"wee"` using ECDSA as well, and pass it in the user op `signature` field. Both `viem` and `ethers` have a `signMessage` utility that can be used to sign a byte array like the one shown below:
+
+<CodeGroup>
+  ```js js
+  const hash = keccak256(toUtf8Bytes("wee"));
+  const message = Uint8Array.from(Buffer.from(hash.slice(2), "hex"));
+  ```
+</CodeGroup>
+
+Once you have this message you can sign it with the `signMessage` utility which will concatenate `"\x19Ethereum Signed Message:\n"` prefix, plus the length of the string, and then finally the string itself. Then it will take the keccak hash of this, the same as the [toEthSignedMessageHash in the OpenZeppelin ECDSA library on-chain](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.5/contracts/utils/cryptography/ECDSA.sol#L165C1-L174).
+
+Once you have the signed message, add this to the `signature` field of the user operation and see if you can successfully validate the signed string!
+
+Before we move on, ask yourself, **Why is this not enough to validate the user operation**? Can we stop here? Afterall, the user did sign the message `"wee"` and we have proof that they did that using the `ECDSA.recover` utility on chain.
+
+The problem here is the `"wee"` signature is public information! Once this signature is placed on-chain, anyone can pretend to be the account owner signing `"wee"` because they know what that signature is. When doing this kind of public key cryptography, we need to make sure that every signature is unique so that way we can verify the user's intent and know that this isn't a signature that was used elsewhere. We can do that by signing the user operation hash instead of a message.
+
+✅ **Task 2/3**: Can you sign and validate the `"wee"`? Do you see why this is not enough for validation?
+
+## ECDSA Verification of a User Operation
+
+Ok, great so lets go ahead and sign the User Operation hash! We can grab the hash by calling out to the `entryPoint.getUserOpHash(userOp)` method, passing in the `userOp` struct as the only argument. We'll get back the hash, which we can then sign like we did with the message above. Remember to again slice off the first two characters `"0x"`if you're using the `Uint8Array.from` method like we did above!
+
+One thing you may realize as you're going to do this, is that you'll need to send up a user op with a `signature` field to the `getUserOpHash` method. You can just leave the `signature` as `"0x"` here until you're ready to send it to `handleOps`, and then you can replace it with the signature of the user op hash.
+
+✅ **Task 3/3**: Were you able to sign and verify the user op hash? Can you ensure that no other use can execute a user operation against this smart account?
+
+If you were able to still initiate the state change via the user operation, you've completed this step successfully, way to go! 🎉
+
+<Info>
+  As an added challenge, you can also try adding validation to the paymaster! Maybe the paymaster only will pay for transactions that are signed by this particular owner, or maybe the paymaster needs to sign the user op and provide it in the `paymasterAndData` field.
+</Info>
+
+The last, and most exciting, step is still to come! In the next step we deploy to the Arbitrum Sepolia testnet using a bundler!
+
+***
+
+What’s Next
+
+* [4. Ship it to the Testnet](/docs/4-ship-it-to-the-testnet)

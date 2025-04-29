@@ -1,0 +1,85 @@
+---
+title: How to Use a Signer in Ethers.js
+description: This guide will introduce you to use a Signer in Ethers.js and level up your Web3 stack!
+subtitle: This guide will introduce you to use a Signer in Ethers.js and level up your Web3 stack!
+url: https://docs.alchemy.com/docs/ethers-js-signer
+slug: docs/ethers-js-signer
+---
+
+## What is a Signer in ethers.js?
+
+A Signer is an abstraction to the Ethereum Account that has access to a private key, which grants access to messages and transactions to be securely signed off-chain while maintaining an interaction with the blockchain.
+
+A Signer allows you to verify that you own a particular account, so that you can send transactions to the blockchain from that account.
+
+### Ethers.js Signer Use Cases
+
+The following are four potential use cases of a Signer within [Ethers.js](/docs/what-is-ethers-js):
+
+* **Balances** - use signer.**getBalance** to retrieve the balance of a user’s wallet
+* **ENS Domains** - use signer.**resolveName** to retrieve the [ENS domain](https://docs.ens.domains/) connected to the wallet address.
+* **Signing** - use signer.**signTransaction** to sign a transaction to confirm ownership by a specific wallet address.
+* **Wallet** - use ethers.**Wallet** to create a new wallet by passing in a private key identifying the owner of the wallet.
+
+There are many more use cases that can be explored by visiting the Signer docs, [here](https://docs.ethers.io/v5/single-page/#/v5/api/signer/).
+
+## How to Use a Signer with the Alchemy SDK
+
+This example will teach you how to send a transaction using the Alchemy SDK. Please Note: The following code snippets require prior [installation of alchemy-SDK](/reference/alchemy-sdk-quickstart).
+
+#### 1. Import Alchemy, Network, Wallet and Utils via alchemy-sdk. Learn more about dotev, [here](https://www.npmjs.com/package/dotenv).
+
+<CodeGroup>
+  ```javascript javascript
+  const { Alchemy, Network, Wallet, Utils } = require("alchemy-sdk");
+  const dotenv = require("dotenv");
+  ```
+</CodeGroup>
+
+#### 2. Optional Config object, but defaults to demo api-key and eth-mainnet.
+
+<CodeGroup>
+  ```javascript javascript
+  const { API_KEY, PRIVATE_KEY } = process.env;
+  const settings = {
+      apiKey: API_KEY,
+      network: Network.ETH_GOERLI, // Replace with your network.
+  };
+
+  const alchemy = new Alchemy(settings);
+  ```
+</CodeGroup>
+
+#### 3. Define wallet - an implementation of Signer that can sign transactions and messages using a private key.
+
+<CodeGroup>
+  ```javascript javascript
+  let wallet = new Wallet(PRIVATE_KEY);
+  ```
+</CodeGroup>
+
+#### 4. Define the transaction and specify details required of the transaction.
+
+<CodeGroup>
+  ```javascript javascript
+  const transaction = {
+      to: "0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd",
+      value: Utils.parseEther("0.001"),
+      gasLimit: "21000",
+      maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
+      maxFeePerGas: Utils.parseUnits("20", "gwei"),
+      nonce: await alchemy.core.getTransactionCount(wallet.getAddress()),
+      type: 2,
+      chainId: 5, // Corresponds to ETH_GOERLI
+  };
+  ```
+</CodeGroup>
+
+#### 5. Define the raw transaction using wallet and transact using Alchemy’s API methods.
+
+<CodeGroup>
+  ```javascript javascript
+  const rawTransaction = await wallet.signTransaction(transaction);
+  await alchemy.transact.sendTransaction(rawTransaction);
+  ```
+</CodeGroup>

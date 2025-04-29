@@ -1,0 +1,130 @@
+---
+title: getFloorPrice - SDK
+description: Returns the floor prices of an NFT contract by marketplace.
+subtitle: Returns the floor prices of an NFT contract by marketplace.
+url: https://docs.alchemy.com/reference/getfloorprice-sdk-v3
+slug: reference/getfloorprice-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+<Info>
+  Please note that this endpoint is only available on **Ethereum mainnet** for **Opensea** & **Looksrare** marketplaces.
+</Info>
+
+# Description
+
+Returns the floor prices of an NFT contract by marketplace.
+
+# Parameters
+
+| Name              | Type     | Description                                  |
+| ----------------- | -------- | -------------------------------------------- |
+| `contractAddress` | `string` | The contract address for the NFT collection. |
+
+# Response
+
+| Property                         | Type     | Description                                                                                                                                     |
+| -------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Promise<GetFloorPriceResponse>` | `object` | Returns an object of the name of the NFT marketplace where the collection is listed. Current marketplaces supported: **OpenSea**, **LooksRare** |
+
+### `GetFloorPriceResponse` object properties
+
+| Property        | Type     | Description                                                               |
+| --------------- | -------- | ------------------------------------------------------------------------- |
+| `floorPrice`    | `number` | The floor price of the collection on the given marketplace.               |
+| `priceCurrency` | `string` | The currency in which the floor price is denominated.                     |
+| `collectionUrl` | `string` | The link to the collection on the given marketplace.                      |
+| `retrievedAt`   | `string` | UTC timestamp of when the floor price was retrieved from the marketplace. |
+
+### `FloorPriceError` object properties
+
+If there is an error, the failing object is returned by the `getFloorPrice` method call for each marketplace (e.g., looksRare, or OpenSea).
+
+| Property | Type     | Description                                             |
+| -------- | -------- | ------------------------------------------------------- |
+| `error`  | `string` | Error fetching floor prices from the given marketplace. |
+
+# Example Request and Response
+
+**Prerequisite**: You must install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address
+      const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
+
+      //Call the method to check the contract floor price
+      const response = await alchemy.nft.getFloorPrice(address)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "openSea": {
+          "floorPrice": 24.979951,
+          "priceCurrency": "ETH",
+          "collectionUrl": "https://opensea.io/collection/boredapeyachtclub",
+          "retrievedAt": "2023-09-21T15:22:06.168Z",
+          "error": undefined
+      },
+      "looksRare": {
+          "floorPrice": 24.98,
+          "priceCurrency": "ETH",
+          "collectionUrl": "https://looksrare.org/collections/0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+          "retrievedAt": "2023-09-21T15:22:06.097Z",
+          "error": undefined
+      }
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getFloorPrice` method:
+
+* **NFT marketplaces**: In an NFT marketplace, the `getFloorPrice` method can be used to display the minimum price at which an NFT can be purchased. This helps buyers to determine the minimum price they need to pay for a particular NFT, and also helps sellers to set a minimum price for their NFT.
+
+* **Auctions**: In an auction, the `getFloorPrice` method can be used to determine the minimum bid amount for an item. This helps to ensure that the auction starts at a fair price and helps to prevent low-ball bids.
+
+* **Automated market makers (AMMs)**: In an AMM, the `getFloorPrice` method can be used to determine the minimum price at which a particular token can be bought or sold. This helps to ensure that trades are executed at a fair price and helps to prevent price manipulation.
+
+* **Tokenized real estate**: In the emerging market of tokenized real estate, the `getFloorPrice` method can be used to display the minimum price at which a particular real estate asset can be sold. This helps buyers to determine the minimum price they need to pay for a particular property, and also helps sellers to set a minimum price for their property.

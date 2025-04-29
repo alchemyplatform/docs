@@ -1,0 +1,124 @@
+---
+title: getNftFilters - SDK
+description: Get all NFT filters tracked for the provided NftActivityWebhook , i.e., the \NFT_ACTIVITY\.
+subtitle: Get all NFT filters tracked for the provided NftActivityWebhook , i.e., the \NFT_ACTIVITY\.
+url: https://docs.alchemy.com/reference/getnftfilters-sdk-v3
+slug: reference/getnftfilters-sdk-v3
+---
+
+Get all NFT filters tracked for the provided `NftActivityWebhook`, i.e., the "NFT\_ACTIVITY".
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Get all NFT filters tracked for the provided `NftActivityWebhook`, i.e., the "NFT\_ACTIVITY".
+
+# Parameters
+
+| Name        | Type     | Description                                                                                                                                                                             |
+| ----------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `webhookId` | `string` | The `id` of the NFT activity webhook. Passing in an incorrect id of a non-NFT webhook will result in a response object with no filters.                                                 |
+| `options`   | `object` | `Optional` Pagination options when fetching nft filters. Parameters include: 1. `limit` - `number` Number of addresses to fetch. 2. `pageKey` - `string` Page cursor for the next page. |
+
+# Response
+
+| Property                      | Type               | Description                           |
+| ----------------------------- | ------------------ | ------------------------------------- |
+| `Promise<NftFiltersResponse>` | `array of objects` | Returns a list of nft filter objects. |
+
+### `NftFiltersResponse` parameters
+
+| Property     | Type               | Description                                                                                                                                                                                                                                                                                           |
+| ------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filters`    | `array of objects` | The NFT filters on the provided webhook. The parameters in the objects include: 1. `contractAddress` - `string` The contract address of the NFT. 2. `tokenId` - `string` The token id of the NFT to track. If this field is omitted, defaults to tracking all NFTs for the provided contract address. |
+| `totalCount` | `number`           | The total number of NFT filters on the webhook.                                                                                                                                                                                                                                                       |
+| `pageKey`    | `string`           | `Optional` Page key used to fetch the remaining filters.                                                                                                                                                                                                                                              |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network} = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  // authToken is required to use Notify APIs. Found on the top right corner of
+  // https://dashboard.alchemy.com/notify.
+  const config = {
+      authToken: "your-notify-auth-token", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Define the webhooks by fetching all the Webhooks
+      const hooks = await alchemy.notify.getAllWebhooks();
+
+      //Call the method to return the nfts by ID
+      const nftsById = await alchemy.notify.getNftFilters("wh_zyhqo5im08n6ougk", {
+    		limit: 3,
+    		pageKey: 1,
+  		});
+
+      // Get the nfts by webhooks
+  		const nftsByWebhook = await alchemy.notify.getNftFilters(hooks.webhooks[1]);
+
+      //Logging the response to the console
+      console.log(nftsById, nftsByWebhook);
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  [
+    {
+      "addresses": [
+        {
+          "contractAddress": "string",
+          "tokenId": "string"
+        }
+      ],
+      "totalCount": 0,
+      "pageKey": "string"
+    }
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getNftFilters` method:
+
+* **Tracking NFT transfers**: You can use `getNftFilters` to track the transfer of NFTs between addresses. This can be useful for tracking the movement of valuable NFTs, such as rare digital art pieces or collectibles.
+
+* **Monitoring NFT sales**: If you're interested in the buying and selling of NFTs, you can use `getNftFilters` to receive notifications whenever an NFT is sold on a particular marketplace or exchange. This can help you stay up to date with market trends and fluctuations.
+
+* **Watching NFT auctions**: Many NFTs are sold through auction houses or bidding platforms. With `getNftFilters`, you can track the progress of NFT auctions in real-time and receive notifications when bids are placed, updated, or withdrawn.
+
+* **Monitoring NFT metadata changes**: The metadata associated with an NFT can be just as valuable as the NFT itself. With `getNftFilters`, you can track changes to NFT metadata, such as updates to the image or description, and receive notifications when these changes occur.

@@ -1,0 +1,102 @@
+---
+title: getAllWebhooks - SDK
+description: Get all webhooks on your team. The team is determined by the authToken provided into the AlchemySettings object when creating a new Alchemy instance.This method returns a response object containing all the webhooks.
+subtitle: Get all webhooks on your team. The team is determined by the authToken provided into the AlchemySettings object when creating a new Alchemy instance.This method returns a response object containing all the webhooks.
+url: https://docs.alchemy.com/reference/getallwebhooks-sdk-v3
+slug: reference/getallwebhooks-sdk-v3
+---
+
+Get all webhooks on your team. The team is determined by the `authToken` provided into the `AlchemySettings` object when creating a new Alchemy instance.This method returns a response object containing all the webhooks.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Get all webhooks on your team. The team is determined by the `authToken` provided into the `AlchemySettings` object when creating a new Alchemy instance.
+
+This method returns a response object containing all the webhooks.
+
+# Response
+
+| Property                          | Type               | Description                      |
+| --------------------------------- | ------------------ | -------------------------------- |
+| `Promise<GetAllWebhooksResponse>` | `array of objects` | Returns list of webhook objects. |
+
+### `GetAllWebhooksResponse` parameters
+
+| Property     | Type               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `webhooks`   | `array of objects` | List of webhooks for your team. The parameters contained in this property include: 1. `id` - `string` The webhook's unique id. 2. `network` - `string` The network the webhook is on, e.g., `ETH_MAINNET`, `ETH_GOERLI`, `ETH_ROPSTEN`, `ETH_RINKEBY`, etc. 3. `type` - `string` The type of webhook. e.g., `MINED_TRANSACTION`, `DROPPED_TRANSACTION`, etc. 4. `url` - `string` The url that the webhook sends its payload to. 5. `isActive` - `boolean` Whether the webhook is currently active. 6. `timeCreated` - `string` The creation time of the webhook as an ISO string. 7. `signingKey` - `string` The signing key used to verify payloads for the webhook. 8. `version` - `string` The webhook version. All newly created webhooks default to V2. 9. `appId` - `string` Only exists for Mined / Dropped Transactions. The App ID of the project the webhook is connected to. |
+| `totalCount` | `number`           | The total number of webhooks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network} = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  // authToken is required to use Notify APIs. Found on the top right corner of
+  // https://dashboard.alchemy.com/notify.
+  const config = {
+      authToken: "uat5Shotg-0gjVwjdjwoQnytzmjq4zU_", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Call the method to return the webhooks
+      const response = await alchemy.notify.getAllWebhooks()
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  { webhooks: [Array], totalCount: 0 }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getAllWebhooks` method:
+
+* **Monitoring transactions**: By setting up a webhook for transaction events, you can receive real-time notifications about when transactions are sent or received by your smart contract. This can be useful for tracking the progress of a transaction, and for triggering other actions in response to specific transaction events.
+
+* **Monitoring contract events**: In addition to tracking transactions, you can also set up webhooks to receive notifications when specific events occur within your smart contract. For example, you could set up a webhook to trigger an alert whenever a new user registers on your decentralized application.
+
+* **Managing account balances**: By using webhooks to monitor changes in your account balances, you can keep track of your cryptocurrency holdings in real time. This can be useful for managing your portfolio, and for triggering automated trades or other actions based on changes in your account balances.
+
+# Related Methods
+
+Some methods related to `getAllWebhooks` include:
+
+* [getAddresses](/reference/getaddresses-sdk) - Get all addresses tracked for the provided address activity.

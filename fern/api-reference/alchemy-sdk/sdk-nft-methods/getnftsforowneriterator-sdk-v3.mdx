@@ -1,0 +1,481 @@
+---
+title: getNftsForOwnerIterator - SDK
+description: Fetches all NFTs for a given owner and yields them in an async iterable. This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the options parameter in the request's body.
+subtitle: Fetches all NFTs for a given owner and yields them in an async iterable. This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the options parameter in the request's body.
+url: https://docs.alchemy.com/reference/getnftsforowneriterator-sdk-v3
+slug: reference/getnftsforowneriterator-sdk-v3
+---
+
+Fetches all NFTs for a given owner and yields them in an async iterable. This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the `options` parameter in the request's body.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Fetches all NFTs for a given owner and yields them in an async iterable.
+
+This method returns the full NFT for the owner and pages through all page keys until all NFTs have been fetched. To get all NFTs without their associated metadata, use the `options` parameter by setting `omitMetadata` to `true` in the body of the request.
+
+# Parameters
+
+| Name      | Type     | Description                                     |
+| --------- | -------- | ----------------------------------------------- |
+| `owner`   | `string` | The address of the owner.                       |
+| `options` | `string` | The optional parameters to use for the request. |
+
+### `options` parameters
+
+| Parameter              | Type               | Description                                                                                                                                                                                                                                                                    |
+| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `contractAddresses?`   | `array of strings` | `Optional` list of contract addresses to filter the results by. Limit is 45.                                                                                                                                                                                                   |
+| `omitMetadata?`        | `boolean`          | `Optional` boolean flag to omit NFT metadata. Defaults to `false`. To return the response as shown in [OwnedBaseNftsResponse](#ownedbasenftsresponse-object-parameters), set this parameter to `true`.                                                                         |
+| `excludeFilters?`      | `string`           | `Optional` list of filters applied to the query. NFTs that match one or more of these filters are excluded from the response. Available options include: `SPAM`, `AIRDROPS`.                                                                                                   |
+| `includeFilters?`      | `string`           | `Optional` list of filters applied to the query. NFTs that match one or more of these filters are included in the response. Available options include: `SPAM`, `AIRDROPS`.                                                                                                     |
+| `pageSize?`            | `number`           | Sets the total number of NFTs to return in the response. Defaults to **100**. Maximum page size is **100**.                                                                                                                                                                    |
+| `tokenUriTimeoutInMs?` | `number`           | No set timeout by default - When metadata is requested, this parameter is the timeout (in milliseconds) for the website hosting the metadata to respond. If you want only to access the cache and not live to fetch any metadata for cache misses, then set this value to `0`. |
+| `orderBy?`             | `string`           | Order in which to return results. By default, results are ordered by contract address and token ID in lexicographic order. The available option is `TRANSFERTIME`.                                                                                                             |
+| `pageKey?`             | string             | Optional page key to use for pagination.                                                                                                                                                                                                                                       |
+
+# Response
+
+| Property                                   | Type     | Description                                  |
+| ------------------------------------------ | -------- | -------------------------------------------- |
+| `AsyncIterable <OwnedBaseNft \| OwnedNft>` | `object` | An object containing nfts owned by an owner. |
+
+## `OwnedNft` response object properties
+
+| Property          | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | `object` | The NFT's underlying contract and relevant contract metadata. Parameters in the contract include: 1. `address`: `string` The address of the NFT contract. 2. `tokenType`: `object` The type of the token in the contract 3. `name`: `string` The name of the contract. 4. `symbol`: `string` The symbol of the contract. 5. `totalSupply?: string` The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts. 6. `openSeaMetadata: object` OpenSea's metadata for the contract. 7. `contractDeployer?: string` The address that deployed the NFT contract. 8. `deployedBlockNumber?: number`The block number the NFT contract deployed in. 9. `isSpam`: `boolean` Whether the NFT contract is marked as spam. 10. `spamClassifications`: `array` Potential reasons why an NFT Contract was classified as spam. |
+| `tokenId`         | `string` | The unique identifier of the token. This could be in hexadecimal or decimal format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `tokenType`       | `string` | The type of NFT, e.g.,`ERC721`, `ERC1155`, `UNKNOWN`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `name`            | `string` | The NFT name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `description`     | `string` | The NFT description.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `timeLastUpdated` | `string` | When the NFT was last updated in the blockchain. Represented in `ISO-8601` format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `raw`             | `object` | The raw metadata for the NFT based on the metadata URI on the NFT contract. 1. `tokenUri?: string`: The raw token URI on the NFT contract. 2. `metadata: string`: The raw metadata parsed from the raw token URI. 3. `error?: string`: Error message if the raw metadata could not be fetched.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `tokenUri`        | `string` | URIs for accessing the NFT's metadata blob.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `image`           | `object` | Media URLs and information for the NFT. Parameters in this object include: 1. `cachedUrl: string`: URL of the image stored in Alchemy's cache. 2. `thumbnailUrl: string`: URL of a thumbnail-sized image. 3. `pngUrl: string`: URL of the image in `png` format. 4. `contentType: string`: The type of the media image.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `acquiredAt`      | `object` | Time at which the user most recently acquired the NFT. Only available when specifying `orderBy: NftOrdering.TRANSFERTIME` in the request. 1. `blockTimestamp?: string`: Timestamp of the block at which an NFT was last acquired. 2. `blockNumber?: number`: Block number of the block at which an NFT was last acquired.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `collection`      | `object` | Collection metadata for the NFT, if available. Parameters include: 1. `name: string`: The name of the collection. 2. `slug?: string`: The OpenSea human-readable slug of the collection. 3. `externalUrl?: string`: The external URL for the collection. 4. `bannerImageUrl?: string`: The banner image URL for the collection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `balance`         | `string` | The token balance indicating how many units of this NFT the owner holds.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `mint`            | `object` | Mint information for the NFT. Parameters include: 1. `mintAddress?: string`: The address that the NFT was minted to. 2. `blockNumber?: number`: The block number that the NFT was minted on. 3. `timestamp?: string`: The timestamp the NFT was minted on. 4. `transactionHash?: string`: The transaction hash of the transaction that minted the NFT.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+## `OwnedBaseNft` response object properties
+
+The `ownedBaseNft` response object is returned when the `options` parameter `omitMetadata` is set to `true`.
+
+| Property          | Type     | Description                                                                         |
+| ----------------- | -------- | ----------------------------------------------------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT.                                                    |
+| `tokenId`         | `string` | The unique identifier of the token. This could be in hexadecimal or decimal format. |
+| `balance`         | `string` | The token balance indicating how many units of this NFT the owner holds.            |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the owner address whose NFTs you want to fetch
+      const owner = "0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8";
+
+      // create an async generator function that uses the getNftsForOwnerIterator method
+      async function getNftsForOwner() {
+          try {
+              let nfts = [];
+              // Get the async iterable for the owner's NFTs.
+              const nftsIterable = alchemy.nft.getNftsForOwnerIterator(owner);
+
+              // Iterate over the NFTs and add them to the nfts array.
+              for await (const nft of nftsIterable) {
+                  nfts.push(nft);
+              }
+
+              // Log the NFTs.
+              console.log(nfts);
+          } catch (error) {
+              console.log(error);
+          }
+      }
+
+      getNftsForOwner();
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  [
+      {
+          "contract": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "name": "CryptoKitties",
+              "symbol": "CK",
+              "totalSupply": "2023232",
+              "tokenType": "ERC721",
+              "contractDeployer": "0xba52c75764d6F594735dc735Be7F1830CDf58dDf",
+              "deployedBlockNumber": 4605167,
+              "openSeaMetadata": {
+                  "floorPrice": 0.006,
+                  "collectionName": "CryptoKitties",
+                  "collectionSlug": "cryptokitties",
+                  "safelistRequestStatus": "verified",
+                  "imageUrl": "https://i.seadn.io/gae/C272ZRW1RGGef9vKMePFSCeKc1Lw6U40wl9ofNVxzUxFdj84hH9xJRQNf-7wgs7W8qw8RWe-1ybKp-VKuU5D-tg?w=500&auto=format",
+                  "description": "CryptoKitties is a game centered around breedable, collectible, and oh-so-adorable creatures we call CryptoKitties! Each cat is one-of-a-kind and 100% owned by you; it cannot be replicated, taken away, or destroyed.",
+                  "externalUrl": "https://www.cryptokitties.co/",
+                  "twitterUsername": "CryptoKitties",
+                  "discordUrl": "https://discord.gg/cryptokitties",
+                  "bannerImageUrl": "https://i.seadn.io/gcs/static/banners/cryptokitties-banner2.png?w=500&auto=format",
+                  "lastIngestedAt": "2023-09-18T00:29:33.000Z"
+              },
+              "spamClassifications": []
+          },
+          "tokenId": "1289657",
+          "tokenType": "ERC721",
+          "name": "Nala",
+          "tokenUri": "https://api.cryptokitties.co/v3/kitties/1289657",
+          "image": {
+              "cachedUrl": "https://nft-cdn.alchemy.com/eth-mainnet/5bd85609cdacb4214faab3d08e13bd9f",
+              "thumbnailUrl": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/5bd85609cdacb4214faab3d08e13bd9f",
+              "pngUrl": "https://res.cloudinary.com/alchemyapi/image/upload/convert-png/eth-mainnet/5bd85609cdacb4214faab3d08e13bd9f",
+              "contentType": "image/svg+xml",
+              "size": 63131,
+              "originalUrl": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289657.svg"
+          },
+          "raw": {
+              "tokenUri": "https://api.cryptokitties.co/v3/kitties/1289657",
+              "metadata": {
+                  "birthday": "2018-12-16T00:00:00.000Z",
+                  "hatched": true,
+                  "enhanced_cattributes": [
+                      {
+                          "description": "spock",
+                          "position": 5850,
+                          "type": "pattern",
+                          "kittyId": 680104
+                      },
+                      {
+                          "description": "se7",
+                          "position": -1,
+                          "type": "secret",
+                          "kittyId": 1289657
+                      }
+                  ],
+                  "color": "cyan",
+                  "created_at": "2018-12-16T08:12:41.000Z",
+                  "bio": "En Taro Adun! I'm Nala. I am currently trying to start my own company making berets for tripod kitties. I combine the best qualities of Ryan Gosling, Benjamin Franklin, and Raekwon. I can tell you like to get into trouble.",
+                  "language": "en",
+                  "auction": {},
+                  "offer": {},
+                  "children": [
+                      {
+                          "generation": 14,
+                          "owner": {
+                              "address": "0x002781a27becd321d831d815e3fa386944b329c8"
+                          },
+                          "hatched": true,
+                          "enhanced_cattributes": [],
+                          "color": "cyan",
+                          "image_url": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1290051.png",
+                          "is_exclusive": false,
+                          "created_at": "2018-12-16T10:31:23.000Z",
+                          "is_special_edition": false,
+                          "image_url_png": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1290051.png",
+                          "kitty_type": "fancy",
+                          "fancy_type": "Pawrula",
+                          "name": "Pawrula The Bright",
+                          "owner_wallet_address": "0x002781a27becd321d831d815e3fa386944b329c8",
+                          "id": 1290051,
+                          "is_fancy": true,
+                          "wrapped": true,
+                          "image_url_cdn": "https://img.cn.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1290051.png",
+                          "status": {
+                              "is_ready": true,
+                              "cooldown": 1527648022509,
+                              "is_gestating": false
+                          }
+                      },
+                      {
+                          "generation": 14,
+                          "owner": {
+                              "address": "0x65e10a29e0bf9bfda353ab3d44fe127bf2e09a4b"
+                          },
+                          "hatched": true,
+                          "enhanced_cattributes": [
+                              {
+                                  "description": "soserious",
+                                  "position": -1,
+                                  "type": "mouth",
+                                  "kittyId": 1903269
+                              },
+                              {
+                                  "description": "doridnudibranch",
+                                  "position": 132,
+                                  "type": "coloreyes",
+                                  "kittyId": 680079
+                              }
+                          ],
+                          "color": "doridnudibranch",
+                          "image_url": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1903269.svg",
+                          "is_exclusive": false,
+                          "created_at": "2020-04-23T22:10:56.000Z",
+                          "is_special_edition": false,
+                          "image_url_png": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1903269.png",
+                          "name": "Fressbert",
+                          "owner_wallet_address": "0x65e10a29e0bf9bfda353ab3d44fe127bf2e09a4b",
+                          "id": 1903269,
+                          "is_fancy": false,
+                          "wrapped": false,
+                          "image_url_cdn": "https://img.cn.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1903269.svg",
+                          "status": {
+                              "is_ready": true,
+                              "cooldown": 1607028977617,
+                              "is_gestating": false
+                          }
+                      }
+                  ],
+                  "id": 1289657,
+                  "is_fancy": false,
+                  "wrapped": true,
+                  "generation": 13,
+                  "owner": {
+                      "address": "0xe5cb067e90d5cd1f8052b83562ae670ba4a211a8",
+                      "hasDapper": false
+                  },
+                  "genes": "508101394017420297960203117038449397458346282085579186181678174847507224",
+                  "image_url": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289657.svg",
+                  "is_prestige": false,
+                  "is_exclusive": false,
+                  "is_special_edition": false,
+                  "purrs": {
+                      "count": 1,
+                      "is_purred": false
+                  },
+                  "image_url_png": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289657.png",
+                  "hatcher": {
+                      "image": "5",
+                      "address": "0x68b42e44079d1d0a4a037e8c6ecd62c48967e69f",
+                      "hasDapper": false,
+                      "nickname": "Kitten Mittens LLC 10D 10K 10H"
+                  },
+                  "background_color": "#c5eefa",
+                  "name": "Nala",
+                  "matron": {
+                      "generation": 12,
+                      "owner": {
+                          "address": "0x68b42e44079d1d0a4a037e8c6ecd62c48967e69f"
+                      },
+                      "hatched": true,
+                      "enhanced_cattributes": [
+                          {
+                              "description": "soserious",
+                              "position": -1,
+                              "type": "mouth",
+                              "kittyId": 1289248
+                          },
+                          {
+                              "description": "chronic",
+                              "position": 87,
+                              "type": "eyes",
+                              "kittyId": 468466
+                          },
+                          {
+                              "description": "topaz",
+                              "position": -1,
+                              "type": "coloreyes",
+                              "kittyId": 1289248
+                          }
+                      ],
+                      "color": "topaz",
+                      "image_url": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289248.svg",
+                      "is_exclusive": false,
+                      "created_at": "2018-12-16T05:37:33.000Z",
+                      "is_special_edition": false,
+                      "image_url_png": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289248.png",
+                      "name": "Sergeant Delibinky",
+                      "owner_wallet_address": "0x68b42e44079d1d0a4a037e8c6ecd62c48967e69f",
+                      "id": 1289248,
+                      "is_fancy": false,
+                      "wrapped": false,
+                      "image_url_cdn": "https://img.cn.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289248.svg",
+                      "status": {
+                          "is_ready": true,
+                          "cooldown": 1521350296999,
+                          "is_gestating": false
+                      }
+                  },
+                  "sire": {
+                      "generation": 12,
+                      "owner": {
+                          "address": "0x68b42e44079d1d0a4a037e8c6ecd62c48967e69f"
+                      },
+                      "hatched": true,
+                      "enhanced_cattributes": [],
+                      "color": "topaz",
+                      "image_url": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289336.png",
+                      "is_exclusive": false,
+                      "created_at": "2018-12-16T06:15:48.000Z",
+                      "is_special_edition": false,
+                      "image_url_png": "https://img.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289336.png",
+                      "kitty_type": "fancy",
+                      "fancy_type": "Pawrula",
+                      "name": "Pawrula The Bright",
+                      "owner_wallet_address": "0x68b42e44079d1d0a4a037e8c6ecd62c48967e69f",
+                      "id": 1289336,
+                      "is_fancy": true,
+                      "wrapped": false,
+                      "image_url_cdn": "https://img.cn.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289336.png",
+                      "status": {
+                          "is_ready": true,
+                          "cooldown": 1521366384221,
+                          "is_gestating": false
+                      }
+                  },
+                  "image_url_cdn": "https://img.cn.cryptokitties.co/0x06012c8cf97bead5deae237070f9587f8e7a266d/1289657.svg",
+                  "watchlist": {
+                      "count": 0,
+                      "is_watchlisted": false
+                  },
+                  "status": {
+                      "is_ready": true,
+                      "cooldown_end_block": 9932251,
+                      "cooldown": 1571707809089,
+                      "dynamic_cooldown": 1595681023241,
+                      "cooldown_index": 8,
+                      "is_gestating": false
+                  }
+              }
+          },
+          "collection": {
+              "name": "CryptoKitties",
+              "slug": "cryptokitties",
+              "externalUrl": "https://www.cryptokitties.co/",
+              "bannerImageUrl": "https://i.seadn.io/gcs/static/banners/cryptokitties-banner2.png?w=500&auto=format"
+          },
+          "mint": {},
+          "timeLastUpdated": "2023-09-18T19:21:52.169Z",
+          "balance": "1",
+          "acquiredAt": {}
+      },
+      {
+          "contract": {
+              "address": "0xEA67b4DD7BaCAE340Bc4E43652044B5CDED1963c",
+              "name": "Moonkys",
+              "symbol": "MOONK",
+              "totalSupply": "8968",
+              "tokenType": "ERC721",
+              "contractDeployer": "0x94f65107EB422c67E61588682Fcf9D85AaC940B8",
+              "deployedBlockNumber": 14045176,
+              "openSeaMetadata": {
+                  "floorPrice": 0.0019,
+                  "collectionName": "The MoonkysNFT",
+                  "collectionSlug": "the-moonkysnft",
+                  "safelistRequestStatus": "approved",
+                  "imageUrl": "https://i.seadn.io/gae/HagE-EZ6Wrf5Odw56FjtlSmfFvyEAz5Vg1p76yH-ARh_erNiiWMknrktD7mphF_9QRP_SOzx_Gmm1HrgFv9reHr6eMBxh4FWUg2j5A?w=500&auto=format",
+                  "description": "A collection of 9000 Moonkys!\r\nAll different, all endearing, from the jungle to the moon and beyond.",
+                  "externalUrl": "https://www.moonkys.art",
+                  "twitterUsername": "MoonkysNFT",
+                  "discordUrl": "https://discord.gg/8sZyt3SNUY",
+                  "bannerImageUrl": "https://i.seadn.io/gae/NwDkjH5GU0DsDmQUUnkHk0i6gQcil-pNMPs9su9r2V_mgsTjgBhbg1YM9450riZYsxTAE9HlbDd0R269vfTDVrCZDkN4S_m5hH-5qQ?w=500&auto=format",
+                  "lastIngestedAt": "2023-09-18T05:52:19.000Z"
+              },
+              "spamClassifications": []
+          },
+          "tokenId": "2378",
+          "tokenType": "ERC721",
+          "name": "Moonky #2378",
+          "description": "A collection of 9000 randomly generated Moonkys, living on ETH Blockchain. All different, All endearing.",
+          "tokenUri": "https://ipfs.io/ipfs/QmThsntJV1wZuF3HdvYWG9QkVVSW1WwU5TZrCH36skCe21/2378",
+          "image": {
+              "cachedUrl": "https://nft-cdn.alchemy.com/eth-mainnet/a29980483f4257bde13a28906ca87267",
+              "thumbnailUrl": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/a29980483f4257bde13a28906ca87267",
+              "pngUrl": "https://res.cloudinary.com/alchemyapi/image/upload/convert-png/eth-mainnet/a29980483f4257bde13a28906ca87267",
+              "contentType": "image/png",
+              "size": 233824,
+              "originalUrl": "https://ipfs.io/ipfs/QmRmquSbLpiYRd8nCURUmP2fJ9LbaEtG3tJLGGscFp1WAT"
+          },
+          "raw": {
+              "tokenUri": "https://ipfs.io/ipfs/QmThsntJV1wZuF3HdvYWG9QkVVSW1WwU5TZrCH36skCe21/2378",
+              "metadata": {
+                  "name": "Moonky #2378",
+                  "description": "A collection of 9000 randomly generated Moonkys, living on ETH Blockchain. All different, All endearing.",
+                  "image": "https://ipfs.io/ipfs/QmRmquSbLpiYRd8nCURUmP2fJ9LbaEtG3tJLGGscFp1WAT",
+                  "attributes": [
+                      {
+                          "value": "Orange",
+                          "trait_type": "Background"
+                      },
+                      {
+                          "value": "Cobra Kai",
+                          "trait_type": "Hat"
+                      }
+                  ],
+                  "external_link": "https://www.moonkys.art"
+              }
+          },
+          "collection": {
+              "name": "The MoonkysNFT",
+              "slug": "the-moonkysnft",
+              "externalUrl": "https://www.moonkys.art",
+              "bannerImageUrl": "https://i.seadn.io/gae/NwDkjH5GU0DsDmQUUnkHk0i6gQcil-pNMPs9su9r2V_mgsTjgBhbg1YM9450riZYsxTAE9HlbDd0R269vfTDVrCZDkN4S_m5hH-5qQ?w=500&auto=format"
+          },
+          "mint": {
+              "mintAddress": "0xffa6c931719cf546df7e48010bde2b0fd0bfc431",
+              "blockNumber": 15108732,
+              "timestamp": "2022-07-09T13:47:51Z",
+              "transactionHash": "0xce02924d42c0d6f1e5144bbfea8a49fc4fb0330a42782ac8c7c00b7d10b8a4c4"
+          },
+          "timeLastUpdated": "2023-08-01T07:40:39.116Z",
+          "balance": "1",
+          "acquiredAt": {}
+      }
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getNftsForOwnerIterator` method:
+
+* **NFT marketplace platforms**: NFT marketplace platforms can use this method to retrieve a list of all NFTs owned by a user and display them on the user's profile page. This can help users keep track of their NFTs and make it easier to sell or trade their NFTs on the platform.
+
+* **Asset management**: Companies or individuals who own many NFTs can use this function to keep track of their assets on the blockchain. They can use this function to retrieve a list of all the NFTs they own and their corresponding metadata.
+
+* **Gaming platforms**: Gaming platforms that use NFTs as in-game assets can use this function to retrieve a list of all NFTs owned by a player's account. This can be useful for players to keep track of their in-game assets and also for game developers to design games around NFT ownership.
+
+# Related Methods
+
+* [getNftsForContractIterator](/reference/getnftsforcontractiterator-sdk): Fetches all NFTs for a given contract address and yields them in an async iterable.

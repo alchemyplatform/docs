@@ -1,0 +1,97 @@
+---
+title: getTransactionCount - SDK
+description: Returns the number of transactions ever sent from the provided address, as of the provided block tag. This value is used as the nonce for the next transaction from the address sent to the network.
+subtitle: Returns the number of transactions ever sent from the provided address, as of the provided block tag. This value is used as the nonce for the next transaction from the address sent to the network.
+url: https://docs.alchemy.com/reference/gettransactioncount-sdk-v3
+slug: reference/gettransactioncount-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns the number of transactions ever sent from the provided address, as of the provided block tag. This value is used as the nonce for the next transaction from the address sent to the network.
+
+# Parameters
+
+| Name            | Type     | Description                                                             |
+| --------------- | -------- | ----------------------------------------------------------------------- |
+| `addressOrName` | `string` | The address or ENS name of the account to get the nonce for.            |
+| `blockTag`      | `string` | The optional block number or hash. Defaults to 'latest' if unspecified. |
+
+### `blockTag` parameters
+
+* `pending` - A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from `local` mempool. Intuitively, you can think of these as blocks that have not been mined yet.
+* `latest` - The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions.
+* `safe` - The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is “unlikely” to be re-orged.
+* `finalized `- The most recent crypto-economically secure block, that has been accepted by >2/3 of validators. Cannot be re-orged outside of manual intervention driven by community coordination. Intuitively, this block is very unlikely to be re-orged.
+* `earliest` - The lowest numbered block the client has available. Intuitively, you can think of this as the first block created.
+
+# Response
+
+| Property          | Type     | Description                     |
+| ----------------- | -------- | ------------------------------- |
+| `Promise<number>` | `number` | Returns the value of the count. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getTransactionCount` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getTransactionCount.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Initialize variables for the parameters
+      const address = "vitalik.eth"
+      
+      //Call the method
+      let response = await alchemy.core.getTransactionCount(address)
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  1017
+  ```
+</CodeGroup>
+
+# Related Methods
+
+* [getTransactionReceipts](/reference/gettransactionreceipts-sdk): Returns the transaction receipt for hash or `null` if the transaction has not been mined.

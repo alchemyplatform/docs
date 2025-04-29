@@ -1,0 +1,94 @@
+---
+title: Using your Rollup
+description: How to connect to your Rollup RPCs, bridge assets, and deploy smart contracts.
+subtitle: How to connect to your Rollup RPCs, bridge assets, and deploy smart contracts.
+url: https://docs.alchemy.com/reference/using-your-rollup
+slug: reference/using-your-rollup
+---
+
+# Using Your Rollup
+
+After deployment, learn how to interact with your rollup. This guide covers connecting via RPC, bridging assets, and exploring the blockchain.
+
+## RPC Endpoints & API Access
+
+* Your rollup’s RPC URL is available in the Alchemy dashboard.
+* Use this URL in your web3 libraries (e.g., viem, ethers.js, web3.js) to interact with the blockchain.
+* Standard JSON-RPC methods are supported for reading state and sending transactions.
+
+## Bridging Assets
+
+### Depositing to Rollup
+
+* Use the Bridge UI provided in the dashboard or an external bridge provider.
+* Send assets (e.g., ETH, ERC-20 tokens) from your parent chain to your rollup. This involves locking tokens on the parent chain and minting corresponding tokens on rollup.
+
+### Withdrawing to Parent Chain
+
+* Initiate a withdrawal through the Bridge UI.
+* For optimistic rollups, there is a challenge period before funds are released.
+* For ZK rollups, withdrawals are processed quickly after proof verification.
+
+## Block Explorer
+
+* Each rollup includes a block explorer for inspecting transactions, blocks, and smart contracts.
+* Use the explorer to verify contract deployments, monitor transactions, and assess network health.
+
+## Wallet Configuration
+
+* To connect your wallet (e.g., MetaMask), add your rollup as a custom network using:
+
+  * Network Name
+  * RPC URL
+  * Chain ID
+  * Currency Symbol
+  * Block Explorer URL
+
+These steps ensure you can fully use your rollup for development and testing.
+
+## Deploying Smart Contracts on Your Rollup
+
+Deploying smart contracts to your rollup is similar to deploying on Ethereum. This guide covers the use of popular tools such as Hardhat and Foundry.
+
+## Using Hardhat
+
+1. **Setup Hardhat:** Initialize a new Hardhat project and install the necessary packages.
+
+2. **Configure Network:** Update your `hardhat.config.js` file with a network configuration using your rollup’s RPC URL and Chain ID.
+
+3. **Write a Contract:** Create your Solidity contract in the `contracts/` folder.
+
+4. **Deploy Script:** Write a deployment script (e.g., `scripts/deploy.js`) that utilizes Hardhat’s ethers plugin to deploy your contract.
+
+5. **Deploy:** Execute the deployment script with:
+
+   <CodeGroup>
+     ```bash bash
+     npx hardhat run scripts/deploy.js --network <your_rollup>
+     ```
+   </CodeGroup>
+
+6. **Verification:** After deployment, verify your contract on the rollup’s block explorer by uploading your source code.
+
+## Using Foundry (Forge)
+
+1. **Install Foundry:** Set up Foundry on your system.
+
+2. **Initialize Project:** Scaffold a new project with `forge init`.
+
+3. **Configure Network:** Set your RPC URL and private key in your configuration.
+
+4. **Deploy:** Use Forge to compile and deploy your contract:
+
+   <CodeGroup>
+     ```bash bash
+     forge create --rpc-url $ROLLUP_RPC_URL --private-key $PRIVATE_KEY path/to/YourContract.sol:YourContract
+     ```
+   </CodeGroup>
+
+## Alternative Tools
+
+* **Remix:** Connect Remix to your rollup via your wallet’s custom RPC settings and deploy directly through the browser.
+* **Other Frameworks:** Tools like Truffle or Brownie can also be configured to deploy contracts using your rollup’s RPC endpoint.
+
+Follow these instructions to deploy and verify your contracts, enabling you to build and interact with your new rollup.

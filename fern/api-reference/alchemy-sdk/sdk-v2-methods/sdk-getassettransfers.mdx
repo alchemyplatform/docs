@@ -1,0 +1,222 @@
+---
+title: getAssetTransfers - SDK
+description: The Transfers API allows you to easily fetch historical transactions for any address across Ethereum and supported L2s including Polygon, Arbitrum, and Optimism. See the web documentation for the full details.
+subtitle: The Transfers API allows you to easily fetch historical transactions for any address across Ethereum and supported L2s including Polygon, Arbitrum, and Optimism. See the web documentation for the full details.
+url: https://docs.alchemy.com/reference/sdk-getassettransfers
+slug: reference/sdk-getassettransfers
+---
+
+The Transfers API allows you to easily fetch historical transactions for any address across Ethereum and supported L2s including Polygon, Arbitrum, and Optimism.
+
+See the [web documentation](/reference/alchemy-getassettransfers#alchemy_getassettransfers) for the full details.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+The Transfers API allows you to easily fetch historical transactions for any address across Ethereum and supported L2s including Polygon, Arbitrum, and Optimism.
+
+See the [web documentation](/reference/alchemy-getassettransfers#alchemy_getassettransfers) for the full details.
+
+# Parameters
+
+| Parameter | Type     | Description                                              |
+| --------- | -------- | -------------------------------------------------------- |
+| `params`  | `object` | An object containing fields for the asset transfer query |
+
+### `params` object parameters
+
+| Param               | Type               | Description                                                                                                                                                                                                    |
+| ------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fromBlock`         | `string`           | The starting block to check for transfers. This value is inclusive and defaults to `0x0` if omitted.                                                                                                           |
+| `toBlock`           | `string`           | Inclusive to block (hex string, int, or latest). Defaults to `latest` if omitted.                                                                                                                              |
+| `order?`            | `string`           | Whether to return results in ascending or descending order by block number. Defaults to `ascending` if omitted.                                                                                                |
+| `fromAddress?`      | `string`           | The `from` address to filter transfers by. This value defaults to a wildcard for all addresses if omitted.                                                                                                     |
+| `toAddress?`        | `string`           | The `to` address to filter transfers by. This value defaults to a wildcard for all addresses if omitted.                                                                                                       |
+| `contractAddresses` | `array of strings` | List of contract addresses to filter for - only applies to `erc20`, `erc721`, `erc1155` transfers. Defaults to all addresses if omitted.                                                                       |
+| `excludeZeroValue`  | `boolean`          | Whether to exclude transfers with zero value. Note that `zero` value is different from `null` value. Defaults to `true` if omitted.                                                                            |
+| `category`          | array\`            | An array of categories to get transfers for. Available categories include: \[ EXTERNAL = `external`, INTERNAL = `internal`, ERC20 = `erc20`, ERC721 = `erc721`, ERC1155 = `erc1155`, SPECIALNFT = `specialnft` |
+| `maxCount`          | `number`           | The maximum number of results to return per page. Defaults to **1000** if omitted.                                                                                                                             |
+| `pageKey?`          | `string`           | Optional page key from an existing one to use for pagination.                                                                                                                                                  |
+| `withMetadata`      | `boolean`          | Whether to include additional metadata about each transfer event. Defaults to `false` if omitted.                                                                                                              |
+
+# Response
+
+| Property                                                               | Type     | Description                                                                                   |
+| ---------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `Promise<AssetTransfersResponse / AssetTransfersWithMetadataResponse>` | `object` | This returns the object response depending on whether `withMetadata` was set to `true`or not. |
+
+### `AssetTransfersResponse` response object parameters
+
+| paramter          | type                        | description                                                                                                                                      |
+| ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `uniqueId`        | `string`                    | The unique ID of the transfer.                                                                                                                   |
+| `category`        | `string`                    | The category of the transfer.                                                                                                                    |
+| `blockNum`        | `string`                    | The block number where the transfer occurred.                                                                                                    |
+| `from`            | `string`                    | The from address of the transfer.                                                                                                                |
+| `to`              | `string \| null`            | The to address of the transfer.                                                                                                                  |
+| `value`           | `number \| null`            | Converted asset transfer value as a number (raw value divided by contract decimal). `null` if ERC721 transfer or contract decimal not available. |
+| `erc721TokenId`   | `string \| null`            | The raw ERC721 token id of the transfer as a hex string. `null` if not an ERC721 transfer.                                                       |
+| `erc1155Metadata` | `ERC1155Metadata[] \| null` | A list of ERC1155 metadata objects if the asset transferred is an ERC1155 token. `null` if not an ERC1155 transfer.                              |
+| `tokenId`         | `string \| null`            | The token id of the token transferred.                                                                                                           |
+| `asset`           | `string \| null`            | Returns the token's symbol or ETH for other transfers. `null` if the information was not available.                                              |
+| `hash`            | `string`                    | The transaction hash of the transfer transaction.                                                                                                |
+| `rawContract`     | `RawContract`               | Information about the raw contract of the asset transferred.                                                                                     |
+
+### `AssetTransfersWithMetadataResponse` object parameters
+
+| paramter          | type                        | description                                                                                                                                                                                    |
+| ----------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `uniqueId`        | `string`                    | The unique ID of the transfer.                                                                                                                                                                 |
+| `category`        | `string`                    | The category of the transfer.                                                                                                                                                                  |
+| `blockNum`        | `string`                    | The block number where the transfer occurred.                                                                                                                                                  |
+| `from`            | `string`                    | The from address of the transfer.                                                                                                                                                              |
+| `to`              | `string \| null`            | The to address of the transfer.                                                                                                                                                                |
+| `value`           | `number \| null`            | Converted asset transfer value as a number (raw value divided by contract decimal). `null` if ERC721 transfer or contract decimal not available.                                               |
+| `erc721TokenId`   | `string \| null`            | The raw ERC721 token id of the transfer as a hex string. `null` if not an ERC721 transfer.                                                                                                     |
+| `erc1155Metadata` | `ERC1155Metadata[] \| null` | A list of ERC1155 metadata objects if the asset transferred is an ERC1155 token. `null` if not an ERC1155 transfer.                                                                            |
+| `tokenId`         | `string \| null`            | The token id of the token transferred.                                                                                                                                                         |
+| `asset`           | `string \| null`            | Returns the token's symbol or ETH for other transfers. `null` if the information was not available.                                                                                            |
+| `hash`            | `string`                    | The transaction hash of the transfer transaction.                                                                                                                                              |
+| `rawContract`     | `RawContract`               | Information about the raw contract of the asset transferred.                                                                                                                                   |
+| `metadata`        | `AssetTransfersMetadata`    | Additional metadata about the transfer event. The additional metadata object includes: 1. `blockTimestamp`: `string` /  *Timestamp of the block from which the transaction event originated.*/ |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getAssetTransfers` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getAssetTransfers.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Assign the contract address to a variable
+      let toAddress = "0x1E6E8695FAb3Eb382534915eA8d7Cc1D1994B152";
+
+    //The response fetches the transactions the specified addresses.
+      let response = await alchemy.core.getAssetTransfers({
+          fromBlock: "0x0",
+          fromAddress: "0x0000000000000000000000000000000000000000",
+          toAddress: toAddress,
+          excludeZeroValue: true,
+          category: ["erc721", "erc1155"],
+        })
+
+      //Logging the response to the console
+      console.log(response)
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    transfers: [
+      {
+        blockNum: '0xd2113f',
+        uniqueId: '0xb8ad1138a22a0dcc5eddca1db9aa0c731891fe60041ed6f4d9ceb737c9f1b06d:log:165',
+        hash: '0xb8ad1138a22a0dcc5eddca1db9aa0c731891fe60041ed6f4d9ceb737c9f1b06d',
+        from: '0x0000000000000000000000000000000000000000',
+        to: '0x1e6e8695fab3eb382534915ea8d7cc1d1994b152',
+        value: null,
+        erc721TokenId: '0x0000000000000000000000000000000000000000000000000000000000001acb',
+        erc1155Metadata: null,
+        tokenId: '0x0000000000000000000000000000000000000000000000000000000000001acb',
+        asset: 'DUSK',
+        category: 'erc721',
+        rawContract: [Object]
+      },
+      {
+        blockNum: '0xd2113f',
+        uniqueId: '0xb8ad1138a22a0dcc5eddca1db9aa0c731891fe60041ed6f4d9ceb737c9f1b06d:log:166',
+        hash: '0xb8ad1138a22a0dcc5eddca1db9aa0c731891fe60041ed6f4d9ceb737c9f1b06d',
+        from: '0x0000000000000000000000000000000000000000',
+        to: '0x1e6e8695fab3eb382534915ea8d7cc1d1994b152',
+        value: null,
+        erc721TokenId: '0x0000000000000000000000000000000000000000000000000000000000001acc',
+        erc1155Metadata: null,
+        tokenId: '0x0000000000000000000000000000000000000000000000000000000000001acc',
+        asset: 'DUSK',
+        category: 'erc721',
+        rawContract: [Object]
+      },
+      {
+        blockNum: '0xe4284a',
+        uniqueId: '0x04573492a1ecb47102a2a70af190fa47f605a71f54ea62d94a1da1e225b7e157:log:345',
+        hash: '0x04573492a1ecb47102a2a70af190fa47f605a71f54ea62d94a1da1e225b7e157',
+        from: '0x0000000000000000000000000000000000000000',
+        to: '0x1e6e8695fab3eb382534915ea8d7cc1d1994b152',
+        value: null,
+        erc721TokenId: '0x0000000000000000000000000000000000000000000000000000000000000bc0',
+        erc1155Metadata: null,
+        tokenId: '0x0000000000000000000000000000000000000000000000000000000000000bc0',
+        asset: 'NC',
+        category: 'erc721',
+        rawContract: [Object]
+      },
+      {
+        blockNum: '0xe4284a',
+        uniqueId: '0x04573492a1ecb47102a2a70af190fa47f605a71f54ea62d94a1da1e225b7e157:log:346',
+        hash: '0x04573492a1ecb47102a2a70af190fa47f605a71f54ea62d94a1da1e225b7e157',
+        from: '0x0000000000000000000000000000000000000000',
+        to: '0x1e6e8695fab3eb382534915ea8d7cc1d1994b152',
+        value: null,
+        erc721TokenId: '0x0000000000000000000000000000000000000000000000000000000000000bc1',
+        erc1155Metadata: null,
+        tokenId: '0x0000000000000000000000000000000000000000000000000000000000000bc1',
+        asset: 'NC',
+        category: 'erc721',
+        rawContract: [Object]
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some common use cases for the `getAssetTransfers` method:
+
+* **Asset tracking**: One of the most common use cases for `getAssetTransfers` is to track the movement of a particular asset on the blockchain. This can be useful for businesses and organizations that need to keep track of their assets as they move on-chain.
+
+* **Audit trails**: By using `getAssetTransfers` to retrieve a history of all transfers of a particular asset, auditors can verify the authenticity and provenance of the asset. This can help to prevent fraud and ensure compliance with regulations.
+
+* **Payment verification**: `getAssetTransfers` can also be used to verify that a payment has been made or received. For example, if a company is expecting a payment in a particular asset, they can use this function to confirm that the payment has been transferred to their account.
+
+# Related Methods
+
+Here are the methods related to `getAssetTransfers`:
+
+* [call](/reference/call-sdk): Returns the result of executing the transaction, using call.

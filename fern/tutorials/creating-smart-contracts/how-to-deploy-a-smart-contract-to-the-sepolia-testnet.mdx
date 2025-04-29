@@ -1,0 +1,353 @@
+---
+title: How to Deploy a Smart Contract to the Sepolia Testnet
+description: Learn how to deploy smart contracts to the Sepolia testnet, the preferred Ethereum blockchain for testing decentralized applications.
+subtitle: Learn how to deploy smart contracts to the Sepolia testnet, the preferred Ethereum blockchain for testing decentralized applications.
+url: https://docs.alchemy.com/docs/how-to-deploy-a-smart-contract-to-the-sepolia-testnet
+slug: docs/how-to-deploy-a-smart-contract-to-the-sepolia-testnet
+---
+
+Smart contracts are computer programs that help automate business tasks. They're an essential part of blockchain technology, which allows for secure and decentralized transactions.
+
+To deploy a smart contract on Sepolia Testnet, there are several steps you need to follow. You need to create the contract, set up the development environment, compile the code, and then deploy it to the testnet using a virtual wallet ([**Metamask**](https://metamask.io/)), [**Solidity**](https://docs.soliditylang.org/en/v0.8.0/), [**Hardhat**](https://hardhat.org/), and [**Alchemy**](https://dashboard.alchemy.com/signup/?a=deploy-to-sepolia). Let's look at each of these steps in more detail.
+
+## Connecting to the Ethereum Network
+
+There are many ways to make requests to the Ethereum chain. For our purposes, we'll use *Alchemy*, a free blockchain developer platform and API that lets us communicate with the Ethereum chain without needing to run our own nodes.
+
+*Alchemy* also offers developer tools for monitoring and analytics that we can use in this tutorial to better understand the process of deploying our smart contract. It's a great tool for simplifying the process and getting a better grasp of what's happening behind the scenes.
+
+To get started, create your account on Alchemy by clicking on this link: **[https://dashboard.alchemy.com/signup/?a=deploy-to-sepolia](https://dashboard.alchemy.com/signup/?a=deploy-to-sepolia)**
+
+## Create Your App and Obtain an API Key
+
+After creating an Alchemy account, you can generate an API key by creating an app. With this key, we can make requests to the Sepolia test network.
+
+Follow the steps below to create an app:
+
+1. First, navigate to your [Alchemy dashboard](https://dashboard.alchemy.com/) and click on the "Apps" tab.
+
+   ![](3bc88b9-image.png)
+
+2. Next, click on the "Create new app" button.
+
+   ![](0f7b4bf-image.png)
+
+3. Fill in the details for your new app, this includes specifying a name and description (optional) for it. Then click the "Create app" button.
+
+   ![](0fa2754-image.png)
+
+4. Once your app is created, you will be redirected to the app details page, here you will see your API key in the top right corner.
+
+   ![](d7460bc-image.png)
+
+## Setting Up Your Ethereum Account
+
+To send and receive transactions on Ethereum, you'll need an Ethereum account. In this tutorial, we'll be using *Metamask*, a virtual wallet in your browser that helps manage your Ethereum account address.
+
+To get started, you can [**download Metamask**](https://metamask.io/download/) for free and create an account. Once you have an account, you'll need to switch to the *Sepolia Network*.
+
+Follow the steps below to switch:
+
+![](xo6RoDK.png)
+
+![](VfTmljf.png)
+
+![](bEJW97J.png)
+
+In the blank boxes, enter the details mentioned in the [**Sepolia Testnet**](/docs/choosing-a-web3-network#sepolia-testnet) section. Then, click "*Save*" and you're all set.
+
+![](liu6YFT.png)
+
+## Adding Ether from a Sepolia Faucet
+
+To deploy our smart contract on the test network, we need some fake Eth. To get Eth, you can visit the [**Sepolia faucet**](https://sepoliafaucet.com/) and enter your Sepolia account address. Then click on "*Send Me Eth*". It may take a while to receive your fake Eth because of network traffic. You should see the Eth in your Metamask account soon after.
+
+![](JSd2Ye6.png)
+
+## Initiating Our Project
+
+To get started, let's create a folder for our project. Open your command line and type:
+
+<CodeGroup>
+  ```bash bash
+  mkdir sepolia-testnet-deployment
+  cd sepolia-testnet-deployment
+  ```
+</CodeGroup>
+
+Once you're inside the project folder, we can initialize the project using `npm init`. If you don't have npm installed, you'll need to [**follow these instructions**](/docs/alchemy-quickstart-guide#1-install-nodejs-and-npm). You'll also need to download [**Node.js**](https://nodejs.org/en/download/).
+
+<CodeGroup>
+  ```bash bash
+  npm init (or npm init --yes)
+  ```
+</CodeGroup>
+
+Keep pressing *Enter* and eventually, you'll see something like the following:
+
+```shell
+package name: (sepolia-testnet-deployment)
+version: (1.0.0)
+description:
+entry point: (index.js)
+test command:
+git repository:
+keywords:
+author:
+license: (ISC)
+About to write to C:\Users\Dell\sepolia-testnet-deployment\package.json:
+
+{
+  "name": "sepolia-testnet-deployment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
+```
+
+## Downloading and Setting Up Hardhat
+
+[**Hardhat**](https://hardhat.org/hardhat-runner/docs/getting-started#overview) is a powerful development environment designed for Ethereum software development. It lets you compile, deploy, test, and debug your smart contracts and dApps locally before deploying them to the live chain. This tool is especially useful for developers looking to build and test their projects before going live.
+
+Inside our `sepolia-testnet-deployment` project, run:
+
+<CodeGroup>
+  ```bash bash
+  npm install --save-dev hardhat
+  ```
+</CodeGroup>
+
+## Creating a Hardhat Project
+
+Inside our `sepolia-testnet-deployment` project folder, run:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat
+  ```
+</CodeGroup>
+
+After running the above command, a welcome message will appear, giving you different options to choose from. Select "*create an empty hardhat.config.js*", and this will generate a *hardhat.config.js* file. We will use this file for further steps in our project.
+
+<CodeGroup>
+  ```bash bash
+  888    888                      888 888               888
+  888    888                      888 888               888
+  888    888                      888 888               888
+  8888888888  8888b.  888d888 .d88888 88888b.   8888b.  888888
+  888    888     "88b 888P"  d88" 888 888 "88b     "88b 888
+  888    888 .d888888 888    888  888 888  888 .d888888 888
+  888    888 888  888 888    Y88b 888 888  888 888  888 Y88b.
+  888    888 "Y888888 888     "Y88888 888  888 "Y888888  "Y888
+
+  Welcome to Hardhat v2.13.0
+
+  ? What do you want to do? ...
+  > Create a JavaScript project
+    Create a TypeScript project
+    Create an empty hardhat.config.js
+    Quit
+  ```
+</CodeGroup>
+
+## Creating Project Folders
+
+To keep your project neat and tidy, follow these simple steps to create two new folders. First, open your command line and navigate to the root directory of your project. Then, type the following command to create a new folder:
+
+<CodeGroup>
+  ```bash bash
+  mkdir contracts
+  mkdir deployments
+  ```
+</CodeGroup>
+
+`contracts/`: This is where you'll store all of your smart contract code file.
+
+`deployment/`: This folder will keep all the necessary scripts for deploying and interacting with your contract.
+
+## Writing Contract
+
+To create your first smart contract, follow these simple steps:
+
+1. Open your project in your code editor. In this tutorial, we'll be using VS Code.
+2. Navigate to the "*contracts*" folder and create a new file called *FirstContract.sol*.
+3. Copy and paste the following Hello World smart contract from the Ethereum Foundation into your *FirstContract.sol* file. Be sure to read the comments to understand what this contract does.
+
+<CodeGroup>
+  ```solidity solidity
+  // Specifies the version of Solidity, using semantic versioning.
+  // Learn more: https://solidity.readthedocs.io/en/v0.5.10/layout-of-source-files.html#pragma
+  pragma solidity >=0.7.3;
+
+  // Defines a contract named `HelloWorld`.
+  // A contract is a collection of functions and data (its state). Once deployed, a contract resides at a specific address on the Ethereum blockchain. Learn more: https://solidity.readthedocs.io/en/v0.5.10/structure-of-a-contract.html
+  contract HelloWorld {
+
+     //Emitted when update function is called
+     //Smart contract events are a way for your contract to communicate that something happened on the blockchain to your app front-end, which can be 'listening' for certain events and take action when they happen.
+     event UpdatedMessages(string oldStr, string newStr);
+
+     // Declares a state variable `message` of type `string`.
+     // State variables are variables whose values are permanently stored in contract storage. The keyword `public` makes variables accessible from outside a contract and creates a function that other contracts or clients can call to access the value.
+     string public message;
+
+     // Similar to many class-based object-oriented languages, a constructor is a special function that is only executed upon contract creation.
+     // Constructors are used to initialize the contract's data. Learn more:https://solidity.readthedocs.io/en/v0.5.10/contracts.html#constructors
+     constructor(string memory initMessage) {
+
+        // Accepts a string argument `initMessage` and sets the value into the contract's `message` storage variable).
+        message = initMessage;
+     }
+
+     // A public function that accepts a string argument and updates the `message` storage variable.
+     function update(string memory newMessage) public {
+        string memory oldMsg = message;
+        message = newMessage;
+        emit UpdatedMessages(oldMsg, newMessage);
+     }
+  }
+  ```
+</CodeGroup>
+
+This smart contract is straightforward and easy to use. When it's created, it stores a message. You can update this message by calling the "*update*" function.
+
+## Integrate Metamask and Alchemy with Your Project
+
+To send any transaction from your virtual wallet, you need to sign it with your unique private key. But how can you securely provide your program with this permission? The solution is simple: you can safely store your private key (as well as your Alchemy API key) in an environment file.
+
+By using this method, you can keep your private key safe and secure, while still providing your program with the necessary permissions.
+
+To get started with using environment files, you'll need to install the dotenv package in your project directory.
+
+<CodeGroup>
+  ```bash bash
+  npm install dotenv --save
+  ```
+</CodeGroup>
+
+> When it comes to naming your environment file, there are some best practices to keep in mind. First, make sure to name it `.env` - this is the standard naming convention and ensures that your file is recognized as an environment file. Avoid using other names such as "process.env" or ".env-custom" as they may cause confusion.
+
+To get private key from your metamask wallet,
+
+To get HTTP URL from your alchemy account, see the below steps.
+
+For your *private key*, [**follow these instructions**](https://support.metamask.io/hc/en-us/articles/360015289632-How-to-Export-an-Account-Private-Key). And for the *HTTPS URL*, just check out the steps below.
+
+![](7b044d0-image.png)
+
+Your `.env` file should look like this:
+
+<CodeGroup>
+  ```env env
+  API_URL = "https://eth-sepolia.g.alchemy.com/v2/your-api-key"
+  PRIVATE_KEY = "your-metamask-private-key"
+  ```
+</CodeGroup>
+
+## Installing Ethers.js
+
+To make your Ethereum interactions easier and more streamlined, look no further than `Ethers.js` and `Hardhat`.
+
+*Ethers.js* is a library that simplifies Ethereum interaction by wrapping standard [**JSON-RPC**](https://docs.alchemyapi.io/alchemy/documentation/alchemy-api-reference/json-rpc) methods with more user-friendly methods. And with *Hardhat's* [**plugin**](https://hardhat.org/hardhat-runner/plugins) integration, you can easily extend its functionality and add tools to your workflow.
+
+Navigate to the project directory and type the command.
+
+<CodeGroup>
+  ```bash bash
+  npm install --save-dev @nomiclabs/hardhat-ethers "ethers@^5.0.0"
+  ```
+</CodeGroup>
+
+## Updating hardhat.config.js File
+
+In your project directory, you will find a file named `hardhat.config.js`, update this file to match the provided code.
+
+<CodeGroup>
+  ```javascript javascript
+  require('dotenv').config();
+  require("@nomiclabs/hardhat-ethers");
+
+  const { API_URL, PRIVATE_KEY } = process.env;
+
+  module.exports = {
+    solidity: "0.7.3",
+    defaultNetwork: "sepolia",
+    networks: {
+      hardhat: {},
+      sepolia: {
+        url: API_URL,
+        accounts: [`0x${PRIVATE_KEY}`]
+      }
+    },
+  }
+  ```
+</CodeGroup>
+
+## Compiling Contract
+
+To confirm that everything is working properly, we will compile our contract using the built-in compile task in hardhat.
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat compile
+  ```
+</CodeGroup>
+
+## Writing Deploy Script
+
+Go to the `/deployments` folder and create a new file named `deploy.js`. Then, copy and paste the following contents into the file.
+
+<CodeGroup>
+  ```javascript javascript
+  async function main() {
+    const HelloWorld = await ethers.getContractFactory("HelloWorld");
+    const hello_world = await HelloWorld.deploy("Hello World!");
+    console.log("Contract Deployed to Address:", hello_world.address);
+  }
+  main()
+    .then(() => process.exit(0))
+    .catch(error => {
+      console.error(error);
+      process.exit(1);
+    });
+  ```
+</CodeGroup>
+
+In the [**Contracts tutorial**](https://hardhat.org/tutorial/testing-contracts#writing-tests), Hardhat explains the purpose of each line of code.
+
+## Deploying Contract
+
+Let's deploy our smart contract. Open your command line and enter the following command:
+
+<CodeGroup>
+  ```bash bash
+  npx hardhat run deployments/deploy.js --network sepolia
+  ```
+</CodeGroup>
+
+After executing the previous command, you should see something like this:
+
+<CodeGroup>
+  ```bash bash
+  Contract Deployed to Address: 0x34417A0CA9b3aebd...770a716fa8
+  ```
+</CodeGroup>
+
+Go to the [**Sepolia etherscan**](https://sepolia.etherscan.io/) and search for our contract.
+
+![](pcjTJDE.png)
+
+We should able to see that it has been deployed successfully.
+
+![](S5uNxpD.png)
+
+Ensure that the *From address* matches your *Metamask account address*. The *To address* should display "*Contract Creation*", but upon clicking the transaction, we will see our contract address in the *To field*.
+
+![](fkp49Yx.png)
+
+You can check the deployment status in the [**Alchemy Dashboard**](https://dashboard.alchemy.com/logs?time_min=1718204124846\&time_range_preset=last5Minutes).

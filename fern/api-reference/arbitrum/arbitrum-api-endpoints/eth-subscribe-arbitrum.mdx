@@ -1,0 +1,135 @@
+---
+title: eth_subscribe
+description: Subscribe to different Arbitrum event types like newHeads, logs, pendingTransactions, and syncing using WebSockets.
+subtitle: Subscribe to different Arbitrum event types like newHeads, logs, pendingTransactions, and syncing using WebSockets.
+url: https://docs.alchemy.com/reference/eth-subscribe-arbitrum
+slug: reference/eth-subscribe-arbitrum
+---
+
+# eth\_subscribe
+
+Creates a new subscription for desired events. Sends data as soon as it occurs.
+
+# Parameters
+
+* **Event types**- specifies the type of event to listen to (ex: new pending transactions, logs, etc.)
+* **Optional params** - optional parameters to include to describe the type of event to listen to (ex: `address`)
+
+# Returns
+
+While the subscription is active, you will receive events formatted as an object described below:
+
+* Event Object:
+
+  * `jsonrpc`: Always "2.0"
+
+  * `method`: Always "eth\_subscription"
+
+  * `params`: An object with the following fields:
+
+    * `subscription`: The subscription ID returned by the `eth_subscribe` call which created this subscription. This ID will be attached to all received events and can also be used to cancel the subscription using [`eth_unsubscribe`](/reference/eth-unsubscribe)
+    * `result`: An object whose contents vary depending on the event type.
+
+***
+
+# Event types
+
+The following event types are accepted in all `eth_subscribe` WebSocket requests through your Alchemy endpoint. You can view the individual docs for example requests and responses.
+
+| Subscription Type                                                  | Description                                                                                                      |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| [alchemy\_minedTransactions](/reference/alchemy-minedtransactions) | Emits full transaction objects or hashes that are mined on the network based on provided filters and block tags. |
+| [newHeads](/reference/newheads)                                    | Emits new blocks that are added to the blockchain.                                                               |
+| \[logs]\[ref:logs]                                                 | Emits logs attached to a new block that match certain topic filters.                                             |
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://arb-mainnet.g.alchemy.com/v2/demo
+
+  // no param specification - return all mined txs  
+  {"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_minedTransactions"]}
+  ```
+
+  ```javascript alchemy-sdk
+  // Installation: npm install alchemy-sdk
+  import { Alchemy, Network } from "alchemy-sdk";
+
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ARB_MAINNET, // Replace with your network.
+  };
+  const alchemy = new Alchemy(settings);
+
+  // Subscription for Alchemy's minedTransactions API
+  alchemy.ws.on(
+    {
+      method: "alchemy_pendingTransactions",
+      toAddress: "vitalik.eth",
+      fromAddress: "0xshah.eth",
+    },
+    (tx) => console.log(tx)
+  );
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json results
+  {"id":1,"result":"0xf13f7073ddef66a8c1b0c9c9f0e543c3","jsonrpc":"2.0"}
+
+  // hashesOnly = true
+  {
+    "jsonrpc": "2.0",
+    "method": "eth_subscription",
+    "params": {
+      "result": {
+  			"removed": false
+  			"transaction": {
+  				"hash":"0xa8f2cf69e302da6c8100b80298ed77c37b6e75eed1177ca22acd5772c9fb9876",
+  			}
+      },
+      "subscription": "0xf13f7073ddef66a8c1b0c9c9f0e543c3"
+    }
+  }
+
+  // hashesOnly = false
+  {
+    "jsonrpc": "2.0",
+    "method": "eth_subscription",
+    "params": {
+      "result": {
+  			"removed": false
+  			"transaction": {
+  	      "blockHash":"0xbe847be2bceb74e660daf96b3f0669d58f59dc9101715689a00ef864a5408f43",
+  				"blockNumber":"0x5b8d80",
+  				"hash":"0xa8f2cf69e302da6c8100b80298ed77c37b6e75eed1177ca22acd5772c9fb9876",
+  				"from":"0x2a9847093ad514639e8cdec960b5e51686960291",
+  				"gas":"0x4f588",
+  				"gasPrice":"0xc22a75840",
+  				"input":"0x000101d521928b4146",
+  				"nonce":"0x9a2",
+  				"r":"0xb5889c55a0ebbf86627524affc9c4fdedc4608bee7a0f9880b5ec965d58e4264",
+  				"s":"0x2da32e817e2483ec2199ec0121b93384ac820049a75e11b40d152fc7558a5d72",
+  				"to":"0xc7ed8919c70dd8ccf1a57c0ed75b25ceb2dd22d1",
+  				"transactionIndex":"0x14",
+  				"type":"0x0",
+  				"v":"0x1c",
+  				"value":"0x0"
+  			}
+      },
+      "subscription": "0xf13f7073ddef66a8c1b0c9c9f0e543c3"
+    }
+  }
+  ```
+</CodeGroup>
+
+# WebSocket Limits
+
+* There is a limit of 20,000 WebSocket connections per API Key as well as 1,000 parallel WebSocket subscriptions per WebSocket connection, creating a maximum of 20 million subscriptions per application.
+
+  * The maximum size of a JSON-RPC `batch` request that can be sent over a WebSocket connection is 20
+  * Free tier users will be limited to 10 concurrent requests per WebSocket connection.

@@ -1,0 +1,51 @@
+---
+title: EIP-1559 Resource and Tutorial Hub
+description: Everything you need to know about the changes from EIP 1559 (London Hardfork) as a developer, and how you can use the new methods for transactions in your DApp.
+subtitle: Everything you need to know about the changes from EIP 1559 (London Hardfork) as a developer, and how you can use the new methods for transactions in your DApp.
+url: https://docs.alchemy.com/docs/eip-1559
+slug: docs/eip-1559
+---
+
+# EIP 1559 FAQ
+
+## What are the benefits of EIP-1559?
+
+EIP-1559 has brought positive changes to the user and developer experience including: - **Making transaction fees more predictable**: By changing the "auction style" system to simpler calculation of a base fee + tip calculation. The base fee changes less than in the past when transaction fees were determined by whomever placed the highest bid to get their transaction prioritized. - **Saving users on paying higher fees and long transaction times:** Users have saved on transaction fees they pay because the cost is now more transparent. Before EIP-1559, users would overpay on fees so that they knew they would be completed. Transaction times have also gone down as the network is working more efficiently to fill blocks with transactions. - **Controlling the supply of Ethereum**: The base fee of all EIP-1559 transactions is burned. This has decreased the amount of ETH being used, which aims to increase ETH's value over time.
+
+## Is EIP-1559 bad for miners?
+
+Before EIP-1559, miners were rewarded the entire transaction fee. After EIP-1559, miners are only rewarded the priority fee or tip that the user has set. This would look like the miners are losing out on more fees, but it has been shown that the revenue to miners has increased due to more activity on the network as the transaction fees have become more stable.
+
+## What is the difference between gas, gasPrice, and gasLimit?
+
+**Gas** is calculated by the amount of computation and resources needed to complete a transaction. If a transaction is complex, such as interacting with a smart contract, the amount of gas needed will increase.
+
+**gasPrice** is calculated by the user as this is the amount that they want to pay for their transaction to be mined. After EIP-1559 was implemented, this has been replaced by two new values: - **Base fee**: the minimum transaction fee for every transaction that wants to be included in a block. This is calculated by the network and is affected by the number of transactions included in the previous block. - **Max Priority fee:** the optional transaction fee to prioritize your transactions over others. This is the tip that goes to miners.
+
+The user calculates gas limit or max fee, which is the maximum amount of gas willing to be paid to complete the operations of the transaction. This accounts for any changes in the base fee while the transaction is pending.
+
+## How has blocksize changed after EIP-1559?
+
+EIP-1559 introduced variable-size blocks that change according to the amount of traffic the network is experiencing. The target for every block is to reach 15 million gas; a block can expand to 30 million gas if needed when high activity is high.
+
+## Hows is the base fee calculated?
+
+The base fee is calculated by looking at the previous block's capacity.
+
+| Last Block Capacity  | Change of Base Fee |
+| -------------------- | ------------------ |
+| Exactly 50% full     | No change          |
+| 100% full            | 12.5% increase     |
+| Between 50% and 100% | \< 12.5% Increase  |
+| Between 0% and 50%   | \< 12.5% Decrease  |
+| 0% / Empty           | 12.5% Decrease     |
+
+## What does burning Ethereum mean and why is it being burned after EIP-1559?
+
+Burning Ethereum means sending it to a wallet address that can only receive funds and not send any. These are special burner addresses. After the ETH is in the wallet, it can not be added back for transacting in the future.
+
+After EIP-1559, the base fee for all transactions is burned. This was done to control miners adding spam transactions to blocks and help control high gas fees.
+
+## Where can I track base fees and priority fees from previous blocks?
+
+You can find the base fees and priority fees paid to miners on previous blocks on [Watch The Burn](https://watchtheburn.com/).

@@ -1,0 +1,106 @@
+---
+title: newHeads
+description: Emits new blocks that are added to the blockchain.
+subtitle: Emits new blocks that are added to the blockchain.
+url: https://docs.alchemy.com/reference/newheads
+slug: reference/newheads
+---
+
+The `newHeads` subscription type emits an event any time a new header (block) is added to the chain, including during a chain reorganization.
+
+<Info>
+  When a chain reorganization occurs, this subscription will emit an event containing all new headers (blocks) for the new chain. This means that you may see multiple headers emitted with the same height (block number), and when this happens the later (highest) block number should be taken as the correct one after a reorganization.
+</Info>
+
+# Supported Networks
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+# Parameters
+
+* None
+
+# Response
+
+* `result`
+
+  * `number`: QUANTITY - The block number. Null when it's a pending block.
+  * `parentHash`: DATA, 32 Bytes - Hash of the parent block.
+  * `nonce`: DATA, 8 Bytes - Hash of the generated proof-of-work. Null when it's a pending block.
+  * `sha3Uncles`: DATA, 32 Bytes - SHA3 of the uncles data in the block.
+  * `logsBloom`: DATA, 256 Bytes - The bloom filter for the logs of the block. Null when it's a pending block.
+  * `transactionsRoot`: DATA, 32 Bytes - The root of the transaction trie of the block.
+  * `stateRoot`: DATA, 32 Bytes - The root of the final state trie of the block.
+  * `receiptsRoot`: DATA, 32 Bytes - The root of the receipts trie of the block.
+  * `miner`: DATA, 20 Bytes - The address of the beneficiary to whom the mining rewards were given.
+  * `difficulty`: QUANTITY - Integer of the difficulty for this block.
+  * `extraData`: DATA - The "extra data" field of this block.
+  * `gasLimit`: QUANTITY - The maximum gas allowed in this block.
+  * `gasUsed`: QUANTITY - The total used gas by all transactions in this block.
+  * `timestamp`: QUANTITY - The Unix timestamp for when the block was collated.
+
+* `subscription`: `string` - Subscription ID
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://eth-mainnet.g.alchemy.com/v2/demo
+
+  // then call subscription 
+  {"jsonrpc":"2.0","id": 1, "method": "eth_subscribe", "params": ["newHeads"]}
+  ```
+
+  ```javascript alchemy-sdk
+  // Installation: npm install alchemy-sdk
+  import { Alchemy, Network } from "alchemy-sdk";
+
+  const settings = {
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET, // Replace with your network.
+  };
+  const alchemy = new Alchemy(settings);
+
+  // Subscribe to new blocks, or newHeads
+  alchemy.ws.on("block", (blockNumber) =>
+    console.log("Latest block:", blockNumber)
+  );
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  {"jsonrpc":"2.0", "id":1, "result":"0x9ce59a13059e417087c02d3236a0b1cc"}
+
+  {
+     "jsonrpc": "2.0",
+     "method": "eth_subscription",
+     "params": {
+       "result": {
+         "difficulty": "0x15d9223a23aa",
+         "extraData": "0xd983010305844765746887676f312e342e328777696e646f7773",
+         "gasLimit": "0x47e7c4",
+         "gasUsed": "0x38658",
+         "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+         "miner": "0xf8b483dba2c3b7176a3da549ad41a48bb3121069",
+         "nonce": "0x084149998194cc5f",
+         "number": "0x1348c9",
+         "parentHash": "0x7736fab79e05dc611604d22470dadad26f56fe494421b5b333de816ce1f25701",
+         "receiptRoot": "0x2fab35823ad00c7bb388595cb46652fe7886e00660a01e867824d3dceb1c8d36",
+         "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+         "stateRoot": "0xb3346685172db67de536d8765c43c31009d0eb3bd9c501c9be3229203f15f378",
+         "timestamp": "0x56ffeff8",
+         "transactionsRoot": "0x0167ffa60e3ebc0b080cdb95f7c0087dd6c0e61413140e39d94d3468d7c9689f"
+       },
+     "subscription": "0x9ce59a13059e417087c02d3236a0b1cc"
+     }
+   }
+  ```
+</CodeGroup>

@@ -1,0 +1,118 @@
+---
+title: getOwnersForNft - SDK
+description: Gets all the owners for a given NFT contract address and token ID.
+subtitle: Gets all the owners for a given NFT contract address and token ID.
+url: https://docs.alchemy.com/reference/getownersfornft-sdk-v3
+slug: reference/getownersfornft-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Gets all the owners for a given NFT contract address and token ID.
+
+# Parameters
+
+| Property          | Type     | Description                                 |
+| ----------------- | -------- | ------------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT.            |
+| `tokenId`         | `string` | Token id of the NFT.                        |
+| `options?`        | `object` | Optional parameters to use for the request. |
+
+### `options` parameters
+
+| Property   | Type     | Description                                                     |
+| ---------- | -------- | --------------------------------------------------------------- |
+| `pageKey`  | `string` | Optional page key to paginate the next page for large requests. |
+| `pageSize` | `number` | Sets the total number of owners to return in the response.      |
+
+# Response
+
+| Property                           | Type     | Description                                                            |
+| ---------------------------------- | -------- | ---------------------------------------------------------------------- |
+| `Promise<GetOwnersForNftResponse>` | `object` | An object that returns all the owners for a given NFT contract address |
+
+## `GetOwnersForNftResponse` object properties
+
+| Property  | Type               | Description                                         |
+| --------- | ------------------ | --------------------------------------------------- |
+| `owners`  | `array of strings` | An array of owner addresses for the provided token. |
+| `pageKey` | `string`           | Describes the page key.                             |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address and token Id w
+      const address = "0x5180db8F5c931aaE63c74266b211F580155ecac8";
+      const tokenId = "1590";
+
+      //Call the method to fetch the owners for the collection
+      const response = await alchemy.nft.getOwnersForNft(address, tokenId)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "owners": [
+          "0xF5FFF32CF83A1A614e15F25Ce55B0c0A6b5F8F2c"
+      ],
+      "pageKey": null
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getOwnersForNft` method:
+
+* **Royalty tracking**: NFTs can be used to represent intellectual property, such as music or art. The `getOwnersForNft` method can be used to track the ownership of the NFT and ensure that royalties are paid to the correct parties.
+
+* **Fraud prevention**: The `getOwnersForNft` method can be used to detect potential fraudulent activity. For example, if the ownership of an NFT changes rapidly and frequently, it may be a sign of a fraudulent transaction.
+
+# Related Methods
+
+Here are the methods related to `getOwnersForNft`:
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Gets the metadata associated with a given NFT.

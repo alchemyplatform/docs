@@ -1,0 +1,58 @@
+---
+title: Data Sources
+description: Define your input data sources from on-chain smart contracts.
+subtitle: Define your input data sources from on-chain smart contracts.
+url: https://docs.alchemy.com/reference/data-sources
+slug: reference/data-sources
+---
+
+# Overview
+
+Each "data source" within a subgraph manifest corresponds to an Ethereum contract on a specific network.
+
+For example, the following data source pulls Compound v3 data for the USDC deployment:
+
+```shell
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Comet
+    network: mainnet
+    source:
+      address: "0xc3d688B66703497DAA19211EEdff47f25384cdc3"
+      abi: Comet
+      startBlock: 15331586
+    mapping:
+			...
+```
+
+See [full specification](https://github.com/graphprotocol/graph-node/blob/master/docs/subgraph-manifest.md#15-data-source) for more details.
+
+# Adding a Data Source
+
+To add a new data source to an existing subgraph, you can use the `graph add` CLI command:
+
+```shell
+graph add <address> [<subgraph-manifest default: "./subgraph.yaml">]
+
+Options:
+
+      --abi <path>              Path to the contract ABI (default: download from Etherscan)
+      --contract-name           Name of the contract (default: Contract)
+      --merge-entities          Whether to merge entities with the same name (default: false)
+      --network-file <path>     Networks config file path (default: "./networks.json")
+```
+
+# Proxy Contracts
+
+EVM protocols often use a **proxy contract** that points to an **implementation contract** for the sake of upgradeability.
+
+Event log and transaction data is associated with the **proxy contract** address, but need to be decoded using the **implementation contract** ABI. Because of this, you'll likely need to download the **implementation contract** ABI and associate it with the **proxy contract** address in your data source.
+
+# Factory Contracts
+
+Another common pattern is to use factory or registry contracts that create and manage other smart contracts.
+
+In order to handle sub-contracts that are dynamically created, you'll need to use [Data Source Templates](https://thegraph.com/docs/en/developing/creating-a-subgraph/#data-source-templates).

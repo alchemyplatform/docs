@@ -1,0 +1,117 @@
+---
+title: computeRarity - SDK
+description: Get the rarity of each attribute of an NFT.
+subtitle: Get the rarity of each attribute of an NFT.
+url: https://docs.alchemy.com/reference/sdk-computerarity
+slug: reference/sdk-computerarity
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Get the rarity of each attribute of an NFT.
+
+# Parameters
+
+| Name              | Type     | Description                                 |
+| ----------------- | -------- | ------------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT collection. |
+| `tokenId`         | `string` | Token id of the NFT.                        |
+
+# Response
+
+| Property                        | Type     | Description                                                         |
+| ------------------------------- | -------- | ------------------------------------------------------------------- |
+| `Promise<NftAttributeRarity[]>` | `object` | Summary of the attribute prevalence for the specified NFT contract. |
+
+### `NftAttributeRarity` response parameters
+
+| Property     | Type     | Description                                                                                                       |
+| ------------ | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `value`      | `string` | Name of the NFT's attribute.                                                                                      |
+| `traitType`  | `string` | The type of NFT attribute.                                                                                        |
+| `prevalence` | `number` | A number from `0` to `1` representing the prevalence of this value for this trait type in the current collection. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address and tokenId
+      const address = "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d";
+      const tokenId = 145;
+
+      //Call the method to display the rarity of each attribute of the NFT
+      const response = await alchemy.nft.computeRarity(address, tokenId)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  [
+    { prevalence: 0.1273, traitType: 'Background', value: 'Orange' },
+    { prevalence: 0.013, traitType: 'Hat', value: 'Prussian Helmet' },
+    { prevalence: 0.1551, traitType: 'Mouth', value: 'Bored Unshaven' },
+    { prevalence: 0.1229, traitType: 'Fur', value: 'Black' },
+    { prevalence: 0.0203, traitType: 'Clothes', value: 'Bone Necklace' },
+    { prevalence: 0.0487, traitType: 'Eyes', value: '3d' }
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `computeRarity` method:
+
+* **NFT marketplaces**: NFT marketplaces such as OpenSea, Rarible, and SuperRare use the `computeRarity` method to calculate the rarity score of different NFTs, which helps determine their value in the marketplace.
+
+* **NFT collections**: NFT collections such as CryptoKitties and CryptoPunks use the `computeRarity` method to determine the rarity of each NFT in their collection, which adds to the overall uniqueness and value of the collection.
+
+* **Gaming applications**: Gaming applications that use NFTs often use the `computeRarity` method to calculate the rarity of different game items, such as weapons or armor, which can affect their in-game performance and value.
+
+# Related Methods
+
+Here are the methods related to `computeRarity`:
+
+* [getNftMetadataBatch](/reference/getnftmetadatabatch-sdk): Gets the NFT metadata for multiple NFT tokens.
+
+* [getNftMetadata](/reference/getnftmetadata-sdk): Gets the metadata associated with a given NFT.

@@ -1,0 +1,111 @@
+---
+title: getSpamContracts - SDK
+description: Returns a list of all spam contracts marked by Alchemy.
+subtitle: Returns a list of all spam contracts marked by Alchemy.
+url: https://docs.alchemy.com/reference/sdk-getspamcontracts
+slug: reference/sdk-getspamcontracts
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns a list of all spam contracts marked by Alchemy. For details on how Alchemy marks spam contracts, go to [this link](https://docs.alchemy.com/alchemy/enhanced-apis/nft-api/nft-api-faq#nft-spam-classification).
+
+# Response
+
+| Property            | Description        | Description                          |
+| ------------------- | ------------------ | ------------------------------------ |
+| `Promise<string[]>` | `array of strings` | A list of identified spam contracts. |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      //Call the method to return a list of spam contracts
+      const response = await alchemy.nft.getSpamContracts()
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  [
+  	'0x0103a04286a05a3ebdbe5f04ebd5641e9cd2b795',
+    '0x010d7618b6c2f6d926f0f41d2c97f6644300317d',
+    '0x013c7e2f908a2e9a7576bd416e9ed5d0f36872e3',
+    '0x02dabd06e79aaa35b77b2e51c5123a0a97e769e3',
+    '0x02ecbde3b983f9867a1b06328d4787f99eb1ecf2',
+    '0x02ecf3f6af760c9e50bf141479822251e01044b3',
+    '0x02f625fe7a75ae6cb548bedbc709da34c8a08224',
+    '0x030f0ab2fd3e44c06e221d0142be5cc0fd007885',
+    '0x0327c782d647c06e73910c08bd3a2f5bff8dc7ec',
+    '0x032d96756697af7ec02ce03d39001b39f7a5d849',
+    '0x03364b89dc0eede57a54798f84da9fd799361361',
+    '0x0337e808a32fb6e915a0187a28560979528402c1',
+    '0x033c71e788ac167ce566d8b851cbf27ef37964a5',
+    '0x034a0e87ccb2943e60ddc1fd6a3ab3aaa442e554',
+    '0x0356b7113be6c7c914305819f0c4c141217f16e6',
+    '0x0356d96097723355c6a00011633659a8f2c96c9e',
+    '0x03673bc69f8348a2009fc43765d03f8bdf3fe7a4',
+    '0x037c265012f140629e3aa275ea30c0f6a21d1e93',
+    '0x038cc0f103c380400482d87be0d3abcc4d9b2225',
+    '0x03998026ef319e663364d2bb3947af6ee64a3888',
+    '0x039b52db88ae51b86b7ab091fa710082ef60dd7b',
+    '0x039ff95d9cd2b67ec0b2da048ccce4637f23cb36',
+    ... 7368 more items
+  ]
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getSpamContracts` method:
+
+* **Anti-spam measures**: `getSpamContracts` could be used to identify and flag contracts or agreements that are likely to be spam or fraudulent. For example, a system could use machine learning algorithms to analyze contracts and agreements for patterns and characteristics commonly associated with spam or fraudulent activity.
+
+* **Contract management**: `getSpamContracts` could be used as a tool to manage and organize a large number of contracts or agreements. By identifying contracts that are unlikely to be legitimate, the system could prioritize the review and processing of valid contracts.
+
+* **Legal compliance**: `getSpamContracts` could be used as part of a compliance process to ensure that all contracts and agreements meet legal and regulatory requirements. By identifying potential spam or fraudulent contracts, the system could prevent violations of legal and regulatory frameworks.
+
+# Related Methods
+
+* [isSpamContract](/reference/isspamcontract-sdk) - Returns whether a contract is marked as spam or not by Alchemy.

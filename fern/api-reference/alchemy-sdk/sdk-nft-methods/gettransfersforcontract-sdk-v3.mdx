@@ -1,0 +1,307 @@
+---
+title: getTransfersForContract - SDK
+description: The getTransfersForContract method gets all NFT transfers for a given NFT contract address.
+subtitle: The getTransfersForContract method gets all NFT transfers for a given NFT contract address.
+url: https://docs.alchemy.com/reference/gettransfersforcontract-sdk-v3
+slug: reference/gettransfersforcontract-sdk-v3
+---
+
+The `getTransfersForContract` method gets all NFT transfers for a given NFT contract address.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+`getTransfersForContract` gets all NFT transfers for a given NFT contract address.
+
+# Parameters
+
+| Name              | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Example                                                      |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `contractAddress` | `string` | The NFT contract address to get transfers for.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `"0x1F02bF9dDe7C79137a08B2Dd4FC964BfD2499734"`               |
+| `options?`        | `object` | An optional object with the following properties: 1. `fromBlock`: Starting block (inclusive) to get transfers from. This can be an integer of the block number, hex string of the block number or a block tag such as `latest`, `earliest` or `finalized`. 2. `toBlock`: Ending block (inclusive) to get transfers from. This can be an integer of the block number, hex string of the block number or a block tag such as `latest`, `earliest` or `finalized`. 3. `order`: Whether to return results in ascending or descending order by block number. Defaults to ascending if omitted. The options are `"asc"` for ascending order and `"desc"` for descending order. 4. `pageKey`: Optional page key from an existing response to use for pagination. | `{ fromBlock: 16564734, toBlock: 16567427, order: "desc", }` |
+
+# Response
+
+The `getTransfersForContract` method returns a `Promise<TransfersNftResponse>` object that contains the NFT transfers for the given NFT contract address.
+
+## `TransfersNftResponse` object properties
+
+The returned object has the following fields:
+
+| Property   | Type               | Description                                                                                                                      |
+| ---------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `nfts`     | `array of objects` | An array of the transfer objects. Each transfer object contains information about the transferred NFT.                           |
+| `pageKey?` | `string`           | Optional page key to use to fetch the next group of NFTs. `undefined` if all the transfers are already included in the response. |
+
+### `nfts` properties
+
+Each transfer object has the following fields:
+
+| Property          | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contract`        | `object` | The NFT's underlying contract and relevant contract metadata. Parameters in the contract include: 1. `address`: `string` The address of the NFT contract. 2. `tokenType`: `object` The type of the token in the contract 3. `name`: `string` The name of the contract. 4. `symbol`: `string` The symbol of the contract. 5. `totalSupply?: string` The number of NFTs in the contract as an integer string. This field is only available on ERC-721 contracts. 6. `openSeaMetadata: object` OpenSea's metadata for the contract. 7. `contractDeployer?: string` The address that deployed the NFT contract. 8. `deployedBlockNumber?: number`The block number the NFT contract deployed in. 9. `isSpam`: `boolean` Whether the NFT contract is marked as spam. 10. `spamClassifications`: `array` Potential reasons why an NFT Contract was classified as spam. |
+| `tokenId`         | `string` | The unique identifier of the token. This could be in hexadecimal or decimal format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `tokenType`       | `string` | The type of NFT, e.g.,`ERC721`, `ERC1155`, `UNKNOWN`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `name`            | `string` | The NFT name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `description`     | `string` | The NFT description.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `timeLastUpdated` | `string` | When the NFT was last updated in the blockchain. Represented in `ISO-8601` format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `raw`             | `object` | The raw metadata for the NFT based on the metadata URI on the NFT contract. 1. `tokenUri?: string`: The raw token URI on the NFT contract. 2. `metadata: string`: The raw metadata parsed from the raw token URI. 3. `error?: string`: Error message if the raw metadata could not be fetched.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `tokenUri`        | `string` | URIs for accessing the NFT's metadata blob.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `image`           | `object` | Media URLs and information for the NFT. Parameters in this object include: 1. `cachedUrl: string`: URL of the image stored in Alchemy's cache. 2. `thumbnailUrl: string`: URL of a thumbnail-sized image. 3. `pngUrl: string`: URL of the image in `png` format. 4. `contentType: string`: The type of the media image.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `acquiredAt`      | `object` | Time at which the user most recently acquired the NFT. Only available when specifying `orderBy: NftOrdering.TRANSFERTIME` in the request. 1. `blockTimestamp?: string`: Timestamp of the block at which an NFT was last acquired. 2. `blockNumber?: number`: Block number of the block at which an NFT was last acquired.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `collection`      | `object` | Collection metadata for the NFT, if available. Parameters include: 1. `name: string`: The name of the collection. 2. `slug?: string`: The OpenSea human-readable slug of the collection. 3. `externalUrl?: string`: The external URL for the collection. 4. `bannerImageUrl?: string`: The banner image URL for the collection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `mint`            | `object` | Mint information for the NFT. Parameters include: 1. `mintAddress?: string`: The address that the NFT was minted to. 2. `blockNumber?: number`: The block number that the NFT was minted on. 3. `timestamp?: string`: The timestamp the NFT was minted on. 4. `transactionHash?: string`: The transaction hash of the transaction that minted the NFT.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `from`            | `string` | The address the NFT was sent from. For minted NFTs, this field is set to `0x0000000000000000000000000000000000000000`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `to`              | `string` | The address the NFT was sent or minted to.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `transactionHash` | `string` | The transaction hash where the transfer or mint occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `blockNumber`     | `string` | The block number as a hex string of when the transfer or mint occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+
+# Example Request and Response
+
+**Prerequisite**: You must install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```text yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+Here is an example of how to make a `getTransfersForContract` request using the Alchemy SDK:
+
+<CodeGroup>
+  ```javascript getTransfersForContract.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+    apiKey: "demo", // Replace with your API key
+    network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  // Example of using the new getTransfersForContract method
+  const main = async () => {
+    // The nft contract address to get transfers for
+    let contractAddress = "0x1F02bF9dDe7C79137a08B2Dd4FC964BfD2499734";
+
+    // Additional options for the request. (Optional)
+    let options = {
+      /** Starting block (inclusive) to get transfers from. */
+      fromBlock: 16564734,
+      /** Ending block (inclusive) to get transfers from. */
+      toBlock: 16567427,
+      /**
+       * Whether to return results in ascending or descending order by block number.
+       * Defaults to ascending if omitted.
+       */
+      order: "desc",
+    };
+
+    // Calling the getTransfersForContract method
+    let transfers = await alchemy.nft.getTransfersForContract(
+      contractAddress,
+      options
+    );
+
+    // Logging the response to the console
+    console.log(transfers);
+  };
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+And here is an example of what a successful response to this request might look like:
+
+<CodeGroup>
+  ```json getTransfersForContract response
+  {
+      "nfts": [
+          {
+              "contract": {
+                  "address": "0x1F02bF9dDe7C79137a08B2Dd4FC964BfD2499734",
+                  "name": "Elephants",
+                  "symbol": "ELENFT",
+                  "totalSupply": "7778",
+                  "tokenType": "ERC721",
+                  "contractDeployer": "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
+                  "deployedBlockNumber": 15140845,
+                  "openSeaMetadata": {
+                      "floorPrice": 0.0032,
+                      "collectionName": "3L3Phants Official",
+                      "collectionSlug": "3l3phants-official",
+                      "safelistRequestStatus": "verified",
+                      "imageUrl": "https://i.seadn.io/gcs/files/71dfb6cacb894a713d91f493917fa1b5.png?w=500&auto=format",
+                      "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. From the mind of Ic3cream and designed by World Renowned Artist Tornado Toad. Join the Herd today!\n\nEarn $NUT token in our discord now!\n\nhttps://discord.gg/3l3phantsnft",
+                      "externalUrl": "http://3l3phants.io",
+                      "twitterUsername": "3L3NFT",
+                      "discordUrl": "https://discord.gg/3L3phantsnft",
+                      "bannerImageUrl": "https://i.seadn.io/gcs/files/1667bbb67e548917820271ee2430bb35.png?w=500&auto=format",
+                      "lastIngestedAt": "2023-09-19T22:06:03.000Z"
+                  },
+                  "spamClassifications": []
+              },
+              "tokenId": "5447",
+              "tokenType": "ERC721",
+              "name": "3L3PHANTS #5447",
+              "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+              "tokenUri": "https://alchemy.mypinata.cloud/ipfs/QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/5447",
+              "image": {
+                  "cachedUrl": "https://nft-cdn.alchemy.com/eth-mainnet/34233c43dee24fc5748d48867d5a61e8",
+                  "thumbnailUrl": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/34233c43dee24fc5748d48867d5a61e8",
+                  "pngUrl": "https://res.cloudinary.com/alchemyapi/image/upload/convert-png/eth-mainnet/34233c43dee24fc5748d48867d5a61e8",
+                  "contentType": "image/png",
+                  "size": 211149,
+                  "originalUrl": "https://ipfs.io/ipfs/QmWS5E2YK9rEWUuvkZkicSTZ9Fbck9z1aZTKYLAcmkmdTx"
+              },
+              "raw": {
+                  "tokenUri": "ipfs://QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/5447",
+                  "metadata": {
+                      "name": "3L3PHANTS #5447",
+                      "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+                      "image": "ipfs://QmWS5E2YK9rEWUuvkZkicSTZ9Fbck9z1aZTKYLAcmkmdTx",
+                      "attributes": [
+                          {
+                              "value": "Green",
+                              "trait_type": "Background"
+                          },
+                          {
+                              "value": "Red Hoodie",
+                              "trait_type": "Outfit"
+                          },
+                          {
+                              "value": "Gold",
+                              "trait_type": "Tusks"
+                          }
+                      ]
+                  }
+              },
+              "collection": {
+                  "name": "3L3Phants Official",
+                  "slug": "3l3phants-official",
+                  "externalUrl": "http://3l3phants.io",
+                  "bannerImageUrl": "https://i.seadn.io/gcs/files/1667bbb67e548917820271ee2430bb35.png?w=500&auto=format"
+              },
+              "mint": {
+                  "mintAddress": "0xfd279644adb28043ee10111f2971b3e4fb655e86",
+                  "blockNumber": 15260123,
+                  "timestamp": "2022-08-02T01:18:08Z",
+                  "transactionHash": "0x7cfdf3018a244529c6b1c6b85171f5c1cbf355c78b5f4faa80bd2fcfaf0d4429"
+              },
+              "timeLastUpdated": "2023-02-18T18:43:33.104Z",
+              "from": "0x93ab7195dc4dd4a098efb10b47fe48c7893b8864",
+              "to": "0xad2596f9506309ea64e81605aaa4e898134ac1f2",
+              "transactionHash": "0xcec76b5c70c1dc71c09a2f383a4ae5a93331a0d4dea690171041263ae416c05c",
+              "blockNumber": "0xfccb9e"
+          },
+          {
+              "contract": {
+                  "address": "0x1F02bF9dDe7C79137a08B2Dd4FC964BfD2499734",
+                  "name": "Elephants",
+                  "symbol": "ELENFT",
+                  "totalSupply": "7778",
+                  "tokenType": "ERC721",
+                  "contractDeployer": "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8",
+                  "deployedBlockNumber": 15140845,
+                  "openSeaMetadata": {
+                      "floorPrice": 0.0032,
+                      "collectionName": "3L3Phants Official",
+                      "collectionSlug": "3l3phants-official",
+                      "safelistRequestStatus": "verified",
+                      "imageUrl": "https://i.seadn.io/gcs/files/71dfb6cacb894a713d91f493917fa1b5.png?w=500&auto=format",
+                      "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. From the mind of Ic3cream and designed by World Renowned Artist Tornado Toad. Join the Herd today!\n\nEarn $NUT token in our discord now!\n\nhttps://discord.gg/3l3phantsnft",
+                      "externalUrl": "http://3l3phants.io",
+                      "twitterUsername": "3L3NFT",
+                      "discordUrl": "https://discord.gg/3L3phantsnft",
+                      "bannerImageUrl": "https://i.seadn.io/gcs/files/1667bbb67e548917820271ee2430bb35.png?w=500&auto=format",
+                      "lastIngestedAt": "2023-09-19T22:06:03.000Z"
+                  },
+                  "spamClassifications": []
+              },
+              "tokenId": "372",
+              "tokenType": "ERC721",
+              "name": "3L3PHANTS #372",
+              "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+              "tokenUri": "https://ipfs.io/ipfs/QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/372",
+              "image": {
+                  "cachedUrl": "https://nft-cdn.alchemy.com/eth-mainnet/5da1c73b64d3fc6dc1c986ac8e4f76f8",
+                  "thumbnailUrl": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/5da1c73b64d3fc6dc1c986ac8e4f76f8",
+                  "pngUrl": "https://res.cloudinary.com/alchemyapi/image/upload/convert-png/eth-mainnet/5da1c73b64d3fc6dc1c986ac8e4f76f8",
+                  "contentType": "image/png",
+                  "size": 189584,
+                  "originalUrl": "https://ipfs.io/ipfs/QmXvc2DMgg9ZJWGuAV1DTRn3HFS2oFtHbyo2am2LsSuguY"
+              },
+              "raw": {
+                  "tokenUri": "ipfs://QmcpMnvcmUvn3EsQ6QmV1J7QwouBKimrhbHpEV5Db9gFgy/372",
+                  "metadata": {
+                      "name": "3L3PHANTS #372",
+                      "description": "3L3Phants NFT is a collection of 7,777 Elephants stampeding on the Ethereum blockchain. Saving 3L3Phants & Wildlife one NFT at a time",
+                      "image": "ipfs://QmXvc2DMgg9ZJWGuAV1DTRn3HFS2oFtHbyo2am2LsSuguY",
+                      "attributes": [
+                          {
+                              "value": "Red",
+                              "trait_type": "Background"
+                          },
+                          {
+                              "value": "Brown",
+                              "trait_type": "Tusks"
+                          }
+                      ]
+                  }
+              },
+              "collection": {
+                  "name": "3L3Phants Official",
+                  "slug": "3l3phants-official",
+                  "externalUrl": "http://3l3phants.io",
+                  "bannerImageUrl": "https://i.seadn.io/gcs/files/1667bbb67e548917820271ee2430bb35.png?w=500&auto=format"
+              },
+              "mint": {
+                  "mintAddress": "0xa590b03f6492f658b9d13f49924b2b1bb4b596b1",
+                  "blockNumber": 15141967,
+                  "timestamp": "2022-07-14T16:52:41Z",
+                  "transactionHash": "0xc126314bde53b9348df97561c796ff9535549ac7fa596f9f7223084443bbdff8"
+              },
+              "timeLastUpdated": "2023-03-15T08:33:25.446Z",
+              "from": "0xb7dded5be42790543096fd7d765155de658530f8",
+              "to": "0x4209859ae2992f581d2678392b4ac80c13d5eed4",
+              "transactionHash": "0xb89d383a80ead28c4ec00d985dd5f25989c02d945bb84b55261e07ce34d4406f",
+              "blockNumber": "0xfcc202"
+          }
+      ]
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Some of the use cases for `getTransfersForContract` are:
+
+* **NFT Market Analysis**: An NFT market analysis platform could use the API to gather data on NFT transfers for a specific NFT contract and analyze the demand and supply of that particular NFT.
+
+* **NFT Contract Monitoring**: An NFT contract owner or administrator could use the API to monitor all transfers of their NFT contract and ensure that they are being used in a compliant manner.
+
+* **NFT Trading Platform**: An NFT trading platform could use the API to retrieve information about all transfers of a specific NFT contract and display it to users, allowing them to trade and buy/sell NFTs.
+
+# Related Methods
+
+Here are the methods related to `getTransfersForContract`:
+
+* [`getTransfersForOwner`](/reference/sdk-gettransfersforowner): Returns all NFT transfers for a given owner address.
+
+* [`getMintedNfts`](/reference/sdk-getmintednfts): Returns all the NFTs minted by a specified owner address.

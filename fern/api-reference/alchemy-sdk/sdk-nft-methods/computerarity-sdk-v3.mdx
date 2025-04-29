@@ -1,0 +1,145 @@
+---
+title: computeRarity - SDK
+description: Returns the floor prices of an NFT contract by marketplace.
+subtitle: Returns the floor prices of an NFT contract by marketplace.
+url: https://docs.alchemy.com/reference/computerarity-sdk-v3
+slug: reference/computerarity-sdk-v3
+---
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+<Info>
+  Please note that this endpoint is only available on **Ethereum (mainnet)** & **Polygon (mainnet & mumbai)**
+</Info>
+
+# Description
+
+Get the rarity of each attribute of an NFT.
+
+# Parameters
+
+| Name              | Type     | Description                                 |
+| ----------------- | -------- | ------------------------------------------- |
+| `contractAddress` | `string` | The contract address of the NFT collection. |
+| `tokenId`         | `string` | Token id of the NFT.                        |
+
+# Response
+
+| Property                         | Type     | Description                         |
+| -------------------------------- | -------- | ----------------------------------- |
+| `Promise<ComputeRarityResponse>` | `object` | The response object for the method. |
+
+## `ComputeRarityResponse` object properties
+
+| Parameter  | Type               | Description                                                         |
+| ---------- | ------------------ | ------------------------------------------------------------------- |
+| `rarities` | `array of objects` | Summary of the attribute prevalence for the specified NFT contract. |
+
+### `rarities` response properties
+
+| Property     | Type     | Description                                                                                               |
+| ------------ | -------- | --------------------------------------------------------------------------------------------------------- |
+| `value`      | `string` | Name of the NFT's attribute.                                                                              |
+| `traitType`  | `string` | The type of NFT attribute.                                                                                |
+| `prevalence` | `number` | A number from `0` to `1`represents this value's prevalence for this trait type in the current collection. |
+
+# Example Request and Response
+
+**Prerequisite**: You must install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk@latest
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the contract address and tokenId
+      const address = "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d";
+      const tokenId = 145;
+
+      //Call the method to display the rarity of each attribute of the NFT
+      const response = await alchemy.nft.computeRarity(address, tokenId)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```json json
+  {
+      "rarities": [
+          {
+              "traitType": "Background",
+              "value": "Orange",
+              "prevalence": 0.1273
+          },
+          {
+              "traitType": "Hat",
+              "value": "Prussian Helmet",
+              "prevalence": 0.013
+          },
+          {
+              "traitType": "Mouth",
+              "value": "Bored Unshaven",
+              "prevalence": 0.1551
+          },
+          {
+              "traitType": "Fur",
+              "value": "Black",
+              "prevalence": 0.1229
+          },
+          {
+              "traitType": "Clothes",
+              "value": "Bone Necklace",
+              "prevalence": 0.0203
+          },
+          {
+              "traitType": "Eyes",
+              "value": "3d",
+              "prevalence": 0.0487
+          }
+      ]
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `computeRarity` method:
+
+* **NFT marketplaces**: NFT marketplaces such as OpenSea, Rarible, and SuperRare use the `computeRarity` method to calculate the rarity score of different NFTs helps determine their value in the marketplace.
+
+* **NFT collections**: NFT collections such as CryptoKitties and CryptoPunks use the `computeRarity` method to determine the rarity of each NFT in their collection, which adds to the overall uniqueness and value of the collection.
+
+* **Gaming applications**: Gaming applications that use NFTs often use the `computeRarity` method to calculate the rarity of different game items, such as weapons or armor, which can affect their in-game performance and value.

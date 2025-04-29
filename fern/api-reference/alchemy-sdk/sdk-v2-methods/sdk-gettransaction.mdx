@@ -1,0 +1,138 @@
+---
+title: getTransaction - SDK
+description: Returns the transaction with hash or null if the transaction is unknown. If a transaction has not been mined, this method will search the transaction pool. Various backends may have more restrictive transaction pool access (e.g. if the gas price is too low or the transaction was only recently sent a...
+subtitle: Returns the transaction with hash or null if the transaction is unknown. If a transaction has not been mined, this method will search the transaction pool. Various backends may have more restrictive transaction pool access (e.g. if the gas price is too low or the transaction was only recently sent a...
+url: https://docs.alchemy.com/reference/sdk-gettransaction
+slug: reference/sdk-gettransaction
+---
+
+Returns the transaction with `hash` or `null` if the transaction is unknown.
+
+If a transaction has not been mined, this method will search the transaction pool. Various backends may have more restrictive transaction pool access (e.g. if the gas price is too low or the transaction was only recently sent and not yet indexed) in which case this method may also return null.
+
+<Tip title="Don’t have an API key?" icon="star">
+  Start using this method in your app today. [Get started for free](https://dashboard.alchemy.com/signup/)
+</Tip>
+
+# Description
+
+Returns the transaction with hash or null if the transaction is unknown.
+
+If a transaction has not been mined, this method will search the transaction pool. Various backends may have more restrictive transaction pool access (e.g. if the gas price is too low or the transaction was only recently sent and not yet indexed) in which case this method may also return null.
+
+# Parameters
+
+| Name              | Type     | Description                         |
+| ----------------- | -------- | ----------------------------------- |
+| `transactionHash` | `string` | The hash of the transaction to get. |
+
+# Response
+
+| Property                              | Type     | Description                       |
+| ------------------------------------- | -------- | --------------------------------- |
+| `Promise<TransactionResponse / null>` | `object` | Returns the transaction response. |
+
+### `TransactionResponse` object parameters
+
+| Property        | Type     | Description                                                                                               |
+| --------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| `hash`          | `string` | The transaction hash.                                                                                     |
+| `from`          | `string` | `20 Bytes`. The `from` address.                                                                           |
+| `blockNumber?`  | `number` | The block number where this log was in. `null` when its pending. `null` when its pending log.             |
+| `blockHash?`    | `string` | `32 Bytes` - hash of the block where this log was in. null when its pending. `null` when its pending log. |
+| `timestamp?`    | `number` | `Optional`. Returns only if a transaction has been mined.                                                 |
+| `confirmations` | `number` | number of transaction confirmations.                                                                      |
+| `raw`           | `string` | Raw value.                                                                                                |
+
+# Example Request and Response
+
+**Prerequisite**: You will need to install the Alchemy SDK before making requests with it.
+
+The commands for installing it using **npm** or **yarn** are given below:
+
+<CodeGroup>
+  ```shell npm
+  npm install alchemy-sdk
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk
+  ```
+</CodeGroup>
+
+## Request
+
+<CodeGroup>
+  ```javascript index.js
+  // Imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // Configures the Alchemy SDK
+  const config = {
+      apiKey: "alchemy-replit", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // Creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the transaction hash
+      const txHash = "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b";
+
+      //Call the method to display the transaction based on the transaction hash
+      const response = await alchemy.transact.getTransaction(txHash)
+
+      //Logging the response to the console
+      console.log(response)
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+## Response
+
+<CodeGroup>
+  ```shell shell
+  {
+    hash: '0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b',
+    type: 0,
+    accessList: null,
+    blockHash: '0x1d59ff54b1eb26b013ce3cb5fc9dab3705b415a67127a003c3e61eb445bb8df2',
+    blockNumber: 6139707,
+    transactionIndex: 65,
+    confirmations: 10639439,
+    from: '0xa7d9ddBE1f17865597fBD27EC712455208B6B76d',
+    gasPrice: BigNumber { _hex: '0x04a817c800', _isBigNumber: true },
+    gasLimit: BigNumber { _hex: '0xc350', _isBigNumber: true },
+    to: '0xF02c1c8e6114b1Dbe8937a39260b5b0a374432bB',
+    value: BigNumber { _hex: '0x0f3dbb76162000', _isBigNumber: true },
+    nonce: 21,
+    data: '0x68656c6c6f21',
+    r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
+    s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+    v: 37,
+    creates: null,
+    chainId: 1,
+    wait: [Function (anonymous)]
+  }
+  ```
+</CodeGroup>
+
+# Use Cases
+
+Here are some potential use cases for the `getTransaction` method:
+
+* **Transaction status**: You can use `getTransaction` to check the status of a transaction by its hash. If the transaction has been mined and confirmed, you will be able to see the block number and other details. If the transaction has not yet been mined, you can use `getTransactionReceipt` to get the current status.
+
+* **Transaction details**: You can use `getTransaction` to retrieve the details of a transaction, including the sender and recipient addresses, the amount transferred, and the gas used. This information can be useful for auditing purposes or to reconcile your own records.
+
+* **Debugging**: If you are experiencing issues with a transaction, you can use `getTransaction` to retrieve the details and identify the source of the problem. For example, if a transaction is failing due to insufficient gas, you can use `getTransaction` to confirm the gas limit and adjust it as needed.
+
+# Related Methods
+
+Here are the methods related to `getTransaction`:
+
+* [sendTransaction](/reference/sendtransaction-sdk) - Submits transaction to the network to be mined.
+* [waitForTransaction](/reference/waitfortransaction-sdk) - Returns a promise which will not resolve until specified transaction hash is mined.

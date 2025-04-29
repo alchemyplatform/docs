@@ -1,0 +1,102 @@
+---
+title: Ink API Quickstart
+description: Get started building on Ink and using the JSON-RPC API
+subtitle: Get started building on Ink and using the JSON-RPC API
+url: https://docs.alchemy.com/reference/ink-api-quickstart
+slug: reference/ink-api-quickstart
+---
+
+## Introduction
+
+Ink is a cutting-edge Layer 2 blockchain solution developed by Kraken, designed to bridge centralized and decentralized finance. Built on the OP Stack within the Optimism Superchain ecosystem, Ink offers sub-second block times, optimized gas fees, and high performance. It aims to simplify DeFi access, leveraging Kraken's established infrastructure while inheriting Ethereum's robust security.
+
+## What is the Ink API?
+
+The Ink API allows interaction with the Ink network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
+
+```shell
+mkdir ink-api-quickstart
+cd ink-api-quickstart
+npm init --yes
+```
+
+```shell
+mkdir ink-api-quickstart
+cd ink-api-quickstart
+yarn init --yes
+```
+
+This creates a new directory named `ink-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = 'https://ink-mainnet.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Ink mainnet:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the latest block information from Ink's mainnet outputted to your console:
+
+```shell
+Latest Block: 0x...
+```
+
+## Next Steps
+
+Congratulations! You've made your first request to the Ink network. You can now explore the various [JSON-RPC methods available on Ink](/reference/ink-api-endpoints) and start building your dApps on this innovative platform.

@@ -1,0 +1,212 @@
+---
+title: Alchemy SDK V2 to V3 Migration Guide
+description: Easily migrate from Alchemy SDK V2 to V3 with this guide. Learn about key differences, updated methods, and best practices for a seamless transition to the improved SDK V3.
+subtitle: Easily migrate from Alchemy SDK V2 to V3 with this guide. Learn about key differences, updated methods, and best practices for a seamless transition to the improved SDK V3.
+url: https://docs.alchemy.com/reference/alchemy-sdk-v2-to-v3-migration-guide
+slug: reference/alchemy-sdk-v2-to-v3-migration-guide
+---
+
+# Table of Contents
+
+1. [Introduction](#introduction)
+2. [Overview of Changes in Alchemy SDK V3](#overview-of-changes-in-alchemy-sdk-v3)
+3. [Migrating from V2 to V3](#migrating-from-v2-to-v3)
+4. [Conclusion](#conclusion)
+
+For a detailed overview of the differences between each Alchemy SDK method in V2 and V3, check out [Alchemy SDK V2 vs. V3 Method Differences](/reference/alchemy-sdk-v2-vs-v3-method-differences)
+
+# Introduction
+
+Welcome to the Alchemy SDK V2 to V3 Migration Guide! This guide has been designed to help you transition your projects from using the V2 version of our Alchemy SDK to the improved V3 version. This latest version uses the improved [NFT API V3](/reference/nft-api-v2-to-v3-migration-guide) at its core, bringing all its advantages to the SDK users as well. So, Upgrading to Alchemy SDK V3 will bring several advantages when dealing with the NFT related methods, such as more consistent response formats, stricter typing, and overall enhanced ease of use. We believe that the improvements made in V3 will enable developers to work more efficiently and create more robust applications.
+
+<Info>
+  This guide specifically focuses on migrating projects that use Alchemy SDK for interacting with the NFT API.
+
+  The response formats and migration steps in this guide are not applicable to projects using direct API calls. For API call formats refer to [NFT API V2 to V3 Migration Guide](/reference/nft-api-v2-to-v3-migration-guide).
+</Info>
+
+# Overview of Changes in Alchemy SDK V3
+
+Since Alchemy SDK V3 uses the advanced [NFT API V3](/reference/nft-api-v2-to-v3-migration-guide) under the hood, it incorporates all the benefits of the NFT API V3 when handling NFT related methods. The improvements for NFT related methods include:
+
+1. **Strict Types**: In V3, all fields have a strict type (string, map, or integer), ensuring that you receive predictable and reliable data.
+
+2. **Mandatory fields**: Null Fields will always be available in the response. This differs from V2, where null fields were sometimes missing.
+
+3. **Consistent format across APIs**: All methods in V3 return a consistent format for every model.
+
+4. **Flat response format**: V3 responses aim to have a flat structure, making them easier to parse and consume.
+
+5. **Ease of consumption**: We've designed V3 responses with ease of consumption, helping you understand and utilize the data more quickly.
+
+6. **Checksummed addresses**: All addresses in V3 are checksummed addresses, whereas in V2, we served lowercased addresses. This change enhances the security and readability of addresses in the SDK.
+
+7. **Decimal String token IDs**: All token IDs are now served as decimal strings. In V2, token IDs were sometimes served as hexadecimal or decimal strings, which could lead to confusion and potential errors.
+
+The changes introduced in Alchemy SDK V3 are focused on providing developers a better, more consistent, and easier-to-use experience. The following sections will discuss the migration process and provide detailed mappings for each changed endpoint.
+
+***
+
+# Migrating from V2 to V3
+
+This section provides steps to migrate your existing projects from Alchemy SDK V2 to V3. We will use a sample script that interacts with the `getContractMetadata` method as an example to demonstrate the migration process. The steps are listed below.
+
+## Step 0: Analyzing The Existing Codebase
+
+Before starting the migration, let's take a look at an existing [node.js](https://nodejs.org/en) script using Alchemy SDK V2. This script retrieves contract metadata for a given contract address and prints the floor price and collection name. We will use this script as a basis for demonstrating the migration steps.
+
+**Existing V2 Script:**
+
+<CodeGroup>
+  ```javascript javascript
+  // imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // configures the Alchemy SDK
+  const config = {
+      apiKey: "demo", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the address whose contract metadata you want to fetch
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      // call the method to fetch metadata
+      const response = await alchemy.nft.getContractMetadata(address)
+
+      console.log("Floor Price: ", response.openSea.floorPrice);
+      console.log("Collection Name: ", response.openSea.collectionName);
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+To run the script given above, you need to have a `node.js` project setup with `alchemy-sdk` installed. If you don't, you can follow the steps given below:
+
+1. Create a new `node.js` project by running the following commands in your terminal
+   <CodeGroup>
+     ```Text npm
+     mkdir alchemy-sdk-project
+     cd alchemy-sdk-project
+     npm init --yes
+     ```
+   </CodeGroup>
+2. Install the `alchemy-sdk` library by running the command
+   <CodeGroup>
+     ```Text npm
+     npm i alchemy-sdk@latest
+     ```
+   </CodeGroup>
+3. Create a new file called `getContractMetadata.js` and paste the script given above into it
+   <CodeGroup>
+     ```Text npm
+     touch getContractMetadata.js
+     ```
+   </CodeGroup>
+4. Run the script with the command given below
+   <CodeGroup>
+     ```Text npm
+     node getContractMetadata.js
+     ```
+   </CodeGroup>
+5. You should see the output in your console
+   <CodeGroup>
+     ```shell bash
+     Floor Price: 0.001
+     Collection Name: Undead Warriors
+     ```
+   </CodeGroup>
+
+***
+
+## Step 1: Update Your Alchemy SDK Version
+
+Update the Alchemy SDK version by running the following command in your terminal:
+
+<CodeGroup>
+  ```shell npm
+  npm i alchemy-sdk@v3-beta
+  ```
+
+  ```shell yarn
+  yarn add alchemy-sdk@latest
+  ```
+</CodeGroup>
+
+***
+
+## Step 2: Update Your Response Handling Code
+
+Since the response structure has changed in SDK V3, you will need to update your code to handle the new response format. Make sure to account for the changes in field names, data types, and structure as outlined in [Detailed Method Mappings](/reference/alchemy-sdk-v2-vs-v3-method-differences).
+
+For example, in the case of the `getContractMetadata` method's response, the `openSea` object has been renamed to `openSeaMetadata`. So we can update our existing script as follows:
+
+**Updated V3 Script:**
+
+<CodeGroup>
+  ```javascript javascript
+   // imports the Alchemy SDK
+  const { Alchemy, Network } = require("alchemy-sdk");
+
+  // configurs the Alchemy SDK
+  const config = {
+      apiKey: "demo", // Replace with your API key
+      network: Network.ETH_MAINNET, // Replace with your network
+  };
+
+  // creates an Alchemy object instance with the config to use for making requests
+  const alchemy = new Alchemy(config);
+
+  const main = async () => {
+      // define the address whose contract metadata you want to fetch
+      const address = "0x61fce80d72363b731425c3a2a46a1a5fed9814b2";
+
+      // call the method to fetch metadata
+      const response = await alchemy.nft.getContractMetadata(address);
+
+      // Now using the OpenSeaMetadata object in V3 instead of the OpenSea object in V2
+      console.log("Floor Price: ", response.openSeaMetadata.floorPrice);
+      console.log("Collection Name: ", response.openSeaMetadata.collectionName);
+  }
+
+  main();
+  ```
+</CodeGroup>
+
+***
+
+## Step 3: Testing The Updated Script
+
+At this point, you have successfully migrated from Alchemy SDK V2 to V3, but before deploying the updated script to production, thoroughly test it to ensure it works as expected according to your application requirements. Verify that the output is correct and that there are no errors or unexpected behavior.
+
+1. Run the updated script in your development environment. In this case, run it with the given command
+   <CodeGroup>
+     ```shell shell
+     node getContractMetadata.js
+     ```
+   </CodeGroup>
+2. Compare the output to the output of the V2 script, making sure the data is consistent.
+   ```text
+   Floor Price: 0.001
+   Collection Name: Undead Warriors
+   ```
+   In this case, as you can see, we are getting the same output as before and getting the desired result.
+3. Perform additional tests, such as providing different parameters (in this case, contract addresses), to ensure the script can handle various scenarios.
+4. Verify that the script integrates correctly with other parts of your application, if applicable.
+
+After successful testing, you can confidently deploy the updated script to production, taking advantage of the improvements.
+
+***
+
+# Conclusion
+
+In this migration guide, we've covered key changes and detailed the differences between V2 and V3. Alchemy SDK V3 offers numerous improvements, including consistent formatting, a flat response format, and ease of consumption when dealing with NFT-related methods. For a detailed look at the differences between V2 and V3 for each method, check out [Alchemy SDK V2 vs. V3 Method Differences](/reference/alchemy-sdk-v2-vs-v3-method-differences).
+
+We strongly encourage developers to upgrade to Alchemy SDK V3 to benefit from these improvements and to ensure the best possible experience when working with NFTs.
+
+By upgrading to Alchemy SDK V3, you'll be better equipped to build and maintain efficient applications, ensuring a seamless experience for your users. Happy coding
