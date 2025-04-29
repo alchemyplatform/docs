@@ -5,25 +5,28 @@ url: "https://docs.alchemy.com/reference/notify-api-quickstart"
 slug: "reference/notify-api-quickstart"
 ---
 
-Alchemy Webhooks provide real-time notifications for primarily on-chain data. They're often used to stream on-chain activity for a set of wallets, events and traces on a set of smart contracts, and all block data for a particular chain, but are customizable to your many different use cases! Here are a few quick-links and an introduction video:
+Alchemy Webhooks let you receive real-time HTTP POST requests for on-chain events across 80+ chains — no polling required! They’re often used to stream:
 
-* [Webhook Types](/reference/webhook-types)
-* [How to Set up Webhooks](/reference/notify-api-quickstart#how-to-set-up-webhooks)
+* all on-chain activity for millions of wallets
+* events and traces for any smart contract
+* all block data (including traces)
 
-<iframe href="https://www.loom.com/embed/ba9ac66d824b47e1906cf5e91b0e60ad" height="500px" width="100%" border="none" src="https://www.loom.com/embed/ba9ac66d824b47e1906cf5e91b0e60ad" style="border: none; display: flex; margin: auto;"><a target="_self" href="https://www.loom.com/embed/ba9ac66d824b47e1906cf5e91b0e60ad" title="loom.com">iframe</a></iframe>
+They're also fully [customizable via a GraphQL style query](/reference/custom-webhook).
 
-<Tip title="Don’t have an API key?" icon="star">
-  Sign up or upgrade your plan for access. [Get started for free](https://dashboard.alchemy.com/signup/?a=a82992b699)
-</Tip>
+# Why Alchemy Webhooks?
+
+* ⛓️ **Multi-Chain:** Supports over 80+ EVM chains (+ [Solana now](/reference/address-activity-webhook)) and more soon
+* ⚡ **Fast:** Streams on-chain events immediately as blocks confirm
+* 💪🏽 **Reliable:** Built on our propietary blockchain engine, and incudes retries
+* 🧑‍🤝‍🧑 **Scalable:** Tracks millions of users effortlessly
+* **💰 Savings:** Reduces RPC spend by eliminating polling workflows
 
 # Webhook types
 
-| Webhook Type                                                | Description                                                                                                                                                                                                                                                                                                                                 |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Custom](/reference/custom-webhook)                         | Custom Webhooks allows you to track any smart contract or marketplace activity, monitor any contract creation, or any other on-chain interaction. This gives you infinite data access with precise filter controls to get the blockchain data you need.                                                                                     |
-| [Address Activity](/reference/address-activity-webhook)     | Alchemy's Address Activity webhook tracks all ETH, ERC20, ERC721 and ERC1155 transfers. This provides your app with real-time state changes when an address sends/receives tokens or ETH. Specify the addresses for which you want to track this activity via API as well. A maximum of 100,000 addresses can be added to a single webhook. |
-| [NFT Activity](/reference/nft-activity-webhook)             | The NFT Activity webhook allows you to track ERC721 and ERC1155 token contracts for NFTs. This provides your app with real-time state changes when an NFT is transferred between addresses.                                                                                                                                                 |
-| [NFT Meta Updates](/reference/nft-metadata-updates-webhook) | The NFT Metadata Updates webhook allows you to track metadata updates for ERC721 and ERC1155 token contracts for Ethereum and Polygon NFTs. This notifies your app when the metadata for an NFT is updated.                                                                                                                                 |
+| [**Custom Webhooks**](/reference/custom-webhook)                                                                              | [**Address Activity**](/reference/address-activity-webhook)                                                                                                      | [NFT Activity](/reference/get-transaction-history-by-address)                                                                        |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Image 1](customWebhookTypeImage.png)                      | ![Image 2](cc619a4df5351c534c2c0f6c718d26336600c07275d076dd15fe80e1964aaee5-Screenshot_2025-02-24_at_4.22.57_PM.png)                                      | ![Image 3](b6a2d47e1d0a755c480ec042ebfd011dcb7403c4338ded3c1a8e0edf106bc848-Screenshot_2025-02-24_at_4.22.10_PM.png)                        |
+| **Ideal for:** Most Use Cases **How it works:** Get notified for any event on every block | **Ideal for:** Wallets, Portfolio Trackers **How it works:** Get notified when an address transacts| **Ideal for:** NFT Collections, NFT Analytics **How it works:** Get notified when NFTs are transferred |
 
 <Info>
   Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
@@ -31,9 +34,9 @@ Alchemy Webhooks provide real-time notifications for primarily on-chain data. Th
   ![](523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
 </Info>
 
-## V2 Webhook
+# Webhook Payload Structure
 
-### Field definitions
+## Field definitions
 
 | Field       | Description                             | Value                      |
 | ----------- | --------------------------------------- | -------------------------- |
@@ -57,69 +60,25 @@ Alchemy Webhooks provide real-time notifications for primarily on-chain data. Th
   ```
 </CodeGroup>
 
-## V1 Webhook Event Object
+# Getting Started
 
-### Field definitions
+To start building with webhooks:
 
-| Field         | Description                                       | Value                      |
-| ------------- | ------------------------------------------------- | -------------------------- |
-| `app`         | Alchemy app name sending the transaction webhook. | `Demo`                     |
-| `network`     | Network for the webhook event.                    | `MAINNET`                  |
-| `webhookType` | The type of webhook.                              | `MINED_TRANSACTION`        |
-| `timestamp`   | Timestamp when the webhook was created.           | `2020-07-29T00:29:18.414Z` |
-| `event name`  | Webhook event type.                               | `OBJECT`                   |
+1. Select the right webhook type
+2. Create a webhook listener
+3. Create and test your webhook
 
-For Webhooks full dependencies and more code examples, \[go to the GitHub repo] ([https://github.com/alchemyplatform/webhook-examples](https://github.com/alchemyplatform/webhook-examples)).
+## Select the right webhook type
 
-### Example Response
+* If you’re interested in tracking transfers on a set of wallets, (\< 100K wallets), get started with our [Address Activity webhooks](/reference/address-activity-webhook)!
+* If you’re interested in tracking transfers of a particular NFT, an NFT collection, or all NFTs for a chain, use the [NFT Activity webhooks](/reference/nft-activity-webhook)!
+* For all other use cases, we recommend leveraging our [Custom webhooks](/reference/custom-webhook)!
 
-<CodeGroup>
-  ```shell v1
-  {
-    "app": "Demo", 
-    "network": "MAINNET",
-    "webhookType": "MINED_TRANSACTION",
-    "timestamp": "2020-07-29T00:29:18.414Z",
-    "event name": OBJECT
-  }
-  ```
-</CodeGroup>
-
-# How to set-up webhooks
-
-Setting up a webhook is as simple as adding a new URL to your application.
-
-<Warning>
-  If you need to add over 10 addresses to the address activity webhook, we recommend adding them through an API call.
-</Warning>
-
-## Set-up webhooks in your dashboard
-
-1. Navigate to the Webhooks tab in your [Alchemy Dashboard](https://dashboard.alchemyapi.io/notify).
-2. Determine which [type of webhook](/reference/notify-api-quickstart#types-of-webhooks) you want to activate.
-3. Click the **Create Webhook** button.
-4. Select the app to add the webhook notifications.
-5. Add in your unique webhook URL. This is the link to receive requests (**Please note that localhost domains are not allowed as webhook URLs**). The webhook payload might not always be compatible for 3rd party integrations.
-6. Test your webhook by clicking the **Test Webhook** button.
-7. Click **Create Webhook** and your webhook appears in the list.
-8. Check your endpoint to see responses.
-
-## Set-up webhooks programmatically
-
-Use the `create-webhook` endpoint: [https://docs.alchemy.com/reference/create-webhook](/reference/create-webhook).
-
-## Webhook IP addresses
-
-As an added security measure, you can ensure your webhook notification originates from Alchemy by using one of the following IP addresses:
-
-* `54.236.136.17`
-* `34.237.24.169`
-
-# Create webhook listeners
+## Create a webhook listener
 
 Webhook listeners receive requests and process event data.
 
-The listener responds to the Alchemy server with a `200` status code once you've successfully received the webhook event. Your webhook listener can be a simple server or Slack integration to receive the webhook listener data.
+The listener responds to the Alchemy server with a `200` status code once it successfully receives the webhook event. Your webhook listener can be a simple server or Slack integration to receive the webhook listener data.
 
 After setting up the webhooks in your Alchemy dashboard (or programmatically) use the starter code in JavaScript, Python, Go, and Rust below. Here's the [GitHub repository](https://github.com/alchemyplatform/webhook-examples) for the entire code.
 
@@ -447,33 +406,36 @@ After setting up the webhooks in your Alchemy dashboard (or programmatically) us
   ```
 </CodeGroup>
 
-# Test webhooks with Ngrok
+## Create and test your webhooks
 
-1. Sign-up for a [free Ngrok account](https://dashboard.ngrok.com/signup).
-2. Install Ngrok using [the Ngrok guide](https://dashboard.ngrok.com/get-started/setup). On macOS run `brew install ngrok`.
-3. Connect your Ngrok account by running `ngrok authtoken YOUR_AUTH_TOKEN`.
-4. Start your local forwarding tunnel: `ngrok http 80`.
+1. Navigate to the [webhooks dashboard](https://dashboard.alchemy.com/webhooks) and click **Create Webhook** OR create one by calling the [createWebhook](/data/webhooks/custom-webhook-api-methods/custom-webhook-api-methods/notify-api-methods/create-webhook) endpoint. When it asks for your Webhook URL, enter your endpoint or follow these steps to create an NGROK endpoint:
+   * Sign-up for a [free Ngrok account](https://dashboard.ngrok.com/signup).
+   * Install Ngrok using [the Ngrok guide](https://dashboard.ngrok.com/get-started/setup). On macOS run `brew install ngrok`.
+   * Connect your Ngrok account by running `ngrok authtoken YOUR_AUTH_TOKEN`.
+   * Start your local forwarding tunnel: `ngrok http 80`.
+     ![](49a5266-Screen_Shot_2022-03-01_at_1.33.31_PM.png "Screen Shot 2022-03-01 at 1.33.31 PM.png")
 
-![](49a5266-Screen_Shot_2022-03-01_at_1.33.31_PM.png "Screen Shot 2022-03-01 at 1.33.31 PM.png")
+2. Once you have a URL to test your webhook (in this case `https://461a-199-116-73-171.ngrok.io` pictured above), paste your NGROK endpoint into the Webhook URL field and hit “Test Webhook”, and see the event appear here: http://localhost:4040/inspect/http
 
-Once you have a URL to test your webhook (in this case `https://461a-199-116-73-171.ngrok.io` pictured above), follow the steps below:
+3. Navigate to your [webhooks dashboard](https://dashboard.alchemy.com/webhooks).
 
-1. Navigate to your [Webhooks dashboard](https://dashboard.alchemy.com/webhooks).
-2. Click **Create Webhook** on the webhook you want to test.
-3. Paste **your unique URL** and hit the **Test Webhook** button.
-4. You'll see the webhooks here: `http://localhost:4040/inspect/http`.
+4. Click **Create Webhook** on the webhook you want to test.
 
-# Webhook signature & security
+5. Paste **your unique URL** and hit the **Test Webhook** button.
+
+6. You'll see the webhooks here: `http://localhost:4040/inspect/http`.
+
+# Webhook Signature & Security
+
+## Signatures
 
 To make your webhooks secure, you can verify that they originated from Alchemy by generating a HMAC SHA-256 hash code using your unique webhook signing key.
 
-## Find your signing key
+### Find your signing key
 
-Navigate to the [Webhooks page](https://dashboard.alchemyapi.io/notify) in your dashboard. Next, click on the three dots of the webhook you want to get the signature for and copy the Signing Key.
+To find your signing key, navigate to the [webhooks dashboard](https://dashboard.alchemy.com/webhooks), select your webhook, and copy the singing key from the top right of that webhook's detail page.
 
-![](4138e14-Screen_Shot_2021-12-13_at_10.41.56_AM.png "Screen Shot 2021-12-13 at 10.41.56 AM.png")
-
-## Validate the signature received
+### Validate the signature received
 
 Every outbound request contains a hashed authentication signature in the header. It's computed by concatenating your signing key and request body. Then generates a hash using the HMAC SHA256 hash algorithm.
 
@@ -550,16 +512,19 @@ To verify the signature came from Alchemy, you generate the HMAC SHA256 hash and
   ```
 </CodeGroup>
 
-# Webhook Retry Logic
+## Auth Token
 
-Alchemy Webhooks have built-in retry-logic for non-200 response codes in failures to reach your server.
+The Auth Token, located at the top of you [webhooks dashboard](https://dashboard.alchemy.com/webhooks), is required to let you manage your webhooks via our webhooks API!
 
-Requests are retried up to 3 times before failing. Below are the request retry intervals.
+## Webhooks IP addresses
 
-* 15 seconds
-* 1 minute
-* 10 minutes
+As an added security measure, you can ensure your webhook notification originates from Alchemy by using one of the following IP addresses:
 
-# Reliability and Guarantees
+* `54.236.136.17`
+* `34.237.24.169`
 
-* Best-effort FIFO for first-time delivery- All first-time webhooks notifications, regardless of the selected chain/network and its speed, will be delivered in order to users
+# Webhook Delivery Behavior
+
+* **Event Ordering** - All first-time webhooks notifications, regardless of the selected chain/network and its speed, will be delivered in order to users.
+* **Automatic Retries** -  Webhooks have built-in retry-logic with exponential backoff for non-200 response codes in failures to reach your server. For Free and PAYG tier teams, these will fire with back off up to 10 minutes after. For Enterprise customers, this back off period will extend to 1 hour.
+* **Manual Retries (Coming Soon)** - Soon you’ll have the ability to manually trigger retries for failed events!
