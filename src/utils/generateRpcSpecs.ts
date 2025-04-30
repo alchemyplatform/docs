@@ -33,6 +33,19 @@ export const generateChainRpcSpec = async (
   const doc: OpenrpcDocument = {
     "x-generated-warning":
       "⚠️ This file is auto-generated. Do not edit manually",
+    "x-fern-parameters": [
+      {
+        name: "apiKey",
+        in: "path",
+        schema: {
+          type: "string",
+          default: "docs-demo",
+          description:
+            "For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)",
+        },
+        required: true,
+      },
+    ],
     $schema: "https://meta.open-rpc.org/",
     openrpc: "1.2.4",
     ...base,
@@ -69,6 +82,19 @@ export const generateAlchemyRpcSpec = async (
   const doc: OpenrpcDocument = {
     "x-generated-warning":
       "⚠️ This file is auto-generated. Do not edit manually",
+    "x-fern-parameters": [
+      {
+        name: "apiKey",
+        in: "path",
+        schema: {
+          type: "string",
+          default: "docs-demo",
+          description:
+            "For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)",
+        },
+        required: true,
+      },
+    ],
     $schema: "https://meta.open-rpc.org/",
     openrpc: "1.2.4",
     ...base,
