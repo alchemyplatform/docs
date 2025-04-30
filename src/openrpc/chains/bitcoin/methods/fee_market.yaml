@@ -1,0 +1,37 @@
+- name: estimatesmartfee
+  summary: Estimate smart fee for confirmation within target blocks
+  description: >
+    Estimates the approximate fee per kilobyte required for a transaction to begin confirmation
+    within `conf_target` blocks. Uses BIP 141 virtual transaction size.
+  params:
+    - name: conf_target
+      required: true
+      description: Number of blocks within which confirmation is targeted.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1008
+        example: 6
+    - name: estimate_mode
+      required: false
+      description: >
+        Fee estimate mode. Options are "UNSET", "ECONOMICAL", or "CONSERVATIVE".
+      schema:
+        type: string
+        enum: ["UNSET", "ECONOMICAL", "CONSERVATIVE"]
+        example: "CONSERVATIVE"
+  result:
+    name: result
+    description: Estimated fee rate and corresponding target blocks.
+    schema:
+      type: object
+      properties:
+        feerate:
+          type: number
+          format: double
+          description: Estimated fee rate in BTC per KB.
+          example: 0.00021051
+        blocks:
+          type: integer
+          description: The actual confirmation target (may differ if estimate unavailable).
+          example: 6

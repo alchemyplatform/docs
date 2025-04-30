@@ -1,0 +1,328 @@
+- name: getrawtransaction
+  summary: Retrieve raw transaction data by txid
+  description: >
+    Returns the raw transaction representation for a given transaction ID (`txid`). 
+    If `verbose` is true, returns a JSON object with detailed information; 
+    otherwise, returns a serialized hex-encoded string.
+  params:
+    - name: txid
+      required: true
+      description: The transaction ID to fetch.
+      schema:
+        $ref: "#/components/schemas/BTC_TX_ID"
+    - name: verbose
+      required: false
+      description: Return verbose JSON or just the raw hex string.
+      schema:
+        type: boolean
+        default: false
+        example: true
+    - name: blockhash
+      required: false
+      description: The block in which to look for the transaction (if not in the mempool).
+      schema:
+        $ref: "#/components/schemas/BTC_BLOCK_HASH"
+  result:
+    name: result
+    description: Raw transaction data.
+    schema:
+      oneOf:
+        - type: string
+          description: Raw transaction as hex string.
+          example: "0200000000010142d6bd07c424e975fe821c978e720f9a55f9981d62c290cea5ccd06b455d79b90000000000fdffffff028096980000000000160014d3620fe180a0beb8fcc9682fe92e5a25f0feccd370cd2f0100000000160014076d998f6b12c3d1da6217d967154f42a5e0afd30247304402204549b10ea1698d4b4605be1d3bfff810f6135395386207664a66f5bb8bd1470902205fb86c95bfbe7b502195ffa65276d292fb074fe18ba171ef0a35395211384091012103cb5de30b343b35cc09b50f064eb289dd3e252f6985fc4309fba795cc950316afcfa50d00"
+        - type: object
+          properties:
+            txid:
+              $ref: "#/components/schemas/BTC_TX_ID"
+            hash:
+              $ref: "#/components/schemas/BTC_BLOCK_HASH"
+            size:
+              type: integer
+              example: 102076
+            vsize:
+              type: integer
+              example: 54421
+            weight:
+              type: integer
+              example: 217681
+            locktime:
+              type: integer
+              example: 0
+            blockhash:
+              $ref: "#/components/schemas/BTC_BLOCK_HASH"
+            confirmations:
+              type: integer
+              example: 100
+            time:
+              type: integer
+              example: 1681218131
+            blocktime:
+              type: integer
+              example: 1681218131
+
+- name: gettxout
+  summary: Get details about an unspent transaction output
+  description: >
+    Returns details about an unspent transaction output (UTXO), optionally including mempool data.
+  params:
+    - name: txid
+      required: true
+      description: The transaction ID.
+      schema:
+        $ref: "#/components/schemas/BTC_TX_ID"
+    - name: n
+      required: true
+      description: The vout number.
+      schema:
+        type: integer
+        example: 1
+    - name: include_mempool
+      required: false
+      description: >
+        Whether to include outputs spent in the mempool. Default is true.
+      schema:
+        type: boolean
+        default: true
+        example: true
+  result:
+    name: result
+    description: Details about the specified unspent output, or null if not found.
+    schema:
+      type: object
+      nullable: true
+      properties:
+        bestblock:
+          $ref: "#/components/schemas/BTC_BLOCK_HASH"
+        confirmations:
+          type: integer
+          description: Number of confirmations for the transaction.
+          example: 3
+        value:
+          type: number
+          format: float
+          description: The amount in BTC.
+          example: 0.015
+        scriptPubKey:
+          type: object
+          description: The public key script info.
+          properties:
+            asm:
+              type: string
+              example: "OP_DUP OP_HASH160 89abcdefabbaabbaabbaabbaabbaabbaabbaabba OP_EQUALVERIFY OP_CHECKSIG"
+            hex:
+              type: string
+              example: "76a91489abcdefabbaabbaabbaabbaabbaabbaabbaabba88ac"
+            reqSigs:
+              type: integer
+              example: 1
+            type:
+              type: string
+              example: "pubkeyhash"
+            addresses:
+              type: array
+              items:
+                type: string
+              example:
+                - "bc1qexampleaddresshere"
+        coinbase:
+          type: boolean
+          description: True if the output is from a coinbase transaction.
+          example: false
+
+- name: gettxoutproof
+  summary: Get a proof that one or more transactions are included in a block
+  description: >
+    Returns a hex-encoded proof that the specified transaction(s) were included in a block.
+    This proof can be used to verify the inclusion of transactions without relying on a full node.
+  params:
+    - name: txids
+      required: true
+      description: An array of transaction IDs to generate proof for.
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/BTC_TX_ID"
+        example:
+          - "ee652f0b40209bd02468de0c6336854f5efdd79fb865560aef2c46f4fa0b4a07"
+          - "cee11bc3bb3d9db8c4813ed2072a14369a15fcfb9e6bc5cb37a0b5bcc6aa59aa"
+    - name: blockhash
+      required: false
+      description: The block in which to search for the txid(s). If omitted, the node will try to locate it.
+      schema:
+        $ref: "#/components/schemas/BTC_BLOCK_HASH"
+  result:
+    name: result
+    description: A hex-encoded proof that the specified transactions are part of a block.
+    schema:
+      type: string
+      example: "00000020f2...<proof-hex>..."
+
+- name: decoderawtransaction
+  summary: Decode a raw transaction hex string
+  description: >
+    Decodes a serialized, hex-encoded Bitcoin transaction. Returns detailed information about inputs, outputs, size, witness data, etc.
+  params:
+    - name: hexstring
+      required: true
+      description: The transaction hex string to decode.
+      schema:
+        $ref: "#/components/schemas/BTC_TX_HEX"
+    - name: iswitness
+      required: false
+      description: >
+        Indicates whether the transaction includes witness data. If omitted, heuristic decoding is applied.
+      schema:
+        type: boolean
+        example: true
+  result:
+    name: result
+    description: A JSON object representing the decoded transaction.
+    schema:
+      type: object
+      properties:
+        txid:
+          $ref: "#/components/schemas/BTC_TX_ID"
+        hash:
+          type: string
+          description: The transaction hash (differs from txid for witness transactions).
+          $ref: "#/components/schemas/BTC_BLOCK_HASH"
+        size:
+          type: integer
+          example: 107
+        vsize:
+          type: integer
+          example: 107
+        weight:
+          type: integer
+          example: 428
+        version:
+          type: integer
+          example: 2
+        locktime:
+          type: integer
+          example: 0
+        vin:
+          type: array
+          items:
+            type: object
+            properties:
+              txid:
+                $ref: "#/components/schemas/BTC_TX_ID"
+              vout:
+                type: integer
+                example: 0
+              scriptSig:
+                type: object
+                properties:
+                  asm:
+                    type: string
+                    example: ""
+                  hex:
+                    type: string
+                    example: ""
+              txinwitness:
+                type: array
+                items:
+                  type: string
+              sequence:
+                type: integer
+                example: 4294967295
+        vout:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: number
+                format: double
+                example: 0
+              n:
+                type: integer
+                example: 0
+              scriptPubKey:
+                type: object
+                properties:
+                  asm:
+                    type: string
+                    example: "OP_RETURN 00010203"
+                  desc:
+                    type: string
+                    example: "raw(6a0400010203)"
+                  hex:
+                    type: string
+                    example: "6a0400010203"
+                  type:
+                    type: string
+                    example: "nulldata"
+
+- name: decodescript
+  summary: Decode a hex-encoded script
+  description: >
+    Decodes a hex-encoded script and provides detailed information about it.
+  params:
+    - name: hexstring
+      required: true
+      description: The hex-encoded script.
+      schema:
+        type: string
+        $ref: "#/components/schemas/BTC_SCRIPT_HEX"
+  result:
+    name: result
+    description: Decoded script information.
+    schema:
+      type: object
+      properties:
+        asm:
+          type: string
+          description: The script public key in the form of a string.
+          example: "0 0x01 0x01 0x02 0x93"
+        type:
+          type: string
+          description: Output type (e.g., nonstandard, pubkeyhash, scripthash, etc.).
+          example: "nonstandard"
+        reqSigs:
+          type: integer
+          description: Number of required signatures.
+          example: 1
+        addresses:
+          type: array
+          description: A list of Bitcoin addresses used in the transaction.
+          items:
+            type: string
+          example:
+            - "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080"
+        p2sh:
+          type: string
+          description: Address of the P2SH script wrapping this redeem script.
+          example: "3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou"
+        segwit:
+          type: object
+          description: Result of a witness script public key wrapping this redeem script.
+          properties:
+            asm:
+              type: string
+              description: The script public key in the form of string.
+              example: "0 751e76e8199196d454941c45d1b3a323f1433bd6"
+            hex:
+              type: string
+              description: The hex of the script's public key.
+              example: "0014751e76e8199196d454941c45d1b3a323f1433bd6"
+            type:
+              type: string
+              description: Type of the script public key.
+              example: "witness_v0_keyhash"
+            reqSigs:
+              type: integer
+              description: Required signatures.
+              example: 1
+            addresses:
+              type: array
+              description: List of Bitcoin addresses.
+              items:
+                type: string
+              example:
+                - "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080"
+            p2sh-segwit:
+              type: string
+              description: Address of the P2SH script wrapping this witness redeem script.
+              example: "3NukJ6fYZJ5Kk8bPjycAnruZkE5Q7UW7i8"

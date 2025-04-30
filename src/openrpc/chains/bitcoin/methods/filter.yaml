@@ -1,0 +1,387 @@
+- name: getindexinfo
+  summary: Get information about one or all available indices
+  description: >
+    Returns the state of one or all available indices currently running. 
+    You can optionally filter the results by a specific index name.
+  params:
+    - name: index_name
+      required: false
+      description: >
+        Filter results for an index with a specific name.
+      schema:
+        type: string
+        example: "txindex"
+  result:
+    name: result
+    description: A mapping of index names to their respective info.
+    schema:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          txindex:
+            type: string
+            description: The index name.
+            example: "txindex"
+          synced:
+            type: boolean
+            description: Whether the index is fully synced.
+            example: true
+          best_block_height:
+            type: integer
+            description: The block height to which the index is synced.
+            example: 830289
+
+- name: getmempoolancestors
+  summary: Get mempool ancestors of a transaction
+  description: >
+    Returns the in-mempool ancestors of a given transaction.
+  params:
+    - name: txid
+      required: true
+      description: The transaction ID whose ancestors to retrieve.
+      schema:
+        $ref: "#/components/schemas/BTC_TX_ID"
+    - name: verbose
+      required: false
+      description: Whether to return detailed info (true) or just txids (false).
+      schema:
+        type: boolean
+        default: false
+  result:
+    name: result
+    description: The mempool ancestors of the specified transaction.
+    schema:
+      oneOf:
+        - type: array
+          description: A list of ancestor transaction IDs.
+          items:
+            $ref: "#/components/schemas/BTC_TX_ID"
+          example:
+            - "b86ae732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b795"
+            - "d97af732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b796"
+        - type: object
+          additionalProperties:
+            type: object
+            properties:
+              size:
+                type: integer
+                example: 237
+              fee:
+                type: number
+                example: 0.00001000
+              modifiedfee:
+                type: number
+                example: 0.00001100
+              time:
+                type: integer
+                example: 1714400000
+              descendantcount:
+                type: integer
+                example: 2
+              ancestorcount:
+                type: integer
+                example: 3
+              depends:
+                type: array
+                items:
+                  type: string
+                example:
+                  [
+                    "6f8c6e8d3021d8a1db71eae3cb8db00f1c99d0f94f3b5782e6cfc155b55f3c55",
+                    "a4d47b8bdee5f5b8c098c9ac9aa4e3ec113d9f305a4f723d617a92439ab244cb",
+                  ]
+              spentby:
+                type: array
+                items:
+                  type: string
+                example:
+                  [
+                    "fe5289e5f1f32f2a45c85b2e351c5edebf7f76aa86e31bb8a2983d4f8d95a63a",
+                  ]
+
+- name: getmempooldescendants
+  summary: Get mempool descendants of a transaction
+  description: >
+    Returns the in-mempool descendants of a given transaction.
+  params:
+    - name: txid
+      required: true
+      description: The transaction ID whose descendants to retrieve.
+      schema:
+        $ref: "#/components/schemas/BTC_TX_ID"
+    - name: verbose
+      required: false
+      description: Whether to return detailed info (true) or just txids (false).
+      schema:
+        type: boolean
+        default: false
+  result:
+    name: result
+    description: The mempool descendants of the specified transaction.
+    schema:
+      oneOf:
+        - type: array
+          description: A list of descendant transaction IDs.
+          items:
+            $ref: "#/components/schemas/BTC_TX_ID"
+          example:
+            - "c3b9f342fc90837fd4a22878b59fdf5cdeae1b4e4586224b0df1b3a2e3e6e9c8"
+            - "a2e34d98cb7e98b8d85d3a991c8d1cbd3e7a3f17b4acdf4768c88fa3e0e9d8bc"
+        - type: object
+          additionalProperties:
+            type: object
+            properties:
+              size:
+                type: integer
+                example: 192
+              fee:
+                type: number
+                example: 0.00001200
+              modifiedfee:
+                type: number
+                example: 0.00001300
+              time:
+                type: integer
+                example: 1714400500
+              descendantcount:
+                type: integer
+                example: 1
+              ancestorcount:
+                type: integer
+                example: 1
+              depends:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BTC_TX_ID"
+                example:
+                  - "fe84b3e08b3f434a8d36b37c4b5a2dcd73f8e95c9b5b7ed46cc6ef3d3c5b2cdd"
+              spentby:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BTC_TX_ID"
+                example: []
+
+- name: getrawmempool
+  summary: Get raw mempool transaction data
+  description: >
+    Returns either a list of transaction IDs currently in the mempool or detailed metadata
+    for each transaction, depending on the verbosity level.
+  params:
+    - name: verbose
+      required: false
+      description: >
+        If true, returns detailed info per transaction. If false, returns a list of txids.
+      schema:
+        type: boolean
+        default: false
+        example: false
+    - name: mempool_sequence
+      required: false
+      description: >
+        When verbose is false, includes mempool sequence number in the response.
+      schema:
+        type: boolean
+        default: false
+        example: true
+  result:
+    name: result
+    description: Mempool data depending on verbosity level.
+    schema:
+      oneOf:
+        - type: object
+          required:
+            - txids
+            - mempool_sequence
+          properties:
+            txids:
+              type: array
+              description: List of transaction IDs in the mempool.
+              items:
+                $ref: "#/components/schemas/BTC_TX_ID"
+              example:
+                - "b86ae732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b795"
+                - "d97af732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b796"
+            mempool_sequence:
+              type: integer
+              description: The mempool sequence number.
+              example: 43210
+        - type: object
+          description: Map of txid to transaction metadata when verbose is true.
+          additionalProperties:
+            type: object
+            properties:
+              vsize:
+                type: integer
+                description: Virtual transaction size (vbytes).
+                example: 234
+              weight:
+                type: integer
+                description: Transaction weight as defined in BIP 141.
+                example: 936
+              time:
+                type: integer
+                description: UNIX timestamp when transaction entered mempool.
+                example: 1714400000
+              height:
+                type: integer
+                description: Block height when the transaction entered mempool.
+                example: 840000
+              descendantcount:
+                type: integer
+                example: 2
+              descendantsize:
+                type: integer
+                example: 480
+              ancestorcount:
+                type: integer
+                example: 1
+              ancestorsize:
+                type: integer
+                example: 234
+              wtxid:
+                $ref: "#/components/schemas/BTC_TX_ID"
+              fees:
+                type: object
+                properties:
+                  base:
+                    type: number
+                    example: 0.0001
+                  modified:
+                    type: number
+                    example: 0.0001
+                  ancestor:
+                    type: number
+                    example: 0.0001
+                  descendant:
+                    type: number
+                    example: 0.0002
+              depends:
+                type: array
+                items:
+                  type: string
+                example: []
+              spentby:
+                type: array
+                items:
+                  type: string
+                example: []
+              bip125-replaceable:
+                type: boolean
+                example: true
+              unbroadcast:
+                type: boolean
+                example: false
+
+- name: getmempoolinfo
+  summary: Retrieve information about the mempool state
+  description: >
+    Provides information about the TX memory pool's current state, including memory usage, transaction count,
+    and relay fee settings.
+  params: []
+  result:
+    name: result
+    description: Mempool state information.
+    schema:
+      type: object
+      required:
+        - loaded
+        - size
+        - bytes
+        - usage
+        - total_fee
+        - maxmempool
+        - mempoolminfee
+        - minrelaytxfee
+        - incrementalrelayfee
+        - unbroadcastcount
+        - fullrbf
+      properties:
+        loaded:
+          type: boolean
+          description: Whether the mempool is fully loaded.
+          example: true
+        size:
+          type: integer
+          description: Number of transactions in the mempool.
+          example: 52173
+        bytes:
+          type: integer
+          description: Total size of mempool in bytes.
+          example: 93871836
+        usage:
+          type: integer
+          description: Total dynamic memory usage for the mempool (in bytes).
+          example: 288621536
+        total_fee:
+          type: number
+          format: double
+          description: Total fees of all transactions in the mempool in BTC.
+          example: 7.90326757
+        maxmempool:
+          type: integer
+          description: Maximum allowed memory usage for the mempool in bytes.
+          example: 300000000
+        mempoolminfee:
+          type: number
+          format: double
+          description: Minimum fee rate for transactions to be accepted into the mempool (in BTC/kvB).
+          example: 0.00001773
+        minrelaytxfee:
+          type: number
+          format: double
+          description: Minimum fee rate for relaying transactions (in BTC/kvB).
+          example: 0.00001000
+        incrementalrelayfee:
+          type: number
+          format: double
+          description: Incremental relay fee rate used for BIP 125 replacement (in BTC/kvB).
+          example: 0.00001000
+        unbroadcastcount:
+          type: integer
+          description: Number of transactions waiting for initial broadcast acknowledgement.
+          example: 0
+        fullrbf:
+          type: boolean
+          description: Whether full Replace-by-Fee is enabled.
+          example: false
+
+- name: testmempoolaccept
+  summary: Test if raw transactions would be accepted by the mempool
+  description: >
+    Indicates whether one or more raw transactions (serialized, hex-encoded) would be accepted by the mempool.
+  params:
+    - name: rawtxs
+      required: true
+      description: >
+        An array of hex-encoded raw transactions to test for mempool acceptance.
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/BTC_TX_HEX"
+    - name: maxfeerate
+      required: false
+      description: >
+        Reject transactions whose fee rate is higher than the specified value, expressed in BTC/kB.
+      schema:
+        type: number
+        example: 0
+  result:
+    name: result
+    description: Result of the mempool acceptance test for each transaction.
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          txid:
+            $ref: "#/components/schemas/BTC_TX_ID"
+          allowed:
+            type: boolean
+            description: Whether the transaction would be accepted to the mempool.
+            example: false
+          reject-reason:
+            type: string
+            description: Reason for rejection if not allowed.
+            nullable: true
+            example: "txn-mempool-conflict"

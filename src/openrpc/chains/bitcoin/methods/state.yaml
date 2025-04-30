@@ -1,0 +1,54 @@
+- name: gettxoutsetinfo
+  summary: Get statistics about the current UTXO set
+  description: >
+    Returns statistics about the unspent transaction output (UTXO) set.
+    Only the current chain tip is supported; querying specific blocks is not available.
+  params:
+    - name: use_index
+      required: false
+      description: >
+        Whether to use `coinstatsindex` if available. Defaults to true.
+      schema:
+        type: boolean
+        example: true
+  result:
+    name: result
+    description: Statistics on the current state of the UTXO set.
+    schema:
+      type: object
+      properties:
+        height:
+          type: integer
+          description: The current block height.
+          example: 840000
+        bestblock:
+          $ref: "#/components/schemas/BTC_BLOCK_HASH"
+        txouts:
+          type: integer
+          description: Total number of unspent outputs.
+          example: 85000000
+        bogosize:
+          type: integer
+          description: A meaningless metric used for comparison purposes.
+          example: 630000000
+        hash_serialized_3:
+          type: string
+          description: The serialized hash of the UTXO set.
+          example: "ecf93f60c3e1c3d7e765b9206be60453a21650f0a3abfef87c30d972d03c434b"
+        muhash:
+          type: string
+          description: A MuHash of the UTXO set, used for integrity checks.
+          example: "cc4c74e5d7bba2f98ef8bf3aaa0f6521e8d833f26084e604206b65e7d7f3f9ec"
+        total_amount:
+          type: number
+          format: double
+          description: Total amount in BTC of all UTXOs.
+          example: 19000000.12345678
+        transactions:
+          type: integer
+          description: Number of transactions with unspent outputs.
+          example: 62000000
+        disk_size:
+          type: integer
+          description: Estimated size of the UTXO set on disk, in bytes.
+          example: 50331648

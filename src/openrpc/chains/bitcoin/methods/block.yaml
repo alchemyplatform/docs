@@ -1,0 +1,165 @@
+- name: getblock
+  summary: Get block details by block hash
+  description: >
+    Returns information about a block, based on the provided block hash.
+  params:
+    - name: blockhash
+      required: true
+      description: The hash of the block to retrieve.
+      schema:
+        $ref: "#/components/schemas/BTC_BLOCK_HASH"
+    - name: verbosity
+      required: false
+      description: >
+        Level of detail to return. 
+        - 0: hex-encoded string,
+        - 1: basic block info,
+        - 2: with transactions,
+        - 3: with transactions + input prevouts.
+      schema:
+        type: integer
+        default: 1
+        enum: [0, 1, 2, 3]
+  result:
+    name: result
+    description: The block object or hex string, depending on verbosity.
+    schema:
+      $ref: "#/components/schemas/BTC_BLOCK"
+
+- name: getblockhash
+  summary: Get block hash by block height
+  description: >
+    Returns the hash of the block at a given height (index) in the active Bitcoin blockchain.
+  params:
+    - name: height
+      required: true
+      description: The height of the block to retrieve the hash for.
+      schema:
+        $ref: "#/components/schemas/BTC_BLOCK_HEIGHT"
+  result:
+    name: result
+    description: The hash of the block at the specified height.
+    schema:
+      $ref: "#/components/schemas/BTC_BLOCK_HASH"
+
+- name: getblockheader
+  summary: Get block header by block hash
+  description: >
+    Returns the block header for the specified block hash.
+  params:
+    - name: blockhash
+      required: true
+      description: The block hash to retrieve the header for.
+      schema:
+        $ref: "#/components/schemas/BTC_BLOCK_HASH"
+    - name: verbose
+      required: false
+      description: >
+        Whether to return a JSON object (true) or raw hex-encoded string (false). Default is true.
+      schema:
+        type: boolean
+        default: true
+  result:
+    name: result
+    description: The block header as an object or hex string depending on verbose.
+    schema:
+      oneOf:
+        - $ref: "#/components/schemas/BTC_BLOCK_HEADER"
+        - type: string
+          description: Hex-encoded block header
+
+- name: getblockcount
+  summary: Get the current block count
+  description: >
+    Returns the number of blocks in the longest fully validated blockchain.
+  params: []
+  result:
+    name: result
+    description: The number of blocks in the current best blockchain.
+    schema:
+      $ref: "#/components/schemas/BTC_BLOCK_HEIGHT"
+
+- name: getbestblockhash
+  summary: Get the best (tip) block hash of the longest valid chain
+  description: >
+    Returns the hash of the most-work fully-validated tip block in the active Bitcoin blockchain.
+  params: []
+  result:
+    name: result
+    description: The hash of the best block in the longest chain.
+    schema:
+      $ref: "#/components/schemas/BTC_BLOCK_HASH"
+
+- name: getblockstats
+  summary: Get per-block statistics
+  description: >
+    Calculates various statistics for a given block by hash or height.
+  params:
+    - name: hash_or_height
+      required: true
+      description: The block hash (string) or height (integer) of the target block.
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/BTC_BLOCK_HASH"
+          - $ref: "#/components/schemas/BTC_BLOCK_HEIGHT"
+    - name: stats
+      required: false
+      description: >
+        Optional list of specific stats to retrieve. If empty or omitted, returns all stats.
+      schema:
+        type: array
+        items:
+          type: string
+  result:
+    name: result
+    description: A set of statistical metrics for the specified block.
+    schema:
+      $ref: "#/components/schemas/BTC_BLOCK_STATS"
+
+- name: getdifficulty
+  summary: Get the current proof-of-work difficulty
+  description: >
+    Returns the proof-of-work difficulty as a multiple of the minimum difficulty.
+  params: []
+  result:
+    name: result
+    description: The difficulty of the current best block as a floating-point number.
+    schema:
+      $ref: "#/components/schemas/BTC_DIFFICULTY"
+
+- name: getchaintips
+  summary: Get information about all known tips in the block tree
+  description: >
+    Returns information about all known tips in the block tree, including the active chain tip and orphaned branches.
+  params: []
+  result:
+    name: result
+    description: An array of chain tip information objects.
+    schema:
+      type: array
+      items:
+        $ref: "#/components/schemas/BTC_CHAIN_TIP"
+
+- name: getchaintxstats
+  summary: Get chain transaction statistics
+  description: >
+    Calculates statistics about the overall transaction rate and volume of the blockchain over a window of blocks.
+  params:
+    - name: nblocks
+      required: false
+      description: The size of the window in number of blocks. Defaults to approximately one month.
+      schema:
+        type: integer
+        example: 2016
+    - name: blockhash
+      required: false
+      description: The block hash at which the window ends. Defaults to chain tip.
+      schema:
+        type: string
+        pattern: "^[a-fA-F0-9]{64}$"
+        example: "000000000000000000035c8582f22752a268f5695379597ce9405e10c4051be6"
+  result:
+    name: result
+    description: The calculated chain transaction statistics.
+    schema:
+      $ref: "#/components/schemas/BTC_CHAIN_TX_STATS"

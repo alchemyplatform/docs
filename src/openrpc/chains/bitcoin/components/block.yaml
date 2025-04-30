@@ -1,0 +1,378 @@
+BTC_BLOCK_HEIGHT:
+  title: Block Height
+  type: integer
+  minimum: 0
+  description: The block height (index) used to fetch the block hash.
+  example: 23465
+
+BTC_BLOCK_HASH:
+  title: Bitcoin Block Hash
+  type: string
+  pattern: "^[a-fA-F0-9]{64}$"
+  description: A 64-character hex string representing the block hash.
+  example: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+
+BTC_BLOCK:
+  title: Bitcoin Block
+  type: object
+  required:
+    - hash
+    - confirmations
+    - height
+    - version
+    - merkleroot
+    - time
+    - tx
+  properties:
+    hash:
+      type: string
+      description: The block hash.
+      example: "00000000000000000001135510bc76c371b4b425c9c69e5c2f474e96c51bedc6"
+    confirmations:
+      type: integer
+      description: Number of confirmations or -1 if block not on main chain.
+      example: 134
+    size:
+      type: integer
+      description: Block size in bytes.
+      example: 1234567
+    strippedsize:
+      type: integer
+      description: Block size excluding witness data.
+      example: 900000
+    weight:
+      type: integer
+      description: Block weight as defined in BIP 141.
+      example: 399936
+    height:
+      type: integer
+      description: Block height or index.
+      example: 812345
+    version:
+      type: integer
+      description: Block version.
+      example: 543210
+    versionHex:
+      type: string
+      description: Block version in hex.
+      example: "20000000"
+    merkleroot:
+      type: string
+      description: Merkle root.
+      example: "4d44f3c6209fa0c44f67a8e9f867e0d6a5e1d79ad0ec10a2d258c31753d0512e"
+    time:
+      type: integer
+      description: Block time in UNIX timestamp.
+      example: 1700000000
+    mediantime:
+      type: integer
+      description: Median block time.
+      example: 1699995000
+    nonce:
+      type: integer
+      description: Nonce used for mining.
+      example: 1234567890
+    bits:
+      type: string
+      description: nBits field of block header.
+      example: "170d5c6f"
+    difficulty:
+      type: number
+      format: double
+      description: Difficulty at the time of mining.
+      example: 3421101832.109
+    chainwork:
+      type: string
+      description: Expected number of hashes to produce the chain.
+      example: "000000000000000000000000000000000000000000f8f8f8f8f8f8f8f8f8f8f8"
+    nTx:
+      type: integer
+      description: Number of transactions in the block.
+      example: 2456
+    previousblockhash:
+      type: string
+      description: Hash of the previous block.
+      example: "00000000000000000001135510bc76c371b4b425c9c69e5c2f474e96c51bedc6"
+    nextblockhash:
+      type: string
+      description: Hash of the next block.
+      example: "000000000000000000006058431de7ad87def03c28228bb5742b343dc223e399"
+    tx:
+      type: array
+      description: List of transaction IDs included in the block.
+      items:
+        type: string
+        description: Transaction ID
+        example: "c86b4846175942038cc9da086e506aa8a441beada92f1678fb1fe35d640366db"
+
+BTC_BLOCK_HEADER:
+  title: Block Header (Verbose = true)
+  type: object
+  required:
+    - hash
+    - confirmations
+    - height
+    - version
+    - versionHex
+    - merkleroot
+    - time
+    - mediantime
+    - nonce
+    - bits
+    - difficulty
+    - chainwork
+    - nTx
+    - previousblockhash
+    - nextblockhash
+  properties:
+    hash:
+      type: string
+      description: Hash of the block.
+      example: "000000000000000000013f2851d71e6ea8dfcc9151654ca4cbbbfd759122589f"
+    confirmations:
+      type: integer
+      description: Number of confirmations, or -1 if not on main chain.
+      example: 45595
+    height:
+      type: integer
+      description: Block height or index.
+      example: 784665
+    version:
+      type: integer
+      description: Block version.
+      example: 683581440
+    versionHex:
+      type: string
+      description: Block version in hex.
+      example: "28bea000"
+    merkleroot:
+      type: string
+      description: Merkle root of the block.
+      example: "d8f4f9edd1c0a37a705289b7202a3d3b67ef46a20f88c27c88fe757aa87f17c5"
+    time:
+      type: integer
+      description: Block time (UNIX timestamp).
+      example: 1681051849
+    mediantime:
+      type: integer
+      description: Median time of previous 11 blocks.
+      example: 1681049210
+    nonce:
+      type: integer
+      description: Nonce used to generate this block.
+      example: 2450381578
+    bits:
+      type: string
+      description: Compact target (difficulty) representation.
+      example: "1705e0b2"
+    difficulty:
+      type: number
+      format: double
+      description: Network difficulty at time of block.
+      example: 47887764338536.25
+    chainwork:
+      type: string
+      description: Expected number of hashes to produce the chain up to this block.
+      example: "000000000000000000000000000000000000000045155fb82c72a339d3522688"
+    nTx:
+      type: integer
+      description: Number of transactions in the block.
+      example: 169
+    previousblockhash:
+      type: string
+      description: Hash of the previous block.
+      example: "00000000000000000001135510bc76c371b4b425c9c69e5c2f474e96c51bedc6"
+    nextblockhash:
+      type: string
+      description: Hash of the next block.
+      example: "000000000000000000006058431de7ad87def03c28228bb5742b343dc223e399"
+
+BTC_BLOCK_STATS:
+  title: Bitcoin Block Statistics
+  type: object
+  properties:
+    avgfee:
+      type: integer
+      description: Average fee in the block (satoshis)
+      example: 3510
+    avgfeerate:
+      type: integer
+      description: Average fee rate
+      example: 12
+    avgtxsize:
+      type: integer
+      description: Average transaction size
+      example: 234
+    blockhash:
+      $ref: "#/components/schemas/BTC_BLOCK_HASH"
+    feerate_percentiles:
+      type: array
+      description: Feerates at 10th, 25th, 50th, 75th, and 90th percentile
+      example: [1, 3, 5, 10, 20]
+      items:
+        type: integer
+    height:
+      $ref: "#/components/schemas/BTC_BLOCK_HEIGHT"
+    ins:
+      type: integer
+      description: Number of inputs
+      example: 4890
+    outs:
+      type: integer
+      description: Number of outputs
+      example: 5100
+    maxfee:
+      type: integer
+      example: 100000
+    maxfeerate:
+      type: integer
+      example: 150
+    maxtxsize:
+      type: integer
+      example: 1024
+    medianfee:
+      type: integer
+      example: 3200
+    mediantime:
+      type: integer
+      example: 1681049210
+    mediantxsize:
+      type: integer
+      example: 225
+    minfee:
+      type: integer
+      example: 50
+    minfeerate:
+      type: integer
+      example: 1
+    mintxsize:
+      type: integer
+      example: 120
+    subsidy:
+      type: integer
+      example: 625000000
+    swtotal_size:
+      type: integer
+      example: 800000
+    swtotal_weight:
+      type: integer
+      example: 3200000
+    swtxs:
+      type: integer
+      example: 1800
+    time:
+      type: integer
+      example: 1700000000
+    total_out:
+      type: integer
+      example: 12500000000
+    total_size:
+      type: integer
+      example: 1200000
+    total_weight:
+      type: integer
+      example: 3999999
+    totalfee:
+      type: integer
+      example: 520000
+    txs:
+      type: integer
+      example: 2456
+    utxo_increase:
+      type: integer
+      example: 123
+    utxo_size_inc:
+      type: integer
+      example: 456
+
+BTC_DIFFICULTY:
+  title: Bitcoin Proof-of-Work Difficulty
+  type: number
+  format: double
+  description: The proof-of-work difficulty as a multiple of the minimum difficulty.
+  example: 75502165623893.72
+
+BTC_CHAIN_TIP:
+  title: Bitcoin Chain Tip
+  type: object
+  required:
+    - height
+    - hash
+    - branchlen
+    - status
+  properties:
+    height:
+      type: integer
+      description: The height of the chain tip.
+      example: 812345
+    hash:
+      type: string
+      description: The block hash of the chain tip.
+      example: "0000000000000000000a7f31c7ec617cb84c7fcd41b40f42b79b1cbd407d8c5f"
+    branchlen:
+      type: integer
+      description: Length of the branch connecting the tip to the main chain (0 for main chain).
+      example: 0
+    status:
+      type: string
+      description: >
+        Status of the chain tip:
+        - active: tip of the main chain
+        - valid-fork: fully validated but not active
+        - valid-headers: headers valid but blocks not fully validated
+        - headers-only: only headers are available
+        - invalid: contains at least one invalid block
+      enum:
+        - active
+        - valid-fork
+        - valid-headers
+        - headers-only
+        - invalid
+      example: "active"
+
+BTC_CHAIN_TX_STATS:
+  title: Bitcoin Chain Transaction Statistics
+  type: object
+  required:
+    - time
+    - txcount
+    - window_final_block_hash
+    - window_final_block_height
+    - window_block_count
+    - window_tx_count
+    - window_interval
+    - txrate
+  properties:
+    time:
+      type: integer
+      description: Timestamp for the last block in the window (UNIX epoch).
+      example: 1707831750
+    txcount:
+      type: integer
+      description: Total number of transactions up to the final block.
+      example: 965252756
+    window_final_block_hash:
+      type: string
+      description: Hash of the final block in the window.
+      example: "000000000000000000035c8582f22752a268f5695379597ce9405e10c4051be6"
+    window_final_block_height:
+      type: integer
+      description: Height of the final block in the window.
+      example: 830289
+    window_block_count:
+      type: integer
+      description: Number of blocks included in the window.
+      example: 2016
+    window_tx_count:
+      type: integer
+      description: Number of transactions in the window.
+      example: 4723063
+    window_interval:
+      type: integer
+      description: Elapsed time (in seconds) across the window.
+      example: 1103416
+    txrate:
+      type: number
+      format: double
+      description: Average transaction rate per second across the window.
+      example: 4.280401045480581
