@@ -19,6 +19,87 @@
 	],
 	"methods": [
 		{
+			"name": "alchemy_requestFeePayer",
+			"summary": "Requests gas sponsorship for a Solana transaction and returns the **fully-signed** `serializedTransaction` (now containing the fee-payer signature).",
+			"params": [
+				{
+					"name": "sponsorshipRequest",
+					"description": "Object that describes the sponsorship request. You must supply a base-64 **serializedTransaction** that is **missing** any fee-payer signature.   The API will set the **feePayer** field and sign the transaction.\n",
+					"schema": {
+						"title": "Fee-payer sponsorship request",
+						"type": "object",
+						"required": [
+							"policyId",
+							"serializedTransaction"
+						],
+						"properties": {
+							"policyId": {
+								"description": "The policy ID (_or list of IDs_) that governs sponsorship.",
+								"oneOf": [
+									{
+										"type": "string",
+										"format": "uuid"
+									},
+									{
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uuid"
+										}
+									}
+								]
+							},
+							"serializedTransaction": {
+								"title": "base-64-encoded Solana transaction",
+								"type": "string",
+								"pattern": "^[A-Za-z0-9+/]+={0,2}$",
+								"description": "The unsigned transaction produced by `tx.serialize()`.\nIt may already contain a **feePayer**; the service will overwrite it\nwith the sponsoring account and add the fee-payer signature.\n"
+							},
+							"webhookData": {
+								"type": "string",
+								"description": "Optional metadata (e.g. proof-of-humanity) that is forwarded to any policy-level webhooks.\n"
+							}
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "Sponsored transaction wrapper",
+				"description": "Object containing the **fully-signed** transaction ready for `sendRawTransaction`.\n",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"serializedTransaction": {
+							"title": "base-64-encoded Solana transaction",
+							"type": "string",
+							"description": "The transaction after the service sets the **feePayer** field and adds the fee-payer signature.\n"
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "alchemy_requestFeePayer example",
+					"params": [
+						{
+							"name": "sponsorshipRequest",
+							"value": {
+								"policyId": "69d524a7-e932-4214-8673-dcdcba31bb42",
+								"serializedTransaction": "AgICAQMEBQYHCAkKCwwNDg8BCg==",
+								"webhookData": "user-liveness-proof"
+							}
+						}
+					],
+					"result": {
+						"name": "Sponsored transaction wrapper",
+						"value": {
+							"serializedTransaction": "AQIDBAUGBwgJCgsMDQ4PEA=="
+						}
+					}
+				}
+			]
+		},
+		{
 			"name": "alchemy_requestGasAndPaymasterAndData",
 			"summary": "Requests gas and coverage for a UserOperation. Returns paymasterAndData and gas parameters if approved, errors if not. Optionally accepts fee parameter overrides to be used in the UserOperation.",
 			"params": [
