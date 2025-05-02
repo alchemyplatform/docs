@@ -25,6 +25,37 @@
     description: The block object or hex string, depending on verbosity.
     schema:
       $ref: "#/components/schemas/BTC_BLOCK"
+  examples:
+    - name: getblock example
+      params:
+        - name: blockhash
+          value: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+        - name: verbosity
+          value: 2
+      result:
+        name: result
+        value:
+          hash: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+          confirmations: 151
+          height: 894470
+          version: 537067520
+          versionHex: "20030000"
+          merkleroot: "9d93ae25de98e5ed33aec9ccfea612c3b5b181a60171ba564ec1634786b04bc6"
+          time: 1745931642
+          mediantime: 1745928076
+          nonce: 766301978
+          bits: "170248b6"
+          target: "0000000000000000000248b60000000000000000000000000000000000000000"
+          difficulty: 123234387977050.9
+          chainwork: "0000000000000000000000000000000000000000bf64054821a76841a63cb26e"
+          nTx: 2186
+          previousblockhash: "00000000000000000001aa9a63c6c0774a767f7a4d37d2bce3658728de76a146"
+          nextblockhash: "00000000000000000000cb8a1d7945b960985579525957bcc37b22174f1ecb31"
+          strippedsize: 844254
+          size: 1460798
+          weight: 3993560
+          tx:
+            - "c86b4846175942038cc9da086e506aa8a441beada92f1678fb1fe35d640366db"
 
 - name: getblockhash
   summary: Get block hash by block height
@@ -41,6 +72,14 @@
     description: The hash of the block at the specified height.
     schema:
       $ref: "#/components/schemas/BTC_BLOCK_HASH"
+  examples:
+    - name: getblockhash example
+      params:
+        - name: height
+          value: 894470
+      result:
+        name: result
+        value: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
 
 - name: getblockheader
   summary: Get block header by block hash
@@ -67,6 +106,31 @@
         - $ref: "#/components/schemas/BTC_BLOCK_HEADER"
         - type: string
           description: Hex-encoded block header
+  examples:
+    - name: getblockheader example
+      params:
+        - name: blockhash
+          value: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+        - name: verbose
+          value: true
+      result:
+        name: result
+        value:
+          hash: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+          confirmations: 154
+          height: 894470
+          version: 537067520
+          versionHex: "20030000"
+          merkleroot: "9d93ae25de98e5ed33aec9ccfea612c3b5b181a60171ba564ec1634786b04bc6"
+          time: 1745931642
+          mediantime: 1745928076
+          nonce: 766301978
+          bits: "170248b6"
+          difficulty: 123234387977050.9
+          chainwork: "0000000000000000000000000000000000000000bf64054821a76841a63cb26e"
+          nTx: 2186
+          previousblockhash: "00000000000000000001aa9a63c6c0774a767f7a4d37d2bce3658728de76a146"
+          nextblockhash: "00000000000000000000cb8a1d7945b960985579525957bcc37b22174f1ecb31"
 
 - name: getblockcount
   summary: Get the current block count
@@ -78,6 +142,12 @@
     description: The number of blocks in the current best blockchain.
     schema:
       $ref: "#/components/schemas/BTC_BLOCK_HEIGHT"
+  examples:
+    - name: getblockcount example
+      params: []
+      result:
+        name: result
+        value: 894623
 
 - name: getbestblockhash
   summary: Get the best (tip) block hash of the longest valid chain
@@ -89,6 +159,12 @@
     description: The hash of the best block in the longest chain.
     schema:
       $ref: "#/components/schemas/BTC_BLOCK_HASH"
+  examples:
+    - name: getbestblockhash example
+      params: []
+      result:
+        name: result
+        value: "00000000000000000001fe9b58c5ccd401de62139c29e7dbfd32bd3cf14b650c"
 
 - name: getblockstats
   summary: Get per-block statistics
@@ -115,6 +191,47 @@
     description: A set of statistical metrics for the specified block.
     schema:
       $ref: "#/components/schemas/BTC_BLOCK_STATS"
+  examples:
+    - name: getblockstats example
+      params:
+        - name: hash_or_height
+          value: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+        - name: stats
+          value: []
+      result:
+        name: result
+        value:
+          avgfee: 1565
+          avgfeerate: 3
+          avgtxsize: 668
+          blockhash: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+          feerate_percentiles: [2, 2, 3, 3, 4]
+          height: 894470
+          ins: 7718
+          outs: 5666
+          maxfee: 376692
+          maxfeerate: 79
+          maxtxsize: 200604
+          medianfee: 453
+          mediantime: 1745928076
+          mediantxsize: 228
+          minfee: 141
+          minfeerate: 1
+          mintxsize: 150
+          subsidy: 312500000
+          swtotal_size: 1049707
+          swtotal_weight: 2349304
+          swtxs: 2075
+          time: 1745931642
+          total_out: 271147032190
+          total_size: 1460379
+          total_weight: 3991992
+          totalfee: 3420664
+          txs: 2186
+          utxo_increase: -2052
+          utxo_size_inc: -137484
+          utxo_increase_actual: -2841
+          utxo_size_inc_actual: -199799
 
 - name: getdifficulty
   summary: Get the current proof-of-work difficulty
@@ -126,6 +243,12 @@
     description: The difficulty of the current best block as a floating-point number.
     schema:
       $ref: "#/components/schemas/BTC_DIFFICULTY"
+  examples:
+    - name: getdifficulty example
+      params: []
+      result:
+        name: result
+        value: 123234387977050.9
 
 - name: getchaintips
   summary: Get information about all known tips in the block tree
@@ -139,6 +262,20 @@
       type: array
       items:
         $ref: "#/components/schemas/BTC_CHAIN_TIP"
+  examples:
+    - name: getchaintips example
+      params: []
+      result:
+        name: result
+        value:
+          - height: 894712
+            hash: "00000000000000000000e6518eac47199bcf0108b1c7d194b00ef5a9df794427"
+            branchlen: 0
+            status: active
+          - height: 894657
+            hash: "00000000000000000002311b7c31f1ffef1261bb53740958ed98c600ae2abd41"
+            branchlen: 1
+            status: valid-fork
 
 - name: getchaintxstats
   summary: Get chain transaction statistics
@@ -150,16 +287,29 @@
       description: The size of the window in number of blocks. Defaults to approximately one month.
       schema:
         type: integer
-        example: 2016
     - name: blockhash
       required: false
       description: The block hash at which the window ends. Defaults to chain tip.
       schema:
         type: string
         pattern: "^[a-fA-F0-9]{64}$"
-        example: "000000000000000000035c8582f22752a268f5695379597ce9405e10c4051be6"
   result:
     name: result
     description: The calculated chain transaction statistics.
     schema:
       $ref: "#/components/schemas/BTC_CHAIN_TX_STATS"
+  examples:
+    - name: getchaintxstats example
+      params:
+        - name: nblocks
+          value: 0
+        - name: blockhash
+          value: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+      result:
+        name: result
+        value:
+          time: 1745931642
+          txcount: 1184990717
+          window_final_block_hash: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+          window_final_block_height: 894470
+          window_block_count: 0

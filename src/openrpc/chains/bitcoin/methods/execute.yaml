@@ -18,13 +18,21 @@
         oneOf:
           - type: number
           - type: string
-        example: 0
   result:
     name: result
     description: The transaction ID (txid) of the submitted transaction.
     schema:
       type: string
-      example: "e3e703ecf6a58b5a97a7cb94077dd5fa872728d2c54e24e0564f85eeedddc37e"
+  examples:
+    - name: sendrawtransaction example
+      params:
+        - name: hexstring
+          value: "0200000000010153fc6712e0c6cbfd15e56743f2a16bba3c0b17837d4fd33d68d2d930739e2b130000000000ffffffff01c0c62d0000000000160014c24b61118d4a2b36257b65e1ea7f15f85e41ff0402483045022100ac32e935715a57ec1d642a5e178c37f74c013bf8e4edc4cb1c79f5352f136e87022020b0b3192347d1b84e9b89d00a2ecb290f18f9c39e514fa3ef2b7a889e7b6c1b012103ab0b56c7aa6254a80c124e04d2149f7fc376afedfe4623f3c59b87c279eaeb1400000000"
+        - name: maxfeerate
+          value: 0.1
+      result:
+        name: result
+        value: "1b6d7a0196d78d84c31408982f8fa6bc7383d29c96c5e2b3a55e1f1575dc1cfb"
 
 - name: submitpackage
   summary: Submit a set of serialized raw transactions
@@ -39,52 +47,42 @@
         type: array
         items:
           type: string
-        example:
-          - "0200000000010142d6bd07c424e975fe821c978e720f9a55f9981d62c290cea5ccd06b455d79b90000000000fdffffff028096980000000000160014d3620fe180a0beb8fcc9682fe92e5a25f0feccd370cd2f0100000000160014076d998f6b12c3d1da6217d967154f42a5e0afd30247304402204549b10ea1698d4b4605be1d3bfff810f6135395386207664a66f5bb8bd1470902205fb86c95bfbe7b502195ffa65276d292fb074fe18ba171ef0a35395211384091012103cb5de30b343b35cc09b50f064eb289dd3e252f6985fc4309fba795cc950316afcfa50d00"
   result:
     name: result
     description: Transaction results keyed by `wtxid`.
     schema:
       type: object
-      additionalProperties:
-        type: object
-        properties:
-          txid:
-            $ref: "#/components/schemas/BTC_TX_ID"
-          other_wtxid:
-            type: string
-            description: (Optional) The wtxid of a different transaction with the same txid but different witness found in mempool.
-            example: "7c9b2f0e6f4d3c4a2b8a7c9b2f0e6f7d3c2b1a0f9e8d7c6b5a49382716151413"
-          vsize:
-            type: integer
-            description: Virtual transaction size as defined in BIP 141.
-            example: 225
-          fees:
+      properties:
+        package_msg:
+          type: string
+          description: Status message for the package (e.g., "transaction failed")
+        tx-results:
+          type: object
+          additionalProperties:
             type: object
             properties:
-              base:
-                type: number
-                format: double
-                description: The base transaction fee in BTC.
-                example: 0.0001
-              effective_feerate:
-                type: number
-                format: double
-                description: (Optional) The effective feerate in BTC per KvB.
-                example: 0.00005
-              effective_includes:
-                type: array
-                items:
-                  type: string
-                description: (Optional) The wtxids whose fees are included in effective-feerate.
-                example:
-                  - "abcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890"
-                  - "def56789abcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234"
-          replaced_transactions:
-            type: array
-            items:
-              type: string
-            description: List of txids of transactions that were replaced.
-            example:
-              - "abcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890"
-              - "1234abcd5678ef901234abcd5678ef901234abcd5678ef901234abcd5678ef90"
+              txid:
+                $ref: "#/components/schemas/BTC_TX_ID"
+              error:
+                type: string
+                description: Error message if the transaction failed
+        replaced-transactions:
+          type: array
+          description: List of replaced txids (if any)
+          items:
+            type: string
+  examples:
+    - name: submitpackage example
+      params:
+        - name: package
+          value:
+            - "0200000000010153fc6712e0c6cbfd15e56743f2a16bba3c0b17837d4fd33d68d2d930739e2b130000000000ffffffff01c0c62d0000000000160014c24b61118d4a2b36257b65e1ea7f15f85e41ff0402483045022100ac32e935715a57ec1d642a5e178c37f74c013bf8e4edc4cb1c79f5352f136e87022020b0b3192347d1b84e9b89d00a2ecb290f18f9c39e514fa3ef2b7a889e7b6c1b012103ab0b56c7aa6254a80c124e04d2149f7fc376afedfe4623f3c59b87c279eaeb1400000000"
+      result:
+        name: result
+        value:
+          package_msg: "transaction failed"
+          tx-results:
+            "6dbccbd4775598af6e9713cd84e90e80431ecc7e932c4b832ab3966ad988bc08":
+              txid: "c67ecf450828d639a8cf3d74f168fe6bd9a1121a1167a1d46908d703f871c3a6"
+              error: "bad-txns-inputs-missingorspent"
+          replaced-transactions: []
