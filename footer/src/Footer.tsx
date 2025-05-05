@@ -13,6 +13,7 @@ const FooterContainer = styled.section`
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Inter', sans-serif;
   gap: 1rem;
   width: 100%;
   color: ${({ theme }) => (theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
