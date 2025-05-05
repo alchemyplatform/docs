@@ -1018,7 +1018,7 @@
                     "type": "array",
                     "minItems": 1,
                     "maxItems": 2,
-                    "description": "Array of address and networks pairs (limit 2 pairs, max 5 networks each). Networks should match network enums.\n",
+                    "description": "Array of address and networks pairs (limit 2 pairs, max 15 networks each). Networks should match network enums.\n",
                     "items": {
                       "type": "array",
                       "properties": {
@@ -1039,9 +1039,75 @@
                           ],
                           "items": {
                             "type": "string",
+                            "enum": [
+                              "eth-mainnet",
+                              "eth-sepolia",
+                              "eth-holesky",
+                              "avax-mainnet",
+                              "avax-fuji",
+                              "zksync-mainnet",
+                              "opt-mainnet",
+                              "polygon-mainnet",
+                              "polygon-amoy",
+                              "arb-mainnet",
+                              "arb-sepolia",
+                              "blast-mainnet",
+                              "blast-sepolia",
+                              "base-mainnet",
+                              "base-sepolia",
+                              "soneium-mainnet",
+                              "soneium-minato",
+                              "scroll-mainnet",
+                              "scroll-sepolia",
+                              "shape-mainnet",
+                              "shape-sepolia",
+                              "lens-mainnet",
+                              "lens-sepolia",
+                              "starknet-mainnet",
+                              "starknet-sepolia",
+                              "rootstock-mainnet",
+                              "rootstock-testnet",
+                              "linea-mainnet",
+                              "linea-sepolia",
+                              "settlus-septestnet",
+                              "abstract-mainnet",
+                              "abstract-testnet",
+                              "apechain-mainnet"
+                            ],
                             "default": "eth-mainnet"
                           },
                           "description": "<style>\n  .custom-style {\n    color: #048FF4;\n  }\n</style>\nNetwork identifier (e.g., eth-mainnet). Find more network enums <span class=\"custom-style\"><a href=\"https://dashboard.alchemy.com/chains\" target=\"_blank\">here</a></span>\n"
+                        },
+                        "excludeFilters": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "SPAM",
+                              "AIRDROPS"
+                            ],
+                            "default": "SPAM"
+                          }
+                        },
+                        "includeFilters": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "SPAM",
+                              "AIRDROPS"
+                            ],
+                            "default": "SPAM"
+                          }
+                        },
+                        "spamConfidenceLevel": {
+                          "type": "string",
+                          "enum": [
+                            "VERY_HIGH",
+                            "HIGH",
+                            "MEDIUM",
+                            "LOW"
+                          ]
                         }
                       },
                       "required": [
@@ -1054,6 +1120,13 @@
                     "description": "Boolean - if set to `true`, returns metadata. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`.",
                     "type": "boolean",
                     "default": true
+                  },
+                  "pageKey": {
+                    "type": "string"
+                  },
+                  "pageSize": {
+                    "type": "integer",
+                    "default": 100
                   }
                 },
                 "required": [
