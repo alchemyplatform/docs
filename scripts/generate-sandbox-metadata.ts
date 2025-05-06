@@ -19,7 +19,7 @@ const URL = "https://alchemy.docs.buildwithfern.com";
           traverse(fullPath);
         } else if (!entry.name.startsWith(".")) {
           const relativePath = path.relative(API_SPECS_DIR, fullPath);
-          files.push(relativePath);
+          files.push(`/${relativePath}`);
         }
       }
     }
