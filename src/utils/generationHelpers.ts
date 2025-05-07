@@ -55,6 +55,11 @@ export const getMethodsFromFile = (methodsFile: string): Methods => {
   const documents = yaml.loadAll(rawMethods);
   const unsortedMethods = documents.flat() as Methods;
 
+  // TODO: add this as a config param to base.yaml
+  if (methodsFile.includes("wallet-api")) {
+    return unsortedMethods;
+  }
+
   return unsortedMethods.sort((a, b) => {
     if ("name" in a && "name" in b) {
       return a.name.localeCompare(b.name);
