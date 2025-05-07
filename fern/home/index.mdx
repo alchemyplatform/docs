@@ -4,92 +4,98 @@ layout: custom
 hide-feedback: true
 ---
 
-<div className="landing">
-  <div className="hero">
-    <div className="hero-background">
-      <div className="vertical-bg" />
-    </div>
+<style>
+  {`
+      /* Hide all anchor links on the homepage */
+    [data-radix-popper-content-wrapper]:has(span[id^="radix-"]) {
+      display: none !important;
+    }
+  `}
+</style>
 
-    <h1>Alchemy Documentation</h1>
-    <h4 class="t-muted ">All the resources you need to build onchain apps.</h4>
+<div className="content">
+  <div className="products">
+    <h2 data-state="closed">Build anything onchain</h2>
+    <CardGroup cols={2}>
+      <Card className="product-card" title="Node" href="/docs/node">
+        <p>Use our Node API to start reading and writing to the blockchain—scale infinitely.</p>
+      </Card>
 
-    <a class="get-started-anchor" href="/reference/api-overview">
-      <button id="get-started-button" class="fern-button filled">
-        Get started
-      </button>
-    </a>
+      <Card className="product-card" title="Data" href="/docs/data">
+        <p>Your complete toolkit to build embedded wallets—powered by smart accounts.</p>
+      </Card>
 
-    <div className="search">
-      <div className="search-input-container">
-        <SearchBar />
-      </div>
+      <Card className="product-card" title="Wallets" href="/docs/wallets">
+        <p>Get consistent push notifications and subscribe to ongoing onchain data.</p>
+      </Card>
 
-      <div className="search-options">
-        <p className="t-muted">Popular searches</p>
-        <a href="/reference/transfers-api-quickstart">
-          <span className="fern-button minimal">Transfers API</span>
-        </a>
-        <a href="/docs/sending-transactions">
-          <span className="fern-button minimal">How to send transactions</span>
-        </a>
-        <a href="/docs/how-to-create-an-nft">
-          <span className="fern-button minimal">NFT smart contract</span>
-        </a>
-      </div>
-    </div>
+      <Card className="product-card" title="Rollups" href="/docs/rollups">
+        <p>Ship faster with an onchain data API. Reduce data lag by 50%. Backfill data up to 5x faster.</p>
+      </Card>
+    </CardGroup>
   </div>
 
-  <div className="content">
-    {/* <h2>What are you building?</h2>
+  <div className="homepage-code-block">
+    <h3 className="code-block-title">Query the blockchain in seconds</h3>
+    <EndpointRequestSnippet endpoint="GET /v3/{apiKey}/getNFTsForCollection" />
+  </div>
 
-        <div className="main-cards">
-          <CardGroup cols={2}>
-            <div className="beginner-card">
-              <Card
-                title="Build an onchain app"
-                href="/"
-              >
-                Jump into building an app on our supported chains.
-                <img src="../assets/stack.png" className="card-image" />
-              </Card>
-            </div>
-            <div className="advanced-card">
-              <Card
-                title="Build your own chain"
-                href="/"
-              >
-                Deploy and get access to millions of developers.
+  <div className="use-cases">
+    <h3>Use cases</h3>
+    <CardGroup cols={2}>
+      <Card className="use-case-card" title="Crypto wallet onboarding" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Supernode.svg" />} iconPosition="left">
+        <p className="description">Enable seedless signup, social login, and gasless transactions with account abstraction.</p>
+        <p className="cta"><a href="">Clone repository</a></p>
+      </Card>
 
-                <img src="../assets/diagram.png" className="card-image" />
-              </Card>
-            </div>
-          </CardGroup>
-        </div> */}
+      <Card className="use-case-card" title="NFT marketplace" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />} iconPosition="left">
+        <p className="description">Fetch, display, and track NFTs across chains with real-time metadata and ownership resolution.</p>
+        <p className="cta"><a href="">Clone repository</a></p>
+      </Card>
 
-    <h2>Use cases for every builder</h2>
+      <Card className="use-case-card" title="DeFi dashboard" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Webhooks.svg" />} iconPosition="left">
+        <p className="description">Aggregate portfolio balances, token prices, and yield data with accurate blockchain reads.</p>
+        <p className="cta"><a href="">Clone repository</a></p>
+      </Card>
 
-    <div className="use-cases">
-      <CardGroup cols={1}>
-        <Card title="JSON RPC" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Supernode.svg" />} href="/reference/chain-apis-overview" className="flex-1 min-w-[200px] p-5 h-full flex flex-col text-left md:w-1/3 before:content-['🕐_5_min'] before:absolute before:top-4 before:right-4 before:bg-[#eff4f9] before:text-[#475569] before:px-2 before:py-1 before:rounded before:text-sm before:font-normal">
-          Use our Node API to start reading and writing to the blockchain—scale infinitely.
-        </Card>
+      <Card className="use-case-card" title="Transaction previews" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Index.svg" />} iconPosition="left">
+        <p className="description">Simulate swaps, mints, or contract calls to catch errors and alert users before execution.</p>
+        <p className="cta"><a href="">Clone repository</a></p>
+      </Card>
 
-        <Card title="Onboard users" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />} href="/wallets">
-          Bring everyone onchain with seamless email/social login or their existing web3 wallets.
-        </Card>
+      <Card className="use-case-card" title="In-game asset tracking" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />} iconPosition="left">
+        <p className="description">Listen to real-time events for NFT mints, transfers, or token rewards in blockchain games.</p>
+        <p className="cta"><a href="">Clone repository</a></p>
+      </Card>
 
-        <Card title="Stream events" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Webhooks.svg" />} href="/reference/notify-api-quickstart">
-          Get consistent push notifications and subscribe to ongoing onchain data.
-        </Card>
+      <Card className="use-case-card" title="Web3 notifications" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Account.svg" />} iconPosition="left">
+        <p className="description">Trigger instant alerts for on-chain events like wallet deposits, sales, or governance votes.</p>
+        <p className="cta"><a href="">Clone repository</a></p>
+      </Card>
+    </CardGroup>
+  </div>
+  <hr/>
+  <div className="footer">
+    <CardGroup cols={4}>
+      <Card title="Alchemy University" className="footer-card">
+        <p className="description">Stay updated on live events for NFT mints, transfers, and token rewards in blockchain gaming.</p>
+        <p className="cta"><a href="">Visit</a></p>
+      </Card>
 
-        <Card title="Index data" icon={<img src="https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/Index.svg" />} href="/reference/subgraphs-quickstart/">
-          Ship faster with an onchain data API. Reduce data lag by 50%. Backfill data up to 5x faster.
-        </Card>
+      <Card title="Support Hub" className="footer-card">
+        <p className="description">Keep informed about real-time happenings for NFT mints, transfers, or token rewards within the realm of blockchain gaming.</p>
+        <p className="cta"><a href="">Visit</a></p>
+      </Card>
 
-        <Card title="Cheaper, faster, safer transactions" icon={<img src="../images/wallets-txn-icon.svg" />} href="/wallets/react/sponsor-gas">
-          Power wallets with gasless, batched transactions and endless account programmability.
-        </Card>
-      </CardGroup>
-    </div>
+      <Card title="Platform Status" className="footer-card">
+        <p className="description">Stay updated on live events for NFT mints, transfers, or token rewards in blockchain gaming.</p>
+        <p className="cta"><a href="">Visit</a></p>
+      </Card>
+
+      <Card title="Constact Sales" className="footer-card">
+        <p className="description">Connect with our sales team to stay updated on live events for NFT mints, transfers, and token rewards in blockchain gaming.</p>
+        <p className="cta"><a href="">Visit</a></p>
+      </Card>
+    </CardGroup>
   </div>
 </div>
