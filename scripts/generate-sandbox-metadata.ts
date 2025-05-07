@@ -4,7 +4,8 @@ import * as path from "path";
 
 const API_SPECS_DIR = path.join(process.cwd(), "build", "api-specs");
 const OUTPUT_FILE = path.join(API_SPECS_DIR, ".sandbox-metadata.json");
-const URL = "https://alchemy.docs.buildwithfern.com";
+const API_SPECS_URL = "https://dev-docs.alchemy.com/api-specs";
+const DOCS_URL = "https://www.alchemy.com/docs";
 
 (async () => {
   try {
@@ -19,7 +20,7 @@ const URL = "https://alchemy.docs.buildwithfern.com";
           traverse(fullPath);
         } else if (!entry.name.startsWith(".")) {
           const relativePath = path.relative(API_SPECS_DIR, fullPath);
-          files.push(`/${relativePath}`);
+          files.push(`${API_SPECS_URL}/${relativePath}`);
         }
       }
     }
@@ -27,7 +28,7 @@ const URL = "https://alchemy.docs.buildwithfern.com";
     traverse(API_SPECS_DIR);
 
     // Fetch and parse sitemap
-    const sitemapResponse = await fetch(`${URL}/sitemap.xml`);
+    const sitemapResponse = await fetch(`${DOCS_URL}/sitemap.xml`);
 
     if (!sitemapResponse.ok) {
       throw new Error(`Failed to fetch sitemap: ${sitemapResponse.statusText}`);
@@ -39,7 +40,7 @@ const URL = "https://alchemy.docs.buildwithfern.com";
     const urls =
       sitemapXml
         .match(/<loc>(.*?)<\/loc>/g)
-        ?.map((url) => url.replace(/<\/?loc>/g, "").replace(URL, "")) || [];
+        ?.map((url) => url.replace(/<\/?loc>/g, "")) || [];
 
     // Write to file
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify({ files, urls }, null, 2));
