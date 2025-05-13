@@ -83,6 +83,10 @@ git push origin main
 
 Unsure how to make changes yourself? Feel free to open an issue using the appropriate template. Please fill out required fields and provide as much detail as possible to ensure contributors can be as helpful as possible.
 
+## Alchemy Employees
+
+If you work at Alchemy you don't need to create your own fork. You can directly access the repo by joining the [Alchemy Employees Team](https://github.com/orgs/alchemyplatform/teams/alchemy-employees) in the [alchemyplatform](https://github.com/alchemyplatform) GitHub org. Please contact IT if you are not already a member.
+
 ## Questions?
 
 If you have any questions or need help, please open an issue in the repository.
