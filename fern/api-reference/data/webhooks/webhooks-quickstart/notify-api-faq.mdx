@@ -1,14 +1,114 @@
 ---
 title: Webhooks FAQ
-description: Frequently asked questions about the Notify API
-subtitle: Frequently asked questions about the Notify API
+description: Frequently asked questions about Alchemy Webhooks
+subtitle: Frequently asked questions about Alchemy Webhooks
 url: https://docs.alchemy.com/reference/notify-api-faq
 slug: reference/notify-api-faq
 ---
 
-## What does the capacity limit error mean?
+## General
 
-The capacity limit error means you've exceeded your total monthly compute units. To upgrade your capacity limits go to your [Alchemy dashboard](https://dashboard.alchemyapi.io/settings/billing). Below is an example capacity limit error.
+### What chains are supported for webhooks?
+
+We support 80+ chains. Check [here](https://dashboard.alchemy.com/chains?service=webhooks) for the most updated view of which networks are supported for webhooks (or other Alchemy products).
+
+### How many webhooks can I create?
+
+These are the number of webhooks you can create per tier!
+
+| Tier          | # of Webhooks |
+| ------------- | ------------- |
+| Free          | 5             |
+| Pay As You Go | 100           |
+| Enterprise    | Unlimited     |
+
+### How much do webhooks cost?
+
+Webhooks are priced based on **bandwidth**: the amount of data delivered to your endpoint. The current rate is maintained on this [page](reference/compute-unit-costs#notify-and-subscription-apis).
+
+At the current pricing rate, for many use cases, this averages out to about ~40 CUs per event.
+
+## Setup and Configuration
+
+### What are best practices for constructing a GraphQL query for a Custom Webhook?
+
+We have a number of resources to help you accomplish this! The templates in the [webhooks creation flow](https://dashboard.alchemy.com/webhooks/create) cover most common use cases, and there are some more examples in we have shared in [this public repo](https://github.com/alchemyplatform/lab/tree/main/webhooks/queries).
+
+An alternative solution is to plug this [query schema](https://gist.github.com/mintymento456/038f75a5427c2a5a3d1835bc15a8245d) into ChatGPT or another LLM and ask it to write a query (e.g. Take this schema and write me query that triggers for all events on my smart contract 0x…)
+
+### How can I filter logs with specific event parameters on Custom Webhooks?
+
+Currently, our log/event filter leverages the same semantics as a traditional topic filter for an eth\_getLogs RPC call. If you’re not familiar with how topic filters work for those calls, check out this primer on [Custom Webhook Filters](/reference/custom-webhook-filters)
+
+### Can I add more advanced GraphQL filtering to my webhook queries?
+
+Take a look at this [repo](https://github.com/alchemyplatform/lab/tree/main/webhooks/queries) of more complex queries! An alternative solution is to plug this [query schema](https://gist.github.com/mintymento456/038f75a5427c2a5a3d1835bc15a8245d) into chatGPT and ask it to write a query (e.g. Take this schema and write me query that triggers for all events on my smart contract 0x…)
+
+### Are there constraints on GraphQL queries used with Custom Webhooks?
+
+While logs and transactions can be self-referential entities, we only allow for a single-layer nested data structure to bound GraphQL queries. This helps us to to maintain a tidy API surface area.
+
+### How many addresses can be tracked by a webhook?
+
+* For Address Activity, we guarantee reliable support for up to **100,000 addresses** per webhook.
+* For Custom, with custom webhook [variables](/reference/custom-webhook-variables), we support a maximum of **10M addresses** per variable currently.
+* For NFT Activity, there are no hard set limits.
+
+## Behavior and Delivery
+
+### Why am I receiving so many webhook events?
+
+* It’s possible you’re tracking highly traffic’d wallet(s) or smart contract(s), resulting in an increase in traffic. Double check your webhooks configuration to be sure!
+* For Custom webhooks, it’s possible your query was configured to fire on all blocks, regardless if the filter matches. When creating a custom webhook from the dashboard, ensure the `Include Empty Messages` checkbox is unchecked. If creating a custom webhook via API, be sure to set the `skip_empty_messages` parameter to false.
+* For NFT Activity webhooks, if filters aren’t set, you will receive activity related to all NFTs on that particular chain!
+
+### How are blockchain reorganizations (reorgs) handled?
+
+If a re-org occurs, Alchemy will automatically re-run your webhook filters on the latest canonical (correct) block and send you a new webhook notification. If you see a block number repeated with a new block hash, that means previous events with the same block number were re-org’d out of the canonical chain!
+
+### Why am I missing transactions in the response?
+
+Double check that you’re parsing the response payload correctly. Remember, transactions are returned in a list. Transactions that are mined within the same block will be returned within the same `activity` list.
+
+### What if my endpoint goes down?
+
+Webhooks have built-in retry-logic with exponential backoff for non-200 response codes in failures to reach your server. For Free and Pay As You Go tier teams, these will fire with back off up to 10 minutes after. For Enterprise customers, this back off period will extend to 1 hour. We're looking into expanding this soon, reach out to data-services-product@alchemy.com if you're interested in early access!
+
+### What sort of timeouts are set?
+
+Our webhook HTTP requests will timeout if your server doesn't respond within 5 seconds. Please ensure your service responds to webhook events prior to processing them to ensure you don't hit this timeout!
+
+### How should I respond to webhook HTTP events?
+
+Ensure your webhook listener responses with an HTTP 200 status code to let our service know that you’ve successfully received the HTTP request. Responding with non-200’s will trigger retries, and eventually lead to pausing of your webhooks!
+
+### What headers does Alchemy send with webhooks requests?
+
+#### Example Request Header
+
+<CodeGroup>
+  ```shell Request header
+  POST /yourWebhookServer/push HTTP/1.1
+  Content-Type: application/json;
+  X-Alchemy-Signature: your-hashed-signature
+  ```
+</CodeGroup>
+
+## Error Handling and Troubleshooting
+
+### Why did my webhooks pause?
+
+Your webhooks can be automatically paused if you hit your account’s capacity limit or your webhook listener consistently responds with non-2xx HTTP status codes. Go to your [webhook dashboard](https://dashboard.alchemy.com/webhooks) and hover your cursor over the status to understand the exact reason!
+
+### How do I unpause my webhooks?
+
+Ensure you’re within your accounts capacity limits AND that your webhook listener responds with HTTP 200’s.
+
+Then resume your webhook from the dashboard or via this [toggle status endpoint](/data/webhooks/custom-webhook-api-methods/custom-webhook-api-methods/notify-api-methods/update-webhook)! Your webhook will continue to stream from the latest confirmed block!
+
+### What does a "capacity limit" error mean?
+
+The capacity limit error means you’ve exceeded your total monthly compute units. To upgrade your capacity limits, go to the [billing page on your dashboard](https://dashboard.alchemy.com/settings/billing/manage-plan). Below is an example capacity limit error.
 
 <CodeGroup>
   ```shell Capacity limit error
@@ -24,13 +124,37 @@ The capacity limit error means you've exceeded your total monthly compute units.
   ```
 </CodeGroup>
 
-## How do I validate the webhook event?
+### How can I debug why I’m not receiving expected webhooks?
+
+Ensure your filters and webhooks listener are properly configured! Feel free to reach out to use on [Discord](https://discord.com/invite/alchemyplatform) for support!
+
+### Why am I missing transactions in the response?
+
+Double check that you're parsing the response payload correctly. Remember, transactions are returned in a list. Transactions that are mined within the same block will be returned within the same `activity` list.
+
+### Why are Address Activity events for the same transaction split across multiple response?
+
+You may notice `activity` entries from the same transaction being split across multiple requests when using the Address Activity webhooks. This is expected behavior because webhook streams are currently separated by `block` and `type`. This means that if there are `external`, `internal` and `token` transfers all within the same transaction that occurred in block 49, you will still receive 3 separate webhook payloads, one for each of them.
+
+## Security and Best Practices
+
+**Find more about our security best practices [here](/reference/notify-api-quickstart#webhook-signature--security)**
+
+### Where can I find my Auth Token?
+
+To find your Auth Token to use the webhook API, navigate to the [webhooks dashboard](https://dashboard.alchemy.com/webhooks), and copy the Auth Token from the top right of the page.
+
+### Where can I find my webhook's Signing Key?
+
+To find your signing key, navigate to the [webhooks dashboard](https://dashboard.alchemy.com/webhooks), select your webhook, and copy the singing key from the top right of that webhook’s detail page.
+
+### How do I validate the webhook event?
 
 Every outbound request contains a hashed authentication signature in the header `X-Alchemy-Signature`. It's computed by concatenating your signing key and request body. Then generates a hash using the HMAC SHA256 hash algorithm.
 
 To verify the signature came from Alchemy, you generate the HMAC SHA256 hash and compare it with the signature received.
 
-### Example Request Header
+#### Example Request Header
 
 <CodeGroup>
   ```shell Request header
@@ -40,7 +164,7 @@ To verify the signature came from Alchemy, you generate the HMAC SHA256 hash and
   ```
 </CodeGroup>
 
-### Example Signature Validation
+#### Example Signature Validation
 
 <CodeGroup>
   ```ts typescript
@@ -100,59 +224,3 @@ To verify the signature came from Alchemy, you generate the HMAC SHA256 hash and
   }
   ```
 </CodeGroup>
-
-## Where do I find my Alchemy auth token?
-
-Find your Alchemy auth token in the upper-right corner of your Webhook dashboard by clicking the **AUTH TOKEN** button.
-
-![1600](c2ec742ed4b29e539c263129d102da82e85078520952b1bcae0ef81e7848e1de-Untitled.jpg "notify_page_screenshot.png")
-
-Alchemy dashboard showing where to copy the Auth Token for the Webhooks API.
-
-## How many webhooks can I create?
-
-These are the number of webhooks you can create per tier!
-
-| Tier          | # of Webhooks |
-| ------------- | ------------- |
-| Free          | 5             |
-| Pay As You Go | 100           |
-| Enterprise    | Unlimited     |
-
-## How many addresses can you add to a single webhook?
-
-For Address Activity webhooks, we reliably support up to 100,000 addresses per single webhook. For Custom webhooks, with [variables](/reference/custom-webhook-variables), we support a maximum of 10M addresses.
-
-## Why am I missing transactions in the response?
-
-Double check that you're parsing the response payload correctly. Remember, transactions are returned in a list. Transactions that are mined within the same block will be returned within the same `activity` list.
-
-## Why are address activity events for the same transaction split across multiple response?
-
-You may notice `activity` entries from the same transaction being split across multiple requests when using the Address Activity webhooks. This is expected behavior because webhook streams are currently separated by `block` and `type`. This means that if there are `external`, `internal` and `token` transfers all within the same transaction that occurred in block 49, you will still receive 3 separate webhook payloads, one for each of them.
-
-## What are some best practices when using webhooks with a large number of addresses?
-
-When working with large address lists, we suggest that users assign no more than 100,000 addresses to each webhook. If you find yourself using many addresses, spin up a new webhook to ensure that you have a reliable and scalable system.
-
-## How are reorgs handled?
-
-When a chain reorganization occurs, block logs on the old chain will be emitted again with the property `removed` set to `true`.
-
-## Why am I getting 5xx errors repeatedly setting up a webhook?
-
-You may be seeing repeated 5xx errors because of automatic webhook-retry-logic where requests are retried for non-200 response codes and upon failures to reach your server.
-
-One common mistake we see is users not responding with 2xx status codes on a successful response which will trigger a retry. To resolve, set-up a [webhook listener](/reference/notify-api-quickstart#create-webhook-listeners).
-
-## How does reaching my CU limit impact my webhook's activity?
-
-If you hit your CU limit and don't have autoscaling activated, all your active webhooks will be set to the 'paused' state. This means they'll temporarily stop operating until you manually unpause them or acquire more CUs.
-
-## What happens when my webhooks are in a 'paused' state?
-
-When your webhooks are 'paused', they won't operate or trigger any notifications. You'll need to either wait for more CUs or upgrade to unpause them.
-
-## Why won't my paused webhooks automatically unpause after I upgrade or when I acquire more CUs?
-
-We've noticed that many of our users use up all their CUs quickly at the month's start. To ensure these webhooks don't consume resources without proving their value, we ask that you manually unpause them, even after an upgrade.
