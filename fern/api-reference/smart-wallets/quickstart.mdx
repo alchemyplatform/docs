@@ -8,7 +8,7 @@ slug: reference/smart-wallet-quickstart
 
 This guide outlines exactly what you need to use Wallet Server with your app! We’ll go over the [`wallet_requestAccount`](https://www.alchemy.com/docs/node/smart-wallets/wallets-api-endpoints/wallets-api-endpoints/wallet-request-account), [`wallet_createSession`](https://www.alchemy.com/docs/node/smart-wallets/wallets-api-endpoints/wallets-api-endpoints/wallet-create-session), [`wallet_prepareCalls`](https://www.alchemy.com/docs/node/smart-wallets/wallets-api-endpoints/wallets-api-endpoints/wallet-prepare-calls), and [`wallet_sendPreparedCalls`](https://www.alchemy.com/docs/node/smart-wallets/wallets-api-endpoints/wallets-api-endpoints/wallet-send-prepared-calls) endpoints in this tutorial.
 
-The logical flow is to get an account for a given signer, create a session for use with that account, prepare the calls you’re looking to send, and send them!
+The logical flow is to get an account for a given signer, create a session for use with that account, prepare the calls you’re looking to send, and send them! If you're looking for a typescript SDK guide, you'll find that here too.
 
 Session keys are useful if you are looking to grant your app’s server partial, secure access to user’s wallets so that the server can sign and send transactions on a user’s behalf within certain permissions.
 
@@ -24,6 +24,8 @@ graph LR
 If instead, you don’t want to use session keys and you want the user’s to sign all of the transactions, you can simply skip the createSession step and use the client side signer to sign prepared calls.
 
 This guide assumes you have an account you can sign with, like an [Alchemy Signer](https://www.alchemy.com/docs/wallets/signer/what-is-a-signer#alchemy-signer).
+
+## Using The JSON-RPC APIs Directly
 
 ### 1. Request an Account for the Owner Signer
 
@@ -233,3 +235,128 @@ curl --request POST \
 ```
 
 This will return the array of prepared call IDs! These are userOp hashes.
+
+## Using The Account Kit SDK
+
+Given a signer (e.g. a `LocalAccountSigner` imported from `@aa-sdk/core` or an [Alchemy Signer](https://www.alchemy.com/docs/wallets/signer/what-is-a-signer#alchemy-signer)), all you need to do is follow a few simple steps to start sending user ops with Wallet APIs!
+
+### Create A Smart Account Client
+
+```
+import { createSmartWalletClient } from "@account-kit/wallet-client";
+  
+const client = createSmartWalletClient({
+  transport,
+  chain: CHAIN, // imported from @account-kit/infra
+  mode: "remote",
+  signer,
+});
+```
+
+### Request The Account
+
+A counterfactual address is the account address associated with the given signer-- but the account contract hasn't been deployed yet.
+
+```
+const account = await client.requestAccount();
+  
+// get the address
+const address = account.address;
+```
+
+### Sign A Message
+
+```
+const message = "we are so back"
+  
+const signature = await client.signMessage(message);
+  
+// using a regular viem publicClient, instantiated with createPublicClient()
+const isValid = await publicClient.verifyMessage({
+  address: account.address, // fetched from await client.requestAccount()
+  message,
+  signature,
+});
+```
+
+### Sign Typed Data
+
+```
+// assuming you have a typedData variable
+const signature = await client.signTypedData(typedData);
+  
+const isValid = await publicClient.verifyTypedData({
+  address: account.address, // fetched from await client.requestAccount()
+  ...givenTypedData,
+  signature,
+});
+```
+
+### Send A UserOp
+
+```
+const account = await client.requestAccount();
+  
+const preparedUO = await client.prepareCalls({
+  calls: [{ to: zeroAddress, value: "0x0" }], // callData is optional in a "data" parameter
+  from: account.address,
+  // capabilities are a data structure that hold paymaster data (as seen below) or permission data
+  // capabilities: {
+  //   paymasterService: {
+  //     policyId: process.env.TEST_PAYMASTER_POLICY_ID!,
+  //   },
+  // },
+});
+  
+// Sign the userOp
+const signature = await client.signSignatureRequest(
+  preparedUO.signatureRequest,
+);
+  
+// Send the userOp
+const result = await client.sendPreparedCalls({
+  ...preparedUO,
+  signature,
+});
+```
+
+### Create A Session With Permissions
+
+```
+const account = await client.requestAccount();
+  
+// This is where you would use your session key signer!
+const sessionKey = LocalAccountSigner.generatePrivateKeySigner();
+  
+const permissions = await client.grantPermissions({
+  account: account.address,
+  expiry: Math.floor(Date.now() / 1000) + 60 * 60,
+  key: {
+    publicKey: await sessionKey.getAddress(),
+    type: "secp256k1",
+  },
+  permissions: [{ type: "root" }], // Here we grant root permissions as an example, but this is not advised in production!
+});
+  
+const preparedUO = await client.prepareCalls({
+  calls: [{ to: zeroAddress, value: "0x0" }],
+  from: account.address,
+  capabilities: {
+    // Optional paymaster information goes here too
+    permissions,
+  },
+});
+  
+const signature = await signSignatureRequest(
+  sessionKey, // Note that we now sign with the session key!
+  preparedUO.signatureRequest,
+);
+  
+const result = await client.sendPreparedCalls({
+  ...preparedUO,
+  signature,
+  capabilities: {
+    permissions,
+  },
+});
+```
