@@ -85,7 +85,7 @@ Unsure how to make changes yourself? Feel free to open an issue using the approp
 
 ## Alchemy Employees
 
-If you work at Alchemy you don't need to create your own fork. You can directly access the repo by joining the [Alchemy Employees Team](https://github.com/orgs/alchemyplatform/teams/alchemy-employees) in the [alchemyplatform](https://github.com/alchemyplatform) GitHub org. Please contact IT if you are not already a member.
+If you work at Alchemy you don't need to create your own fork. Members of the [Alchemy Employees Team](https://github.com/orgs/alchemyplatform/teams/alchemy-employees) team in GitHub are automatically granted direct access. Clicking on the alchemyplatform tile in Okta should automatically add you to this team! Please contact IT if you need further assistance getting access.
 
 ## Questions?
 
