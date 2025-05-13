@@ -85,7 +85,10 @@ Unsure how to make changes yourself? Feel free to open an issue using the approp
 
 ## Alchemy Employees
 
-If you work at Alchemy you don't need to create your own fork. Members of the [Alchemy Employees Team](https://github.com/orgs/alchemyplatform/teams/alchemy-employees) team in GitHub are automatically granted direct access. Clicking on the alchemyplatform tile in Okta should automatically add you to this team! Please contact IT if you need further assistance getting access.
+If you work at Alchemy you don't need to create your own fork. Members of the [Alchemy Employees Team](https://github.com/orgs/alchemyplatform/teams/alchemy-employees) team in GitHub are automatically granted direct access. Clicking on the alchemyplatform tile in Okta should automatically add you to this team! Please contact IT if you need further assistance being added to the team.
+
+> \[!NOTE]
+> The SSH key you use with GitHub **must** have SSO enabled to work. You can do that [here](https://github.com/settings/keys). Click the "Configure SSO" dropdown and authorize `alchemyplatform`
 
 ## Questions?
 
