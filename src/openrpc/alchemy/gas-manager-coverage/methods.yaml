@@ -20,6 +20,10 @@
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
+    - name: "dummySignature"
+      description: "Dummy signature for the operation. This is useful for estimating gas costs."
+      schema:
+        type: "string"
     - name: "userOperation"
       description: "Partial UserOperation object, missing gas parameters, paymasterAndData and signature fields. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field."
       schema:
@@ -110,6 +114,56 @@
               paymasterPostOpGasLimit:
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+    - name: "overrides"
+      description: "Optional fields to override default gas and fee behavior – these can be multiplier overrides or absolute overrides."
+      schema:
+        type: "object"
+        properties:
+          maxFeePerGas:
+            oneOf:
+              - type: "string"
+                description: "Hex string."
+              - type: "object"
+                properties:
+                  multiplier:
+                    type: "number"
+                description: "Multiplier value."
+          maxPriorityFeePerGas:
+            oneOf:
+              - type: "string"
+                description: "Hex string."
+              - type: "object"
+                properties:
+                  multiplier:
+                    type: "number"
+                description: "Multiplier value."
+          callGasLimit:
+            oneOf:
+              - type: "string"
+                description: "Hex string."
+              - type: "object"
+                properties:
+                  multiplier:
+                    type: "number"
+                description: "Multiplier value."
+          verificationGasLimit:
+            oneOf:
+              - type: "string"
+                description: "Hex string."
+              - type: "object"
+                properties:
+                  multiplier:
+                    type: "number"
+                description: "Multiplier value."
+          preVerificationGas:
+            oneOf:
+              - type: "string"
+                description: "Hex string."
+              - type: "object"
+                properties:
+                  multiplier:
+                    type: "number"
+                description: "Multiplier value."
   result:
     name: "Asset changes"
     description: "The transformed response object that wraps the original gas and paymaster response. It includes an array of asset change objects, a gasUsed field, and an error field."
@@ -123,16 +177,46 @@
             paymasterAndData:
               type: "string"
               description: "The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field. Contains gas manager address, sigTimeRange, and secp256k1 signature."
+            callGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the main execution call."
+            verificationGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the verification step."
+            preVerificationGas:
+              type: "string"
+              description: "The amount of gas to compensate the bundler for pre-verification execution and calldata."
+            maxFeePerGas:
+              type: "string"
+              description: "The maximum fee per gas to pay for the execution of this operation (similar to EIP-1559 max_fee_per_gas)."
+            maxPriorityFeePerGas:
+              type: "string"
+              description: "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)."
         entrypointV07Response:
           title: "Entrypoint v0.7 Response"
           type: "object"
           properties:
             paymaster:
               type: "string"
-              description: "The address of the paymaster."
+              description: "The paymaster address used in the operation."
             paymasterData:
               type: "string"
               description: "The data for the paymaster in the operation."
+            callGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the main execution call."
+            verificationGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the verification step."
+            preVerificationGas:
+              type: "string"
+              description: "The amount of gas to compensate the bundler for pre-verification execution and calldata."
+            maxFeePerGas:
+              type: "string"
+              description: "The maximum fee per gas to pay for the execution of this operation (similar to EIP-1559 max_fee_per_gas)."
+            maxPriorityFeePerGas:
+              type: "string"
+              description: "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)."
             paymasterVerificationGasLimit:
               type: "string"
               description: "The gas limit for paymaster verification."
