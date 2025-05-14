@@ -48,6 +48,25 @@ pnpm dev
 
 This will start a local server with live reloading. Visit `http://localhost:3020` to view the documentation.
 
+#### Building Custom Components
+
+In some cases we need to use custom-built components that require styling outside the standard Fern capabilities. Currently, Fern does not support building/rendering Custom JS + React locally, so first you'll need to build the custom component:
+
+```bash
+cd footer/  # using the custom footer component as an example
+pnpm install  # if you need to install dependencies
+pnpm run build
+```
+
+Then, a preview needs to be generated (this requires access to Fern):
+
+```bash
+pnpm fern login
+pnpm fern generate --docs --preview
+```
+
+This will take a minute as it needs to upload a lot files to generate the preview and it will output a preview URL.
+
 ### Building API Specs
 
 Production OpenAPI and OpenRPC specs are generated using scripts from their definition files in the `src` directory.
@@ -100,4 +119,4 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## License
 
-This project is licensed under the CC-BY-4.0 License - see the LICENSE file for details.
+This project is licensed under the CC-BY-4.0 License - see the [LICENSE](./LICENSE) file for details.

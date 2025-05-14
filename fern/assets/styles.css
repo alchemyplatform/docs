@@ -10,11 +10,57 @@ header#fern-header {
   background-color: #020617;
 }
 
+.fern-sidebar-group li:last-child {
+  margin-bottom: 15px !important;
+}
+
+li:has(> .fern-sidebar-link.nested) {
+  margin-bottom: 0 !important;
+}
+
+.fern-sidebar-group:after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  transform: translateX(-50%);
+  left: 50%;
+}
+
+:is(.dark) .fern-sidebar-group:after {
+  border-bottom: 1px solid #131829;
+}
+
+:is(.light) .fern-sidebar-group:after {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+:is(.light) .toc-root:before {
+  background-color: #e2e8f0 !important;
+}
+
+:is(.dark) .toc-root:before {
+  background-color: #131829 !important;
+}
+
+.fern-sidebar-group.fern-collapsible:after {
+  border-bottom: none !important;
+  content: unset !important;
+}
+
+#fern-search-button {
+  background-color: var(--accent-1) !important;
+  border: 1px solid var(--accent-3) !important;
+}
+
+.fern-scroll-area-scrollbar {
+  display: none !important;
+}
+
 /* SIGN IN TO ALCHEMY BUTTON */
 header#fern-header a.fern-button.filled.normal.primary {
   height: 2.5rem !important;
   padding: 0.4rem 1.5rem !important;
-  background-color: var(--grayscale-12) !important;
+  color: white !important;
   transition: box-shadow 0.2s ease-in-out;
   position: relative;
   overflow: hidden;
@@ -28,67 +74,16 @@ header#fern-header a.fern-button.filled.normal.primary:hover {
   box-shadow: 0px 0px 1.25rem 0px rgba(81, 103, 255, 0.5);
 }
 
-header#fern-header a.fern-button.filled.normal.primary:before,
-header#fern-header a.fern-button.filled.normal.primary:after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 7.5rem;
-  height: 7.5rem;
-  background-image: url("https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-button-blur.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 0;
-}
-header#fern-header a.fern-button.filled.normal.primary:before {
-  left: 35%;
-  transform: translate(-50%, -50%);
-}
-header#fern-header a.fern-button.filled.normal.primary:after {
-  right: 35%;
-  transform: translate(50%, -50%);
-}
-header#fern-header a.fern-button.filled.normal.primary:hover:before {
-  opacity: 0.5;
-  animation:
-    slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
-    floatVerticalLeft 4s ease-in-out infinite,
-    fadeEdges 6s ease-in-out infinite;
-  animation-fill-mode: both;
-}
-header#fern-header a.fern-button.filled.normal.primary:hover:after {
-  opacity: 0.5;
-  animation:
-    slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
-    floatVerticalRight 4s ease-in-out infinite,
-    fadeEdges 6s ease-in-out infinite;
-  animation-delay: 0.5s;
-  animation-fill-mode: both;
+:is(.dark) header#fern-header a.fern-button.filled.normal.primary {
+  background-color: #5167ff !important;
 }
 
-:is(.dark) header#fern-header a.fern-button.filled.normal.primary {
-  background-color: white !important;
-  color: black !important;
+:is(.light) header#fern-header a.fern-button.filled.normal.primary {
+  background-color: #363ff9 !important;
 }
-:is(.dark) header#fern-header a.fern-button.filled.normal.primary:hover:before {
-  opacity: 0.5;
-  animation:
-    slideBlurLeft 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
-    floatVerticalLeft 4s ease-in-out infinite,
-    fadeEdgesDark 6s ease-in-out infinite;
-  animation-fill-mode: both;
-}
-:is(.dark) header#fern-header a.fern-button.filled.normal.primary:hover:after {
-  opacity: 0.5;
-  animation:
-    slideBlurRight 6s cubic-bezier(0.45, 0, 0.55, 1) infinite,
-    floatVerticalRight 4s ease-in-out infinite,
-    fadeEdgesDark 6s ease-in-out infinite;
-  animation-delay: 0.5s;
-  animation-fill-mode: both;
+
+.fern-header {
+  border: 0 !important;
 }
 
 .fern-header-right-menu .fern-button.filled svg {
@@ -109,6 +104,10 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
 
 .fern-theme-button {
   margin-right: 12px !important;
+}
+
+.fern-header-tab-button {
+  font-size: 16px !important;
 }
 
 :is(.light) .fern-header-tab-button[data-state="inactive"] {
@@ -285,16 +284,68 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
 }
 
 .fern-sidebar-heading-content {
-  font-size: 12px !important;
-  text-transform: uppercase !important;
-  color: var(--grayscale-a11) !important;
+  font-size: 16px !important;
+  color: var(--accent-11) !important;
 }
 
-:is(.light)
-  .fern-sidebar-link-container[data-state="active"]
-  .fern-sidebar-link {
-  background-color: #ecf3ff !important;
-  color: #363ff9 !important;
+.fern-sidebar-link {
+  font-weight: 400 !important;
+  border-radius: 0 !important;
+}
+
+:is(.light) .fern-sidebar-link[data-state="inactive"] {
+  color: #383838 !important;
+  &:hover {
+    background-color: #f7f9ff !important;
+  }
+}
+
+:is(.dark) .fern-sidebar-link[data-state="inactive"] {
+  color: #ededed !important;
+  &:hover {
+    background-color: #0f1427 !important;
+  }
+}
+
+:is(.light) .fern-sidebar-link[data-state="active"] {
+  color: #111111 !important;
+  background-color: #eef2fe !important;
+}
+
+:is(.dark) .fern-sidebar-link[data-state="active"] {
+  color: #ffffff !important;
+  background-color: #18204e !important;
+}
+
+:is(.light) .fern-sidebar-link.nested[data-state="inactive"] {
+  background-color: none !important;
+  color: #111111 !important;
+  &:hover {
+    background-color: #f7f9ff !important;
+  }
+}
+
+:is(.dark) .fern-sidebar-link.nested[data-state="inactive"] {
+  background-color: none !important;
+  &:hover {
+    background-color: #0f1427 !important;
+  }
+}
+
+.fern-header-logo-container img {
+  height: unset !important;
+}
+
+.fern-header-tabs a {
+  font-weight: 500 !important;
+}
+
+:is(.dark) .fern-header-tabs a[data-state="inactive"] {
+  color: #ededed !important;
+}
+
+:is(.light) .fern-header-tabs a[data-state="inactive"] {
+  color: #111111 !important;
 }
 
 :is(.dark)
@@ -340,7 +391,6 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
 :is(.light) .callout-outlined-tip {
   background-color: #f0fdf4 !important;
 }
-
 
 /* HOME PAGE STYLING */
 @keyframes moveUp {
@@ -438,7 +488,10 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: linear-gradient(var(--background) 25%, color-mix(in srgb, var(--background) 0%, transparent) 100%);
+      background-image: linear-gradient(
+        var(--background) 25%,
+        color-mix(in srgb, var(--background) 0%, transparent) 100%
+      );
       z-index: 1;
       pointer-events: none;
     }
@@ -451,7 +504,7 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-hor-solid.svg');
+      background-image: url("https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-hor-solid.svg");
       background-size: cover;
       background-position: center bottom;
       background-repeat: no-repeat;
@@ -466,7 +519,7 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-vert-solid.svg');
+      background-image: url("https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-vert-solid.svg");
       background-size: cover;
       background-position: center bottom;
       background-repeat: no-repeat;
@@ -476,7 +529,10 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
 
   :is(.dark) .hero-background {
     &:before {
-      background-image: linear-gradient(var(--background) 25%, color-mix(in srgb, var(--background) 70%, transparent) 100%);
+      background-image: linear-gradient(
+        var(--background) 25%,
+        color-mix(in srgb, var(--background) 70%, transparent) 100%
+      );
     }
   }
 
@@ -522,7 +578,7 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
 
   :is(.dark) {
     .search {
-      background-color: rgba(255, 255, 255, 0.10) !important;
+      background-color: rgba(255, 255, 255, 0.1) !important;
     }
   }
 
@@ -563,13 +619,14 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
       z-index: 2;
     }
 
-    &:before, &:after {
+    &:before,
+    &:after {
       content: "";
       position: absolute;
       top: 50%;
       width: 7.5rem;
       height: 7.5rem;
-      background-image: url('https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-button-blur.png');
+      background-image: url("https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/alchemy-bg-button-blur.png");
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -645,7 +702,9 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
     align-items: center;
     border-radius: 6.25rem;
     padding: 6.25rem 3.125rem;
-    box-shadow: 0px -4.56rem 4.56rem 0px rgba(117, 152, 240, 0.09), 0px -1.125rem 2.5rem 0px rgba(117, 152, 240, 0.10);
+    box-shadow:
+      0px -4.56rem 4.56rem 0px rgba(117, 152, 240, 0.09),
+      0px -1.125rem 2.5rem 0px rgba(117, 152, 240, 0.1);
     margin-bottom: 0;
     z-index: 2;
     position: relative;
@@ -706,7 +765,11 @@ header#fern-header a.fern-button.filled.normal.primary:hover:after {
       }
 
       .advanced-card .fern-card {
-        background: linear-gradient(43.83deg, var(--accent-11) 2.24%, var(--accent-12) 118.17%);
+        background: linear-gradient(
+          43.83deg,
+          var(--accent-11) 2.24%,
+          var(--accent-12) 118.17%
+        );
 
         .text-body {
           color: var(--grayscale-1) !important;
