@@ -1,24 +1,119 @@
 ---
-title: "Blast FAQ"
+title: "🔍 Blast FAQ"
 description: "Common questions about Blast networks through Alchemy"
 slug: "reference/blast-faq"
 ---
 
-Below are some common questions about Blast networks through Alchemy.
+> 💡  Available only with [Blast](../reference/introduction-to-blast#how-to-get-blast) access
 
-### How much does Blast cost?
+*Everything you need to know about Alchemy’s high-throughput RPC for historical data*
 
-Starts at $0.10/M CU
+## What is Blast?
 
-### How is Blast different from Supernode?
+**Blast** is Alchemy’s purpose-built RPC service for **read-only, high-scale access to historical blockchain data**. It’s engineered for teams that need to query past chain states at extreme volume—like indexers, analytics platforms, explorers, and oracles—without paying for real-time features they don’t need.
 
-* Main difference: Read-only historical data
-* Other differences: reliability, developer tools, new chain support, read more here link to Limitations
+Blast eliminates write capabilities, webSockets, and redundancy to offer a more **cost-efficient** solution for historical reads.
 
-### How do I use Blast?
+## Who should use Blast?
 
-TBD
+Blast is ideal for engineering teams with **batch-based, data-heavy workloads**, such as:
 
-### TBD
+* 🧾 **Marketplaces & Indexers**
 
-TBD
+  Backfill user activity, asset metadata, or contract interactions across chains.
+
+* 📊 **Analytics & Data Science Teams**
+
+  Query full blockchain histories for modeling, reporting, or anomaly detection.
+
+* 🔮 **Oracles & Infrastructure Providers**
+
+  Retrieve accurate historical values or validate chain state over time.
+
+## What are the limitations of Blast?
+
+Blast is optimized for historical reads and intentionally excludes features that are unnecessary for that use case:
+
+| **Feature** | **Supported?** | **Notes** |
+| --- | --- | --- |
+| Write support (eth\_sendTx) | ❌ | Use Supernode for tx submission |
+| Tip-of-chain reads | ❌ | Reads begin ~25 blocks behind tip (~30s delay) |
+| WebSockets / subscriptions | ❌ | No eth\_subscribe, no event streams |
+| Mempool access | ❌ | No pending tx data |
+| Developer tooling | 🔸 Limited | No usage charts or response logs |
+| New chain support | ⏳ Slight delay | Launches a few days to weeks after Supernode |
+| Uptime SLA | ✅ 99.9% | Versus Supernode’s 99.99% |
+
+> 🔍 Want full-featured, real-time RPC? Use [Alchemy Supernode](https://www.alchemy.com/supernode)
+
+## How do I get started with Blast?
+
+Blast is currently available to **Alchemy enterprise customers**. To get access:
+
+1. Contact your **Alchemy sales or solutions rep** to request access.
+2. Once approved, create a new **Blast app** in your Alchemy dashboard.
+3. Copy the **API key** and drop it into your existing SDK config.
+
+> ✅ Blast supports the same SDKs and request formats as Supernode—just with historical-only access.
+
+Read more about Blast API endpoints [here](../reference/blast-supported-chains).
+
+## How far behind is the chain tip?
+
+All Blast reads are delayed by **~25 blocks (~30 seconds)** behind the current chain head. This applies to all supported networks and allows for:
+
+* Enhanced caching
+* Greater throughput
+* Lower infrastructure overhead
+
+This delay is fixed and not configurable.
+
+## What chains does Blast support?
+
+Blast supports **100+ EVM-compatible networks**, including:
+
+* Ethereum Mainnet
+* Polygon
+* Arbitrum
+* Optimism
+* Base
+* Avalanche
+* And many more
+
+Note: **New chain support launches first on Supernode**, with Blast availability following after stability and caching pipelines are in place.
+
+## **Can I use Blast and Supernode together?**
+
+Absolutely—and we recommend it.
+
+Use **Blast** for:
+
+* Historical reads
+* Indexing and backfills
+* Long-range analytics
+
+Use **Supernode** for:
+
+* Real-time dashboards
+* Wallet interactions
+* Live dApps
+
+Routing traffic between both services helps optimize for both cost and performance.
+
+## How can I monitor my usage?
+
+Blast currently offers minimal in-product monitoring:
+
+* No built-in usage charts
+* No request logs or traces
+
+We recommend integrating with your own observability stack (e.g. DataDog, Grafana, OpenTelemetry) to monitor request behavior and usage volume.
+
+## Where can I learn more?
+
+* [Intro to Blast](../reference/introduction-to-blast)
+* [Limitations of Blast](../reference/available-on-blast)
+* [Supernode vs. Blast](../reference/available-on-blast#summary-table-blast-vs-supernode-limitations-focus)
+* [Compute Units Explained](../reference/compute-units)
+
+Want help evaluating if Blast is the right fit for your workload? [Contact our team](https://www.alchemy.com/contact-sales)
