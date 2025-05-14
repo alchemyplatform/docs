@@ -1,0 +1,361 @@
+- name: sui_getCheckpoint
+  summary: Return a checkpoint
+  description: >
+    Retrieves a checkpoint by its digest or sequence number.
+  params:
+    - name: id
+      required: true
+      description: Checkpoint identifier — can be a digest or a sequence number (both strings).
+      schema:
+        type: string
+  result:
+    name: result
+    description: The checkpoint data for the specified ID.
+    schema:
+      $ref: "#/components/schemas/CHECKPOINT"
+  examples:
+    - name: Valid response for checkpoint
+      params:
+        - name: id
+          value: "1000"
+      result:
+        name: result
+        value:
+          epoch: "0"
+          sequenceNumber: "1000"
+          digest: "BE4JixC94sDtCgHJZruyk7QffZnWDFvM2oFjC8XtChET"
+          networkTotalTransactions: "1001"
+          previousDigest: "41nPNZWHvvajmBQjX3GbppsgGZDEB6DhN4UxPkjSYRRj"
+          epochRollingGasCostSummary:
+            computationCost: "0"
+            storageCost: "0"
+            storageRebate: "0"
+            nonRefundableStorageFee: "0"
+          timestampMs: "1681393657483"
+          transactions:
+            - "9NnjyPG8V2TPCSbNE391KDyge42AwV3vUD7aNtQQ9eqS"
+          checkpointCommitments: []
+          validatorSignature: "r8/5+Rm7niIlndcnvjSJ/vZLPrH3xY/ePGYTvrVbTascoQSpS+wsGlC+bQBpzIwA"
+
+- name: sui_getCheckpoints
+  summary: Return paginated list of checkpoints
+  description: >
+    Retrieves a paginated list of checkpoints. Results can be ordered ascending or descending by sequence number.
+  params:
+    - name: cursor
+      required: false
+      description: Optional paging cursor. If provided, results start from the item after the given cursor.
+      schema:
+        type: string
+    - name: limit
+      required: false
+      description: Maximum number of items to return.
+      schema:
+        type: integer
+    - name: descending_order
+      required: false
+      description: If true, results are returned in descending order. Defaults to false.
+      schema:
+        type: boolean
+  result:
+    name: result
+    description: Paginated list of checkpoints.
+    schema:
+      type: object
+      required:
+        - data
+        - nextCursor
+        - hasNextPage
+      properties:
+        data:
+          type: array
+          description: List of checkpoint objects.
+          items:
+            $ref: "#/components/schemas/CHECKPOINT"
+        nextCursor:
+          type: string
+        hasNextPage:
+          type: boolean
+  examples:
+    - name: Get 1 checkpoint in descending order starting from cursor 10
+      params:
+        - name: cursor
+          value: "10"
+        - name: limit
+          value: 1
+        - name: descending_order
+          value: true
+      result:
+        name: result
+        value:
+          data:
+            - epoch: "0"
+              sequenceNumber: "9"
+              digest: "4XvAN2hfEtTgFfTLA5jaWn96rZ84hAyLtnzRKdsRDXHC"
+              networkTotalTransactions: "10"
+              previousDigest: "CxsCPaoZ2BGNACeFFdeDmfiRXxtyA484gBkL4N5JxXDW"
+              epochRollingGasCostSummary:
+                computationCost: "0"
+                storageCost: "0"
+                storageRebate: "0"
+                nonRefundableStorageFee: "0"
+              timestampMs: "1681392134159"
+              transactions:
+                - "D2XXLRxxvYLsTTmN8ZZZhYikjKaRRPyWWC8AJEsvwvyE"
+              checkpointCommitments: []
+              validatorSignature: "pH/sPzHYdSXJrDz2U5XY86edyshhbZ1hFQ3SMWpXSSxdiC+/9xtuVHqTu6C+h67n"
+          nextCursor: "9"
+          hasNextPage: true
+
+- name: sui_getLatestCheckpointSequenceNumber
+  summary: Return the sequence number of the latest checkpoint
+  description: >
+    Retrieves the sequence number of the most recently executed checkpoint.
+  params: []
+  result:
+    name: result
+    description: The sequence number of the latest checkpoint.
+    schema:
+      type: string
+  examples:
+    - name: Latest checkpoint sequence number
+      params: []
+      result:
+        name: result
+        value: "143498509"
+
+- name: sui_getTotalTransactionBlocks
+  summary: Return the total number of transactions
+  description: >
+    Returns the total number of transaction blocks known to the server.
+  params: []
+  result:
+    name: result
+    description: The total number of transaction blocks.
+    schema:
+      type: string
+  examples:
+    - name: Total transaction blocks example
+      params: []
+      result:
+        name: result
+        value: "3541747040"
+
+- name: sui_getTransactionBlock
+  summary: Return the transaction response object.
+  description: >
+    Returns detailed information about a transaction block by digest, including input, effects, events, and timestamp.
+  params:
+    - name: digest
+      required: true
+      description: The digest of the queried transaction.
+      schema:
+        type: string
+    - name: options
+      required: true
+      description: Options to control which fields are returned.
+      schema:
+        $ref: "#/components/schemas/TX_RESPONSE_OPTIONS"
+  result:
+    name: result
+    description: The transaction block response.
+    schema:
+      type: object
+  examples:
+    - name: Get transaction block example
+      params:
+        - name: digest
+          value: "2pDaMQ1uTz1EEbfiZcTUoyRUP22vVqUpZowgZxLXdGUG"
+        - name: options
+          value:
+            showInput: true
+            showRawInput: false
+            showEffects: true
+            showEvents: true
+            showObjectChanges: false
+            showBalanceChanges: false
+      result:
+        name: result
+        value:
+          digest: "2pDaMQ1uTz1EEbfiZcTUoyRUP22vVqUpZowgZxLXdGUG"
+          transaction:
+            data:
+              messageVersion: "v1"
+              transaction:
+                kind: "ProgrammableTransaction"
+                inputs:
+                  - type: "object"
+                    objectType: "immOrOwnedObject"
+                    objectId: "0xd9f6db5103a374a81a161549ac2e0f044e67df0c2d3f5a551069c272c592ca1f"
+                    version: "541127851"
+                    digest: "6AEizdtWki8Zsukh1fkMQNZcLAeYnB7xqUegvuhXTrFZ"
+                  - type: "pure"
+                    valueType: "u64"
+                    value: "4000000000000000"
+                  - type: "pure"
+                    valueType: "address"
+                    value: "0x935029ca5219502a47ac9b69f556ccf6e2198b5e7815cf50f68846f723739cbd"
+                transactions:
+                  - SplitCoins:
+                      - Input: 0
+                      - - Input: 1
+                  - TransferObjects:
+                      - - Result: 0
+                        - Input: 2
+              sender: "0xac5bceec1b789ff840d7d4e6ce4ce61c90d190a7f8c4f4ddf0bff6ee2413c33c"
+              gasData:
+                payment:
+                  - objectId: "0x0466a9a57add505b7b85ac485054f9b71f574f4504d9c70acd8f73ef11e0dc30"
+                    version: 541127851
+                    digest: "4zPZiohyjWYFtUDnvGCqFxrjV8K8rVaR6r2dZwsm2L2k"
+                  - objectId: "0x1cc196b6cf0618880961593cea61043bf211312faff296dd3e6417fd130692c8"
+                    version: 546760283
+                    digest: "9venMS9EFSATK4adgcgrLLZkGNzdg3YHgmTfxtr7cKAQ"
+                owner: "0xac5bceec1b789ff840d7d4e6ce4ce61c90d190a7f8c4f4ddf0bff6ee2413c33c"
+                price: "740"
+                budget: "3818976"
+            txSignatures:
+              - "AMpIvSOCvmDhxtfRmUIP1+wHS1P7uNjG/nbbXKgBO9lQ9TxSDexchRpp6gj1nkIu0mdrW1c5yT+1VFH78nHvXgiT5a1NeBxNOvDF96KyiveJ7afzY9L9GdrGlIwUCJLiDA=="
+          effects:
+            status:
+              status: "success"
+            executedEpoch: "757"
+            gasUsed:
+              computationCost: "740000"
+              storageCost: "3663200"
+              storageRebate: "3280464"
+              nonRefundableStorageFee: "33136"
+            modifiedAtVersions:
+              - objectId: "0x0466a9a57add505b7b85ac485054f9b71f574f4504d9c70acd8f73ef11e0dc30"
+                sequenceNumber: "541127851"
+              - objectId: "0x1cc196b6cf0618880961593cea61043bf211312faff296dd3e6417fd130692c8"
+                sequenceNumber: "546760283"
+              - objectId: "0xd9f6db5103a374a81a161549ac2e0f044e67df0c2d3f5a551069c272c592ca1f"
+                sequenceNumber: "541127851"
+            created:
+              - owner:
+                  AddressOwner: "0x935029ca5219502a47ac9b69f556ccf6e2198b5e7815cf50f68846f723739cbd"
+                reference:
+                  objectId: "0x6f0a2c043864007581261b041d4bf68ae6da5a821f6c500f86f0c49555fa5253"
+                  version: 546760284
+                  digest: "HQSEjogwi8yhLm9yfABqXYXni3Z2xYBs8NM5PDVqxS3j"
+            mutated:
+              - owner:
+                  AddressOwner: "0xac5bceec1b789ff840d7d4e6ce4ce61c90d190a7f8c4f4ddf0bff6ee2413c33c"
+                reference:
+                  objectId: "0x0466a9a57add505b7b85ac485054f9b71f574f4504d9c70acd8f73ef11e0dc30"
+                  version: 546760284
+                  digest: "CiJgoU28EjjE31XCbwCn1EhjDr7PABKu4FeRwKTkR8ax"
+              - owner:
+                  AddressOwner: "0xac5bceec1b789ff840d7d4e6ce4ce61c90d190a7f8c4f4ddf0bff6ee2413c33c"
+                reference:
+                  objectId: "0xd9f6db5103a374a81a161549ac2e0f044e67df0c2d3f5a551069c272c592ca1f"
+                  version: 546760284
+                  digest: "6UX8kadeV2g8BEJHHCxviqeQyejaPoJa1sVKDBCgz2kz"
+            deleted:
+              - objectId: "0x1cc196b6cf0618880961593cea61043bf211312faff296dd3e6417fd130692c8"
+                version: 546760284
+                digest: "7gyGAp71YXQRoxmFBaHxofQXAipvgHyBKPyxmdSJxyvz"
+            gasObject:
+              owner:
+                AddressOwner: "0xac5bceec1b789ff840d7d4e6ce4ce61c90d190a7f8c4f4ddf0bff6ee2413c33c"
+              reference:
+                objectId: "0x0466a9a57add505b7b85ac485054f9b71f574f4504d9c70acd8f73ef11e0dc30"
+                version: 546760284
+                digest: "CiJgoU28EjjE31XCbwCn1EhjDr7PABKu4FeRwKTkR8ax"
+            dependencies:
+              - "3ouqWx1G3NgVmDewUmp2VNXuoHUgFSCtX7o2ok7DELiK"
+              - "4Dre3aB1q4Y8ofehS76bCmPDTCcymdeVQuw9HMgg6bVQ"
+          events: []
+          timestampMs: "1746765615941"
+          checkpoint: "143012710"
+
+- name: sui_multiGetTransactionBlocks
+  summary: Retrieve multiple transaction blocks by digest
+  description: >
+    Returns an ordered list of transaction block responses for the provided digests.
+    The method throws an error if the input contains duplicates or exceeds the maximum allowed size.
+  params:
+    - name: digests
+      required: true
+      description: List of transaction digests to query.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: options
+      required: true
+      description: Options to control which fields are returned in the response.
+      schema:
+        $ref: "#/components/schemas/TX_RESPONSE_OPTIONS"
+  result:
+    name: result
+    description: List of transaction block responses.
+    schema:
+      type: array
+      items:
+        type: object
+  examples:
+    - name: Fetch a transaction block with options
+      params:
+        - name: digests
+          value:
+            - "8b3byDuRojHXqmSz16PsyzfdXJEY5nZBGTM23gMsMAY8"
+        - name: options
+          value:
+            showInput: true
+            showRawInput: false
+            showEffects: true
+            showEvents: true
+            showObjectChanges: false
+            showBalanceChanges: false
+      result:
+        name: result
+        value:
+          - digest: "8b3byDuRojHXqmSz16PsyzfdXJEY5nZBGTM23gMsMAY8"
+            transaction:
+              data:
+                messageVersion: "v1"
+                transaction:
+                  kind: "ProgrammableTransaction"
+                  inputs:
+                    - type: "object"
+                      objectType: "immOrOwnedObject"
+                      objectId: "0x704c8c0d8052be7b5ca7174222a8980fb2ad3cd640f4482f931deb6436902627"
+                      version: "17914894"
+                      digest: "EtB9hPj2sgFNvi5AmdePGWVjzTY8avMcDBbXmU8KKrav"
+                  transactions:
+                    - MergeCoins: [...]
+                    - MoveCall: { ... }
+                    - TransferObjects: [...]
+              sender: "0x8b35e67a519fffa11a9c74f169228ff1aa085f3a3d57710af08baab8c02211b9"
+              gasData:
+                payment:
+                  - objectId: "0x05fa83c7371003767a1a9a204a4f788df7880bbb2d1a8813612848c0684a1508"
+                    version: 17914894
+                    digest: "8QS7xEpuhpVyE5FYtAwFokGMVgEiTuwxeScmm9NKH6gL"
+                owner: "0x8b35e67a519fffa11a9c74f169228ff1aa085f3a3d57710af08baab8c02211b9"
+                price: "780"
+                budget: "1560000"
+            txSignatures:
+              - "AHwNUODZnfOCQ66fNxaFhRxcJVp8ph6YG2nDMBmHDKW+t10A2tgLOwm+ZlCfflC59Ymvx43c2PVnK4mT10/NDQgVReFJgPk3gCeodtmcp+/EUo0Iat5xJMpD5Jps73bUpA=="
+            effects:
+              status:
+                status: "success"
+              executedEpoch: "120"
+              gasUsed:
+                computationCost: "780000"
+                storageCost: "31000400"
+                storageRebate: "43187760"
+                nonRefundableStorageFee: "436240"
+              transactionDigest: "8b3byDuRojHXqmSz16PsyzfdXJEY5nZBGTM23gMsMAY8"
+              gasObject:
+                owner:
+                  AddressOwner: "0x8b35e67a519fffa11a9c74f169228ff1aa085f3a3d57710af08baab8c02211b9"
+                reference:
+                  objectId: "0x05fa83c7371003767a1a9a204a4f788df7880bbb2d1a8813612848c0684a1508"
+                  version: 17917509
+                  digest: "2UgthUKMotpLrFxCfTsfzjMzxtdcFM43nJu3LLdEa3z3"
+            events: []
+            timestampMs: "1691758371497"
+            checkpoint: "10066505"

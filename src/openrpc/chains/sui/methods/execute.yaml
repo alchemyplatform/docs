@@ -1,0 +1,1236 @@
+- name: unsafe_batchTransaction
+  summary: Create an unsigned batched transaction
+  description: >
+    Creates a BCS-serialized batched transaction that is not signed. This can be used
+    to execute multiple actions atomically in one transaction block.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: single_transaction_params
+      required: true
+      description: A list of individual transaction instructions to include in the batch.
+      schema:
+        type: array
+        items:
+          type: object
+          description: Individual transaction request parameter.
+          properties:
+            kind:
+              type: string
+              description: The kind of transaction (e.g. TransferObject, MoveCall, etc).
+            data:
+              type: object
+              description: The parameters for the specific transaction kind.
+    - name: gas
+      required: false
+      description: The gas object to be used. If omitted, one will be selected automatically.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The maximum amount of gas to be used for this transaction.
+      schema:
+        type: string
+    - name: txn_builder_mode
+      required: false
+      description: Whether this is a regular or dev-inspect transaction.
+      schema:
+        type: string
+        enum:
+          - Commit
+          - DevInspect
+  result:
+    name: result
+    description: The batched transaction block as BCS-encoded data, plus gas and input metadata.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: BCS serialized transaction data bytes (base64-encoded, without type tag).
+        gas:
+          type: array
+          description: Gas objects used in the transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: string
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          description: All input objects used in this transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: string
+              digest:
+                type: string
+  examples:
+    - name: Create batched transaction
+      params:
+        - name: signer
+          value: "0x7d20dcdb2bca4f508ea9613994683eb4e76e9c4ed371169677c1be02aaf0b58e"
+        - name: single_transaction_params
+          value:
+            - kind: TransferObject
+              data:
+                recipient: "0x9b9f3d0c8593d68164661b7f3de35308a3ffde34cb4f08879642a6a2b6ceca69"
+                objectId: "0x4f82f1c8587b98d64c00bfb46c3843bd8bf6ccfa7c65a86138698cd1fdcac3dc"
+        - name: gas
+          value: "0xe8d8c7ce863f313da3dbd92a83ef26d128b88fe66bf26e0e0d09cdaf727d1d84"
+        - name: gas_budget
+          value: "10000000"
+        - name: txn_builder_mode
+          value: "Commit"
+      result:
+        name: result
+        value:
+          txBytes: "AAACACBqEB6aOvXIBwES+Ahkizbvv43uihqC3kbZUE6WoRCKFwEA..."
+          gas:
+            - objectId: "0xe8d8c7ce863f313da3dbd92a83ef26d128b88fe66bf26e0e0d09cdaf727d1d84"
+              version: "2"
+              digest: "EnRQXe1hDGAJCFyF2ds2GmPHdvf9V6yxf24LisEsDkYt"
+          inputObjects:
+            - objectId: "0x4f82f1c8587b98d64c00bfb46c3843bd8bf6ccfa7c65a86138698cd1fdcac3dc"
+              version: "2"
+              digest: "Cv7n2YaM7Am1ssZGu4khsFkcKHnpgVhwFCSs4kLjrtLW"
+
+- name: unsafe_mergeCoins
+  summary: Create an unsigned transaction to merge multiple coins into one coin
+  description: >
+    Constructs a BCS-encoded transaction block that merges the balance of `coin_to_merge` into `primary_coin`.
+    This transaction must be signed and then submitted using a separate execute call. The gas object must be owned by the signer.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: primary_coin
+      required: true
+      description: The coin object to merge into. This coin will remain after the transaction.
+      schema:
+        type: string
+    - name: coin_to_merge
+      required: true
+      description: The coin object to be merged. It will be destroyed and its balance added to `primary_coin`.
+      schema:
+        type: string
+    - name: gas
+      required: false
+      description: The gas object to be used. If omitted, the node will auto-select one from the signer's owned coins.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget for the transaction. The transaction fails if gas used exceeds this.
+      schema:
+        type: string
+  result:
+    name: result
+    description: The unsigned transaction block that merges coins.
+    schema:
+      type: object
+      properties:
+        gas:
+          type: array
+          description: The gas object(s) selected for this transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: string
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          description: List of objects the transaction references.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: string
+              digest:
+                type: string
+              objectType:
+                type: string
+        txBytes:
+          type: string
+          description: Base64-encoded BCS transaction data, ready for signing.
+  examples:
+    - name: Merge coins
+      params:
+        - name: signer
+          value: "0x4c05f4f76ed81d210e9a29ac0756c7a3129e4b9ecacbbb9fc1579505947630cf"
+        - name: primary_coin
+          value: "0x5b14e6b640d6254959803aafff56b3d42c559760f38c3f98a91f557233b8ebc9"
+        - name: coin_to_merge
+          value: "0x47011883c7c75aaeb5beec48ade6eebb428bb8a89a340936e9b24fcbacdc67ea"
+        - name: gas
+          value: "0x8aPfVmE7k1h3BFju4WFhGJ59oWpMFSiRqsCa1EsyJxtS"
+        - name: gas_budget
+          value: "3000"
+      result:
+        name: result
+        value:
+          gas:
+            - objectId: "0x8aPfVmE7k1h3BFju4WFhGJ59oWpMFSiRqsCa1EsyJxtS"
+              version: "1"
+              digest: "BhbWpBeESxuRWvmvLMyb2JNUuFa6j4aG1T4WUiPgKAHm"
+          inputObjects:
+            - objectId: "0x5b14e6b640d6254959803aafff56b3d42c559760f38c3f98a91f557233b8ebc9"
+              version: "1"
+              digest: "BhbWpBeESxuRWvmvLMyb2JNUuFa6j4aG1T4WUiPgKAHm"
+              objectType: "Coin"
+            - objectId: "0x47011883c7c75aaeb5beec48ade6eebb428bb8a89a340936e9b24fcbacdc67ea"
+              version: "1"
+              digest: "BhbWpBeESxuRWvmvLMyb2JNUuFa6j4aG1T4WUiPgKAHm"
+              objectType: "Coin"
+          txBytes: "BASE64_ENCODED_BCS_BYTES_HERE"
+
+- name: unsafe_moveCall
+  summary: Create an unsigned transaction to execute a Move call
+  description: >
+    Constructs a BCS-encoded transaction block that performs a Move call to a specific function
+    in a Move module. This unsigned transaction must be signed and submitted separately.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: package_object_id
+      required: true
+      description: The Move package ID containing the target module.
+      schema:
+        type: string
+    - name: module
+      required: true
+      description: The name of the Move module.
+      schema:
+        type: string
+    - name: function
+      required: true
+      description: The name of the Move function to call.
+      schema:
+        type: string
+    - name: type_arguments
+      required: true
+      description: Type arguments passed to the Move function.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: arguments
+      required: true
+      description: Function arguments in SuiJson format.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: gas
+      required: false
+      description: Gas object to be used. Will be auto-selected if not provided.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: Maximum gas budget for the transaction.
+      schema:
+        type: string
+    - name: execution_mode
+      required: false
+      description: Whether this is a normal execution or a dev inspect. Defaults to "Commit".
+      schema:
+        type: string
+        enum:
+          - Commit
+          - DevInspect
+  result:
+    name: result
+    description: An unsigned transaction block containing the Move call.
+    schema:
+      type: object
+      properties:
+        gas:
+          type: array
+          description: The gas object(s) used.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: string
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          description: Objects involved in the transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: string
+              digest:
+                type: string
+              objectType:
+                type: string
+        txBytes:
+          type: string
+          description: Base64-encoded BCS transaction data.
+  examples:
+    - name: Move call - borrow from bag
+      params:
+        - name: signer
+          value: "0x00c364252964511b32b084c17a492093d5b762cbe2766d46911912718e56950f"
+        - name: package_object_id
+          value: "0x0000000000000000000000000000000000000000000000000000000000000002"
+        - name: module
+          value: "bag"
+        - name: function
+          value: "borrow"
+        - name: type_arguments
+          value:
+            - "0x2::devnet_nft::MintNFTEvent"
+        - name: arguments
+          value:
+            - "copy"
+            - "drop"
+        - name: gas
+          value: "0x30dab78d58471a78496eb71c2c6e77ba268f0390"
+        - name: gas_budget
+          value: "1"
+        - name: execution_mode
+          value: "Commit"
+      result:
+        name: result
+        value:
+          gas:
+            - objectId: "0x30dab78d58471a78496eb71c2c6e77ba268f0390"
+              version: "1"
+              digest: "sEnRQXe1hDGAJCFyF2ds2GmPHdvf9V6yxf24LisEsDkYt"
+          inputObjects:
+            - objectId: "0xa6379c19b3aa9aa878fc1deaf69c1dbb1de4224de8b62de04e4962b593e037e9"
+              version: "1"
+              digest: "EnRQXe1hDGAJCFyF2ds2GmPHdvf9V6yxf24LisEsDkYt"
+              objectType: "MoveObject"
+          txBytes: "BASE64_ENCODED_TX_BYTES"
+
+- name: unsafe_pay
+  summary: Send Coin<T> to a list of addresses
+  description: >
+    Create an unsigned transaction to send Coin<T> to a list of recipients, 
+    where T can be any coin type. The specified gas object must not appear 
+    in the input_coins array. If not provided, the node will select one automatically.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: input_coins
+      required: true
+      description: List of Coin<T> object IDs to use for sending value.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: recipients
+      required: true
+      description: The recipient addresses. Must have the same length as `amounts`.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: amounts
+      required: true
+      description: The amounts to transfer to each recipient, in the same order.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: gas
+      required: false
+      description: Object ID of the gas coin to use. Must not be in input_coins.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget for the transaction.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Unsigned transaction for sending Coin<T>.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: Base64-encoded BCS serialized transaction bytes.
+        gas:
+          type: array
+          description: Gas object(s) selected for the transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          description: All objects involved in this transaction (coins, gas, etc.).
+          items:
+            type: object
+  examples:
+    - name: Transfer Coin<T> to 1 recipient
+      params:
+        - name: signer
+          value: "0x00c364252964511b32b084c17a492093d5b762cbe2766d46911912718e56950f"
+        - name: input_coins
+          value:
+            - "0xa6379c19b3aa9aa878fc1deaf69c1dbb1de4224de8b62de04e4962b593e037e9"
+        - name: recipients
+          value:
+            - "0x8933942921bd522d69d7af12f875ba4f4963ad01431df8403597dfa8692f417d"
+        - name: amounts
+          value:
+            - "10"
+        - name: gas
+          value: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+        - name: gas_budget
+          value: "2000"
+      result:
+        name: result
+        value:
+          txBytes: "AAADAQCmN5wZs6qaqHj8Her2nB27HeQiTei2LeBOSWK1k+A36Q4DMCEAAAAAIF..."
+          gas:
+            - objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+              version: 1
+              digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0xa6379c19b3aa9aa878fc1deaf69c1dbb1de4224de8b62de04e4962b593e037e9"
+                version: 556794638
+                digest: "6afcUrFL3VjDUHd7EUTPgCM2Tbw2vt1X96kVDhZqWh6r"
+            - ImmOrOwnedMoveObject:
+                objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+                version: 1
+                digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+
+- name: unsafe_payAllSui
+  summary: Transfer all SUI coins to a single recipient
+  description: >
+    Creates an unsigned transaction that transfers all SUI coins to one recipient. 
+    All SUI from the input coins are consolidated into the first coin, which is 
+    then transferred and used as the gas object. Remaining input coins are deleted.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: input_coins
+      required: true
+      description: List of Coin<SUI> object IDs to use, including the one used for gas.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: recipient
+      required: true
+      description: The recipient's Sui address.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget for the transaction.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Unsigned transaction that transfers all SUI.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: Base64-encoded BCS serialized transaction bytes.
+        gas:
+          type: array
+          description: Gas object(s) selected for the transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          description: All objects involved in this transaction (SUI coins).
+          items:
+            type: object
+  examples:
+    - name: Send all SUI to one recipient
+      params:
+        - name: signer
+          value: "0x00c364252964511b32b084c17a492093d5b762cbe2766d46911912718e56950f"
+        - name: input_coins
+          value:
+            - "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+        - name: recipient
+          value: "0xeeb30f4dc675a7d49b8abedf58eb2e3738facfc554c80f4b27ab62aa02878f56"
+        - name: gas_budget
+          value: "2000"
+      result:
+        name: result
+        value:
+          txBytes: "AAABACDusw9NxnWn1JuKvt9Y6y43OPrPxVTID0snq2KqAoePVgEBAQABAAAAw2QlK..."
+          gas:
+            - objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+              version: 1
+              digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+                version: 1
+                digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+
+- name: unsafe_paySui
+  summary: Send SUI coins to multiple recipients
+  description: >
+    Creates an unsigned transaction that sends SUI to multiple recipients.
+    The transaction uses SUI coins for both transfer and gas without requiring a separate gas object.
+    1. Debits each input coin to create new coins for recipients.
+    2. Consolidates residual SUI into the first coin, which becomes the gas coin.
+    3. Updates the first coin balance to: total_input - total_output - gas_cost.
+    4. Deletes all other input coins.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: input_coins
+      required: true
+      description: List of Coin<SUI> object IDs to use, including the one used for gas.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: recipients
+      required: true
+      description: List of recipient Sui addresses.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: amounts
+      required: true
+      description: List of amounts (same order as recipients).
+      schema:
+        type: array
+        items:
+          type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget for the transaction.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Unsigned transaction that transfers SUI to recipients.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: Base64-encoded BCS serialized transaction bytes.
+        gas:
+          type: array
+          description: Gas object used for the transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          description: All input SUI coin objects involved.
+          items:
+            type: object
+  examples:
+    - name: Transfer SUI to one recipient
+      params:
+        - name: signer
+          value: "0xeeb30f4dc675a7d49b8abedf58eb2e3738facfc554c80f4b27ab62aa02878f56"
+        - name: input_coins
+          value:
+            - "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+        - name: recipients
+          value:
+            - "0x1f446cc6caa6dff121d1540568e91e89b7e0d36f6e009522c59265c627ed0361"
+        - name: amounts
+          value:
+            - "2"
+        - name: gas_budget
+          value: "2000"
+      result:
+        name: result
+        value:
+          txBytes: "AAACAAgCAAAAAAAAAAAgH0Rsxsqm3/Eh0VQFaOkeibfg029uAJUixZJlxiftA2ECAgABAQA..."
+          gas:
+            - objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+              version: 1
+              digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+                version: 1
+                digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+
+- name: unsafe_publish
+  summary: Publish a Move module package
+  description: >
+    Creates an unsigned transaction that publishes a Move module package to the Sui blockchain.
+    The transaction includes the compiled module bytecode, a list of dependency addresses, and gas settings.
+  params:
+    - name: sender
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: compiled_modules
+      required: true
+      description: List of compiled Move module byte arrays (base64-encoded).
+      schema:
+        type: array
+        items:
+          type: string
+    - name: dependencies
+      required: true
+      description: List of object IDs for all transitive Move dependencies.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: gas
+      required: false
+      description: Object ID of the gas coin to use. Auto-selected if omitted.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: Maximum gas budget allowed for the transaction.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Unsigned transaction containing the Move package publish operation.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: BCS-serialized unsigned transaction, base64-encoded.
+        gas:
+          type: object
+          description: The gas object used for this transaction.
+          properties:
+            objectId:
+              type: string
+            version:
+              type: integer
+            digest:
+              type: string
+        inputObjects:
+          type: array
+          description: All input objects used in the transaction (e.g., gas coin).
+          items:
+            type: object
+  examples:
+    - name: Publish a Move module
+      params:
+        - name: sender
+          value: "0x9c74337b14141ba3b0357c6625f756b47e76c7f7fa6370dec809cfc6500f54ca"
+        - name: compiled_modules
+          value:
+            - "UDYCDa2aWEDMU0HrzbHIwSynps1KS/SmcWkdXjWE8j1Q/EXOnhbI2+0QILrztBoHkxDT8VpkxGe2ZgprmWO4Dw=="
+        - name: dependencies
+          value:
+            - "0x06850c139e7f8923edd306226efe08d7ed699eafa8f8b8e59a7fa6aa31f481ff"
+        - name: gas_budget
+          value: "2"
+      result:
+        name: result
+        value:
+          txBytes: "AAEBYQBviFz6Y6H4RjBva6ARJNNMc6TT7ATjOibU4ESkWPM8r1nMCMq1OKoR1XrCk9D6J9FtMT9G+kqiBZ3lsU7wwuIDBE8TbGiR+lASjfxn4meOl/IjFf3ci1P8x8FTKwafVU0w2reNWEcaeElutxwsbne6Jo8DkDoOobmA6nL3RXhPeThmlRJ0z5Vlc6AGAAAAAAAg52EjC2IvYUY3YUndrVNlQfdL5hj0pWzgMM0rSmicQbwBAAAAAAAAAAEAAAAAAAAA"
+          gas:
+            objectId: "0x3a0ea1b980ea72f745784f793866951274cf9565"
+            version: 434291
+            digest: "52EjC2IvYUY3YUndrVNlQfdL5hj0pWzgMM0rSmicQbw="
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0x3a0ea1b980ea72f745784f793866951274cf9565"
+                version: 434291
+                digest: "52EjC2IvYUY3YUndrVNlQfdL5hj0pWzgMM0rSmicQbw="
+
+- name: unsafe_requestAddStake
+  summary: Stake SUI with a validator using multiple input coins
+  description: >
+    Creates an unsigned transaction to stake SUI by selecting one or more SUI coins, 
+    specifying the amount, and choosing a validator's address. This operation deposits the funds 
+    into the validator’s staking pool. Gas must be paid with a separate coin.
+  params:
+    - name: signer
+      required: true
+      description: The address of the transaction signer.
+      schema:
+        type: string
+    - name: coins
+      required: true
+      description: A list of Coin<SUI> object IDs to be used for staking.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: amount
+      required: true
+      description: The amount to stake (in SUI base units).
+      schema:
+        type: string
+    - name: validator
+      required: true
+      description: The address of the validator to which the stake is delegated.
+      schema:
+        type: string
+    - name: gas
+      required: false
+      description: The object ID of the gas coin to be used. If not provided, one will be auto-selected.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: Maximum gas budget for the transaction.
+      schema:
+        type: string
+  result:
+    name: result
+    description: The unsigned transaction for adding stake.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: The unsigned transaction encoded in base64.
+        gas:
+          type: array
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+          description: The gas object to be used.
+        inputObjects:
+          type: array
+          items:
+            type: object
+          description: List of objects required as inputs (e.g., stake coin, Move modules).
+  examples:
+    - name: Stake 2 SUI to a validator
+      params:
+        - name: signer
+          value: "0x1f446cc6caa6dff121d1540568e91e89b7e0d36f6e009522c59265c627ed0361"
+        - name: coins
+          value:
+            - "0x74274e3dcc1bcf7360b291e0fd7d5a66c468d56c766664028d34cdd760c00090"
+        - name: amount
+          value: "2"
+        - name: validator
+          value: "0x88127002d43aac4a92422b4b35d41e17d72b62d0336751ec52e341c8b8d10ba7"
+        - name: gas
+          value: "0x8d776bfe8433e298973f7018e195906664985a80d060a288af6f9848094738bb"
+        - name: gas_budget
+          value: "2000"
+      result:
+        name: result
+        value:
+          txBytes: "AAAEAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQEAdCdOPcwbz3NgspHg/X1aZsRo1Wx2ZmQCjTTN12DAAJCkIFQAAAAAACC/HMsNq7PPzkJSKt1qkBzkDWjrvOSrW8fnMi8SJMWFIwAJAQIAAAAAAAAAACCIEnAC1DqsSpJCK0s11B4X1yti0DNnUexS40HIuNELpwIFAAEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMKc3VpX3N5c3RlbRpyZXF1ZXN0X2FkZF9zdGFrZV9tdWxfY29pbgAEAQAAAgAAAQIAAQMAH0Rsxsqm3/Eh0VQFaOkeibfg029uAJUixZJlxiftA2EBC78rbAPLD14T1jSUU168V4VsaKHY/2c0zCGk5G36vA8p4XAAAAAAACAlGdyE6dJy1R1HDv2UJPmpwIxeq/b4rO9kZbkPBIZy1x9EbMbKpt/xIdFUBWjpHom34NNvbgCVIsWSZcYn7QNh6AMAAAAAAADQBwAAAAAAAAA="
+          gas:
+            - objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+              version: 7397673
+              digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+          inputObjects:
+            - SharedMoveObject:
+                id: "0x0000000000000000000000000000000000000000000000000000000000000005"
+                initial_shared_version: "1"
+                mutable: true
+            - ImmOrOwnedMoveObject:
+                objectId: "0x74274e3dcc1bcf7360b291e0fd7d5a66c468d56c766664028d34cdd760c00090"
+                version: 5513380
+                digest: "Ds2LSHthqBzpEFDix7iLprGaTFgeDgyZtcDhTmZvDntJ"
+            - MovePackage: "0x0000000000000000000000000000000000000000000000000000000000000003"
+            - ImmOrOwnedMoveObject:
+                objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+                version: 7397673
+                digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+
+- name: unsafe_requestWithdrawStake
+  summary: Withdraw a stake from a validator's staking pool
+  description: >
+    Creates an unsigned transaction that requests withdrawal of a staked SUI object 
+    from a validator's staking pool. The gas coin must not be part of the staked assets.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: staked_sui
+      required: true
+      description: StakedSui object ID.
+      schema:
+        type: string
+    - name: gas
+      required: true
+      description: Gas object to be used in this transaction. If not provided, one will be auto-selected by the node.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget for the transaction. The transaction will fail if the gas cost exceeds this value.
+      schema:
+        type: string
+  result:
+    name: result
+    description: The unsigned transaction to withdraw stake.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: Base64-encoded BCS transaction bytes.
+        gas:
+          type: array
+          description: The gas object used in the transaction.
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          description: List of input objects involved in the transaction.
+          items:
+            type: object
+  examples:
+    - name: Withdraw stake
+      params:
+        - name: signer
+          value: "0xeeb30f4dc675a7d49b8abedf58eb2e3738facfc554c80f4b27ab62aa02878f56"
+        - name: staked_sui
+          value: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+        - name: gas
+          value: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+        - name: gas_budget
+          value: "5000"
+      result:
+        name: result
+        value:
+          txBytes: "AAACAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQEAAAAAAAAAAQEA7mXfRGyJZQRRLLNag/glEMEP0vq13itRo6Y/9vcQbacBAAAAAAAAACAK12msl7LT8P5mymJEPw7iN/uuGhV/TB71nx0TlEikMQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMKc3VpX3N5c3RlbRZyZXF1ZXN0X3dpdGhkcmF3X3N0YWtlAAIBAAABAQDusw9NxnWn1JuKvt9Y6y43OPrPxVTID0snq2KqAoePVgHuZd9EbIllBFEss1qD+CUQwQ/S+rXeK1Gjpj/29xBtpwEAAAAAAAAAIArXaayXstPw/mbKYkQ/DuI3+64aFX9MHvWfHROUSKQx7rMPTcZ1p9Sbir7fWOsuNzj6z8VUyA9LJ6tiqgKHj1bkAgAAAAAAAIgTAAAAAAAAAA=="
+          gas:
+            - objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+              version: 1
+              digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+          inputObjects:
+            - SharedMoveObject:
+                id: "0x0000000000000000000000000000000000000000000000000000000000000005"
+                initial_shared_version: "1"
+                mutable: true
+            - ImmOrOwnedMoveObject:
+                objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+                version: 1
+                digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+            - MovePackage: "0x0000000000000000000000000000000000000000000000000000000000000003"
+            - ImmOrOwnedMoveObject:
+                objectId: "0xee65df446c896504512cb35a83f82510c10fd2fab5de2b51a3a63ff6f7106da7"
+                version: 1
+                digest: "jKbAsTuqaK9k6hb27Z5xxnQVmTSWoU6dkL82x44c2dW"
+
+- name: unsafe_splitCoin
+  summary: Create an unsigned transaction to split a coin object into multiple coins.
+  description: >
+    Creates a transaction that splits a coin into multiple coins with specific amounts.
+    This is useful for dividing SUI coins before transferring or staking.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: coin_object_id
+      required: true
+      description: The coin object to be split.
+      schema:
+        type: string
+    - name: split_amounts
+      required: true
+      description: The amounts to split out from the coin.
+      schema:
+        type: array
+        items:
+          type: string
+    - name: gas
+      required: true
+      description: The gas object to be used in this transaction. If not specified, the node selects one automatically.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget. The transaction fails if the cost exceeds this amount.
+      schema:
+        type: string
+  result:
+    name: result
+    description: The unsigned transaction bytes and input objects.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: BCS serialized transaction data bytes, base64 encoded.
+        gas:
+          type: array
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          items:
+            type: object
+  examples:
+    - name: Split coin into one output
+      params:
+        - name: signer
+          value: "0x563ee81d153032ef327b349420cf91e28a8d5528cbdcae5c108093a8a3879abb"
+        - name: coin_object_id
+          value: "0x8d776bfe8433e298973f7018e195906664985a80d060a288af6f9848094738bb"
+        - name: split_amounts
+          value: ["2"]
+        - name: gas
+          value: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+        - name: gas_budget
+          value: "2000"
+      result:
+        name: result
+        value:
+          txBytes: "AAACAQAAP5wPUztPcrOOTf2Q8mwp8FLrhVq4+xkS0grC45rDvCKgEAAAAAAAIPTdUyUhkhrkLz3h/2BpV7H2ZXm6WUv66fIHIPSPLJavAAkBAgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACA3BheQlzcGxpdF92ZWMBB4XFtkmIexd3hWGjoJvBpHQrn5nJp5dj6JrMCl3cI+y1A2V0aANFVEgAAgEAAAEBAFY+6B0VMDLvMns0lCDPkeKKjVUoy9yuXBCAk6ijh5q7AQu/K2wDyw9eE9Y0lFNevFeFbGih2P9nNMwhpORt+rwPKeFwAAAAAAAgJRnchOnSctUdRw79lCT5qcCMXqv2+KzvZGW5DwSGctdWPugdFTAy7zJ7NJQgz5Hiio1VKMvcrlwQgJOoo4eau+gDAAAAAAAA0AcAAAAAAAAA"
+          gas:
+            - objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+              version: 7397673
+              digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+                version: 1089570
+                digest: "HUrDhmdBEtQW8LBAd2fdQrqznLedy16rPjME6WdZqCsG"
+            - MovePackage: "0x0000000000000000000000000000000000000000000000000000000000000002"
+            - MovePackage: "0x85c5b649887b17778561a3a09bc1a4742b9f99c9a79763e89acc0a5ddc23ecb5"
+            - ImmOrOwnedMoveObject:
+                objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+                version: 7397673
+                digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+
+- name: unsafe_splitCoinEqual
+  summary: Create an unsigned transaction to split a coin object into multiple equal-size coins.
+  description: >
+    Splits a coin into multiple equally-sized parts. The transaction returns `txBytes` and the objects involved.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: coin_object_id
+      required: true
+      description: The coin object to be split.
+      schema:
+        type: string
+    - name: split_count
+      required: true
+      description: The number of equal-size coins to split into.
+      schema:
+        type: string
+    - name: gas
+      required: true
+      description: The gas object to use in this transaction.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The maximum gas budget for executing the transaction.
+      schema:
+        type: string
+  result:
+    name: result
+    description: The unsigned transaction bytes and object metadata.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+          description: BCS serialized transaction data bytes (base64).
+        gas:
+          type: array
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          items:
+            type: object
+  examples:
+    - name: Split coin into 2 equal parts
+      params:
+        - name: signer
+          value: "0x563ee81d153032ef327b349420cf91e28a8d5528cbdcae5c108093a8a3879abb"
+        - name: coin_object_id
+          value: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+        - name: split_count
+          value: "2"
+        - name: gas
+          value: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+        - name: gas_budget
+          value: "2000"
+      result:
+        name: result
+        value:
+          txBytes: "AAACAQAAP5wPUztPcrOOTf2Q8mwp8FLrhVq4+xkS0grC45rDvCKgEAAAAAAAIPTdUyUhkhrkLz3h/2BpV7H2ZXm6WUv66fIHIPSPLJavAAgCAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDcGF5D2RpdmlkZV9hbmRfa2VlcAEHhcW2SYh7F3eFYaOgm8GkdCufmcmnl2PomswKXdwj7LUDZXRoA0VUSAACAQAAAQEAVj7oHRUwMu8yezSUIM+R4oqNVSjL3K5cEICTqKOHmrsBC78rbAPLD14T1jSUU168V4VsaKHY/2c0zCGk5G36vA8p4XAAAAAAACAlGdyE6dJy1R1HDv2UJPmpwIxeq/b4rO9kZbkPBIZy11Y+6B0VMDLvMns0lCDPkeKKjVUoy9yuXBCAk6ijh5q76AMAAAAAAADQBwAAAAAAAAA"
+          gas:
+            - objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+              version: 7397673
+              digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+                version: 1089570
+                digest: "HUrDhmdBEtQW8LBAd2fdQrqznLedy16rPjME6WdZqCsG"
+            - MovePackage: "0x0000000000000000000000000000000000000000000000000000000000000002"
+            - MovePackage: "0x85c5b649887b17778561a3a09bc1a4742b9f99c9a79763e89acc0a5ddc23ecb5"
+            - ImmOrOwnedMoveObject:
+                objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+                version: 7397673
+                digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+
+- name: unsafe_transferObject
+  summary: Create an unsigned transaction to transfer an object from one address to another.
+  description: >
+    Transfers an object that supports public transfer from the signer to a recipient address.
+    The gas object must be distinct from the object being transferred.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: object_id
+      required: true
+      description: The object to be transferred.
+      schema:
+        type: string
+    - name: gas
+      required: true
+      description: The gas object used for this transaction.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget (uint64).
+      schema:
+        type: string
+    - name: recipient
+      required: true
+      description: The address to which the object is transferred.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Transaction block bytes and object metadata for signing and execution.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+        gas:
+          type: array
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          items:
+            type: object
+  examples:
+    - name: Transfer a coin object to a recipient
+      params:
+        - name: signer
+          value: "0x563ee81d153032ef327b349420cf91e28a8d5528cbdcae5c108093a8a3879abb"
+        - name: object_id
+          value: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+        - name: gas
+          value: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+        - name: gas_budget
+          value: "2000"
+        - name: recipient
+          value: "0xeeb30f4dc675a7d49b8abedf58eb2e3738facfc554c80f4b27ab62aa02878f56"
+      result:
+        name: result
+        value:
+          txBytes: "AAACACDusw9NxnWn1JuKvt9Y6y43OPrPxVTID0snq2KqAoePVgEAAD+cD1M7T3Kzjk39kPJsKfBS64VauPsZEtIKwuOaw7wioBAAAAAAACD03VMlIZIa5C894f9gaVex9mV5ullL+unyByD0jyyWrwEBAQEBAAEAAFY+6B0VMDLvMns0lCDPkeKKjVUoy9yuXBCAk6ijh5q7AQu/K2wDyw9eE9Y0lFNevFeFbGih2P9nNMwhpORt+rwPKeFwAAAAAAAgJRnchOnSctUdRw79lCT5qcCMXqv2+KzvZGW5DwSGctdWPugdFTAy7zJ7NJQgz5Hiio1VKMvcrlwQgJOoo4eau+gDAAAAAAAA0AcAAAAAAAAA"
+          gas:
+            - objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+              version: 7397673
+              digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+                version: 1089570
+                digest: "HUrDhmdBEtQW8LBAd2fdQrqznLedy16rPjME6WdZqCsG"
+            - ImmOrOwnedMoveObject:
+                objectId: "0x0bbf2b6c03cb0f5e13d63494535ebc57856c68a1d8ff6734cc21a4e46dfabc0f"
+                version: 7397673
+                digest: "3VpxVaviG7RykDVLx1A21yT5YD1QFJpo1AWv5hJxQjKt"
+
+- name: unsafe_transferSui
+  summary: Create an unsigned transaction to send a SUI coin object to a Sui address.
+  description: >
+    Transfers SUI to a recipient using a single coin object, which is also used to pay gas.
+    Internally performs a split and transfer using the same coin.
+  params:
+    - name: signer
+      required: true
+      description: The transaction signer's Sui address.
+      schema:
+        type: string
+    - name: sui_object_id
+      required: true
+      description: The SUI coin object to use in this transaction.
+      schema:
+        type: string
+    - name: gas_budget
+      required: true
+      description: The gas budget, the transaction will fail if exceeded.
+      schema:
+        type: string
+    - name: recipient
+      required: true
+      description: The address receiving the SUI.
+      schema:
+        type: string
+    - name: amount
+      required: true
+      description: The amount of SUI to transfer.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Transaction bytes and related input object metadata.
+    schema:
+      type: object
+      properties:
+        txBytes:
+          type: string
+        gas:
+          type: array
+          items:
+            type: object
+            properties:
+              objectId:
+                type: string
+              version:
+                type: integer
+              digest:
+                type: string
+        inputObjects:
+          type: array
+          items:
+            type: object
+  examples:
+    - name: Transfer SUI and pay gas from same coin
+      params:
+        - name: signer
+          value: "0x563ee81d153032ef327b349420cf91e28a8d5528cbdcae5c108093a8a3879abb"
+        - name: sui_object_id
+          value: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+        - name: gas_budget
+          value: "2000"
+        - name: recipient
+          value: "0xeeb30f4dc675a7d49b8abedf58eb2e3738facfc554c80f4b27ab62aa02878f56"
+        - name: amount
+          value: "2"
+      result:
+        name: result
+        value:
+          txBytes: "AAACACDusw9NxnWn1JuKvt9Y6y43OPrPxVTID0snq2KqAoePVgAIAgAAAAAAAAACAgABAQEAAQECAAABAABWPugdFTAy7zJ7NJQgz5Hiio1VKMvcrlwQgJOoo4eauwEAP5wPUztPcrOOTf2Q8mwp8FLrhVq4+xkS0grC45rDvCKgEAAAAAAAIPTdUyUhkhrkLz3h/2BpV7H2ZXm6WUv66fIHIPSPLJavVj7oHRUwMu8yezSUIM+R4oqNVSjL3K5cEICTqKOHmrvoAwAAAAAAANAHAAAAAAAAAA=="
+          gas:
+            - objectId: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+              version: 1089570
+              digest: "HUrDhmdBEtQW8LBAd2fdQrqznLedy16rPjME6WdZqCsG"
+          inputObjects:
+            - ImmOrOwnedMoveObject:
+                objectId: "0x003f9c0f533b4f72b38e4dfd90f26c29f052eb855ab8fb1912d20ac2e39ac3bc"
+                version: 1089570
+                digest: "HUrDhmdBEtQW8LBAd2fdQrqznLedy16rPjME6WdZqCsG"
