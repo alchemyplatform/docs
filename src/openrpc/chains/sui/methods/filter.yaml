@@ -1,0 +1,114 @@
+- name: suix_queryEvents
+  summary: Query events using filter criteria
+  description: >
+    Returns a paginated list of events that match the given query criteria.
+    You can filter by sender, package, module, event type, and more. Supports pagination and ordering.
+  params:
+    - name: query
+      required: true
+      description: The event query criteria (e.g., MoveModule, Sender).
+      schema:
+        type: object
+    - name: cursor
+      required: false
+      description: Optional paging cursor, an EventID { txDigest, eventSeq } object.
+      schema:
+        $ref: "#/components/schemas/EVENT_ID"
+    - name: limit
+      required: false
+      description: Maximum number of events to return.
+      schema:
+        type: integer
+    - name: descending_order
+      required: false
+      description: Whether to return results in descending order.
+      schema:
+        type: boolean
+  result:
+    name: result
+    description: A page of matched events.
+    schema:
+      $ref: "#/components/schemas/PAGINATION_RESULT"
+  examples:
+    - name: Query MoveModule events
+      params:
+        - name: query
+          value:
+            MoveModule:
+              package: "0x0000000000000000000000000000000000000000000000000000000000000002"
+              module: "deepbook_utils"
+              type: "0xdee9::clob_v2::DepositAsset<0x8da140bad1be69f7e64abf9f494b094dd3a77242577cab0ad658c9436bed225e::coin::COIN>"
+        - name: cursor
+          value: null
+        - name: limit
+          value: 3
+        - name: descending_order
+          value: false
+      result:
+        name: result
+        value:
+          data: []
+          nextCursor: null
+          hasNextPage: false
+
+- name: suix_queryTransactionBlocks
+  summary: Query transactions using filter criteria
+  description: >
+    Returns a paginated list of transaction blocks that match the given query criteria. 
+    You can filter by input object, sender, transaction kind, and more. Supports pagination and ordering.
+  params:
+    - name: query
+      required: true
+      description: Transaction query filter and field options.
+      schema:
+        type: object
+        properties:
+          filter:
+            type: object
+          options:
+            type: object
+            nullable: true
+    - name: cursor
+      required: false
+      description: Optional paging cursor, a transaction digest string.
+      schema:
+        type: string
+    - name: limit
+      required: false
+      description: Maximum number of results to return.
+      schema:
+        type: integer
+    - name: descending_order
+      required: false
+      description: Whether to return results in descending order.
+      schema:
+        type: boolean
+  result:
+    name: result
+    description: A page of matched transaction blocks.
+    schema:
+      $ref: "#/components/schemas/PAGINATION_RESULT"
+  examples:
+    - name: Query transactions using InputObject filter
+      params:
+        - name: query
+          value:
+            filter:
+              InputObject: "0x8da140bad1be69f7e64abf9f494b094dd3a77242577cab0ad658c9436bed225e"
+            options: null
+        - name: cursor
+          value: "44G1v9zusjuKqKjeAqZz2GBvBWd1MGiNPQGB4pZeagNb"
+        - name: limit
+          value: 100
+        - name: descending_order
+          value: false
+      result:
+        name: result
+        value:
+          data:
+            - digest: "GUPcK4cmRmgsTFr52ab9f6fnzNVg3Lz6hF2aXFcsRzaD"
+            - digest: "B2iV1SVbBjgTKfbJKPQrvTT6F3kNdekFuBwY9tQcAxV2"
+            - digest: "8QrPa4x9iNG5r2zQfmeH8pJoVjjtq9AGzp8rp2fxi8Sk"
+            - digest: "3nek86HEjXZ7K3EtrAcBG4wMrCS21gqr8BqwwC6M6P7F"
+          nextCursor: "3nek86HEjXZ7K3EtrAcBG4wMrCS21gqr8BqwwC6M6P7F"
+          hasNextPage: false

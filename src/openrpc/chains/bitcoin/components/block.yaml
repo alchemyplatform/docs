@@ -1,0 +1,306 @@
+BTC_BLOCK_HEIGHT:
+  title: Block Height
+  type: integer
+  minimum: 0
+  description: The block height (index) used to fetch the block hash.
+
+BTC_BLOCK_HASH:
+  title: Bitcoin Block Hash
+  type: string
+  pattern: "^[a-fA-F0-9]{64}$"
+  description: A 64-character hex string representing the block hash.
+
+BTC_BLOCK:
+  title: Bitcoin Block
+  type: object
+  required:
+    - hash
+    - confirmations
+    - height
+    - version
+    - merkleroot
+    - time
+    - tx
+  properties:
+    hash:
+      type: string
+      description: The block hash.
+    confirmations:
+      type: integer
+      description: Number of confirmations or -1 if block not on main chain.
+    size:
+      type: integer
+      description: Block size in bytes.
+    strippedsize:
+      type: integer
+      description: Block size excluding witness data.
+    weight:
+      type: integer
+      description: Block weight as defined in BIP 141.
+    height:
+      type: integer
+      description: Block height or index.
+    version:
+      type: integer
+      description: Block version.
+    versionHex:
+      type: string
+      description: Block version in hex.
+    merkleroot:
+      type: string
+      description: Merkle root.
+    time:
+      type: integer
+      description: Block time in UNIX timestamp.
+    mediantime:
+      type: integer
+      description: Median block time.
+    nonce:
+      type: integer
+      description: Nonce used for mining.
+    bits:
+      type: string
+      description: nBits field of block header.
+    target:
+      type: string
+      description: The target threshold for the block’s hash (derived from `bits`).
+    difficulty:
+      type: number
+      format: double
+      description: Difficulty at the time of mining.
+    chainwork:
+      type: string
+      description: Expected number of hashes to produce the chain.
+    nTx:
+      type: integer
+      description: Number of transactions in the block.
+    previousblockhash:
+      type: string
+      description: Hash of the previous block.
+    nextblockhash:
+      type: string
+      description: Hash of the next block.
+    tx:
+      type: array
+      description: List of transaction IDs included in the block.
+      items:
+        type: string
+        description: Transaction ID
+
+BTC_BLOCK_HEADER:
+  title: Block Header (Verbose = true)
+  type: object
+  required:
+    - hash
+    - confirmations
+    - height
+    - version
+    - versionHex
+    - merkleroot
+    - time
+    - mediantime
+    - nonce
+    - bits
+    - difficulty
+    - chainwork
+    - nTx
+    - previousblockhash
+    - nextblockhash
+  properties:
+    hash:
+      type: string
+      description: Hash of the block.
+    confirmations:
+      type: integer
+      description: Number of confirmations, or -1 if not on main chain.
+    height:
+      type: integer
+      description: Block height or index.
+    version:
+      type: integer
+      description: Block version.
+    versionHex:
+      type: string
+      description: Block version in hex.
+    merkleroot:
+      type: string
+      description: Merkle root of the block.
+    time:
+      type: integer
+      description: Block time (UNIX timestamp).
+    mediantime:
+      type: integer
+      description: Median time of previous 11 blocks.
+    nonce:
+      type: integer
+      description: Nonce used to generate this block.
+    bits:
+      type: string
+      description: Compact target (difficulty) representation.
+    difficulty:
+      type: number
+      format: double
+      description: Network difficulty at time of block.
+    chainwork:
+      type: string
+      description: Expected number of hashes to produce the chain up to this block.
+    nTx:
+      type: integer
+      description: Number of transactions in the block.
+    previousblockhash:
+      type: string
+      description: Hash of the previous block.
+    nextblockhash:
+      type: string
+      description: Hash of the next block.
+
+BTC_BLOCK_STATS:
+  title: Bitcoin Block Statistics
+  type: object
+  properties:
+    avgfee:
+      type: integer
+      description: Average fee in the block (satoshis)
+    avgfeerate:
+      type: integer
+      description: Average fee rate
+    avgtxsize:
+      type: integer
+      description: Average transaction size
+    blockhash:
+      $ref: "#/components/schemas/BTC_BLOCK_HASH"
+    feerate_percentiles:
+      type: array
+      description: Feerates at 10th, 25th, 50th, 75th, and 90th percentile
+      items:
+        type: integer
+    height:
+      $ref: "#/components/schemas/BTC_BLOCK_HEIGHT"
+    ins:
+      type: integer
+      description: Number of inputs
+    outs:
+      type: integer
+      description: Number of outputs
+    maxfee:
+      type: integer
+    maxfeerate:
+      type: integer
+    maxtxsize:
+      type: integer
+    medianfee:
+      type: integer
+    mediantime:
+      type: integer
+    mediantxsize:
+      type: integer
+    minfee:
+      type: integer
+    minfeerate:
+      type: integer
+    mintxsize:
+      type: integer
+    subsidy:
+      type: integer
+    swtotal_size:
+      type: integer
+    swtotal_weight:
+      type: integer
+    swtxs:
+      type: integer
+    time:
+      type: integer
+    total_out:
+      type: integer
+    total_size:
+      type: integer
+    total_weight:
+      type: integer
+    totalfee:
+      type: integer
+    txs:
+      type: integer
+    utxo_increase:
+      type: integer
+    utxo_size_inc:
+      type: integer
+    utxo_increase_actual:
+      type: integer
+    utxo_size_inc_actual:
+      type: integer
+
+BTC_DIFFICULTY:
+  title: Bitcoin Proof-of-Work Difficulty
+  type: number
+  format: double
+  description: The proof-of-work difficulty as a multiple of the minimum difficulty.
+
+BTC_CHAIN_TIP:
+  title: Bitcoin Chain Tip
+  type: object
+  required:
+    - height
+    - hash
+    - branchlen
+    - status
+  properties:
+    height:
+      type: integer
+      description: The height of the chain tip.
+    hash:
+      type: string
+      description: The block hash of the chain tip.
+    branchlen:
+      type: integer
+      description: Length of the branch connecting the tip to the main chain (0 for main chain).
+    status:
+      type: string
+      description: >
+        Status of the chain tip:
+        - active: tip of the main chain
+        - valid-fork: fully validated but not active
+        - valid-headers: headers valid but blocks not fully validated
+        - headers-only: only headers are available
+        - invalid: contains at least one invalid block
+      enum:
+        - active
+        - valid-fork
+        - valid-headers
+        - headers-only
+        - invalid
+
+BTC_CHAIN_TX_STATS:
+  title: Bitcoin Chain Transaction Statistics
+  type: object
+  required:
+    - time
+    - txcount
+    - window_final_block_hash
+    - window_final_block_height
+    - window_block_count
+  properties:
+    time:
+      type: integer
+      description: Timestamp for the last block in the window (UNIX epoch).
+    txcount:
+      type: integer
+      description: Total number of transactions up to the final block.
+    window_final_block_hash:
+      type: string
+      description: Hash of the final block in the window.
+    window_final_block_height:
+      type: integer
+      description: Height of the final block in the window.
+    window_block_count:
+      type: integer
+      description: Number of blocks included in the window.
+    window_tx_count:
+      type: integer
+      description: Number of transactions in the window.
+    window_interval:
+      type: integer
+      description: Elapsed time (in seconds) across the window.
+    txrate:
+      type: number
+      format: double
+      description: Average transaction rate per second across the window.

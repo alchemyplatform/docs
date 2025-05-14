@@ -1,0 +1,2816 @@
+{
+	"x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
+	"x-fern-parameters": [
+		{
+			"name": "apiKey",
+			"in": "path",
+			"schema": {
+				"type": "string",
+				"default": "docs-demo",
+				"description": "For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)"
+			},
+			"required": true
+		}
+	],
+	"$schema": "https://meta.open-rpc.org/",
+	"openrpc": "1.2.4",
+	"info": {
+		"title": "Alchemy Bitcoin JSON-RPC Specification",
+		"description": "A specification of the standard JSON-RPC methods for Bitcoin.",
+		"version": "0.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://bitcoin-mainnet.alchemy-blast.com/v2",
+			"name": "Bitcoin Mainnet"
+		},
+		{
+			"url": "https://bitcoin-mainnet.alchemy-blast.com/v2",
+			"name": "Bitcoin Testnet"
+		}
+	],
+	"methods": [
+		{
+			"name": "decoderawtransaction",
+			"summary": "Decode a raw transaction hex string",
+			"description": "Decodes a serialized, hex-encoded Bitcoin transaction. Returns detailed information about inputs, outputs, size, witness data, etc.\n",
+			"params": [
+				{
+					"name": "hexstring",
+					"required": true,
+					"description": "The transaction hex string to decode.",
+					"schema": {
+						"title": "Raw Transaction Hex",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]+$",
+						"description": "A serialized, hex-encoded Bitcoin transaction."
+					}
+				},
+				{
+					"name": "iswitness",
+					"required": false,
+					"description": "Indicates whether the transaction includes witness data. If omitted, heuristic decoding is applied.\n",
+					"schema": {
+						"type": "boolean"
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "A JSON object representing the decoded transaction.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"txid": {
+							"title": "Bitcoin Transaction ID",
+							"type": "string",
+							"pattern": "^[a-fA-F0-9]{64}$",
+							"description": "A 64-character hex string identifying a transaction."
+						},
+						"hash": {
+							"type": "string",
+							"description": "The transaction hash (differs from txid for witness transactions)."
+						},
+						"size": {
+							"type": "integer"
+						},
+						"vsize": {
+							"type": "integer"
+						},
+						"weight": {
+							"type": "integer"
+						},
+						"version": {
+							"type": "integer"
+						},
+						"locktime": {
+							"type": "integer"
+						},
+						"vin": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"txid": {
+										"title": "Bitcoin Transaction ID",
+										"type": "string",
+										"pattern": "^[a-fA-F0-9]{64}$",
+										"description": "A 64-character hex string identifying a transaction."
+									},
+									"vout": {
+										"type": "integer"
+									},
+									"scriptSig": {
+										"type": "object",
+										"properties": {
+											"asm": {
+												"type": "string"
+											},
+											"hex": {
+												"type": "string"
+											}
+										}
+									},
+									"txinwitness": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									},
+									"sequence": {
+										"type": "integer"
+									}
+								}
+							}
+						},
+						"vout": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"value": {
+										"type": "number",
+										"format": "double"
+									},
+									"n": {
+										"type": "integer"
+									},
+									"scriptPubKey": {
+										"type": "object",
+										"properties": {
+											"asm": {
+												"type": "string"
+											},
+											"desc": {
+												"type": "string"
+											},
+											"hex": {
+												"type": "string"
+											},
+											"type": {
+												"type": "string"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "decoderawtransaction example",
+					"params": [
+						{
+							"name": "hexstring",
+							"value": "0200000000010142d6bd07c424e975fe821c978e720f9a55f9981d62c290cea5ccd06b455d79b90000000000fdffffff028096980000000000160014d3620fe180a0beb8fcc9682fe92e5a25f0feccd370cd2f0100000000160014076d998f6b12c3d1da6217d967154f42a5e0afd30247304402204549b10ea1698d4b4605be1d3bfff810f6135395386207664a66f5bb8bd1470902205fb86c95bfbe7b502195ffa65276d292fb074fe18ba171ef0a35395211384091012103cb5de30b343b35cc09b50f064eb289dd3e252f6985fc4309fba795cc950316afcfa50d00"
+						},
+						{
+							"name": "iswitness",
+							"value": true
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"txid": "a4cf344758af60ab8d4812477a7d3eee8854595db70ab39cf68f9dc509b13929",
+							"hash": "48d1de9e93391ac3d83e5e97ce94ebd1db0f88553e45a6dffad3501c82408995",
+							"size": 222,
+							"vsize": 141,
+							"weight": 564,
+							"version": 2,
+							"locktime": 862954048,
+							"vin": [
+								{
+									"txid": "b9795d456bd0cca5ce90c2621d98f9559a0f728e971c82fe75e924c407bdd642",
+									"vout": 0,
+									"scriptSig": {
+										"asm": "",
+										"hex": ""
+									},
+									"sequence": 4294967293,
+									"txinwitness": [
+										"304402204549b10ea1698d4b4605be1d3bfff810f6135395386207664a66f5bb8bd1470902205fb86c95bfbe7b502195ffa65276d292fb074fe18ba171ef0a35395211384091",
+										"03cb5de30b343b35cc09b50f064eb289dd3e252f6985fc4309fba795cc950316af"
+									]
+								}
+							],
+							"vout": [
+								{
+									"value": 0.1,
+									"n": 0,
+									"scriptPubKey": {
+										"asm": "OP_DUP OP_HASH160 d3620fe180a0beb8fcc9682fe92e5a25f0feccd3 OP_EQUALVERIFY OP_CHECKSIG",
+										"desc": "addr(1BM1sAcrfV6d4zPKytzziu4McLQDsFC2Qc)",
+										"hex": "76a914d3620fe180a0beb8fcc9682fe92e5a25f0feccd388ac",
+										"type": "pubkeyhash"
+									}
+								},
+								{
+									"value": 0.65281824,
+									"n": 1,
+									"scriptPubKey": {
+										"asm": "OP_DUP OP_HASH160 076d998f6b12c3d1da6217d967154f42a5e0afd3 OP_EQUALVERIFY OP_CHECKSIG",
+										"desc": "addr(1iPoHeR3z1EidftGXMcEppzA1UupGPs2u)",
+										"hex": "76a914076d998f6b12c3d1da6217d967154f42a5e0afd388ac",
+										"type": "pubkeyhash"
+									}
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "decodescript",
+			"summary": "Decode a hex-encoded script",
+			"description": "Decodes a hex-encoded script and provides detailed information about it.\n",
+			"params": [
+				{
+					"name": "hexstring",
+					"required": true,
+					"description": "The hex-encoded script.",
+					"schema": {
+						"title": "Hex-encoded Script",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]+$",
+						"description": "A hex-encoded script for use in decoding."
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Decoded script information.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"asm": {
+							"type": "string",
+							"description": "The script public key in assembly form."
+						},
+						"desc": {
+							"type": "string",
+							"description": "Output descriptor for the script."
+						},
+						"address": {
+							"type": "string",
+							"description": "The derived Bitcoin address (if applicable)."
+						},
+						"type": {
+							"type": "string",
+							"description": "Output type (e.g., nonstandard, pubkeyhash, scripthash, witness_v0_keyhash)."
+						},
+						"p2sh": {
+							"type": "string",
+							"description": "P2SH address wrapping this script, if applicable."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "decodescript example",
+					"params": [
+						{
+							"name": "hexstring",
+							"value": "0014751e76e8199196d454941c45d1b3a323f1433bd6"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"asm": "0 751e76e8199196d454941c45d1b3a323f1433bd6",
+							"desc": "addr(bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4)#uyjndxcw",
+							"address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+							"type": "witness_v0_keyhash",
+							"p2sh": "3JvL6Ymt8MVWiCNHC7oWU6nLeHNJKLZGLN"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "estimatesmartfee",
+			"summary": "Estimate smart fee for confirmation within target blocks",
+			"description": "Estimates the approximate fee per kilobyte required for a transaction to begin confirmation within `conf_target` blocks. Uses BIP 141 virtual transaction size.\n",
+			"params": [
+				{
+					"name": "conf_target",
+					"required": true,
+					"description": "Number of blocks within which confirmation is targeted.",
+					"schema": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 1008
+					}
+				},
+				{
+					"name": "estimate_mode",
+					"required": false,
+					"description": "Fee estimate mode. Options are \"UNSET\", \"ECONOMICAL\", or \"CONSERVATIVE\".\n",
+					"schema": {
+						"type": "string",
+						"enum": [
+							"UNSET",
+							"ECONOMICAL",
+							"CONSERVATIVE"
+						]
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Estimated fee rate and corresponding target blocks.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"feerate": {
+							"type": "number",
+							"format": "double",
+							"description": "Estimated fee rate in BTC per KB."
+						},
+						"blocks": {
+							"type": "integer",
+							"description": "The actual confirmation target (may differ if estimate unavailable)."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "estimatesmartfee example",
+					"params": [
+						{
+							"name": "conf_target",
+							"value": 1
+						},
+						{
+							"name": "estimate_mode",
+							"value": "UNSET"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"feerate": 0.00002465,
+							"blocks": 2
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getbestblockhash",
+			"summary": "Get the best (tip) block hash of the longest valid chain",
+			"description": "Returns the hash of the most-work fully-validated tip block in the active Bitcoin blockchain.\n",
+			"params": [],
+			"result": {
+				"name": "result",
+				"description": "The hash of the best block in the longest chain.",
+				"schema": {
+					"title": "Bitcoin Block Hash",
+					"type": "string",
+					"pattern": "^[a-fA-F0-9]{64}$",
+					"description": "A 64-character hex string representing the block hash."
+				}
+			},
+			"examples": [
+				{
+					"name": "getbestblockhash example",
+					"params": [],
+					"result": {
+						"name": "result",
+						"value": "00000000000000000001fe9b58c5ccd401de62139c29e7dbfd32bd3cf14b650c"
+					}
+				}
+			]
+		},
+		{
+			"name": "getblock",
+			"summary": "Get block details by block hash",
+			"description": "Returns information about a block, based on the provided block hash.\n",
+			"params": [
+				{
+					"name": "blockhash",
+					"required": true,
+					"description": "The hash of the block to retrieve.",
+					"schema": {
+						"title": "Bitcoin Block Hash",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string representing the block hash."
+					}
+				},
+				{
+					"name": "verbosity",
+					"required": false,
+					"description": "Level of detail to return.  - 0: hex-encoded string, - 1: basic block info, - 2: with transactions, - 3: with transactions + input prevouts.\n",
+					"schema": {
+						"type": "integer",
+						"default": 1,
+						"enum": [
+							0,
+							1,
+							2,
+							3
+						]
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "The block object or hex string, depending on verbosity.",
+				"schema": {
+					"title": "Bitcoin Block",
+					"type": "object",
+					"required": [
+						"hash",
+						"confirmations",
+						"height",
+						"version",
+						"merkleroot",
+						"time",
+						"tx"
+					],
+					"properties": {
+						"hash": {
+							"type": "string",
+							"description": "The block hash."
+						},
+						"confirmations": {
+							"type": "integer",
+							"description": "Number of confirmations or -1 if block not on main chain."
+						},
+						"size": {
+							"type": "integer",
+							"description": "Block size in bytes."
+						},
+						"strippedsize": {
+							"type": "integer",
+							"description": "Block size excluding witness data."
+						},
+						"weight": {
+							"type": "integer",
+							"description": "Block weight as defined in BIP 141."
+						},
+						"height": {
+							"type": "integer",
+							"description": "Block height or index."
+						},
+						"version": {
+							"type": "integer",
+							"description": "Block version."
+						},
+						"versionHex": {
+							"type": "string",
+							"description": "Block version in hex."
+						},
+						"merkleroot": {
+							"type": "string",
+							"description": "Merkle root."
+						},
+						"time": {
+							"type": "integer",
+							"description": "Block time in UNIX timestamp."
+						},
+						"mediantime": {
+							"type": "integer",
+							"description": "Median block time."
+						},
+						"nonce": {
+							"type": "integer",
+							"description": "Nonce used for mining."
+						},
+						"bits": {
+							"type": "string",
+							"description": "nBits field of block header."
+						},
+						"target": {
+							"type": "string",
+							"description": "The target threshold for the block’s hash (derived from `bits`)."
+						},
+						"difficulty": {
+							"type": "number",
+							"format": "double",
+							"description": "Difficulty at the time of mining."
+						},
+						"chainwork": {
+							"type": "string",
+							"description": "Expected number of hashes to produce the chain."
+						},
+						"nTx": {
+							"type": "integer",
+							"description": "Number of transactions in the block."
+						},
+						"previousblockhash": {
+							"type": "string",
+							"description": "Hash of the previous block."
+						},
+						"nextblockhash": {
+							"type": "string",
+							"description": "Hash of the next block."
+						},
+						"tx": {
+							"type": "array",
+							"description": "List of transaction IDs included in the block.",
+							"items": {
+								"type": "string",
+								"description": "Transaction ID"
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getblock example",
+					"params": [
+						{
+							"name": "blockhash",
+							"value": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+						},
+						{
+							"name": "verbosity",
+							"value": 2
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"hash": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80",
+							"confirmations": 151,
+							"height": 894470,
+							"version": 537067520,
+							"versionHex": "20030000",
+							"merkleroot": "9d93ae25de98e5ed33aec9ccfea612c3b5b181a60171ba564ec1634786b04bc6",
+							"time": 1745931642,
+							"mediantime": 1745928076,
+							"nonce": 766301978,
+							"bits": "170248b6",
+							"target": "0000000000000000000248b60000000000000000000000000000000000000000",
+							"difficulty": 123234387977050.9,
+							"chainwork": "0000000000000000000000000000000000000000bf64054821a76841a63cb26e",
+							"nTx": 2186,
+							"previousblockhash": "00000000000000000001aa9a63c6c0774a767f7a4d37d2bce3658728de76a146",
+							"nextblockhash": "00000000000000000000cb8a1d7945b960985579525957bcc37b22174f1ecb31",
+							"strippedsize": 844254,
+							"size": 1460798,
+							"weight": 3993560,
+							"tx": [
+								"c86b4846175942038cc9da086e506aa8a441beada92f1678fb1fe35d640366db"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getblockchaininfo",
+			"summary": "Retrieve general information about the blockchain.",
+			"description": "Returns an object containing state details related to blockchain processing, network, and storage information.\n",
+			"params": [],
+			"result": {
+				"name": "result",
+				"description": "Blockchain status information.",
+				"schema": {
+					"title": "Bitcoin Blockchain Info",
+					"type": "object",
+					"required": [
+						"chain",
+						"blocks",
+						"headers",
+						"bestblockhash",
+						"difficulty",
+						"time",
+						"mediantime",
+						"verificationprogress",
+						"initialblockdownload",
+						"chainwork",
+						"size_on_disk",
+						"pruned"
+					],
+					"properties": {
+						"chain": {
+							"type": "string",
+							"description": "Current network name (main, test, regtest)."
+						},
+						"blocks": {
+							"type": "integer",
+							"description": "The current number of blocks."
+						},
+						"headers": {
+							"type": "integer",
+							"description": "The current number of headers."
+						},
+						"bestblockhash": {
+							"type": "string",
+							"description": "The hash of the best block."
+						},
+						"bits": {
+							"type": "string",
+							"description": "The nBits field of the best block header."
+						},
+						"target": {
+							"type": "string",
+							"description": "The target corresponding to current difficulty."
+						},
+						"difficulty": {
+							"type": "number",
+							"format": "double",
+							"description": "The current difficulty."
+						},
+						"time": {
+							"type": "integer",
+							"description": "Timestamp of the best block."
+						},
+						"mediantime": {
+							"type": "integer",
+							"description": "Median time of the blockchain."
+						},
+						"verificationprogress": {
+							"type": "number",
+							"format": "double",
+							"description": "Estimate of verification progress (0.0–1.0)."
+						},
+						"initialblockdownload": {
+							"type": "boolean",
+							"description": "Whether the node is in IBD (initial block download)."
+						},
+						"chainwork": {
+							"type": "string",
+							"description": "Expected number of hashes required to produce the chain."
+						},
+						"size_on_disk": {
+							"type": "integer",
+							"description": "Estimated size of the blockchain stored on disk in bytes."
+						},
+						"pruned": {
+							"type": "boolean",
+							"description": "If the blockchain is pruned."
+						},
+						"warnings": {
+							"type": "array",
+							"description": "Any network or blockchain warnings.",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getblockchaininfo example",
+					"params": [],
+					"result": {
+						"name": "result",
+						"value": {
+							"chain": "main",
+							"blocks": 894713,
+							"headers": 894713,
+							"bestblockhash": "00000000000000000000eb0ae1714d3ec43cfaac74769f3bcde489daf116e4ca",
+							"bits": "170248b6",
+							"target": "0000000000000000000248b60000000000000000000000000000000000000000",
+							"difficulty": 123234387977050.9,
+							"time": 1746083867,
+							"mediantime": 1746081100,
+							"verificationprogress": 0.9999993374725104,
+							"initialblockdownload": false,
+							"chainwork": "0000000000000000000000000000000000000000bfce6962cc3162143b67a1d4",
+							"size_on_disk": 745999541195,
+							"pruned": false,
+							"warnings": []
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getblockcount",
+			"summary": "Get the current block count",
+			"description": "Returns the number of blocks in the longest fully validated blockchain.\n",
+			"params": [],
+			"result": {
+				"name": "result",
+				"description": "The number of blocks in the current best blockchain.",
+				"schema": {
+					"title": "Block Height",
+					"type": "integer",
+					"minimum": 0,
+					"description": "The block height (index) used to fetch the block hash."
+				}
+			},
+			"examples": [
+				{
+					"name": "getblockcount example",
+					"params": [],
+					"result": {
+						"name": "result",
+						"value": 894623
+					}
+				}
+			]
+		},
+		{
+			"name": "getblockhash",
+			"summary": "Get block hash by block height",
+			"description": "Returns the hash of the block at a given height (index) in the active Bitcoin blockchain.\n",
+			"params": [
+				{
+					"name": "height",
+					"required": true,
+					"description": "The height of the block to retrieve the hash for.",
+					"schema": {
+						"title": "Block Height",
+						"type": "integer",
+						"minimum": 0,
+						"description": "The block height (index) used to fetch the block hash."
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "The hash of the block at the specified height.",
+				"schema": {
+					"title": "Bitcoin Block Hash",
+					"type": "string",
+					"pattern": "^[a-fA-F0-9]{64}$",
+					"description": "A 64-character hex string representing the block hash."
+				}
+			},
+			"examples": [
+				{
+					"name": "getblockhash example",
+					"params": [
+						{
+							"name": "height",
+							"value": 894470
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+					}
+				}
+			]
+		},
+		{
+			"name": "getblockheader",
+			"summary": "Get block header by block hash",
+			"description": "Returns the block header for the specified block hash.\n",
+			"params": [
+				{
+					"name": "blockhash",
+					"required": true,
+					"description": "The block hash to retrieve the header for.",
+					"schema": {
+						"title": "Bitcoin Block Hash",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string representing the block hash."
+					}
+				},
+				{
+					"name": "verbose",
+					"required": false,
+					"description": "Whether to return a JSON object (true) or raw hex-encoded string (false). Default is true.\n",
+					"schema": {
+						"type": "boolean",
+						"default": true
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "The block header as an object or hex string depending on verbose.",
+				"schema": {
+					"oneOf": [
+						{
+							"title": "Block Header (Verbose = true)",
+							"type": "object",
+							"required": [
+								"hash",
+								"confirmations",
+								"height",
+								"version",
+								"versionHex",
+								"merkleroot",
+								"time",
+								"mediantime",
+								"nonce",
+								"bits",
+								"difficulty",
+								"chainwork",
+								"nTx",
+								"previousblockhash",
+								"nextblockhash"
+							],
+							"properties": {
+								"hash": {
+									"type": "string",
+									"description": "Hash of the block."
+								},
+								"confirmations": {
+									"type": "integer",
+									"description": "Number of confirmations, or -1 if not on main chain."
+								},
+								"height": {
+									"type": "integer",
+									"description": "Block height or index."
+								},
+								"version": {
+									"type": "integer",
+									"description": "Block version."
+								},
+								"versionHex": {
+									"type": "string",
+									"description": "Block version in hex."
+								},
+								"merkleroot": {
+									"type": "string",
+									"description": "Merkle root of the block."
+								},
+								"time": {
+									"type": "integer",
+									"description": "Block time (UNIX timestamp)."
+								},
+								"mediantime": {
+									"type": "integer",
+									"description": "Median time of previous 11 blocks."
+								},
+								"nonce": {
+									"type": "integer",
+									"description": "Nonce used to generate this block."
+								},
+								"bits": {
+									"type": "string",
+									"description": "Compact target (difficulty) representation."
+								},
+								"difficulty": {
+									"type": "number",
+									"format": "double",
+									"description": "Network difficulty at time of block."
+								},
+								"chainwork": {
+									"type": "string",
+									"description": "Expected number of hashes to produce the chain up to this block."
+								},
+								"nTx": {
+									"type": "integer",
+									"description": "Number of transactions in the block."
+								},
+								"previousblockhash": {
+									"type": "string",
+									"description": "Hash of the previous block."
+								},
+								"nextblockhash": {
+									"type": "string",
+									"description": "Hash of the next block."
+								}
+							}
+						},
+						{
+							"type": "string",
+							"description": "Hex-encoded block header"
+						}
+					]
+				}
+			},
+			"examples": [
+				{
+					"name": "getblockheader example",
+					"params": [
+						{
+							"name": "blockhash",
+							"value": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+						},
+						{
+							"name": "verbose",
+							"value": true
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"hash": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80",
+							"confirmations": 154,
+							"height": 894470,
+							"version": 537067520,
+							"versionHex": "20030000",
+							"merkleroot": "9d93ae25de98e5ed33aec9ccfea612c3b5b181a60171ba564ec1634786b04bc6",
+							"time": 1745931642,
+							"mediantime": 1745928076,
+							"nonce": 766301978,
+							"bits": "170248b6",
+							"difficulty": 123234387977050.9,
+							"chainwork": "0000000000000000000000000000000000000000bf64054821a76841a63cb26e",
+							"nTx": 2186,
+							"previousblockhash": "00000000000000000001aa9a63c6c0774a767f7a4d37d2bce3658728de76a146",
+							"nextblockhash": "00000000000000000000cb8a1d7945b960985579525957bcc37b22174f1ecb31"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getblockstats",
+			"summary": "Get per-block statistics",
+			"description": "Calculates various statistics for a given block by hash or height.\n",
+			"params": [
+				{
+					"name": "hash_or_height",
+					"required": true,
+					"description": "The block hash (string) or height (integer) of the target block.",
+					"schema": {
+						"oneOf": [
+							{
+								"title": "Bitcoin Block Hash",
+								"type": "string",
+								"pattern": "^[a-fA-F0-9]{64}$",
+								"description": "A 64-character hex string representing the block hash."
+							},
+							{
+								"title": "Block Height",
+								"type": "integer",
+								"minimum": 0,
+								"description": "The block height (index) used to fetch the block hash."
+							}
+						]
+					}
+				},
+				{
+					"name": "stats",
+					"required": false,
+					"description": "Optional list of specific stats to retrieve. If empty or omitted, returns all stats.\n",
+					"schema": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "A set of statistical metrics for the specified block.",
+				"schema": {
+					"title": "Bitcoin Block Statistics",
+					"type": "object",
+					"properties": {
+						"avgfee": {
+							"type": "integer",
+							"description": "Average fee in the block (satoshis)"
+						},
+						"avgfeerate": {
+							"type": "integer",
+							"description": "Average fee rate"
+						},
+						"avgtxsize": {
+							"type": "integer",
+							"description": "Average transaction size"
+						},
+						"blockhash": {
+							"title": "Bitcoin Block Hash",
+							"type": "string",
+							"pattern": "^[a-fA-F0-9]{64}$",
+							"description": "A 64-character hex string representing the block hash."
+						},
+						"feerate_percentiles": {
+							"type": "array",
+							"description": "Feerates at 10th, 25th, 50th, 75th, and 90th percentile",
+							"items": {
+								"type": "integer"
+							}
+						},
+						"height": {
+							"title": "Block Height",
+							"type": "integer",
+							"minimum": 0,
+							"description": "The block height (index) used to fetch the block hash."
+						},
+						"ins": {
+							"type": "integer",
+							"description": "Number of inputs"
+						},
+						"outs": {
+							"type": "integer",
+							"description": "Number of outputs"
+						},
+						"maxfee": {
+							"type": "integer"
+						},
+						"maxfeerate": {
+							"type": "integer"
+						},
+						"maxtxsize": {
+							"type": "integer"
+						},
+						"medianfee": {
+							"type": "integer"
+						},
+						"mediantime": {
+							"type": "integer"
+						},
+						"mediantxsize": {
+							"type": "integer"
+						},
+						"minfee": {
+							"type": "integer"
+						},
+						"minfeerate": {
+							"type": "integer"
+						},
+						"mintxsize": {
+							"type": "integer"
+						},
+						"subsidy": {
+							"type": "integer"
+						},
+						"swtotal_size": {
+							"type": "integer"
+						},
+						"swtotal_weight": {
+							"type": "integer"
+						},
+						"swtxs": {
+							"type": "integer"
+						},
+						"time": {
+							"type": "integer"
+						},
+						"total_out": {
+							"type": "integer"
+						},
+						"total_size": {
+							"type": "integer"
+						},
+						"total_weight": {
+							"type": "integer"
+						},
+						"totalfee": {
+							"type": "integer"
+						},
+						"txs": {
+							"type": "integer"
+						},
+						"utxo_increase": {
+							"type": "integer"
+						},
+						"utxo_size_inc": {
+							"type": "integer"
+						},
+						"utxo_increase_actual": {
+							"type": "integer"
+						},
+						"utxo_size_inc_actual": {
+							"type": "integer"
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getblockstats example",
+					"params": [
+						{
+							"name": "hash_or_height",
+							"value": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+						},
+						{
+							"name": "stats",
+							"value": []
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"avgfee": 1565,
+							"avgfeerate": 3,
+							"avgtxsize": 668,
+							"blockhash": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80",
+							"feerate_percentiles": [
+								2,
+								2,
+								3,
+								3,
+								4
+							],
+							"height": 894470,
+							"ins": 7718,
+							"outs": 5666,
+							"maxfee": 376692,
+							"maxfeerate": 79,
+							"maxtxsize": 200604,
+							"medianfee": 453,
+							"mediantime": 1745928076,
+							"mediantxsize": 228,
+							"minfee": 141,
+							"minfeerate": 1,
+							"mintxsize": 150,
+							"subsidy": 312500000,
+							"swtotal_size": 1049707,
+							"swtotal_weight": 2349304,
+							"swtxs": 2075,
+							"time": 1745931642,
+							"total_out": 271147032190,
+							"total_size": 1460379,
+							"total_weight": 3991992,
+							"totalfee": 3420664,
+							"txs": 2186,
+							"utxo_increase": -2052,
+							"utxo_size_inc": -137484,
+							"utxo_increase_actual": -2841,
+							"utxo_size_inc_actual": -199799
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getchaintips",
+			"summary": "Get information about all known tips in the block tree",
+			"description": "Returns information about all known tips in the block tree, including the active chain tip and orphaned branches.\n",
+			"params": [],
+			"result": {
+				"name": "result",
+				"description": "An array of chain tip information objects.",
+				"schema": {
+					"type": "array",
+					"items": {
+						"title": "Bitcoin Chain Tip",
+						"type": "object",
+						"required": [
+							"height",
+							"hash",
+							"branchlen",
+							"status"
+						],
+						"properties": {
+							"height": {
+								"type": "integer",
+								"description": "The height of the chain tip."
+							},
+							"hash": {
+								"type": "string",
+								"description": "The block hash of the chain tip."
+							},
+							"branchlen": {
+								"type": "integer",
+								"description": "Length of the branch connecting the tip to the main chain (0 for main chain)."
+							},
+							"status": {
+								"type": "string",
+								"description": "Status of the chain tip: - active: tip of the main chain - valid-fork: fully validated but not active - valid-headers: headers valid but blocks not fully validated - headers-only: only headers are available - invalid: contains at least one invalid block\n",
+								"enum": [
+									"active",
+									"valid-fork",
+									"valid-headers",
+									"headers-only",
+									"invalid"
+								]
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getchaintips example",
+					"params": [],
+					"result": {
+						"name": "result",
+						"value": [
+							{
+								"height": 894712,
+								"hash": "00000000000000000000e6518eac47199bcf0108b1c7d194b00ef5a9df794427",
+								"branchlen": 0,
+								"status": "active"
+							},
+							{
+								"height": 894657,
+								"hash": "00000000000000000002311b7c31f1ffef1261bb53740958ed98c600ae2abd41",
+								"branchlen": 1,
+								"status": "valid-fork"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "getchaintxstats",
+			"summary": "Get chain transaction statistics",
+			"description": "Calculates statistics about the overall transaction rate and volume of the blockchain over a window of blocks.\n",
+			"params": [
+				{
+					"name": "nblocks",
+					"required": false,
+					"description": "The size of the window in number of blocks. Defaults to approximately one month.",
+					"schema": {
+						"type": "integer"
+					}
+				},
+				{
+					"name": "blockhash",
+					"required": false,
+					"description": "The block hash at which the window ends. Defaults to chain tip.",
+					"schema": {
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$"
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "The calculated chain transaction statistics.",
+				"schema": {
+					"title": "Bitcoin Chain Transaction Statistics",
+					"type": "object",
+					"required": [
+						"time",
+						"txcount",
+						"window_final_block_hash",
+						"window_final_block_height",
+						"window_block_count"
+					],
+					"properties": {
+						"time": {
+							"type": "integer",
+							"description": "Timestamp for the last block in the window (UNIX epoch)."
+						},
+						"txcount": {
+							"type": "integer",
+							"description": "Total number of transactions up to the final block."
+						},
+						"window_final_block_hash": {
+							"type": "string",
+							"description": "Hash of the final block in the window."
+						},
+						"window_final_block_height": {
+							"type": "integer",
+							"description": "Height of the final block in the window."
+						},
+						"window_block_count": {
+							"type": "integer",
+							"description": "Number of blocks included in the window."
+						},
+						"window_tx_count": {
+							"type": "integer",
+							"description": "Number of transactions in the window."
+						},
+						"window_interval": {
+							"type": "integer",
+							"description": "Elapsed time (in seconds) across the window."
+						},
+						"txrate": {
+							"type": "number",
+							"format": "double",
+							"description": "Average transaction rate per second across the window."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getchaintxstats example",
+					"params": [
+						{
+							"name": "nblocks",
+							"value": 0
+						},
+						{
+							"name": "blockhash",
+							"value": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"time": 1745931642,
+							"txcount": 1184990717,
+							"window_final_block_hash": "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80",
+							"window_final_block_height": 894470,
+							"window_block_count": 0
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getconnectioncount",
+			"summary": "Get the number of connections to other nodes",
+			"description": "Returns the number of connections to other nodes (both inbound and outbound).\n",
+			"params": [],
+			"result": {
+				"name": "result",
+				"description": "The total number of connections.",
+				"schema": {
+					"type": "integer"
+				}
+			},
+			"examples": [
+				{
+					"name": "getconnectioncount example",
+					"params": [],
+					"result": {
+						"name": "result",
+						"value": 10
+					}
+				}
+			]
+		},
+		{
+			"name": "getdifficulty",
+			"summary": "Get the current proof-of-work difficulty",
+			"description": "Returns the proof-of-work difficulty as a multiple of the minimum difficulty.\n",
+			"params": [],
+			"result": {
+				"name": "result",
+				"description": "The difficulty of the current best block as a floating-point number.",
+				"schema": {
+					"title": "Bitcoin Proof-of-Work Difficulty",
+					"type": "number",
+					"format": "double",
+					"description": "The proof-of-work difficulty as a multiple of the minimum difficulty."
+				}
+			},
+			"examples": [
+				{
+					"name": "getdifficulty example",
+					"params": [],
+					"result": {
+						"name": "result",
+						"value": 123234387977050.9
+					}
+				}
+			]
+		},
+		{
+			"name": "getindexinfo",
+			"summary": "Get information about one or all available indices",
+			"description": "Returns the state of one or all available indices currently running.  You can optionally filter the results by a specific index name.\n",
+			"params": [
+				{
+					"name": "index_name",
+					"required": false,
+					"description": "Filter results for an index with a specific name.\n",
+					"schema": {
+						"type": "string"
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "A mapping of index names to their respective info.",
+				"schema": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"txindex": {
+								"type": "string",
+								"description": "The index name."
+							},
+							"synced": {
+								"type": "boolean",
+								"description": "Whether the index is fully synced."
+							},
+							"best_block_height": {
+								"type": "integer",
+								"description": "The block height to which the index is synced."
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getindexinfo example",
+					"params": [
+						{
+							"name": "index_name",
+							"value": "txindex"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"txindex": {
+								"synced": true,
+								"best_block_height": 894717
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getmemoryinfo",
+			"summary": "Get memory usage information",
+			"description": "Returns information about memory usage, either general statistics (\"stats\") or heap information (\"mallocinfo\").\n",
+			"params": [
+				{
+					"name": "mode",
+					"required": false,
+					"description": "Determines what kind of information is returned: - \"stats\" returns general statistics about memory usage. - \"mallocinfo\" returns an XML string describing low-level heap state.\n",
+					"schema": {
+						"type": "string",
+						"enum": [
+							"stats",
+							"mallocinfo"
+						]
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Memory usage details.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"locked": {
+							"type": "object",
+							"description": "Information about locked memory.",
+							"properties": {
+								"used": {
+									"type": "integer",
+									"description": "Used memory in KB."
+								},
+								"free": {
+									"type": "integer",
+									"description": "Free memory in KB."
+								},
+								"total": {
+									"type": "integer",
+									"description": "Total memory available in KB."
+								},
+								"locked": {
+									"type": "integer",
+									"description": "Locked memory in KB."
+								},
+								"chunks_used": {
+									"type": "integer",
+									"description": "Number of used memory chunks."
+								},
+								"chunks_free": {
+									"type": "integer",
+									"description": "Number of free memory chunks."
+								}
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getmemoryinfo stats example",
+					"params": [
+						{
+							"name": "mode",
+							"value": "stats"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"locked": {
+								"used": 352,
+								"free": 65184,
+								"total": 65536,
+								"locked": 65536,
+								"chunks_used": 1,
+								"chunks_free": 1
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getmempoolancestors",
+			"summary": "Get mempool ancestors of a transaction",
+			"description": "Returns the in-mempool ancestors of a given transaction.\n",
+			"params": [
+				{
+					"name": "txid",
+					"required": true,
+					"description": "The transaction ID whose ancestors to retrieve.",
+					"schema": {
+						"title": "Bitcoin Transaction ID",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string identifying a transaction."
+					}
+				},
+				{
+					"name": "verbose",
+					"required": false,
+					"description": "Whether to return detailed info (true) or just txids (false).",
+					"schema": {
+						"type": "boolean",
+						"default": false
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "The mempool ancestors of the specified transaction.",
+				"schema": {
+					"oneOf": [
+						{
+							"type": "array",
+							"description": "A list of ancestor transaction IDs.",
+							"items": {
+								"title": "Bitcoin Transaction ID",
+								"type": "string",
+								"pattern": "^[a-fA-F0-9]{64}$",
+								"description": "A 64-character hex string identifying a transaction."
+							}
+						},
+						{
+							"type": "object",
+							"additionalProperties": {
+								"type": "object",
+								"properties": {
+									"size": {
+										"type": "integer"
+									},
+									"fee": {
+										"type": "number"
+									},
+									"modifiedfee": {
+										"type": "number"
+									},
+									"time": {
+										"type": "integer"
+									},
+									"descendantcount": {
+										"type": "integer"
+									},
+									"ancestorcount": {
+										"type": "integer"
+									},
+									"depends": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									},
+									"spentby": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			"examples": [
+				{
+					"name": "Non-verbose example",
+					"params": [
+						{
+							"name": "txid",
+							"value": "b86ae732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b795"
+						},
+						{
+							"name": "verbose",
+							"value": false
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": [
+							"6f8c6e8d3021d8a1db71eae3cb8db00f1c99d0f94f3b5782e6cfc155b55f3c55",
+							"a4d47b8bdee5f5b8c098c9ac9aa4e3ec113d9f305a4f723d617a92439ab244cb"
+						]
+					}
+				},
+				{
+					"name": "Verbose example",
+					"params": [
+						{
+							"name": "txid",
+							"value": "b86ae732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b795"
+						},
+						{
+							"name": "verbose",
+							"value": true
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"6f8c6e8d3021d8a1db71eae3cb8db00f1c99d0f94f3b5782e6cfc155b55f3c55": {
+								"size": 237,
+								"fee": 0.00001,
+								"modifiedfee": 0.000011,
+								"time": 1714400000,
+								"descendantcount": 2,
+								"ancestorcount": 3,
+								"depends": [
+									"abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234"
+								],
+								"spentby": [
+									"fe5289e5f1f32f2a45c85b2e351c5edebf7f76aa86e31bb8a2983d4f8d95a63a"
+								]
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getmempooldescendants",
+			"summary": "Get mempool descendants of a transaction",
+			"description": "Returns the in-mempool descendants of a given transaction.\n",
+			"params": [
+				{
+					"name": "txid",
+					"required": true,
+					"description": "The transaction ID whose descendants to retrieve.",
+					"schema": {
+						"title": "Bitcoin Transaction ID",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string identifying a transaction."
+					}
+				},
+				{
+					"name": "verbose",
+					"required": false,
+					"description": "Whether to return detailed info (true) or just txids (false).",
+					"schema": {
+						"type": "boolean",
+						"default": false
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "The mempool descendants of the specified transaction.",
+				"schema": {
+					"oneOf": [
+						{
+							"type": "array",
+							"description": "A list of descendant transaction IDs.",
+							"items": {
+								"title": "Bitcoin Transaction ID",
+								"type": "string",
+								"pattern": "^[a-fA-F0-9]{64}$",
+								"description": "A 64-character hex string identifying a transaction."
+							}
+						},
+						{
+							"type": "object",
+							"additionalProperties": {
+								"type": "object",
+								"properties": {
+									"size": {
+										"type": "integer"
+									},
+									"fee": {
+										"type": "number"
+									},
+									"modifiedfee": {
+										"type": "number"
+									},
+									"time": {
+										"type": "integer"
+									},
+									"descendantcount": {
+										"type": "integer"
+									},
+									"ancestorcount": {
+										"type": "integer"
+									},
+									"depends": {
+										"type": "array",
+										"items": {
+											"title": "Bitcoin Transaction ID",
+											"type": "string",
+											"pattern": "^[a-fA-F0-9]{64}$",
+											"description": "A 64-character hex string identifying a transaction."
+										}
+									},
+									"spentby": {
+										"type": "array",
+										"items": {
+											"title": "Bitcoin Transaction ID",
+											"type": "string",
+											"pattern": "^[a-fA-F0-9]{64}$",
+											"description": "A 64-character hex string identifying a transaction."
+										}
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			"examples": [
+				{
+					"name": "Non-verbose example",
+					"params": [
+						{
+							"name": "txid",
+							"value": "546263a196ce5cf674d5002afc0231ab417c2e971fd4ed1735c7a4c63f44720b"
+						},
+						{
+							"name": "verbose",
+							"value": false
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": [
+							"c3b9f342fc90837fd4a22878b59fdf5cdeae1b4e4586224b0df1b3a2e3e6e9c8",
+							"a2e34d98cb7e98b8d85d3a991c8d1cbd3e7a3f17b4acdf4768c88fa3e0e9d8bc"
+						]
+					}
+				},
+				{
+					"name": "Verbose example",
+					"params": [
+						{
+							"name": "txid",
+							"value": "546263a196ce5cf674d5002afc0231ab417c2e971fd4ed1735c7a4c63f44720b"
+						},
+						{
+							"name": "verbose",
+							"value": true
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"c3b9f342fc90837fd4a22878b59fdf5cdeae1b4e4586224b0df1b3a2e3e6e9c8": {
+								"size": 192,
+								"fee": 0.000012,
+								"modifiedfee": 0.000013,
+								"time": 1714400500,
+								"descendantcount": 1,
+								"ancestorcount": 1,
+								"depends": [
+									"fe84b3e08b3f434a8d36b37c4b5a2dcd73f8e95c9b5b7ed46cc6ef3d3c5b2cdd"
+								],
+								"spentby": []
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getmempoolinfo",
+			"summary": "Retrieve information about the mempool state",
+			"description": "Provides information about the TX memory pool's current state, including memory usage, transaction count, and relay fee settings.\n",
+			"params": [],
+			"result": {
+				"name": "result",
+				"description": "Mempool state information.",
+				"schema": {
+					"type": "object",
+					"required": [
+						"loaded",
+						"size",
+						"bytes",
+						"usage",
+						"total_fee",
+						"maxmempool",
+						"mempoolminfee",
+						"minrelaytxfee",
+						"incrementalrelayfee",
+						"unbroadcastcount",
+						"fullrbf"
+					],
+					"properties": {
+						"loaded": {
+							"type": "boolean",
+							"description": "Whether the mempool is fully loaded."
+						},
+						"size": {
+							"type": "integer",
+							"description": "Number of transactions in the mempool."
+						},
+						"bytes": {
+							"type": "integer",
+							"description": "Total size of mempool in bytes."
+						},
+						"usage": {
+							"type": "integer",
+							"description": "Total dynamic memory usage for the mempool (in bytes)."
+						},
+						"total_fee": {
+							"type": "number",
+							"format": "double",
+							"description": "Total fees of all transactions in the mempool in BTC."
+						},
+						"maxmempool": {
+							"type": "integer",
+							"description": "Maximum allowed memory usage for the mempool in bytes."
+						},
+						"mempoolminfee": {
+							"type": "number",
+							"format": "double",
+							"description": "Minimum fee rate for transactions to be accepted into the mempool (in BTC/kvB)."
+						},
+						"minrelaytxfee": {
+							"type": "number",
+							"format": "double",
+							"description": "Minimum fee rate for relaying transactions (in BTC/kvB)."
+						},
+						"incrementalrelayfee": {
+							"type": "number",
+							"format": "double",
+							"description": "Incremental relay fee rate used for BIP 125 replacement (in BTC/kvB)."
+						},
+						"unbroadcastcount": {
+							"type": "integer",
+							"description": "Number of transactions waiting for initial broadcast acknowledgement."
+						},
+						"fullrbf": {
+							"type": "boolean",
+							"description": "Whether full Replace-by-Fee is enabled."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "getmempoolinfo example",
+					"params": [],
+					"result": {
+						"name": "result",
+						"value": {
+							"loaded": true,
+							"size": 4889,
+							"bytes": 13816734,
+							"usage": 49380080,
+							"total_fee": 0.14547621,
+							"maxmempool": 300000000,
+							"mempoolminfee": 0.00001,
+							"minrelaytxfee": 0.00001,
+							"incrementalrelayfee": 0.00001,
+							"unbroadcastcount": 0,
+							"fullrbf": true
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getrawmempool",
+			"summary": "Get raw mempool transaction data",
+			"description": "Returns either a list of transaction IDs currently in the mempool or detailed metadata for each transaction, depending on the verbosity level.\n",
+			"params": [
+				{
+					"name": "verbose",
+					"required": false,
+					"description": "If true, returns detailed info per transaction. If false, returns a list of txids.\n",
+					"schema": {
+						"type": "boolean",
+						"default": false
+					}
+				},
+				{
+					"name": "mempool_sequence",
+					"required": false,
+					"description": "When verbose is false, includes mempool sequence number in the response.\n",
+					"schema": {
+						"type": "boolean",
+						"default": false
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Mempool data depending on verbosity level.",
+				"schema": {
+					"oneOf": [
+						{
+							"type": "object",
+							"required": [
+								"txids",
+								"mempool_sequence"
+							],
+							"properties": {
+								"txids": {
+									"type": "array",
+									"description": "List of transaction IDs in the mempool.",
+									"items": {
+										"title": "Bitcoin Transaction ID",
+										"type": "string",
+										"pattern": "^[a-fA-F0-9]{64}$",
+										"description": "A 64-character hex string identifying a transaction."
+									}
+								},
+								"mempool_sequence": {
+									"type": "integer",
+									"description": "The mempool sequence number."
+								}
+							}
+						},
+						{
+							"type": "object",
+							"description": "Map of txid to transaction metadata when verbose is true.",
+							"additionalProperties": {
+								"type": "object",
+								"properties": {
+									"vsize": {
+										"type": "integer",
+										"description": "Virtual transaction size (vbytes)."
+									},
+									"weight": {
+										"type": "integer",
+										"description": "Transaction weight as defined in BIP 141."
+									},
+									"time": {
+										"type": "integer",
+										"description": "UNIX timestamp when transaction entered mempool."
+									},
+									"height": {
+										"type": "integer",
+										"description": "Block height when the transaction entered mempool."
+									},
+									"descendantcount": {
+										"type": "integer"
+									},
+									"descendantsize": {
+										"type": "integer"
+									},
+									"ancestorcount": {
+										"type": "integer"
+									},
+									"ancestorsize": {
+										"type": "integer"
+									},
+									"wtxid": {
+										"title": "Bitcoin Transaction ID",
+										"type": "string",
+										"pattern": "^[a-fA-F0-9]{64}$",
+										"description": "A 64-character hex string identifying a transaction."
+									},
+									"fees": {
+										"type": "object",
+										"properties": {
+											"base": {
+												"type": "number"
+											},
+											"modified": {
+												"type": "number"
+											},
+											"ancestor": {
+												"type": "number"
+											},
+											"descendant": {
+												"type": "number"
+											}
+										}
+									},
+									"depends": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									},
+									"spentby": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										}
+									},
+									"bip125-replaceable": {
+										"type": "boolean"
+									},
+									"unbroadcast": {
+										"type": "boolean"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			"examples": [
+				{
+					"name": "getrawmempool simple list",
+					"params": [
+						{
+							"name": "verbose",
+							"value": false
+						},
+						{
+							"name": "mempool_sequence",
+							"value": false
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"txids": [
+								"5f10285c6fee80d1982df9893742d0c5aed5aa4fcca3aa4331d7fa071ba4d5ce",
+								"30ad6eacfc8b83de7b91f8df705e081945c9d8a7a05506de38a1842dd856550b"
+							],
+							"mempool_sequence": 1386211
+						}
+					}
+				},
+				{
+					"name": "getrawmempool with verbose true",
+					"params": [
+						{
+							"name": "verbose",
+							"value": true
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"5f10285c6fee80d1982df9893742d0c5aed5aa4fcca3aa4331d7fa071ba4d5ce": {
+								"vsize": 234,
+								"weight": 936,
+								"time": 1714400000,
+								"height": 840000,
+								"descendantcount": 2,
+								"descendantsize": 480,
+								"ancestorcount": 1,
+								"ancestorsize": 234,
+								"wtxid": "5f10285c6fee80d1982df9893742d0c5aed5aa4fcca3aa4331d7fa071ba4d5ce",
+								"fees": {
+									"base": 0.0001,
+									"modified": 0.0001,
+									"ancestor": 0.0001,
+									"descendant": 0.0002
+								},
+								"depends": [],
+								"spentby": [],
+								"bip125-replaceable": true,
+								"unbroadcast": false
+							}
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "getrawtransaction",
+			"summary": "Retrieve raw transaction data by txid",
+			"description": "Returns the raw transaction representation for a given transaction ID (`txid`).  If `verbose` is true, returns a JSON object with detailed information;  otherwise, returns a serialized hex-encoded string.\n",
+			"params": [
+				{
+					"name": "txid",
+					"required": true,
+					"description": "The transaction ID to fetch.",
+					"schema": {
+						"title": "Bitcoin Transaction ID",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string identifying a transaction."
+					}
+				},
+				{
+					"name": "verbose",
+					"required": false,
+					"description": "Return verbose JSON or just the raw hex string.",
+					"schema": {
+						"type": "boolean",
+						"default": false
+					}
+				},
+				{
+					"name": "blockhash",
+					"required": false,
+					"description": "The block in which to look for the transaction (if not in the mempool).",
+					"schema": {
+						"title": "Bitcoin Block Hash",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string representing the block hash."
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Raw transaction data.",
+				"schema": {
+					"oneOf": [
+						{
+							"type": "string",
+							"description": "Raw transaction as hex string."
+						},
+						{
+							"type": "object",
+							"properties": {
+								"txid": {
+									"title": "Bitcoin Transaction ID",
+									"type": "string",
+									"pattern": "^[a-fA-F0-9]{64}$",
+									"description": "A 64-character hex string identifying a transaction."
+								},
+								"hash": {
+									"title": "Bitcoin Block Hash",
+									"type": "string",
+									"pattern": "^[a-fA-F0-9]{64}$",
+									"description": "A 64-character hex string representing the block hash."
+								},
+								"size": {
+									"type": "integer"
+								},
+								"vsize": {
+									"type": "integer"
+								},
+								"weight": {
+									"type": "integer"
+								},
+								"locktime": {
+									"type": "integer"
+								},
+								"blockhash": {
+									"title": "Bitcoin Block Hash",
+									"type": "string",
+									"pattern": "^[a-fA-F0-9]{64}$",
+									"description": "A 64-character hex string representing the block hash."
+								},
+								"confirmations": {
+									"type": "integer"
+								},
+								"time": {
+									"type": "integer"
+								},
+								"blocktime": {
+									"type": "integer"
+								}
+							}
+						}
+					]
+				}
+			},
+			"examples": [
+				{
+					"name": "getrawtransaction example",
+					"params": [
+						{
+							"name": "txid",
+							"value": "546263a196ce5cf674d5002afc0231ab417c2e971fd4ed1735c7a4c63f44720b"
+						},
+						{
+							"name": "verbose",
+							"value": false
+						},
+						{
+							"name": "blockhash",
+							"value": "000000000000000000013c7104486ef1aa53e8ac99b8a8ac02a113b58457ed8b"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": "0100000001d074a22eedb6e7258c15368988826e6c73c6577fff490f42afeb8cd7be858032010000006b48304502210084689df7816df6f8a85c72a8cf4d52c2957657d619f5d126dbfc5f866d7561e80220415f8fbd095f53f0a8a4aa11496b126bc87dd020771d3d30c58f374a0f02bf420121024a42999af129d16c92bc0a0b18b39e2550769711845817d1f69932762d431ebcffffffff02ab6502000000000017a91453ca847feb3986cf2be405429e7e513484e0bc938780c6b001000000001976a914ebbfc363611943f588194465c1febdba9bf3883988ac00000000"
+					}
+				}
+			]
+		},
+		{
+			"name": "gettxout",
+			"summary": "Get details about an unspent transaction output",
+			"description": "Returns details about an unspent transaction output (UTXO), optionally including mempool data.\n",
+			"params": [
+				{
+					"name": "txid",
+					"required": true,
+					"description": "The transaction ID.",
+					"schema": {
+						"title": "Bitcoin Transaction ID",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string identifying a transaction."
+					}
+				},
+				{
+					"name": "n",
+					"required": true,
+					"description": "The vout number.",
+					"schema": {
+						"type": "integer"
+					}
+				},
+				{
+					"name": "include_mempool",
+					"required": false,
+					"description": "Whether to include outputs spent in the mempool. Default is true.\n",
+					"schema": {
+						"type": "boolean",
+						"default": true
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Details about the specified unspent output, or null if not found.",
+				"schema": {
+					"type": "object",
+					"nullable": true,
+					"properties": {
+						"bestblock": {
+							"title": "Bitcoin Block Hash",
+							"type": "string",
+							"pattern": "^[a-fA-F0-9]{64}$",
+							"description": "A 64-character hex string representing the block hash."
+						},
+						"confirmations": {
+							"type": "integer",
+							"description": "Number of confirmations for the transaction."
+						},
+						"value": {
+							"type": "number",
+							"format": "float",
+							"description": "The amount in BTC."
+						},
+						"scriptPubKey": {
+							"type": "object",
+							"description": "The public key script info.",
+							"properties": {
+								"asm": {
+									"type": "string"
+								},
+								"hex": {
+									"type": "string"
+								},
+								"address": {
+									"type": "string"
+								},
+								"desc": {
+									"type": "string"
+								},
+								"type": {
+									"type": "string"
+								}
+							}
+						},
+						"coinbase": {
+							"type": "boolean",
+							"description": "True if the output is from a coinbase transaction."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "gettxout example",
+					"params": [
+						{
+							"name": "txid",
+							"value": "546263a196ce5cf674d5002afc0231ab417c2e971fd4ed1735c7a4c63f44720b"
+						},
+						{
+							"name": "n",
+							"value": 0
+						},
+						{
+							"name": "include_mempool",
+							"value": true
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"bestblock": "00000000000000000000944aba5f33a268df0c95a8bacdf42e5d10f8c7d51f94",
+							"confirmations": 7,
+							"value": 0.00157099,
+							"scriptPubKey": {
+								"asm": "OP_HASH160 53ca847feb3986cf2be405429e7e513484e0bc93 OP_EQUAL",
+								"desc": "addr(39L4cdhha5ueasiKz1wRVd75fHdB9NV2t7)#29pkvxg9",
+								"hex": "a91453ca847feb3986cf2be405429e7e513484e0bc9387",
+								"address": "39L4cdhha5ueasiKz1wRVd75fHdB9NV2t7",
+								"type": "scripthash"
+							},
+							"coinbase": false
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "gettxoutproof",
+			"summary": "Get a proof that one or more transactions are included in a block",
+			"description": "Returns a hex-encoded proof that the specified transaction(s) were included in a block. This proof can be used to verify the inclusion of transactions without relying on a full node.\n",
+			"params": [
+				{
+					"name": "txids",
+					"required": true,
+					"description": "An array of transaction IDs to generate proof for.",
+					"schema": {
+						"type": "array",
+						"items": {
+							"title": "Bitcoin Transaction ID",
+							"type": "string",
+							"pattern": "^[a-fA-F0-9]{64}$",
+							"description": "A 64-character hex string identifying a transaction."
+						}
+					}
+				},
+				{
+					"name": "blockhash",
+					"required": false,
+					"description": "The block in which to search for the txid(s). If omitted, the node will try to locate it.",
+					"schema": {
+						"title": "Bitcoin Block Hash",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]{64}$",
+						"description": "A 64-character hex string representing the block hash."
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "A hex-encoded proof that the specified transactions are part of a block.",
+				"schema": {
+					"type": "string"
+				}
+			},
+			"examples": [
+				{
+					"name": "gettxoutproof example",
+					"params": [
+						{
+							"name": "txids",
+							"value": [
+								"546263a196ce5cf674d5002afc0231ab417c2e971fd4ed1735c7a4c63f44720b"
+							]
+						},
+						{
+							"name": "blockhash",
+							"value": "000000000000000000013c7104486ef1aa53e8ac99b8a8ac02a113b58457ed8b"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": "0080ce25cae416f1da89e4cd3b9f7674acfa3cc43e4d71e10aeb0000000000000000000029cc4a072d5cba23dd0e821d8d711f56124f19015b70abaf08ca4f2124a429fc3e23136..."
+					}
+				}
+			]
+		},
+		{
+			"name": "gettxoutsetinfo",
+			"summary": "Get statistics about the current UTXO set",
+			"description": "Returns statistics about the unspent transaction output (UTXO) set. Only the current chain tip is supported; querying specific blocks is not available.\n",
+			"params": [
+				{
+					"name": "use_index",
+					"required": false,
+					"description": "Whether to use `coinstatsindex` if available. Defaults to true.\n",
+					"schema": {
+						"type": "boolean"
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Statistics on the current state of the UTXO set.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"height": {
+							"type": "integer",
+							"description": "The current block height."
+						},
+						"bestblock": {
+							"title": "Bitcoin Block Hash",
+							"type": "string",
+							"pattern": "^[a-fA-F0-9]{64}$",
+							"description": "A 64-character hex string representing the block hash."
+						},
+						"txouts": {
+							"type": "integer",
+							"description": "Total number of unspent outputs."
+						},
+						"bogosize": {
+							"type": "integer",
+							"description": "A meaningless metric used for comparison purposes."
+						},
+						"hash_serialized_3": {
+							"type": "string",
+							"description": "The serialized hash of the UTXO set."
+						},
+						"muhash": {
+							"type": "string",
+							"description": "A MuHash of the UTXO set, used for integrity checks."
+						},
+						"total_amount": {
+							"type": "number",
+							"format": "double",
+							"description": "Total amount in BTC of all UTXOs."
+						},
+						"transactions": {
+							"type": "integer",
+							"description": "Number of transactions with unspent outputs."
+						},
+						"disk_size": {
+							"type": "integer",
+							"description": "Estimated size of the UTXO set on disk, in bytes."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "gettxoutsetinfo example",
+					"params": [
+						{
+							"name": "use_index",
+							"value": false
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"height": 894719,
+							"bestblock": "000000000000000000022d8a0f2096e71b1fe50b486dcda415857bb0cc5a2ca8",
+							"txouts": 174434793,
+							"bogosize": 13652712508,
+							"hash_serialized_3": "d9183d9a82433fbd0b9370da065fb84bbd1bb5004816f242ce0f2268c0394b2e",
+							"total_amount": 19858278.9908868,
+							"transactions": 121919431,
+							"disk_size": 12197514429
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "sendrawtransaction",
+			"summary": "Submit a raw transaction to the Bitcoin network",
+			"description": "Broadcasts a raw transaction (hex-encoded) to the network. Useful for rebroadcasting transactions not originating from your wallet.\n",
+			"params": [
+				{
+					"name": "hexstring",
+					"required": true,
+					"description": "The hex-encoded raw transaction.",
+					"schema": {
+						"title": "Raw Transaction Hex",
+						"type": "string",
+						"pattern": "^[a-fA-F0-9]+$",
+						"description": "A serialized, hex-encoded Bitcoin transaction."
+					}
+				},
+				{
+					"name": "maxfeerate",
+					"required": false,
+					"description": "Reject transactions whose fee rate is higher than this value (in BTC/kB). Set to 0 to disable the check.\n",
+					"schema": {
+						"oneOf": [
+							{
+								"type": "number"
+							},
+							{
+								"type": "string"
+							}
+						]
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "The transaction ID (txid) of the submitted transaction.",
+				"schema": {
+					"type": "string"
+				}
+			},
+			"examples": [
+				{
+					"name": "sendrawtransaction example",
+					"params": [
+						{
+							"name": "hexstring",
+							"value": "0200000000010153fc6712e0c6cbfd15e56743f2a16bba3c0b17837d4fd33d68d2d930739e2b130000000000ffffffff01c0c62d0000000000160014c24b61118d4a2b36257b65e1ea7f15f85e41ff0402483045022100ac32e935715a57ec1d642a5e178c37f74c013bf8e4edc4cb1c79f5352f136e87022020b0b3192347d1b84e9b89d00a2ecb290f18f9c39e514fa3ef2b7a889e7b6c1b012103ab0b56c7aa6254a80c124e04d2149f7fc376afedfe4623f3c59b87c279eaeb1400000000"
+						},
+						{
+							"name": "maxfeerate",
+							"value": 0.1
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": "1b6d7a0196d78d84c31408982f8fa6bc7383d29c96c5e2b3a55e1f1575dc1cfb"
+					}
+				}
+			]
+		},
+		{
+			"name": "submitpackage",
+			"summary": "Submit a set of serialized raw transactions",
+			"description": "Submits a package containing multiple raw transactions to the mempool for validation and acceptance.\n",
+			"params": [
+				{
+					"name": "package",
+					"required": true,
+					"description": "An array of raw transactions (serialized hex strings) to be submitted as a package.\n",
+					"schema": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Transaction results keyed by `wtxid`.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"package_msg": {
+							"type": "string",
+							"description": "Status message for the package (e.g., \"transaction failed\")"
+						},
+						"tx-results": {
+							"type": "object",
+							"additionalProperties": {
+								"type": "object",
+								"properties": {
+									"txid": {
+										"title": "Bitcoin Transaction ID",
+										"type": "string",
+										"pattern": "^[a-fA-F0-9]{64}$",
+										"description": "A 64-character hex string identifying a transaction."
+									},
+									"error": {
+										"type": "string",
+										"description": "Error message if the transaction failed"
+									}
+								}
+							}
+						},
+						"replaced-transactions": {
+							"type": "array",
+							"description": "List of replaced txids (if any)",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "submitpackage example",
+					"params": [
+						{
+							"name": "package",
+							"value": [
+								"0200000000010153fc6712e0c6cbfd15e56743f2a16bba3c0b17837d4fd33d68d2d930739e2b130000000000ffffffff01c0c62d0000000000160014c24b61118d4a2b36257b65e1ea7f15f85e41ff0402483045022100ac32e935715a57ec1d642a5e178c37f74c013bf8e4edc4cb1c79f5352f136e87022020b0b3192347d1b84e9b89d00a2ecb290f18f9c39e514fa3ef2b7a889e7b6c1b012103ab0b56c7aa6254a80c124e04d2149f7fc376afedfe4623f3c59b87c279eaeb1400000000"
+							]
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"package_msg": "transaction failed",
+							"tx-results": {
+								"6dbccbd4775598af6e9713cd84e90e80431ecc7e932c4b832ab3966ad988bc08": {
+									"txid": "c67ecf450828d639a8cf3d74f168fe6bd9a1121a1167a1d46908d703f871c3a6",
+									"error": "bad-txns-inputs-missingorspent"
+								}
+							},
+							"replaced-transactions": []
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "testmempoolaccept",
+			"summary": "Test if raw transactions would be accepted by the mempool",
+			"description": "Indicates whether one or more raw transactions (serialized, hex-encoded) would be accepted by the mempool.\n",
+			"params": [
+				{
+					"name": "rawtxs",
+					"required": true,
+					"description": "An array of hex-encoded raw transactions to test for mempool acceptance.\n",
+					"schema": {
+						"type": "array",
+						"items": {
+							"title": "Raw Transaction Hex",
+							"type": "string",
+							"pattern": "^[a-fA-F0-9]+$",
+							"description": "A serialized, hex-encoded Bitcoin transaction."
+						}
+					}
+				},
+				{
+					"name": "maxfeerate",
+					"required": false,
+					"description": "Reject transactions whose fee rate is higher than the specified value, expressed in BTC/kB.\n",
+					"schema": {
+						"type": "number"
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Result of the mempool acceptance test for each transaction.",
+				"schema": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"txid": {
+								"title": "Bitcoin Transaction ID",
+								"type": "string",
+								"pattern": "^[a-fA-F0-9]{64}$",
+								"description": "A 64-character hex string identifying a transaction."
+							},
+							"wtxid": {
+								"type": "string",
+								"description": "Witness transaction ID, if available."
+							},
+							"allowed": {
+								"type": "boolean",
+								"description": "Whether the transaction would be accepted to the mempool."
+							},
+							"reject-reason": {
+								"type": "string",
+								"description": "Reason for rejection if not allowed.",
+								"nullable": true
+							}
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "testmempoolaccept example",
+					"params": [
+						{
+							"name": "rawtxs",
+							"value": [
+								"0200000000010142d6bd07c424e975fe821c978e720f9a55f9981d62c290cea5ccd06b455d79b90000000000fdffffff028096980000000000160014d3620fe180a0beb8fcc9682fe92e5a25f0feccd370cd2f0100000000160014076d998f6b12c3d1da6217d967154f42a5e0afd30247304402204549b10ea1698d4b4605be1d3bfff810f6135395386207664a66f5bb8bd1470902205fb86c95bfbe7b502195ffa65276d292fb074fe18ba171ef0a35395211384091012103cb5de30b343b35cc09b50f064eb289dd3e252f6985fc4309fba795cc950316afcfa50d00"
+							]
+						},
+						{
+							"name": "maxfeerate",
+							"value": 0
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": [
+							{
+								"txid": "054183ee699ff12cf1c9f4413f421c3cf0a8febc6b82a1d8751a30f5e0fd54c0",
+								"wtxid": "b07f26a908955f8071620896476d6e2ca6b6610e5edc9e55f19185ca9536c8de",
+								"allowed": true
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "validateaddress",
+			"summary": "Validate a Bitcoin address",
+			"description": "Verifies the validity of a given Bitcoin address and provides additional metadata about it.\n",
+			"params": [
+				{
+					"name": "address",
+					"required": true,
+					"description": "The Bitcoin address to validate.",
+					"schema": {
+						"title": "Bitcoin Address",
+						"type": "string",
+						"pattern": "^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}$",
+						"description": "A valid Bitcoin address."
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Validation result and metadata about the address.",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"isvalid": {
+							"type": "boolean",
+							"description": "Whether the address is valid."
+						},
+						"address": {
+							"type": "string",
+							"description": "The validated Bitcoin address."
+						},
+						"scriptPubKey": {
+							"type": "string",
+							"description": "The hex encoded scriptPubKey generated by the address."
+						},
+						"isscript": {
+							"type": "boolean",
+							"description": "Whether the address corresponds to a script."
+						},
+						"iswitness": {
+							"type": "boolean",
+							"description": "Whether the address is a witness address."
+						},
+						"witness_version": {
+							"type": "integer",
+							"description": "The version number of the witness program."
+						},
+						"witness_program": {
+							"type": "string",
+							"description": "The hex value of the witness program."
+						}
+					}
+				}
+			},
+			"examples": [
+				{
+					"name": "validateaddress example",
+					"params": [
+						{
+							"name": "address",
+							"value": "39L4cdhha5ueasiKz1wRVd75fHdB9NV2t7"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": {
+							"isvalid": true,
+							"address": "39L4cdhha5ueasiKz1wRVd75fHdB9NV2t7",
+							"scriptPubKey": "a91453ca847feb3986cf2be405429e7e513484e0bc9387",
+							"isscript": true,
+							"iswitness": false
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "verifymessage",
+			"summary": "Verify a signed message",
+			"description": "Verifies a message signature using the corresponding Bitcoin address. Returns true if the signature is valid and matches the given address.\n",
+			"params": [
+				{
+					"name": "address",
+					"required": true,
+					"description": "The Bitcoin address to use for the signature.",
+					"schema": {
+						"title": "Bitcoin Address",
+						"type": "string",
+						"pattern": "^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}$",
+						"description": "A valid Bitcoin address."
+					}
+				},
+				{
+					"name": "signature",
+					"required": true,
+					"description": "The base64-encoded signature provided by the signer.",
+					"schema": {
+						"title": "Base64-encoded Signature",
+						"type": "string",
+						"description": "A cryptographic signature encoded in Base64."
+					}
+				},
+				{
+					"name": "message",
+					"required": true,
+					"description": "The message that was signed.",
+					"schema": {
+						"type": "string"
+					}
+				}
+			],
+			"result": {
+				"name": "result",
+				"description": "Whether the signature is valid for the message and address.",
+				"schema": {
+					"type": "boolean"
+				}
+			},
+			"examples": [
+				{
+					"name": "verifymessage example",
+					"params": [
+						{
+							"name": "address",
+							"value": "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY"
+						},
+						{
+							"name": "signature",
+							"value": "G9oR+mz9QwPZq2boSmjdtbX0VNdD+dLOFRzJ93ZDHNwhnOtJb1EDAKCK3NmPIzctQDAazX9gh3d+zdoFKc69bQ4="
+						},
+						{
+							"name": "message",
+							"value": "Test message from Bitcoin"
+						}
+					],
+					"result": {
+						"name": "result",
+						"value": true
+					}
+				}
+			]
+		}
+	]
+}

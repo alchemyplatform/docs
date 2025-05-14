@@ -1,0 +1,512 @@
+- name: suix_getAllBalances
+  summary: Get all coin balances for an address
+  description: >
+    Returns the total balance for each coin type owned by the specified address,
+    including the number of coin objects and any locked amounts.
+  params:
+    - name: owner
+      required: true
+      description: The owner's Sui address.
+      schema:
+        type: string
+  result:
+    name: result
+    description: A list of balance entries, one for each coin type the address owns.
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          coinType:
+            type: string
+            description: The full type tag of the coin (e.g., 0x2::sui::SUI).
+          coinObjectCount:
+            type: integer
+            description: The number of coin objects for this coin type.
+          totalBalance:
+            type: string
+            description: The total balance, summed across all coin objects of this type.
+          lockedBalance:
+            type: object
+            description: Locked balance breakdown if any.
+  examples:
+    - name: Get all balances
+      params:
+        - name: owner
+          value: "0xe883a1df96561884e46d8e29cfb4e127bb6fd2719c33af1c16239a25a469e0a6"
+      result:
+        name: result
+        value:
+          - coinType: "0x2::sui::SUI"
+            coinObjectCount: 5
+            totalBalance: "5000000000"
+            lockedBalance: {}
+
+- name: suix_getAllCoins
+  summary: Get all coin objects owned by an address
+  description: >
+    Returns a paginated list of all Coin objects owned by the specified address.
+    Each Coin object includes metadata such as coin type, balance, and transaction history.
+  params:
+    - name: owner
+      required: true
+      description: The owner's Sui address.
+      schema:
+        type: string
+    - name: cursor
+      required: false
+      description: Optional paging cursor from a previous response.
+      schema:
+        type: string
+        nullable: true
+    - name: limit
+      required: false
+      description: Maximum number of results to return.
+      schema:
+        type: integer
+  result:
+    name: result
+    description: Paginated list of coin objects for the given address.
+    schema:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The list of Coin objects owned by the address.
+          items:
+            type: object
+            properties:
+              coinType:
+                type: string
+                description: The full type tag of the coin.
+              coinObjectId:
+                type: string
+                description: The object ID of the coin.
+              version:
+                type: string
+                description: The object version.
+              digest:
+                type: string
+                description: Digest of the coin object.
+              balance:
+                type: string
+                description: The coin balance.
+              previousTransaction:
+                type: string
+                description: The transaction digest that last modified this coin.
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor for the next page.
+        hasNextPage:
+          type: boolean
+          description: Whether more pages are available.
+  examples:
+    - name: Get all coin objects
+      params:
+        - name: owner
+          value: "0xe883a1df96561884e46d8e29cfb4e127bb6fd2719c33af1c16239a25a469e0a6"
+        - name: cursor
+          value: "0x1c574d9f2db5f293a799cc82795486aa8ce2962f831c7c6a433cbdcd84639acb"
+        - name: limit
+          value: 3
+      result:
+        name: result
+        value:
+          data:
+            - coinType: "0x2::sui::SUI"
+              coinObjectId: "0x861c5e055605b2bb1199faf653a8771e448930bc95a0369fad43a9870a2e5878"
+              version: "103626"
+              digest: "Ao1QyN9UTmYzb2ead3D5xhSBk7TvACRvmnJW8gRbwP99"
+              balance: "200000000"
+              previousTransaction: "7dp5WtTmtGp83EXYYFMzjBJRFeSgR67AzqMETLrfgeFx"
+            - coinType: "0x2::sui::SUI"
+              coinObjectId: "0x7e769678d059761bff8a8f3944642e4c33a6e4fb0b55f8face36fadaa22f2a0d"
+              version: "103626"
+              digest: "5taVxHU9QLQD5cNdqxt8kNGAab93GMG4vX7zYDxEaohx"
+              balance: "200000000"
+              previousTransaction: "9xLdMXezY8d1yRA2TtN6pYjapyy2EVKHWNriGPFGCFvd"
+            - coinType: "0x2::sui::SUI"
+              coinObjectId: "0xa323d541ba5cf9e34919d2644cda38a263f69f47ae954dec65295231e0d2c7c8"
+              version: "103626"
+              digest: "82ZNKSSueWUQkpFNbBZGHSr3sUL5Rxfr7ucVRsvgQzz2"
+              balance: "200000000"
+              previousTransaction: "5xexWFq6QpGHBQyC9P2cbAJXq9qm2EjzfuRM9NwS1uyG"
+          nextCursor: "abcd"
+          hasNextPage: true
+
+- name: suix_getBalance
+  summary: Get the total balance for a specific coin type
+  description: >
+    Returns the total coin balance for a single coin type owned by the specified address.
+    If no coin type is specified, defaults to the native SUI coin type.
+  params:
+    - name: owner
+      required: true
+      description: The owner's Sui address.
+      schema:
+        type: string
+    - name: coin_type
+      required: false
+      description: >
+        Fully qualified type name of the coin. If omitted, defaults to `0x2::sui::SUI`.
+      schema:
+        type: string
+  result:
+    name: result
+    description: The balance data for the requested coin type.
+    schema:
+      type: object
+      properties:
+        coinType:
+          type: string
+          description: The coin type queried.
+        coinObjectCount:
+          type: integer
+          description: Number of coin objects owned of the specified type.
+        totalBalance:
+          type: string
+          description: Total balance in base units of the coin.
+        lockedBalance:
+          type: object
+          description: Object describing any locked funds, if applicable.
+  examples:
+    - name: Get balance for SUI coin
+      params:
+        - name: owner
+          value: "0xe883a1df96561884e46d8e29cfb4e127bb6fd2719c33af1c16239a25a469e0a6"
+        - name: coin_type
+          value: "0x2::sui::SUI"
+      result:
+        name: result
+        value:
+          coinType: "0x2::sui::SUI"
+          coinObjectCount: 5
+          totalBalance: "5000000000"
+          lockedBalance: {}
+
+- name: suix_getCoins
+  summary: Get Coin objects for a specific coin type owned by an address
+  description: >
+    Returns all Coin objects of the specified coin type owned by the given address.
+    If the coin type is not provided, defaults to `0x2::sui::SUI`.
+  params:
+    - name: owner
+      required: true
+      description: The owner's Sui address.
+      schema:
+        type: string
+    - name: coin_type
+      required: false
+      description: >
+        Fully qualified type name of the coin (e.g., `0x2::sui::SUI`). Defaults to `0x2::sui::SUI` if omitted.
+      schema:
+        type: string
+    - name: cursor
+      required: false
+      description: Optional paging cursor to paginate results.
+      schema:
+        type: string
+    - name: limit
+      required: false
+      description: Maximum number of items to return in a single page.
+      schema:
+        type: integer
+  result:
+    name: result
+    description: A page of Coin objects and pagination metadata.
+    schema:
+      type: object
+      properties:
+        data:
+          type: array
+          description: List of Coin objects.
+          items:
+            type: object
+            properties:
+              coinType:
+                type: string
+                description: Type of the coin.
+              coinObjectId:
+                type: string
+                description: Object ID of the coin.
+              version:
+                type: string
+                description: Version of the coin object.
+              digest:
+                type: string
+                description: Digest of the coin object.
+              balance:
+                type: string
+                description: Balance of the coin object.
+              lockedUntilEpoch:
+                type: string
+                nullable: true
+                description: Optional epoch number until which the coin is locked.
+              previousTransaction:
+                type: string
+                description: Digest of the previous transaction affecting this coin.
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor pointing to the next page of results, if any.
+        hasNextPage:
+          type: boolean
+          description: Whether there are more results available after this page.
+  examples:
+    - name: Get SUI coins owned by an address
+      params:
+        - name: owner
+          value: "0xe883a1df96561884e46d8e29cfb4e127bb6fd2719c33af1c16239a25a469e0a6"
+        - name: coin_type
+          value: "0x2::sui::SUI"
+        - name: cursor
+          value: "0x1c574d9f2db5f293a799cc82795486aa8ce2962f831c7c6a433cbdcd84639acb"
+        - name: limit
+          value: 3
+      result:
+        name: result
+        value:
+          data:
+            - coinType: "0x2::sui::SUI"
+              coinObjectId: "0xb770280feece9abe5f4683ee9a1b5baa76e3426d3dd46e9e17ae45a294d8a486"
+              version: "2960614"
+              digest: "CwcAqcZsw9toDkJjg2WjUvdY5U8o914CwzbTSUeEgPRR"
+              balance: "1000000000"
+              lockedUntilEpoch: null
+              previousTransaction: "DsYAh2efV1nD4UuEQXMeicPBgeYD4UbQSDpLg9mKTMzc"
+          nextCursor: "0xb770280feece9abe5f4683ee9a1b5baa76e3426d3dd46e9e17ae45a294d8a486"
+          hasNextPage: false
+
+- name: suix_getCommitteeInfo
+  summary: Return the committee information for a specific epoch
+  description: >
+    Retrieves the list of validator public keys and their voting power for the specified epoch.
+    If no epoch is specified, the latest available epoch is used by default.
+  params:
+    - name: epoch
+      required: false
+      description: Epoch number to retrieve committee info for. Defaults to the latest epoch if not provided.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Committee information for the specified or latest epoch.
+    schema:
+      type: object
+      properties:
+        epoch:
+          type: string
+          description: The epoch number this committee is for.
+        validators:
+          type: array
+          description: >
+            A list of validator entries. Each entry is a 2-item array:
+            [base64-encoded public key, voting power as string].
+          items:
+            type: array
+            items:
+              - type: string
+                description: Base64-encoded public key of the validator.
+              - type: string
+                description: Voting power assigned to the validator.
+  examples:
+    - name: Get latest committee info
+      params: []
+      result:
+        name: result
+        value:
+          epoch: "734"
+          validators:
+            - [
+                "jc/20VUECmVvSBmxMRG1LFdGqGunLzlfuv4uw4R9HoFA5iSnUf32tfIFC8cgXPnTAATJCwx0Cv/TJs5nPMKyOi0k1T4q/rKG38Zo/UBgCJ1tKxe3md02+Q0zLlSnozjU",
+                "305",
+              ]
+            - [
+                "mfJe9h+AMrkUY2RgmCxcxvE07x3a52ZX8sv+wev8jQlzdAgN9vzw3Li8Sw2OCvXYDrv/K0xZn1T0LWMS38MUJ2B4wcw0fru+xRmL4lhRPzhrkw0CwnSagD4jMJVevRoQ",
+                "37",
+              ]
+
+- name: suix_getStakes
+  summary: Governance Read API - Return all [DelegatedStake]
+  description: >
+    Retrieves all delegated staking positions associated with the specified Sui address.
+    Each entry includes the validator address, the staking pool, and the individual stake details such as amount, status, and epochs.
+  params:
+    - name: owner
+      required: true
+      description: The Sui address of the staking position owner.
+      schema:
+        type: string
+  result:
+    name: result
+    description: List of staking entries, grouped by validator address.
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          validatorAddress:
+            type: string
+            description: Sui address of the validator receiving the stake.
+          stakingPool:
+            type: string
+            description: Sui object ID of the associated staking pool.
+          stakes:
+            type: array
+            description: Individual delegated stake entries.
+            items:
+              type: object
+              properties:
+                stakedSuiId:
+                  type: string
+                  description: Object ID representing the staked SUI coin.
+                stakeRequestEpoch:
+                  type: string
+                  description: Epoch in which the staking request was submitted.
+                stakeActiveEpoch:
+                  type: string
+                  description: Epoch in which the stake becomes active.
+                principal:
+                  type: string
+                  description: Amount of SUI staked.
+                status:
+                  type: string
+                  description: Current status of the stake (e.g., Active, Pending, Unstaked).
+                estimatedReward:
+                  type: string
+                  nullable: true
+                  description: Estimated reward for the active stake (optional).
+  examples:
+    - name: Get all delegated stakes for an address
+      params:
+        - name: owner
+          value: "0x7d20dcdb2bca4f508ea9613994683eb4e76e9c4ed371169677c1be02aaf0b58e"
+      result:
+        name: result
+        value:
+          - validatorAddress: "0x3befb84f03a24386492bd3b05b1fd386172eb450e5059ce7df0ea6d9d6cefcaa"
+            stakingPool: "0x9a95cf69368e31b4dbe8ee9bdb3c0587bbc79d8fc6edf4007e185a962fd906df"
+            stakes:
+              - stakedSuiId: "0xb4eeb46b70f0bebcae832aeef9f7c5db76052ab656e5f81853d0cf701cdbc8eb"
+                stakeRequestEpoch: "62"
+                stakeActiveEpoch: "63"
+                principal: "200000000000"
+                status: "Active"
+                estimatedReward: "520000000"
+              - stakedSuiId: "0xf27ab513fc6ef8c344406c78da3d5ad3a5fcc295dc8803c15989a62d33ee8590"
+                stakeRequestEpoch: "142"
+                stakeActiveEpoch: "143"
+                principal: "200000000000"
+                status: "Pending"
+          - validatorAddress: "0x14cfd5e91c13a481370240e392464c329a203fb9f0a8158aaab9b2a90044b26e"
+            stakingPool: "0x14cc7fee4100fdcabda6d15c63c4b49c45ae23f2b936495cd38b1a4b04010295"
+            stakes:
+              - stakedSuiId: "0xbaa75ac72e548aeecf2ce8b4e88530651d6e8f93e0fb79b4bc65a512beb5b9f3"
+                stakeRequestEpoch: "244"
+                stakeActiveEpoch: "245"
+                principal: "200000000000"
+                status: "Unstaked"
+
+- name: suix_getStakesByIds
+  summary: Governance Read API - Return one or more [DelegatedStake]
+  description: >
+    Returns information about one or more staking positions specified by their `stakedSuiId`.
+    If a stake has been withdrawn, its status will be `"Unstaked"`.
+  params:
+    - name: staked_sui_ids
+      required: true
+      description: A list of object IDs representing staked SUI positions.
+      schema:
+        type: array
+        items:
+          type: string
+  result:
+    name: result
+    description: One or more delegated stake entries grouped under their validator and pool.
+    schema:
+      type: object
+      properties:
+        validatorAddress:
+          type: string
+          description: Sui address of the validator associated with the stake.
+        stakingPool:
+          type: string
+          description: Object ID of the staking pool linked to this validator.
+        stakes:
+          type: array
+          description: List of individual delegated stake objects.
+          items:
+            type: object
+            properties:
+              stakedSuiId:
+                type: string
+                description: Object ID representing the staked SUI coin.
+              stakeRequestEpoch:
+                type: string
+                description: Epoch during which the stake was requested.
+              stakeActiveEpoch:
+                type: string
+                description: Epoch when the stake became or will become active.
+              principal:
+                type: string
+                description: Amount of SUI staked.
+              status:
+                type: string
+                description: Stake status - Active, Pending, or Unstaked.
+              estimatedReward:
+                type: string
+                nullable: true
+                description: Estimated reward for the stake if applicable.
+  examples:
+    - name: Get stakes by ID
+      params:
+        - name: staked_sui_ids
+          value:
+            - "0xa6379c19b3aa9aa878fc1deaf69c1dbb1de4224de8b62de04e4962b593e037e9"
+      result:
+        name: result
+        value:
+          validatorAddress: "0x754eb2eed23e6c6bb32c89fe1f21ab588374445e72e0402aea014b2956105799"
+          stakingPool: "0x63ee67e81398729f87d81d62f399c041b0f8d0938923ea7e3917608ee62df437"
+          stakes:
+            - stakedSuiId: "0x378423de90ed03b694cecf443c72b5387b29a731d26d98108d7abc4902107d7d"
+              stakeRequestEpoch: "62"
+              stakeActiveEpoch: "63"
+              principal: "200000000000"
+              status: "Active"
+              estimatedReward: "520000000"
+            - stakedSuiId: "0x6a8e0f8fea6fda5488462e58724c034462b6064a08845e2ae2942fe7c4ee816d"
+              stakeRequestEpoch: "244"
+              stakeActiveEpoch: "245"
+              principal: "200000000000"
+              status: "Unstaked"
+
+- name: suix_getTotalSupply
+  summary: Coin Query API – Return total supply for a coin
+  description: >
+    Returns the total supply of a specific coin type on the network.
+  params:
+    - name: coin_type
+      required: true
+      description: Fully qualified type name for the coin (e.g., `0x2::sui::SUI`).
+      schema:
+        type: string
+  result:
+    name: result
+    description: The total supply object for the specified coin type.
+    schema:
+      type: object
+      properties:
+        value:
+          type: string
+          description: Total coin supply as a 64-bit unsigned integer string.
+  examples:
+    - name: Get total supply for SUI
+      params:
+        - name: coin_type
+          value: "0x2::sui::SUI"
+      result:
+        name: result
+        value:
+          value: "10000000000000000000"

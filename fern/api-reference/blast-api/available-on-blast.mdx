@@ -1,0 +1,88 @@
+---
+title: "Available on Blast"
+description: "Available on Blast"
+slug: "reference/available-on-blast"
+---
+
+# Understanding the Limitations of Blast
+
+Blast is designed for a narrow but critical segment of blockchain infrastructure: **high-throughput, cost-efficient, read-only access to historical data**. This specialization allows Blast to operate with massive scale and affordability—but with that comes purposeful limitations.
+
+This guide outlines the key constraints of Blast and the rationale behind each, so developers can make informed decisions about when and how to use it effectively.
+
+## 1. 🛑 Read-Only, Historical Access Only
+
+Blast does not support **write operations** or **real-time reads**.
+
+* **No transaction submission**: Methods like eth\_sendRawTransaction are not supported.
+* **No access to the chain tip**: All eth\_call requests are restricted to data that is **~25+ blocks behind the chain tip**, introducing a **~30s delay** across chains.
+* **Designed for stability, not live data**: This architecture enables deep caching and throughput optimization but makes Blast unsuitable for any latency-sensitive, real-time use case.
+
+📌 *Use Blast for historical indexing, analytics, and backfills—not live dashboards or apps that rely on up-to-the-second blockchain state.*
+
+## 2. 📉 No Real-Time Features (WebSockets, Subscriptions, Mempool)
+
+Blast deliberately excludes real-time APIs to simplify infrastructure and maximize reliability.
+
+* ❌ eth\_subscribe (e.g., newHeads, logs)
+* ❌ eth\_newPendingTransactionFilter
+* ❌ Access to **mempool** data
+* ❌ Live event streaming
+
+These are common in full-featured RPCs like Alchemy Supernode but removed in Blast to ensure throughput remains consistent and cost-efficient at scale.
+
+🔄 *If you require real-time event tracking or mempool visibility, pair Blast with Supernode or a similar full-spectrum RPC.*
+
+## 3. 📊 Limited Developer Tooling
+
+Blast is optimized for automated systems, not developer workflows.
+
+* 🚫 No response logs or API request tracing
+* 🚫 Limited dashboard visibility
+
+Debugging or fine-tuning traffic through Blast is more manual, typically involving logs from your own infrastructure. For rich observability and debugging, use **Supernode**, which includes advanced dashboards, traffic breakdowns, and logs.
+
+🛠 *Blast assumes your workloads are mature, repeatable, and programmatically managed.*
+
+## 4. 📉 Slightly Lower Uptime (99.9% vs. 99.99%)
+
+Blast offers **99.9% uptime**, which translates to ~8.7 hours of potential downtime per year—compared to **Supernode’s 99.99% (~52 minutes/year)**.
+
+This trade-off enables lower redundancy requirements and reduces overall infrastructure cost.
+
+* ✅ Blast is **SLA-backed**, production-ready, and geographically distributed
+* ⚠️ Use cases requiring **zero failover downtime** or **live user SLAs** may be better suited for Supernode
+
+🔁 *Blast is best used as a high-throughput batch processor —not as the default path for critical user-facing transactions.*
+
+## 5. 🐢 Slower Chain Support Rollouts
+
+When a new blockchain or L2 is added to Alchemy:
+
+* ✅ It will be **immediately available on Supernode**
+* ⏳ **Blast support may follow days or weeks later**
+
+Blast prioritizes stability, meaning chain support is gated by caching, indexing, and availability guarantees. For bleeding-edge access or day-one network launches, Supernode is your best bet.
+
+## 6. 🙋 Limited Support Coverage
+
+Blast is currently offered **only to enterprise customers**, with:
+
+* Priority but **non-24/7** support
+* No granular request-level triage
+* Delays in feature or tooling feedback loops
+
+If your team relies heavily on tight support SLAs or needs rapid iteration on RPC features, ensure your use of Blast is scoped accordingly.
+
+## Summary Table: Blast vs. Supernode (Limitations Focus)
+
+| Feature                           | Blast                       | Supernode                 |
+|-----------------------------------|-----------------------------|---------------------------|
+| **Read access to tip of chain**   | ❌ ~25 blocks delayed       | ✅ Near-instantaneous     |
+| **Write support** (eth\_sendTx)    | ❌                          | ✅                        |
+| **WebSocket subscriptions**       | ❌                          | ✅                        |
+| **Mempool access**                | ❌                          | ✅                        |
+| **Uptime SLA**                    | 99.9%                       | 99.99%                    |
+| **New chain rollout**             | Slower (days–weeks)         | Immediate (Day 1)         |
+| **Usage dashboards/logs**         | ❌                          | ✅                        |
+| **Developer support**             | Limited                     | Priority/full             |

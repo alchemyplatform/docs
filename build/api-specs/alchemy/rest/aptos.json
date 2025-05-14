@@ -1,0 +1,2754 @@
+{
+  "x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
+  "openapi": "3.1.0",
+  "info": {
+    "title": "🌐 Aptos",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://aptos-mainnet.alchemy-blast.com/v2/:apiKey"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/v1": {
+      "get": {
+        "summary": "/v1",
+        "description": "Retrieves the latest information from the Aptos blockchain ledger, including the current chain ID, node role, latest and oldest ledger versions, epoch, block height, and more.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "responses": {
+          "200": {
+            "description": "The latest ledger information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "chain_id": {
+                      "type": "integer",
+                      "description": "ID of the blockchain chain.",
+                      "example": 1
+                    },
+                    "epoch": {
+                      "type": "string",
+                      "description": "Current epoch number.",
+                      "example": "176"
+                    },
+                    "ledger_version": {
+                      "type": "string",
+                      "description": "Latest ledger version.",
+                      "example": "14527564"
+                    },
+                    "oldest_ledger_version": {
+                      "type": "string",
+                      "description": "Earliest available ledger version (due to pruning).",
+                      "example": "0"
+                    },
+                    "ledger_timestamp": {
+                      "type": "string",
+                      "description": "Timestamp of the latest ledger version in microseconds.",
+                      "example": "1666860694570540"
+                    },
+                    "node_role": {
+                      "type": "string",
+                      "description": "Role of this node in the network.",
+                      "example": "full_node"
+                    },
+                    "oldest_block_height": {
+                      "type": "string",
+                      "description": "Lowest block height available.",
+                      "example": "0"
+                    },
+                    "block_height": {
+                      "type": "string",
+                      "description": "Current block height.",
+                      "example": "3983662"
+                    },
+                    "git_hash": {
+                      "type": "string",
+                      "description": "Git hash of the node build.",
+                      "example": "cf280b9a9013dddaeda359174b90236b60990533"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "chain_id": 1,
+                      "epoch": "176",
+                      "ledger_version": "14527564",
+                      "oldest_ledger_version": "0",
+                      "ledger_timestamp": "1666860694570540",
+                      "node_role": "full_node",
+                      "oldest_block_height": "0",
+                      "block_height": "3983662",
+                      "git_hash": "cf280b9a9013dddaeda359174b90236b60990533"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/spec": {
+      "get": {
+        "summary": "/v1/spec",
+        "description": "Provides a web-based UI for exploring the Aptos REST API.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["curl"]
+        },
+        "responses": {
+          "200": {
+            "description": "HTML page with interactive API documentation.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "response": {
+                    "summary": "HTML response sample (truncated)",
+                    "value": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Aptos REST API</title>\n  <script src=\"https://unpkg.com/@stoplight/elements/web-components.min.js\"></script>\n  <link rel=\"stylesheet\" href=\"https://unpkg.com/@stoplight/elements/styles.min.css\">\n</head>\n<body>\n  <elements-api apiDescriptionUrl=\"spec.yaml\" router=\"hash\" layout=\"sidebar\" hideInternal=\"true\" />\n</body>\n</html>\n"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/healthy": {
+      "get": {
+        "summary": "/v1/healthy",
+        "description": "Checks whether the node is healthy.\nBy default, this endpoint just verifies that the node can retrieve the latest ledger info and returns a `200 OK`.\nIf the optional `duration_secs` query parameter is specified, the endpoint returns a `200` only if:\n`server_latest_ledger_info_timestamp >= server_current_time_timestamp - duration_secs`\nOtherwise, it returns a `503 Service Unavailable`.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["curl", "javascript", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "duration_secs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 5
+            },
+            "description": "Threshold in seconds for how far behind the server can be to still be considered healthy. If not provided, the health check always succeeds.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server is healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "aptos-node:ok"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Server is not healthy (e.g., too far behind).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "aptos-node:unhealthy"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}": {
+      "get": {
+        "summary": "/v1/accounts",
+        "description": "Retrieves high-level information about an account such as its sequence number and authentication key.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4"
+            },
+            "description": "Address of account with or without a 0x prefix."
+          },
+          {
+            "name": "ledger_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ledger version to get the state of the account."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account information retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sequence_number": {
+                      "type": "string",
+                      "description": "A string containing a 64-bit unsigned integer."
+                    },
+                    "authentication_key": {
+                      "type": "string",
+                      "description": "All bytes (Vec) data is represented as hex-encoded string prefixed with 0x and fulfilled with two hex digits per byte."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example of a valid account response",
+                    "value": {
+                      "sequence_number": "140718",
+                      "authentication_key": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}/resources": {
+      "get": {
+        "summary": "/v1/accounts/{address}/resources",
+        "description": "Retrieves all account resources for a given account and a specific ledger version. \nIf the ledger version is not specified, the latest ledger version is used.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4"
+            },
+            "description": "Address of account with or without a 0x prefix."
+          },
+          {
+            "name": "ledger_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ledger version to get the state of the account."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of account resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "String representation of a MoveStructTag (e.g. 0x1::coin::CoinStore<...>)"
+                      },
+                      "data": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "JSON representation of Move struct data within the resource."
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example of account resources",
+                    "value": [
+                      {
+                        "type": "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>",
+                        "data": {
+                          "coin": {
+                            "value": "386589061842"
+                          },
+                          "deposit_events": {
+                            "counter": "18687",
+                            "guid": {
+                              "id": {
+                                "addr": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                                "creation_num": "2"
+                              }
+                            }
+                          },
+                          "frozen": false,
+                          "withdraw_events": {
+                            "counter": "25730",
+                            "guid": {
+                              "id": {
+                                "addr": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                                "creation_num": "3"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "0x1::account::Account",
+                        "data": {
+                          "authentication_key": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                          "coin_register_events": {
+                            "counter": "1",
+                            "guid": {
+                              "id": {
+                                "addr": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                                "creation_num": "0"
+                              }
+                            }
+                          },
+                          "guid_creation_num": "4",
+                          "key_rotation_events": {
+                            "counter": "0",
+                            "guid": {
+                              "id": {
+                                "addr": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                                "creation_num": "1"
+                              }
+                            }
+                          },
+                          "rotation_capability_offer": {
+                            "for": {
+                              "vec": []
+                            }
+                          },
+                          "sequence_number": "83530",
+                          "signer_capability_offer": {
+                            "for": {
+                              "vec": []
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}/resource/{resource_type}": {
+      "get": {
+        "summary": "/v1/accounts/{address}/resource/{resource_type}",
+        "description": "Retrieves an individual resource from a given account and at a specific ledger version.\nIf the ledger version is not specified, the latest ledger version is used.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4"
+            },
+            "description": "Address of account with or without a 0x prefix."
+          },
+          {
+            "name": "resource_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x1::account::Account"
+            },
+            "description": "Name of the Move struct resource to retrieve (e.g. 0x1::account::Account)."
+          },
+          {
+            "name": "ledger_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ledger version to get the state of the account."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The resource data for the specified type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "String representation of a MoveStructTag (e.g. 0x1::account::Account)."
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "description": "JSON representation of Move struct data within the resource."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example of a single resource (Account)",
+                    "value": {
+                      "type": "0x1::account::Account",
+                      "data": {
+                        "authentication_key": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                        "coin_register_events": {
+                          "counter": "1",
+                          "guid": {
+                            "id": {
+                              "addr": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                              "creation_num": "0"
+                            }
+                          }
+                        },
+                        "guid_creation_num": "4",
+                        "key_rotation_events": {
+                          "counter": "0",
+                          "guid": {
+                            "id": {
+                              "addr": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4",
+                              "creation_num": "1"
+                            }
+                          }
+                        },
+                        "rotation_capability_offer": {
+                          "for": {
+                            "vec": []
+                          }
+                        },
+                        "sequence_number": "83912",
+                        "signer_capability_offer": {
+                          "for": {
+                            "vec": []
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}/modules": {
+      "get": {
+        "summary": "/v1/accounts/{address}/modules",
+        "description": "Retrieves all account modules' bytecode for a given account at a specific ledger version.\nIf the ledger version is not specified, the latest ledger version is used.\nThe Aptos nodes prune account state history, via a configurable time window. If the requested ledger version has been pruned, the server responds with a 410.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4"
+            },
+            "description": "Address of account with or without a 0x prefix."
+          },
+          {
+            "name": "ledger_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ledger version to get the state of the account."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Move modules (bytecode + ABI)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "bytecode": {
+                        "type": "string",
+                        "description": "Hex-encoded bytecode of the module."
+                      },
+                      "abi": {
+                        "type": "object",
+                        "properties": {
+                          "address": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "friends": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "exposed_functions": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "visibility": {
+                                  "type": "string"
+                                },
+                                "is_entry": {
+                                  "type": "boolean"
+                                },
+                                "is_view": {
+                                  "type": "boolean"
+                                },
+                                "generic_type_params": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "constraints": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "params": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "return": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "structs": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "is_native": {
+                                  "type": "boolean"
+                                },
+                                "is_event": {
+                                  "type": "boolean"
+                                },
+                                "abilities": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "generic_type_params": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "constraints": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "fields": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example of account module with ABI",
+                    "value": [
+                      {
+                        "bytecode": "0xa11ceb0b05000000080100020302...",
+                        "abi": {
+                          "address": "0x190d44266241744264b964a37b8f09863167a12d3e70cda39376cfb4e3561e12",
+                          "name": "math",
+                          "friends": [],
+                          "exposed_functions": [
+                            {
+                              "name": "min_u64",
+                              "visibility": "public",
+                              "is_entry": false,
+                              "is_view": false,
+                              "generic_type_params": [],
+                              "params": ["u64", "u64"],
+                              "return": ["u64"]
+                            },
+                            {
+                              "name": "mul_div",
+                              "visibility": "public",
+                              "is_entry": false,
+                              "is_view": false,
+                              "generic_type_params": [],
+                              "params": ["u64", "u64", "u64"],
+                              "return": ["u64"]
+                            }
+                          ],
+                          "structs": []
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}/module/{module_name}": {
+      "get": {
+        "summary": "/v1/accounts/{address}/module/{module_name}",
+        "description": "Retrieves an individual module from a given account and at a specific ledger version.\nIf the ledger version is not specified, the latest ledger version is used.\nThe Aptos nodes prune account state history, via a configurable time window. If the requested ledger version has been pruned, the server responds with a 410.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4"
+            },
+            "description": "Address of account with or without a 0x prefix."
+          },
+          {
+            "name": "module_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "coin"
+            },
+            "description": "Name of the module to retrieve."
+          },
+          {
+            "name": "ledger_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ledger version to get the state of the account."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single Move module (bytecode + ABI).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bytecode": {
+                      "type": "string",
+                      "description": "Hex-encoded bytecode of the module."
+                    },
+                    "abi": {
+                      "type": "object",
+                      "properties": {
+                        "address": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "friends": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "exposed_functions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "visibility": {
+                                "type": "string"
+                              },
+                              "is_entry": {
+                                "type": "boolean"
+                              },
+                              "generic_type_params": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "constraints": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "params": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "return": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "structs": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "is_native": {
+                                "type": "boolean"
+                              },
+                              "abilities": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "generic_type_params": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "constraints": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "fields": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example of a single module",
+                    "value": {
+                      "bytecode": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                      "abi": {
+                        "address": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                        "name": "example_module",
+                        "friends": ["0x1::aptos_coin"],
+                        "exposed_functions": [
+                          {
+                            "name": "transfer",
+                            "visibility": "private",
+                            "is_entry": true,
+                            "generic_type_params": [
+                              {
+                                "constraints": ["store"]
+                              }
+                            ],
+                            "params": ["address"],
+                            "return": ["bool"]
+                          }
+                        ],
+                        "structs": [
+                          {
+                            "name": "Balance",
+                            "is_native": true,
+                            "abilities": ["store"],
+                            "generic_type_params": [
+                              {
+                                "constraints": []
+                              }
+                            ],
+                            "fields": [
+                              {
+                                "name": "value",
+                                "type": "u64"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}/events/{creation_number}": {
+      "get": {
+        "summary": "/v1/accounts/{address}/events/{creation_number}",
+        "description": "Retrieves events by account address and creation number. Optionally supports pagination via `start` and `limit`.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0xc32f662cd9718f02d8a8e5628f8f642fa27cd9b5f457b406ed734901a4939e34"
+            },
+            "description": "Address receiving the events (32-byte hex-encoded)."
+          },
+          {
+            "name": "creation_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Creation number corresponding to the event stream."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sequence number to start retrieving events from."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Maximum number of events to retrieve."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of events from the specified stream.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string",
+                        "description": "Ledger version in which the event was emitted."
+                      },
+                      "guid": {
+                        "type": "object",
+                        "properties": {
+                          "creation_number": {
+                            "type": "string"
+                          },
+                          "account_address": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "sequence_number": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Move type of the event data."
+                      },
+                      "data": {
+                        "type": ["object", "null"],
+                        "description": "The actual event data."
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example event result",
+                    "value": [
+                      {
+                        "guid": {
+                          "creation_number": "32425224034",
+                          "account_address": "0xc32f662cd9718f02d8a8e5628f8f642fa27cd9b5f457b406ed734901a4939e34"
+                        },
+                        "sequence_number": "32425224034",
+                        "type": "string",
+                        "data": null
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}/events/{event_handle}/{field_name}": {
+      "get": {
+        "summary": "/v1/accounts/{address}/events/{event_handle}/{field_name}",
+        "description": "Uses the given account `address`, `event_handle`, and `field_name` to retrieve events emitted to the account that match the corresponding event type.\nThe combination of these parameters constructs a globally unique event stream identifier.\nPagination is supported via `start` and `limit`.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0xc32f662cd9718f02d8a8e5628f8f642fa27cd9b5f457b406ed734901a4939e34"
+            },
+            "description": "Hex-encoded 32-byte Aptos account address, with or without 0x prefix."
+          },
+          {
+            "name": "event_handle",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x1::account::Account"
+            },
+            "description": "Struct type name that contains the event handle."
+          },
+          {
+            "name": "field_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "withdraw_events"
+            },
+            "description": "Field name within the struct that holds the event handle."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Starting sequence number of events."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Maximum number of events to return."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of events matching the specified type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string",
+                        "description": "Ledger version in which the event was emitted."
+                      },
+                      "guid": {
+                        "type": "object",
+                        "properties": {
+                          "creation_number": {
+                            "type": "string"
+                          },
+                          "account_address": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "sequence_number": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Move type of the event."
+                      },
+                      "data": {
+                        "type": ["object", "null"],
+                        "description": "JSON representation of the event data."
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Sample event list",
+                    "value": [
+                      {
+                        "guid": {
+                          "creation_number": "32425224034",
+                          "account_address": "0xc32f662cd9718f02d8a8e5628f8f642fa27cd9b5f457b406ed734901a4939e34"
+                        },
+                        "sequence_number": "32425224034",
+                        "type": "0x1::account::WithdrawEvent",
+                        "data": null
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/blocks/by_height/{block_height}": {
+      "get": {
+        "summary": "/v1/blocks/by_height/{block_height}",
+        "description": "Retrieves block metadata and optionally the transactions contained in the block.\nIf the block is pruned, the server will return a 410 error. To avoid partial results when `with_transactions=true`, consider checking the total number of transactions expected.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "block_height",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 3700145
+            },
+            "description": "Block height to look up. Starts at 0."
+          },
+          {
+            "name": "with_transactions",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "If set to true, includes all transactions in the block. May be limited by max transaction size."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block data with or without transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "block_height": {
+                      "type": "string"
+                    },
+                    "block_hash": {
+                      "type": "string"
+                    },
+                    "block_timestamp": {
+                      "type": "string"
+                    },
+                    "first_version": {
+                      "type": "string"
+                    },
+                    "last_version": {
+                      "type": "string"
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "hash": {
+                            "type": "string"
+                          },
+                          "sender": {
+                            "type": "string"
+                          },
+                          "sequence_number": {
+                            "type": "string"
+                          },
+                          "max_gas_amount": {
+                            "type": "string"
+                          },
+                          "gas_unit_price": {
+                            "type": "string"
+                          },
+                          "expiration_timestamp_secs": {
+                            "type": "string"
+                          },
+                          "payload": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "function": {
+                                "type": "string"
+                              },
+                              "type_arguments": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "arguments": {
+                                "type": "array",
+                                "items": {
+                                  "oneOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          },
+                          "signature": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "public_key": {
+                                "type": "string"
+                              },
+                              "signature": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example block response",
+                    "value": {
+                      "block_height": "32425224034",
+                      "block_hash": "string",
+                      "block_timestamp": "32425224034",
+                      "first_version": "32425224034",
+                      "last_version": "32425224034",
+                      "transactions": [
+                        {
+                          "type": "pending_transaction",
+                          "hash": "string",
+                          "sender": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                          "sequence_number": "32425224034",
+                          "max_gas_amount": "32425224034",
+                          "gas_unit_price": "32425224034",
+                          "expiration_timestamp_secs": "32425224034",
+                          "payload": {
+                            "type": "entry_function_payload",
+                            "function": "0x1::aptos_coin::transfer",
+                            "type_arguments": ["string"],
+                            "arguments": [null]
+                          },
+                          "signature": {
+                            "type": "ed25519_signature",
+                            "public_key": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                            "signature": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/blocks/by_version/{version}": {
+      "get": {
+        "summary": "/v1/blocks/by_version/{version}",
+        "description": "Retrieves block metadata and optionally the transactions contained in the block, based on a specific ledger version.\nIf the block is pruned, the server will return a 410 error. To avoid partial results when `with_transactions=true`, consider checking the total number of transactions expected.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 13563213
+            },
+            "description": "Ledger version to look up block information for."
+          },
+          {
+            "name": "with_transactions",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "If set to true, includes all transactions in the block. May be limited by max transaction size."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block data with or without transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "block_height": {
+                      "type": "string"
+                    },
+                    "block_hash": {
+                      "type": "string"
+                    },
+                    "block_timestamp": {
+                      "type": "string"
+                    },
+                    "first_version": {
+                      "type": "string"
+                    },
+                    "last_version": {
+                      "type": "string"
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "hash": {
+                            "type": "string"
+                          },
+                          "sender": {
+                            "type": "string"
+                          },
+                          "sequence_number": {
+                            "type": "string"
+                          },
+                          "max_gas_amount": {
+                            "type": "string"
+                          },
+                          "gas_unit_price": {
+                            "type": "string"
+                          },
+                          "expiration_timestamp_secs": {
+                            "type": "string"
+                          },
+                          "payload": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "function": {
+                                "type": "string"
+                              },
+                              "type_arguments": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "arguments": {
+                                "type": "array",
+                                "items": {
+                                  "oneOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          },
+                          "signature": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "public_key": {
+                                "type": "string"
+                              },
+                              "signature": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example block by version",
+                    "value": {
+                      "block_height": "32425224034",
+                      "block_hash": "string",
+                      "block_timestamp": "32425224034",
+                      "first_version": "32425224034",
+                      "last_version": "32425224034",
+                      "transactions": [
+                        {
+                          "type": "pending_transaction",
+                          "hash": "string",
+                          "sender": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                          "sequence_number": "32425224034",
+                          "max_gas_amount": "32425224034",
+                          "gas_unit_price": "32425224034",
+                          "expiration_timestamp_secs": "32425224034",
+                          "payload": {
+                            "type": "entry_function_payload",
+                            "function": "0x1::aptos_coin::transfer",
+                            "type_arguments": ["string"],
+                            "arguments": [null]
+                          },
+                          "signature": {
+                            "type": "ed25519_signature",
+                            "public_key": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                            "signature": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tables/{table_handle}/item": {
+      "post": {
+        "summary": "/v1/tables/{table_handle}/item",
+        "description": "Retrieves a specific item from the table identified by `{table_handle}` using the provided key. This is a POST endpoint because the key can be complex and not suitable for query parameters.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "table_handle",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "hex"
+            },
+            "description": "Hex-encoded 32-byte string representing the table handle.\n"
+          },
+          {
+            "name": "ledger_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ledger version to get the state of the account. If not specified, the latest version is used.\n"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key_type": {
+                    "type": "string",
+                    "description": "The Move type of the key.\n"
+                  },
+                  "value_type": {
+                    "type": "string",
+                    "description": "The Move type of the value.\n"
+                  },
+                  "key": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object"
+                      }
+                    ],
+                    "description": "The key to identify the item in the table. Can be a primitive or a complex object.\n"
+                  }
+                },
+                "required": ["key_type", "value_type", "key"]
+              },
+              "examples": {
+                "example": {
+                  "summary": "Example request",
+                  "value": {
+                    "key_type": "0x1::string::String",
+                    "value_type": "address",
+                    "key": "dport"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The retrieved table item.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example string response",
+                    "value": "0x81e2e2499407693c81fe65c86405ca70df529438339d9da7a6fc2520142b591e"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{address}/transactions": {
+      "get": {
+        "summary": "/v1/accounts/{address}/transactions",
+        "description": "Retrieves transactions sent from a specific account. If `start` is not provided, retrieval starts at sequence number 0. If `start` is too far in the past and pruned, a 410 will be returned.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0xc32f662cd9718f02d8a8e5628f8f642fa27cd9b5f457b406ed734901a4939e34"
+            },
+            "description": "Address of account with or without a 0x prefix."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of transactions to retrieve."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Account sequence number to start retrieving transactions from."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions from the specified account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string"
+                      },
+                      "hash": {
+                        "type": "string"
+                      },
+                      "state_change_hash": {
+                        "type": "string"
+                      },
+                      "event_root_hash": {
+                        "type": "string"
+                      },
+                      "state_checkpoint_hash": {
+                        "type": ["string", "null"]
+                      },
+                      "gas_used": {
+                        "type": "string"
+                      },
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "vm_status": {
+                        "type": "string"
+                      },
+                      "accumulator_root_hash": {
+                        "type": "string"
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "address": {
+                              "type": "string"
+                            },
+                            "state_key_hash": {
+                              "type": "string"
+                            },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "data": {
+                                  "type": "object"
+                                }
+                              }
+                            },
+                            "type": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example transaction list",
+                    "value": [
+                      {
+                        "version": "6691597071",
+                        "hash": "0x3841a4cba1c638dc15e6c3f8559059747f342349caef7004b401eabb0b7279aa",
+                        "state_change_hash": "0xb0394dfe1356dd2f702dfc5d1832a928884117cdb28b52710f8297aa768fb59b",
+                        "event_root_hash": "0x2cce8081b44bb21c55891081a77b3a806c589dbaa231e297dd44b3d7092635bf",
+                        "state_checkpoint_hash": null,
+                        "gas_used": "30",
+                        "success": true,
+                        "vm_status": "Executed successfully",
+                        "accumulator_root_hash": "0x4d435ff06204a8e20adf4da01c95ea77734ab960c39f240d215f95fde225befc",
+                        "changes": [
+                          {
+                            "address": "0x13a9f1a109368730f2e355d831ba8fbf5942fb82321863d55de54cb4ebe5d18f",
+                            "state_key_hash": "0x6df3ecbf3a2fbae0fdba75291520be34b171e2b75b648f3381c101df2eb1abf3",
+                            "type": "write_resource",
+                            "data": {
+                              "type": "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>",
+                              "data": {
+                                "coin": {
+                                  "value": "8382825976"
+                                },
+                                "deposit_events": {
+                                  "counter": "79737818",
+                                  "guid": {
+                                    "id": {
+                                      "addr": "0x13a9f1a109368730f2e355d831ba8fbf5942fb82321863d55de54cb4ebe5d18f",
+                                      "creation_num": "2"
+                                    }
+                                  }
+                                },
+                                "frozen": false,
+                                "withdraw_events": {
+                                  "counter": "65846",
+                                  "guid": {
+                                    "id": {
+                                      "addr": "0x13a9f1a109368730f2e355d831ba8fbf5942fb82321863d55de54cb4ebe5d18f",
+                                      "creation_num": "3"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/estimate_gas_price": {
+      "get": {
+        "summary": "/v1/estimate_gas_price",
+        "description": "Estimates a suitable gas price based on recent network activity.\nThe estimate is derived from the median gas unit price of the last 100,000 transactions. If there have been no transactions in that window, the estimate defaults to 1.\nUsers can choose to pay more to prioritize their transaction or less if they're willing to wait.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "responses": {
+          "200": {
+            "description": "Estimated gas prices for deprioritized, standard, and prioritized transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deprioritized_gas_estimate": {
+                      "type": "integer",
+                      "example": 100,
+                      "description": "Estimated gas price for deprioritized transactions."
+                    },
+                    "gas_estimate": {
+                      "type": "integer",
+                      "example": 101,
+                      "description": "Median estimated gas price (standard)."
+                    },
+                    "prioritized_gas_estimate": {
+                      "type": "integer",
+                      "example": 150,
+                      "description": "Estimated gas price for prioritized transactions."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example gas estimate response",
+                    "value": {
+                      "deprioritized_gas_estimate": 100,
+                      "gas_estimate": 101,
+                      "prioritized_gas_estimate": 150
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions": {
+      "get": {
+        "summary": "/v1/transactions",
+        "description": "Retrieves on-chain committed transactions from the ledger.\nSupports optional pagination via the `start` and `limit` query parameters.\nIf the starting version has been pruned due to the node's data retention policy, a 410 error will be returned.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ledger version to start the list of transactions."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of transactions to retrieve."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of committed transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string"
+                      },
+                      "hash": {
+                        "type": "string"
+                      },
+                      "state_change_hash": {
+                        "type": "string"
+                      },
+                      "event_root_hash": {
+                        "type": "string"
+                      },
+                      "state_checkpoint_hash": {
+                        "type": ["string", "null"]
+                      },
+                      "gas_used": {
+                        "type": "string"
+                      },
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "vm_status": {
+                        "type": "string"
+                      },
+                      "accumulator_root_hash": {
+                        "type": "string"
+                      },
+                      "changes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      },
+                      "timestamp": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example transaction list",
+                    "value": [
+                      {
+                        "version": "14535506",
+                        "hash": "0xb0d995b7e89a81014d350bbc69d0e2480f90fa67dfc0a99644406575678f0abc",
+                        "state_change_hash": "0xafb6e14fe47d850fd0a7395bcfb997ffacf4715e0f895cc162c218e4a7564bc6",
+                        "event_root_hash": "0x414343554d554c41544f525f504c414345484f4c4445525f4841534800000000",
+                        "state_checkpoint_hash": "0xa6f03e2323b0205e3e95c9ee6afefb2ee96136d730e0b4efd0379fe7d867e38e",
+                        "gas_used": "0",
+                        "success": true,
+                        "vm_status": "Executed successfully",
+                        "accumulator_root_hash": "0x29e611472fcb25e25d515cbfe90a1d68e0932a4eeebc571c441e93dfe1fb8b63",
+                        "changes": [],
+                        "timestamp": "1666861318607443",
+                        "type": "state_checkpoint_transaction"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions/batch": {
+      "post": {
+        "summary": "/v1/transactions/batch",
+        "description": "Submits a batch of transactions to the Aptos network. Each transaction in the batch includes full transaction details, such as sender, sequence number, gas settings, and a payload.\nIf any transaction in the batch fails, the response will include the corresponding failure details.\nNote: The API credit cost for this endpoint is 10.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "sender",
+                    "sequence_number",
+                    "max_gas_amount",
+                    "gas_unit_price",
+                    "expiration_timestamp_secs",
+                    "payload",
+                    "signature"
+                  ],
+                  "properties": {
+                    "sender": {
+                      "type": "string"
+                    },
+                    "sequence_number": {
+                      "type": "string"
+                    },
+                    "max_gas_amount": {
+                      "type": "string"
+                    },
+                    "gas_unit_price": {
+                      "type": "string"
+                    },
+                    "expiration_timestamp_secs": {
+                      "type": "string"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "function": {
+                          "type": "string"
+                        },
+                        "type_arguments": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "arguments": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "signature": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "public_key": {
+                          "type": "string"
+                        },
+                        "signature": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "response": {
+                  "summary": "Sample batch request",
+                  "value": [
+                    {
+                      "sender": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                      "sequence_number": "0",
+                      "max_gas_amount": "1000",
+                      "gas_unit_price": "1",
+                      "expiration_timestamp_secs": "1713380000",
+                      "payload": {
+                        "type": "entry_function_payload",
+                        "function": "0x1::aptos_coin::transfer",
+                        "type_arguments": ["0x1::aptos_coin::AptosCoin"],
+                        "arguments": [
+                          "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                          "100000"
+                        ]
+                      },
+                      "signature": {
+                        "type": "ed25519_signature",
+                        "public_key": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                        "signature": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Array of failed transactions, if any.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transaction_failures": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "error": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string"
+                              },
+                              "error_code": {
+                                "type": "string"
+                              },
+                              "vm_error_code": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "transaction_index": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Sample batch failure response",
+                    "value": {
+                      "transaction_failures": [
+                        {
+                          "error": {
+                            "message": "account not found",
+                            "error_code": "account_not_found",
+                            "vm_error_code": "1001"
+                          },
+                          "transaction_index": 0
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions/by_hash/{txn_hash}": {
+      "get": {
+        "summary": "/v1/transactions/by_hash/{txn_hash}",
+        "description": "Retrieves a transaction from the Aptos blockchain by transaction hash.\nIf the transaction is not found or has been pruned, the API may return a 404 or 410 respectively.\nThis endpoint has a credit cost of 10.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "txn_hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The hash of the transaction to retrieve."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details for the given hash.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "hash": {
+                      "type": "string"
+                    },
+                    "state_change_hash": {
+                      "type": "string"
+                    },
+                    "event_root_hash": {
+                      "type": "string"
+                    },
+                    "state_checkpoint_hash": {
+                      "type": ["string", "null"]
+                    },
+                    "gas_used": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "vm_status": {
+                      "type": "string"
+                    },
+                    "accumulator_root_hash": {
+                      "type": "string"
+                    },
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "address": {
+                            "type": "string"
+                          },
+                          "state_key_hash": {
+                            "type": "string"
+                          },
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "data": {
+                                "type": "object",
+                                "additionalProperties": true
+                              }
+                            }
+                          },
+                          "type": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example transaction by hash",
+                    "value": {
+                      "version": "134911660",
+                      "hash": "0xbe9e71660e128e0e3e1f082c394f7b1bd2f4cb9c52207fe63cf4c8e7eb080e9d",
+                      "state_change_hash": "0x0b0ad696fe46c2ddf6a7acf4ba58a96f406da4fd19b28f562e351ee855eca0c2",
+                      "event_root_hash": "0xb5731d0d85ce6296185ece141fa3c99e73c3a98af9796c1179134a332c2990eb",
+                      "state_checkpoint_hash": null,
+                      "gas_used": "57",
+                      "success": true,
+                      "vm_status": "Executed successfully",
+                      "accumulator_root_hash": "0xa51fbb0b8959b229634eec711902063848aa1999869fd93dba72c551cef48b1e",
+                      "changes": [
+                        {
+                          "address": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                          "state_key_hash": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                          "data": {
+                            "type": "0x190d44...::Storage<...>",
+                            "data": {
+                              "coin_x": {
+                                "value": "13611165452"
+                              },
+                              "coin_y": {
+                                "value": "212766465934"
+                              }
+                            }
+                          },
+                          "type": "write_resource"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions/by_version/{txn_version}": {
+      "get": {
+        "summary": "/v1/transactions/by_version/{txn_version}",
+        "description": "Retrieves a transaction from the Aptos blockchain by ledger version.\nIf the version has been pruned, the server responds with a 410.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "parameters": [
+          {
+            "name": "txn_version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The version of the transaction to retrieve."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction data for the given version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "hash": {
+                      "type": "string"
+                    },
+                    "state_change_hash": {
+                      "type": "string"
+                    },
+                    "event_root_hash": {
+                      "type": "string"
+                    },
+                    "state_checkpoint_hash": {
+                      "type": "string"
+                    },
+                    "gas_used": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "vm_status": {
+                      "type": "string"
+                    },
+                    "accumulator_root_hash": {
+                      "type": "string"
+                    },
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "List of state changes made by the transaction."
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example transaction by version",
+                    "value": {
+                      "version": "14632549",
+                      "hash": "0x7295e969a202a5f4e9a3fff708d2c6110936a8e09d5174017b5941976fa45d56",
+                      "state_change_hash": "0xafb6e14fe47d850fd0a7395bcfb997ffacf4715e0f895cc162c218e4a7564bc6",
+                      "event_root_hash": "0x414343554d554c41544f525f504c414345484f4c4445525f4841534800000000",
+                      "state_checkpoint_hash": "0x0dec4b1197e60a42e3c936581b7e1140623c5ee85aff067b4f25941691d8fc29",
+                      "gas_used": "0",
+                      "success": true,
+                      "vm_status": "Executed successfully",
+                      "accumulator_root_hash": "0xb8d0ee88398e517a2fc9b814978a2bbf136ea95335b846c70388fa36208111ed",
+                      "changes": [],
+                      "timestamp": "1666868948644188",
+                      "type": "state_checkpoint_transaction"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions/encode_submission": {
+      "post": {
+        "summary": "/v1/transactions/encode_submission",
+        "description": "This endpoint accepts an `EncodeSubmissionRequest`, validates the request format, and returns that request encoded in BCS format as a hex string.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "x-readme": {
+          "samples-languages": ["javascript", "curl", "python", "go"]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "sender",
+                  "sequence_number",
+                  "max_gas_amount",
+                  "gas_unit_price",
+                  "expiration_timestamp_secs",
+                  "payload"
+                ],
+                "properties": {
+                  "sender": {
+                    "type": "string",
+                    "example": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                  },
+                  "sequence_number": {
+                    "type": "string",
+                    "example": "32425224034"
+                  },
+                  "max_gas_amount": {
+                    "type": "string",
+                    "example": "32425224034"
+                  },
+                  "gas_unit_price": {
+                    "type": "string",
+                    "example": "32425224034"
+                  },
+                  "expiration_timestamp_secs": {
+                    "type": "string",
+                    "example": "32425224034"
+                  },
+                  "payload": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "example": "entry_function_payload"
+                      },
+                      "function": {
+                        "type": "string",
+                        "example": "0x1::aptos_coin::transfer"
+                      },
+                      "type_arguments": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": ["0x1::aptos_coin::AptosCoin"]
+                      },
+                      "arguments": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "example": [
+                          "0x1a2b3c4d5e6f70819283746556473829",
+                          "1000000"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Encoded transaction in BCS format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "BCS-encoded transaction as a hex string."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Full encoded message example",
+                    "value": {
+                      "message": "0xa11ceb0b0500000000000001c1f74cf8d1ebfa74a5e8bcf0b5798f1111847ff0cfbe1f13d7bbef5a0a14c01c0124c64c23c5b4"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transactions/simulate": {
+      "post": {
+        "summary": "/v1/transactions/simulate",
+        "description": "Simulates a transaction without committing it to the chain. The output includes transaction events and execution results,  but omits state hashes. Useful for estimating gas usage and transaction validity.\nYou must provide a SignedTransaction with a zero-padded signature.\nOptional flags allow estimating gas price, max gas amount, or using a prioritized gas price.\n",
+        "tags": ["Aptos API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "estimate_gas_unit_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "If true, replaces the transaction's gas unit price with the estimated value.\n"
+          },
+          {
+            "name": "estimate_max_gas_amount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "If true, overrides the max gas with the estimated maximum.\n"
+          },
+          {
+            "name": "estimate_prioritized_gas_unit_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "If true, uses a higher gas price than the standard estimate to prioritize the transaction.\n"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "sender",
+                  "sequence_number",
+                  "max_gas_amount",
+                  "gas_unit_price",
+                  "expiration_timestamp_secs",
+                  "payload",
+                  "signature"
+                ],
+                "properties": {
+                  "sender": {
+                    "type": "string"
+                  },
+                  "sequence_number": {
+                    "type": "string"
+                  },
+                  "max_gas_amount": {
+                    "type": "string"
+                  },
+                  "gas_unit_price": {
+                    "type": "string"
+                  },
+                  "expiration_timestamp_secs": {
+                    "type": "string"
+                  },
+                  "payload": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "function": {
+                        "type": "string"
+                      },
+                      "type_arguments": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "arguments": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "signature": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "public_key": {
+                        "type": "string"
+                      },
+                      "signature": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "simulateRequest": {
+                  "summary": "Example simulation request",
+                  "value": {
+                    "sender": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                    "sequence_number": "32425224034",
+                    "max_gas_amount": "32425224034",
+                    "gas_unit_price": "32425224034",
+                    "expiration_timestamp_secs": "32425224034",
+                    "payload": {
+                      "type": "entry_function_payload",
+                      "function": "0x1::aptos_coin::transfer",
+                      "type_arguments": ["string"],
+                      "arguments": [null]
+                    },
+                    "signature": {
+                      "type": "ed25519_signature",
+                      "public_key": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                      "signature": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulation results including execution status and events.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string"
+                      },
+                      "hash": {
+                        "type": "string"
+                      },
+                      "gas_used": {
+                        "type": "string"
+                      },
+                      "success": {
+                        "type": "boolean"
+                      },
+                      "vm_status": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "sender": {
+                        "type": "string"
+                      },
+                      "sequence_number": {
+                        "type": "string"
+                      },
+                      "max_gas_amount": {
+                        "type": "string"
+                      },
+                      "gas_unit_price": {
+                        "type": "string"
+                      },
+                      "expiration_timestamp_secs": {
+                        "type": "string"
+                      },
+                      "payload": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "function": {
+                            "type": "string"
+                          },
+                          "type_arguments": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "arguments": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "signature": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "public_key": {
+                            "type": "string"
+                          },
+                          "signature": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "simulateResponse": {
+                    "summary": "Simulated transaction response",
+                    "value": [
+                      {
+                        "version": "14535506",
+                        "hash": "0xb0d995b7e89a81014d350bbc69d0e2480f90fa67dfc0a99644406575678f0abc",
+                        "gas_used": "0",
+                        "success": true,
+                        "vm_status": "Executed successfully",
+                        "type": "state_checkpoint_transaction",
+                        "sender": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                        "sequence_number": "32425224034",
+                        "max_gas_amount": "32425224034",
+                        "gas_unit_price": "32425224034",
+                        "expiration_timestamp_secs": "32425224034",
+                        "payload": {
+                          "type": "entry_function_payload",
+                          "function": "0x1::aptos_coin::transfer",
+                          "type_arguments": ["string"],
+                          "arguments": [null]
+                        },
+                        "signature": {
+                          "type": "ed25519_signature",
+                          "public_key": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1",
+                          "signature": "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

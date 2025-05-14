@@ -1,0 +1,233 @@
+- name: sui_getNormalizedMoveFunction
+  summary: Get normalized representation of a Move function
+  description: >
+    Returns a structured and fully resolved representation of the specified Move function, including its
+    visibility, entry status, parameter and return types, and type parameter constraints.
+  params:
+    - name: package
+      required: true
+      description: The package object ID of the Move module.
+      schema:
+        type: string
+    - name: module_name
+      required: true
+      description: The name of the Move module.
+      schema:
+        type: string
+    - name: function_name
+      required: true
+      description: The name of the Move function.
+      schema:
+        type: string
+  result:
+    name: result
+    description: Normalized representation of the requested Move function.
+    schema:
+      type: object
+  examples:
+    - name: Get normalized Move function
+      params:
+        - name: package
+          value: "0x0000000000000000000000000000000000000000000000000000000000000002"
+        - name: module_name
+          value: "bag"
+        - name: function_name
+          value: "borrow"
+      result:
+        name: result
+        value:
+          visibility: "Public"
+          isEntry: false
+          typeParameters:
+            - abilities: ["Copy", "Drop", "Store"]
+            - abilities: ["Store"]
+          parameters:
+            - Reference:
+                Struct:
+                  address: "0x2"
+                  module: "bag"
+                  name: "Bag"
+                  typeArguments: []
+            - TypeParameter: 0
+          return:
+            - Reference:
+                TypeParameter: 1
+
+- name: sui_getNormalizedMoveModule
+  summary: Get normalized representation of a Move module
+  description: >
+    Returns a structured representation of a Move module, including all functions, structs,
+    type parameters, visibility, and associated metadata.
+  params:
+    - name: package
+      required: true
+      description: The package object ID of the Move module.
+      schema:
+        type: string
+    - name: module_name
+      required: true
+      description: The name of the Move module.
+      schema:
+        type: string
+  result:
+    name: result
+    description: The normalized representation of the requested Move module.
+    schema:
+      type: object
+  examples:
+    - name: Get normalized Move module
+      params:
+        - name: package
+          value: "0x0000000000000000000000000000000000000000000000000000000000000002"
+        - name: module_name
+          value: "bag"
+      result:
+        name: result
+        value:
+          fileFormatVersion: 6
+          address: "0x2"
+          name: "bag"
+          friends: []
+          structs:
+            Bag:
+              abilities:
+                abilities: ["Store", "Key"]
+              typeParameters: []
+              fields:
+                - name: "id"
+                  type:
+                    Struct:
+                      address: "0x2"
+                      module: "object"
+                      name: "UID"
+                      typeArguments: []
+                - name: "size"
+                  type: "U64"
+          exposedFunctions:
+            borrow:
+              visibility: "Public"
+              isEntry: false
+              typeParameters:
+                - abilities: ["Copy", "Drop", "Store"]
+                - abilities: ["Store"]
+              parameters:
+                - Reference:
+                    Struct:
+                      address: "0x2"
+                      module: "bag"
+                      name: "Bag"
+                      typeArguments: []
+                - TypeParameter: 0
+              return:
+                - Reference:
+                    TypeParameter: 1
+
+- name: sui_getNormalizedMoveModulesByPackage
+  summary: Get normalized representations of all Move modules in a package
+  description: >
+    Returns a mapping of module names to their normalized structured representations for all modules 
+    contained within the specified package.
+  params:
+    - name: package
+      required: true
+      description: The object ID of the package to query.
+      schema:
+        type: string
+  result:
+    name: result
+    description: A map of module names to their normalized module definitions.
+    schema:
+      type: object
+  examples:
+    - name: Get normalized modules by package
+      params:
+        - name: package
+          value: "0x0000000000000000000000000000000000000000000000000000000000000002"
+      result:
+        name: result
+        value:
+          address:
+            fileFormatVersion: 6
+            address: "0x2"
+            name: "address"
+            friends: []
+            structs: {}
+            exposedFunctions:
+              from_ascii_bytes:
+                visibility: "Public"
+                isEntry: false
+                typeParameters: []
+                parameters:
+                  - Reference:
+                      Vector: "U8"
+                return: ["Address"]
+              from_bytes:
+                visibility: "Public"
+                isEntry: false
+                typeParameters: []
+                parameters:
+                  - Vector: "U8"
+                return: ["Address"]
+              to_string:
+                visibility: "Public"
+                isEntry: false
+                typeParameters: []
+                parameters: ["Address"]
+                return:
+                  - Struct:
+                      address: "0x1"
+                      module: "string"
+                      name: "String"
+                      typeArguments: []
+
+- name: sui_getNormalizedMoveStruct
+  summary: Get a normalized representation of a Move struct
+  description: >
+    Returns the normalized, structured representation of a specified Move struct within a module
+    of a given package. This includes information about type parameters, abilities, and field types.
+  params:
+    - name: package
+      required: true
+      description: The package object ID containing the struct.
+      schema:
+        type: string
+    - name: module_name
+      required: true
+      description: The name of the module containing the struct.
+      schema:
+        type: string
+    - name: struct_name
+      required: true
+      description: The name of the Move struct to query.
+      schema:
+        type: string
+  result:
+    name: result
+    description: A structured definition of the Move struct.
+    schema:
+      type: object
+  examples:
+    - name: Get normalized struct definition
+      params:
+        - name: package
+          value: "0x0000000000000000000000000000000000000000000000000000000000000002"
+        - name: module_name
+          value: "bag"
+        - name: struct_name
+          value: "Bag"
+      result:
+        name: result
+        value:
+          abilities:
+            abilities: ["Store", "Key"]
+          typeParameters: []
+          fields:
+            - name: "id"
+              type:
+                Struct:
+                  address: "0x2"
+                  module: "object"
+                  name: "UID"
+                  typeArguments: []
+            - name: "size"
+              type: "U64"
