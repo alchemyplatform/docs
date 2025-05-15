@@ -39,7 +39,7 @@ const render = async () => {
     )
 
     // Show the container after rendering
-    if (fernFooterContainer) fernFooterContainer.style.display = 'block'
+    // if (fernFooterContainer) fernFooterContainer.style.display = 'block'
   }
 }
 
