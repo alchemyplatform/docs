@@ -39,7 +39,8 @@ const render = async () => {
     )
 
     // Show the container after rendering
-    // if (fernFooterContainer) fernFooterContainer.style.display = 'block'
+    // TODO: Temporarily hiding the footer until a redesign.
+    if (fernFooterContainer) fernFooterContainer.style.display = 'none'
   }
 }
 
