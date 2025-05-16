@@ -1,12 +1,13 @@
 - name: "alchemy_requestGasAndPaymasterAndData"
-  description: "Requests gas and coverage for a UserOperation. Returns paymasterAndData and gas parameters if approved, errors if not. Optionally accepts fee parameter overrides to be used in the UserOperation."
+  description: |
+    Requests gas and coverage for a `UserOperation`. Returns `paymasterAndData` and gas parameters if approved, errors if not. Optionally accepts fee parameter overrides to be used in the `UserOperation`.
   params:
     - name: "webhookData"
       description: "Additional data you wish to include in the request, such as proof of humanity."
       schema:
         type: "string"
     - name: "policyId"
-      description: "The policy ID or list of policy IDs."
+      description: "The Gas Policy ID or list of Gas Policy IDs."
       schema:
         oneOf:
           - type: "string"
@@ -16,16 +17,20 @@
               type: "string"
               format: "uuid"
     - name: "entryPoint"
-      description: "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the supportedEntryPoints RPC call and match the version of the user operation in the userOperation field."
+      description: The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call and match the version of the user operation in the `userOperation` field.
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
     - name: "dummySignature"
-      description: "Dummy signature for the operation. This is useful for estimating gas costs."
+      description: |
+        Dummy signature for the operation. This is useful for estimating gas costs.
+          <Warning>
+            This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.
+          </Warning>
       schema:
         type: "string"
     - name: "userOperation"
-      description: "Partial UserOperation object, missing gas parameters, paymasterAndData and signature fields. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field."
+      description: An object containing optional gas parameters, `paymasterAndData`, and signature fields. It can be either a v0.6 or v0.7 user operation but must match the version of the entry point at the specified `entryPoint`.
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature, paymasterData, and gas fields)"
         oneOf:
@@ -115,7 +120,28 @@
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
     - name: "overrides"
-      description: "Optional fields to override default gas and fee behavior – these can be multiplier overrides or absolute overrides."
+      description: |
+        Optional fields that override our gas and fee estimates. Use this parameter to optionally override available fields: `maxFeePerGas`, `maxPriorityFeePerGas`, `callGasLimit`, `verificationGasLimit`, or `preVerificationGas`. 
+
+        This will apply either:
+        - absolutes overrides (using a hex string) simply overriding estimated values entirely OR
+        - multiplier overrides relative to our estimates (in the format of { "multiplier": number } with max precision of 4 decimal places). For example, if the override value is { multiplier: 1.1 } for the `maxPriorityFeePerGas` field, then a 1.1 multiplier, or a 10% increase, is applied to the estimated `maxPriorityFeePerGas` of the userOp.
+
+        These overrides will be applied for every userOp sent with this provider. A higher buffer may give userOps a better chance to mine if the L1/L2 gas and fees change.
+
+        ```json
+        "overrides": {
+          "maxFeePerGas": "hex string" | { "multiplier": number },
+          "maxPriorityFeePerGas": "hex string" | { "multiplier": number },
+          "callGasLimit": "hex string" | { "multiplier": number },
+          "verificationGasLimit": "hex string" | { "multiplier": number },
+          "preVerificationGas": "hex string" | { "multiplier": number },
+        }
+        ```
+
+        <Warning>
+          Previous override using "percentage" has been deprecated in favor of "multiplier" values
+        </Warning>
       schema:
         type: "object"
         properties:
@@ -164,6 +190,30 @@
                   multiplier:
                     type: "number"
                 description: "Multiplier value."
+    - name: "stateOverrideSet"
+      required: false
+      description: |
+        Optional.Allows changes to the state of a contract before executing the call. For example, you can modify variable values (like balances or approvals) for that call without changing the contract itself on the blockchain. 
+
+        In more technical terms, the state override set is an optional parameter that allows executing the call against a modified chain state. It is an address-to-state mapping, where each entry specifies some state to be overridden prior to executing the call.
+      schema:
+        type: "object"
+        properties:
+          balance:
+            type: "string"
+            description: "Fake balance to set for the account before executing the call (<= 32 bytes)"
+          nonce:
+            type: "string"
+            description: Fake nonce to set for the account before executing the call (<= 8 bytes).
+          code:
+            type: "string"
+            description: "Fake EVM bytecode to inject into the account before executing the call."
+          state:
+            type: "object"
+            description: "Fake key-value mapping to override all slots in the account storage before executing the call."
+          stateDiff:
+            type: "object"
+            description: "Fake key-value mapping to override individual slots in the account storage before executing the call."
   result:
     name: "Asset changes"
     description: "The transformed response object that wraps the original gas and paymaster response. It includes an array of asset change objects, a gasUsed field, and an error field."
@@ -226,22 +276,20 @@
   examples:
     - name: "alchemy_requestGasAndPaymasterAndData example"
       params:
-        - name: "webhookData"
-          value: "example webhook data"
-        - name: "policyId"
-          value: "69d524a7-e932-4214-8673-dcdcba31bb42"
-        - name: "entryPoint"
-          value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-        - name: "userOperation"
+        - name: "params"
           value:
-            sender: "0x1234567890123456789012345678901234567890"
-            nonce: "0x1"
-            callData: "0xabcdef"
-            callGasLimit: "0x5208"
-            verificationGasLimit: "0x5208"
-            preVerificationGas: "0x5208"
-            maxFeePerGas: "0x1"
-            maxPriorityFeePerGas: "0x1"
+            webhookData: "example webhook data"
+            policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
+            entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+            userOperation:
+              sender: "0x1234567890123456789012345678901234567890"
+              nonce: "0x1"
+              callData: "0xabcdef"
+              callGasLimit: "0x5208"
+              verificationGasLimit: "0x5208"
+              preVerificationGas: "0x5208"
+              maxFeePerGas: "0x1"
+              maxPriorityFeePerGas: "0x1"
       result:
         name: "alchemy_requestGasAndPaymasterAndData response"
         value:
@@ -253,7 +301,17 @@
             paymasterPostOpGasLimit: "0x5208"
 
 - name: "alchemy_requestPaymasterAndData"
-  description: "Requests coverage for a UserOperation. Returns paymasterAndData if approved, errors if not."
+  description: |
+    Requests coverage for a `UserOperation`. Returns paymasterAndData if approved, errors if not.
+
+    <Warning title="This endpoint will be deprecated">
+      Please use `alchemy_requestGasAndPaymasterAndData` instead.
+
+      While you can use `alchemy_requestPaymasterAndData` to request a paymaster signature, it's important to note that this function requires gas fields to be part of the `UserOperation` passed as a parameter. These gas fields are influenced by the response of this endpoint, creating a circular dependency.
+
+      To simplify this process, we introduced alchemy_requestGasAndPaymasterAndData. This function both estimates gas and provides signed `paymaster` and `paymasterData` fields, therefore resolving the circular dependency.
+    </Warning>
+
   params:
     - name: "webhookData"
       description: "Additional data you wish to include in the request, such as proof of humanity."
@@ -270,16 +328,12 @@
               type: "string"
               format: "uuid"
     - name: "entryPoint"
-      description: "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the supportedEntryPoints RPC call and match the version of the user operation in the entryPoint field."
+      description: "The `entrypoint` address the request should be sent through. This **MUST** be one of the entry points returned by the `supportedEntryPoints` RPC call and match the version of the user operation in the `userOperation` field."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
-    - name: "dummySignature"
-      description: "Dummy signature for the operation. This is useful for estimating gas costs."
-      schema:
-        type: "string"
     - name: "userOperation"
-      description: "Partial UserOperation object, missing paymasterAndData and signature fields. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address in the entryPoint field."
+      description: "Test Partial UserOperation object, missing `paymasterAndData` and `signature` fields. This can be either a v0.6 or v0.7 user operation, but **MUST** match the version of the entry point at the address in the `entryPoint` field."
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
@@ -368,76 +422,6 @@
               paymasterPostOpGasLimit:
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
-    - name: "overrides"
-      description: "Optional fields to override default gas and fee behavior – these can be multiplier overrides or absolute overrides."
-      schema:
-        type: "object"
-        properties:
-          maxFeePerGas:
-            oneOf:
-              - type: "string"
-                description: "Hex string."
-              - type: "object"
-                properties:
-                  multiplier:
-                    type: "number"
-                description: "Multiplier value."
-          maxPriorityFeePerGas:
-            oneOf:
-              - type: "string"
-                description: "Hex string."
-              - type: "object"
-                properties:
-                  multiplier:
-                    type: "number"
-                description: "Multiplier value."
-          callGasLimit:
-            oneOf:
-              - type: "string"
-                description: "Hex string."
-              - type: "object"
-                properties:
-                  multiplier:
-                    type: "number"
-                description: "Multiplier value."
-          verificationGasLimit:
-            oneOf:
-              - type: "string"
-                description: "Hex string."
-              - type: "object"
-                properties:
-                  multiplier:
-                    type: "number"
-                description: "Multiplier value."
-          preVerificationGas:
-            oneOf:
-              - type: "string"
-                description: "Hex string."
-              - type: "object"
-                properties:
-                  multiplier:
-                    type: "number"
-                description: "Multiplier value."
-    - name: "stateOverrideSet"
-      description: "Allows changes to the state of a contract before executing the call. For example, you can modify variable values (like balances or approvals) for that call without changing the contract itself on the blockchain. In more technical terms, the state override set is an optional parameter that allows executing the call against a modified chain state. It is an address-to-state mapping, where each entry specifies some state to be overridden prior to executing the call. Each address maps to an object containing:"
-      schema:
-        type: "object"
-        properties:
-          balance:
-            type: "string"
-            description: "The balance of the contract (hex string)"
-          code:
-            type: "string"
-            description: "The code of the contract (hex string)"
-          nonce:
-            type: "string"
-            description: "The nonce of the contract (hex string)"
-          state:
-            type: "object"
-            description: "The state of the contract"
-          stateDiff:
-            type: "object"
-            description: "The state diff of the contract"
   result:
     name: "Response"
     description: "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with properties paymasterData, paymasterVerificationGasLimit, and paymasterPostOpGasLimit."
@@ -450,47 +434,17 @@
           properties:
             paymasterAndData:
               type: "string"
-              description: "The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field."
-            callGasLimit:
-              type: "string"
-              description: "The gas limit for the call."
-            verificationGasLimit:
-              type: "string"
-              description: "The gas limit for verification."
-            preVerificationGas:
-              type: "string"
-              description: "The gas limit for pre-verification."
-            maxFeePerGas:
-              type: "string"
-              description: "The max fee per gas."
-            maxPriorityFeePerGas:
-              type: "string"
-              description: "The max priority fee per gas."
+              description: "The 0x-prefixed hex string for the user to put into the UO's paymasterAndData field. Contains gas manager `address`, `sigTimeRange`, and secp256k1 `signature`."
         entrypointV07Response:
           title: "Entrypoint v0.7 Response"
           type: "object"
           properties:
             paymaster:
               type: "string"
-              description: "The address of the paymaster."
+              description: "The paymaster address used in the operation."
             paymasterData:
               type: "string"
               description: "The data for the paymaster in the operation."
-            callGasLimit:
-              type: "string"
-              description: "The gas limit for the call."
-            verificationGasLimit:
-              type: "string"
-              description: "The gas limit for verification."
-            preVerificationGas:
-              type: "string"
-              description: "The gas limit for pre-verification."
-            maxFeePerGas:
-              type: "string"
-              description: "The max fee per gas."
-            maxPriorityFeePerGas:
-              type: "string"
-              description: "The max priority fee per gas."
             paymasterVerificationGasLimit:
               type: "string"
               description: "The gas limit for paymaster verification."
@@ -500,22 +454,21 @@
   examples:
     - name: "alchemy_requestPaymasterAndData example"
       params:
-        - name: "webhookData"
-          value: "example webhook data"
-        - name: "policyId"
-          value: "0x1234567890123456789012345678901234567890123456789012345678901234"
-        - name: "entryPoint"
-          value: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-        - name: "userOperation"
+        - name: "params"
           value:
-            sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
-            nonce: "0x2"
-            callData: "0xdeadbeef"
-            callGasLimit: "0x5208"
-            verificationGasLimit: "0x5208"
-            preVerificationGas: "0x5208"
-            maxFeePerGas: "0x1"
-            maxPriorityFeePerGas: "0x1"
+            webhookData: "example webhook data"
+            policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
+            entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+            userOperation:
+              sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+              nonce: "0x2"
+              initCode: "0x"
+              callData: "0xdeadbeef"
+              callGasLimit: "0x5208"
+              verificationGasLimit: "0x5208"
+              preVerificationGas: "0x5208"
+              maxFeePerGas: "0x1"
+              maxPriorityFeePerGas: "0x1"
       result:
         name: "alchemy_requestPaymasterAndData response"
         value:
@@ -538,7 +491,7 @@
             maxPriorityFeePerGas: "0x1"
 
 - name: "pm_getPaymasterData"
-  description: "Returns values to be used in paymaster-related fields of a signed user operation. These values are not stubs and will be included in a signed user operation as part of an eth_sendUserOperation call. Accepts an unsigned user operation, an entrypoint address, a chain ID, and a context object."
+  description: Returns values to be used in paymaster-related fields of a signed user operation. These values are not stubs and will be included in a signed user operation as part of an `eth_sendUserOperation` call. Accepts an unsigned `userOperation`, an `entrypoint` `address`, a `chainId`, and a `context` object.
   params:
     - name: "userOperation"
       description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData)."
@@ -901,16 +854,19 @@
               name: "SponsorName"
 
 - name: "alchemy_requestFeePayer"
-  description: "Requests gas sponsorship for a Solana transaction and returns the **fully-signed** `serializedTransaction` (now containing the fee-payer signature)."
+  description: |
+    Requests gas sponsorship for a Solana transaction and returns the **fully-signed** `serializedTransaction` (now containing the fee-payer signature).
+
+    <Note>
+      Request access by reaching out to account-abstraction@alchemy.com
+    </Note>
   params:
-    - name: "sponsorshipRequest"
-      description: >
-        Object that describes the sponsorship request.
+    - name: sponsorshipRequest
+      description: Object that describes the sponsorship request.
         You must supply a base-64 **serializedTransaction** that is **missing** any
-        fee-payer signature.  
+        fee-payer signature.
         The API will set the **feePayer** field and sign the transaction.
       schema:
-        title: "Fee-payer sponsorship request"
         type: "object"
         required:
           - policyId
@@ -952,6 +908,11 @@
           description: >
             The transaction after the service sets the **feePayer** field and
             adds the fee-payer signature.
+  servers:
+    [
+      { "url": "https://solana-mainnet.g.alchemy.com/v2", "name": "Mainnet" },
+      { "url": "https://solana-devnet.g.alchemy.com/v2", "name": "Devnet" },
+    ]
   examples:
     - name: "alchemy_requestFeePayer example"
       params:
