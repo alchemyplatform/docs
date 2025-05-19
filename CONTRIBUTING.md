@@ -71,6 +71,13 @@ git merge upstream/main
 git push origin main
 ```
 
+## Adding Images
+
+* Location: `fern/images`
+* Steps:
+  * Place image files in the `fern/images/` directory
+* Reference images from the markdown using its path within the images dir (don't include `/fern/images` in the path). See [Fern's docs](https://buildwithfern.com/learn/docs/content/write-markdown#images) on how to add to do so.
+
 ## Pull Request Guidelines
 
 * Ensure your PR addresses a specific issue or adds a specific feature
