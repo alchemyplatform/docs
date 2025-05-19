@@ -71,6 +71,10 @@ git merge upstream/main
 git push origin main
 ```
 
+## Adding Images
+
+* Add to the `fern/images` folder and import where needed.
+
 ## Pull Request Guidelines
 
 * Ensure your PR addresses a specific issue or adds a specific feature
