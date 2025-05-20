@@ -781,12 +781,12 @@
 		},
 		{
 			"name": "eth_sendUserOperation",
-			"description": "Sends a UserOperation to the given EVM network.",
+			"description": "Sends a UserOperation to the given EVM network.\n\n<Note title=\"Support EntryPoints\">\n  `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning title=\"Replacement Underpriced Error\">\n  You might get a `\"Replacement Underpriced Error\"` when using `eth_sendUserOperation`. View our [FAQs](/docs/reference/account-abstraction-faq#what-is-a-replacement-underpriced-error-and-how-can-i-resolve-it) for a description of this error along with resolution steps.\n</Warning> \n",
 			"params": [
 				{
 					"name": "UserOperation",
 					"required": true,
-					"description": "The UserOperation object (v0.6 or v0.7).",
+					"description": "The UserOperation object. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address of the second parameter.",
 					"schema": {
 						"oneOf": [
 							{
@@ -939,7 +939,7 @@
 				{
 					"name": "Entrypoint address",
 					"required": true,
-					"description": "The entrypoint address through which the operation is sent.",
+					"description": "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call.",
 					"schema": {
 						"title": "hex encoded address",
 						"type": "string",
@@ -949,11 +949,10 @@
 			],
 			"result": {
 				"name": "userOpHash",
-				"description": "The calculated userOpHash for the UserOperation.",
+				"description": "The calculated `userOpHash` for the `UserOperation`.",
 				"schema": {
-					"title": "hex encoded 256 bit unsigned integer",
 					"type": "string",
-					"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
+					"format": "hex"
 				}
 			},
 			"examples": [

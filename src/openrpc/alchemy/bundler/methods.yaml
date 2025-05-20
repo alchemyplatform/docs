@@ -117,25 +117,35 @@
           transactionHash: "0x"
 
 - name: eth_sendUserOperation
-  description: Sends a UserOperation to the given EVM network.
+  description: |
+    Sends a UserOperation to the given EVM network.
+
+    <Note title="Support EntryPoints">
+      `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.
+    </Note>
+
+    <Warning title="Replacement Underpriced Error">
+      You might get a `"Replacement Underpriced Error"` when using `eth_sendUserOperation`. View our [FAQs](/docs/reference/account-abstraction-faq#what-is-a-replacement-underpriced-error-and-how-can-i-resolve-it) for a description of this error along with resolution steps.
+    </Warning>
   params:
     - name: UserOperation
       required: true
-      description: The UserOperation object (v0.6 or v0.7).
+      description: The UserOperation object. This can be either a v0.6 or v0.7 user operation, but MUST match the version of the entry point at the address of the second parameter.
       schema:
         oneOf:
           - $ref: "#/components/schemas/UserOperationV06"
           - $ref: "#/components/schemas/UserOperationV07"
     - name: Entrypoint address
       required: true
-      description: The entrypoint address through which the operation is sent.
+      description: The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call.
       schema:
         $ref: "#/components/schemas/address"
   result:
     name: userOpHash
-    description: The calculated userOpHash for the UserOperation.
+    description: The calculated `userOpHash` for the `UserOperation`.
     schema:
-      $ref: "#/components/schemas/uint256"
+      type: string
+      format: "hex"
   examples:
     - name: eth_sendUserOperation example
       params:
