@@ -159,20 +159,53 @@
           result: "0x1234...5678"
 
 - name: eth_estimateUserOperationGas
-  description: Estimates the gas values for a UserOperation.
+  description: |
+    Estimates the gas values for a UserOperation.
+
+    <Note title="Support EntryPoints">
+      `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.
+    </Note>
+
+    <Warning>
+      This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.
+    </Warning>
   params:
     - name: UserOperation
       required: true
-      description: The UserOperation object (v0.6 or v0.7) with optional gas fields.
+      description: Contains gas limits and prices (optional). This can be either a v0.6 or v0.7 user operation but must match the version of the `EntryPoint` at the address of the second parameter.
       schema:
         oneOf:
           - $ref: "#/components/schemas/UserOperationV06"
           - $ref: "#/components/schemas/UserOperationV07"
-    - name: Entrypoint address
+    - name: entryPoint
       required: true
-      description: The entrypoint address through which the operation is sent.
+      description: The address to which the request should be sent. This must be one of the `EntryPoint` returned by the `supportedEntryPoints` method and should match the version of the `userOp` in the first parameter.
       schema:
         $ref: "#/components/schemas/address"
+    - name: "stateOverrideSet"
+      required: false
+      description: |
+        Optional.Allows changes to the state of a contract before executing the call. For example, you can modify variable values (like balances or approvals) for that call without changing the contract itself on the blockchain. 
+
+        In more technical terms, the state override set is an optional parameter that allows executing the call against a modified chain state. It is an address-to-state mapping, where each entry specifies some state to be overridden prior to executing the call.
+      schema:
+        type: "object"
+        properties:
+          balance:
+            type: "string"
+            description: "Fake balance to set for the account before executing the call (<= 32 bytes)"
+          nonce:
+            type: "string"
+            description: Fake nonce to set for the account before executing the call (<= 8 bytes).
+          code:
+            type: "string"
+            description: "Fake EVM bytecode to inject into the account before executing the call."
+          state:
+            type: "object"
+            description: "Fake key-value mapping to override all slots in the account storage before executing the call."
+          stateDiff:
+            type: "object"
+            description: "Fake key-value mapping to override individual slots in the account storage before executing the call."
   result:
     name: Gas estimation
     description: Gas values estimated for the UserOperation.

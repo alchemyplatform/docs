@@ -120,12 +120,12 @@
 	"methods": [
 		{
 			"name": "eth_estimateUserOperationGas",
-			"description": "Estimates the gas values for a UserOperation.",
+			"description": "Estimates the gas values for a UserOperation.\n\n<Note title=\"Support EntryPoints\">\n  `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning>\n  This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.\n</Warning>\n",
 			"params": [
 				{
 					"name": "UserOperation",
 					"required": true,
-					"description": "The UserOperation object (v0.6 or v0.7) with optional gas fields.",
+					"description": "Contains gas limits and prices (optional). This can be either a v0.6 or v0.7 user operation but must match the version of the `EntryPoint` at the address of the second parameter.",
 					"schema": {
 						"oneOf": [
 							{
@@ -276,13 +276,43 @@
 					}
 				},
 				{
-					"name": "Entrypoint address",
+					"name": "entryPoint",
 					"required": true,
-					"description": "The entrypoint address through which the operation is sent.",
+					"description": "The address to which the request should be sent. This must be one of the `EntryPoint` returned by the `supportedEntryPoints` method and should match the version of the `userOp` in the first parameter.",
 					"schema": {
 						"title": "hex encoded address",
 						"type": "string",
 						"pattern": "^0x[0-9a-fA-F]{40}$"
+					}
+				},
+				{
+					"name": "stateOverrideSet",
+					"required": false,
+					"description": "Optional.Allows changes to the state of a contract before executing the call. For example, you can modify variable values (like balances or approvals) for that call without changing the contract itself on the blockchain. \n\nIn more technical terms, the state override set is an optional parameter that allows executing the call against a modified chain state. It is an address-to-state mapping, where each entry specifies some state to be overridden prior to executing the call.\n",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"balance": {
+								"type": "string",
+								"description": "Fake balance to set for the account before executing the call (<= 32 bytes)"
+							},
+							"nonce": {
+								"type": "string",
+								"description": "Fake nonce to set for the account before executing the call (<= 8 bytes)."
+							},
+							"code": {
+								"type": "string",
+								"description": "Fake EVM bytecode to inject into the account before executing the call."
+							},
+							"state": {
+								"type": "object",
+								"description": "Fake key-value mapping to override all slots in the account storage before executing the call."
+							},
+							"stateDiff": {
+								"type": "object",
+								"description": "Fake key-value mapping to override individual slots in the account storage before executing the call."
+							}
+						}
 					}
 				}
 			],
@@ -781,7 +811,7 @@
 		},
 		{
 			"name": "eth_sendUserOperation",
-			"description": "Sends a UserOperation to the given EVM network.\n\n<Note title=\"Support EntryPoints\">\n  `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning title=\"Replacement Underpriced Error\">\n  You might get a `\"Replacement Underpriced Error\"` when using `eth_sendUserOperation`. View our [FAQs](/docs/reference/account-abstraction-faq#what-is-a-replacement-underpriced-error-and-how-can-i-resolve-it) for a description of this error along with resolution steps.\n</Warning> \n",
+			"description": "Sends a UserOperation to the given EVM network.\n\n<Note title=\"Support EntryPoints\">\n  `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning title=\"Replacement Underpriced Error\">\n  You might get a `\"Replacement Underpriced Error\"` when using `eth_sendUserOperation`. View our [FAQs](/docs/reference/account-abstraction-faq#what-is-a-replacement-underpriced-error-and-how-can-i-resolve-it) for a description of this error along with resolution steps.\n</Warning>\n",
 			"params": [
 				{
 					"name": "UserOperation",
