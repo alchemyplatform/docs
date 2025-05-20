@@ -15,10 +15,15 @@ Session keys are useful if you are looking to grant your app’s server partial,
 In API calls, it’s as simple as:
 
 ```mermaid
-graph LR
-    A[requestAccount] --> B[createSession]
-    B --> C[prepareCalls]
-    C --> D[sendPreparedCalls]
+flowchart LR
+  A[Request Account] -.-> C[Create Session]
+  A --> D[Prepare Calls]
+  C -.-> D
+  D --> E[Send Prepared Calls]
+
+  %% styling the optional step
+  classDef optional stroke-dasharray:5;
+  class C optional;
 ```
 
 If instead, you don’t want to use session keys and you want the user to sign all of the transactions, you can simply skip the createSession step and use the client side signer to sign prepared calls.
