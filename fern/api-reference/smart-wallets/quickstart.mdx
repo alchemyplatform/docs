@@ -90,7 +90,7 @@ import { createPublicClient } from 'viem';
 
 const message = "we are so back"
   
-const signature = await client.signMessage(message);
+const signature = await client.signMessage({ message });
   
 const publicClient = createPublicClient({
   chain: arbitrumSepolia,
@@ -108,12 +108,12 @@ const isValid = await publicClient.verifyMessage({
 
 ```ts
 // assuming you have a typedData variable
-const signature = await client.signTypedData(typedData);
+const signature = await client.signTypedData({typedData});
   
 const isValid = await publicClient.verifyTypedData({
   address: account.address, // fetched from await client.requestAccount()
   ...typedData,
-  signature,
+  signature,  
 });
 ```
 
