@@ -417,8 +417,9 @@
 					"required": true,
 					"description": "The `userOpHash` of the `UserOperation` to retrieve.",
 					"schema": {
+						"title": "32 byte hex value",
 						"type": "string",
-						"format": "hash32"
+						"pattern": "^0x[0-9a-f]{64}$"
 					}
 				}
 			],
@@ -613,12 +614,12 @@
 		},
 		{
 			"name": "eth_getUserOperationReceipt",
-			"description": "Get the UserOperationReceipt based on the userOpHash.",
+			"description": "Get the `UserOperationReceipt` based on the `userOpHash`.\n\n<Note title=\"Supported EntryPoints\">\n  `eth_getUserOperationReceipt` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Note title=\"Limitations\">\n  The `eth_getUserOperationReceipt` method retrieves and decodes user operations from the logs of mined transactions by querying the node. If you attempt to fetch a receipt for a transaction from a distant past block, the request may be rejected by the node due to limitations on the block range size it can process.\n\n  The default range we support is 150 blocks, however the following networks have an unlimited range.\n\n  - Ethereum\n  - Polygon\n  - Base\n  - Optimism\n  - Worldchain\n  - Arbitrum\n</Note>\n\n<Warning title=\"Want to get push notifications for mined userOps?\">\n  Follow [this guide](/docs/how-to-use-custom-webhooks-to-get-push-notifications-for-mined-user-operations) to learn how to use Custom Webhooks and get real time alerts and receipts for mined userOperations.\n</Warning>\n",
 			"params": [
 				{
 					"name": "userOpHash",
 					"required": true,
-					"description": "The userOpHash of the UserOperation to get the receipt for.",
+					"description": "The `userOpHash` of the `UserOperation` to get the receipt for (as returned by `eth_sendUserOperation`).",
 					"schema": {
 						"title": "32 byte hex value",
 						"type": "string",
@@ -628,151 +629,160 @@
 			],
 			"result": {
 				"name": "UserOperationReceipt",
-				"description": "UserOperationReceipt object representing the outcome of a UserOperation.",
+				"description": "`UserOperationReceipt` object representing the outcome of a `UserOperation`.",
 				"schema": {
 					"type": "object",
 					"properties": {
-						"entrypointV06Response": {
-							"type": "object",
-							"properties": {
-								"sender": {
-									"title": "hex encoded address",
-									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
-									"description": "The account making the operation"
-								},
-								"nonce": {
-									"title": "hex encoded unsigned integer",
-									"type": "string",
-									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-									"description": "Anti-replay parameter; used as salt for first-time account creation"
-								},
-								"initCode": {
-									"title": "hex encoded bytes",
-									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
-								},
-								"callData": {
-									"title": "hex encoded bytes",
-									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Encoded data for the primary function call or operation"
-								},
-								"callGasLimit": {
-									"type": "string",
-									"description": "Gas allocated for the main execution call"
-								},
-								"verificationGasLimit": {
-									"type": "string",
-									"description": "Gas allocated for verification"
-								},
-								"preVerificationGas": {
-									"type": "string",
-									"description": "Gas for pre-verification execution and calldata"
-								},
-								"maxFeePerGas": {
-									"type": "string",
-									"description": "Maximum fee per gas (EIP-1559)"
-								},
-								"maxPriorityFeePerGas": {
-									"type": "string",
-									"description": "Max priority fee per gas (EIP-1559)"
-								},
-								"signature": {
-									"type": "string",
-									"description": "Data passed during verification",
-									"pattern": "^0x[0-9a-fA-F]*$"
-								},
-								"paymasterAndData": {
-									"title": "hex encoded bytes",
-									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Paymaster address and extra data"
-								}
+						"userOpHash": {
+							"type": "string",
+							"description": "The request hash of the `UserOperation`."
+						},
+						"entryPoint": {
+							"type": "string",
+							"description": "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call."
+						},
+						"sender": {
+							"type": "string",
+							"description": "The account initiating the `UserOperation`."
+						},
+						"nonce": {
+							"type": "string",
+							"description": "The nonce used in the `UserOperation`."
+						},
+						"paymaster": {
+							"type": "string",
+							"description": "The paymaster used for this `UserOperation` (or empty if self-sponsored)."
+						},
+						"actualGasCost": {
+							"type": "string",
+							"description": "The actual amount paid (by account or paymaster) for this `UserOperation`."
+						},
+						"actualGasUsed": {
+							"type": "string",
+							"description": "The total gas used by this `UserOperation` (including `preVerification`, `creation`, `validation`, and `execution`)."
+						},
+						"success": {
+							"type": "boolean",
+							"description": "Indicates whether the execution completed without reverting."
+						},
+						"reason": {
+							"type": "string",
+							"description": "In case of revert, this is the revert reason."
+						},
+						"logs": {
+							"type": "array",
+							"description": "The logs generated by this `UserOperation` (not including logs of other `UserOperations` in the same bundle).",
+							"items": {
+								"type": "string"
 							}
 						},
-						"entrypointV07Response": {
+						"receipt": {
 							"type": "object",
+							"description": "The `TransactionReceipt` object for the entire bundle, not only for this `UserOperation`.",
 							"properties": {
-								"sender": {
-									"title": "hex encoded address",
+								"blockHash": {
 									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
-									"description": "Account initiating operation"
+									"description": "32 Bytes - The hash of the block where the given transaction was included."
 								},
-								"nonce": {
-									"title": "hex encoded unsigned integer",
+								"blockNumber": {
 									"type": "string",
-									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-									"description": "Account nonce or creation salt"
+									"description": "The number of the block where the given transaction was included."
 								},
-								"initCode": {
-									"title": "hex encoded bytes",
+								"transactionIndex": {
 									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Initialization code (for new accounts)"
+									"description": "The index of the transaction in the block."
 								},
-								"callData": {
-									"title": "hex encoded bytes",
+								"transactionHash": {
 									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Data for operation call"
+									"description": "32 Bytes - The hash of the transaction."
 								},
-								"callGasLimit": {
+								"from": {
 									"type": "string",
-									"description": "Gas allocated for call"
+									"description": "20 Bytes - address of the sender"
 								},
-								"verificationGasLimit": {
+								"to": {
 									"type": "string",
-									"description": "Gas allocated for verification"
+									"description": "20 Bytes - address of the receiver. null when its a contract creation transaction"
 								},
-								"maxFeePerGas": {
+								"cumulativeGasUsed": {
 									"type": "string",
-									"description": "Max fee per gas (EIP-1559)"
+									"description": "The total amount of gas used when this transaction was executed in the block."
 								},
-								"maxPriorityFeePerGas": {
+								"gasUsed": {
 									"type": "string",
-									"description": "Priority fee per gas (EIP-1559)"
+									"description": "The amount of gas used by this specific transaction alone."
 								},
-								"paymaster": {
-									"title": "hex encoded address",
+								"contractAddress": {
 									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
-									"description": "Paymaster contract address"
+									"description": "20 Bytes - The contract address created, if the transaction was a contract creation, otherwise null."
 								},
-								"paymasterData": {
-									"title": "hex encoded bytes",
+								"logs": {
+									"type": "array",
+									"description": "Array of `Log` objects.",
+									"items": {
+										"type": "object",
+										"properties": {
+											"blockHash": {
+												"type": "string",
+												"description": "hash of the block where this log was in. `null` when its pending log"
+											},
+											"blockNumber": {
+												"type": "string",
+												"description": "The block num"
+											},
+											"transactionIndex": {
+												"type": "integer",
+												"description": "Integer of the transactions index position log was created from. null when its pending log."
+											},
+											"address": {
+												"type": "string",
+												"description": "20 Bytes - address from which this log originated."
+											},
+											"logIndex": {
+												"type": "integer",
+												"description": "Integer of the log index position in the block. null when its pending log."
+											},
+											"data": {
+												"type": "string",
+												"description": "Contains one or more 32 Bytes non-indexed arguments of the log."
+											},
+											"removed": {
+												"type": "boolean",
+												"description": "`true` when the log was removed, due to a chain reorganization. `false` if its a valid log."
+											},
+											"topics": {
+												"type": "array",
+												"description": "Array of zero to four 32 Bytes `DATA` of indexed log arguments. In solidity: The first topic is the hash of the signature of the event (e.g. `Deposit(address,bytes32,uint256)`), except you declare the event with the anonymous specifier.",
+												"items": {
+													"type": "string"
+												}
+											},
+											"transactionHash": {
+												"type": "string",
+												"description": "Hash of the transactions this log was created from. null when its pending log."
+											}
+										}
+									}
+								},
+								"logsBloom": {
 									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Data for paymaster"
+									"description": "256 Bytes - Bloom filter for light clients to quickly retrieve related logs"
 								},
-								"paymasterVerificationGasLimit": {
-									"type": "string"
-								},
-								"factory": {
-									"title": "hex encoded address",
+								"root": {
 									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
-									"description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+									"description": "32 bytes of post-transaction stateroot. (pre Byzantium hard fork at block 4,370,000)"
 								},
-								"factoryData": {
-									"title": "hex encoded bytes",
-									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Data for the account factory (only if the account factory exists)"
+								"status": {
+									"type": "integer",
+									"description": "Either `1` (success) or `0` (failure). (post Byzantium hard fork at block 4,370,000)"
 								},
-								"preVerificationGas": {
+								"effectiveGasPrice": {
 									"type": "string",
-									"description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+									"description": "The actual price per unit of gas paid by the sender."
 								},
-								"paymasterPostOpGasLimit": {
+								"type": {
 									"type": "string",
-									"description": "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
-								},
-								"signature": {
-									"type": "string",
-									"description": "Data passed into the account along with the nonce during the verification step"
+									"description": "The type of the transaction."
 								}
 							}
 						}
