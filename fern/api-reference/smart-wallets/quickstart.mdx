@@ -23,7 +23,11 @@ graph LR
 
 If instead, you don’t want to use session keys and you want the user to sign all of the transactions, you can simply skip the createSession step and use the client side signer to sign prepared calls.
 
-This guide assumes you have an account you can sign with, like an [Alchemy Signer](https://www.alchemy.com/docs/wallets/signer/what-is-a-signer#alchemy-signer).
+This guide assumes you have an account you can sign with, like an [Alchemy Signer](https://www.alchemy.com/docs/wallets/signer/what-is-a-signer#alchemy-signer). You will also need an Alchemy API key and a [gas manager policy ID.](https://www.alchemy.com/docs/wallets/react/sponsor-gas)
+
+<Tip title="Don't have an API key?" icon="star">
+  Start using the Alchemy Wallets API today! [Get started for free](https://dashboard.alchemy.com/signup/?a=f8afc2202c)
+</Tip>
 
 ## Using The Account Kit SDK
 
@@ -32,28 +36,22 @@ This guide assumes you have an account you can sign with, like an [Alchemy Signe
 You're going to need the `@account-kit/wallet-client`, `@account-kit/infra`, and optionally `@aa-sdk/core` if you use a `LocalAccountSigner`.
 
 <CodeGroup>
-  ```shell NPM
+  ```shell npm
   npm install @account-kit/wallet-client @account-kit/infra @aa-sdk/core
   ```
 
-  ```shell Bun
+  ```shell bun
   bun add @account-kit/wallet-client @account-kit/infra @aa-sdk/core
   ```
 
-  ```shell Yarn
+  ```shell yarn
   yarn add @account-kit/wallet-client @account-kit/infra @aa-sdk/core
   ```
 </CodeGroup>
 
-Lastly, you'll also need an Alchemy API key and a gas [manager policy ID.](https://www.alchemy.com/docs/wallets/react/sponsor-gas)
-
-<Tip title="Don't have an API key?" icon="star">
-  Start using the Alchemy Wallets API today! [Get started for free](https://dashboard.alchemy.com/signup/?a=f8afc2202c)
-</Tip>
-
 ### Create A Smart Account Client
 
-Given a signer (e.g. a `LocalAccountSigner` imported from `@aa-sdk/core` or an [Alchemy Signer](https://www.alchemy.com/docs/wallets/signer/what-is-a-signer#alchemy-signer)), all you need to do is follow a few simple steps to start sending user ops with Wallet APIs!  
+Given a signer (e.g. a `LocalAccountSigner` imported from `@aa-sdk/core` or an [Alchemy Signer](https://www.alchemy.com/docs/wallets/signer/what-is-a-signer#alchemy-signer)), all you need to do is follow a few simple steps to start sending user ops with Wallet APIs!
 
 ```ts
 import { createSmartWalletClient } from "@account-kit/wallet-client";
@@ -127,10 +125,10 @@ const account = await client.requestAccount();
 const preparedUO = await client.prepareCalls({
   calls: [{ to: zeroAddress, value: "0x0" }], // callData is optional in a "data" parameter
   from: account.address,
-  // "capabilities" is a data structure that hold paymaster data (as seen below) or permission data
+  // "capabilities" is a data structure that hold gas manager data (as seen below) or permission data
   capabilities: {
     paymasterService: {
-      policyId: TEST_PAYMASTER_POLICY_ID, // put your paymaster policy ID here
+      policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
     },
   },
 });
@@ -149,7 +147,7 @@ const result = await client.sendPreparedCalls({
 
 ### Create A Session With Permissions
 
-See [here for a list of permissions!](#permission-types)
+Session keys allow another account to operate on a user's smart account with given permissions. See [here for a list of permissions!](#permission-types)
 
 ```ts
 const account = await client.requestAccount();
@@ -172,7 +170,7 @@ const preparedUO = await client.prepareCalls({
   from: account.address,
   capabilities: {
     paymasterService: {
-      policyId: TEST_PAYMASTER_POLICY_ID, // put your paymaster policy ID here
+      policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
     },
     permissions,
   },
@@ -323,6 +321,9 @@ curl --request POST \
   "params": [
     {
       "capabilities": {
+        "paymasterService": {
+            "policyId": GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
+        },
         "permissions": {
           "context": concat_hex("0x00", 0xSESSION_ID, 0xPERMISSION_SIG)
         }
@@ -385,6 +386,9 @@ curl --request POST \
       "data": {...useropRequest},
       "chainId": "0xCHAIN_ID" // E.g. "0x66eee" for Arbitrum Sepolia
       "capabilities": {
+        "paymasterService": {
+            "policyId": GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
+        },
         "permissions": {
           "context": concat_hex("0x00", 0xSESSION_ID, 0xPERMISSION_SIG)
         }
@@ -432,6 +436,7 @@ This permission allows transfer of native tokens (like Ether) from the account.
 ```
 
 ### ERC20 Token Transfer
+
 This permission allows transfer or approval of erc20 tokens from the account. Both transfers and approvals count towards the limit.
 
 ```ts
@@ -509,6 +514,7 @@ This permission grants access to specific function selectors on **one** contract
   };
 }
 ```
+
 ### Root
 
 This permission grants full access to everything. Needless to say, this is a very dangerous permission to grant.
