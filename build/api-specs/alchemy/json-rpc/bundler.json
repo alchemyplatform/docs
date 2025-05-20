@@ -120,7 +120,7 @@
 	"methods": [
 		{
 			"name": "eth_estimateUserOperationGas",
-			"description": "Estimates the gas values for a UserOperation.\n\n<Note title=\"Support EntryPoints\">\n  `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning>\n  This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.\n</Warning>\n",
+			"description": "Estimates the gas values for a `UserOperation`.\n\n<Note title=\"Supported EntryPoints\">\n  `eth_estimateUserOperationGas` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning>\n  This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.\n</Warning>\n",
 			"params": [
 				{
 					"name": "UserOperation",
@@ -410,158 +410,137 @@
 		},
 		{
 			"name": "eth_getUserOperationByHash",
-			"description": "Return a UserOperation based on a userOpHash.",
+			"description": "Return a `UserOperation` based on a `userOpHash`.\n\n<Note title=\"Supported EntryPoints\">\n  `eth_getUserOperationByHash` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Note title=\"Limitations\">\n  The `eth_getUserOperationByHash` method retrieves and decodes user operations from the logs of mined transactions by querying the node. If you attempt to fetch a receipt for a transaction from a distant past block, the request may be rejected by the node due to limitations on the block range size it can process.\n\n  The default range we support is 150 blocks, however the following networks have an unlimited range.\n\n  - Ethereum\n  - Polygon\n  - Base\n  - Optimism\n  - Worldchain\n  - Arbitrum\n</Note>\n",
 			"params": [
 				{
 					"name": "userOpHash",
 					"required": true,
-					"description": "The userOpHash of the UserOperation to retrieve.",
+					"description": "The `userOpHash` of the `UserOperation` to retrieve.",
 					"schema": {
-						"title": "32 byte hex value",
 						"type": "string",
-						"pattern": "^0x[0-9a-f]{64}$"
+						"format": "hash32"
 					}
 				}
 			],
 			"result": {
 				"name": "UserOperation",
-				"description": "The UserOperation object.",
+				"description": "The `UserOperation` object.",
 				"schema": {
 					"type": "object",
 					"properties": {
 						"entrypointV06Response": {
+							"title": "Entrypoint v0.6 Response",
 							"type": "object",
 							"properties": {
 								"sender": {
-									"title": "hex encoded address",
 									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
 									"description": "The account making the operation"
 								},
 								"nonce": {
-									"title": "hex encoded unsigned integer",
 									"type": "string",
-									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-									"description": "Anti-replay parameter; used as salt for first-time account creation"
+									"description": "Anti-replay parameter; also used as the salt for first-time account creation"
 								},
 								"initCode": {
-									"title": "hex encoded bytes",
 									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "The initCode of the account (needed if the account is not yet on-chain and needs creation)"
+									"description": "The initCode of the account (needed if and only if the account is not yet on-chain and needs to be created)"
 								},
 								"callData": {
-									"title": "hex encoded bytes",
 									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Encoded data for the primary function call or operation"
+									"description": "Encoded data for executing the primary function call or operation within the user's transaction, such as calling a smart contract function or transferring tokens. This data is passed to the sender's address during the execution of the user operation."
 								},
 								"callGasLimit": {
 									"type": "string",
-									"description": "Gas allocated for the main execution call"
+									"description": "The amount of gas to allocate for the main execution call."
 								},
 								"verificationGasLimit": {
 									"type": "string",
-									"description": "Gas allocated for verification"
+									"description": "The amount of gas to allocate for the verification step."
 								},
 								"preVerificationGas": {
 									"type": "string",
-									"description": "Gas for pre-verification execution and calldata"
+									"description": "The amount of gas to compensate the bundler for pre-verification execution and calldata."
 								},
 								"maxFeePerGas": {
 									"type": "string",
-									"description": "Maximum fee per gas (EIP-1559)"
+									"description": "The maximum fee per gas to pay for the execution of this operation (similar to EIP-1559 max_fee_per_gas)."
 								},
 								"maxPriorityFeePerGas": {
 									"type": "string",
-									"description": "Max priority fee per gas (EIP-1559)"
+									"description": "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)."
 								},
 								"signature": {
 									"type": "string",
-									"description": "Data passed during verification",
-									"pattern": "^0x[0-9a-fA-F]*$"
+									"description": "Data passed into the account along with the nonce during the verification step"
 								},
 								"paymasterAndData": {
-									"title": "hex encoded bytes",
 									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Paymaster address and extra data"
+									"description": "Address of paymaster sponsoring the transaction, followed by extra data to send to the paymaster (empty for self-sponsored transaction)"
+								},
+								"entryPoint": {
+									"type": "string",
+									"description": "Address of the entry point contract"
+								},
+								"blockNumber": {
+									"type": "string",
+									"description": "Block number in which `UserOperation` is included"
+								},
+								"blockHash": {
+									"type": "string",
+									"description": "Block hash of the block containing ` UserOperation`"
+								},
+								"transactionHash": {
+									"type": "string",
+									"description": "Transaction hash of the `UserOperation`"
 								}
 							}
 						},
 						"entrypointV07Response": {
+							"title": "Entrypoint v0.7 Response",
 							"type": "object",
 							"properties": {
 								"sender": {
-									"title": "hex encoded address",
 									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
-									"description": "Account initiating operation"
+									"description": "The account making the operation"
 								},
 								"nonce": {
-									"title": "hex encoded unsigned integer",
 									"type": "string",
-									"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-									"description": "Account nonce or creation salt"
-								},
-								"initCode": {
-									"title": "hex encoded bytes",
-									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Initialization code (for new accounts)"
-								},
-								"callData": {
-									"title": "hex encoded bytes",
-									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Data for operation call"
-								},
-								"callGasLimit": {
-									"type": "string",
-									"description": "Gas allocated for call"
-								},
-								"verificationGasLimit": {
-									"type": "string",
-									"description": "Gas allocated for verification"
-								},
-								"maxFeePerGas": {
-									"type": "string",
-									"description": "Max fee per gas (EIP-1559)"
-								},
-								"maxPriorityFeePerGas": {
-									"type": "string",
-									"description": "Priority fee per gas (EIP-1559)"
-								},
-								"paymaster": {
-									"title": "hex encoded address",
-									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
-									"description": "Paymaster contract address"
-								},
-								"paymasterData": {
-									"title": "hex encoded bytes",
-									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
-									"description": "Data for paymaster"
-								},
-								"paymasterVerificationGasLimit": {
-									"type": "string"
+									"description": "Anti-replay parameter; also used as the salt for first-time account creation"
 								},
 								"factory": {
-									"title": "hex encoded address",
 									"type": "string",
-									"pattern": "^0x[0-9a-fA-F]{40}$",
 									"description": "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
 								},
 								"factoryData": {
-									"title": "hex encoded bytes",
 									"type": "string",
-									"pattern": "^0x[0-9a-f]*$",
 									"description": "Data for the account factory (only if the account factory exists)"
+								},
+								"callData": {
+									"type": "string",
+									"description": "Encoded data for executing the primary function call or operation within the user's transaction, such as calling a smart contract function or transferring tokens. This data is passed to the sender's address during the execution of the user operation."
+								},
+								"callGasLimit": {
+									"type": "string",
+									"description": "The amount of gas to allocate for the main execution call."
+								},
+								"verificationGasLimit": {
+									"type": "string",
+									"description": "The amount of gas to allocate for the verification step."
 								},
 								"preVerificationGas": {
 									"type": "string",
-									"description": "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+									"description": "The amount of gas to compensate the bundler for pre-verification execution and calldata."
+								},
+								"maxFeePerGas": {
+									"type": "string",
+									"description": "The maximum fee per gas to pay for the execution of this operation (similar to EIP-1559 max_fee_per_gas)."
+								},
+								"maxPriorityFeePerGas": {
+									"type": "string",
+									"description": "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)."
+								},
+								"paymasterVerificationGasLimit": {
+									"type": "string",
+									"description": "The amount of gas to allocate for the paymaster validation code (only if a paymaster exists)"
 								},
 								"paymasterPostOpGasLimit": {
 									"type": "string",
@@ -570,6 +549,30 @@
 								"signature": {
 									"type": "string",
 									"description": "Data passed into the account along with the nonce during the verification step"
+								},
+								"paymaster": {
+									"type": "string",
+									"description": "Address of the paymaster contract (or empty, if the account pays for itself)"
+								},
+								"paymasterData": {
+									"type": "string",
+									"description": "Data for the paymaster (only if the paymaster exists)"
+								},
+								"entryPoint": {
+									"type": "string",
+									"description": "Address of the entry point contract"
+								},
+								"blockNumber": {
+									"type": "string",
+									"description": "Block number in which `UserOperation` is included"
+								},
+								"blockHash": {
+									"type": "string",
+									"description": "Block hash of the block containing ` UserOperation`"
+								},
+								"transactionHash": {
+									"type": "string",
+									"description": "Transaction hash of the `UserOperation`"
 								}
 							}
 						}
@@ -811,7 +814,7 @@
 		},
 		{
 			"name": "eth_sendUserOperation",
-			"description": "Sends a UserOperation to the given EVM network.\n\n<Note title=\"Support EntryPoints\">\n  `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning title=\"Replacement Underpriced Error\">\n  You might get a `\"Replacement Underpriced Error\"` when using `eth_sendUserOperation`. View our [FAQs](/docs/reference/account-abstraction-faq#what-is-a-replacement-underpriced-error-and-how-can-i-resolve-it) for a description of this error along with resolution steps.\n</Warning>\n",
+			"description": "Sends a `UserOperation` to the given EVM network.\n\n<Note title=\"Supported EntryPoints\">\n  `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.\n</Note>\n\n<Warning title=\"Replacement Underpriced Error\">\n  You might get a `\"Replacement Underpriced Error\"` when using `eth_sendUserOperation`. View our [FAQs](/docs/reference/account-abstraction-faq#what-is-a-replacement-underpriced-error-and-how-can-i-resolve-it) for a description of this error along with resolution steps.\n</Warning>\n",
 			"params": [
 				{
 					"name": "UserOperation",

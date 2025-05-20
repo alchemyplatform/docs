@@ -75,23 +75,148 @@
           - "0x7A0A0d159218E6a2f407B99173A2b12A6DDfC2a6"
 
 - name: eth_getUserOperationByHash
-  description: Return a UserOperation based on a userOpHash.
+  description: |
+    Return a `UserOperation` based on a `userOpHash`.
+
+    <Note title="Supported EntryPoints">
+      `eth_getUserOperationByHash` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.
+    </Note>
+
+    <Note title="Limitations">
+      The `eth_getUserOperationByHash` method retrieves and decodes user operations from the logs of mined transactions by querying the node. If you attempt to fetch a receipt for a transaction from a distant past block, the request may be rejected by the node due to limitations on the block range size it can process.
+
+      The default range we support is 150 blocks, however the following networks have an unlimited range.
+
+      - Ethereum
+      - Polygon
+      - Base
+      - Optimism
+      - Worldchain
+      - Arbitrum
+    </Note>
   params:
     - name: userOpHash
       required: true
-      description: The userOpHash of the UserOperation to retrieve.
+      description: The `userOpHash` of the `UserOperation` to retrieve.
       schema:
-        $ref: "#/components/schemas/hash32"
+        type: string
+        format: "hash32"
   result:
     name: UserOperation
-    description: The UserOperation object.
+    description: The `UserOperation` object.
     schema:
       type: object
       properties:
         entrypointV06Response:
-          $ref: "#/components/schemas/UserOperationV06"
+          title: "Entrypoint v0.6 Response"
+          type: "object"
+          properties:
+            sender:
+              type: "string"
+              description: The account making the operation
+            nonce:
+              type: "string"
+              description: Anti-replay parameter; also used as the salt for first-time account creation
+            initCode:
+              type: "string"
+              description: The initCode of the account (needed if and only if the account is not yet on-chain and needs to be created)
+            callData:
+              type: "string"
+              description: Encoded data for executing the primary function call or operation within the user's transaction, such as calling a smart contract function or transferring tokens. This data is passed to the sender's address during the execution of the user operation.
+            callGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the main execution call."
+            verificationGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the verification step."
+            preVerificationGas:
+              type: "string"
+              description: "The amount of gas to compensate the bundler for pre-verification execution and calldata."
+            maxFeePerGas:
+              type: "string"
+              description: "The maximum fee per gas to pay for the execution of this operation (similar to EIP-1559 max_fee_per_gas)."
+            maxPriorityFeePerGas:
+              type: "string"
+              description: "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)."
+            signature:
+              type: "string"
+              description: Data passed into the account along with the nonce during the verification step
+            paymasterAndData:
+              type: "string"
+              description: Address of paymaster sponsoring the transaction, followed by extra data to send to the paymaster (empty for self-sponsored transaction)
+            entryPoint:
+              type: "string"
+              description: Address of the entry point contract
+            blockNumber:
+              type: "string"
+              description: Block number in which `UserOperation` is included
+            blockHash:
+              type: "string"
+              description: Block hash of the block containing ` UserOperation`
+            transactionHash:
+              type: "string"
+              description: Transaction hash of the `UserOperation`
         entrypointV07Response:
-          $ref: "#/components/schemas/UserOperationV07"
+          title: "Entrypoint v0.7 Response"
+          type: "object"
+          properties:
+            sender:
+              type: "string"
+              description: The account making the operation
+            nonce:
+              type: "string"
+              description: Anti-replay parameter; also used as the salt for first-time account creation
+            factory:
+              type: "string"
+              description: The account factory address (needed if and only if the account is not yet on-chain and needs to be created)
+            factoryData:
+              type: "string"
+              description: Data for the account factory (only if the account factory exists)
+            callData:
+              type: "string"
+              description: Encoded data for executing the primary function call or operation within the user's transaction, such as calling a smart contract function or transferring tokens. This data is passed to the sender's address during the execution of the user operation.
+            callGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the main execution call."
+            verificationGasLimit:
+              type: "string"
+              description: "The amount of gas to allocate for the verification step."
+            preVerificationGas:
+              type: "string"
+              description: "The amount of gas to compensate the bundler for pre-verification execution and calldata."
+            maxFeePerGas:
+              type: "string"
+              description: "The maximum fee per gas to pay for the execution of this operation (similar to EIP-1559 max_fee_per_gas)."
+            maxPriorityFeePerGas:
+              type: "string"
+              description: "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)."
+            paymasterVerificationGasLimit:
+              type: "string"
+              description: The amount of gas to allocate for the paymaster validation code (only if a paymaster exists)
+            paymasterPostOpGasLimit:
+              type: "string"
+              description: The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)
+            signature:
+              type: "string"
+              description: Data passed into the account along with the nonce during the verification step
+            paymaster:
+              type: "string"
+              description: Address of the paymaster contract (or empty, if the account pays for itself)
+            paymasterData:
+              type: "string"
+              description: Data for the paymaster (only if the paymaster exists)
+            entryPoint:
+              type: "string"
+              description: Address of the entry point contract
+            blockNumber:
+              type: "string"
+              description: Block number in which `UserOperation` is included
+            blockHash:
+              type: "string"
+              description: Block hash of the block containing ` UserOperation`
+            transactionHash:
+              type: "string"
+              description: Transaction hash of the `UserOperation`
   examples:
     - name: eth_getUserOperationByHash example
       params:
@@ -118,9 +243,9 @@
 
 - name: eth_sendUserOperation
   description: |
-    Sends a UserOperation to the given EVM network.
+    Sends a `UserOperation` to the given EVM network.
 
-    <Note title="Support EntryPoints">
+    <Note title="Supported EntryPoints">
       `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.
     </Note>
 
@@ -160,10 +285,10 @@
 
 - name: eth_estimateUserOperationGas
   description: |
-    Estimates the gas values for a UserOperation.
+    Estimates the gas values for a `UserOperation`.
 
-    <Note title="Support EntryPoints">
-      `eth_sendUserOperation` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.
+    <Note title="Supported EntryPoints">
+      `eth_estimateUserOperationGas` supports versions v0.6 and v0.7 of ERC-4337. Check our [FAQs](/docs/reference/account-abstraction-faq#entrypoint) to determine which version you should use.
     </Note>
 
     <Warning>
