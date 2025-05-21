@@ -32,7 +32,7 @@
 	"methods": [
 		{
 			"name": "alchemy_simulateUserOperationAssetChanges",
-			"description": "Simulates user operations and returns a list of asset changes.",
+			"description": "Simulates user operations and returns a list of asset changes.\n\n<Note title=\"Changes in blockchain's state could lead to different outcomes\">\n  The results provided by `alchemy_simulateUserOperationAssetChanges` are based on the blockchain's state at the moment of simulation. Changes in the blockchain state, such as updates to contract variables or balances, can occur between the time of simulation and when you actually execute your UserOp.\n\n  This could lead to different outcomes than predicted. For instance, if a userOp's effect is conditional on the current state of a contract, and this state is altered before the transaction is executed, the final result may not match the simulation.\n\n  Please be aware of this potential variance and consider it while using the API.\n</Note>\n\n<Warning>\n  This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.\n</Warning>\n",
 			"params": [
 				{
 					"name": "UserOperation",
@@ -42,6 +42,7 @@
 						"oneOf": [
 							{
 								"type": "object",
+								"title": "User Operation v0.6",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -101,6 +102,7 @@
 								}
 							},
 							{
+								"name": "UserOperationV07",
 								"type": "object",
 								"properties": {
 									"sender": {
@@ -114,12 +116,6 @@
 										"type": "string",
 										"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
 										"description": "Account nonce or creation salt"
-									},
-									"initCode": {
-										"title": "hex encoded bytes",
-										"type": "string",
-										"pattern": "^0x[0-9a-f]*$",
-										"description": "Initialization code (for new accounts)"
 									},
 									"callData": {
 										"title": "hex encoded bytes",
@@ -190,7 +186,7 @@
 				{
 					"name": "entryPoint",
 					"required": true,
-					"description": "EntryPoint address used for simulation. Must be from `supportedEntryPoints`.",
+					"description": "`EntryPoint` to use for the simulation. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call.",
 					"schema": {
 						"title": "hex encoded address",
 						"type": "string",
@@ -200,7 +196,7 @@
 				{
 					"name": "blockNumber",
 					"required": false,
-					"description": "Optional block number for context of simulation. Defaults to latest.",
+					"description": "Optional block number in context of which the simulation should be executed. If not specified, the current block number is used.",
 					"schema": {
 						"title": "hex encoded unsigned integer",
 						"type": "string",

@@ -35,42 +35,41 @@
 			"description": "Requests gas sponsorship for a Solana transaction and returns the **fully-signed** `serializedTransaction` (now containing the fee-payer signature).\n\n<Note>\n  Request access by reaching out to account-abstraction@alchemy.com\n</Note>\n",
 			"params": [
 				{
-					"name": "sponsorshipRequest",
-					"description": "Object that describes the sponsorship request. You must supply a base-64 **serializedTransaction** that is **missing** any fee-payer signature. The API will set the **feePayer** field and sign the transaction.",
+					"name": "policyId",
+					"required": true,
+					"description": "The policy ID (_or list of IDs_) that governs sponsorship.",
 					"schema": {
-						"type": "object",
-						"required": [
-							"policyId",
-							"serializedTransaction"
-						],
-						"properties": {
-							"policyId": {
-								"description": "The policy ID (_or list of IDs_) that governs sponsorship.",
-								"oneOf": [
-									{
-										"type": "string",
-										"format": "uuid"
-									},
-									{
-										"type": "array",
-										"items": {
-											"type": "string",
-											"format": "uuid"
-										}
-									}
-								]
-							},
-							"serializedTransaction": {
-								"title": "base-64-encoded Solana transaction",
+						"oneOf": [
+							{
+								"title": "policyId",
 								"type": "string",
-								"pattern": "^[A-Za-z0-9+/]+={0,2}$",
-								"description": "The unsigned transaction produced by `tx.serialize()`.\nIt may already contain a **feePayer**; the service will overwrite it\nwith the sponsoring account and add the fee-payer signature.\n"
+								"format": "uuid"
 							},
-							"webhookData": {
-								"type": "string",
-								"description": "Optional metadata (e.g. proof-of-humanity) that is forwarded to any policy-level webhooks.\n"
+							{
+								"title": "policyIdArray",
+								"type": "array",
+								"items": {
+									"type": "string",
+									"format": "uuid"
+								}
 							}
-						}
+						]
+					}
+				},
+				{
+					"name": "serializedTransaction",
+					"required": true,
+					"description": "The unsigned transaction produced by `tx.serialize()`.\nIt may already contain a `feePayer`; the service will overwrite it\nwith the sponsoring account and add the fee-payer signature.\n",
+					"schema": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9+/]+={0,2}$"
+					}
+				},
+				{
+					"name": "webhookData",
+					"description": "Optional metadata (e.g. proof-of-humanity) that is forwarded to any policy-level webhooks.\n",
+					"schema": {
+						"type": "string"
 					}
 				}
 			],
@@ -79,11 +78,14 @@
 				"description": "Object containing the **fully-signed** transaction ready for `sendRawTransaction`.\n",
 				"schema": {
 					"type": "object",
+					"required": [
+						"serializedTransaction"
+					],
 					"properties": {
 						"serializedTransaction": {
 							"title": "base-64-encoded Solana transaction",
 							"type": "string",
-							"description": "The transaction after the service sets the **feePayer** field and adds the fee-payer signature.\n"
+							"description": "The transaction after the service sets the `feePayer` field and adds the fee-payer signature.\n"
 						}
 					}
 				}
@@ -125,23 +127,19 @@
 			"description": "Requests gas and coverage for a `UserOperation`. Returns `paymasterAndData` and gas parameters if approved, errors if not. Optionally accepts fee parameter overrides to be used in the `UserOperation`.\n",
 			"params": [
 				{
-					"name": "webhookData",
-					"description": "Additional data you wish to include in the request, such as proof of humanity.",
-					"schema": {
-						"type": "string"
-					}
-				},
-				{
 					"name": "policyId",
+					"required": true,
 					"description": "The Gas Policy ID or list of Gas Policy IDs.",
 					"schema": {
 						"oneOf": [
 							{
 								"type": "string",
+								"title": "policyId",
 								"format": "uuid"
 							},
 							{
 								"type": "array",
+								"title": "policyId Array",
 								"items": {
 									"type": "string",
 									"format": "uuid"
@@ -152,6 +150,7 @@
 				},
 				{
 					"name": "entryPoint",
+					"required": true,
 					"description": "The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call and match the version of the user operation in the `userOperation` field.",
 					"schema": {
 						"type": "string",
@@ -160,6 +159,7 @@
 				},
 				{
 					"name": "dummySignature",
+					"required": true,
 					"description": "Dummy signature for the operation. This is useful for estimating gas costs.\n  <Warning>\n    This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.\n  </Warning>\n",
 					"schema": {
 						"type": "string"
@@ -167,12 +167,14 @@
 				},
 				{
 					"name": "userOperation",
+					"required": true,
 					"description": "An object containing optional gas parameters, `paymasterAndData`, and signature fields. It can be either a v0.6 or v0.7 user operation but must match the version of the entry point at the specified `entryPoint`.",
 					"schema": {
 						"title": "User Operation, either v0.6 or v0.7 (missing signature, paymasterData, and gas fields)",
 						"oneOf": [
 							{
 								"type": "object",
+								"title": "User Operation v0.6",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -222,6 +224,7 @@
 							},
 							{
 								"type": "object",
+								"title": "User Operation v0.7",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -382,7 +385,6 @@
 				},
 				{
 					"name": "stateOverrideSet",
-					"required": false,
 					"description": "Optional.Allows changes to the state of a contract before executing the call. For example, you can modify variable values (like balances or approvals) for that call without changing the contract itself on the blockchain. \n\nIn more technical terms, the state override set is an optional parameter that allows executing the call against a modified chain state. It is an address-to-state mapping, where each entry specifies some state to be overridden prior to executing the call.\n",
 					"schema": {
 						"type": "object",
@@ -409,6 +411,13 @@
 							}
 						}
 					}
+				},
+				{
+					"name": "webhookData",
+					"description": "Additional data you wish to include in the request, such as proof of humanity.",
+					"schema": {
+						"type": "string"
+					}
 				}
 			],
 			"result": {
@@ -416,6 +425,10 @@
 				"description": "The transformed response object that wraps the original gas and paymaster response. It includes an array of asset change objects, a gasUsed field, and an error field.",
 				"schema": {
 					"type": "object",
+					"required": [
+						"entrypointV06Response",
+						"entrypointV07Response"
+					],
 					"properties": {
 						"entrypointV06Response": {
 							"title": "Entrypoint v0.6 Response",
@@ -536,23 +549,19 @@
 			"description": "Requests coverage for a `UserOperation`. Returns paymasterAndData if approved, errors if not.\n\n<Warning title=\"This endpoint will be deprecated\">\n  Please use `alchemy_requestGasAndPaymasterAndData` instead.\n\n  While you can use `alchemy_requestPaymasterAndData` to request a paymaster signature, it's important to note that this function requires gas fields to be part of the `UserOperation` passed as a parameter. These gas fields are influenced by the response of this endpoint, creating a circular dependency.\n\n  To simplify this process, we introduced alchemy_requestGasAndPaymasterAndData. This function both estimates gas and provides signed `paymaster` and `paymasterData` fields, therefore resolving the circular dependency.\n</Warning>\n",
 			"params": [
 				{
-					"name": "webhookData",
-					"description": "Additional data you wish to include in the request, such as proof of humanity.",
-					"schema": {
-						"type": "string"
-					}
-				},
-				{
 					"name": "policyId",
+					"required": true,
 					"description": "The policy ID or list of policy IDs.",
 					"schema": {
 						"oneOf": [
 							{
 								"type": "string",
+								"title": "policyId",
 								"format": "uuid"
 							},
 							{
 								"type": "array",
+								"title": "policyId Array",
 								"items": {
 									"type": "string",
 									"format": "uuid"
@@ -563,6 +572,7 @@
 				},
 				{
 					"name": "entryPoint",
+					"required": true,
 					"description": "The `entrypoint` address the request should be sent through. This **MUST** be one of the entry points returned by the `supportedEntryPoints` RPC call and match the version of the user operation in the `userOperation` field.",
 					"schema": {
 						"type": "string",
@@ -571,12 +581,14 @@
 				},
 				{
 					"name": "userOperation",
+					"required": true,
 					"description": "Test Partial UserOperation object, missing `paymasterAndData` and `signature` fields. This can be either a v0.6 or v0.7 user operation, but **MUST** match the version of the entry point at the address in the `entryPoint` field.",
 					"schema": {
 						"title": "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)",
 						"oneOf": [
 							{
 								"type": "object",
+								"title": "User Operation v0.6",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -626,6 +638,7 @@
 							},
 							{
 								"type": "object",
+								"title": "User Operation v0.7",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -689,6 +702,13 @@
 							}
 						]
 					}
+				},
+				{
+					"name": "webhookData",
+					"description": "Additional data you wish to include in the request, such as proof of humanity.",
+					"schema": {
+						"type": "string"
+					}
 				}
 			],
 			"result": {
@@ -696,6 +716,10 @@
 				"description": "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with properties paymasterData, paymasterVerificationGasLimit, and paymasterPostOpGasLimit.",
 				"schema": {
 					"type": "object",
+					"required": [
+						"entrypointV06Response",
+						"entrypointV07Response"
+					],
 					"properties": {
 						"entrypointV06Response": {
 							"title": "Entrypoint v0.6 Response",
@@ -790,11 +814,13 @@
 				{
 					"name": "userOperation",
 					"description": "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData).",
+					"required": true,
 					"schema": {
 						"title": "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)",
 						"oneOf": [
 							{
 								"type": "object",
+								"title": "User Operation v0.6",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -844,6 +870,7 @@
 							},
 							{
 								"type": "object",
+								"title": "User Operation v0.7",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -910,6 +937,7 @@
 				},
 				{
 					"name": "entryPoint",
+					"required": true,
 					"description": "The entrypoint address the request should be sent through. Must be one of the entry points returned by the `supportedEntryPoints` RPC call.",
 					"schema": {
 						"type": "string",
@@ -918,6 +946,7 @@
 				},
 				{
 					"name": "chainId",
+					"required": true,
 					"description": "The chain ID of the network the operation will be submitted on.",
 					"schema": {
 						"type": "string",
@@ -929,6 +958,9 @@
 					"description": "An object containing context. Must include a policyId and may include webhookData.",
 					"schema": {
 						"type": "object",
+						"required": [
+							"policyId"
+						],
 						"properties": {
 							"policyId": {
 								"oneOf": [
@@ -959,6 +991,10 @@
 				"description": "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with property paymasterData.",
 				"schema": {
 					"type": "object",
+					"required": [
+						"entrypointV06Response",
+						"entrypointV07Response"
+					],
 					"properties": {
 						"entrypointV06Response": {
 							"title": "EntryPoint v0.6 Response",
@@ -1041,11 +1077,13 @@
 				{
 					"name": "userOperation",
 					"description": "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData).",
+					"required": true,
 					"schema": {
 						"title": "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)",
 						"oneOf": [
 							{
 								"type": "object",
+								"title": "User Operation v0.6",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -1095,6 +1133,7 @@
 							},
 							{
 								"type": "object",
+								"title": "User Operation v0.7",
 								"properties": {
 									"sender": {
 										"title": "hex encoded address",
@@ -1161,6 +1200,7 @@
 				},
 				{
 					"name": "entryPoint",
+					"required": true,
 					"description": "The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call.",
 					"schema": {
 						"type": "string",
@@ -1169,6 +1209,7 @@
 				},
 				{
 					"name": "chainId",
+					"required": true,
 					"description": "The chain ID of the network the operation will be submitted on.",
 					"schema": {
 						"type": "string",
@@ -1180,6 +1221,9 @@
 					"description": "An object containing context. Must include a policyId and may include webhookData.",
 					"schema": {
 						"type": "object",
+						"required": [
+							"policyId"
+						],
 						"properties": {
 							"policyId": {
 								"oneOf": [
@@ -1210,6 +1254,10 @@
 				"description": "The response object may be one of two types: - For entrypoint v0.6: an object with properties paymasterAndData and sponsor. - For entrypoint v0.7: an object with properties paymasterData and sponsor.",
 				"schema": {
 					"type": "object",
+					"required": [
+						"entrypointV06Response",
+						"entrypointV07Response"
+					],
 					"properties": {
 						"entrypointV06Response": {
 							"title": "EntryPoint v0.6 Stub Response",
