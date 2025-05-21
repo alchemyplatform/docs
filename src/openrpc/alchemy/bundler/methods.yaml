@@ -48,6 +48,20 @@
     description: "`UserOperationReceipt` object representing the outcome of a `UserOperation`."
     schema:
       type: object
+      required:
+        [
+          "userOpHash",
+          "entryPoint",
+          "sender",
+          "nonce",
+          "paymaster",
+          "actualGasCost",
+          "actualGasUsed",
+          "success",
+          "reason",
+          "logs",
+          "receipt",
+        ]
       properties:
         userOpHash:
           type: string
@@ -84,6 +98,24 @@
         receipt:
           type: object
           description: The `TransactionReceipt` object for the entire bundle, not only for this `UserOperation`.
+          required:
+            [
+              "blockHash",
+              "blockNumber",
+              "transactionIndex",
+              "transactionHash",
+              "from",
+              "to",
+              "cumulativeGasUsed",
+              "gasUsed",
+              "contractAddress",
+              "logs",
+              "logsBloom",
+              "root",
+              "status",
+              "effectiveGasPrice",
+              "type",
+            ]
           properties:
             blockHash:
               type: string
@@ -115,6 +147,18 @@
             logs:
               type: array
               description: Array of `Log` objects.
+              required:
+                [
+                  "blockHash",
+                  "blockNumber",
+                  "transactionIndex",
+                  "address",
+                  "logIndex",
+                  "data",
+                  "removed",
+                  "topics",
+                  "transactionHash",
+                ]
               items:
                 type: object
                 properties:
@@ -241,6 +285,7 @@
     description: The `UserOperation` object.
     schema:
       type: object
+      required: ["entrypointV06Response", "entrypointV07Response"]
       properties:
         entrypointV06Response:
           title: "Entrypoint v0.6 Response"
@@ -471,6 +516,7 @@
     description: Gas values estimated for the UserOperation.
     schema:
       type: object
+      required: ["entrypointV06Response", "entrypointV07Response"]
       properties:
         entrypointV06Response:
           type: object
