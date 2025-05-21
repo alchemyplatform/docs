@@ -2,26 +2,27 @@
   description: |
     Requests gas and coverage for a `UserOperation`. Returns `paymasterAndData` and gas parameters if approved, errors if not. Optionally accepts fee parameter overrides to be used in the `UserOperation`.
   params:
-    - name: "webhookData"
-      description: "Additional data you wish to include in the request, such as proof of humanity."
-      schema:
-        type: "string"
     - name: "policyId"
+      required: true
       description: "The Gas Policy ID or list of Gas Policy IDs."
       schema:
         oneOf:
           - type: "string"
+            title: "policyId"
             format: "uuid"
           - type: "array"
+            title: "policyId Array"
             items:
               type: "string"
               format: "uuid"
     - name: "entryPoint"
+      required: true
       description: The entrypoint address the request should be sent through. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call and match the version of the user operation in the `userOperation` field.
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
     - name: "dummySignature"
+      required: true
       description: |
         Dummy signature for the operation. This is useful for estimating gas costs.
           <Warning>
@@ -30,11 +31,13 @@
       schema:
         type: "string"
     - name: "userOperation"
+      required: true
       description: An object containing optional gas parameters, `paymasterAndData`, and signature fields. It can be either a v0.6 or v0.7 user operation but must match the version of the entry point at the specified `entryPoint`.
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature, paymasterData, and gas fields)"
         oneOf:
           - type: "object"
+            title: "User Operation v0.6"
             properties:
               sender:
                 title: "hex encoded address"
@@ -72,6 +75,7 @@
                 type: "string"
                 description: "Max priority fee per gas (EIP-1559)"
           - type: "object"
+            title: "User Operation v0.7"
             properties:
               sender:
                 title: "hex encoded address"
@@ -191,7 +195,6 @@
                     type: "number"
                 description: "Multiplier value."
     - name: "stateOverrideSet"
-      required: false
       description: |
         Optional.Allows changes to the state of a contract before executing the call. For example, you can modify variable values (like balances or approvals) for that call without changing the contract itself on the blockchain. 
 
@@ -214,11 +217,16 @@
           stateDiff:
             type: "object"
             description: "Fake key-value mapping to override individual slots in the account storage before executing the call."
+    - name: "webhookData"
+      description: "Additional data you wish to include in the request, such as proof of humanity."
+      schema:
+        type: "string"
   result:
     name: "Asset changes"
     description: "The transformed response object that wraps the original gas and paymaster response. It includes an array of asset change objects, a gasUsed field, and an error field."
     schema:
       type: "object"
+      required: ["entrypointV06Response", "entrypointV07Response"]
       properties:
         entrypointV06Response:
           title: "Entrypoint v0.6 Response"
@@ -313,31 +321,33 @@
     </Warning>
 
   params:
-    - name: "webhookData"
-      description: "Additional data you wish to include in the request, such as proof of humanity."
-      schema:
-        type: "string"
     - name: "policyId"
+      required: true
       description: "The policy ID or list of policy IDs."
       schema:
         oneOf:
           - type: "string"
+            title: "policyId"
             format: "uuid"
           - type: "array"
+            title: "policyId Array"
             items:
               type: "string"
               format: "uuid"
     - name: "entryPoint"
+      required: true
       description: "The `entrypoint` address the request should be sent through. This **MUST** be one of the entry points returned by the `supportedEntryPoints` RPC call and match the version of the user operation in the `userOperation` field."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
     - name: "userOperation"
+      required: true
       description: "Test Partial UserOperation object, missing `paymasterAndData` and `signature` fields. This can be either a v0.6 or v0.7 user operation, but **MUST** match the version of the entry point at the address in the `entryPoint` field."
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
           - type: "object"
+            title: "User Operation v0.6"
             properties:
               sender:
                 title: "hex encoded address"
@@ -375,6 +385,7 @@
                 type: "string"
                 description: "Max priority fee per gas (EIP-1559)"
           - type: "object"
+            title: "User Operation v0.7"
             properties:
               sender:
                 title: "hex encoded address"
@@ -422,11 +433,16 @@
               paymasterPostOpGasLimit:
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+    - name: "webhookData"
+      description: "Additional data you wish to include in the request, such as proof of humanity."
+      schema:
+        type: "string"
   result:
     name: "Response"
     description: "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with properties paymasterData, paymasterVerificationGasLimit, and paymasterPostOpGasLimit."
     schema:
       type: "object"
+      required: ["entrypointV06Response", "entrypointV07Response"]
       properties:
         entrypointV06Response:
           title: "Entrypoint v0.6 Response"
@@ -495,10 +511,12 @@
   params:
     - name: "userOperation"
       description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData)."
+      required: true
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
           - type: "object"
+            title: "User Operation v0.6"
             properties:
               sender:
                 title: "hex encoded address"
@@ -536,6 +554,7 @@
                 type: "string"
                 description: "Max priority fee per gas (EIP-1559)"
           - type: "object"
+            title: "User Operation v0.7"
             properties:
               sender:
                 title: "hex encoded address"
@@ -584,11 +603,13 @@
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
     - name: "entryPoint"
+      required: true
       description: "The entrypoint address the request should be sent through. Must be one of the entry points returned by the `supportedEntryPoints` RPC call."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
     - name: "chainId"
+      required: true
       description: "The chain ID of the network the operation will be submitted on."
       schema:
         type: "string"
@@ -597,6 +618,7 @@
       description: "An object containing context. Must include a policyId and may include webhookData."
       schema:
         type: "object"
+        required: ["policyId"]
         properties:
           policyId:
             oneOf:
@@ -615,6 +637,7 @@
     description: "The response object may be one of two types: - For entrypoint v0.6: an object with property paymasterAndData. - For entrypoint v0.7: an object with property paymasterData."
     schema:
       type: "object"
+      required: ["entrypointV06Response", "entrypointV07Response"]
       properties:
         entrypointV06Response:
           title: "EntryPoint v0.6 Response"
@@ -667,10 +690,12 @@
   params:
     - name: "userOperation"
       description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData)."
+      required: true
       schema:
         title: "User Operation, either v0.6 or v0.7 (missing signature and paymasterData)"
         oneOf:
           - type: "object"
+            title: "User Operation v0.6"
             properties:
               sender:
                 title: "hex encoded address"
@@ -708,6 +733,7 @@
                 type: "string"
                 description: "Max priority fee per gas (EIP-1559)"
           - type: "object"
+            title: "User Operation v0.7"
             properties:
               sender:
                 title: "hex encoded address"
@@ -756,11 +782,13 @@
                 type: "string"
                 description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
     - name: "entryPoint"
+      required: true
       description: "The entrypoint address the request should be sent through. Must be one of the entry points returned by the supportedEntryPoints RPC call."
       schema:
         type: "string"
         pattern: "^0[xX][0-9a-fA-F]*$"
     - name: "chainId"
+      required: true
       description: "The chain ID of the network the operation will be submitted on."
       schema:
         type: "string"
@@ -769,6 +797,7 @@
       description: "An object containing context. Must include a policyId and may include webhookData."
       schema:
         type: "object"
+        required: ["policyId"]
         properties:
           policyId:
             oneOf:
@@ -787,6 +816,7 @@
     description: "The response object may be one of two types: - For entrypoint v0.6: an object with properties paymasterAndData and sponsor. - For entrypoint v0.7: an object with properties paymasterData and sponsor."
     schema:
       type: "object"
+      required: ["entrypointV06Response", "entrypointV07Response"]
       properties:
         entrypointV06Response:
           title: "EntryPoint v0.6 Stub Response"
@@ -859,39 +889,34 @@
       Request access by reaching out to account-abstraction@alchemy.com
     </Note>
   params:
-    - name: sponsorshipRequest
-      description: Object that describes the sponsorship request.
-        You must supply a base-64 **serializedTransaction** that is **missing** any
-        fee-payer signature.
-        The API will set the **feePayer** field and sign the transaction.
+    - name: policyId
+      required: true
+      description: "The policy ID (_or list of IDs_) that governs sponsorship."
       schema:
-        type: "object"
-        required:
-          - policyId
-          - serializedTransaction
-        properties:
-          policyId:
-            description: "The policy ID (_or list of IDs_) that governs sponsorship."
-            oneOf:
-              - type: "string"
-                format: "uuid"
-              - type: "array"
-                items:
-                  type: "string"
-                  format: "uuid"
-          serializedTransaction:
-            title: "base-64-encoded Solana transaction"
+        oneOf:
+          - title: policyId
             type: "string"
-            pattern: "^[A-Za-z0-9+/]+={0,2}$"
-            description: |
-              The unsigned transaction produced by `tx.serialize()`.
-              It may already contain a **feePayer**; the service will overwrite it
-              with the sponsoring account and add the fee-payer signature.
-          webhookData:
-            type: "string"
-            description: >
-              Optional metadata (e.g. proof-of-humanity) that is forwarded to any
-              policy-level webhooks.
+            format: "uuid"
+          - title: policyIdArray
+            type: "array"
+            items:
+              type: "string"
+              format: "uuid"
+    - name: serializedTransaction
+      required: true
+      description: |
+        The unsigned transaction produced by `tx.serialize()`.
+        It may already contain a `feePayer`; the service will overwrite it
+        with the sponsoring account and add the fee-payer signature.
+      schema:
+        type: "string"
+        pattern: "^[A-Za-z0-9+/]+={0,2}$"
+    - name: webhookData
+      description: >
+        Optional metadata (e.g. proof-of-humanity) that is forwarded to any
+        policy-level webhooks.
+      schema:
+        type: "string"
   result:
     name: "Sponsored transaction wrapper"
     description: >
@@ -899,12 +924,13 @@
       `sendRawTransaction`.
     schema:
       type: "object"
+      required: ["serializedTransaction"]
       properties:
         serializedTransaction:
           title: "base-64-encoded Solana transaction"
           type: "string"
           description: >
-            The transaction after the service sets the **feePayer** field and
+            The transaction after the service sets the `feePayer` field and
             adds the fee-payer signature.
   servers:
     [

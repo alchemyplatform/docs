@@ -1,5 +1,18 @@
 - name: alchemy_simulateUserOperationAssetChanges
-  description: Simulates user operations and returns a list of asset changes.
+  description: |
+    Simulates user operations and returns a list of asset changes.
+
+    <Note title="Changes in blockchain's state could lead to different outcomes">
+      The results provided by `alchemy_simulateUserOperationAssetChanges` are based on the blockchain's state at the moment of simulation. Changes in the blockchain state, such as updates to contract variables or balances, can occur between the time of simulation and when you actually execute your UserOp.
+
+      This could lead to different outcomes than predicted. For instance, if a userOp's effect is conditional on the current state of a contract, and this state is altered before the transaction is executed, the final result may not match the simulation.
+
+      Please be aware of this potential variance and consider it while using the API.
+    </Note>
+
+    <Warning>
+      This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/account-abstraction-faq#signatures) to learn what a dummy signature is and which dummy signature you should use.
+    </Warning>
   params:
     - name: UserOperation
       required: true
@@ -7,15 +20,61 @@
       schema:
         oneOf:
           - $ref: "#/components/schemas/UserOperationV06"
-          - $ref: "#/components/schemas/UserOperationV07"
+          - name: UserOperationV07
+            type: object
+            properties:
+              sender:
+                $ref: "#/components/schemas/address"
+                description: "Account initiating operation"
+              nonce:
+                $ref: "#/components/schemas/uint"
+                description: "Account nonce or creation salt"
+              callData:
+                $ref: "#/components/schemas/bytes"
+                description: "Data for operation call"
+              callGasLimit:
+                type: string
+                description: "Gas allocated for call"
+              verificationGasLimit:
+                type: string
+                description: "Gas allocated for verification"
+              maxFeePerGas:
+                type: string
+                description: "Max fee per gas (EIP-1559)"
+              maxPriorityFeePerGas:
+                type: string
+                description: "Priority fee per gas (EIP-1559)"
+              paymaster:
+                $ref: "#/components/schemas/address"
+                description: "Paymaster contract address"
+              paymasterData:
+                $ref: "#/components/schemas/bytes"
+                description: "Data for paymaster"
+              paymasterVerificationGasLimit:
+                type: string
+              factory:
+                $ref: "#/components/schemas/address"
+                description: "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
+              factoryData:
+                $ref: "#/components/schemas/bytes"
+                description: "Data for the account factory (only if the account factory exists)"
+              preVerificationGas:
+                type: string
+                description: "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
+              paymasterPostOpGasLimit:
+                type: string
+                description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+              signature:
+                type: string
+                description: "Data passed into the account along with the nonce during the verification step"
     - name: entryPoint
       required: true
-      description: EntryPoint address used for simulation. Must be from `supportedEntryPoints`.
+      description: "`EntryPoint` to use for the simulation. This MUST be one of the entry points returned by the `supportedEntryPoints` RPC call."
       schema:
         $ref: "#/components/schemas/address"
     - name: blockNumber
       required: false
-      description: Optional block number for context of simulation. Defaults to latest.
+      description: Optional block number in context of which the simulation should be executed. If not specified, the current block number is used.
       schema:
         $ref: "#/components/schemas/uint"
   result:
