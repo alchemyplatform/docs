@@ -91,7 +91,7 @@ export const getMethodsFromDir = (methodsDir: string): Methods => {
   });
 };
 
-type OpenRpcBase = Pick<OpenrpcDocument, "info" | "externalDocs" | "servers">;
+// type OpenRpcBase = Pick<OpenrpcDocument, "info" | "externalDocs" | "servers">;
 /**
  * Retrieves the base OpenRPC document from a YAML file and returns it in OpenRPC Base format.
  * @param schemaDir - Path to the directory containing the base OpenRPC document
@@ -100,7 +100,7 @@ type OpenRpcBase = Pick<OpenrpcDocument, "info" | "externalDocs" | "servers">;
 export const getOpenRpcBase = (schemaDir: string) => {
   const baseRaw = readFileSync(`${schemaDir}/base.yaml`).toString();
 
-  return yaml.load(baseRaw) as OpenRpcBase;
+  return yaml.load(baseRaw) as OpenrpcDocument;
 };
 
 /**

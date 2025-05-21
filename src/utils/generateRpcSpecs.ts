@@ -1,11 +1,15 @@
+import defaultResolver from "@json-schema-tools/reference-resolver";
 import type { OpenrpcDocument } from "@open-rpc/meta-schema";
+import { dereferenceDocument } from "@open-rpc/schema-utils-js";
+import type { JSONSchema } from "@open-rpc/schema-utils-js/build/parse-open-rpc-document";
+import { readFileSync } from "fs";
+import yaml from "js-yaml";
+import path from "path";
 
 import {
   formatOpenRpcDoc,
   getComponentsFromDir,
-  getComponentsFromFile,
   getMethodsFromDir,
-  getMethodsFromFile,
   getOpenRpcBase,
   writeOpenRpcDoc,
 } from "./generationHelpers";
@@ -47,7 +51,7 @@ export const generateChainRpcSpec = async (
       },
     ],
     $schema: "https://meta.open-rpc.org/",
-    openrpc: "1.2.4",
+    // openrpc: "1.2.4",
     ...base,
     methods,
     components,
@@ -58,7 +62,6 @@ export const generateChainRpcSpec = async (
   writeOpenRpcDoc(outputDir, filename, spec);
 };
 
-const componentsFile = "src/openrpc/alchemy/_shared/components.yaml";
 /**
  * Generates an OpenRPC specification for the Alchemy JSON-RPC API.
  * @param srcDir - The source directory containing the Alchemy OpenRPC schema
@@ -71,17 +74,12 @@ export const generateAlchemyRpcSpec = async (
   filename: string,
 ) => {
   const schemaDir = `${srcDir}/${filename}`;
-  const methodsFile = `${schemaDir}/methods.yaml`;
-
-  const methods = getMethodsFromFile(methodsFile);
-
-  const components = getComponentsFromFile(componentsFile);
-
   const base = getOpenRpcBase(schemaDir);
 
-  const doc: OpenrpcDocument = {
+  const spec: OpenrpcDocument = {
     "x-generated-warning":
       "⚠️ This file is auto-generated. Do not edit manually",
+    ...base,
     "x-fern-parameters": [
       {
         name: "apiKey",
@@ -95,14 +93,31 @@ export const generateAlchemyRpcSpec = async (
         required: true,
       },
     ],
-    $schema: "https://meta.open-rpc.org/",
-    openrpc: "1.2.4",
-    ...base,
-    methods,
-    components,
   };
 
-  const spec = await formatOpenRpcDoc(doc);
+  // Must override default resolver
+  // dereferenceDocument second argument doesn't work because OpenRPC was coded by brain-dead monkeys
+  // @see https://github.com/open-rpc/schema-utils-js/issues/971
+  const defaultFileResolver = defaultResolver.protocolHandlerMap.file;
+  defaultResolver.protocolHandlerMap.file = async (
+    uri: string,
+    root: JSONSchema,
+  ) => {
+    if (!uri.startsWith(".")) {
+      return defaultFileResolver(uri, root);
+    }
+    // Resolve the ref path relative to the schema directory instead of root
+    const fullPath = path.resolve(schemaDir, uri);
+    const content = yaml.load(readFileSync(fullPath, "utf8")) as JSONSchema;
+    return content;
+  };
 
-  writeOpenRpcDoc(outputDir, filename, spec);
+  try {
+    const resolvedSpec = (await dereferenceDocument(spec)) as OpenrpcDocument;
+
+    writeOpenRpcDoc(outputDir, filename, resolvedSpec);
+  } catch (error) {
+    console.error(error);
+    throw new Error(`Failed to dereference ${filename}`);
+  }
 };
