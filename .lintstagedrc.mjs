@@ -6,5 +6,10 @@ export default {
     "eslint --fix",
     "prettier --write --log-level silent",
   ],
-  "*.{json,yml,yaml}": ["prettier --write --log-level silent"],
+  "*.{yml,yaml}": [
+    "pnpm run generate",
+    "pnpm run validate",
+    "prettier --write --log-level silent",
+  ],
+  "*.{json}": ["prettier --write --log-level silent"],
 };
