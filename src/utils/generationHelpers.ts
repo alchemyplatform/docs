@@ -31,13 +31,28 @@ export const getComponentsFromFile = (componentsFile: string): Components => {
  * @param componentsDir - Path to the directory containing component schemas
  * @returns Components object containing parsed schemas for use in OpenRPC documents
  */
-export const getComponentsFromDir = (componentsDir: string): Components => {
-  const componentsFiles = readdirSync(componentsDir);
+export const getComponentsFromDir = (
+  componentsDir: string,
+  sharedComponentsDir?: string,
+): Components => {
+  let componentsFiles: string[] = [];
+
+  try {
+    componentsFiles = readdirSync(componentsDir);
+  } catch {
+    console.warn("no components folder");
+  }
+
+  if (sharedComponentsDir) {
+    const sharedComponentsFiles = readdirSync(sharedComponentsDir);
+    componentsFiles = [
+      ...sharedComponentsFiles.map((file) => `${sharedComponentsDir}/${file}`),
+      ...componentsFiles.map((file) => `${componentsDir}/${file}`),
+    ];
+  }
 
   const schemas = componentsFiles.reduce<SchemaComponents>((acc, file) => {
-    const { schemas: innerSchemas } = getComponentsFromFile(
-      `${componentsDir}/${file}`,
-    );
+    const { schemas: innerSchemas } = getComponentsFromFile(file);
 
     return { ...acc, ...innerSchemas };
   }, {});
@@ -55,17 +70,7 @@ export const getMethodsFromFile = (methodsFile: string): Methods => {
   const documents = yaml.loadAll(rawMethods);
   const unsortedMethods = documents.flat() as Methods;
 
-  // TODO: add this as a config param to base.yaml
-  if (methodsFile.includes("wallet-api")) {
-    return unsortedMethods;
-  }
-
-  return unsortedMethods.sort((a, b) => {
-    if ("name" in a && "name" in b) {
-      return a.name.localeCompare(b.name);
-    }
-    return 0;
-  });
+  return unsortedMethods;
 };
 
 /**
@@ -108,7 +113,7 @@ export const getOpenRpcBase = (schemaDir: string) => {
  * @param doc - The OpenRPC document to format
  * @returns Formatted OpenRPC document with merged allOf schemas
  */
-export const formatOpenRpcDoc = async (doc: OpenrpcDocument) => {
+export const formatOpenRpcDoc = async (doc: OpenrpcDocument, sort = true) => {
   const spec = (await dereferenceDocument(doc)) as DerefedOpenRpcDoc;
 
   delete spec.components; // once dereferenced, components are no longer needed
@@ -124,6 +129,15 @@ export const formatOpenRpcDoc = async (doc: OpenrpcDocument) => {
       method.result.schema = mergeAllOf(method.result.schema) as JSONSchema;
     }
   });
+
+  if (sort) {
+    spec.methods.sort((a, b) => {
+      if (a.name && b.name) {
+        return a.name.localeCompare(b.name);
+      }
+      return 0;
+    });
+  }
 
   validateRpcSpec(spec);
 
