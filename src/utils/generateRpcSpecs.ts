@@ -10,6 +10,7 @@ import {
   writeOpenRpcDoc,
 } from "./generationHelpers";
 
+const sharedChainRpcComponentsDir = "src/openrpc/chains/_shared/components";
 /**
  * Generates an OpenRPC specification for a supported chain.
  * @param srcDir - The source directory containing the chain's OpenRPC schema
@@ -25,7 +26,10 @@ export const generateChainRpcSpec = async (
   const componentsDir = `${schemaDir}/components`;
   const methodsDir = `${schemaDir}/methods`;
 
-  const components = getComponentsFromDir(componentsDir);
+  const components = getComponentsFromDir(
+    componentsDir,
+    sharedChainRpcComponentsDir,
+  );
   const methods = getMethodsFromDir(methodsDir);
 
   const base = getOpenRpcBase(schemaDir);
@@ -102,7 +106,7 @@ export const generateAlchemyRpcSpec = async (
     components,
   };
 
-  const spec = await formatOpenRpcDoc(doc);
+  const spec = await formatOpenRpcDoc(doc, !schemaDir.includes("wallet-api"));
 
   writeOpenRpcDoc(outputDir, filename, spec);
 };
