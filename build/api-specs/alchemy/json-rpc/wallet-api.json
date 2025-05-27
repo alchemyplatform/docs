@@ -21,7 +21,7 @@
 	},
 	"servers": [
 		{
-			"url": "https://api.g.alchemy.com"
+			"url": "https://api.g.alchemy.com/v2"
 		}
 	],
 	"methods": [
@@ -46,19 +46,37 @@
 										"type": "string"
 									},
 									"creationHint": {
-										"type": "object",
-										"properties": {
-											"accountType": {
-												"type": "string",
-												"enum": [
-													"sma-b"
-												]
+										"anyOf": [
+											{
+												"type": "object",
+												"properties": {
+													"accountType": {
+														"type": "string",
+														"enum": [
+															"sma-b"
+														]
+													},
+													"salt": {
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													}
+												}
 											},
-											"salt": {
-												"type": "string",
-												"pattern": "^0x(.*)$"
+											{
+												"type": "object",
+												"properties": {
+													"accountType": {
+														"type": "string",
+														"enum": [
+															"7702"
+														]
+													}
+												},
+												"required": [
+													"accountType"
+												]
 											}
-										}
+										]
 									},
 									"includeCounterfactualInfo": {
 										"default": false,
@@ -193,6 +211,10 @@
 									"pattern": "^0x(.*)$"
 								}
 							}
+						},
+						"delegation": {
+							"type": "string",
+							"pattern": "^0x(.*)$"
 						}
 					}
 				}
@@ -249,16 +271,37 @@
 								"type": "object",
 								"properties": {
 									"permissions": {
-										"type": "object",
-										"required": [
-											"context"
-										],
-										"properties": {
-											"context": {
-												"type": "string",
-												"pattern": "^0x(.*)$"
+										"anyOf": [
+											{
+												"type": "object",
+												"properties": {
+													"context": {
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													}
+												},
+												"required": [
+													"context"
+												]
+											},
+											{
+												"type": "object",
+												"properties": {
+													"sessionId": {
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													"signature": {
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													}
+												},
+												"required": [
+													"sessionId",
+													"signature"
+												]
 											}
-										}
+										]
 									},
 									"paymasterService": {
 										"type": "object",
@@ -268,6 +311,145 @@
 										"properties": {
 											"policyId": {
 												"type": "string"
+											}
+										}
+									},
+									"gasParamsOverride": {
+										"minProperties": 1,
+										"type": "object",
+										"properties": {
+											"preVerificationGas": {
+												"anyOf": [
+													{
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"multiplier": {
+																"type": "number"
+															}
+														},
+														"required": [
+															"multiplier"
+														]
+													}
+												]
+											},
+											"verificationGasLimit": {
+												"anyOf": [
+													{
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"multiplier": {
+																"type": "number"
+															}
+														},
+														"required": [
+															"multiplier"
+														]
+													}
+												]
+											},
+											"callGasLimit": {
+												"anyOf": [
+													{
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"multiplier": {
+																"type": "number"
+															}
+														},
+														"required": [
+															"multiplier"
+														]
+													}
+												]
+											},
+											"paymasterVerificationGasLimit": {
+												"anyOf": [
+													{
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"multiplier": {
+																"type": "number"
+															}
+														},
+														"required": [
+															"multiplier"
+														]
+													}
+												]
+											},
+											"paymasterPostOpGasLimit": {
+												"anyOf": [
+													{
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"multiplier": {
+																"type": "number"
+															}
+														},
+														"required": [
+															"multiplier"
+														]
+													}
+												]
+											},
+											"maxFeePerGas": {
+												"anyOf": [
+													{
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"multiplier": {
+																"type": "number"
+															}
+														},
+														"required": [
+															"multiplier"
+														]
+													}
+												]
+											},
+											"maxPriorityFeePerGas": {
+												"anyOf": [
+													{
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"multiplier": {
+																"type": "number"
+															}
+														},
+														"required": [
+															"multiplier"
+														]
+													}
+												]
 											}
 										}
 									}
@@ -518,7 +700,7 @@
 													"type": "object",
 													"properties": {
 														"chainId": {
-															"type": "number"
+															"type": "integer"
 														},
 														"name": {
 															"type": "string"
@@ -576,7 +758,30 @@
 										"data"
 									]
 								}
-							]
+							],
+							"type": "object",
+							"properties": {
+								"authorizationRequest": {
+									"type": "object",
+									"required": [
+										"chainId",
+										"address",
+										"nonce"
+									],
+									"properties": {
+										"chainId": {
+											"type": "number"
+										},
+										"address": {
+											"type": "string",
+											"pattern": "^0x(.*)$"
+										},
+										"nonce": {
+											"type": "number"
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -778,9 +983,49 @@
 								],
 								"properties": {
 									"type": {
-										"type": "string"
+										"type": "string",
+										"enum": [
+											"ecdsa"
+										]
 									},
 									"signature": {
+										"type": "string",
+										"pattern": "^0x(.*)$"
+									}
+								}
+							},
+							"signedAuthorization": {
+								"type": "object",
+								"required": [
+									"chainId",
+									"nonce",
+									"address",
+									"r",
+									"s",
+									"yParity"
+								],
+								"properties": {
+									"chainId": {
+										"type": "string",
+										"pattern": "^0x(.*)$"
+									},
+									"nonce": {
+										"type": "string",
+										"pattern": "^0x(.*)$"
+									},
+									"address": {
+										"type": "string",
+										"pattern": "^0x(.*)$"
+									},
+									"r": {
+										"type": "string",
+										"pattern": "^0x(.*)$"
+									},
+									"s": {
+										"type": "string",
+										"pattern": "^0x(.*)$"
+									},
+									"yParity": {
 										"type": "string",
 										"pattern": "^0x(.*)$"
 									}
@@ -793,16 +1038,37 @@
 								],
 								"properties": {
 									"permissions": {
-										"type": "object",
-										"required": [
-											"context"
-										],
-										"properties": {
-											"context": {
-												"type": "string",
-												"pattern": "^0x(.*)$"
+										"anyOf": [
+											{
+												"type": "object",
+												"properties": {
+													"context": {
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													}
+												},
+												"required": [
+													"context"
+												]
+											},
+											{
+												"type": "object",
+												"properties": {
+													"sessionId": {
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													},
+													"signature": {
+														"type": "string",
+														"pattern": "^0x(.*)$"
+													}
+												},
+												"required": [
+													"sessionId",
+													"signature"
+												]
 											}
-										}
+										]
 									}
 								}
 							}
@@ -851,19 +1117,37 @@
 								"type": "string"
 							},
 							"creationOptions": {
-								"type": "object",
-								"properties": {
-									"accountType": {
-										"type": "string",
-										"enum": [
-											"sma-b"
-										]
+								"anyOf": [
+									{
+										"type": "object",
+										"properties": {
+											"accountType": {
+												"type": "string",
+												"enum": [
+													"sma-b"
+												]
+											},
+											"salt": {
+												"type": "string",
+												"pattern": "^0x(.*)$"
+											}
+										}
 									},
-									"salt": {
-										"type": "string",
-										"pattern": "^0x(.*)$"
+									{
+										"type": "object",
+										"properties": {
+											"accountType": {
+												"type": "string",
+												"enum": [
+													"7702"
+												]
+											}
+										},
+										"required": [
+											"accountType"
+										]
 									}
-								}
+								]
 							}
 						}
 					}
@@ -911,7 +1195,7 @@
 								"pattern": "^0x(.*)$"
 							},
 							"expiry": {
-								"type": "number"
+								"type": "integer"
 							},
 							"key": {
 								"type": "object",
@@ -1262,7 +1546,7 @@
 													"type": "object",
 													"properties": {
 														"chainId": {
-															"type": "number"
+															"type": "integer"
 														},
 														"name": {
 															"type": "string"
@@ -1320,7 +1604,30 @@
 										"data"
 									]
 								}
-							]
+							],
+							"type": "object",
+							"properties": {
+								"authorizationRequest": {
+									"type": "object",
+									"required": [
+										"chainId",
+										"address",
+										"nonce"
+									],
+									"properties": {
+										"chainId": {
+											"type": "number"
+										},
+										"address": {
+											"type": "string",
+											"pattern": "^0x(.*)$"
+										},
+										"nonce": {
+											"type": "number"
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -1538,7 +1845,7 @@
 							],
 							"properties": {
 								"totalCount": {
-									"type": "number"
+									"type": "integer"
 								},
 								"after": {
 									"anyOf": [

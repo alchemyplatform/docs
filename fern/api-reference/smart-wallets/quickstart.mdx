@@ -305,13 +305,11 @@ Keep note of the session ID, you’ll need it later!
 
 Sign the signature request from the owner key (used in step 1), then store the resulting signature.
 
-You’re going to need to build the hex-concatenation of `0x00`, the session ID, and the signature.
-
 ### 4. Prepare Calls With the Session Key
 
 With the session ID received in step 2 and the signature from step 3, we’re now ready to prepare some calls!
 
-In the “context” field under “permissions” you need to pass the concatenated hex of `0x00` (the context version indicator), the  session ID, and the signature. If you are not using session keys, you can omit the "permissions" parameter from the capabilities object.
+If you aren't using a session key, you can omit the "permissions" parameter in the capabilities object.
 
 ```bash
 curl --request POST \
@@ -330,7 +328,8 @@ curl --request POST \
             "policyId": GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
         },
         "permissions": {
-          "context": concat_hex("0x00", 0xSESSION_ID, 0xPERMISSION_SIG)
+          "sessionId": 0xSESSION_ID,
+          "signature": 0xPERMISSION_SIG,
         }
       },
       "calls": [
@@ -371,9 +370,9 @@ Note that the `type` field in the `signatureRequest` indicates the signature typ
 
 ### 6. Send the Prepared Calls!
 
-With the signature from step 5, the `useropRequest` from step 4, and the  context from step 3, you’re good to go to send the call!
+With the signature from step 5 and the `useropRequest` from step 4, you’re good to go to send the call!
 
-If you are signing with the owner of the account and not a session key, you can omit the capabilities param.
+If you are signing with the owner of the account and not a session key, you can omit the entire capabilities object.
 
 ```bash
 curl --request POST \
@@ -391,11 +390,9 @@ curl --request POST \
       "data": {...useropRequest},
       "chainId": "0xCHAIN_ID" // E.g. "0x66eee" for Arbitrum Sepolia
       "capabilities": {
-        "paymasterService": {
-            "policyId": GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
-        },
         "permissions": {
-          "context": concat_hex("0x00", 0xSESSION_ID, 0xPERMISSION_SIG)
+          "sessionId": 0xSESSION_ID,
+          "signature": 0xPERMISSION_SIG,
         }
       }
       "signature": {

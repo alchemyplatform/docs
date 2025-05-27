@@ -17,7 +17,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Create Policy",
-        "description": "Creates a new gas manager policy with the specified rules. Returns the policy id of \na successfully created policy. The newly created policy will be in the “inactive” status.\n",
+        "description": "Creates a new gas manager policy with the specified rules. Returns the policy id of \na successfully created policy. The newly created policy will be in the `inactive` status.\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n\n<Note title=\"Testnets\">\n  On testnets, the userOp price is always $0, and hence the `maxSpendUsd`, `maxSpendPerSenderUsd`, and `maxSpendPerUoUsd` should not be configured.\n</Note>\n\n<Note title=\"Adding Custom Rules\">\n  If you add custom rules (webhook URL) to the policy, the Gas Manager will make a POST request to the URL every time you use `alchemy_requestPaymasterAndData`, `alchemy_requestGasAndPaymasterAndData`, or `pm_getPaymasterData`.\n\n  **Request Payload**\n  - `userOperation`: The userOp object.\n  - `policyId`: The ID of your policy.\n  - `chainId`: The ID of the network where the operation is being performed.\n  - `webhookData`: Additional data you wish to include in the request, such as proof of humanity.\n\n  Here is an example request body:\n  ```json\n  {\n    \"userOperation\": { }, // structure depends on EntryPoint version  \n    \"policyId\": \"\",  \n    \"chainId\": \"\",  \n    \"webhookData\": \"\" \n  }\n  ```\n\n  **Expected Result**\n\n  Your endpoint should respond with a `200` status code and a JSON body (`{ \"approved\": true | false }`) indicating whether to the userOp passes the custom rules.\n\n  Anything other than the above will be treated as error, and the Gas Manager will sponsor the userOp only if `approveOnFailure` is `true`.\n</Note>\n",
         "operationId": "create-policy",
         "security": [
           {
@@ -29,6 +29,12 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "policyName",
+                  "policyType",
+                  "appId",
+                  "networks"
+                ],
                 "properties": {
                   "policyName": {
                     "type": "string",
@@ -37,16 +43,23 @@
                   },
                   "policyType": {
                     "type": "string",
-                    "description": "Type of the policy (e.g. \"sponsorship\"). Currently we support \"sponsorship\" (for EVM network policies) and \"solana\" (for Solana network policies).",
+                    "description": "Type of the policy (e.g. \"sponsorship\"). Currently we support `sponsorship` (for EVM network policies) and `solana` (for Solana network policies).",
                     "default": "sponsorship"
                   },
                   "appId": {
                     "type": "string",
-                    "description": "ID for the app associated with the new policy.\nLearn how to find your app ID [here](https://docs.alchemy.com/reference/notify-api-faq#where-can-i-find-the-app-id).\n",
+                    "description": "ID for the app associated with the new policy.\nLearn how to find your app ID [here](docs/reference/notify-api-faq).\n",
                     "default": "6d834x9k1yh4dx6z"
                   },
+                  "networks": {
+                    "description": "Networks for the policy. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`.\n",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
                   "rules": {
-                    "description": "Rules for \"sponsorship\" policy type. Empty if `policyType` is not \"sponsorship\".",
+                    "description": "Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.",
                     "type": "object",
                     "properties": {
                       "maxSpendUsd": {
@@ -133,44 +146,6 @@
                       "startTimeUnix",
                       "sponsorshipExpiryMs"
                     ]
-                  },
-                  "solanaRules": {
-                    "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-                    "type": "object",
-                    "properties": {
-                      "maxSpendUsd": {
-                        "type": "string",
-                        "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                        "default": "6500.00"
-                      },
-                      "maxSpendPerTxnUsd": {
-                        "type": "string",
-                        "description": "Maximum amount of USD that can be spent per transaction",
-                        "default": "30.00"
-                      },
-                      "maxCount": {
-                        "type": "string",
-                        "description": "Maximum number of transactions that can be sponsored through the policy",
-                        "default": "200"
-                      },
-                      "startTimeUnix": {
-                        "type": "string",
-                        "description": "Unix timestamp of when the policy starts",
-                        "default": "1674228753"
-                      },
-                      "endTimeUnix": {
-                        "type": "string",
-                        "description": "Unix timestamp of when the policy ends",
-                        "default": "1679340742"
-                      }
-                    }
-                  },
-                  "networks": {
-                    "description": "Networks for the policy. Example: [\"ETH_MAINNET\"]. For Solana policies, valid values are \"SOLANA_MAINNET\" and \"SOLANA_DEVNET\".\n",
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
                   }
                 }
               }
@@ -184,6 +159,10 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "data",
+                    "error"
+                  ],
                   "properties": {
                     "data": {
                       "type": "object",
@@ -207,7 +186,7 @@
                               "default": "active"
                             },
                             "rules": {
-                              "description": "Rules for \"sponsorship\" policy type. Empty if `policyType` is not \"sponsorship\".",
+                              "description": "Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.",
                               "type": "object",
                               "properties": {
                                 "maxSpendUsd": {
@@ -295,37 +274,6 @@
                                 "sponsorshipExpiryMs"
                               ]
                             },
-                            "solanaRules": {
-                              "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-                              "type": "object",
-                              "properties": {
-                                "maxSpendUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                                  "default": "6500.00"
-                                },
-                                "maxSpendPerTxnUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent per transaction",
-                                  "default": "30.00"
-                                },
-                                "maxCount": {
-                                  "type": "string",
-                                  "description": "Maximum number of transactions that can be sponsored through the policy",
-                                  "default": "200"
-                                },
-                                "startTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy starts",
-                                  "default": "1674228753"
-                                },
-                                "endTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy ends",
-                                  "default": "1679340742"
-                                }
-                              }
-                            },
                             "policyName": {
                               "type": "string",
                               "description": "Name of the policy",
@@ -343,7 +291,7 @@
                             },
                             "policyType": {
                               "type": "string",
-                              "description": "Type of the policy. \"sponsorship\" for EVM policies, \"solana\" for Solana policies.",
+                              "description": "Type of the policy. `sponsorship`.",
                               "default": "sponsorship"
                             },
                             "policyState": {
@@ -389,7 +337,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Get Policy",
-        "description": "Returns a policy by id.",
+        "description": "Returns a policy by id.\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n",
         "operationId": "get-policy",
         "security": [
           {
@@ -438,7 +386,7 @@
                               "default": "active"
                             },
                             "rules": {
-                              "description": "Rules for \"sponsorship\" policy type. Empty if `policyType` is not \"sponsorship\".",
+                              "description": "Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.",
                               "type": "object",
                               "properties": {
                                 "maxSpendUsd": {
@@ -526,37 +474,6 @@
                                 "sponsorshipExpiryMs"
                               ]
                             },
-                            "solanaRules": {
-                              "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-                              "type": "object",
-                              "properties": {
-                                "maxSpendUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                                  "default": "6500.00"
-                                },
-                                "maxSpendPerTxnUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent per transaction",
-                                  "default": "30.00"
-                                },
-                                "maxCount": {
-                                  "type": "string",
-                                  "description": "Maximum number of transactions that can be sponsored through the policy",
-                                  "default": "200"
-                                },
-                                "startTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy starts",
-                                  "default": "1674228753"
-                                },
-                                "endTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy ends",
-                                  "default": "1679340742"
-                                }
-                              }
-                            },
                             "policyName": {
                               "type": "string",
                               "description": "Name of the policy",
@@ -574,7 +491,7 @@
                             },
                             "policyType": {
                               "type": "string",
-                              "description": "Type of the policy. \"sponsorship\" for EVM policies, \"solana\" for Solana policies.",
+                              "description": "Type of the policy. `sponsorship`.",
                               "default": "sponsorship"
                             },
                             "policyState": {
@@ -618,7 +535,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Delete Policy",
-        "description": "Deletes a policy by id.",
+        "description": "Deletes a policy by id.\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n",
         "operationId": "delete-policy",
         "security": [
           {
@@ -639,7 +556,33 @@
         ],
         "responses": {
           "200": {
-            "description": "Policy deleted successfully"
+            "description": "`200` - Policy deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "default": true
+                        }
+                      }
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "msg": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -648,7 +591,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Replace Policy",
-        "description": "Replaces all rules in an existing policy by id.",
+        "description": "Replaces all rules in an existing policy by id.\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n",
         "operationId": "replace-policy",
         "security": [
           {
@@ -767,39 +710,8 @@
                       "sponsorshipExpiryMs"
                     ]
                   },
-                  "solanaRules": {
-                    "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-                    "type": "object",
-                    "properties": {
-                      "maxSpendUsd": {
-                        "type": "string",
-                        "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                        "default": "6500.00"
-                      },
-                      "maxSpendPerTxnUsd": {
-                        "type": "string",
-                        "description": "Maximum amount of USD that can be spent per transaction",
-                        "default": "30.00"
-                      },
-                      "maxCount": {
-                        "type": "string",
-                        "description": "Maximum number of transactions that can be sponsored through the policy",
-                        "default": "200"
-                      },
-                      "startTimeUnix": {
-                        "type": "string",
-                        "description": "Unix timestamp of when the policy starts",
-                        "default": "1674228753"
-                      },
-                      "endTimeUnix": {
-                        "type": "string",
-                        "description": "Unix timestamp of when the policy ends",
-                        "default": "1679340742"
-                      }
-                    }
-                  },
                   "networks": {
-                    "description": "Networks for the policy. Example: [\"ETH_MAINNET\"]. For Solana policies, valid values are \"SOLANA_MAINNET\" and \"SOLANA_DEVNET\".\n",
+                    "description": "Networks for the policy. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`.\n",
                     "type": "array",
                     "items": {
                       "type": "string"
@@ -840,7 +752,7 @@
                               "default": "active"
                             },
                             "rules": {
-                              "description": "Rules for \"sponsorship\" policy type. Empty if `policyType` is not \"sponsorship\".",
+                              "description": "Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.",
                               "type": "object",
                               "properties": {
                                 "maxSpendUsd": {
@@ -928,37 +840,6 @@
                                 "sponsorshipExpiryMs"
                               ]
                             },
-                            "solanaRules": {
-                              "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-                              "type": "object",
-                              "properties": {
-                                "maxSpendUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                                  "default": "6500.00"
-                                },
-                                "maxSpendPerTxnUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent per transaction",
-                                  "default": "30.00"
-                                },
-                                "maxCount": {
-                                  "type": "string",
-                                  "description": "Maximum number of transactions that can be sponsored through the policy",
-                                  "default": "200"
-                                },
-                                "startTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy starts",
-                                  "default": "1674228753"
-                                },
-                                "endTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy ends",
-                                  "default": "1679340742"
-                                }
-                              }
-                            },
                             "policyName": {
                               "type": "string",
                               "description": "Name of the policy",
@@ -976,7 +857,7 @@
                             },
                             "policyType": {
                               "type": "string",
-                              "description": "Type of the policy. \"sponsorship\" for EVM policies, \"solana\" for Solana policies.",
+                              "description": "Type of the policy. `sponsorship`.",
                               "default": "sponsorship"
                             },
                             "policyState": {
@@ -1022,7 +903,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Get All Policies",
-        "description": "Returns all policies under an app. The results are paginated.",
+        "description": "Returns all policies under an app. The results are paginated.\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n",
         "operationId": "get-all-policies",
         "security": [
           {
@@ -1097,7 +978,7 @@
                                 "default": "active"
                               },
                               "rules": {
-                                "description": "Rules for \"sponsorship\" policy type. Empty if `policyType` is not \"sponsorship\".",
+                                "description": "Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.",
                                 "type": "object",
                                 "properties": {
                                   "maxSpendUsd": {
@@ -1185,37 +1066,6 @@
                                   "sponsorshipExpiryMs"
                                 ]
                               },
-                              "solanaRules": {
-                                "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-                                "type": "object",
-                                "properties": {
-                                  "maxSpendUsd": {
-                                    "type": "string",
-                                    "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                                    "default": "6500.00"
-                                  },
-                                  "maxSpendPerTxnUsd": {
-                                    "type": "string",
-                                    "description": "Maximum amount of USD that can be spent per transaction",
-                                    "default": "30.00"
-                                  },
-                                  "maxCount": {
-                                    "type": "string",
-                                    "description": "Maximum number of transactions that can be sponsored through the policy",
-                                    "default": "200"
-                                  },
-                                  "startTimeUnix": {
-                                    "type": "string",
-                                    "description": "Unix timestamp of when the policy starts",
-                                    "default": "1674228753"
-                                  },
-                                  "endTimeUnix": {
-                                    "type": "string",
-                                    "description": "Unix timestamp of when the policy ends",
-                                    "default": "1679340742"
-                                  }
-                                }
-                              },
                               "policyName": {
                                 "type": "string",
                                 "description": "Name of the policy",
@@ -1233,7 +1083,7 @@
                               },
                               "policyType": {
                                 "type": "string",
-                                "description": "Type of the policy. \"sponsorship\" for EVM policies, \"solana\" for Solana policies.",
+                                "description": "Type of the policy. `sponsorship`.",
                                 "default": "sponsorship"
                               },
                               "policyState": {
@@ -1288,7 +1138,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Update Policy Status",
-        "description": "Modifies the status of a policy to either \"active\" or \"inactive\".",
+        "description": "Modifies the status of a policy to either \"active\" or \"inactive\".\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n",
         "operationId": "update-policy-status",
         "security": [
           {
@@ -1312,6 +1162,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "status"
+                ],
                 "properties": {
                   "status": {
                     "description": "The new status of the policy",
@@ -1357,7 +1210,7 @@
                               "default": "active"
                             },
                             "rules": {
-                              "description": "Rules for \"sponsorship\" policy type. Empty if `policyType` is not \"sponsorship\".",
+                              "description": "Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.",
                               "type": "object",
                               "properties": {
                                 "maxSpendUsd": {
@@ -1445,37 +1298,6 @@
                                 "sponsorshipExpiryMs"
                               ]
                             },
-                            "solanaRules": {
-                              "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-                              "type": "object",
-                              "properties": {
-                                "maxSpendUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                                  "default": "6500.00"
-                                },
-                                "maxSpendPerTxnUsd": {
-                                  "type": "string",
-                                  "description": "Maximum amount of USD that can be spent per transaction",
-                                  "default": "30.00"
-                                },
-                                "maxCount": {
-                                  "type": "string",
-                                  "description": "Maximum number of transactions that can be sponsored through the policy",
-                                  "default": "200"
-                                },
-                                "startTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy starts",
-                                  "default": "1674228753"
-                                },
-                                "endTimeUnix": {
-                                  "type": "string",
-                                  "description": "Unix timestamp of when the policy ends",
-                                  "default": "1679340742"
-                                }
-                              }
-                            },
                             "policyName": {
                               "type": "string",
                               "description": "Name of the policy",
@@ -1493,7 +1315,7 @@
                             },
                             "policyType": {
                               "type": "string",
-                              "description": "Type of the policy. \"sponsorship\" for EVM policies, \"solana\" for Solana policies.",
+                              "description": "Type of the policy. `sponsorship`.",
                               "default": "sponsorship"
                             },
                             "policyState": {
@@ -1539,7 +1361,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Get Policy Stats",
-        "description": "Returns stats about a policy specified by ID, including signatures mined, signatures expired, signatures pending, USD mined, and USD pending.",
+        "description": "Returns stats about a policy specified by ID, including signatures mined, signatures expired, signatures pending, USD mined, and USD pending.\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n",
         "operationId": "get-policy-stats",
         "security": [
           {
@@ -1662,7 +1484,7 @@
           "Gas Manager Admin API Endpoints"
         ],
         "summary": "Get Sponsorships",
-        "description": "Returns a list of sponsorships associated with the specified policy ID. The results are paginated.",
+        "description": "Returns a list of sponsorships associated with the specified policy ID. The results are paginated.\n\n<Note title=\"Header Access Token\">\n  To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:\n  - [How to Create Access Keys](/docs/how-to-create-access-keys)\n  - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)\n</Note>\n",
         "operationId": "get-sponsorships",
         "security": [
           {
@@ -1807,7 +1629,7 @@
             "default": "active"
           },
           "rules": {
-            "description": "Rules for \"sponsorship\" policy type. Empty if `policyType` is not \"sponsorship\".",
+            "description": "Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.",
             "type": "object",
             "properties": {
               "maxSpendUsd": {
@@ -1895,37 +1717,6 @@
               "sponsorshipExpiryMs"
             ]
           },
-          "solanaRules": {
-            "description": "Rules for \"solana\" policy type. Empty if `policyType` is not \"solana\".",
-            "type": "object",
-            "properties": {
-              "maxSpendUsd": {
-                "type": "string",
-                "description": "Maximum amount of USD that can be spent by the Gas Manager",
-                "default": "6500.00"
-              },
-              "maxSpendPerTxnUsd": {
-                "type": "string",
-                "description": "Maximum amount of USD that can be spent per transaction",
-                "default": "30.00"
-              },
-              "maxCount": {
-                "type": "string",
-                "description": "Maximum number of transactions that can be sponsored through the policy",
-                "default": "200"
-              },
-              "startTimeUnix": {
-                "type": "string",
-                "description": "Unix timestamp of when the policy starts",
-                "default": "1674228753"
-              },
-              "endTimeUnix": {
-                "type": "string",
-                "description": "Unix timestamp of when the policy ends",
-                "default": "1679340742"
-              }
-            }
-          },
           "policyName": {
             "type": "string",
             "description": "Name of the policy",
@@ -1943,7 +1734,7 @@
           },
           "policyType": {
             "type": "string",
-            "description": "Type of the policy. \"sponsorship\" for EVM policies, \"solana\" for Solana policies.",
+            "description": "Type of the policy. `sponsorship`.",
             "default": "sponsorship"
           },
           "policyState": {

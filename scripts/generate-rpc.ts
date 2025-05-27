@@ -8,12 +8,17 @@ const outputRoot = "build/api-specs";
 // generate chains OpenRPC specs
 // const allChainsDir = `${schemasRoot}/chains`;
 // const outputDir = `${outputRoot}/chains`;
-// const allChainFiles = readdirSync(allChainsDir);
+// const allChainFiles = readdirSync(allChainsDir).filter(
+//   (file) => !file.startsWith("_") && !file.startsWith("."),
+// );
 
 // mkdirSync(outputDir, { recursive: true });
 
 // allChainFiles.forEach((chain) =>
-//   generateChainRpcSpec(allChainsDir, outputDir, chain),
+//   generateChainRpcSpec(allChainsDir, outputDir, chain).catch((err) => {
+//     console.error(err);
+//     throw err;
+//   }),
 // );
 
 // generate alchemy API OpenRPC specs
@@ -26,5 +31,8 @@ const alchemyOutputDir = `${outputRoot}/alchemy/json-rpc`;
 mkdirSync(alchemyOutputDir, { recursive: true });
 
 ["bundler"].forEach((api) =>
-  generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api),
+  generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api).catch((err) => {
+    console.error(err);
+    throw err;
+  }),
 );
