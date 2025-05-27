@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const languageOptions = ["curl", "JavaScript", "Python"];
 const chainOptions = ["Ethereum", "Polygon", "Arbitrum"];
@@ -8,7 +8,29 @@ const methodOptions = [
   "getTokenBalances",
 ];
 
-export const RequestCard: React.FC = () => {
+export const RequestCard = () => {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.target === document.documentElement &&
+          mutation.attributeName === "class"
+        ) {
+          setIsDark(document.documentElement.classList.contains("dark"));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const [language, setLanguage] = useState<string>(languageOptions[0]);
   const [chain, setChain] = useState<string>(chainOptions[0]);
   const [method, setMethod] = useState<string>(methodOptions[0]);
@@ -23,117 +45,186 @@ export const RequestCard: React.FC = () => {
   return (
     <div
       style={{
-        backgroundColor: "#1a202c", // bg-gray-900
-        borderRadius: "1rem", // rounded-2xl
-        padding: "1.5rem", // p-6
-        width: "100%", // w-full
-        maxWidth: "42rem", // max-w-2xl
-        margin: "0 auto", // mx-auto
-        boxShadow:
-          "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", // shadow-lg
-        position: "relative", // relative
+        backgroundColor: isDark ? "#121212" : "#FAFAFA",
+        borderRadius: "24px",
+        border: `1px solid ${isDark ? "#383838" : "#EAEAEA"}`,
+
+        width: "100%",
       }}
     >
+      <div style={{ padding: "24px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <span
+              style={{
+                color: isDark ? "#EDEDED" : "#94A3B8",
+                marginRight: "16px",
+              }}
+            >
+              Request
+            </span>
+            <select
+              style={{
+                backgroundColor: isDark ? "#383838" : "#F1F1F1",
+                color: isDark ? "#EDEDED" : "#111111",
+                padding: "4px",
+                borderRadius: "6px",
+                textAlign: "center",
+                fontFamily: "monospace",
+                border: "none",
+              }}
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+            >
+              {languageOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            <select
+              style={{
+                backgroundColor: isDark ? "#383838" : "#F1F1F1",
+                color: isDark ? "#EDEDED" : "#111111",
+                padding: "4px",
+                borderRadius: "6px",
+                textAlign: "center",
+                fontFamily: "monospace",
+                border: "none",
+              }}
+              value={chain}
+              onChange={(e) => setChain(e.target.value)}
+            >
+              {chainOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            <select
+              style={{
+                backgroundColor: isDark ? "#383838" : "#F1F1F1",
+                color: isDark ? "#EDEDED" : "#111111",
+                padding: "4px",
+                borderRadius: "6px",
+                textAlign: "center",
+                fontFamily: "monospace",
+                border: "none",
+              }}
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+            >
+              {methodOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            style={{
+              backgroundColor: "#383838", // bg-gray-700
+              color: "#EDEDED",
+              padding: "6px 12px",
+              borderRadius: "100px",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "monospace", // font-mono
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor = "#4b5563")
+            } // hover:bg-gray-600
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = "#374151")
+            }
+            onClick={handleRun}
+          >
+            RUN{" "}
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9.07199 5.43326C9.77475 5.83939 9.77732 6.35029 9.07199 6.80944L3.62211 10.6211C2.93734 11.0001 2.47226 10.7763 2.42344 9.95629L2.40032 1.97858C2.3849 1.22324 2.98487 1.00982 3.55659 1.37198L9.07199 5.43326Z"
+                stroke="#EDEDED"
+              />
+            </svg>
+          </button>
+        </div>
+        <pre
+          style={{
+            color: isDark ? "#EDEDED" : "#383838",
+            padding: "1rem", // p-4
+            fontSize: "18px", // text-sm
+            overflowX: "auto",
+          }}
+        >
+          {codeBlock}
+        </pre>
+      </div>
       <div
         style={{
+          backgroundColor: isDark ? "#131313" : "#fbfbfb",
+          borderRadius: "0 0 24px 24px",
+          padding: "0px 32px 24px",
+          color: isDark ? "#EDEDED" : "#111111",
           display: "flex",
-          alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: "1rem",
         }}
       >
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <select
+        <div style={{ color: isDark ? "#EDEDED" : "#111111" }}>
+          <p
             style={{
-              backgroundColor: "#2d3748", // bg-gray-800
-              color: "white", // text-white
-              padding: "0.25rem 0.75rem", // px-3 py-1
-              borderRadius: "0.375rem", // rounded
-              outline: "none", // focus:outline-none
-              border: "1px solid #4a5568", // border border-gray-700
+              fontWeight: 600,
+              fontSize: "20px",
+              marginBottom: "8px",
             }}
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
           >
-            {languageOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-          <select
-            style={{
-              backgroundColor: "#2d3748",
-              color: "white",
-              padding: "0.25rem 0.75rem",
-              borderRadius: "0.375rem",
-              outline: "none",
-              border: "1px solid #4a5568",
-            }}
-            value={chain}
-            onChange={(e) => setChain(e.target.value)}
-          >
-            {chainOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-          <select
-            style={{
-              backgroundColor: "#2d3748",
-              color: "white",
-              padding: "0.25rem 0.75rem",
-              borderRadius: "0.375rem",
-              outline: "none",
-              border: "1px solid #4a5568",
-            }}
-            value={method}
-            onChange={(e) => setMethod(e.target.value)}
-          >
-            {methodOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+            Quickstart
+          </p>
+          <span style={{ fontSize: "14px" }}>
+            Guides for 500+ endpoints on 80+ networks
+          </span>
         </div>
-        <button
-          style={{
-            backgroundColor: "#374151", // bg-gray-700
-            color: "white", // text-white
-            padding: "0.25rem 1rem", // px-4 py-1
-            borderRadius: "0.375rem", // rounded
-            transition: "background-color 0.2s", // transition-colors
-            border: "none",
-            cursor: "pointer",
-          }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = "#4b5563")
-          } // hover:bg-gray-600
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = "#374151")
-          }
-          onClick={handleRun}
-        >
-          Run
-        </button>
+        <div style={{ display: "flex", alignSelf: "end" }}>
+          <span>
+            <a
+              href="https://www.alchemy.com/docs/tutorials-overview"
+              style={{
+                color: isDark ? "#EDEDED" : "#383838",
+                textDecoration: "none",
+              }}
+            >
+              Get started&nbsp;{" "}
+              <svg
+                width="8"
+                height="9"
+                viewBox="0 0 8 9"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1.63872 1.22041L7.32005 1.22033M7.32005 1.22033L7.32005 6.82086M7.32005 1.22033L0.720385 7.81999"
+                  stroke={isDark ? "#EDEDED" : "#111111"}
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+          </span>
+        </div>
       </div>
-      <pre
-        style={{
-          backgroundColor: "#2d3748", // bg-gray-800
-          color: "#bbf7d0", // text-green-200
-          borderRadius: "0.5rem", // rounded-lg
-          padding: "1rem", // p-4
-          fontFamily: "monospace", // font-mono
-          fontSize: "0.875rem", // text-sm
-          overflowX: "auto", // overflow-x-auto
-          whiteSpace: "pre", // whitespace-pre
-          marginBottom: "0.5rem", // mb-2
-        }}
-      >
-        {codeBlock}
-      </pre>
     </div>
   );
 };
