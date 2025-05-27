@@ -592,8 +592,9 @@ ${servers
     console.log("2. Remove any methods that are not supported by this chain");
     console.log("3. Add any chain-specific methods if needed");
     console.log("4. Customize the FAQ content with chain-specific information");
-    console.log("5. Run validation: npm run validate:rpc");
-    console.log("6. Run the docs locally to preview: npm run dev");
+    console.log("5. Customize the emoji for chain section in docs.yml");
+    console.log("6. Run validation: npm run validate:rpc");
+    console.log("7. Run the docs locally to preview: npm run dev");
   } catch (error) {
     console.error("❌ Error:", error.message);
     process.exit(1);
