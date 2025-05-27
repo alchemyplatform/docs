@@ -32,9 +32,12 @@ export const RequestCard = () => {
   const [chain, setChain] = useState<string>(chainOptions[0]);
   const [method, setMethod] = useState<string>(Object.keys(codeMap)[0]);
 
+  const [runButtonDisabled, setRunButtonDisabled] = useState<boolean>(false);
+
   const handleRun = () => {
     console.log(`Run clicked with: ${language}, ${chain}, ${method}`);
     setCode(codeMap[method].response);
+    setRunButtonDisabled(true);
   };
 
   const [code, setCode] = useState<string>(
@@ -78,16 +81,18 @@ export const RequestCard = () => {
               style={{
                 backgroundColor: isDark ? "#383838" : "#F1F1F1",
                 color: isDark ? "#EDEDED" : "#111111",
-                padding: "4px",
+                padding: "6px",
                 borderRadius: "6px",
                 textAlign: "center",
                 fontFamily: "monospace",
+                fontSize: "14px",
                 borderRight: "4px solid transparent",
               }}
               value={language}
               onChange={(e) => {
                 setLanguage(e.target.value);
                 setCode(codeMap[method][e.target.value]);
+                setRunButtonDisabled(false);
               }}
             >
               {languageOptions.map((opt) => (
@@ -100,16 +105,18 @@ export const RequestCard = () => {
               style={{
                 backgroundColor: isDark ? "#383838" : "#F1F1F1",
                 color: isDark ? "#EDEDED" : "#111111",
-                padding: "4px",
+                padding: "6px",
                 borderRadius: "6px",
                 textAlign: "center",
                 fontFamily: "monospace",
+                fontSize: "14px",
                 borderRight: "4px solid transparent",
               }}
               value={chain}
               onChange={(e) => {
                 setChain(e.target.value);
                 setCode(codeMap[method][language]);
+                setRunButtonDisabled(false);
               }}
             >
               {chainOptions.map((opt) => (
@@ -122,16 +129,18 @@ export const RequestCard = () => {
               style={{
                 backgroundColor: isDark ? "#383838" : "#F1F1F1",
                 color: isDark ? "#EDEDED" : "#111111",
-                padding: "4px",
+                padding: "6px",
                 borderRadius: "6px",
                 textAlign: "center",
                 fontFamily: "monospace",
+                fontSize: "14px",
                 borderRight: "4px solid transparent",
               }}
               value={method}
               onChange={(e) => {
                 setMethod(e.target.value);
                 setCode(codeMap[e.target.value][language]);
+                setRunButtonDisabled(false);
               }}
             >
               {Object.keys(codeMap).map((opt) => (
@@ -143,13 +152,13 @@ export const RequestCard = () => {
           </div>
           <button
             style={{
-              backgroundColor: "#383838", // bg-gray-700
+              backgroundColor: isDark ? "#1C1C1C" : "#383838",
               color: "#EDEDED",
               padding: "6px 12px",
               borderRadius: "100px",
               border: "none",
-              cursor: "pointer",
-              fontFamily: "monospace", // font-mono
+              cursor: runButtonDisabled ? "not-allowed" : "pointer",
+              fontFamily: "monospace",
               display: "flex",
               alignItems: "center",
               alignSelf: "flex-start",
@@ -157,11 +166,12 @@ export const RequestCard = () => {
             }}
             onMouseOver={(e) =>
               (e.currentTarget.style.backgroundColor = "#4b5563")
-            } // hover:bg-gray-600
+            }
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = "#374151")
             }
             onClick={handleRun}
+            disabled={runButtonDisabled}
           >
             RUN{" "}
             <svg
@@ -181,9 +191,12 @@ export const RequestCard = () => {
         <pre
           style={{
             color: isDark ? "#EDEDED" : "#383838",
-            padding: "1rem", // p-4
-            fontSize: "18px", // text-sm
+            margin: "16px",
+            fontSize: "16px",
             overflowX: "auto",
+            height: "300px",
+            whiteSpace: "break-spaces",
+            paddingRight: "64px",
           }}
         >
           {code}
