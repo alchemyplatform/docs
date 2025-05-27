@@ -6,9 +6,7 @@ const languageOptions = ["curl", "JavaScript", "Python"];
 const chainOptions = ["Ethereum", "Polygon", "Arbitrum"];
 
 export const RequestCard = () => {
-  const [isDark, setIsDark] = useState(
-    document.documentElement.classList.contains("dark"),
-  );
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
@@ -60,7 +58,14 @@ export const RequestCard = () => {
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <span
               style={{
                 color: isDark ? "#EDEDED" : "#94A3B8",
@@ -147,6 +152,7 @@ export const RequestCard = () => {
               fontFamily: "monospace", // font-mono
               display: "flex",
               alignItems: "center",
+              alignSelf: "flex-start",
               gap: 8,
             }}
             onMouseOver={(e) =>
@@ -215,6 +221,14 @@ export const RequestCard = () => {
                 color: isDark ? "#EDEDED" : "#383838",
                 textDecoration: "none",
               }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.color = isDark
+                  ? "rgba(237, 237, 237, 0.6)"
+                  : "rgba(56, 56, 56, 0.6)")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.color = isDark ? "#EDEDED" : "#383838")
+              }
             >
               Get started&nbsp;{" "}
               <svg
@@ -229,7 +243,7 @@ export const RequestCard = () => {
               >
                 <path
                   d="M1.63872 1.22041L7.32005 1.22033M7.32005 1.22033L7.32005 6.82086M7.32005 1.22033L0.720385 7.81999"
-                  stroke={isDark ? "#EDEDED" : "#111111"}
+                  stroke="currentColor"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 />
