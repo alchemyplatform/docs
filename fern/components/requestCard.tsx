@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 
+import { codeMap } from "./codemap";
+
 const languageOptions = ["curl", "JavaScript", "Python"];
 const chainOptions = ["Ethereum", "Polygon", "Arbitrum"];
-const methodOptions = [
-  "getNFTsForCollection",
-  "getNFTMetadata",
-  "getTokenBalances",
-];
 
 export const RequestCard = () => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(
+    document.documentElement.classList.contains("dark"),
+  );
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
@@ -33,14 +32,16 @@ export const RequestCard = () => {
 
   const [language, setLanguage] = useState<string>(languageOptions[0]);
   const [chain, setChain] = useState<string>(chainOptions[0]);
-  const [method, setMethod] = useState<string>(methodOptions[0]);
+  const [method, setMethod] = useState<string>(Object.keys(codeMap)[0]);
 
   const handleRun = () => {
     console.log(`Run clicked with: ${language}, ${chain}, ${method}`);
+    setCode(codeMap[method].response);
   };
 
-  // Example code block content (could be dynamic later)
-  const codeBlock = `curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/${method}?chain=${chain}'`;
+  const [code, setCode] = useState<string>(
+    codeMap[Object.keys(codeMap)[0]][language],
+  );
 
   return (
     <div
@@ -76,10 +77,13 @@ export const RequestCard = () => {
                 borderRadius: "6px",
                 textAlign: "center",
                 fontFamily: "monospace",
-                border: "none",
+                borderRight: "4px solid transparent",
               }}
               value={language}
-              onChange={(e) => setLanguage(e.target.value)}
+              onChange={(e) => {
+                setLanguage(e.target.value);
+                setCode(codeMap[method][e.target.value]);
+              }}
             >
               {languageOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -95,10 +99,13 @@ export const RequestCard = () => {
                 borderRadius: "6px",
                 textAlign: "center",
                 fontFamily: "monospace",
-                border: "none",
+                borderRight: "4px solid transparent",
               }}
               value={chain}
-              onChange={(e) => setChain(e.target.value)}
+              onChange={(e) => {
+                setChain(e.target.value);
+                setCode(codeMap[method][language]);
+              }}
             >
               {chainOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -114,12 +121,15 @@ export const RequestCard = () => {
                 borderRadius: "6px",
                 textAlign: "center",
                 fontFamily: "monospace",
-                border: "none",
+                borderRight: "4px solid transparent",
               }}
               value={method}
-              onChange={(e) => setMethod(e.target.value)}
+              onChange={(e) => {
+                setMethod(e.target.value);
+                setCode(codeMap[e.target.value][language]);
+              }}
             >
-              {methodOptions.map((opt) => (
+              {Object.keys(codeMap).map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
                 </option>
@@ -170,7 +180,7 @@ export const RequestCard = () => {
             overflowX: "auto",
           }}
         >
-          {codeBlock}
+          {code}
         </pre>
       </div>
       <div
@@ -208,6 +218,9 @@ export const RequestCard = () => {
             >
               Get started&nbsp;{" "}
               <svg
+                style={{
+                  display: "inline",
+                }}
                 width="8"
                 height="9"
                 viewBox="0 0 8 9"
