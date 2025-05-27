@@ -1,39 +1,87 @@
 import { dereference } from "@apidevtools/json-schema-ref-parser";
-import type { OpenrpcDocument } from "@open-rpc/meta-schema";
 
+// import type { OpenrpcDocument } from "@open-rpc/meta-schema";
+
+import type { DerefedOpenRpcDoc } from "../types/openRpc";
 import {
   formatOpenRpcDoc,
-  getComponentsFromDir,
-  getMethodsFromDir,
-  getOpenRpcBase,
+  // getComponentsFromDir,
+  // getMethodsFromDir,
+  // getOpenRpcBase,
   writeOpenRpcDoc,
 } from "./generationHelpers";
+import { validateRpcSpec } from "./validateRpcSpec";
 
-const sharedChainRpcComponentsDir = "src/openrpc/chains/_shared/components";
+// const sharedChainRpcComponentsDir = "src/openrpc/chains/_shared/components";
+// /**
+//  * Generates an OpenRPC specification for a supported chain.
+//  * @param srcDir - The source directory containing the chain's OpenRPC schema
+//  * @param outputDir - The output directory where the generated OpenRPC specification will be saved
+//  * @param filename - The name of the chain's OpenRPC schema file
+//  */
+// export const generateChainRpcSpec = async (
+//   srcDir: string,
+//   outputDir: string,
+//   filename: string,
+// ) => {
+//   const schemaDir = `${srcDir}/${filename}`;
+//   const componentsDir = `${schemaDir}/components`;
+//   const methodsDir = `${schemaDir}/methods`;
+
+//   const components = getComponentsFromDir(
+//     componentsDir,
+//     sharedChainRpcComponentsDir,
+//   );
+//   const methods = getMethodsFromDir(methodsDir);
+
+//   const base = getOpenRpcBase(schemaDir);
+
+//   const doc: OpenrpcDocument = {
+//     "x-generated-warning":
+//       "⚠️ This file is auto-generated. Do not edit manually",
+//     "x-fern-parameters": [
+//       {
+//         name: "apiKey",
+//         in: "path",
+//         schema: {
+//           type: "string",
+//           default: "docs-demo",
+//           description:
+//             "For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)",
+//         },
+//         required: true,
+//       },
+//     ],
+//     $schema: "https://meta.open-rpc.org/",
+//     // openrpc: "1.2.4",
+//     ...base,
+//     methods,
+//     components,
+//   };
+
+//   const spec = await formatOpenRpcDoc(doc);
+
+//   writeOpenRpcDoc(outputDir, filename, spec);
+// };
+
 /**
- * Generates an OpenRPC specification for a supported chain.
- * @param srcDir - The source directory containing the chain's OpenRPC schema
+ * Generates an OpenRPC specification for the Alchemy JSON-RPC API.
+ * @param srcDir - The source directory containing the Alchemy OpenRPC schema
  * @param outputDir - The output directory where the generated OpenRPC specification will be saved
- * @param filename - The name of the chain's OpenRPC schema file
+ * @param filename - The name of the Alchemy OpenRPC schema file
  */
-export const generateChainRpcSpec = async (
+export const generateAlchemyRpcSpec = async (
   srcDir: string,
   outputDir: string,
   filename: string,
 ) => {
   const schemaDir = `${srcDir}/${filename}`;
-  const componentsDir = `${schemaDir}/components`;
-  const methodsDir = `${schemaDir}/methods`;
 
-  const components = getComponentsFromDir(
-    componentsDir,
-    sharedChainRpcComponentsDir,
-  );
-  const methods = getMethodsFromDir(methodsDir);
+  const spec = (await dereference(
+    `${schemaDir}/${filename}.yaml`,
+  )) as DerefedOpenRpcDoc;
 
-  const base = getOpenRpcBase(schemaDir);
-
-  const doc: OpenrpcDocument = {
+  const openRpcSpec = {
     "x-generated-warning":
       "⚠️ This file is auto-generated. Do not edit manually",
     "x-fern-parameters": [
@@ -49,63 +97,15 @@ export const generateChainRpcSpec = async (
         required: true,
       },
     ],
-    $schema: "https://meta.open-rpc.org/",
-    // openrpc: "1.2.4",
-    ...base,
-    methods,
-    components,
+    ...spec,
   };
 
-  const spec = await formatOpenRpcDoc(doc);
+  // wallet api sorts by method popularity
+  const shouldSort = !schemaDir.includes("wallet-api");
 
-  writeOpenRpcDoc(outputDir, filename, spec);
-};
+  const formattedSpec = await formatOpenRpcDoc(openRpcSpec, shouldSort);
 
-/**
- * Generates an OpenRPC specification for the Alchemy JSON-RPC API.
- * @param srcDir - The source directory containing the Alchemy OpenRPC schema
- * @param outputDir - The output directory where the generated OpenRPC specification will be saved
- * @param filename - The name of the Alchemy OpenRPC schema file
- */
-export const generateAlchemyRpcSpec = async (
-  srcDir: string,
-  outputDir: string,
-  filename: string,
-) => {
-  const schemaDir = `${srcDir}/${filename}`;
+  validateRpcSpec(formattedSpec);
 
-  try {
-    const spec = (await dereference(
-      `${schemaDir}/base.yaml`,
-    )) as OpenrpcDocument;
-
-    const openRpcSpec = {
-      "x-generated-warning":
-        "⚠️ This file is auto-generated. Do not edit manually",
-      "x-fern-parameters": [
-        {
-          name: "apiKey",
-          in: "path",
-          schema: {
-            type: "string",
-            default: "docs-demo",
-            description:
-              "For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)",
-          },
-          required: true,
-        },
-      ],
-      ...spec,
-    };
-
-    const formattedSpec = await formatOpenRpcDoc(
-      openRpcSpec,
-      !schemaDir.includes("wallet-api"),
-    );
-
-    writeOpenRpcDoc(outputDir, filename, formattedSpec);
-  } catch (error) {
-    console.error(error);
-    throw new Error(`Failed to dereference ${filename}`);
-  }
+  writeOpenRpcDoc(outputDir, filename, formattedSpec);
 };

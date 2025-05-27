@@ -5,13 +5,11 @@ import type {
   OpenrpcDocument,
   SchemaComponents,
 } from "@open-rpc/meta-schema";
-import { dereferenceDocument } from "@open-rpc/schema-utils-js";
 import { readFileSync, readdirSync, writeFileSync } from "fs";
 import yaml from "js-yaml";
 import mergeAllOf from "json-schema-merge-allof";
 
 import type { DerefedOpenRpcDoc } from "../types/openRpc";
-import { validateRpcSpec } from "./validateRpcSpec";
 
 /**
  * Retrieves components (schemas) from a YAML file and returns them in OpenRPC Components format.
@@ -109,13 +107,14 @@ export const getOpenRpcBase = (schemaDir: string) => {
 };
 
 /**
- * Formats an OpenRPC document by dereferencing it and merging allOf schemas. Validates the document after formatting.
+ * Formats an OpenRPC document by removing components, merging allOf schemas, and sorting methods
  * @param doc - The OpenRPC document to format
  * @returns Formatted OpenRPC document with merged allOf schemas
  */
-export const formatOpenRpcDoc = async (doc: OpenrpcDocument, sort = true) => {
-  const spec = (await dereferenceDocument(doc)) as DerefedOpenRpcDoc;
-
+export const formatOpenRpcDoc = async (
+  spec: DerefedOpenRpcDoc,
+  sort = true,
+) => {
   delete spec.components; // once dereferenced, components are no longer needed
 
   spec.methods.forEach((method) => {
@@ -138,8 +137,6 @@ export const formatOpenRpcDoc = async (doc: OpenrpcDocument, sort = true) => {
       return 0;
     });
   }
-
-  validateRpcSpec(spec);
 
   return spec;
 };
