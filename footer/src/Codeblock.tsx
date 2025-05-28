@@ -1,5 +1,5 @@
 import React from 'react'
-import { ThemeProvider as StyledThemeProvider } from 'styled-components'
+import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript'
@@ -14,12 +14,58 @@ import {
   chainOptions,
   CodeBlockLanguage,
   languageOptions,
+  LanguageToLabel,
 } from './codemap.ts'
 
 SyntaxHighlighter.registerLanguage(CodeBlockLanguage.CLI, bash)
 SyntaxHighlighter.registerLanguage(CodeBlockLanguage.JavaScript, javascript)
 SyntaxHighlighter.registerLanguage(CodeBlockLanguage.Python, python)
 SyntaxHighlighter.registerLanguage(CodeBlockLanguage.JSON, json)
+
+const CodeBlockContainer = styled.div`
+  background-color: ${({ theme }) =>
+    theme.mode === 'dark' ? '#121212' : '#FAFAFA'};
+  border-radius: 24px;
+  border: ${({ theme }) =>
+    theme.mode === 'dark' ? '1px solid #383838' : '1px solid #EAEAEA'};
+`
+
+const CodeBlockDropdown = styled.select`
+  background-color: ${({ theme }) =>
+    theme.mode === 'dark' ? '#383838' : '#F1F1F1'};
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#EDEDED' : '#111111')};
+  padding: 6px;
+  border-radius: 6px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 14px;
+  border-right: 4px solid transparent;
+`
+
+const RunButton = styled.button`
+  background-color: ${({ theme }) =>
+    theme.mode === 'dark' ? '#1C1C1C' : '#383838'};
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#EDEDED' : '#EDEDED')};
+  padding: 6px 12px;
+  border-radius: 100px;
+  border: none;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+`
+
+const QuickstartContainer = styled.div`
+  background-color: ${({ theme }) =>
+    theme.mode === 'dark' ? '#131313' : '#fbfbfb'};
+  border-radius: 0 0 24px 24px;
+  padding: 24px 32px;
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#EDEDED' : '#111111')};
+  display: flex;
+  justify-content: space-between;
+`
 
 export const Codeblock: React.FC = () => {
   const [isDark, setIsDark] = React.useState(
@@ -53,36 +99,39 @@ export const Codeblock: React.FC = () => {
   const [language, setLanguage] = React.useState<string>(languageOptions[0])
   const [chain, setChain] = React.useState<string>(chainOptions[0])
   const [method, setMethod] = React.useState<string>(Object.keys(codeMap)[0])
+  const [languageDropdownOption, setLanguageDropdownOption] =
+    React.useState<string>(languageOptions[0])
 
   const [runButtonDisabled, setRunButtonDisabled] =
     React.useState<boolean>(false)
 
   const handleRun = () => {
     // TODO: Add analytics events when clicked.
-    // console.log(`Run clicked with: ${language}, ${chain}, ${method}`)
+    setLanguage(CodeBlockLanguage.JSON)
     setCode(codeMap[method][CodeBlockLanguage.JSON])
     setRunButtonDisabled(true)
-    setLanguage(CodeBlockLanguage.JSON)
   }
 
   const [code, setCode] = React.useState<string>(
-    codeMap[Object.keys(codeMap)[0]][language],
+    codeMap[Object.keys(codeMap)[0]][languageDropdownOption],
   )
 
-  React.useEffect(() => {
-    setCode(codeMap[method][language])
-  }, [language, chain, method])
+  const updateCode = (
+    chain_: string,
+    method_: string,
+    language_ = languageDropdownOption,
+  ) => {
+    setLanguage(language_)
+    setChain(chain_)
+    setMethod(method_)
+    setCode(codeMap[method_][language_])
+    setRunButtonDisabled(false)
+  }
 
   return (
     <StyledThemeProvider theme={theme}>
       <h3 className="mb-6">Query the blockchain in seconds</h3>
-      <div
-        style={{
-          backgroundColor: isDark ? '#121212' : '#FAFAFA',
-          borderRadius: '24px',
-          border: isDark ? '1px solid #383838' : '1px solid #EAEAEA',
-        }}
-      >
+      <CodeBlockContainer>
         <div style={{ padding: '24px 24px 0px' }}>
           <div
             style={{
@@ -106,46 +155,23 @@ export const Codeblock: React.FC = () => {
               >
                 Request
               </span>
-              <select
-                style={{
-                  backgroundColor: isDark ? '#383838' : '#F1F1F1',
-                  color: isDark ? '#EDEDED' : '#111111',
-                  padding: '6px',
-                  borderRadius: '6px',
-                  textAlign: 'center',
-                  fontFamily: 'monospace',
-                  fontSize: '14px',
-                  borderRight: '4px solid transparent',
-                }}
-                value={language}
+              <CodeBlockDropdown
+                value={languageDropdownOption}
                 onChange={(e) => {
-                  setLanguage(e.target.value)
-                  setCode(codeMap[method][e.target.value])
-                  setRunButtonDisabled(false)
+                  setLanguageDropdownOption(e.target.value)
+                  updateCode(chain, method, e.target.value)
                 }}
               >
                 {languageOptions.map((opt) => (
                   <option key={opt} value={opt}>
-                    {opt}
+                    {LanguageToLabel[opt]}
                   </option>
                 ))}
-              </select>
-              <select
-                style={{
-                  backgroundColor: isDark ? '#383838' : '#F1F1F1',
-                  color: isDark ? '#EDEDED' : '#111111',
-                  padding: '6px',
-                  borderRadius: '6px',
-                  textAlign: 'center',
-                  fontFamily: 'monospace',
-                  fontSize: '14px',
-                  borderRight: '4px solid transparent',
-                }}
+              </CodeBlockDropdown>
+              <CodeBlockDropdown
                 value={chain}
                 onChange={(e) => {
-                  setChain(e.target.value)
-                  setCode(codeMap[method][language])
-                  setRunButtonDisabled(false)
+                  updateCode(e.target.value, method)
                 }}
               >
                 {chainOptions.map((opt) => (
@@ -153,23 +179,11 @@ export const Codeblock: React.FC = () => {
                     {opt}
                   </option>
                 ))}
-              </select>
-              <select
-                style={{
-                  backgroundColor: isDark ? '#383838' : '#F1F1F1',
-                  color: isDark ? '#EDEDED' : '#111111',
-                  padding: '6px',
-                  borderRadius: '6px',
-                  textAlign: 'center',
-                  fontFamily: 'monospace',
-                  fontSize: '14px',
-                  borderRight: '4px solid transparent',
-                }}
+              </CodeBlockDropdown>
+              <CodeBlockDropdown
                 value={method}
                 onChange={(e) => {
-                  setMethod(e.target.value)
-                  setCode(codeMap[e.target.value][language])
-                  setRunButtonDisabled(false)
+                  updateCode(chain, e.target.value)
                 }}
               >
                 {Object.keys(codeMap).map((opt) => (
@@ -177,22 +191,9 @@ export const Codeblock: React.FC = () => {
                     {opt}
                   </option>
                 ))}
-              </select>
+              </CodeBlockDropdown>
             </div>
-            <button
-              style={{
-                backgroundColor: isDark ? '#1C1C1C' : '#383838',
-                color: '#EDEDED',
-                padding: '6px 12px',
-                borderRadius: '100px',
-                border: 'none',
-                cursor: runButtonDisabled ? 'not-allowed' : 'pointer',
-                fontFamily: 'monospace',
-                display: 'flex',
-                alignItems: 'center',
-                alignSelf: 'flex-start',
-                gap: 8,
-              }}
+            <RunButton
               onMouseOver={(e) =>
                 (e.currentTarget.style.backgroundColor = isDark
                   ? '#4b5563'
@@ -219,11 +220,11 @@ export const Codeblock: React.FC = () => {
                   stroke="#EDEDED"
                 />
               </svg>
-            </button>
+            </RunButton>
           </div>
           <SyntaxHighlighter
             style={isDark ? oneDark : oneLight}
-            wrapLongLines={true}
+            // wrapLongLines={true}
             showLineNumbers={true}
             language={language}
             customStyle={{
@@ -241,16 +242,7 @@ export const Codeblock: React.FC = () => {
             {code}
           </SyntaxHighlighter>
         </div>
-        <div
-          style={{
-            backgroundColor: isDark ? '#131313' : '#fbfbfb',
-            borderRadius: '0 0 24px 24px',
-            padding: '24px 32px',
-            color: isDark ? '#EDEDED' : '#111111',
-            display: 'flex',
-            justifyContent: 'space-between',
-          }}
-        >
+        <QuickstartContainer>
           <div style={{ color: isDark ? '#EDEDED' : '#111111' }}>
             <p
               style={{
@@ -303,8 +295,8 @@ export const Codeblock: React.FC = () => {
               </a>
             </span>
           </div>
-        </div>
-      </div>
+        </QuickstartContainer>
+      </CodeBlockContainer>
     </StyledThemeProvider>
   )
 }

@@ -17,15 +17,20 @@ export const languageOptions = [
   CodeBlockLanguage.Python,
 ]
 
+export const LanguageToLabel: { [key in CodeBlockLanguage]: string } = {
+  [CodeBlockLanguage.CLI]: 'curl',
+  [CodeBlockLanguage.JavaScript]: 'JavaScript',
+  [CodeBlockLanguage.Python]: 'Python',
+  [CodeBlockLanguage.JSON]: 'JSON',
+}
+
 export const codeMap: { [endpoint: string]: CodeSample } = {
   getNFTsForCollection: {
-    [CodeBlockLanguage.CLI]: `
-curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTsForCollection?contractAddress=0xe785E82358879F061BC3dcAC6f0444462D4b5330&refreshCache=false'
+    [CodeBlockLanguage.CLI]: `curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTsForCollection?contractAddress=0xe785E82358879F061BC3dcAC6f0444462D4b5330&refreshCache=false'
     --request GET
     --header 'accept: application/json'
 `,
-    [CodeBlockLanguage.JavaScript]: `
-// Declaring variables
+    [CodeBlockLanguage.JavaScript]: `// Declaring variables
 let message = "Hello, World!";
 const PI = 3.14159;
 
@@ -51,8 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Button Clicked!');
     });
 });`,
-    [CodeBlockLanguage.Python]: `
-# Hello, World! program
+    [CodeBlockLanguage.Python]: `# Hello, World! program
 print("Hello, World!")
 
 # Function to add two numbers
@@ -65,8 +69,7 @@ num1 = 5
 num2 = 3
 sum_of_numbers = add_numbers(num1, num2)
 print(f"The sum of {num1} and {num2} is: {sum_of_numbers}")`,
-    [CodeBlockLanguage.JSON]: `
-{
+    [CodeBlockLanguage.JSON]: `{
     "contract": {
       "address": "0xe785E82358879F061BC3dcAC6f0444462D4b5330",
       "name": "World Of Women",
@@ -81,7 +84,7 @@ print(f"The sum of {num1} and {num2} is: {sum_of_numbers}")`,
         "collectionSlug": "world-of-women-nft",
         "safelistRequestStatus": "verified",
         "imageUrl": "https://i.seadn.io/gcs/files/8604de2d9aaec98dd389e3af1b1a14b6.gif?w=500&auto=format",
-        "description": "World of Women is a collection of 10,000 NFTs that gives you full access to our network of artists, creators, entrepreneurs, and executives who are championing diversity and equal opportunity on the blockchain.\n\nCreated and illustrated by Yam Karkai (@ykarkai), World of Women has made prominent appearances at Christie's, The New Yorker and Billboard.\n\nThe Time is WoW.",
+        "description": "World of Women is a collection of 10,000 NFTs that gives you full access to our network of artists, creators, entrepreneurs, and executives who are championing diversity and equal opportunity on the blockchain. Created and illustrated by Yam Karkai (@ykarkai), World of Women has made prominent appearances at Christie's, The New Yorker and Billboard. The Time is WoW.",
         "externalUrl": null,
         "twitterUsername": "worldofwomennft",
         "discordUrl": "https://discord.gg/worldofwomen",
@@ -146,13 +149,11 @@ print(f"The sum of {num1} and {num2} is: {sum_of_numbers}")`,
   }`,
   },
   getNFTMetadata: {
-    [CodeBlockLanguage.CLI]: `
-curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadata?contractAddress=0xe785E82358879F061BC3dcAC6f0444462D4b5330&tokenId=44&refreshCache=false'
+    [CodeBlockLanguage.CLI]: `curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTMetadata?contractAddress=0xe785E82358879F061BC3dcAC6f0444462D4b5330&tokenId=44&refreshCache=false'
     --request GET
     --header 'accept: application/json'
 `,
-    [CodeBlockLanguage.JavaScript]: `
-// Declaring variables
+    [CodeBlockLanguage.JavaScript]: `// Declaring variables
 let message = "Hello, World!";
 const PI = 3.14159;
 
@@ -178,8 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Button Clicked!');
     });
 })`,
-    [CodeBlockLanguage.Python]: `
-# Hello, World! program
+    [CodeBlockLanguage.Python]: `# Hello, World! program
 print("Hello, World!")
 
 # Function to add two numbers
@@ -195,14 +195,37 @@ print(f"The sum of {num1} and {num2} is: {sum_of_numbers}")`,
     [CodeBlockLanguage.JSON]: `{}`,
   },
   getTokenBalances: {
-    [CodeBlockLanguage.CLI]: `
-curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getTokenBalances?contractAddress=0xe785E82358879F061BC3dcAC6f0444462D4b5330&tokenId=44&refreshCache=false'
+    [CodeBlockLanguage.CLI]: `curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getTokenBalances?contractAddress=0xe785E82358879F061BC3dcAC6f0444462D4b5330&tokenId=44&refreshCache=false'
     --request GET
     --header 'accept: application/json'
 `,
-    [CodeBlockLanguage.JavaScript]: `Javascript tmp`,
-    [CodeBlockLanguage.Python]: `
-# Hello, World! program
+    [CodeBlockLanguage.JavaScript]: `// Declaring variables
+let message = "Hello, World!";
+const PI = 3.14159;
+
+// Displaying output
+console.log(message); // Output to the console
+// alert(message); // Displays an alert box in the browser
+
+// Functions
+function add(a, b) {
+  return a + b;
+}
+
+let sum = add(5, 3);
+console.log("The sum is: " + sum);
+
+// Event listener
+document.addEventListener('DOMContentLoaded', function() {
+    const button = document.createElement('button');
+    button.textContent = 'Click Me';
+    document.body.appendChild(button);
+
+    button.addEventListener('click', function() {
+        alert('Button Clicked!');
+    });
+})`,
+    [CodeBlockLanguage.Python]: `# Hello, World! program
 print("Hello, World!")
 
 # Function to add two numbers
