@@ -5,6 +5,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { CustomFooter } from './Footer.js'
+import { Codeblock } from './Codeblock.js'
 
 const FERN_FOOTER_CONTAINER_ID = 'fern-footer'
 
@@ -25,6 +26,14 @@ const render = async () => {
       document.body.appendChild(fernFooterContainer)
     }
 
+    // Get or create code-block-id container
+    let codeBlockContainer = document.getElementById('code-block-id')
+    if (!codeBlockContainer) {
+      codeBlockContainer = document.createElement('div')
+      codeBlockContainer.setAttribute('id', 'code-block-id')
+      document.body.appendChild(codeBlockContainer)
+    }
+
     fernFooterContainer.insertBefore(
       alchemyContentWrapper,
       fernFooterContainer.firstChild,
@@ -38,8 +47,17 @@ const render = async () => {
       </React.StrictMode>,
     )
 
+    // Render Codeblock into code-block-id container
+    const codeBlockRoot = createRoot(codeBlockContainer)
+    codeBlockRoot.render(
+      <React.StrictMode>
+        <Codeblock />
+      </React.StrictMode>,
+    )
+
     // Show the container after rendering
     if (fernFooterContainer) fernFooterContainer.style.display = 'block'
+    if (codeBlockContainer) codeBlockContainer.style.display = 'block'
 
     // reposition 'builtwithfern' element
     const builtWithFern = document.getElementById('builtwithfern')
