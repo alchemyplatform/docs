@@ -10,5 +10,5 @@ export default {
     // "pnpm run generate",
     "prettier --write --log-level silent",
   ],
-  "*.{json}": ["prettier --write --log-level silent"],
+  "*.json": ["prettier --write --log-level silent"],
 };
