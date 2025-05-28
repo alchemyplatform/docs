@@ -11,11 +11,11 @@ const outputRoot = "build/api-specs";
 // generate chains OpenRPC specs
 const allChainsDir = `${schemasRoot}/chains`;
 const outputDir = `${outputRoot}/chains`;
-// const allChainFiles = readdirSync(allChainsDir).filter(isHiddenDir);
+const allChainFiles = readdirSync(allChainsDir).filter(isHiddenDir);
 
 mkdirSync(outputDir, { recursive: true });
 
-["abstract"].forEach((chain) =>
+allChainFiles.forEach((chain) =>
   generateAlchemyRpcSpec(allChainsDir, outputDir, chain).catch((err) => {
     console.error(err);
     throw err;
