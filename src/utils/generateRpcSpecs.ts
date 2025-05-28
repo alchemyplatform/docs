@@ -81,7 +81,7 @@ export const generateAlchemyRpcSpec = async (
     `${schemaDir}/${filename}.yaml`,
   )) as DerefedOpenRpcDoc;
 
-  const openRpcSpec = {
+  const fullSpec = {
     "x-generated-warning":
       "⚠️ This file is auto-generated. Do not edit manually",
     "x-fern-parameters": [
@@ -103,7 +103,7 @@ export const generateAlchemyRpcSpec = async (
   // wallet api sorts by method popularity
   const shouldSort = !schemaDir.includes("wallet-api");
 
-  const formattedSpec = await formatOpenRpcDoc(openRpcSpec, shouldSort);
+  const formattedSpec = await formatOpenRpcDoc(fullSpec, shouldSort);
 
   validateRpcSpec(formattedSpec);
 
