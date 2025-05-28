@@ -49,12 +49,12 @@ export const RequestCard = () => {
       style={{
         backgroundColor: isDark ? "#121212" : "#FAFAFA",
         borderRadius: "24px",
-        border: `1px solid ${isDark ? "#383838" : "#EAEAEA"}`,
+        border: `1px solid ${isDark ? "#383838" : "#EAEAEA"} !important`,
 
         width: "100%",
       }}
     >
-      <div style={{ padding: "24px" }}>
+      <div style={{ padding: "24px 24px 0px" }}>
         <div
           style={{
             display: "flex",
@@ -165,10 +165,14 @@ export const RequestCard = () => {
               gap: 8,
             }}
             onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = "#4b5563")
+              (e.currentTarget.style.backgroundColor = isDark
+                ? "#4b5563"
+                : "#4b5563")
             }
             onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = "#374151")
+              (e.currentTarget.style.backgroundColor = isDark
+                ? "#1C1C1C"
+                : "#383838")
             }
             onClick={handleRun}
             disabled={runButtonDisabled}
@@ -191,7 +195,7 @@ export const RequestCard = () => {
         <pre
           style={{
             color: isDark ? "#EDEDED" : "#383838",
-            margin: "16px",
+            margin: "16px 16px 0px",
             fontSize: "16px",
             overflowX: "auto",
             height: "300px",
@@ -206,7 +210,7 @@ export const RequestCard = () => {
         style={{
           backgroundColor: isDark ? "#131313" : "#fbfbfb",
           borderRadius: "0 0 24px 24px",
-          padding: "0px 32px 24px",
+          padding: "24px 32px",
           color: isDark ? "#EDEDED" : "#111111",
           display: "flex",
           justifyContent: "space-between",
