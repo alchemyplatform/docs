@@ -4,11 +4,11 @@ FilterResults:
     - title: new block or transaction hashes
       type: array
       items:
-        $ref: "#/components/schemas/hash32"
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
     - title: new logs
       type: array
       items:
-        $ref: "#/components/schemas/Log"
+        $ref: "../_shared/components/receipt.yaml#/components/schemas/Log"
 Filter:
   title: filter
   type: object
@@ -16,22 +16,22 @@ Filter:
   properties:
     fromBlock:
       title: from block
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     toBlock:
       title: to block
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     address:
       title: Address(es)
       oneOf:
         - title: Any Address
           type: "null"
         - title: Address
-          $ref: "#/components/schemas/address"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
         - title: Addresses
-          $ref: "#/components/schemas/addresses"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/addresses"
     topics:
       title: Topics
-      $ref: "#/components/schemas/FilterTopics"
+      $ref: "../_shared/components/filter.yaml#/components/schemas/FilterTopics"
 FilterTopics:
   title: Filter Topics
   oneOf:
@@ -40,14 +40,14 @@ FilterTopics:
     - title: Specified Filter Topics
       type: array
       items:
-        $ref: "#/components/schemas/FilterTopic"
+        $ref: "../_shared/components/filter.yaml#/components/schemas/FilterTopic"
 
 FilterTopic:
   title: Filter Topic List Entry
   oneOf:
     - title: Single Topic Match
-      $ref: "#/components/schemas/bytes32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes32"
     - title: Multiple Topic Match
       type: array
       items:
-        $ref: "#/components/schemas/bytes32"
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes32"

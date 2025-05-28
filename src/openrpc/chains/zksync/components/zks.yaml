@@ -6,31 +6,31 @@ CallRequest:
     from:
       title: From address
       description: The address the transaction is sent from.
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
     to:
       title: To address
       description: The address the transaction is directed to.
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
     gas:
       title: Gas
       description: Gas provided for the transaction execution.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     gasPrice:
       title: Gas price
       description: Gas price used for each paid gas.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     value:
       title: Value
       description: Value sent with this transaction.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     data:
       title: Data
       description: The compiled code of a contract OR the hash of the invoked method signature and encoded parameters.
-      $ref: "#/components/schemas/bytes"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes"
     nonce:
       title: Nonce
       description: The number of transactions sent from the address.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
 
 FeeEstimate:
   type: object
@@ -44,19 +44,19 @@ FeeEstimate:
     gas_limit:
       title: Gas limit
       description: The maximum amount of gas that can be used.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     max_fee_per_gas:
       title: Max fee per gas
       description: The maximum fee per unit of gas that the sender is willing to pay.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     max_priority_fee_per_gas:
       title: Max priority fee per gas
       description: The maximum priority fee per unit of gas to incentivize miners.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     gas_per_pubdata_limit:
       title: Gas per pubdata limit
       description: The gas limit per unit of public data.
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
 
 BridgeContracts:
   type: object
@@ -70,19 +70,19 @@ BridgeContracts:
     l1Erc20DefaultBridge:
       title: L1 ERC-20 Default Bridge
       description: Address of the default ERC-20 bridge on Layer 1.
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
     l2Erc20DefaultBridge:
       title: L2 ERC-20 Default Bridge
       description: Address of the default ERC-20 bridge on Layer 2.
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
     l1WethBridge:
       title: L1 WETH Bridge
       description: Address of the Wrapped Ethereum (WETH) bridge on Layer 1.
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
     l2WethBridge:
       title: L2 WETH Bridge
       description: Address of the Wrapped Ethereum (WETH) bridge on Layer 2.
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
 
 LogProof:
   type: object
@@ -95,13 +95,13 @@ LogProof:
     proof:
       type: array
       items:
-        $ref: "#/components/schemas/hash32"
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Array of strings, each representing a piece of the proof for the specified log.
     id:
       type: integer
       description: Identifier of the log within the transaction.
     root:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Root hash of the proof, anchoring it to a specific state in the blockchain.
 
 BlockDetails:
@@ -143,25 +143,25 @@ BlockDetails:
       type: integer
       description: Number of L2 transactions included in the block.
     rootHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Root hash of the block's state after execution.
     status:
       type: string
       description: Current status of the block (e.g., verified, executed).
     commitTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Transaction hash of the commit operation on L1.
     committedAt:
       type: string
       description: Timestamp when the block was committed on L1.
     proveTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Transaction hash of the proof submission on L1.
     provenAt:
       type: string
       description: Timestamp when the proof was submitted on L1.
     executeTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Transaction hash of the execution on L1.
     executedAt:
       type: string
@@ -176,13 +176,13 @@ BlockDetails:
       type: object
       properties:
         bootloader:
-          $ref: "#/components/schemas/hash32"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
           description: Hash of the bootloader system contract.
         default_aa:
-          $ref: "#/components/schemas/hash32"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
           description: Hash of the default AA system contract.
     operatorAddress:
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
       description: Address of the operator who committed the block.
     protocolVersion:
       type: string
@@ -209,25 +209,25 @@ TransactionDetails:
       type: string
       description: Current status of the transaction (e.g., verified).
     fee:
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
       description: Transaction fee.
     gasPerPubdata:
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
       description: Gas amount per unit of public data for this transaction.
     initiatorAddress:
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
       description: Address of the transaction initiator.
     receivedAt:
       type: string
       description: Timestamp when the transaction was received.
     ethCommitTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Transaction hash of the commit operation.
     ethProveTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Transaction hash of the proof submission.
     ethExecuteTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Transaction hash of the execution.
 
 uint32:
@@ -255,10 +255,10 @@ MessageProof:
     proof:
       type: array
       items:
-        $ref: "#/components/schemas/hash32"
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Array of strings, each representing a piece of the proof.
     root:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Root hash of the proof.
     id:
       type: integer
@@ -297,25 +297,25 @@ L1BatchDetails:
       type: integer
       description: Number of L2 transactions associated with this batch.
     rootHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Root hash of the state after processing the batch.
     status:
       type: string
       description: Current status of the batch (e.g., verified).
     commitTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Ethereum transaction hash for the commit operation.
     committedAt:
       type: string
       description: Timestamp when the batch was committed on Ethereum.
     proveTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Ethereum transaction hash for the proof submission.
     provenAt:
       type: string
       description: Timestamp when the proof was submitted.
     executeTxHash:
-      $ref: "#/components/schemas/hash32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Ethereum transaction hash for the execution.
     executedAt:
       type: string
@@ -330,10 +330,10 @@ L1BatchDetails:
       type: object
       properties:
         bootloader:
-          $ref: "#/components/schemas/hash32"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
           description: Hash of the bootloader system contract.
         default_aa:
-          $ref: "#/components/schemas/hash32"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
           description: Hash of the default AA system contract.
 
 AccountProof:
@@ -344,12 +344,12 @@ AccountProof:
     - storageProof
   properties:
     address:
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
       description: Account address associated with the storage proofs.
     storageProof:
       type: array
       items:
-        $ref: "#/components/schemas/StorageProof"
+        $ref: "../_shared/components/state.yaml#/components/schemas/StorageProof"
       description: Array of storage proofs for the requested keys.
 
 StorageProof:
@@ -362,15 +362,15 @@ StorageProof:
     - index
   properties:
     key:
-      $ref: "#/components/schemas/bytes32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes32"
       description: Storage key for which the proof is provided.
     proof:
       type: array
       items:
-        $ref: "#/components/schemas/hash32"
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
       description: Merkle proof hashes from root to leaf.
     value:
-      $ref: "#/components/schemas/bytes32"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes32"
       description: Value stored in the specified storage key.
     index:
       type: integer
@@ -393,7 +393,7 @@ RawTransaction:
       type: integer
       description: Timestamp when the transaction was received, in milliseconds.
     raw_bytes:
-      $ref: "#/components/schemas/bytes"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes"
       description: Raw bytes of the transaction as a hexadecimal string.
 
 TransactionCommonData:
@@ -404,11 +404,11 @@ TransactionCommonData:
       type: object
       properties:
         nonce:
-          $ref: "#/components/schemas/uint"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
         fee:
           $ref: "#/components/schemas/TransactionFee"
         initiatorAddress:
-          $ref: "#/components/schemas/address"
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
         signature:
           type: array
           items:
@@ -421,7 +421,7 @@ TransactionCommonData:
           type: object
           properties:
             hash:
-              $ref: "#/components/schemas/hash32"
+              $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
             data:
               type: array
               items:
@@ -432,7 +432,7 @@ TransactionCommonData:
           type: object
           properties:
             paymaster:
-              $ref: "#/components/schemas/address"
+              $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
             paymasterInput:
               type: array
               items:
@@ -444,24 +444,24 @@ TransactionFee:
   type: object
   properties:
     gas_limit:
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     max_fee_per_gas:
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     max_priority_fee_per_gas:
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     gas_per_pubdata_limit:
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
 
 TransactionExecute:
   type: object
   properties:
     contractAddress:
-      $ref: "#/components/schemas/address"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/address"
     calldata:
-      $ref: "#/components/schemas/bytes"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes"
     value:
-      $ref: "#/components/schemas/uint"
+      $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
     factoryDeps:
       type: array
       items:
-        $ref: "#/components/schemas/hash32"
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
