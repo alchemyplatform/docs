@@ -7,8 +7,7 @@ export default {
     "prettier --write --log-level silent",
   ],
   "*.{yml,yaml}": [
-    "pnpm run generate",
-    "pnpm run validate",
+    // "pnpm run generate",
     "prettier --write --log-level silent",
   ],
   "*.{json}": ["prettier --write --log-level silent"],

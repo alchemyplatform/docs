@@ -1,4 +1,4 @@
-import { mkdirSync } from "fs";
+import { mkdirSync, readdirSync } from "fs";
 
 import { generateAlchemyRpcSpec } from "../src/utils/generateRpcSpecs";
 
@@ -24,13 +24,13 @@ const outputRoot = "build/api-specs";
 // generate alchemy API OpenRPC specs
 const alchemyApisDir = `${schemasRoot}/alchemy`;
 const alchemyOutputDir = `${outputRoot}/alchemy/json-rpc`;
-// const allAlchemyFiles = readdirSync(alchemyApisDir).filter(
-//   (file) => !file.startsWith("_") && !file.startsWith("."),
-// );
+const allAlchemyFiles = readdirSync(alchemyApisDir).filter(
+  (file) => !file.startsWith("_") && !file.startsWith("."),
+);
 
 mkdirSync(alchemyOutputDir, { recursive: true });
 
-["bundler"].forEach((api) =>
+allAlchemyFiles.forEach((api) =>
   generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api).catch((err) => {
     console.error(err);
     throw err;
