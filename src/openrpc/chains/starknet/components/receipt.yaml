@@ -15,31 +15,31 @@ components:
           properties:
             transaction_hash:
               title: Transaction hash
-              $ref: "#/components/schemas/TXN_HASH"
+              $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
               description: The hash identifying the transaction
             actual_fee:
               title: Actual fee
-              $ref: "#/components/schemas/FEE_PAYMENT"
+              $ref: "./client.yaml#/components/schemas/FEE_PAYMENT"
               description: The fee that was charged by the sequencer
             finality_status:
               title: Finality status
               description: Finality status of the transaction
-              $ref: "#/components/schemas/TXN_FINALITY_STATUS"
+              $ref: "./base-types.yaml#/components/schemas/TXN_FINALITY_STATUS"
             messages_sent:
               title: Messages sent
               type: array
               items:
-                $ref: "#/components/schemas/MSG_TO_L1"
+                $ref: "./withdrawal.yaml#/components/schemas/MSG_TO_L1"
             events:
               title: Events
               description: The events emitted as part of this transaction
               type: array
               items:
-                $ref: "#/components/schemas/EVENT"
+                $ref: "./filter.yaml#/components/schemas/EVENT"
             execution_resources:
               title: Execution resources
               description: The resources consumed by the transaction
-              $ref: "#/components/schemas/EXECUTION_RESOURCES"
+              $ref: "./client.yaml#/components/schemas/EXECUTION_RESOURCES"
         - oneOf:
             - title: Successful Common receipt properties
               description: Common properties for a transaction receipt that was executed successfully
@@ -116,7 +116,7 @@ components:
             contract_address:
               title: Contract address
               description: The address of the deployed contract
-              $ref: "#/components/schemas/FELT"
+              $ref: "./base-types.yaml#/components/schemas/FELT"
     DEPLOY_TXN_RECEIPT:
       title: Deploy Transaction Receipt
       allOf:
@@ -135,7 +135,7 @@ components:
             contract_address:
               title: Contract address
               description: The address of the deployed contract
-              $ref: "#/components/schemas/FELT"
+              $ref: "./base-types.yaml#/components/schemas/FELT"
     L1_HANDLER_TXN_RECEIPT:
       title: L1 Handler Transaction Receipt
       description: Receipt for L1 handler transaction
@@ -154,7 +154,7 @@ components:
             message_hash:
               title: Message hash
               description: The message hash as it appears on the L1 core contract
-              $ref: "#/components/schemas/NUM_AS_HEX"
+              $ref: "./base-types.yaml#/components/schemas/NUM_AS_HEX"
         - $ref: "#/components/schemas/COMMON_RECEIPT_PROPERTIES"
     TXN_RECEIPT:
       title: Transaction Receipt
@@ -172,9 +172,9 @@ components:
           properties:
             block_hash:
               title: Block hash
-              $ref: ../../_shared/components/block.yaml#/components/schemas/BLOCK_HASH
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_HASH"
               description: If this field is missing, it means the receipt belongs to the pending block
             block_number:
               title: Block number
-              $ref: ../../_shared/components/block.yaml#/components/schemas/BLOCK_NUMBER
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_NUMBER"
               description: If this field is missing, it means the receipt belongs to the pending block
