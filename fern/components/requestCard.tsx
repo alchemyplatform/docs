@@ -49,8 +49,7 @@ export const RequestCard = () => {
       style={{
         backgroundColor: isDark ? "#121212" : "#FAFAFA",
         borderRadius: "24px",
-        border: `1px solid ${isDark ? "#383838" : "#EAEAEA"} !important`,
-
+        border: isDark ? "1px solid #383838" : "1px solid #EAEAEA",
         width: "100%",
       }}
     >
