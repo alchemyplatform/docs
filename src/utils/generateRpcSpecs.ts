@@ -77,9 +77,11 @@ export const generateAlchemyRpcSpec = async (
 ) => {
   const schemaDir = `${srcDir}/${filename}`;
 
-  const spec = (await dereference(
-    `${schemaDir}/${filename}.yaml`,
-  )) as DerefedOpenRpcDoc;
+  const spec = (await dereference(`${schemaDir}/${filename}.yaml`, {
+    dereference: {
+      preservedProperties: ["title", "description", "type", "pattern"],
+    },
+  })) as DerefedOpenRpcDoc;
 
   const fullSpec = {
     "x-generated-warning":
