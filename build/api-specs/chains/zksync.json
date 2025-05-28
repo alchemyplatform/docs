@@ -3704,84 +3704,56 @@
 				"name": "Account proof",
 				"description": "An object containing the account proof and storage proofs.",
 				"schema": {
-					"title": "Account proof",
 					"type": "object",
+					"title": "Account Proof",
 					"required": [
 						"address",
-						"accountProof",
-						"balance",
-						"codeHash",
-						"nonce",
-						"storageHash",
 						"storageProof"
 					],
-					"additionalProperties": false,
 					"properties": {
 						"address": {
-							"title": "address",
+							"title": "hex encoded address",
 							"type": "string",
-							"pattern": "^0x[0-9a-fA-F]{40}$"
-						},
-						"accountProof": {
-							"title": "accountProof",
-							"type": "array",
-							"items": {
-								"title": "hex encoded bytes",
-								"type": "string",
-								"pattern": "^0x[0-9a-f]*$"
-							}
-						},
-						"balance": {
-							"title": "balance",
-							"type": "string",
-							"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
-						},
-						"codeHash": {
-							"title": "codeHash",
-							"type": "string",
-							"pattern": "^0x[0-9a-f]{64}$"
-						},
-						"nonce": {
-							"title": "nonce",
-							"type": "string",
-							"pattern": "^0x([1-9a-f]+[0-9a-f]{0,15})|0$"
-						},
-						"storageHash": {
-							"title": "storageHash",
-							"type": "string",
-							"pattern": "^0x[0-9a-f]{64}$"
+							"pattern": "^0x[0-9a-fA-F]{40}$",
+							"description": "Account address associated with the storage proofs."
 						},
 						"storageProof": {
-							"title": "Storage proofs",
 							"type": "array",
+							"description": "Array of storage proofs for the requested keys.",
 							"items": {
-								"title": "Storage proof",
 								"type": "object",
+								"title": "Storage Proof",
 								"required": [
 									"key",
+									"proof",
 									"value",
-									"proof"
+									"index"
 								],
-								"additionalProperties": false,
 								"properties": {
 									"key": {
-										"title": "key",
+										"title": "32 hex encoded bytes",
 										"type": "string",
-										"pattern": "^0x[0-9a-f]{0,64}$"
-									},
-									"value": {
-										"title": "value",
-										"type": "string",
-										"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
+										"pattern": "^0x[0-9a-f]{64}$",
+										"description": "Storage key for which the proof is provided."
 									},
 									"proof": {
-										"title": "proof",
 										"type": "array",
+										"description": "Merkle proof hashes from root to leaf.",
 										"items": {
-											"title": "hex encoded bytes",
+											"title": "32 byte hex value",
 											"type": "string",
-											"pattern": "^0x[0-9a-f]*$"
+											"pattern": "^0x[0-9a-f]{64}$"
 										}
+									},
+									"value": {
+										"title": "32 hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]{64}$",
+										"description": "Value stored in the specified storage key."
+									},
+									"index": {
+										"type": "integer",
+										"description": "1-based index representing the position of the tree entry within the Merkle tree."
 									}
 								}
 							}
@@ -9144,84 +9116,56 @@
 				"name": "Proof",
 				"description": "The account details and proofs for storage keys.",
 				"schema": {
-					"title": "Account proof",
 					"type": "object",
+					"title": "Account Proof",
 					"required": [
 						"address",
-						"accountProof",
-						"balance",
-						"codeHash",
-						"nonce",
-						"storageHash",
 						"storageProof"
 					],
-					"additionalProperties": false,
 					"properties": {
 						"address": {
-							"title": "address",
+							"title": "hex encoded address",
 							"type": "string",
-							"pattern": "^0x[0-9a-fA-F]{40}$"
-						},
-						"accountProof": {
-							"title": "accountProof",
-							"type": "array",
-							"items": {
-								"title": "hex encoded bytes",
-								"type": "string",
-								"pattern": "^0x[0-9a-f]*$"
-							}
-						},
-						"balance": {
-							"title": "balance",
-							"type": "string",
-							"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
-						},
-						"codeHash": {
-							"title": "codeHash",
-							"type": "string",
-							"pattern": "^0x[0-9a-f]{64}$"
-						},
-						"nonce": {
-							"title": "nonce",
-							"type": "string",
-							"pattern": "^0x([1-9a-f]+[0-9a-f]{0,15})|0$"
-						},
-						"storageHash": {
-							"title": "storageHash",
-							"type": "string",
-							"pattern": "^0x[0-9a-f]{64}$"
+							"pattern": "^0x[0-9a-fA-F]{40}$",
+							"description": "Account address associated with the storage proofs."
 						},
 						"storageProof": {
-							"title": "Storage proofs",
 							"type": "array",
+							"description": "Array of storage proofs for the requested keys.",
 							"items": {
-								"title": "Storage proof",
 								"type": "object",
+								"title": "Storage Proof",
 								"required": [
 									"key",
+									"proof",
 									"value",
-									"proof"
+									"index"
 								],
-								"additionalProperties": false,
 								"properties": {
 									"key": {
-										"title": "key",
+										"title": "32 hex encoded bytes",
 										"type": "string",
-										"pattern": "^0x[0-9a-f]{0,64}$"
-									},
-									"value": {
-										"title": "value",
-										"type": "string",
-										"pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
+										"pattern": "^0x[0-9a-f]{64}$",
+										"description": "Storage key for which the proof is provided."
 									},
 									"proof": {
-										"title": "proof",
 										"type": "array",
+										"description": "Merkle proof hashes from root to leaf.",
 										"items": {
-											"title": "hex encoded bytes",
+											"title": "32 byte hex value",
 											"type": "string",
-											"pattern": "^0x[0-9a-f]*$"
+											"pattern": "^0x[0-9a-f]{64}$"
 										}
+									},
+									"value": {
+										"title": "32 hex encoded bytes",
+										"type": "string",
+										"pattern": "^0x[0-9a-f]{64}$",
+										"description": "Value stored in the specified storage key."
+									},
+									"index": {
+										"type": "integer",
+										"description": "1-based index representing the position of the tree entry within the Merkle tree."
 									}
 								}
 							}
