@@ -1,449 +1,423 @@
-# block-schemas.yaml
-
-GetBlockConfig:
-  title: GetBlock Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-      default: finalized
-    encoding:
-      type: string
-      description: Encoding format for transactions.
-      enum:
-        - json
-        - jsonParsed
-        - base58
-        - base64
-      default: json
-    transactionDetails:
-      type: string
-      description: Level of transaction detail to return.
-      enum:
-        - full
-        - accounts
-        - signatures
-        - none
-      default: full
-    maxSupportedTransactionVersion:
-      type: integer
-      description: Max transaction version to return.
-    rewards:
-      type: boolean
-      description: Include rewards array if true.
-      default: true
-
-BlockInfo:
-  title: Block Information
-  type: object
-  properties:
-    blockhash:
-      type: string
-      description: Blockhash of this block.
-    previousBlockhash:
-      type: string
-      description: Blockhash of the parent block.
-    parentSlot:
-      type: integer
-      description: Slot index of the parent block.
-    transactions:
-      type: array
-      items:
-        $ref: "#/components/schemas/Transaction"
-      description: Array of transaction objects.
-    signatures:
-      type: array
-      items:
-        type: string
-      description: Array of transaction signatures.
-    rewards:
-      type: array
-      items:
-        $ref: "#/components/schemas/Reward"
-      description: Block-level rewards.
-    blockTime:
-      type: integer
-      description: Estimated production time as Unix timestamp.
-    blockHeight:
-      type: integer
-      description: Number of blocks beneath this block.
-
-Transaction:
-  title: Transaction
-  type: object
-  properties:
-    slot:
-      type: integer
-      description: The slot this transaction was processed in.
-    transaction:
+components:
+  schemas:
+    GetBlockConfig:
+      title: GetBlock Configuration
       type: object
-      description: The transaction details, either in JSON format or encoded binary data, depending on the encoding parameter.
       properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+          default: finalized
+        encoding:
+          type: string
+          description: Encoding format for transactions.
+          enum:
+            - json
+            - jsonParsed
+            - base58
+            - base64
+          default: json
+        transactionDetails:
+          type: string
+          description: Level of transaction detail to return.
+          enum:
+            - full
+            - accounts
+            - signatures
+            - none
+          default: full
+        maxSupportedTransactionVersion:
+          type: integer
+          description: Max transaction version to return.
+        rewards:
+          type: boolean
+          description: Include rewards array if true.
+          default: true
+    BlockInfo:
+      title: Block Information
+      type: object
+      properties:
+        blockhash:
+          type: string
+          description: Blockhash of this block.
+        previousBlockhash:
+          type: string
+          description: Blockhash of the parent block.
+        parentSlot:
+          type: integer
+          description: Slot index of the parent block.
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+          description: Array of transaction objects.
         signatures:
           type: array
           items:
             type: string
-          description: An array of signatures applied to the transaction.
-        message:
-          type: object
-          properties:
-            accountKeys:
-              type: array
-              items:
-                $ref: "#/components/schemas/Pubkey"
-              description: An array of account keys used by the transaction.
-            header:
-              type: object
-              properties:
-                numRequiredSignatures:
-                  type: integer
-                  description: The number of signatures required for the transaction.
-                numReadonlySignedAccounts:
-                  type: integer
-                  description: Number of read-only signed accounts.
-                numReadonlyUnsignedAccounts:
-                  type: integer
-                  description: Number of read-only unsigned accounts.
-            instructions:
-              type: array
-              items:
-                type: object
-                properties:
-                  accounts:
-                    type: array
-                    items:
-                      type: integer
-                    description: List of account indices to be passed to the program.
-                  data:
-                    type: string
-                    description: The program input data encoded as a base-58 string.
-                  programIdIndex:
-                    type: integer
-                    description: Index into the message.accountKeys array indicating the program account.
-            recentBlockhash:
-              type: string
-              description: The recent blockhash used by the transaction.
-    blockTime:
-      type: integer
-      nullable: true
-      description: Estimated production time as a Unix timestamp. Null if not available.
-    meta:
-      type: object
-      nullable: true
-      description: Transaction status metadata.
-      properties:
-        err:
-          type: object
-          nullable: true
-          description: Error if the transaction failed, null if it succeeded.
-        fee:
-          type: integer
-          description: Fee charged for this transaction.
-        preBalances:
-          type: array
-          items:
-            type: integer
-          description: Array of u64 account balances before the transaction.
-        postBalances:
-          type: array
-          items:
-            type: integer
-          description: Array of u64 account balances after the transaction.
-        innerInstructions:
-          type: array
-          nullable: true
-          items:
-            $ref: "#/components/schemas/InnerInstruction"
-          description: List of inner instructions or null if not enabled.
-        preTokenBalances:
-          type: array
-          nullable: true
-          items:
-            $ref: "#/components/schemas/TokenBalance"
-          description: Token balances before the transaction, if available.
-        postTokenBalances:
-          type: array
-          nullable: true
-          items:
-            $ref: "#/components/schemas/TokenBalance"
-          description: Token balances after the transaction, if available.
-        logMessages:
-          type: array
-          nullable: true
-          items:
-            type: string
-          description: Array of string log messages or null if not enabled.
+          description: Array of transaction signatures.
         rewards:
           type: array
-          nullable: true
           items:
             $ref: "#/components/schemas/Reward"
-          description: Transaction-level rewards.
-        loadedAddresses:
+          description: Block-level rewards.
+        blockTime:
+          type: integer
+          description: Estimated production time as Unix timestamp.
+        blockHeight:
+          type: integer
+          description: Number of blocks beneath this block.
+    Transaction:
+      title: Transaction
+      type: object
+      properties:
+        slot:
+          type: integer
+          description: The slot this transaction was processed in.
+        transaction:
           type: object
-          nullable: true
-          description: Transaction addresses loaded from address lookup tables.
-        returnData:
-          type: object
-          nullable: true
-          description: Return data generated by an instruction in the transaction.
-        computeUnitsConsumed:
+          description: The transaction details, either in JSON format or encoded binary data, depending on the encoding parameter.
+          properties:
+            signatures:
+              type: array
+              items:
+                type: string
+              description: An array of signatures applied to the transaction.
+            message:
+              type: object
+              properties:
+                accountKeys:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Pubkey"
+                  description: An array of account keys used by the transaction.
+                header:
+                  type: object
+                  properties:
+                    numRequiredSignatures:
+                      type: integer
+                      description: The number of signatures required for the transaction.
+                    numReadonlySignedAccounts:
+                      type: integer
+                      description: Number of read-only signed accounts.
+                    numReadonlyUnsignedAccounts:
+                      type: integer
+                      description: Number of read-only unsigned accounts.
+                instructions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      accounts:
+                        type: array
+                        items:
+                          type: integer
+                        description: List of account indices to be passed to the program.
+                      data:
+                        type: string
+                        description: The program input data encoded as a base-58 string.
+                      programIdIndex:
+                        type: integer
+                        description: Index into the message.accountKeys array indicating the program account.
+                recentBlockhash:
+                  type: string
+                  description: The recent blockhash used by the transaction.
+        blockTime:
           type: integer
           nullable: true
-          description: Number of compute units consumed by the transaction.
-    version:
-      type: string
-      nullable: true
-      description: Transaction version. Undefined if not set.
-
-InnerInstruction:
-  title: Inner Instruction
-  type: object
-  properties:
-    index:
-      type: integer
-      description: Index of the instruction in the transaction.
-    instructions:
-      type: array
-      items:
-        type: object
-        properties:
-          programId:
+          description: Estimated production time as a Unix timestamp. Null if not available.
+        meta:
+          type: object
+          nullable: true
+          description: Transaction status metadata.
+          properties:
+            err:
+              type: object
+              nullable: true
+              description: Error if the transaction failed, null if it succeeded.
+            fee:
+              type: integer
+              description: Fee charged for this transaction.
+            preBalances:
+              type: array
+              items:
+                type: integer
+              description: Array of u64 account balances before the transaction.
+            postBalances:
+              type: array
+              items:
+                type: integer
+              description: Array of u64 account balances after the transaction.
+            innerInstructions:
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/InnerInstruction"
+              description: List of inner instructions or null if not enabled.
+            preTokenBalances:
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/TokenBalance"
+              description: Token balances before the transaction, if available.
+            postTokenBalances:
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/TokenBalance"
+              description: Token balances after the transaction, if available.
+            logMessages:
+              type: array
+              nullable: true
+              items:
+                type: string
+              description: Array of string log messages or null if not enabled.
+            rewards:
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/Reward"
+              description: Transaction-level rewards.
+            loadedAddresses:
+              type: object
+              nullable: true
+              description: Transaction addresses loaded from address lookup tables.
+            returnData:
+              type: object
+              nullable: true
+              description: Return data generated by an instruction in the transaction.
+            computeUnitsConsumed:
+              type: integer
+              nullable: true
+              description: Number of compute units consumed by the transaction.
+        version:
+          type: string
+          nullable: true
+          description: Transaction version. Undefined if not set.
+    InnerInstruction:
+      title: Inner Instruction
+      type: object
+      properties:
+        index:
+          type: integer
+          description: Index of the instruction in the transaction.
+        instructions:
+          type: array
+          items:
+            type: object
+            properties:
+              programId:
+                $ref: "#/components/schemas/Pubkey"
+                description: Program ID invoked by this instruction.
+              accounts:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pubkey"
+                description: Account addresses involved in this instruction.
+              data:
+                type: string
+                description: The program input data encoded as a base-58 string.
+    LoadedAddresses:
+      title: Loaded Addresses
+      type: object
+      properties:
+        writable:
+          type: array
+          items:
             $ref: "#/components/schemas/Pubkey"
-            description: Program ID invoked by this instruction.
-          accounts:
+          description: Loaded writable addresses.
+        readonly:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pubkey"
+          description: Loaded read-only addresses.
+    Reward:
+      title: Reward
+      type: object
+      properties:
+        pubkey:
+          $ref: "#/components/schemas/Pubkey"
+          description: The public key of the rewarded account.
+        lamports:
+          type: integer
+          description: The amount of reward in lamports.
+        postBalance:
+          type: integer
+          description: The balance of the account after the reward was applied.
+        rewardType:
+          type: string
+          description: The type of reward.
+          enum:
+            - fee
+            - rent
+            - voting
+            - staking
+        commission:
+          type: integer
+          nullable: true
+          description: The vote account commission when the reward was credited, if applicable.
+    GetBlockCommitmentResult:
+      title: GetBlockCommitment Result
+      type: object
+      properties:
+        commitment:
+          type: array
+          nullable: true
+          items:
+            type: integer
+          description: Cluster stake in lamports voted on the block.
+        totalStake:
+          type: integer
+          description: Total active stake in lamports.
+    GetBlockCommitmentParams:
+      title: GetBlockCommitment Parameters
+      type: object
+      properties:
+        block:
+          type: integer
+          description: Block number identified by Slot.
+    GetBlockProductionConfig:
+      title: GetBlockProduction Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        identity:
+          $ref: "#/components/schemas/Pubkey"
+          description: Validator identity to filter results.
+        range:
+          $ref: ../_shared/components/block.yaml#/components/schemas/BlockRange
+    BlockRange:
+      title: Block Range
+      type: object
+      properties:
+        firstSlot:
+          type: integer
+          description: First slot to return block production for.
+        lastSlot:
+          type: integer
+          description: Last slot to return block production for.
+    BlockProductionInfo:
+      title: Block Production Information
+      type: object
+      properties:
+        byIdentity:
+          type: object
+          additionalProperties:
             type: array
             items:
-              $ref: "#/components/schemas/Pubkey"
-            description: Account addresses involved in this instruction.
-          data:
-            type: string
-            description: The program input data encoded as a base-58 string.
-
-LoadedAddresses:
-  title: Loaded Addresses
-  type: object
-  properties:
-    writable:
+              type: integer
+          description: Validator identities with leader slots and blocks produced.
+        range:
+          $ref: ../_shared/components/block.yaml#/components/schemas/BlockRange
+    GetBlocksParams:
+      title: GetBlocks Parameters
+      type: object
+      properties:
+        start_slot:
+          type: integer
+          description: Starting slot.
+        end_slot:
+          type: integer
+          description: Ending slot (optional).
+    GetBlocksConfig:
+      title: GetBlocks Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+          default: finalized
+    SlotList:
+      title: Slot List
       type: array
-      items:
-        $ref: "#/components/schemas/Pubkey"
-      description: Loaded writable addresses.
-    readonly:
-      type: array
-      items:
-        $ref: "#/components/schemas/Pubkey"
-      description: Loaded read-only addresses.
-
-Reward:
-  title: Reward
-  type: object
-  properties:
-    pubkey:
-      $ref: "#/components/schemas/Pubkey"
-      description: The public key of the rewarded account.
-    lamports:
-      type: integer
-      description: The amount of reward in lamports.
-    postBalance:
-      type: integer
-      description: The balance of the account after the reward was applied.
-    rewardType:
-      type: string
-      description: The type of reward.
-      enum:
-        - fee
-        - rent
-        - voting
-        - staking
-    commission:
-      type: integer
-      nullable: true
-      description: The vote account commission when the reward was credited, if applicable.
-
-GetBlockCommitmentResult:
-  title: GetBlockCommitment Result
-  type: object
-  properties:
-    commitment:
-      type: array
-      nullable: true
       items:
         type: integer
-      description: Cluster stake in lamports voted on the block.
-    totalStake:
-      type: integer
-      description: Total active stake in lamports.
-
-GetBlockCommitmentParams:
-  title: GetBlockCommitment Parameters
-  type: object
-  properties:
-    block:
-      type: integer
-      description: Block number identified by Slot.
-
-GetBlockProductionConfig:
-  title: GetBlockProduction Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    identity:
-      $ref: "#/components/schemas/Pubkey"
-      description: Validator identity to filter results.
-    range:
-      $ref: "../_shared/components/block.yaml#/components/schemas/BlockRange"
-
-BlockRange:
-  title: Block Range
-  type: object
-  properties:
-    firstSlot:
-      type: integer
-      description: First slot to return block production for.
-    lastSlot:
-      type: integer
-      description: Last slot to return block production for.
-
-BlockProductionInfo:
-  title: Block Production Information
-  type: object
-  properties:
-    byIdentity:
+      description: List of confirmed blocks between slots.
+    GetBlocksWithLimitParams:
+      title: GetBlocksWithLimit Parameters
       type: object
-      additionalProperties:
-        type: array
-        items:
+      properties:
+        start_slot:
           type: integer
-      description: Validator identities with leader slots and blocks produced.
-    range:
-      $ref: "../_shared/components/block.yaml#/components/schemas/BlockRange"
-
-GetBlocksParams:
-  title: GetBlocks Parameters
-  type: object
-  properties:
-    start_slot:
+          description: Starting slot.
+        limit:
+          type: integer
+          description: Limit for the number of blocks to return.
+    GetBlockTimeParams:
+      title: GetBlockTime Parameters
+      type: object
+      properties:
+        block:
+          type: integer
+          description: Block number identified by Slot.
+    EstimatedProductionTime:
+      title: Estimated Production Time
       type: integer
-      description: Starting slot.
-    end_slot:
+      description: Estimated production time as Unix timestamp.
+    FirstAvailableBlockSlot:
+      title: First Available Block Slot
       type: integer
-      description: Ending slot (optional).
-
-GetBlocksConfig:
-  title: GetBlocks Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-      default: finalized
-
-SlotList:
-  title: Slot List
-  type: array
-  items:
-    type: integer
-  description: List of confirmed blocks between slots.
-
-GetBlocksWithLimitParams:
-  title: GetBlocksWithLimit Parameters
-  type: object
-  properties:
-    start_slot:
-      type: integer
-      description: Starting slot.
-    limit:
-      type: integer
-      description: Limit for the number of blocks to return.
-
-GetBlockTimeParams:
-  title: GetBlockTime Parameters
-  type: object
-  properties:
-    block:
-      type: integer
-      description: Block number identified by Slot.
-
-EstimatedProductionTime:
-  title: Estimated Production Time
-  type: integer
-  description: Estimated production time as Unix timestamp.
-
-FirstAvailableBlockSlot:
-  title: First Available Block Slot
-  type: integer
-  description: Slot of the lowest confirmed block still available in the ledger.
-
-GenesisHash:
-  title: Genesis Hash
-  type: string
-  description: The genesis hash as a base-58 encoded string.
-
-HighestSnapshotSlot:
-  title: Highest Snapshot Slot
-  type: object
-  properties:
-    full:
-      type: integer
-      description: Highest full snapshot slot.
-    incremental:
-      type: integer
-      nullable: true
-      description: Highest incremental snapshot slot based on the full snapshot.
-
-GetBlockHeightConfig:
-  title: GetBlockHeight Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-BlockHeight:
-  title: Block Height
-  type: integer
-  description: The current block height.
-
-GetLatestBlockhashConfig:
-  title: GetLatestBlockhash Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-LatestBlockhash:
-  title: Latest Blockhash
-  type: object
-  properties:
-    blockhash:
+      description: Slot of the lowest confirmed block still available in the ledger.
+    GenesisHash:
+      title: Genesis Hash
       type: string
-      description: Blockhash as a base-58 encoded string.
-    lastValidBlockHeight:
+      description: The genesis hash as a base-58 encoded string.
+    HighestSnapshotSlot:
+      title: Highest Snapshot Slot
+      type: object
+      properties:
+        full:
+          type: integer
+          description: Highest full snapshot slot.
+        incremental:
+          type: integer
+          nullable: true
+          description: Highest incremental snapshot slot based on the full snapshot.
+    GetBlockHeightConfig:
+      title: GetBlockHeight Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+    BlockHeight:
+      title: Block Height
       type: integer
-      description: Last block height at which the blockhash is valid.
-
-IsBlockhashValidParams:
-  title: IsBlockhashValid Parameters
-  type: object
-  properties:
-    blockhash:
-      type: string
-      description: The blockhash to evaluate, as a base-58 encoded string.
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-IsBlockhashValidResult:
-  title: Is Blockhash Valid Result
-  type: boolean
-  description: Indicates if the blockhash is still valid.
-
-MaxSlotResult:
-  title: Max Slot Result
-  type: integer
-  description: The maximum slot number observed.
+      description: The current block height.
+    GetLatestBlockhashConfig:
+      title: GetLatestBlockhash Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+    LatestBlockhash:
+      title: Latest Blockhash
+      type: object
+      properties:
+        blockhash:
+          type: string
+          description: Blockhash as a base-58 encoded string.
+        lastValidBlockHeight:
+          type: integer
+          description: Last block height at which the blockhash is valid.
+    IsBlockhashValidParams:
+      title: IsBlockhashValid Parameters
+      type: object
+      properties:
+        blockhash:
+          type: string
+          description: The blockhash to evaluate, as a base-58 encoded string.
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+    IsBlockhashValidResult:
+      title: Is Blockhash Valid Result
+      type: boolean
+      description: Indicates if the blockhash is still valid.
+    MaxSlotResult:
+      title: Max Slot Result
+      type: integer
+      description: The maximum slot number observed.

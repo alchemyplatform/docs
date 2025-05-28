@@ -1,77 +1,74 @@
-# inflation-schemas.yaml
-
-InflationGovernor:
-  title: Inflation Governor
-  type: object
-  properties:
-    initial:
-      type: number
-      description: Initial inflation percentage from time 0.
-    terminal:
-      type: number
-      description: Terminal inflation percentage.
-    taper:
-      type: number
-      description: Rate per year at which inflation is lowered.
-    foundation:
-      type: number
-      description: Percentage of total inflation allocated to the foundation.
-    foundationTerm:
-      type: number
-      description: Duration of foundation pool inflation in years.
-
-InflationRate:
-  title: Inflation Rate
-  type: object
-  properties:
-    total:
-      type: number
-      description: Total inflation rate.
-    validator:
-      type: number
-      description: Inflation rate allocated to validators.
-    foundation:
-      type: number
-      description: Inflation rate allocated to the foundation.
-    epoch:
-      type: integer
-      description: Epoch for which these values are valid.
-
-InflationRewardParams:
-  title: Inflation Reward Parameters
-  type: object
-  properties:
-    Addresses:
-      type: array
-      items:
-        $ref: "#/components/schemas/Pubkey"
-      description: Array of addresses to query.
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    epoch:
-      type: integer
-      description: Epoch for which the reward occurs.
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-InflationReward:
-  title: Inflation Reward
-  type: object
-  nullable: true
-  properties:
-    epoch:
-      type: integer
-      description: Epoch for which the reward occurred.
-    effectiveSlot:
-      type: integer
-      description: Slot in which rewards are effective.
-    amount:
-      type: integer
-      description: Reward amount in lamports.
-    postBalance:
-      type: integer
-      description: Post balance of the account in lamports.
-    commission:
-      type: integer
+components:
+  schemas:
+    InflationGovernor:
+      title: Inflation Governor
+      type: object
+      properties:
+        initial:
+          type: number
+          description: Initial inflation percentage from time 0.
+        terminal:
+          type: number
+          description: Terminal inflation percentage.
+        taper:
+          type: number
+          description: Rate per year at which inflation is lowered.
+        foundation:
+          type: number
+          description: Percentage of total inflation allocated to the foundation.
+        foundationTerm:
+          type: number
+          description: Duration of foundation pool inflation in years.
+    InflationRate:
+      title: Inflation Rate
+      type: object
+      properties:
+        total:
+          type: number
+          description: Total inflation rate.
+        validator:
+          type: number
+          description: Inflation rate allocated to validators.
+        foundation:
+          type: number
+          description: Inflation rate allocated to the foundation.
+        epoch:
+          type: integer
+          description: Epoch for which these values are valid.
+    InflationRewardParams:
+      title: Inflation Reward Parameters
+      type: object
+      properties:
+        Addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pubkey"
+          description: Array of addresses to query.
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        epoch:
+          type: integer
+          description: Epoch for which the reward occurs.
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+    InflationReward:
+      title: Inflation Reward
+      type: object
       nullable: true
-      description: Vote account commission when reward was credited.
+      properties:
+        epoch:
+          type: integer
+          description: Epoch for which the reward occurred.
+        effectiveSlot:
+          type: integer
+          description: Slot in which rewards are effective.
+        amount:
+          type: integer
+          description: Reward amount in lamports.
+        postBalance:
+          type: integer
+          description: Post balance of the account in lamports.
+        commission:
+          type: integer
+          nullable: true
+          description: Vote account commission when reward was credited.

@@ -1,120 +1,113 @@
-EVENTS_CHUNK:
-  title: Events chunk
-  type: object
-  required:
-    - events
-  properties:
-    events:
-      title: Matching Events
-      type: array
-      items:
-        $ref: "#/components/schemas/EMITTED_EVENT"
-    continuation_token:
-      title: Continuation token
-      description: >
-        Use this token in a subsequent query to obtain the next page.
-        Should not appear if there are no more pages.
-      type: string
-
-RESULT_PAGE_REQUEST:
-  title: Result page request
-  type: object
-  required:
-    - chunk_size
-  properties:
-    continuation_token:
-      title: Continuation token
-      description: >
-        The token returned from the previous query.
-        If no token is provided, the first page is returned.
-      type: string
-    chunk_size:
-      title: Chunk size
-      type: integer
-      minimum: 1
-
-EMITTED_EVENT:
-  title: Emitted event
-  description: >
-    Event information decorated with metadata on where it was emitted.
-    An event emitted as a result of transaction execution.
-  allOf:
-    - $ref: "#/components/schemas/EVENT"
-    - title: Event context
-      description: The event emission information
+components:
+  schemas:
+    EVENTS_CHUNK:
+      title: Events chunk
       type: object
       required:
-        - transaction_hash
+        - events
       properties:
-        block_hash:
-          title: Block hash
-          description: The hash of the block in which the event was emitted
-          $ref: "../_shared/components/block.yaml#/components/schemas/BLOCK_HASH"
-        block_number:
-          title: Block number
-          description: The number of the block in which the event was emitted
-          $ref: "../_shared/components/block.yaml#/components/schemas/BLOCK_NUMBER"
-        transaction_hash:
-          title: Transaction hash
-          description: The transaction that emitted the event
-          $ref: "#/components/schemas/TXN_HASH"
-
-EVENT:
-  title: Event
-  description: A StarkNet event
-  allOf:
-    - title: Event emitter
+        events:
+          title: Matching Events
+          type: array
+          items:
+            $ref: "#/components/schemas/EMITTED_EVENT"
+        continuation_token:
+          title: Continuation token
+          description: |
+            Use this token in a subsequent query to obtain the next page. Should not appear if there are no more pages.
+          type: string
+    RESULT_PAGE_REQUEST:
+      title: Result page request
       type: object
       required:
-        - from_address
+        - chunk_size
       properties:
-        from_address:
-          title: From address
-          $ref: "../_shared/components/base-types.yaml#/components/schemas/ADDRESS"
-    - $ref: "#/components/schemas/EVENT_CONTENT"
-
-EVENT_CONTENT:
-  title: Event content
-  description: The content of an event
-  type: object
-  required:
-    - keys
-    - data
-  properties:
-    keys:
-      title: Keys
-      type: array
-      items:
-        $ref: "#/components/schemas/FELT"
-    data:
-      title: Data
-      type: array
-      items:
-        $ref: "#/components/schemas/FELT"
-
-EVENT_FILTER:
-  title: Event filter
-  description: An event filter/query
-  type: object
-  properties:
-    from_block:
-      title: From block
-      $ref: "../_shared/components/block.yaml#/components/schemas/BLOCK_ID"
-    to_block:
-      title: To block
-      $ref: "../_shared/components/block.yaml#/components/schemas/BLOCK_ID"
-    address:
-      title: From contract
-      $ref: "../_shared/components/base-types.yaml#/components/schemas/ADDRESS"
-    keys:
-      title: Keys
-      description: The values used to filter the events
-      type: array
-      items:
-        title: Keys
-        description: >
-          Per key (by position), designate the possible values to be matched for events to be returned.
-          An empty array designates 'any' value.
-        type: array
-        items:
-          $ref: "#/components/schemas/FELT"
+        continuation_token:
+          title: Continuation token
+          description: |
+            The token returned from the previous query. If no token is provided, the first page is returned.
+          type: string
+        chunk_size:
+          title: Chunk size
+          type: integer
+          minimum: 1
+    EMITTED_EVENT:
+      title: Emitted event
+      description: |
+        Event information decorated with metadata on where it was emitted. An event emitted as a result of transaction execution.
+      allOf:
+        - $ref: "#/components/schemas/EVENT"
+        - title: Event context
+          description: The event emission information
+          type: object
+          required:
+            - transaction_hash
+          properties:
+            block_hash:
+              title: Block hash
+              description: The hash of the block in which the event was emitted
+              $ref: ../_shared/components/block.yaml#/components/schemas/BLOCK_HASH
+            block_number:
+              title: Block number
+              description: The number of the block in which the event was emitted
+              $ref: ../_shared/components/block.yaml#/components/schemas/BLOCK_NUMBER
+            transaction_hash:
+              title: Transaction hash
+              description: The transaction that emitted the event
+              $ref: "#/components/schemas/TXN_HASH"
+    EVENT:
+      title: Event
+      description: A StarkNet event
+      allOf:
+        - title: Event emitter
+          type: object
+          required:
+            - from_address
+          properties:
+            from_address:
+              title: From address
+              $ref: ../_shared/components/base-types.yaml#/components/schemas/ADDRESS
+        - $ref: "#/components/schemas/EVENT_CONTENT"
+    EVENT_CONTENT:
+      title: Event content
+      description: The content of an event
+      type: object
+      required:
+        - keys
+        - data
+      properties:
+        keys:
+          title: Keys
+          type: array
+          items:
+            $ref: "#/components/schemas/FELT"
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: "#/components/schemas/FELT"
+    EVENT_FILTER:
+      title: Event filter
+      description: An event filter/query
+      type: object
+      properties:
+        from_block:
+          title: From block
+          $ref: ../_shared/components/block.yaml#/components/schemas/BLOCK_ID
+        to_block:
+          title: To block
+          $ref: ../_shared/components/block.yaml#/components/schemas/BLOCK_ID
+        address:
+          title: From contract
+          $ref: ../_shared/components/base-types.yaml#/components/schemas/ADDRESS
+        keys:
+          title: Keys
+          description: The values used to filter the events
+          type: array
+          items:
+            title: Keys
+            description: |
+              Per key (by position), designate the possible values to be matched for events to be returned. An empty array designates 'any' value.
+            type: array
+            items:
+              $ref: "#/components/schemas/FELT"

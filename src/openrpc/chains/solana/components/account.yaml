@@ -1,162 +1,149 @@
-# account-schemas.yaml
-
-AccountData:
-  title: Account Data
-  type: array
-  items:
-    type: string
-  description: Account data in the specified encoding format.
-
-AccountInfo:
-  title: Account Information
-  type: object
-  properties:
-    lamports:
+components:
+  schemas:
+    AccountData:
+      title: Account Data
+      type: array
+      items:
+        type: string
+      description: Account data in the specified encoding format.
+    AccountInfo:
+      title: Account Information
+      type: object
+      properties:
+        lamports:
+          type: integer
+          description: Number of lamports assigned to this account.
+        owner:
+          $ref: "#/components/schemas/Pubkey"
+          description: Program owner of this account.
+        data:
+          $ref: "#/components/schemas/AccountData"
+        executable:
+          type: boolean
+          description: Indicates if the account contains a program.
+        rentEpoch:
+          type: integer
+          description: The epoch at which this account will next owe rent.
+        size:
+          type: integer
+          description: The data size of the account.
+    GetAccountInfoConfig:
+      title: GetAccountInfo Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        encoding:
+          $ref: "#/components/schemas/Encoding"
+          description: Encoding format for account data.
+        dataSlice:
+          $ref: "#/components/schemas/DataSlice"
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+    GetBalanceConfig:
+      title: GetBalance Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+    LamportBalance:
+      title: Lamport Balance
       type: integer
-      description: Number of lamports assigned to this account.
-    owner:
-      $ref: "#/components/schemas/Pubkey"
-      description: Program owner of this account.
-    data:
-      $ref: "#/components/schemas/AccountData"
-    executable:
-      type: boolean
-      description: Indicates if the account contains a program.
-    rentEpoch:
-      type: integer
-      description: The epoch at which this account will next owe rent.
-    size:
-      type: integer
-      description: The data size of the account.
-
-GetAccountInfoConfig:
-  title: GetAccountInfo Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    encoding:
-      $ref: "#/components/schemas/Encoding"
-      description: Encoding format for account data.
-    dataSlice:
-      $ref: "#/components/schemas/DataSlice"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-GetBalanceConfig:
-  title: GetBalance Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-LamportBalance:
-  title: Lamport Balance
-  type: integer
-  description: The balance in lamports of the account.
-
-GetMultipleAccountsConfig:
-  title: GetMultipleAccounts Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-    dataSlice:
-      $ref: "#/components/schemas/DataSlice"
-    encoding:
-      $ref: "#/components/schemas/Encoding"
-      default: base64
-
-ProgramAccount:
-  title: Program Account
-  type: object
-  properties:
-    pubkey:
-      $ref: "#/components/schemas/Pubkey"
-      description: The account Pubkey as a base-58 encoded string.
-    account:
-      $ref: "#/components/schemas/AccountInfo"
-
-GetTokenAccountBalanceConfig:
-  title: GetTokenAccountBalance Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-
-TokenBalance:
-  title: Token Balance
-  type: object
-  properties:
-    amount:
-      type: string
-      description: The raw balance without decimals, a string representation of u64.
-    decimals:
-      type: integer
-      description: Number of base-10 digits to the right of the decimal place.
-    uiAmount:
-      type: number
-      nullable: true
-      description: The balance, using mint-prescribed decimals. **DEPRECATED**
-    uiAmountString:
-      type: string
-      description: The balance as a string, using mint-prescribed decimals.
-
-TokenAccount:
-  title: Token Account
-  type: object
-  properties:
-    pubkey:
-      $ref: "#/components/schemas/Pubkey"
-      description: The account Pubkey as a base-58 encoded string.
-    account:
-      $ref: "#/components/schemas/AccountInfo"
-
-GetTokenAccountsByOwnerConfig:
-  title: GetTokenAccountsByOwner Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-    dataSlice:
-      $ref: "#/components/schemas/DataSlice"
-    encoding:
-      $ref: "#/components/schemas/Encoding"
-      description: Encoding format for account data.
-
-LargestAccountsConfig:
-  title: LargestAccounts Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    filter:
-      type: string
-      description: Filter results by account type.
-      enum:
-        - circulating
-        - nonCirculating
-
-LargestAccount:
-  title: Largest Account
-  type: object
-  properties:
-    address:
-      $ref: "#/components/schemas/Pubkey"
-      description: Address of the account.
-    lamports:
-      type: integer
-      description: Number of lamports in the account.
-
-LargestAccountsList:
-  title: Largest Accounts List
-  type: array
-  items:
-    $ref: "#/components/schemas/LargestAccount"
-  description: List of the 20 largest accounts.
+      description: The balance in lamports of the account.
+    GetMultipleAccountsConfig:
+      title: GetMultipleAccounts Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+        dataSlice:
+          $ref: "#/components/schemas/DataSlice"
+        encoding:
+          $ref: "#/components/schemas/Encoding"
+          default: base64
+    ProgramAccount:
+      title: Program Account
+      type: object
+      properties:
+        pubkey:
+          $ref: "#/components/schemas/Pubkey"
+          description: The account Pubkey as a base-58 encoded string.
+        account:
+          $ref: "#/components/schemas/AccountInfo"
+    GetTokenAccountBalanceConfig:
+      title: GetTokenAccountBalance Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+    TokenBalance:
+      title: Token Balance
+      type: object
+      properties:
+        amount:
+          type: string
+          description: The raw balance without decimals, a string representation of u64.
+        decimals:
+          type: integer
+          description: Number of base-10 digits to the right of the decimal place.
+        uiAmount:
+          type: number
+          nullable: true
+          description: The balance, using mint-prescribed decimals. **DEPRECATED**
+        uiAmountString:
+          type: string
+          description: The balance as a string, using mint-prescribed decimals.
+    TokenAccount:
+      title: Token Account
+      type: object
+      properties:
+        pubkey:
+          $ref: "#/components/schemas/Pubkey"
+          description: The account Pubkey as a base-58 encoded string.
+        account:
+          $ref: "#/components/schemas/AccountInfo"
+    GetTokenAccountsByOwnerConfig:
+      title: GetTokenAccountsByOwner Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "#/components/schemas/MinContextSlot"
+        dataSlice:
+          $ref: "#/components/schemas/DataSlice"
+        encoding:
+          $ref: "#/components/schemas/Encoding"
+          description: Encoding format for account data.
+    LargestAccountsConfig:
+      title: LargestAccounts Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "#/components/schemas/Commitment"
+        filter:
+          type: string
+          description: Filter results by account type.
+          enum:
+            - circulating
+            - nonCirculating
+    LargestAccount:
+      title: Largest Account
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/Pubkey"
+          description: Address of the account.
+        lamports:
+          type: integer
+          description: Number of lamports in the account.
+    LargestAccountsList:
+      title: Largest Accounts List
+      type: array
+      items:
+        $ref: "#/components/schemas/LargestAccount"
+      description: List of the 20 largest accounts.
