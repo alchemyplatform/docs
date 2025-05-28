@@ -117,22 +117,19 @@ export const Codeblock: React.FC = () => {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-            }}
-          >
+            }}>
             <div
               style={{
                 display: 'flex',
                 gap: '8px',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-              }}
-            >
+              }}>
               <span
                 style={{
                   color: isDark ? '#EDEDED' : '#94A3B8',
                   marginRight: '16px',
-                }}
-              >
+                }}>
                 {runButtonDisabled ? 'Response' : 'Request'}
               </span>
               {/* Language */}
@@ -179,16 +176,14 @@ export const Codeblock: React.FC = () => {
                   : '#383838'
               }}
               onClick={handleRun}
-              disabled={runButtonDisabled}
-            >
+              disabled={runButtonDisabled}>
               RUN{' '}
               <svg
                 width="12"
                 height="12"
                 viewBox="0 0 12 12"
                 fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+                xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M9.07199 5.43326C9.77475 5.83939 9.77732 6.35029 9.07199 6.80944L3.62211 10.6211C2.93734 11.0001 2.47226 10.7763 2.42344 9.95629L2.40032 1.97858C2.3849 1.22324 2.98487 1.00982 3.55659 1.37198L9.07199 5.43326Z"
                   stroke="#EDEDED"
@@ -214,8 +209,7 @@ export const Codeblock: React.FC = () => {
                 whiteSpace: 'unset',
                 paddingInline: '0px',
               },
-            }}
-          >
+            }}>
             {code}
           </SyntaxHighlighter>
         </div>
@@ -226,8 +220,7 @@ export const Codeblock: React.FC = () => {
                 fontWeight: 600,
                 fontSize: '20px',
                 marginBottom: '8px',
-              }}
-            >
+              }}>
               Quickstart
             </p>
             <span style={{ fontSize: '14px' }}>
@@ -249,8 +242,7 @@ export const Codeblock: React.FC = () => {
                 }
                 onMouseOut={(e) =>
                   (e.currentTarget.style.color = isDark ? '#EDEDED' : '#383838')
-                }
-              >
+                }>
                 Get started&nbsp;
                 <svg
                   style={{
@@ -260,8 +252,7 @@ export const Codeblock: React.FC = () => {
                   height="9"
                   viewBox="0 0 8 9"
                   fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                  xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M1.63872 1.22041L7.32005 1.22033M7.32005 1.22033L7.32005 6.82086M7.32005 1.22033L0.720385 7.81999"
                     stroke="currentColor"
