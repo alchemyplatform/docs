@@ -23,7 +23,6 @@ export const getComponentsFromFile = (componentsFile: string): Components => {
   return { schemas };
 };
 
-// type OpenRpcBase = Pick<OpenrpcDocument, "info" | "externalDocs" | "servers">;
 /**
  * Retrieves the base OpenRPC document from a YAML file and returns it in OpenRPC Base format.
  * @param schemaDir - Path to the directory containing the base OpenRPC document
