@@ -8,13 +8,14 @@ import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash'
 import json from 'react-syntax-highlighter/dist/esm/languages/prism/json'
 import oneDark from 'react-syntax-highlighter/dist/esm/styles/prism/one-dark'
 import oneLight from 'react-syntax-highlighter/dist/esm/styles/prism/one-light'
+import { CodeblockSelect } from './CodeblockSelect'
 
 import {
   codeMap,
   chainOptions,
   CodeBlockLanguage,
   languageOptions,
-  LanguageToLabel,
+  Languages,
 } from './codemap.ts'
 
 SyntaxHighlighter.registerLanguage(CodeBlockLanguage.CLI, bash)
@@ -28,18 +29,6 @@ const CodeBlockContainer = styled.div`
   border-radius: 24px;
   border: ${({ theme }) =>
     theme.mode === 'dark' ? '1px solid #383838' : '1px solid #EAEAEA'};
-`
-
-const CodeBlockDropdown = styled.select`
-  background-color: ${({ theme }) =>
-    theme.mode === 'dark' ? '#383838' : '#F1F1F1'};
-  color: ${({ theme }) => (theme.mode === 'dark' ? '#EDEDED' : '#111111')};
-  padding: 6px;
-  border-radius: 6px;
-  text-align: center;
-  font-family: monospace;
-  font-size: 14px;
-  border-right: 4px solid transparent;
 `
 
 const RunButton = styled.button`
@@ -96,11 +85,11 @@ export const Codeblock: React.FC = () => {
     mode: isDark ? 'dark' : 'light',
   }
 
-  const [language, setLanguage] = React.useState<string>(languageOptions[0])
-  const [chain, setChain] = React.useState<string>(chainOptions[0])
+  const [language, setLanguage] = React.useState<string>(Languages[0])
+  const [chain, setChain] = React.useState<string>(chainOptions[0].value)
   const [method, setMethod] = React.useState<string>(Object.keys(codeMap)[0])
   const [languageDropdownOption, setLanguageDropdownOption] =
-    React.useState<string>(languageOptions[0])
+    React.useState<string>(Languages[0])
 
   const [runButtonDisabled, setRunButtonDisabled] =
     React.useState<boolean>(false)
@@ -153,45 +142,39 @@ export const Codeblock: React.FC = () => {
                   marginRight: '16px',
                 }}
               >
-                Request
+                {runButtonDisabled ? 'Response' : 'Request'}
               </span>
-              <CodeBlockDropdown
-                value={languageDropdownOption}
-                onChange={(e) => {
-                  setLanguageDropdownOption(e.target.value)
-                  updateCode(chain, method, e.target.value)
+              {/* Language */}
+              <CodeblockSelect
+                isDark={isDark}
+                options={languageOptions}
+                selectedOption={languageDropdownOption}
+                onChange={(value) => {
+                  setLanguageDropdownOption(value)
+                  updateCode(chain, method, value)
                 }}
-              >
-                {languageOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {LanguageToLabel[opt]}
-                  </option>
-                ))}
-              </CodeBlockDropdown>
-              <CodeBlockDropdown
-                value={chain}
-                onChange={(e) => {
-                  updateCode(e.target.value, method)
+              />
+              {/* Chain */}
+              <CodeblockSelect
+                isDark={isDark}
+                options={chainOptions}
+                selectedOption={chain}
+                onChange={(value) => {
+                  updateCode(value, method)
                 }}
-              >
-                {chainOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </CodeBlockDropdown>
-              <CodeBlockDropdown
-                value={method}
-                onChange={(e) => {
-                  updateCode(chain, e.target.value)
+              />
+              {/* Method */}
+              <CodeblockSelect
+                isDark={isDark}
+                options={Object.keys(codeMap).map((key) => ({
+                  value: key,
+                  label: key,
+                }))}
+                selectedOption={method}
+                onChange={(value) => {
+                  updateCode(chain, value)
                 }}
-              >
-                {Object.keys(codeMap).map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </CodeBlockDropdown>
+              />
             </div>
             <RunButton
               onMouseOver={(e) =>
@@ -224,18 +207,24 @@ export const Codeblock: React.FC = () => {
           </div>
           <SyntaxHighlighter
             style={isDark ? oneDark : oneLight}
-            // wrapLongLines={true}
+            wrapLongLines={true}
             showLineNumbers={true}
             language={language}
             customStyle={{
               fontSize: '14px',
-              backgroundColor: isDark ? '#121212' : '#FAFAFA',
+              background: 'transparent',
               height: '300px',
+              marginTop: '0px',
+            }}
+            lineProps={{
+              style: {
+                flexWrap: 'wrap',
+              },
             }}
             codeTagProps={{
               style: {
                 boxShadow: 'none',
-                background: 'none',
+                background: 'transparent',
               },
             }}
           >
@@ -288,8 +277,8 @@ export const Codeblock: React.FC = () => {
                   <path
                     d="M1.63872 1.22041L7.32005 1.22033M7.32005 1.22033L7.32005 6.82086M7.32005 1.22033L0.720385 7.81999"
                     stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 </svg>
               </a>

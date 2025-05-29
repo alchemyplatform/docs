@@ -1,5 +1,3 @@
-export const chainOptions = ['Ethereum', 'Polygon', 'Arbitrum']
-
 type CodeSample = {
   [key: string]: string
 }
@@ -11,18 +9,24 @@ export enum CodeBlockLanguage {
   JSON = 'json',
 }
 
-export const languageOptions = [
+export const Languages = [
   CodeBlockLanguage.CLI,
   CodeBlockLanguage.JavaScript,
   CodeBlockLanguage.Python,
 ]
 
-export const LanguageToLabel: { [key in CodeBlockLanguage]: string } = {
-  [CodeBlockLanguage.CLI]: 'curl',
-  [CodeBlockLanguage.JavaScript]: 'JavaScript',
-  [CodeBlockLanguage.Python]: 'Python',
-  [CodeBlockLanguage.JSON]: 'JSON',
-}
+export const languageOptions = [
+  { value: CodeBlockLanguage.CLI as string, label: 'curl' },
+  { value: CodeBlockLanguage.JavaScript as string, label: 'JavaScript' },
+  { value: CodeBlockLanguage.Python as string, label: 'Python' },
+  // { value: CodeBlockLanguage.JSON as string, label: 'JSON' },
+]
+
+export const chainOptions = [
+  { value: 'Ethereum', label: 'Ethereum' },
+  { value: 'Polygon', label: 'Polygon' },
+  { value: 'Arbitrum', label: 'Arbitrum' },
+]
 
 export const codeMap: { [endpoint: string]: CodeSample } = {
   getNFTsForCollection: {
