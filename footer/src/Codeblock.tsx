@@ -55,18 +55,6 @@ const CodeBlockContainer = styled.div`
     theme.mode === 'dark' ? '1px solid #383838' : '1px solid #EAEAEA'};
 `
 
-const CodeBlockDropdown = styled.select`
-  background-color: ${({ theme }) =>
-    theme.mode === 'dark' ? '#383838' : '#F1F1F1'};
-  color: ${({ theme }) => (theme.mode === 'dark' ? '#EDEDED' : '#111111')};
-  padding: 6px;
-  border-radius: 6px;
-  text-align: center;
-  font-family: monospace;
-  font-size: 14px;
-  border-right: 4px solid transparent;
-`
-
 const RunButton = styled.button`
   background-color: ${({ theme }) =>
     theme.mode === 'dark' ? '#1C1C1C' : '#383838'};
