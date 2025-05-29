@@ -12,7 +12,7 @@ slug: reference/alchemy-sdk-api-surface-overview
 
 The Alchemy SDK is the most comprehensive, stable, and powerful Javascript SDK available today to interact with the blockchain.
 
-It supports the exact same syntax and functionality of the Ethers.js AlchemyProvider and WebSocketProvider, making it a 1:1 mapping for anyone using the Ethers.js Provider. However, it adds a significant amount of improved functionality on top of Ethers, such as easy access to Alchemy’s Enhanced and NFT APIs, robust WebSockets, and quality-of life improvements such as automated retries.
+It supports the exact same syntax and functionality of the Ethers.js AlchemyProvider and WebSocketProvider, making it a 1:1 mapping for anyone using the Ethers.js Provider. However, it adds a significant amount of improved functionality on top of Ethers, such as easy access to Alchemy's Enhanced and NFT APIs, robust WebSockets, and quality-of life improvements such as automated retries.
 
 The SDK currently supports the following chains:
 
@@ -30,7 +30,6 @@ The Alchemy SDK currently supports five different namespaces, including:
 * `core`: All commonly-used Ethers.js Provider methods and Alchemy Enhanced API methods
 * `nft`: All Alchemy NFT API methods
 * `ws`: All WebSockets methods
-* `transact`: All Alchemy Transaction API methods
 * `notify`: CRUD endpoints for modifying Alchemy Notify Webhooks
 * `debug`: Methods to inspect and replay transactions and blocks
 
@@ -160,19 +159,6 @@ The main benefits are:
 
 * **Resilient event delivery:** Unlike standard Web3.js or Ethers.js, you will not permanently miss events which arrive while the backing WebSocket is temporarily down. Instead, you will receive these events as soon as the connection is reopened. Note that if the connection is down for more than 120 blocks (approximately 20 minutes), you may still miss some events that were not part of the most recent 120 blocks.
 * **Lowered rate of failure:** Compared to standard Web3.js or Ethers.js, there are fewer failures when sending requests over the WebSocket while the connection is down. Alchemy Web3 will attempt to send the requests once the connection is reopened. Note that it is still possible, with a lower likelihood, for outgoing requests to be lost, so you should still have error handling as with any network request.
-
-# Alchemy Transact
-
-The `transact` namespace contains methods used for sending transactions. The unique methods to the `transact` namespace are:
-
-* `sendPrivateTransaction()`: Send a private transaction through Flashbots.
-* `cancelPrivateTransaction()`: Cancel a private transaction sent with Flashbots.
-
-The `transact` namespace also aliases over several commonly used methods from the `core` namespace for convenience:
-
-* `getTransaction()`: Returns the transaction for the given transaction hash.
-* `sendTransaction()`: Sends a standard transaction to the network to be mined.
-* `waitForTransaction()`: Waits for a transaction to be mined and returns the transaction receipt.
 
 # Alchemy NFT API
 
