@@ -1,270 +1,262 @@
-BatchNumberTag:
-  title: BatchNumberTag
-  type: string
-  description: The optional batch height description
-  enum:
-    - earliest
-    - latest
-
-Batch:
-  title: Batch
-  type: object
-  readOnly: true
-  properties:
-    number:
-      $ref: "#/components/schemas/uint" # BlockNumber is uint
-    globalExitRoot:
-      $ref: "#/components/schemas/hash32"
-    mainnetExitRoot:
-      $ref: "#/components/schemas/hash32"
-    rollupExitRoot:
-      $ref: "#/components/schemas/hash32"
-    accInputHash:
-      $ref: "#/components/schemas/hash32"
-    timestamp:
-      $ref: "#/components/schemas/uint"
-    sendSequencesTxHash:
-      $ref: "#/components/schemas/hash32" # TransactionHash is hash32
-    verifyBatchTxHash:
-      $ref: "#/components/schemas/hash32"
-    closed:
-      title: closed
-      type: boolean
-      description: True if the batch is already closed, otherwise false
-    blocks:
-      title: blocksOrHashes
-      description: Array of block objects, or 32 Bytes block hashes depending on the last given parameter
-      type: array
-      items:
-        title: blockOrBlockHash
-        oneOf:
-          - $ref: "#/components/schemas/Block"
-          - $ref: "#/components/schemas/hash32"
-    transactions:
-      title: transactionsOrHashes
-      description: Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter
-      type: array
-      items:
-        title: transactionOrTransactionHash
-        oneOf:
-          - $ref: "#/components/schemas/TransactionInfo"
-          - $ref: "#/components/schemas/hash32"
-    stateRoot:
-      $ref: "#/components/schemas/hash32"
-    coinbase:
-      $ref: "#/components/schemas/address"
-
-FullBlock:
-  title: FullBlock
-  type: object
-  properties:
-    number:
-      oneOf:
-        - $ref: "#/components/schemas/uint"
-        - type: "null"
-    hash:
-      oneOf:
-        - $ref: "#/components/schemas/hash32"
-        - type: "null"
-    parentHash:
-      $ref: "#/components/schemas/hash32"
-    nonce:
-      oneOf:
-        - $ref: "#/components/schemas/bytes8"
-        - type: "null"
-    sha3Uncles:
-      $ref: "#/components/schemas/hash32"
-    logsBloom:
-      oneOf:
-        - $ref: "#/components/schemas/bytes256"
-        - type: "null"
-    transactionsRoot:
-      $ref: "#/components/schemas/hash32"
-    stateRoot:
-      $ref: "#/components/schemas/hash32"
-    receiptsRoot:
-      $ref: "#/components/schemas/hash32"
-    miner:
-      oneOf:
-        - $ref: "#/components/schemas/address"
-        - type: "null"
-    difficulty:
-      $ref: "#/components/schemas/uint"
-    totalDifficulty:
-      oneOf:
-        - $ref: "#/components/schemas/uint"
-        - type: "null"
-    extraData:
-      $ref: "#/components/schemas/bytes"
-    size:
-      $ref: "#/components/schemas/uint"
-    gasLimit:
-      $ref: "#/components/schemas/uint"
-    gasUsed:
-      $ref: "#/components/schemas/uint"
-    timestamp:
-      $ref: "#/components/schemas/uint"
-    transactions:
-      title: transactionsOrHashes
-      description: Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter
-      type: array
-      items:
-        title: transactionOrTransactionHash
-        oneOf:
-          - $ref: "#/components/schemas/FullTransaction"
-          - $ref: "#/components/schemas/hash32"
-    uncles:
-      title: uncleHashes
-      description: Array of uncle hashes
-      type: array
-      items:
-        $ref: "#/components/schemas/hash32"
-
-FullTransaction:
-  title: FullTransaction
-  type: object
-  required:
-    - gas
-    - gasPrice
-    - nonce
-  properties:
-    blockHash:
-      oneOf:
-        - $ref: "#/components/schemas/hash32"
-        - type: "null"
-    blockNumber:
-      oneOf:
-        - $ref: "#/components/schemas/uint"
-        - type: "null"
-    from:
-      $ref: "#/components/schemas/address"
-    gas:
-      $ref: "#/components/schemas/uint"
-    gasPrice:
-      $ref: "#/components/schemas/uint"
-    hash:
-      $ref: "#/components/schemas/hash32"
-    input:
-      $ref: "#/components/schemas/bytes"
-    nonce:
-      $ref: "#/components/schemas/uint"
-    to:
-      oneOf:
-        - $ref: "#/components/schemas/address"
-        - type: "null"
-    transactionIndex:
-      oneOf:
-        - $ref: "#/components/schemas/uint"
-        - type: "null"
-    value:
-      $ref: "#/components/schemas/uint"
-    v:
-      $ref: "#/components/schemas/uint"
-    r:
-      $ref: "#/components/schemas/uint"
-    s:
-      $ref: "#/components/schemas/uint"
-    receipt:
-      $ref: "#/components/schemas/ReceiptInfo"
-
-NativeBlockHashes:
-  title: NativeBlockHashes
-  description: An array of hashes
-  type: array
-  items:
-    $ref: "#/components/schemas/hash32"
-
-NativeBlockHashBlockRangeFilter:
-  title: NativeBlockHashBlockRangeFilter
-  type: object
-  properties:
-    fromBlock:
-      $ref: "#/components/schemas/uint"
-    toBlock:
-      $ref: "#/components/schemas/uint"
-
-ExitRoots:
-  title: ExitRoots
-  type: object
-  readOnly: true
-  properties:
-    blockNumber:
-      $ref: "#/components/schemas/uint"
-    timestamp:
-      $ref: "#/components/schemas/uint"
-    mainnetExitRoot:
-      $ref: "#/components/schemas/hash32"
-    rollupExitRoot:
-      $ref: "#/components/schemas/hash32"
-
-ZKCountersResponse:
-  title: ZKCountersResponse
-  type: object
-  readOnly: true
-  properties:
-    countersUsed:
-      $ref: "#/components/schemas/ZKCountersUsed"
-    countersLimits:
-      $ref: "#/components/schemas/ZKCountersLimits"
-    revertInfo:
-      $ref: "#/components/schemas/RevertInfo"
-    oocError:
+components:
+  schemas:
+    BatchNumberTag:
+      title: BatchNumberTag
       type: string
-
-ZKCountersUsed:
-  title: ZKCountersUsed
-  type: object
-  readOnly: true
-  properties:
-    gasUsed:
-      $ref: "#/components/schemas/uint"
-    usedKeccakHashes:
-      $ref: "#/components/schemas/uint"
-    usedPoseidonHashes:
-      $ref: "#/components/schemas/uint"
-    usedPoseidonPaddings:
-      $ref: "#/components/schemas/uint"
-    usedMemAligns:
-      $ref: "#/components/schemas/uint"
-    usedArithmetics:
-      $ref: "#/components/schemas/uint"
-    usedBinaries:
-      $ref: "#/components/schemas/uint"
-    usedSteps:
-      $ref: "#/components/schemas/uint"
-    usedSHA256Hashes:
-      $ref: "#/components/schemas/uint"
-
-ZKCountersLimits:
-  title: ZKCountersLimits
-  type: object
-  readOnly: true
-  properties:
-    maxGasUsed:
-      $ref: "#/components/schemas/uint"
-    maxUsedKeccakHashes:
-      $ref: "#/components/schemas/uint"
-    maxUsedPoseidonHashes:
-      $ref: "#/components/schemas/uint"
-    maxUsedPoseidonPaddings:
-      $ref: "#/components/schemas/uint"
-    maxUsedMemAligns:
-      $ref: "#/components/schemas/uint"
-    maxUsedArithmetics:
-      $ref: "#/components/schemas/uint"
-    maxUsedBinaries:
-      $ref: "#/components/schemas/uint"
-    maxUsedSteps:
-      $ref: "#/components/schemas/uint"
-    maxUsedSHA256Hashes:
-      $ref: "#/components/schemas/uint"
-
-RevertInfo:
-  title: RevertInfo
-  type: object
-  readOnly: true
-  properties:
-    message:
-      type: string
-    data:
-      $ref: "#/components/schemas/bytes"
+      description: The optional batch height description
+      enum:
+        - earliest
+        - latest
+    Batch:
+      title: Batch
+      type: object
+      readOnly: true
+      properties:
+        number:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        globalExitRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        mainnetExitRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        rollupExitRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        accInputHash:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        timestamp:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        sendSequencesTxHash:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        verifyBatchTxHash:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        closed:
+          title: closed
+          type: boolean
+          description: True if the batch is already closed, otherwise false
+        blocks:
+          title: blocksOrHashes
+          description: Array of block objects, or 32 Bytes block hashes depending on the last given parameter
+          type: array
+          items:
+            title: blockOrBlockHash
+            oneOf:
+              - $ref: "../../_shared/components/block.yaml#/components/schemas/Block"
+              - $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        transactions:
+          title: transactionsOrHashes
+          description: Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter
+          type: array
+          items:
+            title: transactionOrTransactionHash
+            oneOf:
+              - $ref: "../../_shared/components/transaction.yaml#/components/schemas/TransactionInfo"
+              - $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        stateRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        coinbase:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/address"
+    FullBlock:
+      title: FullBlock
+      type: object
+      properties:
+        number:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+            - type: "null"
+        hash:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+            - type: "null"
+        parentHash:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        nonce:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/bytes8"
+            - type: "null"
+        sha3Uncles:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        logsBloom:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/bytes256"
+            - type: "null"
+        transactionsRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        stateRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        receiptsRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        miner:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/address"
+            - type: "null"
+        difficulty:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        totalDifficulty:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+            - type: "null"
+        extraData:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/bytes"
+        size:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        gasLimit:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        gasUsed:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        timestamp:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        transactions:
+          title: transactionsOrHashes
+          description: Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter
+          type: array
+          items:
+            title: transactionOrTransactionHash
+            oneOf:
+              - $ref: "#/components/schemas/FullTransaction"
+              - $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        uncles:
+          title: uncleHashes
+          description: Array of uncle hashes
+          type: array
+          items:
+            $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+    FullTransaction:
+      title: FullTransaction
+      type: object
+      required:
+        - gas
+        - gasPrice
+        - nonce
+      properties:
+        blockHash:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+            - type: "null"
+        blockNumber:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+            - type: "null"
+        from:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/address"
+        gas:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        gasPrice:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        hash:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        input:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/bytes"
+        nonce:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        to:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/address"
+            - type: "null"
+        transactionIndex:
+          oneOf:
+            - $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+            - type: "null"
+        value:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        v:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        r:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        s:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        receipt:
+          $ref: "../../_shared/components/receipt.yaml#/components/schemas/ReceiptInfo"
+    NativeBlockHashes:
+      title: NativeBlockHashes
+      description: An array of hashes
+      type: array
+      items:
+        $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+    NativeBlockHashBlockRangeFilter:
+      title: NativeBlockHashBlockRangeFilter
+      type: object
+      properties:
+        fromBlock:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        toBlock:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+    ExitRoots:
+      title: ExitRoots
+      type: object
+      readOnly: true
+      properties:
+        blockNumber:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        timestamp:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        mainnetExitRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+        rollupExitRoot:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/hash32"
+    ZKCountersResponse:
+      title: ZKCountersResponse
+      type: object
+      readOnly: true
+      properties:
+        countersUsed:
+          $ref: "#/components/schemas/ZKCountersUsed"
+        countersLimits:
+          $ref: "#/components/schemas/ZKCountersLimits"
+        revertInfo:
+          $ref: "#/components/schemas/RevertInfo"
+        oocError:
+          type: string
+    ZKCountersUsed:
+      title: ZKCountersUsed
+      type: object
+      readOnly: true
+      properties:
+        gasUsed:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedKeccakHashes:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedPoseidonHashes:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedPoseidonPaddings:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedMemAligns:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedArithmetics:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedBinaries:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedSteps:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        usedSHA256Hashes:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+    ZKCountersLimits:
+      title: ZKCountersLimits
+      type: object
+      readOnly: true
+      properties:
+        maxGasUsed:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedKeccakHashes:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedPoseidonHashes:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedPoseidonPaddings:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedMemAligns:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedArithmetics:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedBinaries:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedSteps:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+        maxUsedSHA256Hashes:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/uint"
+    RevertInfo:
+      title: RevertInfo
+      type: object
+      readOnly: true
+      properties:
+        message:
+          type: string
+        data:
+          $ref: "../../_shared/components/base-types.yaml#/components/schemas/bytes"

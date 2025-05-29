@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=https://meta.open-rpc.org/
+
+$schema: https://meta.open-rpc.org/
+openrpc: 1.2.4
+info:
+  title: Alchemy Transactions Receipt API JSON-RPC Specification
+  description: A specification of the standard JSON-RPC methods for Transactions Receipt API.
+  version: 0.0.0
+servers:
+  - url: https://eth-mainnet.g.alchemy.com/v2
+    name: Mainnet
+  - url: https://eth-sepolia.g.alchemy.com/v2
+    name: Sepolia
+methods:
+  - name: alchemy_getTransactionReceipts
+    description: An enhanced API that gets all transaction receipts for a given block by number or block hash.
+    params:
+      - name: blockNumber
+        required: false
+        description: "The block number you want to get transaction receipts for, in hex. One of blockNumber or blockHash must be provided."
+        schema:
+          $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+      - name: blockHash
+        required: false
+        description: "The block hash you want to get transaction receipts for, in hex. One of blockNumber or blockHash must be provided."
+        schema:
+          $ref: "../_shared/components.yaml#/components/schemas/hash32AnyCase"
+    result:
+      name: Transaction receipts
+      description: "A list of transaction receipt objects for each transaction in this block."
+      schema:
+        oneOf:
+          - $ref: "../_shared/components.yaml#/components/schemas/notFound"
+          - type: object
+            properties:
+              receipts:
+                type: array
+                description: "Array of transaction receipt objects."
+                items:
+                  type: object
+                  properties:
+                    blockHash:
+                      $ref: "../_shared/components.yaml#/components/schemas/hash32AnyCase"
+                    blockNumber:
+                      $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                    transactionIndex:
+                      $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                    transactionHash:
+                      $ref: "../_shared/components.yaml#/components/schemas/hash32AnyCase"
+                    from:
+                      $ref: "../_shared/components.yaml#/components/schemas/address"
+                    to:
+                      $ref: "../_shared/components.yaml#/components/schemas/address"
+                    cumulativeGasUsed:
+                      $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                    gasUsed:
+                      $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                    contractAddress:
+                      $ref: "../_shared/components.yaml#/components/schemas/address"
+                    logs:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          blockHash:
+                            $ref: "../_shared/components.yaml#/components/schemas/hash32AnyCase"
+                          blockNumber:
+                            $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                          transactionIndex:
+                            $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                          address:
+                            $ref: "../_shared/components.yaml#/components/schemas/address"
+                          logIndex:
+                            $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                          data:
+                            type: string
+                          removed:
+                            type: boolean
+                          topics:
+                            type: array
+                            description: "Zero to four 32-byte topics, any hex case."
+                            items:
+                              $ref: "../_shared/components.yaml#/components/schemas/hash32AnyCase"
+                          transactionHash:
+                            $ref: "../_shared/components.yaml#/components/schemas/hash32AnyCase"
+                    logsBloom:
+                      $ref: "../_shared/components.yaml#/components/schemas/bytes256AnyCase"
+                    root:
+                      $ref: "../_shared/components.yaml#/components/schemas/hash32AnyCase"
+                    status:
+                      type: integer
+                      enum: [0, 1]
+                      description: "Transaction status; 0 = failure, 1 = success."
+                    effectiveGasPrice:
+                      $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+                    type:
+                      $ref: "../_shared/components.yaml#/components/schemas/uintHexAnyCase"
+
+    examples:
+      - name: alchemy_getTransactionReceipts example (by blockNumber)
+        params:
+          - name: blockNumber
+            value: "0xF1D1C6"
+        result:
+          name: Transaction receipts
+          value:
+            receipts:
+              - blockHash: "0x18760312114f3fdf11f9d5846245995835aa59994d5fc4203faee52d2f7eaabe"
+                blockNumber: "0xF1D1C6"
+                transactionIndex: "0x0"
+                transactionHash: "0x4c32db860a0b1fd4514b94c2c75a76d4924cebaebd62d2f622105e0fc863cfb2"
+                from: "0x0049d82d5a59bbdb24fe2e8eb4733ecf20df1886"
+                to: "0x66c4289252b6f1d8d7b241495e60f93c2820c9b1"
+                cumulativeGasUsed: "0x5208"
+                gasUsed: "0x5208"
+                contractAddress: null
+                logs: []
+                logsBloom: "0x0..."
+                root: null
+                status: 1
+                effectiveGasPrice: "0x1e8480"
+                type: "0x2"
