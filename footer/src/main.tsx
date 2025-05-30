@@ -40,6 +40,14 @@ const render = async () => {
 
     // Show the container after rendering
     if (fernFooterContainer) fernFooterContainer.style.display = 'block'
+
+    // reposition 'builtwithfern' element
+    const builtWithFern = document.getElementById('builtwithfern')
+    if (builtWithFern) {
+      builtWithFern.remove()
+      fernFooterContainer.append(builtWithFern)
+      builtWithFern.classList.add('mt-0')
+    }
   }
 }
 

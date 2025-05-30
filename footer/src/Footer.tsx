@@ -24,8 +24,7 @@ const CommunityLinks = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  max-width: 800px;
+  width: 60%;
   border-top: 1px solid
     ${({ theme }) => (theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   border-bottom: 1px solid
@@ -82,8 +81,7 @@ const FooterAlchemyCopyright = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  width: 100%;
-  max-width: 800px;
+  width: 60%;
   @media screen and (max-width: 768px) {
     flex-direction: column;
     align-items: center;
