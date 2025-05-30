@@ -176,8 +176,7 @@ export const CustomFooter: React.FC = () => {
                 title="Substack form"
                 src="https://alchemysupercharged.substack.com/embed"
                 width="320"
-                height="280"
-              ></iframe>
+                height="280"></iframe>
             </SubscribeForm>
           </FooterRightSide>
         </CommunityLinks>
