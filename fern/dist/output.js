@@ -12063,6 +12063,7 @@ const T8 = () =>
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 80px;
   width: 60%;
   border-top: 1px solid
     ${({ theme: o }) => (o.mode === "dark" ? "#1f2937" : "#e2e8f0")};
@@ -12077,6 +12078,8 @@ const T8 = () =>
     flex-direction: column-reverse;
     align-items: center;
     gap: 50px;
+    width: 100%;
+    margin-top: 0;
     padding: 24px 16px;
   }
 `,

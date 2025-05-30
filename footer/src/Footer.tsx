@@ -24,11 +24,8 @@ const CommunityLinks = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 80px;
   width: 60%;
-  border-top: 1px solid
-    ${({ theme }) => (theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
-  border-bottom: 1px solid
-    ${({ theme }) => (theme.mode === 'dark' ? '#1f2937' : '#e2e8f0')};
   padding-block: 36px;
   a {
     color: ${({ theme }) => (theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
@@ -38,6 +35,8 @@ const CommunityLinks = styled.div`
     flex-direction: column-reverse;
     align-items: center;
     gap: 50px;
+    width: 100%;
+    margin-top: 0;
     padding: 24px 16px;
   }
 `
