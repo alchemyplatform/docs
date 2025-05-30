@@ -27,6 +27,7 @@ const CommunityLinks = styled.div`
   margin-top: 80px;
   width: 60%;
   padding-block: 36px;
+  gap: 16px;
   a {
     color: ${({ theme }) => (theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
     text-decoration: underline;
@@ -34,7 +35,7 @@ const CommunityLinks = styled.div`
   @media screen and (max-width: 768px) {
     flex-direction: column-reverse;
     align-items: center;
-    gap: 50px;
+    gap: 16px;
     width: 100%;
     margin-top: 0;
     padding: 24px 16px;
@@ -75,16 +76,45 @@ const SubscribeForm = styled.form`
   }
 `
 
-const FooterAlchemyCopyright = styled.div`
+const FooterAlchemyCopyrightContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  gap: 16px;
   width: 60%;
+
   @media screen and (max-width: 768px) {
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 8px;
+  }
+`
+
+const FooterCopyrightTextContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  @media screen and (max-width: 768px) {
+    margin-top: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+`
+
+const FooterCopyrightText = styled.p`
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+`
+
+const Separator = styled.span`
+  align-self: center;
+
+  @media screen and (max-width: 768px) {
+    display: none;
   }
 `
 
@@ -152,17 +182,20 @@ export const CustomFooter: React.FC = () => {
             </SubscribeForm>
           </FooterRightSide>
         </CommunityLinks>
-        <FooterAlchemyCopyright>
+        <FooterAlchemyCopyrightContainer>
           {isDark ? <LogoDark /> : <LogoLight />}
-          <p>
-            <span>
-              &copy; {new Date().getFullYear()} Alchemy Insights, Inc. ·{' '}
-            </span>
-            <a href="https://www.alchemy.com/terms-conditions/terms/">
-              Terms of Service
-            </a>
-          </p>
-        </FooterAlchemyCopyright>
+          <FooterCopyrightTextContainer>
+            <FooterCopyrightText>
+              &copy; {new Date().getFullYear()} Alchemy Insights, Inc.
+            </FooterCopyrightText>
+            <Separator>·</Separator>
+            <FooterCopyrightText>
+              <a href="https://www.alchemy.com/terms-conditions/terms/">
+                Terms of Service
+              </a>
+            </FooterCopyrightText>
+          </FooterCopyrightTextContainer>
+        </FooterAlchemyCopyrightContainer>
       </FooterContainer>
     </StyledThemeProvider>
   )

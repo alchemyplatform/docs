@@ -12070,6 +12070,7 @@ const T8 = () =>
   border-bottom: 1px solid
     ${({ theme: o }) => (o.mode === "dark" ? "#1f2937" : "#e2e8f0")};
   padding-block: 36px;
+  gap: 16px;
   a {
     color: ${({ theme: o }) => (o.mode === "dark" ? "#CBD5E0" : "#94a3b8")};
     text-decoration: underline;
@@ -12077,7 +12078,7 @@ const T8 = () =>
   @media screen and (max-width: 768px) {
     flex-direction: column-reverse;
     align-items: center;
-    gap: 50px;
+    gap: 16px;
     width: 100%;
     margin-top: 0;
     padding: 24px 16px;
@@ -12117,12 +12118,13 @@ const T8 = () =>
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  gap: 16px;
   width: 60%;
+
   @media screen and (max-width: 768px) {
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 8px;
   }
 `,
   Y8 = () => {
@@ -12219,8 +12221,7 @@ const T8 = () =>
                     children: [
                       "© ",
                       new Date().getFullYear(),
-                      " Alchemy Insights, Inc. ·",
-                      " ",
+                      " Alchemy Insights, Inc.",
                     ],
                   }),
                   f.jsx("a", {
