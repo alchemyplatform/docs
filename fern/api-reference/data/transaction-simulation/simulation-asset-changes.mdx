@@ -1,0 +1,750 @@
+---
+title: Asset Changes
+description: Simulates a transaction and returns a list of asset changes.
+subtitle: Simulates a transaction and returns a list of asset changes.
+url: https://docs.alchemy.com/reference/simulation-asset-changes
+slug: reference/simulation-asset-changes
+---
+
+<Info>
+  Try it out - [alchemy\_simulateAssetChanges](/reference/alchemy-simulateassetchanges).
+</Info>
+
+## How does it work?
+
+1. You give us a transaction (unsigned transaction object) 📦
+2. We simulate your transaction on our blazing fast infra ⚡
+3. We return a complete list of asset changes (including tokens and NFTs) 💸
+
+## What do you get back?
+
+We currently return the following info:
+
+* gas used
+* change type (approval, transfer)
+* asset type (native, erc20, erc721, erc1155, special nft)
+* sender / destination
+* amount
+* additional metadata (logo, token id, contract address)
+
+## Examples
+
+<Check>
+  The examples below are for Eth Mainnet and Polygon Mainnet. Simulation also works on Arbitrum and testnets - more examples coming soon!
+</Check>
+
+## Ethereum
+
+### ETH - Transfer
+
+`0xbe0eb53f46cd790cd13851d5eff43d12404d33e8` sending 1 ETH to `0xc02aaa39b223fe8d050e5c4f27ead9083c756cc2`.
+
+To send a normal transfer, remove the `data` field from the transaction object in the request. We will add support for `data: " "` and `data: "0x"` soon.
+
+<CodeGroup>
+  ```json Transaction
+  {
+    "from": "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8",
+    "to": "0xc02aaa39b223fe8d050e5c4f27ead9083c756cc2",
+    "value": "0xDE0B6B3A7640000"
+  }
+  ```
+
+  ```curl curl
+  curl --location --request POST 'https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8",
+        "to": "0xc02aaa39b223fe8d050e5c4f27ead9083c756cc2",
+        "value": "0xDE0B6B3A7640000"
+      }
+    ]
+  }'
+  ```
+
+  ```json Response
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "NATIVE",
+          "changeType": "TRANSFER",
+          "from": "0xbe0eb53f46cd790cd13851d5eff43d12404d33e8",
+          "to": "0xc02aaa39b223fe8d050e5c4f27ead9083c756cc2",
+          "rawAmount": "1000000000000000000",
+          "contractAddress": null,
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "ETH",
+          "name": "Ethereum",
+          "logo": "https://static.alchemyapi.io/images/network-assets/eth.png",
+          "amount": "1"
+        }
+      ],
+      "gasUsed": "0x0",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+    	from: "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8",
+    	to: "0xc02aaa39b223fe8d050e5c4f27ead9083c756cc2",
+    	value: "0xDE0B6B3A7640000"
+  	};
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+### ERC20 - Transfer
+
+vitalik.eth (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) sending 1 USDC to demo.eth (`0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`).
+
+<CodeGroup>
+  ```json Transaction
+  {
+     "from": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+     "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+     "value": "0x0",
+     "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+   }
+  ```
+
+  ```curl cURL
+  curl --location --request POST 'https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "value": "0x0",
+        "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+      }
+    ]
+  }'
+  ```
+
+  ```json Response
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "ERC20",
+          "changeType": "TRANSFER",
+          "from": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+          "to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
+          "rawAmount": "1000000",
+          "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          "tokenId": null,
+          "decimals": 6,
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+          "amount": "1"
+        }
+      ],
+      "gasUsed": "0x6925",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+    	from: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    	to: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+     	value: "0x0",
+     	data: "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+  	};
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+### WETH - Wrap
+
+`0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8` depositing 1 ETH and getting 1 WETH back.
+
+<CodeGroup>
+  ```json Transaction
+  {
+    "from": "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8",
+    "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "data": "0xd0e30db0",
+    "value": "0xDE0B6B3A7640000"
+  }
+  ```
+
+  ```curl curl
+  curl --location --request POST 'https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8",
+        "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        "data": "0xd0e30db0",
+        "value": "0xDE0B6B3A7640000"
+      }
+    ]
+  }'
+  ```
+
+  ```json Response
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "NATIVE",
+          "changeType": "TRANSFER",
+          "from": "0xbe0eb53f46cd790cd13851d5eff43d12404d33e8",
+          "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          "rawAmount": "1000000000000000000",
+          "contractAddress": null,
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "ETH",
+          "name": "Ethereum",
+          "logo": "https://static.alchemyapi.io/images/network-assets/eth.png",
+          "amount": "1"
+        },
+        {
+          "assetType": "ERC20",
+          "changeType": "TRANSFER",
+          "from": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          "to": "0xbe0eb53f46cd790cd13851d5eff43d12404d33e8",
+          "rawAmount": "1000000000000000000",
+          "contractAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "WETH",
+          "name": "WETH",
+          "logo": "https://static.alchemyapi.io/images/assets/2396.png",
+          "amount": "1"
+        }
+      ],
+      "gasUsed": "0x5da6",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+      from: "0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8",
+      to: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      data: "0xd0e30db0",
+      value: "0xDE0B6B3A7640000"
+    };
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+### WETH - Unwrap
+
+`0x2e95E1cD077f29733C65D885Ce7AFE278d0726A6` withdrawing 1 ETH (1 WETH sent, 1 ETH returned).
+
+<CodeGroup>
+  ```json Transaction
+  {
+    "from": "0x2e95E1cD077f29733C65D885Ce7AFE278d0726A6",
+    "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "value": "0x0",
+    "data": "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
+  }
+  ```
+
+  ```curl curl
+  curl --location --request POST 'https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0x2e95E1cD077f29733C65D885Ce7AFE278d0726A6",
+        "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        "value": "0x0",
+        "data": "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
+      }
+    ]
+  }'
+  ```
+
+  ```json Response
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "NATIVE",
+          "changeType": "TRANSFER",
+          "from": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          "to": "0x2e95e1cd077f29733c65d885ce7afe278d0726a6",
+          "rawAmount": "1000000000000000000",
+          "contractAddress": null,
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "ETH",
+          "name": "Ethereum",
+          "logo": "https://static.alchemyapi.io/images/network-assets/eth.png",
+          "amount": "1"
+        },
+        {
+          "assetType": "ERC20",
+          "changeType": "TRANSFER",
+          "from": "0x2e95e1cd077f29733c65d885ce7afe278d0726a6",
+          "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          "rawAmount": "1000000000000000000",
+          "contractAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "WETH",
+          "name": "WETH",
+          "logo": "https://static.alchemyapi.io/images/assets/2396.png",
+          "amount": "1"
+        }
+      ],
+      "gasUsed": "0x3674",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.ETH_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+    	from: "0x2e95E1cD077f29733C65D885Ce7AFE278d0726A6",
+    	to: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    	value: "0x0",
+    	data: "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
+  	};
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+## Polygon
+
+### MATIC - Transfer
+
+`0xe7804c37c13166ff0b37f5ae0bb07a3aebb6e245` sending 5 MATIC to `0x0d500b1d8e8ef31e21c99e1db9a6444d3adf1270`.
+
+To send a normal transfer, remove the `data` field from the transaction object in the request. We will add support for `data: " "` and `data: "0x"` soon.
+
+<CodeGroup>
+  ```json Transaction
+  {
+    "from": "0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245",
+    "to": "0x0d500b1d8e8ef31e21c99e1db9a6444d3adf1270",
+    "value": "0x4563918244F40000"
+  }
+  ```
+
+  ```curl cURL
+  curl --location --request POST 'https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245",
+        "to": "0x0d500b1d8e8ef31e21c99e1db9a6444d3adf1270",
+        "value": "0x4563918244F40000"
+      }
+    ]
+  }'
+  ```
+
+  ```json json
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "NATIVE",
+          "changeType": "TRANSFER",
+          "from": "0xe7804c37c13166ff0b37f5ae0bb07a3aebb6e245",
+          "to": "0x0d500b1d8e8ef31e21c99e1db9a6444d3adf1270",
+          "rawAmount": "5000000000000000000",
+          "contractAddress": null,
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "MATIC",
+          "name": "MATIC",
+          "logo": "https://static.alchemyapi.io/images/network-assets/matic.png",
+          "amount": "5"
+        }
+      ],
+      "gasUsed": "0x0",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.MATIC_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+    	from: "0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245",
+      to: "0x0d500b1d8e8ef31e21c99e1db9a6444d3adf1270",
+      value: "0x4563918244F40000"
+    };
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+### ERC20 - Transfer
+
+`0xf977814e90da44bfa03b6295a0616a897441acec` sending 1 USDC to `0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174`.
+
+<CodeGroup>
+  ```json Transaction
+  {
+    "from": "0xF977814e90dA44bFA03b6295A0616a897441aceC",
+    "to": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    "value": "0x0",
+    "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+  }
+  ```
+
+  ```curl curl
+  curl --location --request POST 'https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xF977814e90dA44bFA03b6295A0616a897441aceC",
+        "to": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "value": "0x0",
+        "data": "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+      }
+    ]
+  }'
+  ```
+
+  ```json Response
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "ERC20",
+          "changeType": "TRANSFER",
+          "from": "0xf977814e90da44bfa03b6295a0616a897441acec",
+          "to": "0xfc43f5f9dd45258b3aff31bdbe6561d97e8b71de",
+          "rawAmount": "1000000",
+          "contractAddress": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+          "tokenId": null,
+          "decimals": 6,
+          "symbol": "USDC",
+          "name": "USD Coin (PoS)",
+          "logo": null,
+          "amount": "1"
+        }
+      ],
+      "gasUsed": "0xa3d8",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.MATIC_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+      from: "0xF977814e90dA44bFA03b6295A0616a897441aceC",
+      to: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+      value: "0x0",
+      data: "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
+    };
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+### WMATIC - Wrap
+
+`0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245` depositing 5 MATIC and getting 5 WMATIC back.
+
+<CodeGroup>
+  ```json Transaction
+  {
+    "from": "0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245",
+    "to": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    "data": "0xd0e30db0",
+    "value": "0x4563918244F40000"
+  }
+  ```
+
+  ```curl cURL
+  curl --location --request POST 'https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245",
+        "to": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+        "data": "0xd0e30db0",
+        "value": "0x4563918244F40000"
+      }
+    ]
+  }'
+  ```
+
+  ```json Response
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "NATIVE",
+          "changeType": "TRANSFER",
+          "from": "0xe7804c37c13166ff0b37f5ae0bb07a3aebb6e245",
+          "to": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+          "rawAmount": "5000000000000000000",
+          "contractAddress": null,
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "MATIC",
+          "name": "MATIC",
+          "logo": "https://static.alchemyapi.io/images/network-assets/matic.png",
+          "amount": "5"
+        },
+        {
+          "assetType": "ERC20",
+          "changeType": "TRANSFER",
+          "from": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+          "to": "0xe7804c37c13166ff0b37f5ae0bb07a3aebb6e245",
+          "rawAmount": "5000000000000000000",
+          "contractAddress": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "WMATIC",
+          "name": "Wrapped Matic",
+          "logo": "https://static.alchemyapi.io/images/assets/8925.png",
+          "amount": "5"
+        }
+      ],
+      "gasUsed": "0x1add",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.MATIC_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+    	from: "0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245",
+    	to: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    	data: "0xd0e30db0",
+    	value: "0x4563918244F40000"
+  	};
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+### WMATIC - Unwrap
+
+`0xccc52f64ee0fff73ad7312825ee767ce94d4877a` withdrawing 1 MATIC (1 WMATIC sent, 1 MATIC returned).
+
+<CodeGroup>
+  ```json Transaction
+  {
+    "from": "0xccc52f64ee0fff73ad7312825ee767ce94d4877a",
+   	"to": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+    "value": "0x0",
+    "data": "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
+  }
+  ```
+
+  ```curl curl
+  curl --location --request POST 'https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "jsonrpc": "2.0",
+    "method": "alchemy_simulateAssetChanges",
+    "id": 1,
+    "params": [
+      {
+        "from": "0xccc52f64ee0fff73ad7312825ee767ce94d4877a",
+        "to": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+        "value": "0x0",
+        "data": "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
+      }
+    ]
+  }'
+  ```
+
+  ```json Response
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "changes": [
+        {
+          "assetType": "NATIVE",
+          "changeType": "TRANSFER",
+          "from": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+          "to": "0xccc52f64ee0fff73ad7312825ee767ce94d4877a",
+          "rawAmount": "1000000000000000000",
+          "contractAddress": null,
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "MATIC",
+          "name": "MATIC",
+          "logo": "https://static.alchemyapi.io/images/network-assets/matic.png",
+          "amount": "1"
+        },
+        {
+          "assetType": "ERC20",
+          "changeType": "TRANSFER",
+          "from": "0xccc52f64ee0fff73ad7312825ee767ce94d4877a",
+          "to": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+          "rawAmount": "1000000000000000000",
+          "contractAddress": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+          "tokenId": null,
+          "decimals": 18,
+          "symbol": "WMATIC",
+          "name": "Wrapped Matic",
+          "logo": "https://static.alchemyapi.io/images/assets/8925.png",
+          "amount": "1"
+        }
+      ],
+      "gasUsed": "0x3697",
+      "error": null
+    }
+  }
+  ```
+
+  ```typescript sdk.ts
+  // npm install alchemy-sdk
+  import { Network, Alchemy } from "alchemy-sdk";
+
+  const alchemy = new Alchemy({
+    apiKey: "demo", // Replace with your Alchemy API Key.
+    network: Network.MATIC_MAINNET,
+  });
+
+  (async () => {
+    const transaction = {
+      from: "0xccc52f64ee0fff73ad7312825ee767ce94d4877a",
+      to: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+      value: "0x0",
+      data: "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
+    };
+    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    console.log('Changes', changes);
+    console.log('Error', error);
+  })();
+  ```
+</CodeGroup>
+
+For a deep dive check out our [Asset Changes - Explained](/docs/asset-changes-explained) guide.

@@ -1,9 +1,9 @@
 import { mkdirSync, readdirSync } from "fs";
 
-import {
-  generateAlchemyRpcSpec,
-  generateChainRpcSpec,
-} from "../src/utils/generateRpcSpecs";
+import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs";
+
+const isHiddenDir = (file: string) =>
+  !file.startsWith("_") && !file.startsWith(".");
 
 const schemasRoot = "src/openrpc";
 const outputRoot = "build/api-specs";
@@ -11,14 +11,12 @@ const outputRoot = "build/api-specs";
 // generate chains OpenRPC specs
 const allChainsDir = `${schemasRoot}/chains`;
 const outputDir = `${outputRoot}/chains`;
-const allChainFiles = readdirSync(allChainsDir).filter(
-  (file) => !file.startsWith("_") && !file.startsWith("."),
-);
+const allChainFiles = readdirSync(allChainsDir).filter(isHiddenDir);
 
 mkdirSync(outputDir, { recursive: true });
 
 allChainFiles.forEach((chain) =>
-  generateChainRpcSpec(allChainsDir, outputDir, chain).catch((err) => {
+  generateOpenRpcSpec(allChainsDir, outputDir, chain).catch((err) => {
     console.error(err);
     throw err;
   }),
@@ -27,14 +25,12 @@ allChainFiles.forEach((chain) =>
 // generate alchemy API OpenRPC specs
 const alchemyApisDir = `${schemasRoot}/alchemy`;
 const alchemyOutputDir = `${outputRoot}/alchemy/json-rpc`;
-const allAlchemyFiles = readdirSync(alchemyApisDir).filter(
-  (file) => !file.startsWith("_") && !file.startsWith("."),
-);
+const allAlchemyApiFiles = readdirSync(alchemyApisDir).filter(isHiddenDir);
 
 mkdirSync(alchemyOutputDir, { recursive: true });
 
-allAlchemyFiles.forEach((api) =>
-  generateAlchemyRpcSpec(alchemyApisDir, alchemyOutputDir, api).catch((err) => {
+allAlchemyApiFiles.forEach((api) =>
+  generateOpenRpcSpec(alchemyApisDir, alchemyOutputDir, api).catch((err) => {
     console.error(err);
     throw err;
   }),

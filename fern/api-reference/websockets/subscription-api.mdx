@@ -99,9 +99,15 @@ Next, install a command line tool for making WebSocket requests such as [wscat](
 </CodeGroup>
 
 <Warning>
+  **Don't Use HTTP Methods Over WebSockets!**
+
   Though it's currently possible to send all your HTTP requests over Websockets, we discourage our developers from doing so. Instead, you should only send `eth_subscribe` and `eth_unsubscribe` requests to WebSockets.
 
   This is for several reasons:
+
+  * You won't receive HTTP status codes in WebSockets responses, which can be useful and actionable.
+  * Because individual HTTP requests are load-balanced in our infrastructure to the fastest possible server, you'll add additional latency by sending JSON-RPC requests over WebSockets.
+  * WebSockets client-side handling has many tricky edge cases and silent failure modes, which can make your dApp less stable.
 </Warning>
 
 # WebSocket Limits
