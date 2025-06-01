@@ -33,7 +33,7 @@ pids=()
 lint_failed=0
 
 input_dir="src/openapi"
-output_dir="build/api-specs"
+output_dir="fern/api-specs"
 
 # Process only the main YAML file in each subdirectory
 for dir in ${input_dir}/*/; do

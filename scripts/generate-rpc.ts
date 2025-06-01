@@ -6,7 +6,7 @@ const isHiddenDir = (file: string) =>
   !file.startsWith("_") && !file.startsWith(".");
 
 const schemasRoot = "src/openrpc";
-const outputRoot = "build/api-specs";
+const outputRoot = "fern/api-specs";
 
 // generate chains OpenRPC specs
 const allChainsDir = `${schemasRoot}/chains`;
