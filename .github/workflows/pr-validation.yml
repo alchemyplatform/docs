@@ -45,9 +45,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
-      - name: Install Fern
-        run: npm install -g fern-api
+      - name: Generate API Specs
+        run: pnpm run generate
 
       - name: Check API is valid
-        run: fern check
+        run: pnpm exec fern check
