@@ -24,8 +24,7 @@ export const generateOpenRpcSpec = async (
   })) as DerefedOpenRpcDoc;
 
   const fullSpec = {
-    "x-generated-warning":
-      "⚠️ This file is auto-generated. Do not edit manually",
+    ...spec,
     "x-fern-parameters": [
       {
         name: "apiKey",
@@ -39,7 +38,6 @@ export const generateOpenRpcSpec = async (
         required: true,
       },
     ],
-    ...spec,
   };
 
   // wallet api sorts by method popularity

@@ -11,11 +11,14 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 ├── src/
 │   ├── openapi/     # REST API definitions (OpenAPI)
 │   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
-├── fern/
-│   ├── <tab>/       # Written documentation for that tab (MDX)
-│   └── docs.yml     # Navigation and structure config
-└── build/           # Generated files - Do NOT make changes here
+└── fern/
+    ├── <tab>/       # Written documentation for that tab (MDX)
+    ├── api-specs/   # Dereferenced API Specs generated from definitions (gitignored)
+    └── docs.yml     # Navigation and structure config
 ```
+
+> \[!WARNING]
+> Account Kit documentation is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
 
 ## Getting Started
 
@@ -65,7 +68,7 @@ pnpm fern login
 pnpm fern generate --docs --preview
 ```
 
-This will take a minute as it needs to upload a lot files to generate the preview and it will output a preview URL.
+This will take a few minutes as it needs to upload a lot of files to generate the preview after which it will output a preview URL.
 
 ### Building API Specs
 
@@ -75,11 +78,11 @@ Production OpenAPI and OpenRPC specs are generated using scripts from their defi
 pnpm run generate
 ```
 
-This will generate all specs as dereferenced json files in the `build/` directory.
+This will generate all specs as dereferenced json files in the `fern/api-specs` directory.
 
 ### Validation
 
-You can validate both OpenAPI and OpenRPC using scripts.
+You can validate both OpenAPI and OpenRPC using these commands:
 
 ```bash
 # Validate REST API specs

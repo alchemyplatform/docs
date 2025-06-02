@@ -27,15 +27,12 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 10.9.0
-        run_install: false
+    - name: Setup pnpm
+      uses: ./.github/actions/setup-pnpm
 
-    - name: Install Fern
+    - name: Generate API Specs
       shell: bash
-      run: pnpm install -g fern-api
+      run: pnpm run generate
 
     - name: Build custom app
       shell: bash
@@ -60,9 +57,9 @@ runs:
         FERN_TOKEN: ${{ inputs.fern-token }}
       run: |
         if [[ "${{ inputs.preview }}" == "true" ]]; then
-          OUTPUT=$(fern generate --docs --preview 2>&1) || true
+          OUTPUT=$(pnpm fern generate --docs --preview 2>&1) || true
         else
-          OUTPUT=$(fern generate --docs --log-level debug 2>&1) || true
+          OUTPUT=$(pnpm fern generate --docs --log-level debug 2>&1) || true
         fi
         echo "$OUTPUT"
         URL=$(echo "$OUTPUT" | grep -oP 'Published docs to \K.*(?= \()')
