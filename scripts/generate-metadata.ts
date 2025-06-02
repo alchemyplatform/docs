@@ -3,8 +3,8 @@ import * as fs from "fs";
 import * as path from "path";
 
 const API_SPECS_DIR = path.join(process.cwd(), "fern", "api-specs");
-const OUTPUT_FILE = path.join(API_SPECS_DIR, ".sandbox-metadata.json");
-const API_SPECS_URL = "https://dev-docs.alchemy.com/api-specs";
+const OUTPUT_FILE = path.join(API_SPECS_DIR, "metadata.json");
+const API_SPECS_URL = "https://dev-docs.alchemy.com";
 const DOCS_URL = "https://www.alchemy.com/docs";
 
 (async () => {
