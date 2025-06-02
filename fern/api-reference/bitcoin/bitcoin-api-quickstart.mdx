@@ -1,0 +1,121 @@
+---
+title: "Bitcoin API Quickstart"
+description: "Get started building on Bitcoin and using the JSON-RPC API"
+url: "https://docs.alchemy.com/reference/bitcoin-api-quickstart"
+slug: "reference/bitcoin-api-quickstart"
+---
+
+> 💡  Available only with [Blast](../reference/introduction-to-blast#how-to-get-blast) access
+
+# Introduction
+
+The Bitcoin API gives developers access to interact with the Bitcoin blockchain through a standard set of JSON-RPC methods. With this API, you can retrieve block and transaction data, inspect the mempool, broadcast transactions, and more.
+
+Unlike EVM chains, Bitcoin uses a UTXO-based model and exposes its functionality via the JSON-RPC protocol. This quickstart will help you make your first request.
+
+***
+
+## What is the Bitcoin Chain API?
+
+The Bitcoin Chain API allows applications to communicate with a Bitcoin node using the JSON-RPC protocol. Unlike Ethereum’s account-based model, Bitcoin relies on a UTXO (Unspent Transaction Output) model, which means that balances are tracked by outputs that are explicitly spent or unspent.
+
+Alchemy’s Bitcoin API gives developers a consistent interface to query blockchain data, submit transactions, and monitor network activity. This includes:
+
+* Retrieving raw or decoded transaction data
+* Querying block headers and full blocks
+* Monitoring mempool entries and states
+* Submitting and testing raw transactions
+
+If you’ve worked with Ethereum or other JSON-RPC-compatible chains, the structure will feel familiar, though the data returned may differ in structure and semantics.
+
+***
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Your first step involves selecting a package manager, which will be crucial for managing your project's dependencies. The choice between `npm` and `yarn` depends on your personal preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+To kickstart your project, open your terminal and execute the following commands:
+
+<CodeGroup>
+  ```text npm
+  mkdir bitcoin-api-quickstart
+  cd bitcoin-api-quickstart
+  npm init --yes
+  ```
+
+  ```text yarn
+  mkdir bitcoin-api-quickstart
+  cd bitcoin-api-quickstart
+  yarn init --yes
+  ```
+</CodeGroup>
+
+This creates a new directory named `bitcoin-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = `https://bitcoin-mainnet.alchemy-blast.com/v2/${yourAPIKey}`;
+
+  const payload = {
+  jsonrpc: '2.0',
+  id: 1,
+  method: 'getblockcount',
+  params: []
+  };
+
+  axios.post(url, payload)
+  .then(response => {
+  console.log('Current block height:', response.data.result);
+  })
+  .catch(error => {
+  console.error('Error fetching block count:', error);
+  });
+
+  ```
+</CodeGroup>
+
+Remember to replace `yourAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+To execute your script and make a request to the Bitcoin App, run:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the current block number on Bitcoin App (in hexadecimal format) outputted to your console:
+
+```
+Current block height: 0x6d68e
+```
+
+## Next Steps
+
+Well done! You've just made your first request to the Bitcoin App API. With this foundation, you can dive deeper into the array of [JSON-RPC methods available on Bitcoin App](/node/bitcoin/bitcoin-api-endpoints) and start building your dApps on it!

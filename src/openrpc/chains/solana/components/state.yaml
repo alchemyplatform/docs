@@ -1,91 +1,84 @@
-# state-schemas.yaml
-
-GetEpochInfoConfig:
-  title: GetEpochInfo Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-EpochInfo:
-  title: Epoch Information
-  type: object
-  properties:
-    absoluteSlot:
-      type: integer
-      description: Current slot.
-    blockHeight:
-      type: integer
-      description: Current block height.
-    epoch:
-      type: integer
-      description: Current epoch.
-    slotIndex:
-      type: integer
-      description: Slot index relative to the start of the epoch.
-    slotsInEpoch:
-      type: integer
-      description: Number of slots in this epoch.
-    transactionCount:
-      type: integer
-      nullable: true
-      description: Total transactions processed without error since genesis.
-
-EpochSchedule:
-  title: Epoch Schedule
-  type: object
-  properties:
-    slotsPerEpoch:
-      type: integer
-      description: Max number of slots in each epoch.
-    leaderScheduleSlotOffset:
-      type: integer
-      description: Slots before epoch to calculate leader schedule.
-    warmup:
-      type: boolean
-      description: Whether epochs start short and grow.
-    firstNormalEpoch:
-      type: integer
-      description: First normal-length epoch.
-    firstNormalSlot:
-      type: integer
-      description: First normal slot.
-
-SlotConfig:
-  title: Slot Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-
-SlotLeader:
-  title: Slot Leader
-  type: string
-  description: The node identity Pubkey as a base-58 encoded string.
-
-SlotLeaders:
-  title: Slot Leaders
-  type: array
-  items:
-    $ref: "#/components/schemas/Pubkey"
-  description: An array of node identity public keys as base-58 encoded strings.
-
-MinimumLedgerSlot:
-  title: Minimum Ledger Slot
-  type: integer
-  description: The lowest slot number the node has information about.
-
-VersionInfo:
-  title: Version Information
-  type: object
-  properties:
-    solana-core:
+components:
+  schemas:
+    GetEpochInfoConfig:
+      title: GetEpochInfo Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+    EpochInfo:
+      title: Epoch Information
+      type: object
+      properties:
+        absoluteSlot:
+          type: integer
+          description: Current slot.
+        blockHeight:
+          type: integer
+          description: Current block height.
+        epoch:
+          type: integer
+          description: Current epoch.
+        slotIndex:
+          type: integer
+          description: Slot index relative to the start of the epoch.
+        slotsInEpoch:
+          type: integer
+          description: Number of slots in this epoch.
+        transactionCount:
+          type: integer
+          nullable: true
+          description: Total transactions processed without error since genesis.
+    EpochSchedule:
+      title: Epoch Schedule
+      type: object
+      properties:
+        slotsPerEpoch:
+          type: integer
+          description: Max number of slots in each epoch.
+        leaderScheduleSlotOffset:
+          type: integer
+          description: Slots before epoch to calculate leader schedule.
+        warmup:
+          type: boolean
+          description: Whether epochs start short and grow.
+        firstNormalEpoch:
+          type: integer
+          description: First normal-length epoch.
+        firstNormalSlot:
+          type: integer
+          description: First normal slot.
+    SlotConfig:
+      title: Slot Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+    SlotLeader:
+      title: Slot Leader
       type: string
-      description: The software version of solana-core.
-    feature-set:
+      description: The node identity Pubkey as a base-58 encoded string.
+    SlotLeaders:
+      title: Slot Leaders
+      type: array
+      items:
+        $ref: "./base-types.yaml#/components/schemas/Pubkey"
+      description: An array of node identity public keys as base-58 encoded strings.
+    MinimumLedgerSlot:
+      title: Minimum Ledger Slot
       type: integer
-      description: Unique identifier of the current software's feature set.
+      description: The lowest slot number the node has information about.
+    VersionInfo:
+      title: Version Information
+      type: object
+      properties:
+        solana-core:
+          type: string
+          description: The software version of solana-core.
+        feature-set:
+          type: integer
+          description: Unique identifier of the current software's feature set.

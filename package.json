@@ -2,12 +2,13 @@
   "name": "docs",
   "version": "1.0.0",
   "description": "API Specs and content files for Alchemy's documentation",
-  "license": "MIT",
+  "packageManager": "pnpm@10.9.0",
+  "license": "CC-BY-4.0",
   "engines": {
     "node": "22.x"
   },
-  "packageManager": "pnpm@10.9.0",
   "scripts": {
+    "predev": "pnpm run generate",
     "dev": "fern docs dev --port 3020",
     "check-links": "fern docs broken-links",
     "fern:check": "fern check",
@@ -15,11 +16,15 @@
     "fern:publish": "fern generate --docs",
     "generate:rest": "./scripts/generate-open-api.sh",
     "generate:rpc": "ts-node ./scripts/generate-rpc.ts",
+    "generate:rpc:watch": "onchange \"src/openrpc/**/*.{yaml,yml}\" -- pnpm run generate:rpc",
+    "generate:rest:watch": "onchange \"src/openapi/**/*.{yaml,yml}\" -- pnpm run generate:rest",
+    "generate:watch": "pnpm run generate:rpc:watch & pnpm run generate:rest:watch",
+    "generate:metadata": "ts-node ./scripts/generate-metadata.ts",
     "generate": "pnpm run generate:rest & pnpm run generate:rpc",
-    "clean": "rm -rf build",
+    "clean": "rm -rf fern/api-specs",
     "validate:rest": "./scripts/generate-open-api.sh --validate-only",
     "validate:rpc": "ts-node ./scripts/validate-rpc.ts",
-    "validate": "pnpm run validate:rest & pnpm run validate:rpc & pnpm run validate:mdx",
+    "validate": "pnpm run validate:rest & pnpm run validate:rpc",
     "typecheck": "tsc --noEmit",
     "lint": "pnpm run lint:eslint & pnpm run lint:prettier & pnpm run typecheck",
     "lint:fix": "pnpm run lint:eslint:fix & pnpm run lint:prettier:fix",
@@ -30,8 +35,9 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^12.0.2",
     "@open-rpc/schema-utils-js": "^2.1.2",
-    "fern-api": "^0.57.33",
+    "fern-api": "^0.58.6",
     "js-yaml": "^4.1.0",
     "json-schema-merge-allof": "^0.8.1",
     "ts-node": "^10.9.2"
@@ -52,6 +58,7 @@
     "husky": "^9.1.7",
     "jiti": "^2.4.2",
     "lint-staged": "^15.5.1",
+    "onchange": "^7.1.0",
     "prettier": "3.4.2",
     "remark-frontmatter": "^5.0.0",
     "remark-mdx": "^3.1.0",

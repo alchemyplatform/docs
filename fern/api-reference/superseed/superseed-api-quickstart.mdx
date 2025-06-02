@@ -1,0 +1,117 @@
+---
+title: "Superseed API Quickstart"
+description: "Get started building on Superseed and using the JSON-RPC API"
+url: "https://docs.alchemy.com/reference/superseed-api-quickstart"
+slug: "reference/superseed-api-quickstart"
+---
+
+> 💡  Available only with [Blast](../reference/introduction-to-blast#how-to-get-blast) access
+
+# Introduction
+
+The Superseed API allows developers to interact with the Superseed blockchain using standard JSON-RPC methods.
+
+With this API, you can retrieve block and transaction data, send transactions, and build applications powered by Superseed’s high-throughput, EVM-compatible environment.
+
+***
+
+## What is the Superseed Chain API?
+
+The Superseed Chain API enables developers to communicate with the network through JSON-RPC — a widely adopted standard for blockchain interactions. If you’re familiar with Ethereum’s API structure, Superseed’s methods will feel intuitive.
+
+Using the API, developers can:
+
+* Fetch the latest blocks and transactions
+* Send signed transactions to the network
+* Query contract data
+* Estimate gas fees and more
+
+***
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Your first step involves selecting a package manager, which will be crucial for managing your project's dependencies. The choice between `npm` and `yarn` depends on your personal preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+To kickstart your project, open your terminal and execute the following commands:
+
+<CodeGroup>
+  ```text npm
+  mkdir superseed-api-quickstart
+  cd superseed-api-quickstart
+  npm init --yes
+  ```
+
+  ```text yarn
+  mkdir superseed-api-quickstart
+  cd superseed-api-quickstart
+  yarn init --yes
+  ```
+</CodeGroup>
+
+This creates a new directory named `superseed-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
+
+<CodeGroup>
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = `https://superseed-mainnet.alchemy-blast.com/v2/${yourAPIKey}`;
+
+  const payload = {
+  jsonrpc: '2.0',
+  id: 1,
+  method: 'eth_blockNumber',
+  params: []
+  };
+  axios.post(url, payload)
+  .then(response => {
+    console.log('Block Number:', response.data.result);
+  })
+  .catch(error => {
+    console.error(error);
+  });
+  ```
+</CodeGroup>
+
+Remember to replace `yourAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+### 4. Run Your Script
+
+To execute your script and make a request to the Superseed App, run:
+
+<CodeGroup>
+  ```bash bash
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the current block number on Superseed App (in hexadecimal format) outputted to your console:
+
+```
+Block Number: 0x6d68e
+```
+
+## Next Steps
+
+Well done! You've just made your first request to the Superseed App API. With this foundation, you can dive deeper into the array of [JSON-RPC methods available on Superseed App](/node/superseed/superseed-api-endpoints) and start building your dApps on it!

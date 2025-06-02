@@ -1,0 +1,24 @@
+name: "Add aa-sdk docs to fern"
+description: "Checks out aa-sdk repository and copies docs to fern/wallets"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Sparse Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        repository: alchemyplatform/aa-sdk
+        path: aa-sdk
+
+    - name: Handle include statements
+      shell: bash
+      run: |
+        cd aa-sdk
+        node docs/scripts/extract-include-statements.js
+
+    - name: Copy docs to workspace and insert into fern
+      shell: bash
+      run: |
+        mkdir -p fern/wallets
+        cp -r aa-sdk/docs/* fern/wallets
+        fern/wallets/scripts/insert-docs.sh
