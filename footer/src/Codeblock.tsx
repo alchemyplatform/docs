@@ -1,13 +1,9 @@
 import React from 'react'
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
-import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
-import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript'
-import python from 'react-syntax-highlighter/dist/esm/languages/prism/python'
-import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash'
-import json from 'react-syntax-highlighter/dist/esm/languages/prism/json'
-import oneDark from 'react-syntax-highlighter/dist/esm/styles/prism/one-dark'
-import oneLight from 'react-syntax-highlighter/dist/esm/styles/prism/one-light'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import dark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark'
+import light from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
 import { CodeblockSelect } from './CodeblockSelect'
 
 import {
@@ -17,11 +13,6 @@ import {
   languageOptions,
   Languages,
 } from './codemap.ts'
-
-SyntaxHighlighter.registerLanguage(CodeBlockLanguage.CLI, bash)
-SyntaxHighlighter.registerLanguage(CodeBlockLanguage.JavaScript, javascript)
-SyntaxHighlighter.registerLanguage(CodeBlockLanguage.Python, python)
-SyntaxHighlighter.registerLanguage(CodeBlockLanguage.JSON, json)
 
 const CodeBlockContainer = styled.div`
   background-color: ${({ theme }) =>
@@ -206,12 +197,12 @@ export const Codeblock: React.FC = () => {
             </RunButton>
           </div>
           <SyntaxHighlighter
-            style={isDark ? oneDark : oneLight}
+            style={isDark ? dark : light}
             wrapLongLines={true}
             showLineNumbers={true}
             language={language}
             customStyle={{
-              fontSize: '14px',
+              fontSize: '16px',
               background: 'transparent',
               height: '300px',
               marginTop: '0px',
