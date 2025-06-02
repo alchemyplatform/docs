@@ -36,6 +36,8 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 
 2. Install dependencies:
    ```bash
+   asdf install # or `mise install`
+   corepack enable
    pnpm i
    ```
 
