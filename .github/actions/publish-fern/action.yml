@@ -57,9 +57,9 @@ runs:
         FERN_TOKEN: ${{ inputs.fern-token }}
       run: |
         if [[ "${{ inputs.preview }}" == "true" ]]; then
-          OUTPUT=$(pnpm exec fern generate --docs --preview 2>&1) || true
+          OUTPUT=$(pnpm fern generate --docs --preview 2>&1) || true
         else
-          OUTPUT=$(pnpm exec fern generate --docs --log-level debug 2>&1) || true
+          OUTPUT=$(pnpm fern generate --docs --log-level debug 2>&1) || true
         fi
         echo "$OUTPUT"
         URL=$(echo "$OUTPUT" | grep -oP 'Published docs to \K.*(?= \()')
