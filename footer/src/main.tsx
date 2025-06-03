@@ -72,13 +72,14 @@ const render = async () => {
 // Use 'load' event instead of 'DOMContentLoaded' for App Router
 window.addEventListener('load', async () => {
   // Only render on /docs or /docs/
-  const currentPath = window.location.pathname.replace(/\/+$/, '')
+  const initalPath = window.location.pathname.replace(/\/+$/, '')
 
-  if (currentPath === '/docs') {
+  if (initalPath === '/docs') {
     await render()
   }
 
   new MutationObserver(async (mutations) => {
+    const currentPath = window.location.pathname.replace(/\/+$/, '')
     // Only render if on /docs and footer is missing
     const shouldRender =
       currentPath === '/docs' &&

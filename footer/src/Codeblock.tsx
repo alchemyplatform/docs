@@ -172,18 +172,13 @@ export const Codeblock: React.FC = () => {
                 e.currentTarget.style.backgroundColor = isDark
                   ? '#4b5563'
                   : '#4b5563'
-                e.stopPropagation()
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = isDark
                   ? '#1C1C1C'
                   : '#383838'
-                e.stopPropagation()
               }}
-              onClick={(e) => {
-                handleRun()
-                e.stopPropagation()
-              }}
+              onClick={handleRun}
               disabled={runButtonDisabled}
             >
               RUN{' '}
