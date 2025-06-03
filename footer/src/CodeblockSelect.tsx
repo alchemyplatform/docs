@@ -52,6 +52,9 @@ export const CodeblockSelect = ({
           borderRadius: '6px',
           border: `1px solid ${isDark ? '#383838' : '#F1F1F1'}`,
           fontFamily: 'monospace',
+          fontSize: '14px',
+          minHeight: 'initial',
+          padding: '3px 0px',
         }),
         indicatorSeparator: () => ({
           display: 'none',
@@ -82,6 +85,7 @@ export const CodeblockSelect = ({
           padding: '4px',
           border: `1px solid ${isDark ? '#222222' : '#F1F1F1'}`,
           borderRadius: '6px',
+          fontSize: '14px',
         }),
         option: (base, state) => ({
           ...base,

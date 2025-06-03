@@ -168,17 +168,22 @@ export const Codeblock: React.FC = () => {
               />
             </div>
             <RunButton
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = isDark
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = isDark
                   ? '#4b5563'
-                  : '#4b5563')
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = isDark
+                  : '#4b5563'
+                e.stopPropagation()
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = isDark
                   ? '#1C1C1C'
-                  : '#383838')
-              }
-              onClick={handleRun}
+                  : '#383838'
+                e.stopPropagation()
+              }}
+              onClick={(e) => {
+                handleRun()
+                e.stopPropagation()
+              }}
               disabled={runButtonDisabled}
             >
               RUN{' '}
@@ -198,24 +203,21 @@ export const Codeblock: React.FC = () => {
           </div>
           <SyntaxHighlighter
             style={isDark ? dark : light}
-            wrapLongLines={true}
             showLineNumbers={true}
             language={language}
             customStyle={{
               fontSize: '16px',
               background: 'transparent',
               height: '300px',
-              marginTop: '0px',
-            }}
-            lineProps={{
-              style: {
-                flexWrap: 'wrap',
-              },
+              marginTop: '8px',
+              textWrap: 'initial',
             }}
             codeTagProps={{
               style: {
                 boxShadow: 'none',
                 background: 'transparent',
+                whiteSpace: 'unset',
+                paddingInline: '0px',
               },
             }}
           >
@@ -254,7 +256,7 @@ export const Codeblock: React.FC = () => {
                   (e.currentTarget.style.color = isDark ? '#EDEDED' : '#383838')
                 }
               >
-                Get started&nbsp;{' '}
+                Get started&nbsp;
                 <svg
                   style={{
                     display: 'inline',

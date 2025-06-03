@@ -71,15 +71,17 @@ const render = async () => {
 
 // Use 'load' event instead of 'DOMContentLoaded' for App Router
 window.addEventListener('load', async () => {
-  // Only render on /docs
-  if (window.location.pathname === '/docs') {
+  // Only render on /docs or /docs/
+  const currentPath = window.location.pathname.replace(/\/+$/, '')
+
+  if (currentPath === '/docs') {
     await render()
   }
 
   new MutationObserver(async (mutations) => {
     // Only render if on /docs and footer is missing
     const shouldRender =
-      window.location.pathname === '/docs' &&
+      currentPath === '/docs' &&
       mutations.some(
         (mutation) =>
           mutation.type === 'childList' &&
@@ -89,10 +91,7 @@ window.addEventListener('load', async () => {
       await render()
     }
     // Optionally: Remove footer if not on /docs
-    if (
-      window.location.pathname !== '/docs' &&
-      document.getElementById('alchemy-footer')
-    ) {
+    if (currentPath !== '/docs' && document.getElementById('alchemy-footer')) {
       document.getElementById('alchemy-footer')?.remove()
     }
   }).observe(document.body, { childList: true, subtree: true })

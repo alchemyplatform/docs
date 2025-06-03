@@ -31,9 +31,8 @@ export const chainOptions = [
 export const codeMap: { [endpoint: string]: CodeSample } = {
   getNFTsForCollection: {
     [CodeBlockLanguage.CLI]: `curl 'https://eth-mainnet.g.alchemy.com/nft/v3/{alchemy_api_key}/getNFTsForCollection?contractAddress=0xe785E82358879F061BC3dcAC6f0444462D4b5330&refreshCache=false'
-    --request GET
-    --header 'accept: application/json'
-`,
+  --request GET
+  --header 'accept: application/json'`,
     [CodeBlockLanguage.JavaScript]: `// Declaring variables
 let message = "Hello, World!";
 const PI = 3.14159;
