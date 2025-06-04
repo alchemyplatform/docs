@@ -30,10 +30,10 @@ paths:
               properties:
                 email:
                   type: string
-                  description: Optional. Used for user authentication when passkey is not provided. Specifies the user's email address.
+                  description: Used for user authentication when passkey is not provided. Specifies the user's email address.
                 passkey:
                   type: object
-                  description: Optional. Used for authentication when email is not provided. Enables passkey-based authentication.
+                  description: Used for authentication when email is not provided. Enables passkey-based authentication.
                   properties:
                     challenge:
                       type: string
@@ -61,12 +61,15 @@ paths:
                         - clientDataJson
                         - attestationObject
                         - transports
+                  required:
+                    - challenge
+                    - attestation
                 targetPublicKey:
                   $ref: "#/components/schemas/targetPublicKey"
                 expirationSeconds:
                   $ref: "#/components/schemas/expirationSeconds"
                 redirectParams:
-                  $ref: redirectParams
+                  $ref: "#/components/schemas/redirectParams"
       responses:
         "200":
           description: Wallet creation response.
@@ -80,16 +83,24 @@ paths:
                   userId:
                     type: string
                     description: A unique identifier for the user.
+                    nullable: true
                   address:
                     type: string
                     description: The EVM address of the signer.
+                    nullable: true
                   solanaAddress:
                     type: string
                     description: The Solana address of the signer.
+                    nullable: true
                   otpId:
                     $ref: "#/components/schemas/otpId"
+                    nullable: true
                 required:
                   - orgId
+                  - userId
+                  - address
+                  - solanaAddress
+                  - otpId
       operationId: createAccount
   /auth:
     post:
@@ -117,6 +128,11 @@ paths:
                   $ref: "#/components/schemas/targetPublicKey"
                 expirationSeconds:
                   $ref: "#/components/schemas/expirationSeconds"
+                redirectParams:
+                  $ref: "#/components/schemas/redirectParams"
+              required:
+                - email
+                - targetPublicKey
       responses:
         "200":
           description: Authentication email sent successfully.
@@ -130,8 +146,10 @@ paths:
                     description: The organization ID associated with the user and the application, facilitating the authentication process within the context of the user's application.
                   otpId:
                     $ref: "#/components/schemas/otpId"
+                    nullable: true
                 required:
                   - orgId
+                  - otpId
       operationId: sendEmailAuth
   /whoami:
     post:
@@ -156,6 +174,8 @@ paths:
                   $ref: "#/components/schemas/SignedTurnkeyRequest"
                   description: >
                     A stamped [Turnkey Whoami Request](https://docs.turnkey.com/api#tag/Sessions/operation/GetWhoami).
+              required:
+                - stampedRequest
       responses:
         "200":
           description: User authentication successful.
@@ -167,6 +187,7 @@ paths:
                   email:
                     $ref: "#/components/schemas/email"
                     description: The authenticated user's email address.
+                    nullable: true
                   userId:
                     type: string
                     description: A unique identifier for the authenticated user.
@@ -179,10 +200,13 @@ paths:
                   solanaAddress:
                     type: string
                     description: The Solana address of the user's signer. Required for Solana transactions and wallet management.
+                    nullable: true
                 required:
+                  - email
                   - userId
                   - orgId
                   - address
+                  - solanaAddress
       operationId: authUser
   /lookup:
     post:
@@ -278,8 +302,8 @@ paths:
                     ```
 
                     For more details on the parameters of the request body, see [Turnkey's API Reference](https://docs.turnkey.com/api#tag/Signing/operation/SignRawPayload).
-            required:
-              - stampedRequest
+              required:
+                - stampedRequest
       responses:
         "200":
           description: Message signing successful.
@@ -310,7 +334,7 @@ components:
     expirationSeconds:
       type: string
       description: >
-        Optional. Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).
+        Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).
     targetPublicKey:
       type: string
       description: |
