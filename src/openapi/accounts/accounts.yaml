@@ -83,24 +83,16 @@ paths:
                   userId:
                     type: string
                     description: A unique identifier for the user.
-                    nullable: true
                   address:
                     type: string
                     description: The EVM address of the signer.
-                    nullable: true
                   solanaAddress:
                     type: string
                     description: The Solana address of the signer.
-                    nullable: true
                   otpId:
                     $ref: "#/components/schemas/otpId"
-                    nullable: true
                 required:
                   - orgId
-                  - userId
-                  - address
-                  - solanaAddress
-                  - otpId
       operationId: createAccount
   /auth:
     post:
@@ -146,10 +138,8 @@ paths:
                     description: The organization ID associated with the user and the application, facilitating the authentication process within the context of the user's application.
                   otpId:
                     $ref: "#/components/schemas/otpId"
-                    nullable: true
                 required:
                   - orgId
-                  - otpId
       operationId: sendEmailAuth
   /whoami:
     post:
@@ -187,7 +177,6 @@ paths:
                   email:
                     $ref: "#/components/schemas/email"
                     description: The authenticated user's email address.
-                    nullable: true
                   userId:
                     type: string
                     description: A unique identifier for the authenticated user.
@@ -200,13 +189,10 @@ paths:
                   solanaAddress:
                     type: string
                     description: The Solana address of the user's signer. Required for Solana transactions and wallet management.
-                    nullable: true
                 required:
-                  - email
                   - userId
                   - orgId
                   - address
-                  - solanaAddress
       operationId: authUser
   /lookup:
     post:
