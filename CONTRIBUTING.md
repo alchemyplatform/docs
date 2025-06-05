@@ -27,7 +27,9 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
 
 * Location: `src/openapi/`
 * Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-* **Tip**: Use the [Redocly VSCode extension](https://marketplace.visualstudio.com/items?itemName=Redocly.openapi-vs-code) to enable OpenAPI spec validation with Intellisense.
+
+> \[!TIP]
+> Use the [Redocly VSCode extension](https://marketplace.visualstudio.com/items?itemName=Redocly.openapi-vs-code) to enable OpenAPI spec validation with Intellisense.
 
 **JSON-RPC APIs (OpenRPC)**
 
@@ -37,17 +39,23 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
   * `alchemy/`: Alchemy-specific APIs
   * `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
 
+> \[!TIP]
+> Use the [YAML VSCode extension](https://marketplace.cursorapi.com/items?itemName=redhat.vscode-yaml) to get some basic OpenRPC validation with Intellisense.
+
 ### Account Kit Documentation
 
-Account Kit documentation is maintained in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
+Account Kit documentation is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
 
 ## Making Changes
 
-1. Make your changes
-2. Test locally using `pnpm dev`
-3. Commit your changes
-4. Push to your fork
-5. Create a pull request to the upstream
+If you are not an [Alchemy Employee](#alchemy-employees), you will need to create your own fork.
+
+1. Fork the repo (if you haven't already)
+2. Make your changes
+3. Test locally using `pnpm dev`
+4. Commit your changes
+5. Push to your fork
+6. Create a pull request to the upstream
 
 ## Markdown Style Guide
 
@@ -71,6 +79,13 @@ git merge upstream/main
 git push origin main
 ```
 
+## Adding Images
+
+* Location: `fern/images`
+* Steps:
+  * Place image files in the `fern/images/` directory
+* Reference images from the markdown using its path within the images dir (don't include `/fern/images` in the path). See [Fern's docs](https://buildwithfern.com/learn/docs/content/write-markdown#images) on how to add to do so.
+
 ## Pull Request Guidelines
 
 * Ensure your PR addresses a specific issue or adds a specific feature
@@ -82,6 +97,13 @@ git push origin main
 ## Creating Issues
 
 Unsure how to make changes yourself? Feel free to open an issue using the appropriate template. Please fill out required fields and provide as much detail as possible to ensure contributors can be as helpful as possible.
+
+## Alchemy Employees
+
+If you work at Alchemy you don't need to create your own fork. Members of the [Alchemy Employees Team](https://github.com/orgs/alchemyplatform/teams/alchemy-employees) team in GitHub are automatically granted direct access. Clicking on the alchemyplatform tile in Okta should automatically add you to this team! Please contact IT if you need further assistance being added to the team.
+
+> \[!NOTE]
+> The SSH key you use with GitHub **must** have SSO enabled to work. You can do that [here](https://github.com/settings/keys). Click the "Configure SSO" dropdown and authorize `alchemyplatform`
 
 ## Questions?
 

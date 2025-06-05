@@ -11,11 +11,14 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 ├── src/
 │   ├── openapi/     # REST API definitions (OpenAPI)
 │   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
-├── fern/
-│   ├── <tab>/       # Written documentation for that tab (MDX)
-│   └── docs.yml     # Navigation and structure config
-└── build/           # Generated files - Do NOT make changes here
+└── fern/
+    ├── <tab>/       # Written documentation for that tab (MDX)
+    ├── api-specs/   # Dereferenced API Specs generated from definitions (gitignored)
+    └── docs.yml     # Navigation and structure config
 ```
+
+> \[!WARNING]
+> Account Kit documentation is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
 
 ## Getting Started
 
@@ -33,6 +36,8 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 
 2. Install dependencies:
    ```bash
+   asdf install # or `mise install`
+   corepack enable
    pnpm i
    ```
 
@@ -48,6 +53,25 @@ pnpm dev
 
 This will start a local server with live reloading. Visit `http://localhost:3020` to view the documentation.
 
+#### Building Custom Components
+
+In some cases we need to use custom-built components that require styling outside the standard Fern capabilities. Currently, Fern does not support building/rendering Custom JS + React locally, so first you'll need to build the custom component:
+
+```bash
+cd footer/  # using the custom footer component as an example
+pnpm install  # if you need to install dependencies
+pnpm run build
+```
+
+Then, a preview needs to be generated (this requires access to Fern):
+
+```bash
+pnpm fern login
+pnpm fern generate --docs --preview
+```
+
+This will take a few minutes as it needs to upload a lot of files to generate the preview after which it will output a preview URL.
+
 ### Building API Specs
 
 Production OpenAPI and OpenRPC specs are generated using scripts from their definition files in the `src` directory.
@@ -56,11 +80,11 @@ Production OpenAPI and OpenRPC specs are generated using scripts from their defi
 pnpm run generate
 ```
 
-This will generate all specs as dereferenced json files in the `build/` directory.
+This will generate all specs as dereferenced json files in the `fern/api-specs` directory.
 
 ### Validation
 
-You can validate both OpenAPI and OpenRPC using scripts.
+You can validate both OpenAPI and OpenRPC using these commands:
 
 ```bash
 # Validate REST API specs
@@ -100,4 +124,4 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## License
 
-This project is licensed under the CC-BY-4.0 License - see the LICENSE file for details.
+This project is licensed under the CC-BY-4.0 License - see the [LICENSE](./LICENSE) file for details.

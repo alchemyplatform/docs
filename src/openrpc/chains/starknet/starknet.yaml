@@ -1,0 +1,483 @@
+# yaml-language-server: $schema=https://meta.open-rpc.org/
+
+$schema: https://meta.open-rpc.org/
+openrpc: 1.2.4
+info:
+  title: Alchemy Starknet JSON-RPC Specification
+  description: A specification of the standard JSON-RPC methods for Starknet.
+  version: 0.0.0
+servers:
+  - url: https://starknet-mainnet.g.alchemy.com/v2
+    name: Starknet Mainnet (Default)
+  - url: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/
+    name: Starknet Mainnet (v0.8)
+  - url: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/
+    name: Starknet Mainnet (v0.7)
+  - url: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_6/
+    name: Starknet Mainnet (v0.6)
+  - url: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_5/
+    name: Starknet Mainnet (v0.5)
+  - url: https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_4/
+    name: Starknet Mainnet (v0.4)
+
+methods:
+  # Block methods
+  - name: starknet_blockHashAndNumber
+    description: Get the most recent accepted block hash and number
+    params: []
+    result:
+      name: result
+      description: The latest block hash and number
+      schema:
+        title: Starknet block hash and number result
+        type: object
+        properties:
+          block_hash:
+            title: Block hash
+            $ref: "./components/base-types.yaml#/components/schemas/BLOCK_HASH"
+          block_number:
+            title: Block number
+            $ref: "./components/base-types.yaml#/components/schemas/BLOCK_NUMBER"
+        required:
+          - block_hash
+          - block_number
+
+  - name: starknet_blockNumber
+    description: Get the most recent accepted block number
+    params: []
+    result:
+      name: result
+      description: The latest block number
+      schema:
+        title: Block number
+        $ref: "./components/base-types.yaml#/components/schemas/BLOCK_NUMBER"
+
+  - name: starknet_getBlockWithTxHashes
+    description: Get block information with transaction hashes given the block id
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: The resulting block information with transaction hashes
+      schema:
+        title: Starknet get block hash with tx hashes result
+        oneOf:
+          - title: Block with transaction hashes
+            $ref: "./components/block.yaml#/components/schemas/BLOCK_WITH_TX_HASHES"
+          - title: Pending block with transaction hashes
+            $ref: "./components/block.yaml#/components/schemas/PENDING_BLOCK_WITH_TX_HASHES"
+
+  - name: starknet_getBlockWithTxs
+    description: Get block information with full transactions given the block id
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: The resulting block information with full transactions
+      schema:
+        title: Starknet get block with txs result
+        oneOf:
+          - title: Block with transactions
+            $ref: "./components/block.yaml#/components/schemas/BLOCK_WITH_TXS"
+          - title: Pending block with transactions
+            $ref: "./components/block.yaml#/components/schemas/PENDING_BLOCK_WITH_TXS"
+
+  - name: starknet_getBlockTransactionCount
+    summary: Get the number of transactions in a block given a block id
+    description: Returns the number of transactions in the designated block.
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: The number of transactions in the designated block
+      schema:
+        title: Block transaction count
+        type: integer
+        minimum: 0
+
+  # Client methods
+  - name: starknet_chainId
+    description: Return the currently configured StarkNet chain id
+    params: []
+    result:
+      name: result
+      description: The chain id this node is connected to
+      schema:
+        title: Chain id
+        $ref: "./components/client.yaml#/components/schemas/CHAIN_ID"
+
+  - name: starknet_syncing
+    description: Returns an object about the sync status, or false if the node is not syncing
+    params: []
+    result:
+      name: syncing
+      summary: >
+        The state of the synchronization, or false if the node is not
+        synchronizing
+      description: >
+        The status of the node, if it is currently synchronizing state. FALSE
+        otherwise
+      schema:
+        title: SyncingStatus
+        oneOf:
+          - type: boolean
+            title: "False"
+            description: Only legal value is FALSE here
+          - title: Sync status
+            $ref: "./components/block.yaml#/components/schemas/SYNC_STATUS"
+
+  # Execute methods
+  - name: starknet_call
+    summary: Call a StarkNet function without creating a StarkNet transaction
+    description: >
+      Calls a function in a contract and returns the return value. Using this
+      call will not create a transaction; hence, will not change the state
+    params:
+      - name: request
+        description: The details of the function call
+        required: true
+        schema:
+          title: Function call
+          $ref: "./components/client.yaml#/components/schemas/FUNCTION_CALL"
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag, for the block referencing the state or call the
+          transaction on.
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: The function's return value
+      schema:
+        type: array
+        title: Field element
+        items:
+          $ref: "./components/base-types.yaml#/components/schemas/FELT"
+
+  # Fee_market methods
+  - name: starknet_estimateFee
+    summary: Estimate the fee for StarkNet transactions
+    description: >
+      Estimates the resources required by a given sequence of transactions when
+      applied on a given state. If one of the transactions reverts or fails due
+      to any reason (e.g., validation failure or an internal error), a
+      TRANSACTION_EXECUTION_ERROR is returned. For v0-2 transactions the estimate
+      is given in wei, and for v3 transactions it is given in fri.
+    params:
+      - name: request
+        description: The transaction to estimate
+        required: true
+        schema:
+          type: array
+          description: >
+            A sequence of transactions to estimate, running each transaction on
+            the state resulting from applying all the previous ones
+          title: Transaction
+          items:
+            $ref: "./components/transaction.yaml#/components/schemas/BROADCASTED_TXN"
+      - name: simulation_flags
+        description: Describes what parts of the transaction should be executed
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: "./components/base-types.yaml#/components/schemas/SIMULATION_FLAG_FOR_ESTIMATE_FEE"
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag, for the block referencing the state or call the
+          transaction on.
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: The fee estimations
+      schema:
+        title: Estimation
+        type: array
+        description: >
+          A sequence of fee estimations where the i'th estimate corresponds to
+          the i'th transaction
+        items:
+          $ref: "./components/client.yaml#/components/schemas/FEE_ESTIMATE"
+
+  # Filter methods
+  - name: starknet_getEvents
+    summary: Returns all events matching the given filter
+    description: Returns all event objects matching the conditions in the provided filter
+    params:
+      - name: filter
+        description: The conditions used to filter the returned events
+        required: true
+        schema:
+          title: Events request
+          allOf:
+            - title: Event filter
+              $ref: "./components/filter.yaml#/components/schemas/EVENT_FILTER"
+            - title: Result page request
+              $ref: "./components/filter.yaml#/components/schemas/RESULT_PAGE_REQUEST"
+    result:
+      name: events
+      description: All the event objects matching the filter
+      schema:
+        title: Events chunk
+        $ref: "./components/filter.yaml#/components/schemas/EVENTS_CHUNK"
+
+  # State methods
+  - name: starknet_getStorageAt
+    description: Get the value of the storage at the given address and key
+    params:
+      - name: contract_address
+        description: The address of the contract to read from
+        required: true
+        schema:
+          title: Address
+          $ref: "./components/base-types.yaml#/components/schemas/ADDRESS"
+      - name: key
+        description: The key to the storage value for the given contract
+        required: true
+        schema:
+          title: Storage key
+          $ref: "./components/base-types.yaml#/components/schemas/STORAGE_KEY"
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: The value at the given key for the given contract. 0 if no value is found
+      schema:
+        title: Field element
+        $ref: "./components/base-types.yaml#/components/schemas/FELT"
+
+  - name: starknet_getStateUpdate
+    description: Get the information about the result of executing the requested block
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: The information about the state update of the requested block
+      schema:
+        title: Starknet get state update result
+        oneOf:
+          - title: State update
+            $ref: "./components/block.yaml#/components/schemas/STATE_UPDATE"
+          - title: Pending state update
+            $ref: "./components/block.yaml#/components/schemas/PENDING_STATE_UPDATE"
+
+  - name: starknet_getNonce
+    description: Get the nonce associated with the given address in the given block
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+      - name: contract_address
+        description: The address of the contract whose nonce we're seeking
+        required: true
+        schema:
+          title: Address
+          $ref: "./components/base-types.yaml#/components/schemas/ADDRESS"
+    result:
+      name: result
+      description: The contract's nonce at the requested state
+      schema:
+        title: Field element
+        $ref: "./components/base-types.yaml#/components/schemas/FELT"
+
+  - name: starknet_getClassHashAt
+    description: Get the contract class hash in the given block for the contract deployed at the given address
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+      - name: contract_address
+        description: The address of the contract whose class hash will be returned
+        required: true
+        schema:
+          title: Address
+          $ref: "./components/base-types.yaml#/components/schemas/ADDRESS"
+    result:
+      name: result
+      description: The class hash of the given contract
+      schema:
+        title: Field element
+        $ref: "./components/base-types.yaml#/components/schemas/FELT"
+
+  - name: starknet_getClass
+    description: Get the contract class definition in the given block associated with the given hash
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+      - name: class_hash
+        description: The hash of the requested contract class
+        required: true
+        schema:
+          title: Field element
+          $ref: "./components/base-types.yaml#/components/schemas/FELT"
+    result:
+      name: result
+      description: The contract class, if found
+      schema:
+        title: Starknet get class result
+        oneOf:
+          - title: Deprecated contract class
+            $ref: "./components/state.yaml#/components/schemas/DEPRECATED_CONTRACT_CLASS"
+          - title: Contract class
+            $ref: "./components/state.yaml#/components/schemas/CONTRACT_CLASS"
+
+  - name: starknet_getClassAt
+    description: Get the contract class definition in the given block at the given address
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+      - name: contract_address
+        description: The address of the contract whose class definition will be returned
+        required: true
+        schema:
+          title: Address
+          $ref: "./components/base-types.yaml#/components/schemas/ADDRESS"
+    result:
+      name: result
+      description: The contract class
+      schema:
+        title: Starknet get class at result
+        oneOf:
+          - title: Deprecated contract class
+            $ref: "./components/state.yaml#/components/schemas/DEPRECATED_CONTRACT_CLASS"
+          - title: Contract class
+            $ref: "./components/state.yaml#/components/schemas/CONTRACT_CLASS"
+
+  # Transaction methods
+  - name: starknet_getTransactionByBlockIdAndIndex
+    summary: Get the details of a transaction by a given block id and index
+    description: >
+      Get the details of the transaction given by the identified block and index
+      in that block. If no transaction is found, null is returned.
+    params:
+      - name: block_id
+        description: >
+          The hash of the requested block, or number (height) of the requested
+          block, or a block tag
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+      - name: index
+        description: The index in the block to search for the transaction
+        required: true
+        schema:
+          title: Index
+          type: integer
+          minimum: 0
+    result:
+      name: transactionResult
+      schema:
+        title: Transaction
+        allOf:
+          - $ref: "./components/transaction.yaml#/components/schemas/TXN"
+          - type: object
+            properties:
+              transaction_hash:
+                title: transaction hash
+                $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
+            required:
+              - transaction_hash
+
+  - name: starknet_getTransactionByHash
+    description: Get the details and status of a submitted transaction
+    paramStructure: by-name
+    params:
+      - name: transaction_hash
+        description: The hash of the requested transaction
+        required: true
+        schema:
+          title: Transaction hash
+          $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
+    result:
+      name: result
+      schema:
+        title: Transaction
+        allOf:
+          - $ref: "./components/transaction.yaml#/components/schemas/TXN"
+          - type: object
+            properties:
+              transaction_hash:
+                title: transaction hash
+                $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
+            required:
+              - transaction_hash
+
+  - name: starknet_getTransactionReceipt
+    description: Get the transaction receipt by the transaction hash
+    paramStructure: by-name
+    params:
+      - name: transaction_hash
+        description: The hash of the requested transaction
+        required: true
+        schema:
+          title: Transaction hash
+          $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
+    result:
+      name: result
+      schema:
+        title: Transaction receipt with block info
+        $ref: "./components/receipt.yaml#/components/schemas/TXN_RECEIPT_WITH_BLOCK_INFO"

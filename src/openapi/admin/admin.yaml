@@ -11,7 +11,43 @@ paths:
       summary: Create Policy
       description: |
         Creates a new gas manager policy with the specified rules. Returns the policy id of 
-        a successfully created policy. The newly created policy will be in the “inactive” status.
+        a successfully created policy. The newly created policy will be in the `inactive` status.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
+
+        <Note title="Testnets">
+          On testnets, the userOp price is always $0, and hence the `maxSpendUsd`, `maxSpendPerSenderUsd`, and `maxSpendPerUoUsd` should not be configured.
+        </Note>
+
+        <Note title="Adding Custom Rules">
+          If you add custom rules (webhook URL) to the policy, the Gas Manager will make a POST request to the URL every time you use `alchemy_requestPaymasterAndData`, `alchemy_requestGasAndPaymasterAndData`, or `pm_getPaymasterData`.
+
+          **Request Payload**
+          - `userOperation`: The userOp object.
+          - `policyId`: The ID of your policy.
+          - `chainId`: The ID of the network where the operation is being performed.
+          - `webhookData`: Additional data you wish to include in the request, such as proof of humanity.
+
+          Here is an example request body:
+          ```json
+          {
+            "userOperation": { }, // structure depends on EntryPoint version  
+            "policyId": "",  
+            "chainId": "",  
+            "webhookData": "" 
+          }
+          ```
+
+          **Expected Result**
+
+          Your endpoint should respond with a `200` status code and a JSON body (`{ "approved": true | false }`) indicating whether to the userOp passes the custom rules.
+
+          Anything other than the above will be treated as error, and the Gas Manager will sponsor the userOp only if `approveOnFailure` is `true`.
+        </Note>
       operationId: create-policy
       security:
         - BearerAuth: []
@@ -20,6 +56,11 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - policyName
+                - policyType
+                - appId
+                - networks
               properties:
                 policyName:
                   type: string
@@ -27,26 +68,23 @@ paths:
                   default: "My Policy"
                 policyType:
                   type: string
-                  description: Type of the policy (e.g. "sponsorship"). Currently we support "sponsorship" (for EVM network policies) and "solana" (for Solana network policies).
+                  description: Type of the policy (e.g. "sponsorship"). Currently we support `sponsorship` (for EVM network policies) and `solana` (for Solana network policies).
                   default: "sponsorship"
                 appId:
                   type: string
                   description: |
                     ID for the app associated with the new policy.
-                    Learn how to find your app ID [here](https://docs.alchemy.com/reference/notify-api-faq#where-can-i-find-the-app-id).
+                    Learn how to find your app ID [here](docs/reference/notify-api-faq).
                   default: "6d834x9k1yh4dx6z"
-                rules:
-                  description: Rules for "sponsorship" policy type. Empty if `policyType` is not "sponsorship".
-                  $ref: "#/components/schemas/Rules"
-                solanaRules:
-                  description: Rules for "solana" policy type. Empty if `policyType` is not "solana".
-                  $ref: "#/components/schemas/SolanaRules"
                 networks:
                   description: |
-                    Networks for the policy. Example: ["ETH_MAINNET"]. For Solana policies, valid values are "SOLANA_MAINNET" and "SOLANA_DEVNET".
+                    Networks for the policy. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`.
                   type: array
                   items:
                     type: string
+                rules:
+                  description: Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.
+                  $ref: "#/components/schemas/Rules"
       responses:
         "200":
           description: Policy created successfully
@@ -54,6 +92,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
+                  - error
                 properties:
                   data:
                     type: object
@@ -70,7 +111,14 @@ paths:
     get:
       tags: ["Gas Manager Admin API Endpoints"]
       summary: Get Policy
-      description: Returns a policy by id.
+      description: |
+        Returns a policy by id.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
       operationId: get-policy
       security:
         - BearerAuth: []
@@ -104,7 +152,14 @@ paths:
     delete:
       tags: ["Gas Manager Admin API Endpoints"]
       summary: Delete Policy
-      description: Deletes a policy by id.
+      description: |
+        Deletes a policy by id.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
       operationId: delete-policy
       security:
         - BearerAuth: []
@@ -118,12 +173,35 @@ paths:
             default: "6d834x9k1yh4dx6z"
       responses:
         "200":
-          description: Policy deleted successfully
+          description: "`200` - Policy deleted successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        default: true
+                  error:
+                    type: object
+                    properties:
+                      msg:
+                        type: string
 
     put:
       tags: ["Gas Manager Admin API Endpoints"]
       summary: Replace Policy
-      description: Replaces all rules in an existing policy by id.
+      description: |
+        Replaces all rules in an existing policy by id.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
       operationId: replace-policy
       security:
         - BearerAuth: []
@@ -148,12 +226,9 @@ paths:
                 rules:
                   $ref: "#/components/schemas/Rules"
                   description: Rules for "sponsorship" policy type. Empty if `policyType` is not "sponsorship".
-                solanaRules:
-                  $ref: "#/components/schemas/SolanaRules"
-                  description: Rules for "solana" policy type. Empty if `policyType` is not "solana".
                 networks:
                   description: |
-                    Networks for the policy. Example: ["ETH_MAINNET"]. For Solana policies, valid values are "SOLANA_MAINNET" and "SOLANA_DEVNET".
+                    Networks for the policy. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`.
                   type: array
                   items:
                     type: string
@@ -180,7 +255,14 @@ paths:
     get:
       tags: ["Gas Manager Admin API Endpoints"]
       summary: Get All Policies
-      description: Returns all policies under an app. The results are paginated.
+      description: |
+        Returns all policies under an app. The results are paginated.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
       operationId: get-all-policies
       security:
         - BearerAuth: []
@@ -239,7 +321,14 @@ paths:
     put:
       tags: ["Gas Manager Admin API Endpoints"]
       summary: Update Policy Status
-      description: Modifies the status of a policy to either "active" or "inactive".
+      description: |
+        Modifies the status of a policy to either "active" or "inactive".
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
       operationId: update-policy-status
       security:
         - BearerAuth: []
@@ -256,6 +345,8 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - status
               properties:
                 status:
                   description: The new status of the policy
@@ -285,7 +376,14 @@ paths:
     get:
       tags: ["Gas Manager Admin API Endpoints"]
       summary: Get Policy Stats
-      description: Returns stats about a policy specified by ID, including signatures mined, signatures expired, signatures pending, USD mined, and USD pending.
+      description: |
+        Returns stats about a policy specified by ID, including signatures mined, signatures expired, signatures pending, USD mined, and USD pending.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
       operationId: get-policy-stats
       security:
         - BearerAuth: []
@@ -368,7 +466,14 @@ paths:
     get:
       tags: ["Gas Manager Admin API Endpoints"]
       summary: Get Sponsorships
-      description: Returns a list of sponsorships associated with the specified policy ID. The results are paginated.
+      description: |
+        Returns a list of sponsorships associated with the specified policy ID. The results are paginated.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your access token in the authorization header of the API request. Useful resources:
+          - [How to Create Access Keys](/docs/how-to-create-access-keys)
+          - [How To Make HTTP Header-Based API Requests](/docs/how-to-use-api-keys-in-http-headers)
+        </Note>
       operationId: get-sponsorships
       security:
         - BearerAuth: []
@@ -529,10 +634,7 @@ components:
           default: active
         rules:
           $ref: "#/components/schemas/Rules"
-          description: Rules for "sponsorship" policy type. Empty if `policyType` is not "sponsorship".
-        solanaRules:
-          $ref: "#/components/schemas/SolanaRules"
-          description: Rules for "solana" policy type. Empty if `policyType` is not "solana".
+          description: Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.
         policyName:
           type: string
           description: Name of the policy
@@ -547,7 +649,7 @@ components:
           default: 0
         policyType:
           type: string
-          description: Type of the policy. "sponsorship" for EVM policies, "solana" for Solana policies.
+          description: Type of the policy. `sponsorship`.
           default: "sponsorship"
         policyState:
           type: string

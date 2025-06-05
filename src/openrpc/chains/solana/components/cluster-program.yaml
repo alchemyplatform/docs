@@ -1,141 +1,134 @@
-# cluster-schemas.yaml
-
-ClusterNodeInfo:
-  title: Cluster Node Information
-  type: object
-  properties:
-    pubkey:
-      $ref: "#/components/schemas/Pubkey"
-      description: Node public key.
-    gossip:
-      type: string
-      nullable: true
-      description: Gossip network address.
-    tpu:
-      type: string
-      nullable: true
-      description: TPU network address.
-    rpc:
-      type: string
-      nullable: true
-      description: JSON RPC network address.
-    version:
-      type: string
-      nullable: true
-      description: Software version of the node.
-    featureSet:
-      type: integer
-      nullable: true
-      description: Unique identifier of the node's feature set.
-    shredVersion:
-      type: integer
-      nullable: true
-      description: Shred version used by the node.
-
-ClusterNodesList:
-  title: Cluster Nodes List
-  type: array
-  items:
-    $ref: "#/components/schemas/ClusterNodeInfo"
-  description: Information about all nodes participating in the cluster.
-
-NodeIdentity:
-  title: Node Identity
-  type: object
-  properties:
-    identity:
-      $ref: "#/components/schemas/Pubkey"
-      description: Identity pubkey of the current node.
-
-HealthStatus:
-  title: Health Status
-  oneOf:
-    - type: string
-      description: "Result is 'ok' if healthy."
-    - type: object
-      description: "An error object if unhealthy."
-  description: "Result is 'ok' if healthy, or an error object if unhealthy."
-
-GetProgramAccountsConfig:
-  title: GetProgramAccounts Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    minContextSlot:
-      $ref: "#/components/schemas/MinContextSlot"
-    withContext:
-      type: boolean
-      description: If set, wraps the result in an `RpcResponse` JSON object.
-    encoding:
-      $ref: "#/components/schemas/Encoding"
-      default: json
-    dataSlice:
-      $ref: "#/components/schemas/DataSlice"
-    filters:
-      type: array
-      description: Filters to apply using up to 4 filter objects.
-
-VoteAccountInfo:
-  title: Vote Account Information
-  type: object
-  properties:
-    votePubkey:
-      $ref: "#/components/schemas/Pubkey"
-      description: Vote account address.
-    nodePubkey:
-      $ref: "#/components/schemas/Pubkey"
-      description: Validator identity.
-    activatedStake:
-      type: integer
-      description: Active stake in lamports delegated to this vote account.
-    epochVoteAccount:
-      type: boolean
-      description: Whether the vote account is staked for this epoch.
-    commission:
-      type: number
-      description: Percentage of rewards payout owed to the vote account.
-    lastVote:
-      type: integer
-      description: Most recent slot voted on by this vote account.
-    epochCredits:
-      type: array
-      items:
-        type: array
-        items:
+components:
+  schemas:
+    ClusterNodeInfo:
+      title: Cluster Node Information
+      type: object
+      properties:
+        pubkey:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Node public key.
+        gossip:
+          type: string
+          nullable: true
+          description: Gossip network address.
+        tpu:
+          type: string
+          nullable: true
+          description: TPU network address.
+        rpc:
+          type: string
+          nullable: true
+          description: JSON RPC network address.
+        version:
+          type: string
+          nullable: true
+          description: Software version of the node.
+        featureSet:
           type: integer
-      description: History of earned credits for up to five epochs.
-    rootSlot:
-      type: integer
-      description: Current root slot for this vote account.
-
-GetVoteAccountsConfig:
-  title: GetVoteAccounts Configuration
-  type: object
-  properties:
-    commitment:
-      $ref: "#/components/schemas/Commitment"
-    votePubkey:
-      $ref: "#/components/schemas/Pubkey"
-      description: Return results for this validator vote address.
-    keepUnstakedDelinquents:
-      type: boolean
-      description: Do not filter out delinquent validators with no stake.
-    delinquentSlotDistance:
-      type: integer
-      description: Number of slots behind the tip for a validator to be considered delinquent.
-
-VoteAccounts:
-  title: Vote Accounts
-  type: object
-  properties:
-    current:
+          nullable: true
+          description: Unique identifier of the node's feature set.
+        shredVersion:
+          type: integer
+          nullable: true
+          description: Shred version used by the node.
+    ClusterNodesList:
+      title: Cluster Nodes List
       type: array
       items:
-        $ref: "#/components/schemas/VoteAccountInfo"
-      description: List of current vote accounts.
-    delinquent:
-      type: array
-      items:
-        $ref: "#/components/schemas/VoteAccountInfo"
-      description: List of delinquent vote accounts.
+        $ref: "#/components/schemas/ClusterNodeInfo"
+      description: Information about all nodes participating in the cluster.
+    NodeIdentity:
+      title: Node Identity
+      type: object
+      properties:
+        identity:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Identity pubkey of the current node.
+    HealthStatus:
+      title: Health Status
+      oneOf:
+        - type: string
+          description: Result is 'ok' if healthy.
+        - type: object
+          description: An error object if unhealthy.
+      description: Result is 'ok' if healthy, or an error object if unhealthy.
+    GetProgramAccountsConfig:
+      title: GetProgramAccounts Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        withContext:
+          type: boolean
+          description: If set, wraps the result in an `RpcResponse` JSON object.
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          default: json
+        dataSlice:
+          $ref: "./base-types.yaml#/components/schemas/DataSlice"
+        filters:
+          type: array
+          description: Filters to apply using up to 4 filter objects.
+    VoteAccountInfo:
+      title: Vote Account Information
+      type: object
+      properties:
+        votePubkey:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Vote account address.
+        nodePubkey:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Validator identity.
+        activatedStake:
+          type: integer
+          description: Active stake in lamports delegated to this vote account.
+        epochVoteAccount:
+          type: boolean
+          description: Whether the vote account is staked for this epoch.
+        commission:
+          type: number
+          description: Percentage of rewards payout owed to the vote account.
+        lastVote:
+          type: integer
+          description: Most recent slot voted on by this vote account.
+        epochCredits:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
+          description: History of earned credits for up to five epochs.
+        rootSlot:
+          type: integer
+          description: Current root slot for this vote account.
+    GetVoteAccountsConfig:
+      title: GetVoteAccounts Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        votePubkey:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Return results for this validator vote address.
+        keepUnstakedDelinquents:
+          type: boolean
+          description: Do not filter out delinquent validators with no stake.
+        delinquentSlotDistance:
+          type: integer
+          description: Number of slots behind the tip for a validator to be considered delinquent.
+    VoteAccounts:
+      title: Vote Accounts
+      type: object
+      properties:
+        current:
+          type: array
+          items:
+            $ref: "#/components/schemas/VoteAccountInfo"
+          description: List of current vote accounts.
+        delinquent:
+          type: array
+          items:
+            $ref: "#/components/schemas/VoteAccountInfo"
+          description: List of delinquent vote accounts.

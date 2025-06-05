@@ -32,15 +32,18 @@ pids=()
 # variable to track if any lint commands fail
 lint_failed=0
 
+input_dir="src/openapi"
+output_dir="fern/api-specs"
+
 # Process only the main YAML file in each subdirectory
-for dir in src/openapi/*/; do
+for dir in ${input_dir}/*/; do
   if [ -d "$dir" ]; then
     # Get the main YAML file (same name as directory)
     dirname=$(basename "$dir")
     file="$dir${dirname}.yaml"
     
     if [ -f "$file" ]; then
-      filename="build/api-specs/alchemy/rest/${dirname}.json"
+      filename="${output_dir}/alchemy/rest/${dirname}.json"
       (
         if [ "$validate_only" = true ]; then
           # Only run lint when validate-only is true
