@@ -33,14 +33,20 @@ export enum ApiFunction {
 }
 
 // This will import all request and response files under code-samples recursively as raw text
-const requestModules = import.meta.glob('./code-samples/**/request', {
-  eager: true,
-  query: 'raw',
-})
-const responseModules = import.meta.glob('./code-samples/**/response', {
-  eager: true,
-  query: 'raw',
-})
+const requestModules = import.meta.glob<Record<string, string>>(
+  './code-samples/**/request',
+  {
+    eager: true,
+    query: 'raw',
+  },
+)
+const responseModules = import.meta.glob<Record<string, string>>(
+  './code-samples/**/response',
+  {
+    eager: true,
+    query: 'raw',
+  },
+)
 
 export function loadCodeExamples() {
   const codeMap: Record<
@@ -81,9 +87,8 @@ export function loadCodeExamples() {
     if (!codeMap[apiKey]![langKey]) codeMap[apiKey]![langKey] = {}
     if (!codeMap[apiKey]![langKey]![chainKey])
       codeMap[apiKey]![langKey]![chainKey] = { request: '', response: '' }
-    codeMap[apiKey]![langKey]![chainKey]!.request = requestModules[
-      filePath
-    ] as string
+    codeMap[apiKey]![langKey]![chainKey]!.request = requestModules[filePath]
+      .default as string
   }
 
   // Then, fill in responses
@@ -93,9 +98,8 @@ export function loadCodeExamples() {
     if (!codeMap[apiKey]![langKey]) codeMap[apiKey]![langKey] = {}
     if (!codeMap[apiKey]![langKey]![chainKey])
       codeMap[apiKey]![langKey]![chainKey] = { request: '', response: '' }
-    codeMap[apiKey]![langKey]![chainKey]!.response = responseModules[
-      filePath
-    ] as string
+    codeMap[apiKey]![langKey]![chainKey]!.response = responseModules[filePath]
+      .default as string
   }
 
   return codeMap
