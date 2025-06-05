@@ -30,10 +30,10 @@ paths:
               properties:
                 email:
                   type: string
-                  description: Optional. Used for user authentication when passkey is not provided. Specifies the user's email address.
+                  description: Used for user authentication when passkey is not provided. Specifies the user's email address.
                 passkey:
                   type: object
-                  description: Optional. Used for authentication when email is not provided. Enables passkey-based authentication.
+                  description: Used for authentication when email is not provided. Enables passkey-based authentication.
                   properties:
                     challenge:
                       type: string
@@ -56,10 +56,20 @@ paths:
                           description: Transport protocols used during attestation.
                           items:
                             type: string
+                      required:
+                        - credentialId
+                        - clientDataJson
+                        - attestationObject
+                        - transports
+                  required:
+                    - challenge
+                    - attestation
                 targetPublicKey:
                   $ref: "#/components/schemas/targetPublicKey"
                 expirationSeconds:
                   $ref: "#/components/schemas/expirationSeconds"
+                redirectParams:
+                  $ref: "#/components/schemas/redirectParams"
       responses:
         "200":
           description: Wallet creation response.
@@ -70,6 +80,19 @@ paths:
                 properties:
                   orgId:
                     $ref: "#/components/schemas/orgId"
+                  userId:
+                    type: string
+                    description: A unique identifier for the user.
+                  address:
+                    type: string
+                    description: The EVM address of the signer.
+                  solanaAddress:
+                    type: string
+                    description: The Solana address of the signer.
+                  otpId:
+                    $ref: "#/components/schemas/otpId"
+                required:
+                  - orgId
       operationId: createAccount
   /auth:
     post:
@@ -97,6 +120,11 @@ paths:
                   $ref: "#/components/schemas/targetPublicKey"
                 expirationSeconds:
                   $ref: "#/components/schemas/expirationSeconds"
+                redirectParams:
+                  $ref: "#/components/schemas/redirectParams"
+              required:
+                - email
+                - targetPublicKey
       responses:
         "200":
           description: Authentication email sent successfully.
@@ -108,6 +136,10 @@ paths:
                   orgId:
                     $ref: "#/components/schemas/orgId"
                     description: The organization ID associated with the user and the application, facilitating the authentication process within the context of the user's application.
+                  otpId:
+                    $ref: "#/components/schemas/otpId"
+                required:
+                  - orgId
       operationId: sendEmailAuth
   /whoami:
     post:
@@ -132,6 +164,8 @@ paths:
                   $ref: "#/components/schemas/SignedTurnkeyRequest"
                   description: >
                     A stamped [Turnkey Whoami Request](https://docs.turnkey.com/api#tag/Sessions/operation/GetWhoami).
+              required:
+                - stampedRequest
       responses:
         "200":
           description: User authentication successful.
@@ -155,6 +189,10 @@ paths:
                   solanaAddress:
                     type: string
                     description: The Solana address of the user's signer. Required for Solana transactions and wallet management.
+                required:
+                  - userId
+                  - orgId
+                  - address
       operationId: authUser
   /lookup:
     post:
@@ -178,6 +216,8 @@ paths:
                 email:
                   $ref: "#/components/schemas/email"
                   description: The email address of the user to look up. This is used to verify if an associated account exists within the system.
+              required:
+                - email
       responses:
         "200":
           description: Query successful. Returns organization ID if an account exists for the provided email address.
@@ -248,6 +288,8 @@ paths:
                     ```
 
                     For more details on the parameters of the request body, see [Turnkey's API Reference](https://docs.turnkey.com/api#tag/Signing/operation/SignRawPayload).
+              required:
+                - stampedRequest
       responses:
         "200":
           description: Message signing successful.
@@ -259,43 +301,9 @@ paths:
                   signature:
                     type: string
                     description: The signature generated for the specified payload.
+                required:
+                  - signature
       operationId: signMessage
-  /account/authenticator:
-    post:
-      summary: Register New Authenticator
-      description: >
-        Enables users to register a new authenticator with their wallet, supporting enhanced security and multi-device accessibility. Currently, this functionality supports adding a new passkey as an authenticator, facilitating secure login across different devices.
-      security:
-        - apiKey: []
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                stampedAddAuthenticatorRequest:
-                  $ref: "#/components/schemas/SignedTurnkeyRequest"
-                  description: >
-                    A stamped request that specifies the details of the new authenticator to be registered. This ensures the integrity of the request and confirms the user's intent to add a new authentication method to their wallet. The body of this request must match [Turnkey's Create Authenticators Request Body](https://docs.turnkey.com/api#tag/Authenticators/operation/CreateAuthenticators).
-      responses:
-        "200":
-          description: Authenticator registration successful.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "ok"
-                    description: A confirmation message indicating the successful registration of the new authenticator.
-      operationId: registerNewAuthenticator
 
 components:
   securitySchemes:
@@ -312,7 +320,7 @@ components:
     expirationSeconds:
       type: string
       description: >
-        Optional. Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).
+        Specifies the duration of the login session in seconds. After this period, the user has to re-login to refresh their session. The default value is 900 seconds (15 minutes).
     targetPublicKey:
       type: string
       description: |
@@ -352,6 +360,11 @@ components:
         stamp:
           $ref: "#/components/schemas/SignedTurnkeyRequestStamp"
       required:
-        - url
         - body
         - stamp
+    otpId:
+      type: string
+      description: OTP request identifier
+    redirectParams:
+      type: string
+      description: Redirect parameters appended to the magic link.
