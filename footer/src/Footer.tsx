@@ -8,7 +8,7 @@ import LogoLight from './assets/LogoLight.js'
 import StatusIcon from './assets/StatusIcon.js'
 
 const FooterContainer = styled.section`
-  padding-block: 44px;
+  padding-bottom: 44px;
   flex-direction: column;
   display: flex;
   align-items: center;
@@ -24,7 +24,6 @@ const CommunityLinks = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 80px;
   width: 60%;
   padding-block: 36px;
   gap: 16px;
@@ -177,7 +176,8 @@ export const CustomFooter: React.FC = () => {
                 title="Substack form"
                 src="https://alchemysupercharged.substack.com/embed"
                 width="320"
-                height="280"></iframe>
+                height="280"
+              ></iframe>
             </SubscribeForm>
           </FooterRightSide>
         </CommunityLinks>
