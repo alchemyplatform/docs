@@ -129,7 +129,7 @@ import { zeroAddress } from "viem";
 
 const account = await client.requestAccount();
   
-const { signatureRequest, ...preparedUO } = await client.prepareCalls({
+const preparedCalls = await client.prepareCalls({
   calls: [{ to: zeroAddress, value: "0x0" }], // callData is optional in a "data" parameter
   from: account.address,
   // "capabilities" is a data structure that hold gas manager data (as seen below) or permission data
@@ -140,14 +140,11 @@ const { signatureRequest, ...preparedUO } = await client.prepareCalls({
   },
 });
   
-// Sign the userOp
-const signature = await client.signSignatureRequest(signatureRequest);
+// Sign the calls
+const signedCalls = await client.signPreparedCalls(preparedCalls);
   
 // Send the userOp
-const result = await client.sendPreparedCalls({
-  ...preparedUO,
-  signature,
-});
+const result = await client.sendPreparedCalls(signedCalls);
 ```
 
 ### Create A Session With Permissions
@@ -162,7 +159,7 @@ const sessionKey = LocalAccountSigner.generatePrivateKeySigner();
   
 const permissions = await client.grantPermissions({
   account: account.address,
-  expiry: Math.floor(Date.now() / 1000) + 60 * 60,
+  expirySec: Math.floor(Date.now() / 1000) + 60 * 60,
   key: {
     publicKey: await sessionKey.getAddress(),
     type: "secp256k1",
@@ -170,7 +167,7 @@ const permissions = await client.grantPermissions({
   permissions: [{ type: "root" }], // Here we grant root permissions as an example, but this is not advised in production!
 });
   
-const { signatureRequest, ...preparedUO } = await client.prepareCalls({
+const preparedCalls = await client.prepareCalls({
   calls: [{ to: zeroAddress, value: "0x0" }],
   from: account.address,
   capabilities: {
@@ -181,14 +178,13 @@ const { signatureRequest, ...preparedUO } = await client.prepareCalls({
   },
 });
   
-const signature = await signSignatureRequest(
+const signedCalls = await signPreparedCalls(
   sessionKey, // Note that we now sign with the session key!
-  signatureRequest,
+  preparedCalls,
 );
   
 const result = await client.sendPreparedCalls({
-  ...preparedUO,
-  signature,
+  ...signedCalls,
   capabilities: {
     permissions,
   },
@@ -265,7 +261,7 @@ curl --request POST \
     {
       "account": "0xACCOUNT_ADDRESS",
       "chainId": "0xCHAIN_ID",
-      "expiry": UNIX_TIMESTAMP_EXPIRY_IN_SECONDS,
+      "expirySec": UNIX_TIMESTAMP_EXPIRY_IN_SECONDS,
       "key": {
         "publicKey": "0xSESSION_KEY_ADDRESS",
         "type": "secp256k1"
@@ -396,8 +392,8 @@ curl --request POST \
         }
       }
       "signature": {
-        "type": "ecdsa"
-        "signature": "0xUSEROP_SIGNATURE",
+        "type": "secp256k1"
+        "data": "0xUSEROP_SIGNATURE",
       }
     }
   ]
@@ -414,7 +410,7 @@ To set specific permissions on a session key installation, add an object to the 
 ```ts
 const permissions = await client.grantPermissions({
   account: account.address,
-  expiry: Math.floor(Date.now() / 1000) + 60 * 60,
+  expirySec: Math.floor(Date.now() / 1000) + 60 * 60,
   key: {
     publicKey: await sessionKey.getAddress(),
     type: "secp256k1",
