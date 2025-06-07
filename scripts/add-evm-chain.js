@@ -376,7 +376,9 @@ ${tableRows.join("\n")}
     overviewContent.slice(debugSectionIndex);
 
   fs.writeFileSync(overviewPath, updatedContent);
-  console.log(`✅ Updated chain-apis-overview.mdx with ${displayName} section`);
+  console.info(
+    `✅ Updated chain-apis-overview.mdx with ${displayName} section`,
+  );
 }
 
 // Helper function to copy and modify the eth.yaml file for a new chain
@@ -571,28 +573,30 @@ async function main() {
     // Update chain-apis-overview.mdx
     updateChainApisOverview(chainName, displayName);
 
-    console.log("\n🎉 Successfully created new EVM chain!");
-    console.log(`📍 Locations:`);
-    console.log(
+    console.info("\n🎉 Successfully created new EVM chain!");
+    console.info(`📍 Locations:`);
+    console.info(
       `   - OpenRPC: src/openrpc/chains/${chainName}/${chainName}.yaml`,
     );
-    console.log(`   - Quickstart: fern/api-reference/${chainName}/`);
-    console.log(`   - Generators: fern/apis/${chainName}/`);
-    console.log(`   - Sidebar: Updated in fern/docs.yml`);
-    console.log("\n📋 Files created:");
-    console.log(`   - ${chainName}.yaml (copied and modified from eth.yaml)`);
-    console.log(`   - ${chainName}-api-quickstart.mdx`);
-    console.log(`   - ${chainName}-api-faq.mdx`);
-    console.log(`   - generators.yaml`);
+    console.info(`   - Quickstart: fern/api-reference/${chainName}/`);
+    console.info(`   - Generators: fern/apis/${chainName}/`);
+    console.info(`   - Sidebar: Updated in fern/docs.yml`);
+    console.info("\n📋 Files created:");
+    console.info(`   - ${chainName}.yaml (copied and modified from eth.yaml)`);
+    console.info(`   - ${chainName}-api-quickstart.mdx`);
+    console.info(`   - ${chainName}-api-faq.mdx`);
+    console.info(`   - generators.yaml`);
 
-    console.log("\n💡 Next steps:");
-    console.log("1. Review the generated files");
-    console.log("2. Remove any methods that are not supported by this chain");
-    console.log("3. Add any chain-specific methods if needed");
-    console.log("4. Customize the FAQ content with chain-specific information");
-    console.log("5. Customize the emoji for chain section in docs.yml");
-    console.log("6. Run validation: npm run validate:rpc");
-    console.log("7. Run the docs locally to preview: npm run dev");
+    console.info("\n💡 Next steps:");
+    console.info("1. Review the generated files");
+    console.info("2. Remove any methods that are not supported by this chain");
+    console.info("3. Add any chain-specific methods if needed");
+    console.info(
+      "4. Customize the FAQ content with chain-specific information",
+    );
+    console.info("5. Customize the emoji for chain section in docs.yml");
+    console.info("6. Run validation: npm run validate:rpc");
+    console.info("7. Run the docs locally to preview: npm run dev");
   } catch (error) {
     console.error("❌ Error:", error.message);
     process.exit(1);
@@ -603,7 +607,7 @@ async function main() {
 
 // Handle Ctrl+C gracefully
 process.on("SIGINT", () => {
-  console.log("\n👋 Goodbye!");
+  console.info("\n👋 Goodbye!");
   rl.close();
   process.exit(0);
 });
