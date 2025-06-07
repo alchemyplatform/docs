@@ -27,7 +27,9 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
 
 * Location: `src/openapi/`
 * Define APIs using YAML following the [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-* **Tip**: Use the [Redocly VSCode extension](https://marketplace.visualstudio.com/items?itemName=Redocly.openapi-vs-code) to enable OpenAPI spec validation with Intellisense.
+
+> \[!TIP]
+> Use the [Redocly VSCode extension](https://marketplace.visualstudio.com/items?itemName=Redocly.openapi-vs-code) to enable OpenAPI spec validation with Intellisense.
 
 **JSON-RPC APIs (OpenRPC)**
 
@@ -37,17 +39,23 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
   * `alchemy/`: Alchemy-specific APIs
   * `chains/`: Chain-specific APIs (e.g., ethereum, polygon)
 
+> \[!TIP]
+> Use the [YAML VSCode extension](https://marketplace.cursorapi.com/items?itemName=redhat.vscode-yaml) to get some basic OpenRPC validation with Intellisense.
+
 ### Account Kit Documentation
 
-Account Kit documentation is maintained in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
+Account Kit documentation is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
 
 ## Making Changes
 
-1. Make your changes
-2. Test locally using `pnpm dev`
-3. Commit your changes
-4. Push to your fork
-5. Create a pull request to the upstream
+If you are not an [Alchemy Employee](#alchemy-employees), you will need to create your own fork.
+
+1. Fork the repo (if you haven't already)
+2. Make your changes
+3. Test locally using `pnpm dev`
+4. Commit your changes
+5. Push to your fork
+6. Create a pull request to the upstream
 
 ## Markdown Style Guide
 

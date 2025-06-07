@@ -17,6 +17,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,13 +28,13 @@ jobs:
 
       - name: Run build script
         id: build
-        run: pnpm generate && pnpm generate:sandbox-metadata
+        run: pnpm generate && pnpm generate:metadata
 
       - name: Upload static files as artifact
         id: deploy-artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/
+          path: fern/api-specs/
 
   deploy:
     runs-on: ubuntu-latest

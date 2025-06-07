@@ -91,7 +91,7 @@ const address = account.address;
 ### Sign A Message
 
 ```ts
-import { createPublicClient } from 'viem';
+import { createPublicClient } from "viem";
 
 const message = "we are so back"
   
@@ -125,9 +125,11 @@ const isValid = await publicClient.verifyTypedData({
 ### Send A UserOp
 
 ```ts
+import { zeroAddress } from "viem";
+
 const account = await client.requestAccount();
   
-const preparedUO = await client.prepareCalls({
+const { signatureRequest, ...preparedUO } = await client.prepareCalls({
   calls: [{ to: zeroAddress, value: "0x0" }], // callData is optional in a "data" parameter
   from: account.address,
   // "capabilities" is a data structure that hold gas manager data (as seen below) or permission data
@@ -139,9 +141,7 @@ const preparedUO = await client.prepareCalls({
 });
   
 // Sign the userOp
-const signature = await client.signSignatureRequest(
-  preparedUO.signatureRequest,
-);
+const signature = await client.signSignatureRequest(signatureRequest);
   
 // Send the userOp
 const result = await client.sendPreparedCalls({
@@ -170,7 +170,7 @@ const permissions = await client.grantPermissions({
   permissions: [{ type: "root" }], // Here we grant root permissions as an example, but this is not advised in production!
 });
   
-const preparedUO = await client.prepareCalls({
+const { signatureRequest, ...preparedUO } = await client.prepareCalls({
   calls: [{ to: zeroAddress, value: "0x0" }],
   from: account.address,
   capabilities: {
@@ -183,7 +183,7 @@ const preparedUO = await client.prepareCalls({
   
 const signature = await signSignatureRequest(
   sessionKey, // Note that we now sign with the session key!
-  preparedUO.signatureRequest,
+  signatureRequest,
 );
   
 const result = await client.sendPreparedCalls({
@@ -396,7 +396,7 @@ curl --request POST \
         }
       }
       "signature": {
-        "type": "secp256k1"
+        "type": "ecdsa"
         "signature": "0xUSEROP_SIGNATURE",
       }
     }

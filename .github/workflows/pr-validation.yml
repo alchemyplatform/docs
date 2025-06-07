@@ -8,6 +8,8 @@ jobs:
   open-api-specs:
     name: OpenAPI Specs
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,6 +22,8 @@ jobs:
   rpc-specs:
     name: JSON-RPC Specs
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,6 +35,8 @@ jobs:
   lint:
     name: Lint Files
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,12 +48,16 @@ jobs:
   fern-check:
     name: Fern Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
-      - name: Install Fern
-        run: npm install -g fern-api
+      - name: Generate API Specs
+        run: pnpm run generate
 
       - name: Check API is valid
-        run: fern check
+        run: pnpm fern check

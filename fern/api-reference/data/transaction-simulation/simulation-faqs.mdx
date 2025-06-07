@@ -1,0 +1,85 @@
+---
+title: Transaction Simulation FAQs
+description: Find answers to frequently asked questions related to Alchemy's Transaction Simulation APIs
+subtitle: Find answers to frequently asked questions related to Alchemy's Transaction Simulation APIs
+url: https://docs.alchemy.com/reference/simulation-faqs
+slug: reference/simulation-faqs
+---
+
+## What chains do you support?
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+## Wrapped tokens
+
+| Network          | Name   | Contract Address                           |
+| ---------------- | ------ | ------------------------------------------ |
+| Eth Mainnet      | WETH   | 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 |
+| Eth Goerli       | WETH   | 0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6 |
+| Polygon Mainnet  | WMATIC | 0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270 |
+| Polygon Mumbai   | WMATIC | 0x9c3c9283d3e44854697cd22d3faa240cfb032889 |
+| Arbitrum Mainnet | WETH   | 0x82af49447d8a07e3bd95bd0d56f35241523fbab1 |
+| Arbitrum Goerli  | WETH   | 0x1dfc378641f06f4095e9434017bf335018550c55 |
+
+***
+
+## Do you support NFTs that predate ERC721?
+
+Yes.
+
+We recently added support for the following NFTs that predate the ERC721 standard:
+
+* CryptoKitties
+* Cryptopunks
+
+`assetType` will be set to `SPECIAL_NFT` for these collections.
+
+This is consistent with our [Transfers API](/reference/transfers-api-quickstart#6-special-nft-transfers).
+
+| Network     | Name          | Contract Address                           |
+| ----------- | ------------- | ------------------------------------------ |
+| Eth Mainnet | CryptoKitties | 0x06012c8cf97bead5deae237070f9587f8e7a266d |
+| Eth Mainnet | CryptoPunks   | 0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb |
+
+***
+
+## How can I get metadata for NFTs (ERC721, ERC155)?
+
+You can use the collection address (`contractAddress`) and token id (`tokenId`) returned in the response to call our getNFTMetadata endpoint - see [here](/reference/getnftmetadata).
+
+***
+
+## How can I determine if a simulation was successful?
+
+You can check if the top level `error` field is null.
+
+***
+
+## How can I get gas used?
+
+### `alchemy_simulateAssetChanges`
+
+You can access the top level `gasUsed` field.
+
+### `alchemy_simulateExecution`
+
+The API can return a flat or a nested response depending on the 3rd parameter passed in the request (defaults to flat response).
+
+Flat response - `gasUsed` in first call.
+
+Nested response - `gasUsed` in root call of nested response.
+
+***
+
+## Simulation Limits and Pricing
+
+* Free tier users have access to up to 1,000 simulations per day.
+* Growth tier users have access to up to 50,000 simulations per day.
+* Scale tier users have access to up to 75,000 simulations per day.
+* Enterprise tier users can perform unlimited simulations.
+
+Please note that bundle simulation is only available on the Growth and Enterprise tiers.

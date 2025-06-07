@@ -13,15 +13,87 @@ Build and scale apps with lower CU costs on key APIs
 
 # Table of Contents
 
-[What are Compute Units](#what-are-compute-units) [NFT API](/reference/compute-unit-costs#nft-api) [Transfers API](/reference/compute-unit-costs#transfers-api) [Token API](/reference/compute-unit-costs#token-api) [Transact](/reference/compute-unit-costs#transact) [Debug API](/reference/compute-unit-costs#debug-api) [Trace API](/reference/compute-unit-costs#trace-api) [EVM API](/reference/compute-unit-costs#standard-evm-json-rpc-methods-ethereum-polygon-pos-polygon-zkevm-optimism-arbitrum-astar) [Polygon PoS API](/reference/compute-unit-costs#polygon-pos-specific-methods) [Polygon zkEVM API](/reference/compute-unit-costs#polygon-zkevm-specific-methods) [Gas Manager & Bundler APIs](#gas-manager--bundler-apis) [Embedded Account APIs](/reference/compute-unit-costs#embedded-account-apis) [Starknet JSON-RPC APIs](/reference/compute-unit-costs#standard-starknet-json-rpc-methods) [Solana API](/reference/compute-unit-costs#standard-solana-json-rpc-methods) [Notify & Subscription APIs](/reference/compute-unit-costs#notify-and-subscription-apis) [Error Codes](/reference/compute-unit-costs#compute-unit-cost-for-error-codes)
+* [What are Compute Units](#what-are-compute-units-and-throughput-compute-units)
+* [EVM API](/reference/compute-unit-costs#standard-evm-json-rpc-methods)
+* [NFT API](/reference/compute-unit-costs#nft-api)
+* [Transfers API](/reference/compute-unit-costs#transfers-api)
+* [Token API](/reference/compute-unit-costs#token-api)
+* [Transact](/reference/compute-unit-costs#transact)
+* [Debug API](/reference/compute-unit-costs#debug-api)
+* [Trace API](/reference/compute-unit-costs#trace-api)
+* [Polygon PoS API](/reference/compute-unit-costs#polygon-pos-specific-methods)
+* [Polygon zkEVM API](/reference/compute-unit-costs#polygon-zkevm-specific-methods)
+* [Gas Manager & Bundler APIs](#gas-manager--bundler-apis)
+* [Embedded Account APIs](/reference/compute-unit-costs#embedded-account-apis)
+* [Starknet JSON-RPC APIs](/reference/compute-unit-costs#standard-starknet-json-rpc-methods)
+* [Solana API](/reference/compute-unit-costs#standard-solana-json-rpc-methods)
+* [Notify & Subscription APIs](/reference/compute-unit-costs#notify-and-subscription-apis)
+* [Error Codes](/reference/compute-unit-costs#compute-unit-cost-for-error-codes)
 
-# What are Compute Units?
+## What are Compute Units and Throughput Compute Units?
 
-Compute units (CUs) are the measure of the total computational resources your apps use on our platform. Different methods consume different amounts of CUs based on their complexity. For example, a lightweight query like `eth_blockNumber` uses fewer CUs than a more intensive query like `eth_getLogs`. For more details, please check out the [Compute Units](/reference/compute-units) page.
+For more details, please check out the [Compute Units](/reference/compute-units#what-are-compute-units) section.
 
-# What are Throughput Compute Units?
+## What are Throughput Compute Units?
 
-Throughput Compute Units define how often you can run the request within your throughput limits. For example, a 500 CU per second limit would be able to run 50 requests per second that cost 10 throughput CUs. The actual cost of the method is still reflected by the CU amount while the threshold CU allows you to increase the number of requests before you hit your rate limit. If there is no throughput CU listed, it defaults to the actual CU cost.
+For more details, please check out the [Throughput Compute Units](/reference/compute-units#what-are-throughput-compute-units) section.
+
+# Standard EVM JSON-RPC Methods
+
+| Method                                   | CU                          | Throughput CU |
+| ---------------------------------------- | --------------------------- | ------------- |
+| net\_version                             | 0                           |               |
+| eth\_chainId                             | 0                           |               |
+| eth\_syncing                             | 0                           |               |
+| eth\_protocolVersion                     | 0                           |               |
+| net\_listening                           | 0                           |               |
+| eth\_uninstallFilter                     | 10                          |               |
+| eth\_accounts                            | 10                          |               |
+| eth\_blockNumber                         | 10                          |               |
+| eth\_subscribe                           | 10                          |               |
+| eth\_unsubscribe                         | 10                          |               |
+| eth\_feeHistory                          | 10                          |               |
+| eth\_maxPriorityFeePerGas                | 10                          |               |
+| eth\_createAccessList                    | 10                          |               |
+| eth\_getTransactionReceipt               | 20                          |               |
+| eth\_getUncleByBlockHashAndIndex         | 20                          |               |
+| eth\_getUncleByBlockNumberAndIndex       | 20                          |               |
+| eth\_getTransactionByBlockHashAndIndex   | 20                          |               |
+| eth\_getTransactionByBlockNumberAndIndex | 20                          |               |
+| eth\_getUncleCountByBlockHash            | 20                          |               |
+| eth\_getUncleCountByBlockNumber          | 20                          |               |
+| web3\_clientVersion                      | 20                          |               |
+| web3\_sha3                               | 20                          |               |
+| eth\_getBlockByNumber                    | 20                          |               |
+| eth\_getStorageAt                        | 20                          |               |
+| eth\_getTransactionByHash                | 20                          |               |
+| eth\_gasPrice                            | 20                          |               |
+| eth\_getBalance                          | 20                          |               |
+| eth\_getCode                             | 20                          |               |
+| eth\_getFilterChanges                    | 20                          |               |
+| eth\_newBlockFilter                      | 20                          |               |
+| eth\_newFilter                           | 20                          |               |
+| eth\_simulateV1                          | 40                          |               |
+| eth\_newPendingTransactionFilter         | 20                          |               |
+| eth\_getBlockTransactionCountByHash      | 20                          |               |
+| eth\_getBlockTransactionCountByNumber    | 20                          |               |
+| eth\_getProof                            | 20                          |               |
+| eth\_getBlockByHash                      | 20                          |               |
+| erigon\_forks                            | 20                          |               |
+| erigon\_getHeaderByHash                  | 20                          |               |
+| erigon\_getHeaderByNumber                | 20                          |               |
+| erigon\_getLogsByHash                    | 20                          |               |
+| erigon\_issuance                         | 20                          |               |
+| eth\_getTransactionCount                 | 20                          |               |
+| eth\_call                                | 26                          |               |
+| eth\_getFilterLogs                       | 60                          |               |
+| eth\_getLogs                             | 60                          |               |
+| eth\_estimateGas                         | 20                          |               |
+| eth\_sendRawTransaction                  | 40                          | 250           |
+| eth\_getBlockReceipts                    | 20                          | 500           |
+| batch                                    | CU of method # times called |               |
+
+* To view the batch request breakdown in the dashboard, click on "raw request"
 
 # NFT API
 
@@ -142,63 +214,6 @@ We want builders to be able to use as much of the NFT API as they need without w
 | trace\_filter                  | 40 | 40            |
 | trace\_replayTransaction       | 80 | 3000          |
 | trace\_replayBlockTransactions | 80 | 3000          |
-
-# Standard EVM JSON-RPC Methods
-
-| Method                                   | CU                          | Throughput CU |
-| ---------------------------------------- | --------------------------- | ------------- |
-| net\_version                             | 0                           |               |
-| eth\_chainId                             | 0                           |               |
-| eth\_syncing                             | 0                           |               |
-| eth\_protocolVersion                     | 0                           |               |
-| net\_listening                           | 0                           |               |
-| eth\_uninstallFilter                     | 10                          |               |
-| eth\_accounts                            | 10                          |               |
-| eth\_blockNumber                         | 10                          |               |
-| eth\_subscribe                           | 10                          |               |
-| eth\_unsubscribe                         | 10                          |               |
-| eth\_feeHistory                          | 10                          |               |
-| eth\_maxPriorityFeePerGas                | 10                          |               |
-| eth\_createAccessList                    | 10                          |               |
-| eth\_getTransactionReceipt               | 20                          |               |
-| eth\_getUncleByBlockHashAndIndex         | 20                          |               |
-| eth\_getUncleByBlockNumberAndIndex       | 20                          |               |
-| eth\_getTransactionByBlockHashAndIndex   | 20                          |               |
-| eth\_getTransactionByBlockNumberAndIndex | 20                          |               |
-| eth\_getUncleCountByBlockHash            | 20                          |               |
-| eth\_getUncleCountByBlockNumber          | 20                          |               |
-| web3\_clientVersion                      | 20                          |               |
-| web3\_sha3                               | 20                          |               |
-| eth\_getBlockByNumber                    | 20                          |               |
-| eth\_getStorageAt                        | 20                          |               |
-| eth\_getTransactionByHash                | 20                          |               |
-| eth\_gasPrice                            | 20                          |               |
-| eth\_getBalance                          | 20                          |               |
-| eth\_getCode                             | 20                          |               |
-| eth\_getFilterChanges                    | 20                          |               |
-| eth\_newBlockFilter                      | 20                          |               |
-| eth\_newFilter                           | 20                          |               |
-| eth\_simulateV1                          | 40                          |               |
-| eth\_newPendingTransactionFilter         | 20                          |               |
-| eth\_getBlockTransactionCountByHash      | 20                          |               |
-| eth\_getBlockTransactionCountByNumber    | 20                          |               |
-| eth\_getProof                            | 20                          |               |
-| eth\_getBlockByHash                      | 20                          |               |
-| erigon\_forks                            | 20                          |               |
-| erigon\_getHeaderByHash                  | 20                          |               |
-| erigon\_getHeaderByNumber                | 20                          |               |
-| erigon\_getLogsByHash                    | 20                          |               |
-| erigon\_issuance                         | 20                          |               |
-| eth\_getTransactionCount                 | 20                          |               |
-| eth\_call                                | 26                          |               |
-| eth\_getFilterLogs                       | 60                          |               |
-| eth\_getLogs                             | 60                          |               |
-| eth\_estimateGas                         | 20                          |               |
-| eth\_sendRawTransaction                  | 40                          | 250           |
-| eth\_getBlockReceipts                    | 20                          | 500           |
-| batch                                    | CU of method # times called |               |
-
-* To view the batch request breakdown in the dashboard, click on "raw request"
 
 # Polygon PoS Specific Methods
 
@@ -393,7 +408,7 @@ On average, a typical webhook or WebSocket subscription event is about 1000 byte
 | Error                                        | Compute Units                 |
 | -------------------------------------------- | ----------------------------- |
 | Non-existing methods                         | 0                             |
-| `429`                                        | 0                             |
+| `429, 403`                                   | 0                             |
 | Other `4xx` or `5xx`                         | CU value of specific endpoint |
 | `32600: IP Address not on whitelist`         | 0                             |
 | `32600: App is inactive`                     | 0                             |
