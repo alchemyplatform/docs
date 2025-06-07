@@ -19,26 +19,6 @@ function prompt(question) {
   });
 }
 
-// Helper function to copy directory recursively
-function copyDir(src, dest) {
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true });
-  }
-
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      copyDir(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-}
-
 // Helper function to validate chain name
 function validateChainName(name) {
   if (!name) {
@@ -244,8 +224,6 @@ url: https://docs.alchemy.com/reference/${chainName}-api-faq
 slug: reference/${chainName}-api-faq
 ---
 
-# ${displayName} API FAQ
-
 ## What is ${displayName}?
 
 ${displayName} is an EVM-compatible blockchain that provides developers with a familiar environment for building decentralized applications.
@@ -264,7 +242,7 @@ Check out our [${displayName} API Quickstart guide](./${chainName}-api-quickstar
 function generateGeneratorsYaml(chainName) {
   return `api:
   specs:
-    - openrpc: ../../../build/api-specs/chains/${chainName}.json
+    - openrpc: ../../api-specs/chains/${chainName}.json
 `;
 }
 
@@ -401,6 +379,53 @@ ${tableRows.join("\n")}
   console.log(`✅ Updated chain-apis-overview.mdx with ${displayName} section`);
 }
 
+// Helper function to copy and modify the eth.yaml file for a new chain
+function createChainYaml(chainName, displayName, servers) {
+  const ethYamlPath = path.join(
+    __dirname,
+    "..",
+    "src",
+    "openrpc",
+    "chains",
+    "eth",
+    "eth.yaml",
+  );
+
+  if (!fs.existsSync(ethYamlPath)) {
+    throw new Error("eth.yaml template file not found");
+  }
+
+  // Read the eth.yaml content
+  let ethYamlContent = fs.readFileSync(ethYamlPath, "utf8");
+
+  // Replace the title and description
+  ethYamlContent = ethYamlContent.replace(
+    "title: Alchemy Ethereum JSON-RPC Specification",
+    `title: Alchemy ${displayName} JSON-RPC Specification`,
+  );
+  ethYamlContent = ethYamlContent.replace(
+    "description: A specification of the standard JSON-RPC methods for Ethereum.",
+    `description: A specification of the standard JSON-RPC methods for ${displayName}.`,
+  );
+
+  // Replace the servers section
+  const serversSection = servers
+    .map(
+      (server) => `  - url: ${server.url}
+    name: ${server.name}`,
+    )
+    .join("\n");
+
+  // Find and replace the servers section
+  const serversRegex = /servers:\n( {2}- url: .*\n {4}name: .*\n?)+/;
+  ethYamlContent = ethYamlContent.replace(
+    serversRegex,
+    `servers:\n${serversSection}\n`,
+  );
+
+  return ethYamlContent;
+}
+
 // Main function
 async function main() {
   console.log("🚀 Adding new EVM chain to API references\n");
@@ -490,42 +515,14 @@ async function main() {
       "chains",
       chainName,
     );
-    const methodsDir = path.join(chainDir, "methods");
 
     fs.mkdirSync(chainDir, { recursive: true });
-    fs.mkdirSync(methodsDir, { recursive: true });
 
-    // Copy methods from eth chain
-    console.log("📋 Copying methods from Ethereum chain...");
-    const ethMethodsDir = path.join(
-      __dirname,
-      "..",
-      "src",
-      "openrpc",
-      "chains",
-      "eth",
-      "methods",
-    );
-    copyDir(ethMethodsDir, methodsDir);
-
-    // Create base.yaml
-    console.log("📝 Creating base.yaml...");
-    const baseYamlContent = `info:
-  title: Alchemy ${displayName} JSON-RPC Specification
-  description: A specification of the standard JSON-RPC methods for ${displayName}.
-  version: 0.0.0
-servers:
-${servers
-  .map(
-    (server) => `  - url: ${server.url}
-    name: ${server.name}`,
-  )
-  .join("\n")}
-
-`;
-
-    const baseYamlPath = path.join(chainDir, "base.yaml");
-    fs.writeFileSync(baseYamlPath, baseYamlContent);
+    // Create the chain YAML file by copying and modifying eth.yaml
+    console.log("📝 Creating chain YAML file...");
+    const chainYamlContent = createChainYaml(chainName, displayName, servers);
+    const chainYamlPath = path.join(chainDir, `${chainName}.yaml`);
+    fs.writeFileSync(chainYamlPath, chainYamlContent);
 
     // Create quickstart guide directory
     console.log("\n📁 Creating quickstart guide directory...");
@@ -576,13 +573,14 @@ ${servers
 
     console.log("\n🎉 Successfully created new EVM chain!");
     console.log(`📍 Locations:`);
-    console.log(`   - OpenRPC: src/openrpc/chains/${chainName}/`);
+    console.log(
+      `   - OpenRPC: src/openrpc/chains/${chainName}/${chainName}.yaml`,
+    );
     console.log(`   - Quickstart: fern/api-reference/${chainName}/`);
     console.log(`   - Generators: fern/apis/${chainName}/`);
     console.log(`   - Sidebar: Updated in fern/docs.yml`);
     console.log("\n📋 Files created:");
-    console.log(`   - base.yaml`);
-    console.log(`   - methods/ (copied from eth chain)`);
+    console.log(`   - ${chainName}.yaml (copied and modified from eth.yaml)`);
     console.log(`   - ${chainName}-api-quickstart.mdx`);
     console.log(`   - ${chainName}-api-faq.mdx`);
     console.log(`   - generators.yaml`);
