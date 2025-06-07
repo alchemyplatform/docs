@@ -428,7 +428,7 @@ function createChainYaml(chainName, displayName, servers) {
 
 // Main function
 async function main() {
-  console.log("🚀 Adding new EVM chain to API references\n");
+  console.info("🚀 Adding new EVM chain to API references\n");
 
   try {
     // Get chain name
@@ -439,7 +439,7 @@ async function main() {
       );
       const nameError = validateChainName(chainName);
       if (nameError) {
-        console.log(`❌ ${nameError}`);
+        console.error(`❌ ${nameError}`);
         continue;
       }
 
@@ -453,7 +453,7 @@ async function main() {
         chainName,
       );
       if (fs.existsSync(chainDir)) {
-        console.log(`❌ Chain "${chainName}" already exists`);
+        console.error(`❌ Chain "${chainName}" already exists`);
         continue;
       }
 
@@ -461,15 +461,15 @@ async function main() {
     }
 
     const displayName = formatChainName(chainName);
-    console.log(`✅ Chain name: ${chainName} (${displayName})`);
+    console.info(`✅ Chain name: ${chainName} (${displayName})`);
 
     // Get introduction text for the chain
-    console.log("\n📝 Please provide a brief introduction for the chain:");
+    console.info("\n📝 Please provide a brief introduction for the chain:");
     const introText = await prompt("Introduction text: ");
 
     // Get server URLs
     const servers = [];
-    console.log(
+    console.info(
       "\nEnter server URLs (press Enter with empty input to finish):",
     );
 
@@ -483,12 +483,12 @@ async function main() {
       while (true) {
         serverUrl = await prompt("Enter server URL: ");
         if (!serverUrl) {
-          console.log("❌ Server URL cannot be empty");
+          console.error("❌ Server URL cannot be empty");
           continue;
         }
         const urlError = validateUrl(serverUrl);
         if (urlError) {
-          console.log(`❌ ${urlError}`);
+          console.error(`❌ ${urlError}`);
           continue;
         }
         // Normalize the URL to remove trailing slash
@@ -497,16 +497,16 @@ async function main() {
       }
 
       servers.push({ name: serverName, url: serverUrl });
-      console.log(`✅ Added server: ${serverName} - ${serverUrl}`);
+      console.info(`✅ Added server: ${serverName} - ${serverUrl}`);
     }
 
     if (servers.length === 0) {
-      console.log("❌ At least one server is required");
+      console.error("❌ At least one server is required");
       process.exit(1);
     }
 
     // Create directory structure for OpenRPC
-    console.log("\n📁 Creating OpenRPC directory structure...");
+    console.info("\n📁 Creating OpenRPC directory structure...");
     const chainDir = path.join(
       __dirname,
       "..",
@@ -519,13 +519,13 @@ async function main() {
     fs.mkdirSync(chainDir, { recursive: true });
 
     // Create the chain YAML file by copying and modifying eth.yaml
-    console.log("📝 Creating chain YAML file...");
+    console.info("📝 Creating chain YAML file...");
     const chainYamlContent = createChainYaml(chainName, displayName, servers);
     const chainYamlPath = path.join(chainDir, `${chainName}.yaml`);
     fs.writeFileSync(chainYamlPath, chainYamlContent);
 
     // Create quickstart guide directory
-    console.log("\n📁 Creating quickstart guide directory...");
+    console.info("\n📁 Creating quickstart guide directory...");
     const quickstartDir = path.join(
       __dirname,
       "..",
@@ -536,7 +536,7 @@ async function main() {
     fs.mkdirSync(quickstartDir, { recursive: true });
 
     // Generate and save quickstart guide
-    console.log("📝 Creating quickstart guide...");
+    console.info("📝 Creating quickstart guide...");
     const quickstartContent = generateQuickstartMarkdown(
       introText,
       chainName,
@@ -550,13 +550,13 @@ async function main() {
     fs.writeFileSync(quickstartPath, quickstartContent);
 
     // Generate and save FAQ
-    console.log("📝 Creating FAQ template...");
+    console.info("📝 Creating FAQ template...");
     const faqContent = generateFaqMarkdown(displayName, chainName);
     const faqPath = path.join(quickstartDir, `${chainName}-api-faq.mdx`);
     fs.writeFileSync(faqPath, faqContent);
 
     // Create generators.yaml
-    console.log("📝 Creating generators.yaml...");
+    console.info("📝 Creating generators.yaml...");
     const generatorsDir = path.join(__dirname, "..", "fern", "apis", chainName);
     fs.mkdirSync(generatorsDir, { recursive: true });
 
@@ -565,7 +565,7 @@ async function main() {
     fs.writeFileSync(generatorsPath, generatorsContent);
 
     // Update docs.yml
-    console.log("📝 Updating docs.yml sidebar...");
+    console.info("📝 Updating docs.yml sidebar...");
     updateDocsYml(chainName, displayName);
 
     // Update chain-apis-overview.mdx
