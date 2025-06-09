@@ -20,7 +20,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-// Handle Ctrl+C gracefully on the readline interface
+// Handle Ctrl+C gracefully
 rl.on("SIGINT", () => {
   console.info("\n👋 Goodbye!");
   rl.close();
