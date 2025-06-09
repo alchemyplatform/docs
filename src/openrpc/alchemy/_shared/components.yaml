@@ -179,6 +179,29 @@ components:
       nullable: true
       description: "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
 
+    Eip7702Auth:
+      title: "Eip 7702 Auth"
+      type: object
+      properties:
+        chain_id:
+          $ref: "#/components/schemas/uint64"
+          description: "The chain Id of the authorization"
+        address:
+          $ref: "#/components/schemas/address"
+          description: "The address of the authorization"
+        nonce:
+          $ref: "#/components/schemas/uint64"
+          description: "The nonce for the authorization"
+        y_parity:
+          $ref: "#/components/schemas/uint"
+          description: "Y parity of signed authorizzation tuple"
+        r:
+          $ref: "#/components/schemas/uint256"
+          description: "R of signed authorizzation tuple"
+        s:
+          $ref: "#/components/schemas/uint256"
+          description: "S of signed authorizzation tuple"
+
     UserOperationV06:
       type: object
       title: "User Operation v0.6"
@@ -217,6 +240,9 @@ components:
         paymasterAndData:
           $ref: "#/components/schemas/bytes"
           description: "Paymaster address and extra data"
+        eip7702_auth:
+          $ref: "#/components/schemas/Eip7702Auth"
+          description: "EIP 7702 authorization tuple to upgrade the EOA account"
 
     UserOperationV06Partial:
       type: object
@@ -300,6 +326,9 @@ components:
         signature:
           type: string
           description: "Data passed into the account along with the nonce during the verification step"
+        eip7702_auth:
+          $ref: "#/components/schemas/Eip7702Auth"
+          description: "EIP 7702 authorization tuple to upgrade the EOA account"
 
     UserOperationV07Partial:
       type: object
