@@ -102,7 +102,7 @@ export const CodeblockSelect = ({
           ':hover': {
             backgroundColor: isDark ? '#181818' : '#F6F6F6',
           },
-          ':not(:first-child):not(:last-child)': {
+          ':not(:first-of-type):not(:last-of-type)': {
             margin: '4px 0px',
           },
         }),

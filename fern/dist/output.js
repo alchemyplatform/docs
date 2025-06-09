@@ -12086,6 +12086,7 @@ const pN = () =>
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 80px;
   width: 60%;
   padding-block: 36px;
   gap: 16px;

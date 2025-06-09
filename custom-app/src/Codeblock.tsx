@@ -7,12 +7,15 @@ import light from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
 import { CodeblockSelect } from './CodeblockSelect'
 
 import {
-  codeMap,
-  chainOptions,
   CodeBlockLanguage,
+  Chains,
+  ApiFunction,
   languageOptions,
-  Languages,
+  chainOptions,
+  loadCodeExamples,
 } from './codemap.ts'
+
+const CODE_MAP = loadCodeExamples()
 
 const CodeBlockContainer = styled.div`
   background-color: ${({ theme }) =>
@@ -76,11 +79,15 @@ export const Codeblock: React.FC = () => {
     mode: isDark ? 'dark' : 'light',
   }
 
-  const [language, setLanguage] = React.useState<string>(Languages[0])
-  const [chain, setChain] = React.useState<string>(chainOptions[0].value)
-  const [method, setMethod] = React.useState<string>(Object.keys(codeMap)[0])
+  const [language, setLanguage] = React.useState<CodeBlockLanguage>(
+    CodeBlockLanguage.CLI,
+  )
+  const [chain, setChain] = React.useState<Chains>(Chains.ethereumMainnet)
+  const [method, setMethod] = React.useState<ApiFunction>(
+    ApiFunction.getNFTsForCollection,
+  )
   const [languageDropdownOption, setLanguageDropdownOption] =
-    React.useState<string>(Languages[0])
+    React.useState<CodeBlockLanguage>(CodeBlockLanguage.CLI)
 
   const [runButtonDisabled, setRunButtonDisabled] =
     React.useState<boolean>(false)
@@ -88,23 +95,26 @@ export const Codeblock: React.FC = () => {
   const handleRun = () => {
     // TODO: Add analytics events when clicked.
     setLanguage(CodeBlockLanguage.JSON)
-    setCode(codeMap[method][CodeBlockLanguage.JSON])
+    setCode(CODE_MAP[method]?.[language]?.[chain]?.response ?? '')
     setRunButtonDisabled(true)
   }
 
   const [code, setCode] = React.useState<string>(
-    codeMap[Object.keys(codeMap)[0]][languageDropdownOption],
+    CODE_MAP[method]?.[language]?.[chain]?.request ?? 'Something went wrong',
   )
 
   const updateCode = (
-    chain_: string,
-    method_: string,
+    chain_: Chains,
+    method_: ApiFunction,
     language_ = languageDropdownOption,
   ) => {
     setLanguage(language_)
     setChain(chain_)
     setMethod(method_)
-    setCode(codeMap[method_][language_])
+    setCode(
+      CODE_MAP[method_]?.[language_]?.[chain_]?.request ??
+        'Something went wrong',
+    )
     setRunButtonDisabled(false)
   }
 
@@ -138,32 +148,60 @@ export const Codeblock: React.FC = () => {
               {/* Language */}
               <CodeblockSelect
                 isDark={isDark}
-                options={languageOptions}
+                options={languageOptions.filter((opt) => {
+                  const entry =
+                    CODE_MAP[method]?.[opt.value as CodeBlockLanguage]?.[chain]
+                  return entry && entry.request && entry.response
+                })}
                 selectedOption={languageDropdownOption}
                 onChange={(value) => {
-                  setLanguageDropdownOption(value)
-                  updateCode(chain, method, value)
+                  setLanguageDropdownOption(value as CodeBlockLanguage)
+                  updateCode(chain, method, value as CodeBlockLanguage)
                 }}
               />
               {/* Chain */}
               <CodeblockSelect
                 isDark={isDark}
-                options={chainOptions}
+                options={
+                  language === CodeBlockLanguage.JSON
+                    ? chainOptions.filter(
+                        (opt) =>
+                          CODE_MAP[method]?.[languageDropdownOption] &&
+                          CODE_MAP[method][languageDropdownOption]?.[
+                            opt.value as Chains
+                          ],
+                      )
+                    : chainOptions.filter(
+                        (opt) =>
+                          CODE_MAP[method]?.[language] &&
+                          CODE_MAP[method][language]?.[opt.value as Chains],
+                      )
+                }
                 selectedOption={chain}
                 onChange={(value) => {
-                  updateCode(value, method)
+                  updateCode(value as Chains, method)
                 }}
               />
               {/* Method */}
               <CodeblockSelect
                 isDark={isDark}
-                options={Object.keys(codeMap).map((key) => ({
-                  value: key,
-                  label: key,
-                }))}
+                options={Object.values(ApiFunction)
+                  .filter((selectedMethod) => {
+                    const entry =
+                      language === CodeBlockLanguage.JSON
+                        ? CODE_MAP[selectedMethod]?.[languageDropdownOption]?.[
+                            chain
+                          ]
+                        : CODE_MAP[selectedMethod]?.[language]?.[chain]
+                    return entry && entry.request && entry.response
+                  })
+                  .map((selectedMethod) => ({
+                    value: selectedMethod,
+                    label: selectedMethod,
+                  }))}
                 selectedOption={method}
                 onChange={(value) => {
-                  updateCode(chain, value)
+                  updateCode(chain, value as ApiFunction)
                 }}
               />
             </div>
