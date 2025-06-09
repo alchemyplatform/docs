@@ -20,6 +20,13 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+// Handle Ctrl+C gracefully on the readline interface
+rl.on("SIGINT", () => {
+  console.info("\n👋 Goodbye!");
+  rl.close();
+  process.exit(0);
+});
+
 function prompt(question: string): Promise<string> {
   return new Promise((resolve) => {
     rl.question(question, (answer) => {
@@ -128,8 +135,8 @@ function logSuccess(chainName: string): void {
   console.info("3. Add any chain-specific methods if needed");
   console.info("4. Customize the FAQ content with chain-specific information");
   console.info("5. Customize the emoji for chain section in docs.yml");
-  console.info("6. Run validation: npm run validate:rpc");
-  console.info("7. Run the docs locally to preview: npm run dev");
+  console.info("6. Run the generation script: pnpm run generate");
+  console.info("7. Run the docs locally to preview: pnpm run dev");
 }
 
 async function main(): Promise<void> {
@@ -178,13 +185,6 @@ async function main(): Promise<void> {
     rl.close();
   }
 }
-
-// Handle Ctrl+C gracefully
-process.on("SIGINT", () => {
-  console.info("\n👋 Goodbye!");
-  rl.close();
-  process.exit(0);
-});
 
 // Run the script
 main().catch((error) => {
