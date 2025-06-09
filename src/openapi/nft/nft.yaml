@@ -237,25 +237,17 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - tokens
               properties:
                 tokens:
                   type: array
                   description: List of token objects to batch request NFT metadata for. Maximum 100.
-                  default:
-                    [
-                      {
-                        contractAddress: "0xe785E82358879F061BC3dcAC6f0444462D4b5330",
-                        tokenId: "44",
-                        tokenType: "ERC721",
-                      },
-                      {
-                        contractAddress: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-                        tokenId: "888",
-                        tokenType: "ERC721",
-                      },
-                    ]
                   items:
                     type: object
+                    required:
+                      - contractAddress
+                      - tokenId
                     properties:
                       contractAddress:
                         $ref: "#/components/schemas/contractAddress"
@@ -1240,12 +1232,17 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - tokens
               properties:
                 tokens:
                   type: array
                   description: List of token objects to batch request NFT metadata for. Maximum 100.
                   items:
                     type: object
+                    required:
+                      - contractAddress
+                      - tokenId
                     properties:
                       contractAddress:
                         $ref: "#/components/schemas/contractAddress"
