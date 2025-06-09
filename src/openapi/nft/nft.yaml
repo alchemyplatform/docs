@@ -1037,6 +1037,13 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/addressRequired"
+        - name: isSpam
+          in: query
+          required: true
+          schema:
+            type: boolean
+            description: "Whether the address is spam."
+            default: true
       x-readme:
         samples-languages:
           - javascript
@@ -1882,7 +1889,12 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/owner"
+        - name: wallet
+          description: String - Address for NFT owner (can be in ENS format for Eth Mainnet).
+          schema:
+            $ref: "#/components/schemas/wallet"
+          in: query
+          required: true
         - $ref: "#/components/parameters/contractAddressRequired"
       x-readme:
         samples-languages:
