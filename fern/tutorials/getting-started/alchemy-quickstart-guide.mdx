@@ -1,245 +1,161 @@
 ---
 title: Alchemy Quickstart Guide
-description: Quickstart guide to Alchemy! Learn how to create an Alchemy key, make your first request, setup up Alchemy as your client, and get to building!
-subtitle: Quickstart guide to Alchemy! Learn how to create an Alchemy key, make your first request, setup up Alchemy as your client, and get to building!
+description: Learn how to use Node APIs, Data APIs, Subgraphs, Webhooks, Account Kit and Rollups to create powerful Web3 apps and experiences.
+subtitle: Learn how to use Node APIs, Data APIs, Subgraphs, Webhooks, Account Kit and Rollups to create powerful Web3 apps and experiences.
 url: https://docs.alchemy.com/docs/alchemy-quickstart-guide
 slug: docs/alchemy-quickstart-guide
 ---
 
-# Getting Started
+Alchemy is your complete web3 development platform. Whether you're accessing blockchain data, building smooth, web2-like dApp experiences or launching your own rollup, we have everything you need.
 
-👋 *New to Alchemy? Get access to Alchemy for free* ***[here](https://alchemy.com/?r=e68b2f77-7fc7-4ef7-8e9c-cdfea869b9b5)***.
+This guide is designed to help you get started across our major product areas. Feel free to jump to the section that interests you most:
 
-*Estimated time to complete this guide: \< 10 minutes*
-
-***
-
-## 📋 Steps to get started with Alchemy
-
-This guide assumes you already have an [Alchemy account](https://alchemy.com/?r=e68b2f77-7fc7-4ef7-8e9c-cdfea869b9b5) and access to our [Dashboard](https://dashboard.alchemy.com/).
-
-**1**. 🔑 [Create an Alchemy API key](#1key-create-an-alchemy-api-key)
-
-**2**. ✍️ [Make a request](/docs/alchemy-quickstart-guide#2-️-make-your-first-request)
-
-**3**. 🤝 [Set up Alchemy as your client](doc:alchemy-quickstart-guide/#3-🤝-set-up-alchemy-as-your-client)
-
-4\. 💻[ Start building!](/docs/alchemy-quickstart-guide#4-computer-start-building)
+1. [Node APIs](#node-apis)
+2. [Data: APIs, Subgraphs & Webhooks](#data-apis-subgraphs--webhooks)
+3. [Account Kit](#account-kit)
+4. [Rollups](#rollups)
 
 ***
 
-## 1.🔑 Create an Alchemy API Key
+## Node APIs
 
-To use Alchemy's products, you need an API key to authenticate your requests.
+Node APIs are the standard JSON-RPC endpoints exposed by blockchain clients. We support **45+ chains** today, with new ones added every month.
 
-You get an API key when you [create an app from the dashboard](https://dashboard.alchemy.com/). Follow the steps below to create an app:
+### Getting Started:
 
-1. First, navigate to your [Alchemy dashboard](https://dashboard.alchemy.com/) and click on the "Apps" tab.
+1. **Grab your API key** from the [Alchemy Dashboard](https://dashboard.alchemy.com).
+2. **Make your first request** to any [supported JSON-RPC endpoint](https://www.alchemy.com/docs/reference/chain-apis-overview). For example:
 
-   ![](3bc88b9-image.png)
+```bash
+curl -X POST https://eth-mainnet.g.alchemy.com/v2/{apiKey} \
+     -H "Content-Type: application/json" \
+     -d '{
+  "jsonrpc": "2.0",
+  "method": "eth_blockNumber",
+  "params": [],
+  "id": 1
+}'
+```
 
-2. Next, click on the "Create new app" button.
+**Sample Response:**
 
-   ![](0f7b4bf-image.png)
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": "0x2377"
+}
+```
 
-3. Fill in the details for your new app, this includes specifying a name and description (optional) for it. Then click the "Create app" button.
+This works with any HTTP library — `axios`, `fetch`, and more.
 
-   ![](0fa2754-image.png)
-
-4. Once your app is created, you will be redirected to the app details page, here you will see your API key in the top right corner.
-
-   ![](d7460bc-image.png)
-
-5. By default the API key is enabled for all the chains and networks, switch to the "Networks" tab to disable certain chains and view the request URLs.
-
-   ![](a6954f1-image.png)
-
-6. You can easily disable networks using the "Configure" option.
-
-   ![](25ffbd7-image.png)
-
-***
-
-## 2. ✍️ Make Your First Request
-
-You can interact with Alchemy's infrastructure provider using JSON-RPC and your [command line](https://www.computerhope.com/jargon/c/commandi.htm).
-
-For manual requests, we recommend interacting with the `JSON-RPC` via `POST` requests. Simply pass in the `Content-Type: application/json` header and your query as the `POST` body with the following fields:
-
-* `jsonrpc`: The JSON-RPC version—currently, only `2.0` is supported.
-* `method`: The ETH API method. [See API reference.](/reference/ethereum-api-quickstart)
-* `params`: A list of parameters to pass to the method.
-* `id`: The ID of your request. Will be returned by the response so you can keep track of which request a response belongs to.
-
-Here is an example you can run from the Terminal/Windows/LINUX command line to retrieve the current gas price:
-
-<CodeGroup>
-  ```shell shell
-  curl https://eth-mainnet.g.alchemy.com/v2/demo \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"eth_gasPrice","params":[],"id":73}'
-  ```
-</CodeGroup>
-
-<Info>
-  Please remember to replace "demo" in the request URL with your actual Alchemy API key you created in the last step!
-</Info>
-
-Results:
-
-<CodeGroup>
-  ```json Result
-  { "id": 73,
-    "jsonrpc": "2.0",
-    "result": "0x09184e72a000" // 10000000000000 }
-  ```
-</CodeGroup>
+👉 Explore supported chains and methods in our [Node API Reference](https://www.alchemy.com/docs/reference/api-overview).
 
 ***
 
-## 3. 🤝 Set up Alchemy as your Client
+## Data: APIs, Subgraphs & Webhooks
 
-Want to integrate Alchemy into your production app?
+### Data APIs
 
-Find out how to set up or switch your current provider to Alchemy by using the Alchemy SDK, the easiest and most powerful way to access Alchemy's suite of Enhanced APIs and tools.
+These are high-level APIs built by us to simplify blockchain development. Unlike standard Node APIs, these are powerful abstractions that return rich data in fewer requests.
 
-<Warning>
-  **If you have an existing client,** change your current node provider URL to an Alchemy URL with your API key: "[https://eth-mainnet.g.alchemy.com/v2/your-api-key](https://eth-mainnet.g.alchemy.com/v2/your-api-key)"
+We provide Data APIs for:
 
-  **Note:** The scripts below need to be run in a **node context** or **saved in a file**, not run from the command line.
-</Warning>
+* NFTs
+* Tokens
+* Transactions
+* Prices
+* Transfers
+* And more — across multiple networks.
 
-### The Alchemy SDK
+**Example: Get NFTs for an address**
 
-There are tons of Web3 libraries you can integrate with Alchemy. However, we recommend using the [Alchemy SDK](https://github.com/alchemyplatform/alchemy-sdk-js), a drop-in replacement for Ethers.js, built and configured to work seamlessly with Alchemy. This provides multiple advantages such as automatic retries and robust WebSocket support.
+```bash
+curl -G https://eth-mainnet.g.alchemy.com/nft/v3/${apiKey}/getNFTsForOwner \
+     -d owner=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+```
 
-### 1. From your [command line](https://www.computerhope.com/jargon/c/commandi.htm), create a new project directory and install the Alchemy SDK.
-
-To install the Alchemy SDK, you want to create a project, and then navigate to your project directory to run the installation. Let's go ahead and do that! Once we're in our home directory, let's execute the following:
-
-With Yarn:
-
-<CodeGroup>
-  ```shell Yarn
-  mkdir your-project-name
-  cd your-project-name
-  yarn init # (or yarn init --yes)
-  yarn add alchemy-sdk
-  ```
-</CodeGroup>
-
-With NPM:
-
-<CodeGroup>
-  ```shell NPM
-  mkdir your-project-name
-  cd your-project-name
-  npm init   # (or npm init --yes)
-  npm install alchemy-sdk
-  ```
-</CodeGroup>
-
-### 2. Create a file named `index.js` and add the following contents:
-
-<Info>
-  You should ultimately replace `demo` with your Alchemy HTTP API key.
-</Info>
-
-<CodeGroup>
-  ```javascript index.js
-  // Setup: npm install alchemy-sdk
-  const { Network, Alchemy } = require("alchemy-sdk");
-
-  // Optional Config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-
-  const alchemy = new Alchemy(settings);
-
-  async function main() {
-    const latestBlock = await alchemy.core.getBlockNumber();
-    console.log("The latest block number is", latestBlock);
-  }
-
-  main();
-  ```
-</CodeGroup>
-
-Unfamiliar with the async stuff? Check out this [Medium post](https://betterprogramming.pub/understanding-async-await-in-javascript-1d81bb079b2c).
-
-### 3. Run it using node
-
-<CodeGroup>
-  ```shell shell
-  node index.js
-  ```
-</CodeGroup>
-
-### 4. You should now see the latest block number output in your console!
-
-<CodeGroup>
-  ```shell shell
-  The latest block number is 11043912
-  ```
-</CodeGroup>
-
-Woo! Congrats! You just wrote your first web3 script using Alchemy and sent your first request to your Alchemy API endpoint 🎉
-
-The app associated with your API key should now look like this on the dashboard:
-
-![](b54546e-image.png)
+This endpoint returns all NFTs owned by a wallet — perfect for NFT galleries, dashboards, and marketplaces.
 
 ***
 
-## 4. 💻 Start Building!
+### Subgraphs
 
-Don't know where to start? Check out these four tutorials to get more familiar with Alchemy and blockchain development:
+Need custom, complex queries? Subgraphs let you define your own GraphQL APIs over blockchain data.
 
-1. [Examples of Common Queries Using the Alchemy SDK](/reference/using-the-alchemy-sdk)
-2. Write a [simple web3 script](/docs/how-to-get-the-latest-block-on-ethereum)
-3. Learn [How to Send Transactions on Ethereum](/docs/how-to-send-transactions-on-ethereum)
-4. Try deploying your first [Hello World Smart Contract](/docs/hello-world-smart-contract) and get your hands dirty with some solidity programming!
-
-Once you complete this tutorial, let us know how your experience was or if you have any feedback by tagging us on Twitter [@Alchemy](https://twitter.com/Alchemy)!
+Check out our [Subgraphs Quickstart](https://www.alchemy.com/docs/reference/subgraphs-quickstart) to learn how to build and deploy them on Alchemy Subgraphs.
 
 ***
 
-### Other Web3 Libraries
+### Webhooks
 
-Check out the documentation for each library:
+When polling isn't enough, Webhooks let you receive **real-time on-chain event notifications**. Use them to stream:
 
-* [Web3.py](https://web3py.readthedocs.io/en/stable/)
-* [Web3j](https://docs.web3j.io)
-* [Ethers.js](https://docs.ethers.io/v5/)
-* [Web3.js](https://web3js.readthedocs.io/en/v1.2.9/)
+* Wallet activity at scale
+* Smart contract events
+* Full block data (incl. traces)
 
-Using the below code snippets, you can install and use Alchemy as a provider via any of the following libraries!
+Webhooks are [**customizable using GraphQL-style filters**](https://www.alchemy.com/docs/reference/custom-webhook) so you only get the data you care about.
 
-<CodeGroup>
-  ```python Web3.py
-  # Setup: pip install web3
-  from web3 import Web3
-  alchemy = Web3(Web3.HTTPProvider("https://eth-mainnet.g.alchemy.com/v2/your-api-key"));
-  ```
+📘 Dive into the [Webhooks Quickstart](https://www.alchemy.com/docs/reference/notify-api-quickstart) to get started.
 
-  ```java Web3j
-  // Setup: curl -L get.web3j.io | sh
-  Web3j web3 = Web3j.build(new HttpService("https://eth-mainnet.g.alchemy.com/v2/your-api-key"));
-  ```
+👉 Explore all of our Data capabilities [here](https://www.alchemy.com/docs/reference/api-overview).
 
-  ```javascript Ethers.js
-  // Setup: npm install ethers
-  const ethers = require("ethers");
-  const url = "https://eth-mainnet.g.alchemy.com/v2/your-api-key";
-  const customHttpProvider = new ethers.providers.JsonRpcProvider(url);
-  ```
+***
 
-  ```javascript Web3.js
-  // Setup: npm install web3
-  const Web3 = require('web3');
-  const web3 = new Web3("https://eth-mainnet.g.alchemy.com/v2/your-api-key");
-  ```
-</CodeGroup>
+## Account Kit
+
+Want to create seamless, web2-like experiences for your web3 app? **Account Kit** makes it simple.
+
+With the Account Kit SDK, you can:
+
+* Offer **social logins**
+* Enable **gas-sponsored transactions**
+* Support **invisible signing** for users
+
+It works with React, React Native, and other JS frameworks.
+
+🎬 Try the [Demo App](https://demo.alchemy.com/) to see what's possible.
+
+### Sample Code: Create a Smart Account + Sponsored Tx
+
+```ts
+// yarn add @account-kit/infra @account-kit/smart-contracts
+import {
+  alchemy,
+  createAlchemySmartAccountClient,
+  sepolia,
+} from "@account-kit/infra";
+import { createLightAccount } from "@account-kit/smart-contracts";
+import { LocalAccountSigner } from "@aa-sdk/core";
+import { generatePrivateKey } from "viem/accounts";
+
+const alchemyTransport = alchemy({
+  apiKey: "YOUR_API_KEY", // from Alchemy dashboard
+});
+
+export const client = createAlchemySmartAccountClient({
+  transport: alchemyTransport,
+  policyId: "YOUR_POLICY_ID", // create a gas policy in the dashboard
+  chain: sepolia,
+  account: await createLightAccount({
+    chain: sepolia,
+    transport: alchemyTransport,
+    signer: LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey()),
+  }),
+});
+```
+
+📚 Learn more in our [Account Kit Docs](https://www.alchemy.com/docs/wallets).
+
+***
+
+## Rollups
+
+Want to launch your own chain? Alchemy Rollups let you deploy a production-grade rollup in minutes — no code required.
+
+You'll get a dedicated chain with full control over cost, speed, and functionality, plus built-in RPCs, block explorer and developer tools.
+
+We support major frameworks including **OP Stack**, **Arbitrum Orbit**, and **zkSync ZK Stack**.
+
+👉 [Learn how to deploy a rollup](https://docs.alchemy.com/reference/rollups-quickstart)
