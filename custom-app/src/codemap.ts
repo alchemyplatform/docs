@@ -14,22 +14,29 @@ export const languageOptions = [
 
 export enum Chains {
   ethereumMainnet = 'ethereum-mainnet',
-  ethSepolia = 'eth-sepolia',
-  baseMainnet = 'base-mainnet',
-  avalancheMainnet = 'avalanche-mainnet',
+  zksyncMainnet = 'zksync-mainnet',
 }
 
 export const chainOptions = [
   { value: Chains.ethereumMainnet as string, label: 'Ethereum' },
-  { value: Chains.baseMainnet as string, label: 'Base' },
-  { value: Chains.avalancheMainnet as string, label: 'Avalanche' },
+  { value: Chains.zksyncMainnet as string, label: 'ZKSync' },
 ]
 
 export enum ApiFunction {
-  getNFTsForCollection = 'getNFTsForCollection',
   getNFTsForOwner = 'getNFTsForOwner',
-  getNFTMetadata = 'getNFTMetadata',
   getNFTsForOwnerAndBlockchain = 'getNFTsForOwnerAndBlockchain',
+  alchemy_getTokenAllowance = 'alchemy_getTokenAllowance',
+  alchemy_getTokenBalances = 'alchemy_getTokenBalances',
+  alchemy_getTokenMetadata = 'alchemy_getTokenMetadata',
+  eth_blockNumber = 'eth_blockNumber',
+  eth_estimateGas = 'eth_estimateGas',
+  eth_feeHistory = 'eth_feeHistory',
+  eth_getBlockReceipts = 'eth_getBlockReceipts',
+  eth_getLogs = 'eth_getLogs',
+  getNFTMetadata = 'getNFTMetadata',
+  getNFTMetadataBatch = 'getNFTMetadataBatch',
+  getContractMetadata = 'getContractMetadata',
+  getFloorPrice = 'getFloorPrice',
 }
 
 // This will import all request and response files under code-samples recursively as raw text

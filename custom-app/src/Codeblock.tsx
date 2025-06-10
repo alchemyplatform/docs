@@ -84,10 +84,10 @@ export const Codeblock: React.FC = () => {
   )
   const [chain, setChain] = React.useState<Chains>(Chains.ethereumMainnet)
   const [method, setMethod] = React.useState<ApiFunction>(
-    ApiFunction.getNFTsForCollection,
+    ApiFunction.getNFTMetadata,
   )
   const [languageDropdownOption, setLanguageDropdownOption] =
-    React.useState<CodeBlockLanguage>(CodeBlockLanguage.CLI)
+    React.useState<CodeBlockLanguage>(language)
 
   const [runButtonDisabled, setRunButtonDisabled] =
     React.useState<boolean>(false)
