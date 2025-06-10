@@ -1,38 +1,8 @@
-import type {
-  Components,
-  JSONSchema,
-  OpenrpcDocument,
-  SchemaComponents,
-} from "@open-rpc/meta-schema";
-import { readFileSync, writeFileSync } from "fs";
-import yaml from "js-yaml";
+import type { JSONSchema, OpenrpcDocument } from "@open-rpc/meta-schema";
+import { writeFileSync } from "fs";
 import mergeAllOf from "json-schema-merge-allof";
 
 import type { DerefedOpenRpcDoc } from "../types/openRpc";
-
-/**
- * Retrieves components (schemas) from a YAML file and returns them in OpenRPC Components format.
- * @param componentsFile - Path to the YAML file containing component schemas
- * @returns Components object containing parsed schemas for use in OpenRPC documents
- */
-export const getComponentsFromFile = (componentsFile: string): Components => {
-  const rawMethods = readFileSync(componentsFile).toString();
-  const parsedMethods = yaml.load(rawMethods) as SchemaComponents;
-  const schemas = { ...parsedMethods };
-
-  return { schemas };
-};
-
-/**
- * Retrieves the base OpenRPC document from a YAML file and returns it in OpenRPC Base format.
- * @param schemaDir - Path to the directory containing the base OpenRPC document
- * @returns Base OpenRPC document containing the base information for the OpenRPC document
- */
-export const getOpenRpcBase = (schemaDir: string) => {
-  const baseRaw = readFileSync(`${schemaDir}/base.yaml`).toString();
-
-  return yaml.load(baseRaw) as OpenrpcDocument;
-};
 
 /**
  * Formats an OpenRPC document by removing components, merging allOf schemas, and sorting methods
