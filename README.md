@@ -125,5 +125,3 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ## License
 
 This project is licensed under the CC-BY-4.0 License - see the [LICENSE](./LICENSE) file for details.
-
-TEST
