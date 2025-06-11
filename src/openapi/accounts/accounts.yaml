@@ -231,6 +231,82 @@ paths:
                     description: >
                       The organization ID associated with the user. This ID is returned if an account exists for the given email address. If no account is found, this value will be null. The response is intentionally limited to this information to protect user privacy and security.
       operationId: getUser
+  /otp:
+    post:
+      summary: Verify OTP Code
+      description: >
+        Verifies a one-time password (OTP) code sent to the user's email for authentication. This endpoint allows users to complete the authentication process by providing the OTP code they received, enabling secure access to their Smart Wallet functionalities.
+      security:
+        - apiKey: []
+      x-readme:
+        samples-languages:
+          - javascript
+          - curl
+          - python
+          - go
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                otpCode:
+                  type: string
+                  description: The one-time password code sent to the user's email or phone number. This code is typically 6-8 digits long and expires after a short period.
+                otpId:
+                  $ref: "#/components/schemas/otpId"
+                  description: The OTP request identifier returned from the initial authentication request. This links the verification attempt to the original OTP generation.
+                orgId:
+                  $ref: "#/components/schemas/orgId"
+                targetPublicKey:
+                  $ref: "#/components/schemas/targetPublicKey"
+                expirationSeconds:
+                  $ref: "#/components/schemas/expirationSeconds"
+              required:
+                - orgId
+                - otpCode
+                - otpId
+                - targetPublicKey
+      responses:
+        "200":
+          description: OTP verification successful. User is now authenticated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  credentialBundle:
+                    type: string
+                    description: An encrypted API key credential bundle that can be used for subsequent authenticated requests. This bundle contains the authentication credentials encrypted with the provided targetPublicKey and can be decrypted client-side for stamping requests.
+                required:
+                  - credentialBundle
+        "400":
+          description: Invalid OTP code or expired OTP.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message describing why the OTP verification failed.
+                  code:
+                    type: string
+                    description: Error code for programmatic handling of the error.
+        "429":
+          description: Too many OTP verification attempts. Please wait before trying again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating rate limiting is in effect.
+                  retryAfter:
+                    type: integer
+                    description: Number of seconds to wait before making another verification attempt.
+      operationId: verifyOtp
   /sign-payload:
     post:
       summary: Sign Message
@@ -368,3 +444,6 @@ components:
     redirectParams:
       type: string
       description: Redirect parameters appended to the magic link.
+    credentialBundle:
+      type: string
+      description: An encrypted API key credential bundle that can be used for subsequent authenticated requests. This bundle contains the authentication credentials encrypted with the provided targetPublicKey and can be decrypted client-side for stamping requests.
