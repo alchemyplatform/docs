@@ -1,9 +1,7 @@
 import React from 'react'
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
-import SyntaxHighlighter from 'react-syntax-highlighter'
-import dark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark'
-import light from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light'
+import { codeToHtml } from 'shiki'
 import { CodeblockSelect } from './CodeblockSelect'
 
 import {
@@ -23,6 +21,41 @@ const CodeBlockContainer = styled.div`
   border-radius: 24px;
   border: ${({ theme }) =>
     theme.mode === 'dark' ? '1px solid #383838' : '1px solid #EAEAEA'};
+`
+
+const ShikiCodeBlock = styled.div`
+  margin-top: 24px;
+  overflow-x: auto;
+
+  .shiki {
+    background-color: ${({ theme }) =>
+      theme.mode === 'dark' ? '#121212' : '#FAFAFA'} !important;
+  }
+
+  html.dark .shiki,
+  html.dark .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+  }
+
+  code {
+    counter-reset: step;
+    counter-increment: step 0;
+    box-shadow: none;
+    background-color: transparent;
+    white-space: unset;
+    padding-inline: 0px;
+  }
+
+  code .line::before {
+    content: counter(step);
+    counter-increment: step;
+    width: 1rem;
+    margin-right: 1.5rem;
+    display: inline-block;
+    text-align: right;
+    color: rgba(115, 138, 148, 0.4);
+  }
 `
 
 const RunButton = styled.button`
@@ -118,11 +151,27 @@ export const Codeblock: React.FC = () => {
     setRunButtonDisabled(false)
   }
 
+  const [codeHtml, setCodeHtml] = React.useState<string>('')
+
+  React.useEffect(() => {
+    const generateCodeHtml = async () => {
+      const html = await codeToHtml(code, {
+        lang: language,
+        themes: {
+          light: 'material-theme-lighter',
+          dark: 'material-theme-darker',
+        },
+      })
+      setCodeHtml(html)
+    }
+    generateCodeHtml()
+  }, [code, language, isDark])
+
   return (
     <StyledThemeProvider theme={theme}>
       <h3 className="mb-6">Query the blockchain in seconds</h3>
       <CodeBlockContainer>
-        <div style={{ padding: '24px 24px 0px' }}>
+        <div style={{ padding: '24px' }}>
           <div
             style={{
               display: 'flex',
@@ -234,28 +283,7 @@ export const Codeblock: React.FC = () => {
               </svg>
             </RunButton>
           </div>
-          <SyntaxHighlighter
-            style={isDark ? dark : light}
-            showLineNumbers={true}
-            language={language}
-            customStyle={{
-              fontSize: '16px',
-              background: 'transparent',
-              height: '300px',
-              marginTop: '8px',
-              textWrap: 'initial',
-            }}
-            codeTagProps={{
-              style: {
-                boxShadow: 'none',
-                background: 'transparent',
-                whiteSpace: 'unset',
-                paddingInline: '0px',
-              },
-            }}
-          >
-            {code}
-          </SyntaxHighlighter>
+          <ShikiCodeBlock dangerouslySetInnerHTML={{ __html: codeHtml }} />
         </div>
         <QuickstartContainer>
           <div style={{ color: isDark ? '#EDEDED' : '#111111' }}>
