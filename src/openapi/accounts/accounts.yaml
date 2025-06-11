@@ -307,6 +307,122 @@ paths:
                     type: integer
                     description: Number of seconds to wait before making another verification attempt.
       operationId: verifyOtp
+  /auth-jwt:
+    post:
+      summary: Authenticate with JWT
+      description: >
+        Authenticates a user using a JSON Web Token (JWT) for secure access to their Smart Wallet functionalities. This endpoint validates the provided JWT token and returns authentication credentials upon successful verification. JWT authentication provides a stateless authentication mechanism that can be used for server-side authentication flows and integration with existing identity providers.
+      security:
+        - apiKey: []
+      x-readme:
+        samples-languages:
+          - javascript
+          - curl
+          - python
+          - go
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jwtToken:
+                  type: string
+                  description: The JSON Web Token (JWT) used for authentication. This token should be signed and contain the necessary claims for user identification and authorization.
+                orgId:
+                  $ref: "#/components/schemas/orgId"
+                  description: The organization ID associated with the user and the application context.
+                targetPublicKey:
+                  $ref: "#/components/schemas/targetPublicKey"
+                expirationSeconds:
+                  $ref: "#/components/schemas/expirationSeconds"
+                validateClaims:
+                  type: object
+                  description: Optional additional claims to validate within the JWT token for enhanced security verification.
+                  additionalProperties:
+                    type: string
+              required:
+                - jwtToken
+                - orgId
+                - targetPublicKey
+      responses:
+        "200":
+          description: JWT authentication successful. User is now authenticated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  credentialBundle:
+                    type: string
+                    description: An encrypted API key credential bundle that can be used for subsequent authenticated requests. This bundle contains the authentication credentials encrypted with the provided targetPublicKey and can be decrypted client-side for stamping requests.
+                  orgId:
+                    $ref: "#/components/schemas/orgId"
+                    description: The organization ID associated with the authenticated user and the application.
+                  userId:
+                    type: string
+                    description: A unique identifier for the authenticated user, extracted from the JWT token claims.
+                  address:
+                    type: string
+                    description: The Ethereum address of the user's signer, available after successful authentication.
+                  solanaAddress:
+                    type: string
+                    description: The Solana address of the user's signer, available after successful authentication.
+                  tokenClaims:
+                    type: object
+                    description: The validated claims from the JWT token that was used for authentication.
+                    additionalProperties:
+                      type: string
+                required:
+                  - credentialBundle
+                  - orgId
+                  - userId
+                  - address
+        "400":
+          description: Invalid JWT token or authentication failed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message describing why the JWT authentication failed.
+                  code:
+                    type: string
+                    description: Error code for programmatic handling of the error.
+                  details:
+                    type: object
+                    description: Additional details about the authentication failure, such as expired token, invalid signature, or missing claims.
+                    additionalProperties:
+                      type: string
+        "401":
+          description: Unauthorized - JWT token is invalid, expired, or malformed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the JWT token is not valid for authentication.
+                  tokenError:
+                    type: string
+                    description: Specific details about why the JWT token was rejected.
+        "429":
+          description: Too many authentication attempts. Please wait before trying again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating rate limiting is in effect.
+                  retryAfter:
+                    type: integer
+                    description: Number of seconds to wait before making another authentication attempt.
+      operationId: authJwt
   /sign-payload:
     post:
       summary: Sign Message
