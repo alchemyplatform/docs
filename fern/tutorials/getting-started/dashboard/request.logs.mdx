@@ -5,9 +5,10 @@ url: https://dashboard.alchemy.com/request-logs
 slug: docs/alchemy-request-logs
 ---
 
-This guide provides a comprehensive overview of how to use the Request Logs feature in the Alchemy Dashboard to monitor and debug JSON-RPC API requests. 
+This guide provides a comprehensive overview of how to use the Request Logs feature in the Alchemy Dashboard to monitor and debug JSON-RPC API requests.
 
 ### Why It Matters
+
 The Request Logs feature in the Alchemy Dashboard is a powerful tool for developers building on different blockchains. It solves several critical problems:
 
 * **Debugging Made Easy**: Request Logs provides a user-friendly interface to search, filter, and analyze historical API requests, saving hours of manual debugging compared to raw log files or custom scripts.
@@ -21,9 +22,11 @@ Request Logs empowers developers to maintain reliable dApps, reduce downtime, an
 ![](https://alchemyapi-res.cloudinary.com/image/upload/v1749676270/Screenshot_2025-06-11_at_2.11.07_PM_g03ees.png)
 
 #### Overview of the Request Logs Feature
+
 The Request Logs feature, accessible via the Alchemy Dashboard's Request Explorer, allows you to view and analyze all JSON-RPC requests made to Alchemy's API endpoints for your application. Key functionalities include:
 
 **Search and Filter**: Filter requests by parameters such as:
+
 * **App**: Filter by a specific app.
 * **Network**: Filter by a specific blockchain network.
 * **Method**: Specific JSON-RPC methods (e.g., `eth_blockNumber`, `eth_getLogs`).
@@ -36,6 +39,7 @@ The Request Logs feature, accessible via the Alchemy Dashboard's Request Explore
 ![](https://alchemyapi-res.cloudinary.com/image/upload/v1749676305/Screenshot_2025-06-11_at_2.11.41_PM_eqswvu.png)
 
 **Detailed Request View**: Inspect individual requests to see:
+
 * Request payload and response.
 * Error messages (if any).
 * Node-specific details or network errors.
@@ -49,9 +53,13 @@ To access Request Logs:
 ![](https://alchemyapi-res.cloudinary.com/image/upload/v1749676289/Screenshot_2025-06-11_at_2.11.24_PM_rwldpd.png)
 
 #### Code Samples
+
 Below are code samples to help you interact with Alchemy's API and troubleshoot issues using insights from Request Logs.
+
 ##### Sample 1: Fetching the Latest Nonce Before Sending a Transaction
-If Request Logs show "nonce too low" errors for eth_sendRawTransaction, use this code to fetch the latest nonce:
+
+If Request Logs show "nonce too low" errors for eth\_sendRawTransaction, use this code to fetch the latest nonce:
+
 ```javascript
 const { ethers } = require("ethers");
 const provider = new ethers.providers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY");
@@ -69,9 +77,13 @@ async function getLatestNonce(walletAddress) {
 // Example usage
 getLatestNonce("0xYourWalletAddress");
 ```
-**Usage**: Run this before sending a transaction to ensure the correct nonce. Check Request Logs to confirm eth_getTransactionCount requests succeed (HTTP 200).
+
+**Usage**: Run this before sending a transaction to ensure the correct nonce. Check Request Logs to confirm eth\_getTransactionCount requests succeed (HTTP 200).
+
 ##### Sample 2: Batching Requests to Avoid Rate Limits
+
 If Request Logs show HTTP 429 (Too Many Requests) errors, batch requests using the Alchemy SDK:
+
 ```javascript
 const { Network, Alchemy } = require("alchemy-sdk");
 
@@ -96,9 +108,11 @@ async function batchRequests() {
 
 batchRequests();
 ```
-**Usage**: Batching reduces the number of requests, lowering the chance of hitting rate limits. Monitor Request Logs for fewer eth_blockNumber and eth_getBalance entries.
+
+**Usage**: Batching reduces the number of requests, lowering the chance of hitting rate limits. Monitor Request Logs for fewer eth\_blockNumber and eth\_getBalance entries.
 
 ### Best Practices
+
 #### Pro Tips
 
 * **Use Specific Filters**: Combine filters (e.g., method + error code) to quickly isolate issues in Request Explorer.
@@ -109,16 +123,16 @@ batchRequests();
 
 * **Data Retention**: Logs are available for up to 10 days. Export logs regularly for longer-term analysis.
 * **Rate Limits**: HTTP 429 errors indicate rate limit breaches. Optimize with batching or upgrade your plan.
-* **Block Range for eth_getLogs**: Limit eth_getLogs block ranges (e.g., 5,000 blocks) to avoid timeouts.
+* **Block Range for eth\_getLogs**: Limit eth\_getLogs block ranges (e.g., 5,000 blocks) to avoid timeouts.
 
 #### Common Issues and Solutions
 
 * **Issue**: HTTP 429 (Too Many Requests) in logs.
-	* **Solution**: Use batch requests (see Sample 2) or reduce request frequency.
-* **Issue**: "Nonce too low" errors in eth_sendRawTransaction.
-	* **Solution**: Fetch the latest nonce before each transaction (see Sample 1).
+  * **Solution**: Use batch requests (see Sample 2) or reduce request frequency.
+* **Issue**: "Nonce too low" errors in eth\_sendRawTransaction.
+  * **Solution**: Fetch the latest nonce before each transaction (see Sample 1).
 * **Issue**: Empty or missing logs.
-	* **Solution**: Verify API key, app, and network filters. Check for dashboard delays during high network congestion.
+  * **Solution**: Verify API key, app, and network filters. Check for dashboard delays during high network congestion.
 
 #### Additional Notes
 
@@ -126,4 +140,4 @@ batchRequests();
 * **Documentation**: See Alchemy's Error Reference for JSON-RPC error codes.
 * **Support**: Contact Alchemy Support via the dashboard or check the FAQ.
 
-By leveraging Request Logs and these practices, you can monitor, debug, and optimize your dApp's API interactions for a reliable user experience. 
+By leveraging Request Logs and these practices, you can monitor, debug, and optimize your dApp's API interactions for a reliable user experience.
