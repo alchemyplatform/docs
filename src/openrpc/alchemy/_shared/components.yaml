@@ -179,6 +179,29 @@ components:
       nullable: true
       description: "The reason why a transaction would revert. Provides details about potential transaction failure before execution."
 
+    Eip7702Auth:
+      title: "Eip 7702 Auth"
+      type: object
+      properties:
+        chain_id:
+          $ref: "#/components/schemas/uint64"
+          description: "The chain Id of the authorization"
+        address:
+          $ref: "#/components/schemas/address"
+          description: "The address of the authorization"
+        nonce:
+          $ref: "#/components/schemas/uint64"
+          description: "The nonce for the authorization"
+        y_parity:
+          $ref: "#/components/schemas/uint"
+          description: "Y parity of signed authorizzation tuple"
+        r:
+          $ref: "#/components/schemas/uint256"
+          description: "R of signed authorizzation tuple"
+        s:
+          $ref: "#/components/schemas/uint256"
+          description: "S of signed authorizzation tuple"
+
     UserOperationV06:
       type: object
       title: "User Operation v0.6"
@@ -196,27 +219,29 @@ components:
           $ref: "#/components/schemas/bytes"
           description: "Encoded data for the primary function call or operation"
         callGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for the main execution call"
         verificationGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for verification"
         preVerificationGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas for pre-verification execution and calldata"
         maxFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Maximum fee per gas (EIP-1559)"
         maxPriorityFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Max priority fee per gas (EIP-1559)"
         signature:
-          type: string
+          $ref: "#/components/schemas/bytesAnyCase"
           description: "Data passed during verification"
-          pattern: "^0x[0-9a-fA-F]*$"
         paymasterAndData:
           $ref: "#/components/schemas/bytes"
           description: "Paymaster address and extra data"
+        eip7702Auth:
+          $ref: "#/components/schemas/Eip7702Auth"
+          description: "The authorization tuple that an EOA account delegates to in EIP-7702"
 
     UserOperationV06Partial:
       type: object
@@ -234,20 +259,23 @@ components:
           $ref: "#/components/schemas/bytes"
           description: "Encoded data for the primary function call or operation"
         callGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for the main execution call"
         verificationGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for verification"
         preVerificationGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas for pre-verification execution and calldata"
         maxFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Maximum fee per gas (EIP-1559)"
         maxPriorityFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Max priority fee per gas (EIP-1559)"
+        eip7702Auth:
+          $ref: "#/components/schemas/Eip7702Auth"
+          description: "The authorization tuple that an EOA account delegates to in EIP-7702"
 
     UserOperationV07:
       type: object
@@ -259,23 +287,20 @@ components:
         nonce:
           $ref: "#/components/schemas/uint"
           description: "Account nonce or creation salt"
-        initCode:
-          $ref: "#/components/schemas/bytes"
-          description: "Initialization code (for new accounts)"
         callData:
           $ref: "#/components/schemas/bytes"
           description: "Data for operation call"
         callGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for call"
         verificationGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for verification"
         maxFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Max fee per gas (EIP-1559)"
         maxPriorityFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Priority fee per gas (EIP-1559)"
         paymaster:
           $ref: "#/components/schemas/address"
@@ -285,6 +310,7 @@ components:
           description: "Data for paymaster"
         paymasterVerificationGasLimit:
           type: string
+          description: "The gas limit for paymaster verification."
         factory:
           $ref: "#/components/schemas/address"
           description: "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
@@ -292,14 +318,17 @@ components:
           $ref: "#/components/schemas/bytes"
           description: "Data for the account factory (only if the account factory exists)"
         preVerificationGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
         paymasterPostOpGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
         signature:
-          type: string
+          $ref: "#/components/schemas/bytesAnyCase"
           description: "Data passed into the account along with the nonce during the verification step"
+        eip7702Auth:
+          $ref: "#/components/schemas/Eip7702Auth"
+          description: "The authorization tuple that an EOA account delegates to in EIP-7702"
 
     UserOperationV07Partial:
       type: object
@@ -310,29 +339,27 @@ components:
         nonce:
           $ref: "#/components/schemas/uint"
           description: "Account nonce or creation salt"
-        initCode:
-          $ref: "#/components/schemas/bytes"
-          description: "Initialization code (for new accounts)"
         callData:
           $ref: "#/components/schemas/bytes"
           description: "Data for operation call"
         callGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for call"
         verificationGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Gas allocated for verification"
         maxFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Max fee per gas (EIP-1559)"
         maxPriorityFeePerGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "Priority fee per gas (EIP-1559)"
         paymaster:
           $ref: "#/components/schemas/address"
           description: "Paymaster contract address"
         paymasterVerificationGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
+          description: "The gas limit for paymaster verification."
         factory:
           $ref: "#/components/schemas/address"
           description: "The account factory address (needed if and only if the account is not yet on-chain and needs to be created)"
@@ -340,11 +367,14 @@ components:
           $ref: "#/components/schemas/bytes"
           description: "Data for the account factory (only if the account factory exists)"
         preVerificationGas:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata"
         paymasterPostOpGasLimit:
-          type: string
+          $ref: "#/components/schemas/uint64"
           description: "The amount of gas to allocate for the paymaster post-op code (only if a paymaster exists)"
+        eip7702Auth:
+          $ref: "#/components/schemas/Eip7702Auth"
+          description: "The authorization tuple that an EOA account delegates to in EIP-7702"
 
     transactionObject:
       title: Transaction Object
