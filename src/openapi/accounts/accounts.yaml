@@ -311,7 +311,8 @@ paths:
     post:
       summary: Authenticate with JWT
       description: >
-        Authenticates a user using a JSON Web Token (JWT) for secure access to their Smart Wallet functionalities. This endpoint validates the provided JWT token and returns authentication credentials upon successful verification. JWT authentication provides a stateless authentication mechanism that can be used for server-side authentication flows and integration with existing identity providers.
+        Authenticates a user using a JSON Web Token (JWT) for secure access to their Smart Wallet functionalities. This endpoint validates the provided JWT token and can be used for authenticating an existing user or to pregenerate a wallet.
+
       security:
         - apiKey: []
       x-readme:
@@ -326,39 +327,60 @@ paths:
             schema:
               type: object
               properties:
-                jwtToken:
+                jwt:
                   type: string
-                  description: The JSON Web Token (JWT) used for authentication. This token should be signed and contain the necessary claims for user identification and authorization.
-                orgId:
-                  $ref: "#/components/schemas/orgId"
-                  description: The organization ID associated with the user and the application context.
+                  description: |
+                    The JSON Web Token (JWT) used for authentication. The JWT must be a valid OIDC ID Token containing the required claims for user identification and authentication.
+
+                    **Required OIDC Claims:**
+                    - `iss` (Issuer): The identifier of the OIDC provider. Should be the same as issuer of openid-config.
+                    - `sub` (Subject): A unique identifier that identifies the user with this auth provider.
+                    - `aud` (Audience): The client ID for which this token is intended
+                    - `exp` (Expiration): Token expiration time as Unix timestamp
+                    - `iat` (Issued At): Token issuance time as Unix timestamp
+                    - `nonce` (Nonce): toHex(sha256(targetPublicKey)) without the leading 0x
+
+                    **Example JWT Payload:**
+                    ```json
+                    {
+                      "iss": "https://accounts.google.com",
+                      "sub": "1234567890abcdef",
+                      "aud": "your-client-id.apps.googleusercontent.com",
+                      "exp": 1640995200,
+                      "iat": 1640991600,
+                    }
+                    ```
+                  format: jwt
+                  example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+                authProvider:
+                  type: string
+                  description: Name of your application as entered on google form.
                 targetPublicKey:
                   $ref: "#/components/schemas/targetPublicKey"
                 expirationSeconds:
                   $ref: "#/components/schemas/expirationSeconds"
-                validateClaims:
-                  type: object
-                  description: Optional additional claims to validate within the JWT token for enhanced security verification.
-                  additionalProperties:
-                    type: string
+
               required:
-                - jwtToken
-                - orgId
-                - targetPublicKey
+                - jwt
+                - authProvider
       responses:
         "200":
-          description: JWT authentication successful. User is now authenticated.
+          description: JWT authentication successful. User is now authenticated or wallet has been pregenerated.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  credentialBundle:
-                    type: string
-                    description: An encrypted API key credential bundle that can be used for subsequent authenticated requests. This bundle contains the authentication credentials encrypted with the provided targetPublicKey and can be decrypted client-side for stamping requests.
+                  isSignup:
+                    type: boolean
+                    description: If true, indicates a new wallet was pre-generated.
+                    default: false
                   orgId:
                     $ref: "#/components/schemas/orgId"
                     description: The organization ID associated with the authenticated user and the application.
+                  credentialBundle:
+                    type: string
+                    description: An encrypted API key credential bundle that can be used for subsequent authenticated requests. This bundle contains the authentication credentials encrypted with the provided targetPublicKey and can be decrypted client-side for stamping requests.
                   userId:
                     type: string
                     description: A unique identifier for the authenticated user, extracted from the JWT token claims.
@@ -368,16 +390,9 @@ paths:
                   solanaAddress:
                     type: string
                     description: The Solana address of the user's signer, available after successful authentication.
-                  tokenClaims:
-                    type: object
-                    description: The validated claims from the JWT token that was used for authentication.
-                    additionalProperties:
-                      type: string
                 required:
-                  - credentialBundle
                   - orgId
-                  - userId
-                  - address
+                  - isSignUp
         "400":
           description: Invalid JWT token or authentication failed.
           content:
