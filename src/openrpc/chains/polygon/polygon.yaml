@@ -1033,8 +1033,18 @@ methods:
   - name: eth_getLogs
     description: |
       Returns an array of all logs matching the specified filter.
+      ## Supported Block Ranges
+      Here are the block ranges you're able to submit in a single query, depending on your plan tier:
 
-      <Note>Requests to `eth_getLogs` are limited to a maximum 500-block range for users on the Free Tier. For access to larger block ranges (up to 10,000 blocks), please upgrade to a paid plan (PAYG or Enterprise). </Note>
+      > ⚠️ Note: All responses will be capped at 150MB.
+
+      | Chain | Free | Pay As You Go | Enterprise |
+      |-------|------|---------------|------------|
+      | Ethereum and Layer 2s (Ethereum, Base, Optimism, Arbitrum, Worldchain) | unlimited | unlimited | unlimited |
+      | Polygon | 500 | 2000 | unlimited |
+      | Monad | 500 | 1000 | unlimited |
+      | BSC | 500 | 10000 | 10000 |
+      | All Other Chains | 500 | 10000 | unlimited |
     params:
       - name: Filter
         required: true
