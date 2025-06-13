@@ -74,6 +74,34 @@ const RunButton = styled.button`
   gap: 8px;
 `
 
+const LoaderContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  height: 300px;
+  width: 100%;
+`
+
+const LoaderSpinner = styled.div`
+  width: 16px;
+  height: 16px;
+  border: 2px solid
+    ${({ theme }) => (theme.mode === 'dark' ? '#EDEDED' : '#111111')};
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`
+
 const QuickstartContainer = styled.div`
   background-color: ${({ theme }) =>
     theme.mode === 'dark' ? '#131313' : '#fbfbfb'};
@@ -129,6 +157,7 @@ export const Codeblock: React.FC = () => {
   const handleRun = () => {
     // TODO: Add analytics events when clicked.
     setLanguage(CodeBlockLanguage.JSON)
+    showLoader()
     setCode(CODE_MAP[method]?.[language]?.[chain]?.response ?? '')
     setRunButtonDisabled(true)
   }
@@ -136,6 +165,18 @@ export const Codeblock: React.FC = () => {
   const [code, setCode] = React.useState<string>(
     CODE_MAP[method]?.[language]?.[chain]?.request ?? 'Something went wrong',
   )
+
+  const [isLoading, setIsLoading] = React.useState<boolean>(false)
+
+  const showLoader = () => {
+    setIsLoading(true)
+    setTimeout(
+      () => {
+        setIsLoading(false)
+      },
+      Math.floor(Math.random() * 300) + 100,
+    )
+  }
 
   const updateCode = (
     chain_: Chains,
@@ -172,7 +213,7 @@ export const Codeblock: React.FC = () => {
     <StyledThemeProvider theme={theme}>
       <h3 className="mb-6">Query the blockchain in seconds</h3>
       <CodeBlockContainer>
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: '24px 24px 0px' }}>
           <div
             style={{
               display: 'flex',
@@ -286,7 +327,13 @@ export const Codeblock: React.FC = () => {
               </svg>
             </RunButton>
           </div>
-          <ShikiCodeBlock dangerouslySetInnerHTML={{ __html: codeHtml }} />
+          {isLoading ? (
+            <LoaderContainer>
+              <LoaderSpinner />
+            </LoaderContainer>
+          ) : (
+            <ShikiCodeBlock dangerouslySetInnerHTML={{ __html: codeHtml }} />
+          )}
         </div>
         <QuickstartContainer>
           <div style={{ color: isDark ? '#EDEDED' : '#111111' }}>
