@@ -1047,52 +1047,23 @@ methods:
   # Filter methods
   - name: eth_getLogs
     summary: Returns an array of all logs matching the specified filter.
-    description: >
+    description: |
       Returns an array of all logs matching the specified filter.
 
       > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
 
-    x-tiers:
-      title: Tier Limits for eth_getLogs
-      description: Maximum number of blocks allowed in fromBlock to toBlock range
-      type: object
-      properties:
-        ethereum:
-          title: Ethereum and Layer 2s
-          description: Ethereum, Base, Optimism, Arbitrum, Worldchain
-          type: object
-          properties:
-            free: unlimited
-            paygo: unlimited
-            enterprise: unlimited
-        polygon:
-          title: Polygon
-          type: object
-          properties:
-            free: 500
-            paygo: 2000
-            enterprise: unlimited
-        monad:
-          title: Monad
-          type: object
-          properties:
-            free: 500
-            paygo: 1000
-            enterprise: unlimited
-        bsc:
-          title: BSC
-          type: object
-          properties:
-            free: 500
-            paygo: 10000
-            enterprise: 10000
-        other:
-          title: All Other Chains
-          type: object
-          properties:
-            free: 500
-            paygo: 10000
-            enterprise: unlimited
+      ### Supported Block Ranges
+      Here are the block ranges you're able to submit in a single query, depending on your plan tier:
+
+      > ⚠️ Note: All responses will be capped at 150MB.
+
+      | Chain | Free | Pay As You Go | Enterprise |
+      |-------|------|---------------|------------|
+      | Ethereum and Layer 2s (Ethereum, Base, Optimism, Arbitrum, Worldchain) | unlimited | unlimited | unlimited |
+      | Polygon | 500 | 2000 | unlimited |
+      | Monad | 500 | 1000 | unlimited |
+      | BSC | 500 | 10000 | 10000 |
+      | All Other Chains | 500 | 10000 | unlimited |
     params:
       - name: Filter
         required: true
