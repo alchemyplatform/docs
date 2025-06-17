@@ -481,3 +481,94 @@ methods:
       schema:
         title: Transaction receipt with block info
         $ref: "./components/receipt.yaml#/components/schemas/TXN_RECEIPT_WITH_BLOCK_INFO"
+
+  - name: starknet_addDeclareTransaction
+    description: Submits a class declaration transaction to the Starknet network. The transaction includes details about the new class to be added.
+    paramStructure: by-name
+    params:
+      - name: declare_transaction
+        description: The declaration transaction to be submitted
+        required: true
+        schema:
+          title: Declare transaction
+          $ref: "./components/transaction.yaml#/components/schemas/BROADCASTED_DECLARE_TXN"
+    result:
+      name: result
+      description: The result of the transaction submission
+      schema:
+        title: DeclareTransactionResult
+        type: object
+        properties:
+          transaction_hash:
+            title: Transaction hash
+            $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
+          class_hash:
+            title: Class hash
+            $ref: "./components/base-types.yaml#/components/schemas/FELT"
+        required:
+          - transaction_hash
+          - class_hash
+
+  - name: starknet_pendingTransactions
+    description: Returns the transactions currently in the transaction pool that have been recognized by this sequencer but not yet included in a block.
+    paramStructure: by-name
+    params: []
+    result:
+      name: result
+      description: List of transactions in the pending pool
+      schema:
+        title: Pending Transactions
+        type: array
+        items:
+          $ref: "./components/transaction.yaml#/components/schemas/TXN"
+
+  - name: starknet_addDeployAccountTransaction
+    description: Submits a new deploy account transaction to the Starknet network. This transaction initializes a new account contract on-chain with an associated address and class hash.
+    paramStructure: by-name
+    params:
+      - name: deploy_account_transaction
+        description: The deploy account transaction to be submitted
+        required: true
+        schema:
+          title: Deploy Account Transaction
+          $ref: "./components/transaction.yaml#/components/schemas/BROADCASTED_DEPLOY_ACCOUNT_TXN"
+    result:
+      name: result
+      description: The result of the transaction submission
+      schema:
+        title: DeployAccountTransactionResult
+        type: object
+        properties:
+          transaction_hash:
+            title: Transaction hash
+            $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
+          contract_address:
+            title: Contract address
+            $ref: "./components/base-types.yaml#/components/schemas/FELT"
+        required:
+          - transaction_hash
+          - contract_address
+
+  - name: starknet_addInvokeTransaction
+    description: Submits an invoke transaction to the Starknet network. This can include either invoking a smart contract function or an account call (in version 1).
+    paramStructure: by-name
+    params:
+      - name: invoke_transaction
+        description: The information needed to invoke the function or account
+        required: true
+        schema:
+          title: Invoke Transaction
+          $ref: "./components/transaction.yaml#/components/schemas/BROADCASTED_INVOKE_TXN"
+    result:
+      name: result
+      description: The result of the transaction submission
+      schema:
+        title: InvokeTransactionResult
+        type: object
+        properties:
+          transaction_hash:
+            title: Transaction hash
+            description: The hash of the invoke transaction
+            $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
+        required:
+          - transaction_hash
