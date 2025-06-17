@@ -13,53 +13,58 @@ servers:
     name: Sepolia
 methods:
   - name: alchemy_getAssetTransfers
-    description: The Transfers API allows you to easily fetch historical transactions for any address across Ethereum and supported L2s including Polygon, Arbitrum, and Optimism.
+    description: Returns historical token and ETH transfers.
+    paramStructure: by-name
     params:
-      - name: assetTransferParams
+      - name: fromBlock
+        required: false
+        schema:
+          type: string
+          default: "0x0"
+      - name: toBlock
+        required: false
+        schema:
+          type: string
+          default: "latest"
+      - name: toAddress
+        required: false
+        schema:
+          type: string
+      - name: category
         required: true
         schema:
-          type: object
-          properties:
-            fromBlock:
-              type: string
-              default: "0x0"
-            toBlock:
-              type: string
-              default: "latest"
-            fromAddress:
-              type: string
-              default: "0x0000000000000000000000000000000000000000"
-            toAddress:
-              type: string
-              default: "0x0000000000000000000000000000000000000000"
-            excludeZeroValue:
-              type: boolean
-              default: true
-            category:
-              type: array
-              items:
-                type: string
-                enum:
-                  - external
-                  - internal
-                  - erc20
-                  - erc721
-                  - erc1155
-                  - specialnft
-            order:
-              type: string
-              enum:
-                - asc
-                - desc
-            withMetadata:
-              type: boolean
-              default: false
-            maxCount:
-              type: string
-              default: "0x3e8"
-            pageKey:
-              type: string
-              default: "0x0"
+          type: array
+          items:
+            type: string
+            enum:
+              - external
+              - internal
+              - erc20
+              - erc721
+              - erc1155
+              - specialnft
+      - name: order
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+      - name: withMetadata
+        required: false
+        schema:
+          type: boolean
+      - name: excludeZeroValue
+        required: false
+        schema:
+          type: boolean
+          default: true
+      - name: maxCount
+        required: false
+        schema:
+          type: string
+      - name: pageKey
+        required: false
+        schema:
+          type: string
     result:
       name: Asset transfers
       description: "Returns the list of transfers, and a pageKey if additional results remain."
