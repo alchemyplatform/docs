@@ -237,25 +237,17 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - tokens
               properties:
                 tokens:
                   type: array
                   description: List of token objects to batch request NFT metadata for. Maximum 100.
-                  default:
-                    [
-                      {
-                        contractAddress: "0xe785E82358879F061BC3dcAC6f0444462D4b5330",
-                        tokenId: "44",
-                        tokenType: "ERC721",
-                      },
-                      {
-                        contractAddress: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-                        tokenId: "888",
-                        tokenType: "ERC721",
-                      },
-                    ]
                   items:
                     type: object
+                    required:
+                      - contractAddress
+                      - tokenId
                     properties:
                       contractAddress:
                         $ref: "#/components/schemas/contractAddress"
@@ -642,7 +634,7 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddress"
+        - $ref: "#/components/parameters/contractAddressDefault"
         - $ref: "#/components/parameters/collectionSlug"
       x-readme:
         samples-languages:
@@ -1037,6 +1029,13 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/addressRequired"
+        - name: isSpam
+          in: query
+          required: true
+          schema:
+            type: boolean
+            description: "Whether the address is spam."
+            default: true
       x-readme:
         samples-languages:
           - javascript
@@ -1073,6 +1072,9 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - contractAddress
+                - tokenId
               properties:
                 contractAddress:
                   type: string
@@ -1233,12 +1235,17 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - tokens
               properties:
                 tokens:
                   type: array
                   description: List of token objects to batch request NFT metadata for. Maximum 100.
                   items:
                     type: object
+                    required:
+                      - contractAddress
+                      - tokenId
                     properties:
                       contractAddress:
                         $ref: "#/components/schemas/contractAddress"
@@ -1444,7 +1451,7 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - $ref: "#/components/parameters/TokenContractAddress"
         - $ref: "#/components/parameters/tokenId"
         - $ref: "#/components/parameters/pageKey"
         - $ref: "#/components/parameters/getOwnersForTokenPageSize"
@@ -1491,7 +1498,7 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - $ref: "#/components/parameters/contractAddressDefault"
         - $ref: "#/components/parameters/withTokenBalances"
         # - $ref: '#/components/parameters/block'
         - $ref: "#/components/parameters/pageKey"
@@ -1882,7 +1889,12 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/owner"
+        - name: wallet
+          description: String - Address for NFT owner (can be in ENS format for Eth Mainnet).
+          schema:
+            $ref: "#/components/schemas/wallet"
+          in: query
+          required: true
         - $ref: "#/components/parameters/contractAddressRequired"
       x-readme:
         samples-languages:
@@ -2230,7 +2242,7 @@ components:
       description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
       in: query
       schema:
-        $ref: "#/components/schemas/contractAddress"
+        type: string
       required: false
     contractAddressRequired:
       name: contractAddress
@@ -2238,6 +2250,22 @@ components:
       in: query
       schema:
         $ref: "#/components/schemas/contractAddress"
+      required: true
+    contractAddressDefault:
+      name: contractAddress
+      description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+      in: query
+      schema:
+        type: string
+        default: "0x1f02bf9dde7c79137a08b2dd4fc964bfd2499734"
+      required: true
+    TokenContractAddress:
+      name: contractAddress
+      description: String - Contract address for the token to get the owner for.
+      in: query
+      schema:
+        type: string
+        default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
       required: true
     tokenId:
       name: tokenId
