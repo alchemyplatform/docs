@@ -1,0 +1,106 @@
+---
+title: Bridging Options
+description: Overview of the various options for bridging assets to your rollup.
+subtitle: Overview of the various options for bridging assets to your rollup.
+url: https://docs.alchemy.com/reference/bridging-options
+slug: reference/bridging-options
+---
+
+Bridging brings users, liquidity, and real economic activity to your rollup.
+
+With Alchemy Rollups, there are two tiers:
+
+1. **Standard Bridge**: Includes the native / canonical bridge bundled with OP Stack, Arbitrum Orbit, etc.
+2. **Alchemy Universal Bridge:** In addition to the native bridge, you also get connected to **90+ networks and billions in TVL** on day 1. Includes a hosted bridge UI, bridge aggregation, and free bridge integrations.
+
+# Why do you need bridging?
+
+Every L2 needs a reliable way to move assets in and out.
+
+A native bridge helps move assets to and from your parent chain. However, you can turbocharge liquidity & TVL by making it easy to bridge assets from **any chain**.
+
+That's exactly what the **Alchemy Universal Bridge** delivers: an optimized aggregation layer that integrates Across, LayerZero, Stargate, Relay, Decent, Hyperlane and more behind a single SDK and hosted UI.
+
+# Bridge Tiers
+
+| Tier                 | Supported Bridges                                                                                                      | Connectivity        | Speed             | Fee model                                                                    | Hosted UI                                     |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------- | ----------------- | ---------------------------------------------------------------------------- | --------------------------------------------- |
+| **Standard Bridge**  | Native / canonical                                                                                                     | Parent ↔ child only | 7-day withdrawals | L1 + L2 gas                                                                  | ⚠️ Defaults to Arbitrum Bridge or Superbridge |
+| **Universal Bridge** | Native / canonical<br>Across<br>LayerZero<br>Stargate<br>Relay (included)<br>Decent (included)<br>Hyperlane (included) | **90+ chains**      | < 30 sec          | Canonical routes: L1 + L2 gas<br>Other routes: Low bps to liquidity partners | ✅ Hosted Alchemy UI                          |
+
+# Native Bridge
+
+### OP Stack Standard Bridge
+
+- **Key contracts**: `L1StandardBridge`, `L2StandardBridge`, `OptimismPortal`
+- **Flow**
+    1. User approves tokens then calls `depositERC20` on `L1StandardBridge`.
+    2. Tokens are escrowed on L1; a cross‑domain message moves to L2.
+    3. `L2StandardBridge` mints the wrapped ERC‑20 on L2.
+    4. Withdrawals reverse the flow after the 7‑day fault‑proof window.
+- **Integration**: We spin up a free **Superbridge UI instance** so your users bridge through a polished, branded frontend from day one.
+
+```solidity
+IERC20(l1Token).approve(L1_STANDARD_BRIDGE, amount);
+
+L1StandardBridge.depositERC20(
+  l1Token,
+  l2Token,
+  amount,
+  200_000,  // l2GasLimit hint
+  bytes("") // data
+);
+
+```
+
+### Arbitrum Standard Bridge
+
+- **Key contracts**: `L1GatewayRouter`, `L2GatewayRouter`, `StandardERC20Gateway`
+- Deposits escrow on L1, create a "retryable ticket," and mint on L2.
+- ETH uses the same pattern; gateways handle ERC‑20 routing.
+- **Integration**: Your rollup is wired straight into the **Arbitrum Bridge UI** — users can bridge at https://bridge.arbitrum.io/ with no extra work.
+
+```solidity
+IL1GatewayRouter(router).outboundTransfer(
+  l1Token,
+  l2Recipient,
+  amount,
+  200_000, // maxGas
+  0,       // gasPriceBid
+  abi.encode(0)
+);
+
+```
+
+Why stick with the native bridge?
+
+• Iron‑clad security (inherits L1 consensus)
+
+• Mandatory finality for withdrawals
+
+The native bridge works when week‑long exits are acceptable.
+
+# Alchemy Universal Bridge
+
+### Includes
+
+- **Instant liquidity** – bridge assets to & from 90+ networks
+- **Hosted UI** – low-friction, seamless UI
+- **Path optimization** – automatically recommend the best routes
+- **Free partner integration** – Hyperlane, Decent, Relay
+- **$0 integration cost** – launch first, pay nothing up front
+- **Add additional bridges** – easily add additional bridges like Across, Stargate once they've integrated your chain
+
+### Security Model
+
+- Canonical paths still escrow on L1 contracts you trust
+- Fast paths rely on a partner network
+- Cross-chain messaging is powered by Hyperlane by default
+
+# Getting Started
+
+- **Native Bridge:** we'll install this by default on your chain.
+- **Universal Bridge**:
+    1. **Tell us you're in.**
+    2. **We provision everything:** Alchemy hosts the UI, aggregates liquidity, and provides a dedicated URL.
+    3. **Add links within your docs & app:** No engineering work - just drop the URL wherever you want users to bridge. 
