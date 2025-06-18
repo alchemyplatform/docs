@@ -1,0 +1,1 @@
+This directly is replaced by it's equivalent in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). It only exists here to prevent local dev from failing if the components folder is not found.
