@@ -11,6 +11,9 @@ import {
   languageOptions,
   chainOptions,
   loadCodeExamples,
+  solanaApiFunctions,
+  ethereumApiFunctions,
+  ethMainnetOnlyApiFunctions,
 } from './codemap.ts'
 
 const CODE_MAP = loadCodeExamples()
@@ -112,6 +115,25 @@ const QuickstartContainer = styled.div`
   justify-content: space-between;
 `
 
+const getMethodOptions = (chain: Chains) => {
+  if (chain === Chains.solanaMainnet) {
+    return solanaApiFunctions.map((selectedMethod) => ({
+      value: selectedMethod,
+      label: selectedMethod,
+    }))
+  }
+
+  const baseFunctions =
+    chain === Chains.ethereumMainnet
+      ? [...ethMainnetOnlyApiFunctions, ...ethereumApiFunctions]
+      : ethereumApiFunctions
+
+  return baseFunctions.map((selectedMethod) => ({
+    value: selectedMethod,
+    label: selectedMethod,
+  }))
+}
+
 export const Codeblock: React.FC = () => {
   const [isDark, setIsDark] = React.useState(
     document.documentElement.classList.contains('dark'),
@@ -146,7 +168,7 @@ export const Codeblock: React.FC = () => {
   )
   const [chain, setChain] = React.useState<Chains>(Chains.ethereumMainnet)
   const [method, setMethod] = React.useState<ApiFunction>(
-    ApiFunction.getNFTMetadata,
+    ApiFunction.eth_getBlockByNumber,
   )
   const [languageDropdownOption, setLanguageDropdownOption] =
     React.useState<CodeBlockLanguage>(language)
@@ -226,12 +248,12 @@ export const Codeblock: React.FC = () => {
                 gap: '8px',
                 alignItems: 'center',
                 flexWrap: 'wrap',
+                marginRight: '8px',
               }}
             >
               <span
                 style={{
                   color: isDark ? '#EDEDED' : '#94A3B8',
-                  marginRight: '16px',
                   minWidth: '9ch',
                   display: 'inline-block',
                 }}
@@ -255,43 +277,28 @@ export const Codeblock: React.FC = () => {
               {/* Chain */}
               <CodeblockSelect
                 isDark={isDark}
-                options={
-                  language === CodeBlockLanguage.JSON
-                    ? chainOptions.filter(
-                        (opt) =>
-                          CODE_MAP[method]?.[languageDropdownOption] &&
-                          CODE_MAP[method][languageDropdownOption]?.[
-                            opt.value as Chains
-                          ],
-                      )
-                    : chainOptions.filter(
-                        (opt) =>
-                          CODE_MAP[method]?.[language] &&
-                          CODE_MAP[method][language]?.[opt.value as Chains],
-                      )
-                }
+                options={chainOptions}
                 selectedOption={chain}
                 onChange={(value) => {
-                  updateCode(value as Chains, method)
+                  // If we switch between Solana and Ethereum, we need to update
+                  // the currently selected method to a valid default.
+                  if (value === Chains.solanaMainnet && value !== chain) {
+                    updateCode(
+                      value as Chains,
+                      ApiFunction.getTokenAccountsByOwner,
+                    )
+                  } else if (value !== chain) {
+                    updateCode(
+                      value as Chains,
+                      ApiFunction.eth_getBlockByNumber,
+                    )
+                  }
                 }}
               />
               {/* Method */}
               <CodeblockSelect
                 isDark={isDark}
-                options={Object.values(ApiFunction)
-                  .filter((selectedMethod) => {
-                    const entry =
-                      language === CodeBlockLanguage.JSON
-                        ? CODE_MAP[selectedMethod]?.[languageDropdownOption]?.[
-                            chain
-                          ]
-                        : CODE_MAP[selectedMethod]?.[language]?.[chain]
-                    return entry && entry.request && entry.response
-                  })
-                  .map((selectedMethod) => ({
-                    value: selectedMethod,
-                    label: selectedMethod,
-                  }))}
+                options={getMethodOptions(chain)}
                 selectedOption={method}
                 onChange={(value) => {
                   updateCode(chain, value as ApiFunction)
