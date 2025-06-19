@@ -7,37 +7,80 @@ export enum CodeBlockLanguage {
 
 export const languageOptions = [
   { value: CodeBlockLanguage.CLI as string, label: 'curl' },
-  { value: CodeBlockLanguage.JavaScript as string, label: 'JavaScript' },
-  { value: CodeBlockLanguage.Python as string, label: 'Python' },
+  // { value: CodeBlockLanguage.JavaScript as string, label: 'JavaScript' },
+  // { value: CodeBlockLanguage.Python as string, label: 'Python' },
   { value: CodeBlockLanguage.JSON as string, label: 'JSON' },
 ]
 
 export enum Chains {
   ethereumMainnet = 'ethereum-mainnet',
-  zksyncMainnet = 'zksync-mainnet',
+  arbitrumMainnet = 'arb-mainnet',
+  baseMainnet = 'base-mainnet',
+  optimismMainnet = 'opt-mainnet',
+  solanaMainnet = 'solana-mainnet',
+  polygonMainnet = 'polygon-mainnet',
 }
 
 export const chainOptions = [
   { value: Chains.ethereumMainnet as string, label: 'Ethereum' },
-  { value: Chains.zksyncMainnet as string, label: 'ZKSync' },
+  { value: Chains.arbitrumMainnet as string, label: 'Arbitrum' },
+  { value: Chains.baseMainnet as string, label: 'Base' },
+  { value: Chains.optimismMainnet as string, label: 'Optimism' },
+  { value: Chains.solanaMainnet as string, label: 'Solana' },
+  { value: Chains.polygonMainnet as string, label: 'Polygon PoS' },
 ]
 
 export enum ApiFunction {
-  getNFTsForOwner = 'getNFTsForOwner',
-  getNFTsForOwnerAndBlockchain = 'getNFTsForOwnerAndBlockchain',
-  alchemy_getTokenAllowance = 'alchemy_getTokenAllowance',
+  alchemy_getAssetTransfers = 'alchemy_getAssetTransfers',
   alchemy_getTokenBalances = 'alchemy_getTokenBalances',
-  alchemy_getTokenMetadata = 'alchemy_getTokenMetadata',
   eth_blockNumber = 'eth_blockNumber',
+  eth_chainId = 'eth_chainId',
   eth_estimateGas = 'eth_estimateGas',
-  eth_feeHistory = 'eth_feeHistory',
+  eth_gasPrice = 'eth_gasPrice',
+  eth_getBalance = 'eth_getBalance',
+  eth_getBlockByNumber = 'eth_getBlockByNumber',
   eth_getBlockReceipts = 'eth_getBlockReceipts',
   eth_getLogs = 'eth_getLogs',
-  getNFTMetadata = 'getNFTMetadata',
-  getNFTMetadataBatch = 'getNFTMetadataBatch',
-  getContractMetadata = 'getContractMetadata',
-  getFloorPrice = 'getFloorPrice',
+  eth_getTransactionByHash = 'eth_getTransactionByHash',
+  eth_getTransactionCount = 'eth_getTransactionCount',
+  eth_getTransactionReceipt = 'eth_getTransactionReceipt',
+  getAccountInfo = 'getAccountInfo',
+  getBalance = 'getBalance',
+  getLatestBlockhash = 'getLatestBlockhash',
+  getSignaturesForAddress = 'getSignaturesForAddress',
+  getTokenAccountBalance = 'getTokenAccountBalance',
+  getTokenAccountsByOwner = 'getTokenAccountsByOwner',
+  getTransaction = 'getTransaction',
 }
+
+export const solanaApiFunctions = [
+  ApiFunction.getTokenAccountsByOwner,
+  ApiFunction.getTokenAccountBalance,
+  ApiFunction.getLatestBlockhash,
+  ApiFunction.getSignaturesForAddress,
+  ApiFunction.getTransaction,
+  ApiFunction.getAccountInfo,
+  ApiFunction.getBalance,
+]
+
+export const ethereumApiFunctions = [
+  ApiFunction.eth_getBlockByNumber,
+  ApiFunction.eth_getTransactionByHash,
+  ApiFunction.eth_getTransactionCount,
+  ApiFunction.eth_getTransactionReceipt,
+  ApiFunction.eth_getBlockReceipts,
+  ApiFunction.eth_getLogs,
+  ApiFunction.eth_getBalance,
+  ApiFunction.eth_estimateGas,
+  ApiFunction.eth_gasPrice,
+  ApiFunction.eth_chainId,
+  ApiFunction.eth_blockNumber,
+]
+
+export const ethMainnetOnlyApiFunctions = [
+  ApiFunction.alchemy_getAssetTransfers,
+  ApiFunction.alchemy_getTokenBalances,
+]
 
 // This will import all request and response files under code-samples recursively as raw text
 const requestModules = import.meta.glob<Record<string, string>>(
