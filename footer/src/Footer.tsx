@@ -27,7 +27,7 @@ const columns = [
       },
       {
         href: 'https://status.alchemy.com',
-        text: 'Checkout our platform status',
+        text: 'Check out our platform status',
         Icon: StatusIcon,
       },
     ],
@@ -70,8 +70,8 @@ const columns = [
 ]
 
 const FooterContainer = styled.div`
-  padding: 48px 24px;
-  font-family: 'Inter', sans-serif;
+  padding: 0 24px 48px;
+  font-family: Inter, sans-serif;
   color: ${({ theme }) => (theme.mode === 'dark' ? '#FBFDFF' : '#020617')};
 `
 
@@ -84,24 +84,29 @@ const FooterWrapper = styled.div`
 
 const TopSection = styled.div`
   display: flex;
-  gap: 32px;
-  padding-bottom: 48px;
+  padding: 48px 0;
+  border-top: 1px solid
+    ${({ theme }) => (theme.mode === 'dark' ? '#383838' : '#E2E8F0')};
   border-bottom: 1px solid
     ${({ theme }) => (theme.mode === 'dark' ? '#383838' : '#E2E8F0')};
+  flex-direction: column;
+  gap: 40px;
 
-  @media screen and (max-width: 768px) {
-    flex-direction: column;
-    gap: 40px;
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 32px;
   }
 `
 
 const LinksColumns = styled.div`
   display: flex;
-  column-gap: 36px;
   flex: 1;
+  flex-direction: column;
+  row-gap: 36px;
 
-  @media screen and (max-width: 768px) {
-    flex-direction: column;
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
     column-gap: 64px;
   }
 `
@@ -114,9 +119,11 @@ const Column = styled.div`
 `
 
 const ColumnTitle = styled.h3`
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  color: ${({ theme }) => (theme.mode === 'dark' ? '#FFFFFF' : '#0F172A')};
+  line-height: 1.25;
+  letter-spacing: -0.32px;
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#FFFFFF' : '#000000')};
   margin: 0;
 `
 
@@ -124,8 +131,10 @@ const FooterLink = styled.a`
   display: flex;
   align-items: center;
   gap: 8px;
-  color: inherit;
   text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
   &:hover {
     color: #5167ff;
   }
@@ -134,29 +143,32 @@ const FooterLink = styled.a`
 const BottomSection = styled.div`
   padding-top: 32px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  flex-direction: column;
+  gap: 28px;
 
-  @media screen and (max-width: 768px) {
-    flex-direction: column;
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+`
+
+const CopyrightTerms = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  flex-direction: column;
+  gap: 12px;
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
     gap: 24px;
   }
 `
 
-const Copyright = styled.div`
-  display: flex;
-  gap: 24px;
-  align-items: center;
-  font-size: 14px;
-
-  @media screen and (max-width: 768px) {
-    flex-direction: column;
-    gap: 16px;
-  }
-`
-
 const TermsLink = styled.a`
-  color: inherit;
   text-decoration: none;
   &:hover {
     color: #5167ff;
@@ -213,12 +225,12 @@ export const CustomFooter: FC = () => {
           </TopSection>
           <BottomSection>
             <AlchemyLogo isDark={isDark} />
-            <Copyright>
+            <CopyrightTerms>
               <TermsLink href="https://legal.alchemy.com/#contract-kduihkaqm">
                 Terms & Conditions
               </TermsLink>
               <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
-            </Copyright>
+            </CopyrightTerms>
           </BottomSection>
         </FooterWrapper>
       </FooterContainer>
