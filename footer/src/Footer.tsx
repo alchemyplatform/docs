@@ -169,63 +169,72 @@ const XIcon = () => (
   </svg>
 )
 
-const supportAndPlatform = [
+const columns = [
   {
-    href: '#',
-    text: 'Get help on our support hub',
-    icon: SupportHubIcon,
+    title: 'Support & Platform',
+    links: [
+      {
+        href: '#',
+        text: 'Get help on our support hub',
+        Icon: SupportHubIcon,
+      },
+      {
+        href: '#',
+        text: 'Questions? Contact sales',
+        Icon: ContactSalesIcon,
+      },
+      {
+        href: 'https://status.alchemy.com',
+        text: 'Checkout our platform status',
+        Icon: StatusIcon,
+      },
+    ],
   },
   {
-    href: '#',
-    text: 'Questions? Contact sales',
-    icon: ContactSalesIcon,
+    title: 'Resources',
+    links: [
+      {
+        href: '#',
+        text: 'Using AI? View our llms.txt',
+        Icon: LLMsIcon,
+      },
+      {
+        href: '#',
+        text: 'Learn more on Alchemy University',
+        Icon: UniversityIcon,
+      },
+    ],
   },
   {
-    href: 'https://status.alchemy.com',
-    text: 'Checkout our platform status',
-    icon: StatusIcon,
+    title: 'Stay updated',
+    links: [
+      {
+        href: '#',
+        text: 'Subscribe to our Newsletter',
+        Icon: NewsletterIcon,
+      },
+      {
+        href: '#',
+        text: 'Follow us on X',
+        Icon: XIcon,
+      },
+      {
+        href: 'https://discord.gg/9GnAcXQYZ6',
+        text: 'Join our discord',
+        Icon: CommunityIcon,
+      },
+    ],
   },
 ]
 
-const resources = [
-  {
-    href: '#',
-    text: 'Using AI? View our llms.txt',
-    icon: LLMsIcon,
-  },
-  {
-    href: '#',
-    text: 'Learn more on Alchemy University',
-    icon: UniversityIcon,
-  },
-]
-
-const stayUpdated = [
-  {
-    href: '#',
-    text: 'Subscribe to our Newsletter',
-    icon: NewsletterIcon,
-  },
-  {
-    href: '#',
-    text: 'Follow us on X',
-    icon: XIcon,
-  },
-  {
-    href: 'https://discord.gg/9GnAcXQYZ6',
-    text: 'Join our discord',
-    icon: CommunityIcon,
-  },
-]
-
-const FooterContainer = styled.footer`
+const FooterContainer = styled.div`
   padding: 48px 24px;
   font-family: 'Inter', sans-serif;
-  color: ${({ theme }) => (theme.mode === 'dark' ? '#CBD5E0' : '#475569')};
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#FBFDFF' : '#020617')};
 `
 
 const FooterWrapper = styled.div`
-  max-width: 1200px;
+  max-width: 1010px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -236,7 +245,7 @@ const TopSection = styled.div`
   gap: 32px;
   padding-bottom: 48px;
   border-bottom: 1px solid
-    ${({ theme }) => (theme.mode === 'dark' ? '#1E293B' : '#E2E8F0')};
+    ${({ theme }) => (theme.mode === 'dark' ? '#383838' : '#E2E8F0')};
 
   @media screen and (max-width: 768px) {
     flex-direction: column;
@@ -246,13 +255,12 @@ const TopSection = styled.div`
 
 const LinksColumns = styled.div`
   display: flex;
-  gap: 32px;
+  column-gap: 36px;
   flex: 1;
-  justify-content: space-between;
 
   @media screen and (max-width: 768px) {
     flex-direction: column;
-    gap: 40px;
+    column-gap: 64px;
   }
 `
 
@@ -261,9 +269,6 @@ const Column = styled.div`
   flex-direction: column;
   gap: 16px;
   font-size: 14px;
-  &:hover {
-    color: ${({ theme }) => (theme.mode === 'dark' ? '#FFFFFF' : '#0F172A')};
-  }
 `
 
 const ColumnTitle = styled.h3`
@@ -309,7 +314,7 @@ const TermsLink = styled.a`
   color: inherit;
   text-decoration: none;
   &:hover {
-    text-decoration: underline;
+    color: #5167ff;
   }
 `
 
@@ -348,33 +353,17 @@ export const CustomFooter: FC = () => {
         <FooterWrapper>
           <TopSection>
             <LinksColumns>
-              <Column>
-                <ColumnTitle>Support & Platform</ColumnTitle>
-                {supportAndPlatform.map((link, index) => (
-                  <FooterLink key={index} href={link.href}>
-                    <link.icon />
-                    <span>{link.text}</span>
-                  </FooterLink>
-                ))}
-              </Column>
-              <Column>
-                <ColumnTitle>Resources</ColumnTitle>
-                {resources.map((link, index) => (
-                  <FooterLink key={index} href={link.href}>
-                    <link.icon />
-                    <span>{link.text}</span>
-                  </FooterLink>
-                ))}
-              </Column>
-              <Column>
-                <ColumnTitle>Stay updated</ColumnTitle>
-                {stayUpdated.map((link, index) => (
-                  <FooterLink key={index} href={link.href}>
-                    <link.icon />
-                    <span>{link.text}</span>
-                  </FooterLink>
-                ))}
-              </Column>
+              {columns.map(({ title, links }) => (
+                <Column key={title}>
+                  <ColumnTitle>{title}</ColumnTitle>
+                  {links.map(({ href, text, Icon }) => (
+                    <FooterLink key={text} href={href}>
+                      <Icon />
+                      <span>{text}</span>
+                    </FooterLink>
+                  ))}
+                </Column>
+              ))}
             </LinksColumns>
           </TopSection>
           <BottomSection>
