@@ -11175,8 +11175,16 @@ const Ap = ({ isDark: i = !1 }) =>
     {
       title: "Support & Platform",
       links: [
-        { href: "#", text: "Get help on our support hub", Icon: Qp },
-        { href: "#", text: "Questions? Contact sales", Icon: Vp },
+        {
+          href: "https://www.alchemy.com/support",
+          text: "Get help on our support hub",
+          Icon: Qp,
+        },
+        {
+          href: "https://www.alchemy.com/contact-sales",
+          text: "Questions? Contact sales",
+          Icon: Vp,
+        },
         {
           href: "https://status.alchemy.com",
           text: "Checkout our platform status",
@@ -11187,15 +11195,27 @@ const Ap = ({ isDark: i = !1 }) =>
     {
       title: "Resources",
       links: [
-        { href: "#", text: "Using AI? View our llms.txt", Icon: Up },
-        { href: "#", text: "Learn more on Alchemy University", Icon: Hp },
+        {
+          href: "https://www.alchemy.com/docs/llms.txt",
+          text: "Using AI? View our llms.txt",
+          Icon: Up,
+        },
+        {
+          href: "https://www.alchemy.com/university",
+          text: "Learn more on Alchemy University",
+          Icon: Hp,
+        },
       ],
     },
     {
       title: "Stay updated",
       links: [
-        { href: "#", text: "Subscribe to our Newsletter", Icon: $p },
-        { href: "#", text: "Follow us on X", Icon: Kp },
+        {
+          href: "https://alchemysupercharged.substack.com/subscribe?just_signed_up=true&skip_redirect_check=true&utm_medium=web&utm_source=embed",
+          text: "Subscribe to our Newsletter",
+          Icon: $p,
+        },
+        { href: "https://x.com/alchemy", text: "Follow us on X", Icon: Kp },
         {
           href: "https://discord.gg/9GnAcXQYZ6",
           text: "Join our discord",
@@ -11255,6 +11275,9 @@ const Ap = ({ isDark: i = !1 }) =>
   gap: 8px;
   color: inherit;
   text-decoration: none;
+  &:hover {
+    color: #5167ff;
+  }
 `,
   t0 = Et.div`
   padding-top: 32px;

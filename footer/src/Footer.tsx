@@ -16,12 +16,12 @@ const columns = [
     title: 'Support & Platform',
     links: [
       {
-        href: '#',
+        href: 'https://www.alchemy.com/support',
         text: 'Get help on our support hub',
         Icon: SupportHubIcon,
       },
       {
-        href: '#',
+        href: 'https://www.alchemy.com/contact-sales',
         text: 'Questions? Contact sales',
         Icon: EmailIcon,
       },
@@ -36,12 +36,12 @@ const columns = [
     title: 'Resources',
     links: [
       {
-        href: '#',
+        href: 'https://www.alchemy.com/docs/llms.txt',
         text: 'Using AI? View our llms.txt',
         Icon: RobotIcon,
       },
       {
-        href: '#',
+        href: 'https://www.alchemy.com/university',
         text: 'Learn more on Alchemy University',
         Icon: AlchemyUniversityIcon,
       },
@@ -51,12 +51,12 @@ const columns = [
     title: 'Stay updated',
     links: [
       {
-        href: '#',
+        href: 'https://alchemysupercharged.substack.com/subscribe?just_signed_up=true&skip_redirect_check=true&utm_medium=web&utm_source=embed',
         text: 'Subscribe to our Newsletter',
         Icon: NewsletterIcon,
       },
       {
-        href: '#',
+        href: 'https://x.com/alchemy',
         text: 'Follow us on X',
         Icon: XIcon,
       },
@@ -126,6 +126,9 @@ const FooterLink = styled.a`
   gap: 8px;
   color: inherit;
   text-decoration: none;
+  &:hover {
+    color: #5167ff;
+  }
 `
 
 const BottomSection = styled.div`
