@@ -11253,7 +11253,6 @@ const Ap = ({ isDark: i = !1 }) =>
 `,
   Jp = Et.div`
   display: flex;
-  flex: 1;
   flex-direction: column;
   row-gap: 36px;
 
@@ -11286,6 +11285,18 @@ const Ap = ({ isDark: i = !1 }) =>
   line-height: 1.5;
   &:hover {
     color: #5167ff;
+
+    svg {
+      /* For icons that use fill (like XIcon, DiscordIcon) */
+      path[fill] {
+        fill: #5167ff;
+      }
+
+      /* For icons that use stroke (like StatusIcon) */
+      path[stroke] {
+        stroke: #5167ff;
+      }
+    }
   }
 `,
   t0 = Et.div`

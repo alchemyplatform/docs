@@ -101,7 +101,6 @@ const TopSection = styled.div`
 
 const LinksColumns = styled.div`
   display: flex;
-  flex: 1;
   flex-direction: column;
   row-gap: 36px;
 
@@ -137,6 +136,16 @@ const FooterLink = styled.a`
   line-height: 1.5;
   &:hover {
     color: #5167ff;
+
+    svg {
+      /* Add hover effect to icon paths depending on if they use fill or stroke */
+      path[fill] {
+        fill: #5167ff;
+      }
+      path[stroke] {
+        stroke: #5167ff;
+      }
+    }
   }
 `
 
