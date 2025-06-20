@@ -1,173 +1,15 @@
 import { useEffect, useState, type FC } from 'react'
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
-import CommunityIcon from './assets/CommunityIcon.js'
-import LogoDark from './assets/LogoDark.js'
-import LogoLight from './assets/LogoLight.js'
+import AlchemyLogo from './assets/AlchemyLogo.js'
+import AlchemyUniversityIcon from './assets/AlchemyUniversityIcon.js'
+import DiscordIcon from './assets/DiscordIcon.js'
+import EmailIcon from './assets/EmailIcon.js'
+import NewsletterIcon from './assets/NewsletterIcon.js'
+import RobotIcon from './assets/RobotIcon.js'
 import StatusIcon from './assets/StatusIcon.js'
-
-// Placeholder Icons
-const SupportHubIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M6 8H10"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M8 6V10"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-const ContactSalesIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M2 5L8 9L14 5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M14 11V5C14 4.44772 13.5523 4 13 4H3C2.44772 4 2 4.44772 2 5V11C2 11.5523 2.44772 12 3 12H13C13.5523 12 14 11.5523 14 11Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-const LLMsIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M10 2H4C3.44772 2 3 2.44772 3 3V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V6L10 2Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M10 2V6H13"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-const UniversityIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M3 8L8 4L13 8L8 12L3 8Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M13 8V12"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M5 9.5V12C5 12.5523 6.34315 13 8 13C9.65685 13 11 12.5523 11 12V9.5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-const NewsletterIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M3 5L8 9L13 5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M13 11V5C13 4.44772 12.5523 4 12 4H4C3.44772 4 3 4.44772 3 5V11C3 11.5523 3.44772 12 4 12H12C12.5523 12 13 11.5523 13 11Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-const XIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M4 4L12 12"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M12 4L4 12"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
+import SupportHubIcon from './assets/SupportHubIcon.js'
+import XIcon from './assets/XIcon.js'
 
 const columns = [
   {
@@ -181,7 +23,7 @@ const columns = [
       {
         href: '#',
         text: 'Questions? Contact sales',
-        Icon: ContactSalesIcon,
+        Icon: EmailIcon,
       },
       {
         href: 'https://status.alchemy.com',
@@ -196,12 +38,12 @@ const columns = [
       {
         href: '#',
         text: 'Using AI? View our llms.txt',
-        Icon: LLMsIcon,
+        Icon: RobotIcon,
       },
       {
         href: '#',
         text: 'Learn more on Alchemy University',
-        Icon: UniversityIcon,
+        Icon: AlchemyUniversityIcon,
       },
     ],
   },
@@ -221,7 +63,7 @@ const columns = [
       {
         href: 'https://discord.gg/9GnAcXQYZ6',
         text: 'Join our discord',
-        Icon: CommunityIcon,
+        Icon: DiscordIcon,
       },
     ],
   },
@@ -358,7 +200,7 @@ export const CustomFooter: FC = () => {
                   <ColumnTitle>{title}</ColumnTitle>
                   {links.map(({ href, text, Icon }) => (
                     <FooterLink key={text} href={href}>
-                      <Icon />
+                      <Icon isDark={isDark} />
                       <span>{text}</span>
                     </FooterLink>
                   ))}
@@ -367,7 +209,7 @@ export const CustomFooter: FC = () => {
             </LinksColumns>
           </TopSection>
           <BottomSection>
-            {isDark ? <LogoDark /> : <LogoLight />}
+            <AlchemyLogo isDark={isDark} />
             <Copyright>
               <TermsLink href="https://legal.alchemy.com/#contract-kduihkaqm">
                 Terms & Conditions
