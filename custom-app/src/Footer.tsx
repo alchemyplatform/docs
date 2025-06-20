@@ -14,7 +14,6 @@ const FooterContainer = styled.section`
   align-items: center;
   justify-content: center;
   font-family: 'Inter', sans-serif;
-  gap: 1rem;
   width: 100%;
   color: ${({ theme }) => (theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
   font-weight: 400;
@@ -25,7 +24,7 @@ const CommunityLinks = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 60%;
-  padding-block: 36px;
+  padding-bottom: 24px;
   gap: 16px;
   a {
     color: ${({ theme }) => (theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};

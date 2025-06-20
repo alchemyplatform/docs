@@ -360,7 +360,7 @@ export const Codeblock: React.FC = () => {
           <div style={{ display: 'flex', alignSelf: 'end' }}>
             <span>
               <a
-                href="https://www.alchemy.com/docs/tutorials-overview"
+                href="https://www.alchemy.com/docs/alchemy-quickstart-guide"
                 style={{
                   color: isDark ? '#EDEDED' : '#383838',
                   textDecoration: 'none',
