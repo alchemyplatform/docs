@@ -814,3 +814,107 @@ methods:
             transactionHash: "0x504ce587a65bdbdb6414a0c6c16d86a04dd79bfcc4f2950eec9634b30ce5370f"
             transactionIndex: "0x0"
             type: "0x0"
+
+  ## linea_ methods
+
+  - name: linea_estimateGas
+    description: >
+      Generates and returns the estimated amount of gas required to allow the transaction to complete and be published on Ethereum.
+      This method does not submit the transaction to the blockchain. The priorityFeePerGas returned includes the cost of submitting
+      the transaction to Ethereum, which can vary based on the size of the calldata.
+    params:
+      - name: Call object
+        required: true
+        description: The transaction call object.
+        schema:
+          type: object
+          properties:
+            from:
+              type: string
+              description: 20-byte sender address.
+            to:
+              type: string
+              description: 20-byte recipient address.
+            gas:
+              type: string
+              description: Hexadecimal gas limit for execution.
+            gasPrice:
+              type: string
+              description: Hexadecimal gas price per unit.
+            maxPriorityFeePerGas:
+              type: string
+              description: Max priority fee per gas in wei.
+            maxFeePerGas:
+              type: string
+              description: Max total fee (base + priority) per gas in wei.
+            value:
+              type: string
+              description: Hexadecimal value of ETH to send with the transaction.
+            data:
+              type: string
+              description: ABI-encoded data (function selector + params).
+          required: []
+          additionalProperties: false
+
+      - name: State override object
+        required: false
+        description: Optional object to override account state for simulation.
+        schema:
+          type: object
+          description: Mapping of account addresses to temporary override objects.
+          additionalProperties:
+            type: object
+            properties:
+              balance:
+                type: string
+                description: Hexadecimal temporary balance override.
+              nonce:
+                type: string
+                description: Hexadecimal temporary nonce override.
+              code:
+                type: string
+                description: Temporary bytecode override.
+              stateDiff:
+                type: object
+                description: Storage slot override map.
+                additionalProperties:
+                  type: string
+            required: []
+            additionalProperties: false
+
+    result:
+      name: Gas estimation result
+      description: Estimated gas limit, base fee, and priority fee.
+      schema:
+        type: object
+        properties:
+          gasLimit:
+            type: string
+            description: Recommended gas limit for the transaction.
+          baseFeePerGas:
+            type: string
+            description: Estimated base fee per gas in hexadecimal format.
+          priorityFeePerGas:
+            type: string
+            description: Estimated priority fee per gas in hexadecimal format.
+        required:
+          - gasLimit
+          - baseFeePerGas
+          - priorityFeePerGas
+        additionalProperties: false
+
+    examples:
+      - name: Simple ETH transfer
+        params:
+          - name: Call object
+            value:
+              from: "0x42c27251C710864Cf76f1b9918Ace3E585e6E21b"
+              value: "0x1"
+              gasPrice: "0x100000000"
+              gas: "0x21000"
+        result:
+          name: Gas estimation result
+          value:
+            gasLimit: "0xcf08"
+            baseFeePerGas: "0x7"
+            priorityFeePerGas: "0x43a82a4"
