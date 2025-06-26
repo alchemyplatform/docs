@@ -364,11 +364,13 @@ export const Codeblock: React.FC = () => {
                 style={{
                   color: isDark ? '#EDEDED' : '#383838',
                   textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
                 }}
                 onMouseOver={(e) =>
                   (e.currentTarget.style.color = isDark
-                    ? 'rgba(237, 237, 237, 0.6)'
-                    : 'rgba(56, 56, 56, 0.6)')
+                    ? 'rgba(81, 103, 255, 1)'
+                    : 'rgba(81, 103, 255, 1)')
                 }
                 onMouseOut={(e) =>
                   (e.currentTarget.style.color = isDark ? '#EDEDED' : '#383838')
@@ -377,7 +379,7 @@ export const Codeblock: React.FC = () => {
                 Get started&nbsp;
                 <svg
                   style={{
-                    display: 'inline',
+                    marginLeft: '4px',
                   }}
                   width="8"
                   height="9"
