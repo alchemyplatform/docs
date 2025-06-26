@@ -1114,8 +1114,18 @@ methods:
   - name: eth_getLogs
     description: |
       Returns an array of all logs matching the specified filter.
+      ### Supported Block Ranges
+      Here are the block ranges you're able to submit in a single query, depending on your plan tier:
 
-      <Note>Requests to `eth_getLogs` are limited to a maximum 500-block range for users on the Free Tier. For access to larger block ranges (up to 10,000 blocks), please upgrade to a paid plan (PAYG or Enterprise). </Note>
+      > ⚠️ Note: All responses will be capped at 150MB.
+
+      | Chain | Free | Pay As You Go | Enterprise |
+      |-------|------|---------------|------------|
+      | Ethereum and Layer 2s (Ethereum, Base, Optimism, Arbitrum, Worldchain) | unlimited | unlimited | unlimited |
+      | Polygon | 500 | 2000 | unlimited |
+      | Monad | 500 | 1000 | unlimited |
+      | BSC | 500 | 10000 | 10000 |
+      | All Other Chains | 500 | 10000 | unlimited |
     params:
       - name: Filter
         required: true
@@ -1335,6 +1345,159 @@ methods:
                 proof:
                   - "0xf90211a0c87222cccea2bf32759fcee9dbaacbe3ea4165dd6184af6773651c5e00e34a8ba0be90e6e5d1a67ab5587779c60ac136d6a96db62b84c04998a5f03a367346abd6a05344aa1c9ca2e3e56bf98fd718ec43728578d148e1967fbaf8bf17a2a073a0bda011a2f9312c3308640a0d6ceeae218747290f23806067456da1d444c65abae437a0b3097a108bfce79af6699da4ae3003cd4929f0b4576aad655c31cb725bde84c7a0c133d3c637e174f36a73c22b1039eb003da6374bc0929321241badb3efa3c4a9a0f13059f2301ad9862ce02e3f7f3f2c9ab78eb30583764d73654f7f1f8b1e86fda06544e3915748b18204e09df75ff20d2fa6bd8121e2e669699012d54590383d6fa070e3a8e093691581d58fadb560b510262a758037632cd8670d3a36df828976b7a062a88a2900544dc76a32255a6b2b2a2eef8fa68279700c00adc7508286702552a0a474aeebd5603dfce46a6ecd1ecd519068dc034a544fde03ac42d4018e60a334a0b7d528fc41c8fdc8ea18c6e7d0099270c777ec1403cf879d1f5134bdc12a6c6ca04440f1242e42c5bfa7c536591ab89c8e84bea417435871c32eef1e25295b20daa06a5dcfe3cc84cff9d3e3c3ae868cfba8f0dd111a90c3f85869dab5b893f96643a026b2fb9dd7d08b0ed2f1c44fbf875011412a384f86f751c92e1013248d4aa371a0c75597b2b789fc4e939b71937390ce9d7d53159431328ac52180eef08ef200f280"
                 value: "0x1"
+
+  # Subscription methods
+  - name: eth_subscribe
+    description: Subscribes to specific event types and returns a subscription ID to receive asynchronous notifications via the `eth_subscription` method.
+    params:
+      - name: Subscription Type
+        description: The type of event to subscribe to (e.g., "newHeads", "logs", "newPendingTransactions", "syncing").
+        schema:
+          type: string
+      - name: Options
+        description: Optional subscription parameters, such as filtering topics for `logs`.
+        schema:
+          type: object
+          additionalProperties: true
+    result:
+      name: Subscription ID
+      description: A unique identifier for the subscription, returned as a 32-byte hex string.
+      schema:
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
+    examples:
+      - name: eth_subscribe example
+        params:
+          - name: Subscription Type
+            value: "newHeads"
+        result:
+          name: Subscription ID
+          value: "0x9c7c3f3c3c63b1b89ac0c1e0b0d3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8090a1b"
+
+  - name: eth_unsubscribe
+    description: Cancels an active subscription given its subscription ID.
+    params:
+      - name: Subscription ID
+        description: The identifier of the subscription to cancel.
+        schema:
+          $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
+    result:
+      name: Unsubscribe Result
+      description: A boolean indicating whether the subscription was successfully canceled.
+      schema:
+        type: boolean
+    examples:
+      - name: Unsubscribe example
+        params:
+          - name: Subscription ID
+            value: "0x9c7c3f3c3c63b1b89ac0c1e0b0d3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8090a1b"
+        result:
+          name: Unsubscribe Result
+          value: true
+
+  # Blob methods
+  - name: eth_blobBaseFee
+    description: Returns the base fee per blob gas in wei for the current block.
+    params: []
+    result:
+      name: Blob Base Fee
+      description: The base fee per blob gas, in wei, as a hexadecimal encoded unsigned integer.
+      schema:
+        $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes"
+    examples:
+      - name: eth_blobBaseFee example
+        params: []
+        result:
+          name: Blob Base Fee
+          value: "0x3b9aca00"
+
+  - name: eth_getBlobSidecars
+    description: Returns the blob sidecars for a given block, identified by block hash or block number.
+    params:
+      - name: Block Identifier
+        description: A block hash or block number to retrieve blob sidecars for.
+        schema:
+          oneOf:
+            - $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
+            - $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
+    result:
+      name: Blob Sidecars
+      description: An array of blob sidecar objects.
+      schema:
+        type: array
+        items:
+          type: object
+          required: [index, blob, kzgCommitment, kzgProof]
+          properties:
+            index:
+              $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
+            blob:
+              $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes"
+            kzgCommitment:
+              $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes48"
+            kzgProof:
+              $ref: "../_shared/components/base-types.yaml#/components/schemas/bytes96"
+    examples:
+      - name: eth_getBlobSidecars example
+        params:
+          - name: Block Identifier
+            value: "0x41a5d8ffcc7ba7bbf3670caff9a2d95a63a4f31be905f86f5c44e25c2dfb30ed"
+        result:
+          name: Blob Sidecars
+          value:
+            - index: "0x0"
+              blob: "0x..."
+              kzgCommitment: "0x..."
+              kzgProof: "0x..."
+
+  - name: eth_getFinalizedHeader
+    description: Returns the latest finalized execution payload header.
+    params: []
+    result:
+      name: Finalized Header
+      description: The finalized execution block header.
+      schema:
+        type: object
+        additionalProperties: true
+    examples:
+      - name: eth_getFinalizedHeader example
+        params: []
+        result:
+          name: Finalized Header
+          value:
+            parentHash: "0xabc123..."
+            number: "0x123456"
+            stateRoot: "0xdef456..."
+
+  - name: eth_getTransactionReceiptsByBlock
+    description: Returns the transaction receipts for all transactions in a given block.
+    params:
+      - name: Block Identifier
+        description: The block hash or block number.
+        schema:
+          oneOf:
+            - $ref: "../_shared/components/base-types.yaml#/components/schemas/hash32"
+            - $ref: "../_shared/components/base-types.yaml#/components/schemas/uint"
+    result:
+      name: Transaction Receipts
+      description: An array of transaction receipt objects for the block's transactions.
+      schema:
+        type: array
+        items:
+          type: object
+          additionalProperties: true
+    examples:
+      - name: eth_getTransactionReceiptsByBlock example
+        params:
+          - name: Block Identifier
+            value: "0x91b1b84c7a4d7f17126f7186e0dd1bdc21c2d334a78b4034c0d3705797698c27"
+        result:
+          name: Transaction Receipts
+          value:
+            - transactionHash: "0xabc123..."
+              status: "0x1"
+              blockNumber: "0x123456"
+              gasUsed: "0x5208"
+              logs: []
 
   # Submit methods
   - name: eth_sendRawTransaction

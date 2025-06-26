@@ -1,126 +1,195 @@
-import React from 'react'
+import { useEffect, useState, type FC } from 'react'
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
-import ChangelogIcon from './assets/ChangelogIcon.js'
-import CommunityIcon from './assets/CommunityIcon.js'
-import LogoDark from './assets/LogoDark.js'
-import LogoLight from './assets/LogoLight.js'
+import AlchemyLogo from './assets/AlchemyLogo.js'
+import AlchemyUniversityIcon from './assets/AlchemyUniversityIcon.js'
+import DiscordIcon from './assets/DiscordIcon.js'
+import EmailIcon from './assets/EmailIcon.js'
+import NewsletterIcon from './assets/NewsletterIcon.js'
+import RobotIcon from './assets/RobotIcon.js'
 import StatusIcon from './assets/StatusIcon.js'
+import SupportHubIcon from './assets/SupportHubIcon.js'
+import XIcon from './assets/XIcon.js'
 
-const FooterContainer = styled.section`
-  padding-bottom: 44px;
+const columns = [
+  {
+    title: 'Support & Platform',
+    links: [
+      {
+        href: 'https://www.alchemy.com/support',
+        text: 'Get help on our support hub',
+        Icon: SupportHubIcon,
+      },
+      {
+        href: 'https://www.alchemy.com/contact-sales',
+        text: 'Questions? Contact sales',
+        Icon: EmailIcon,
+      },
+      {
+        href: 'https://status.alchemy.com',
+        text: 'Check out our platform status',
+        Icon: StatusIcon,
+      },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      {
+        href: 'https://www.alchemy.com/docs/llms.txt',
+        text: 'Using AI? View our llms.txt',
+        Icon: RobotIcon,
+      },
+      {
+        href: 'https://www.alchemy.com/university',
+        text: 'Learn more on Alchemy University',
+        Icon: AlchemyUniversityIcon,
+      },
+    ],
+  },
+  {
+    title: 'Stay updated',
+    links: [
+      {
+        href: 'https://alchemysupercharged.substack.com/subscribe?just_signed_up=true&skip_redirect_check=true&utm_medium=web&utm_source=embed',
+        text: 'Subscribe to our Newsletter',
+        Icon: NewsletterIcon,
+      },
+      {
+        href: 'https://x.com/alchemy',
+        text: 'Follow us on X',
+        Icon: XIcon,
+      },
+      {
+        href: 'https://discord.gg/9GnAcXQYZ6',
+        text: 'Join our discord',
+        Icon: DiscordIcon,
+      },
+    ],
+  },
+]
+
+const FooterContainer = styled.div`
+  padding: 0 24px 48px;
+  font-family: Inter, sans-serif;
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#FBFDFF' : '#020617')};
+`
+
+const FooterWrapper = styled.div`
+  max-width: 1010px;
+  margin: 0 auto;
+  display: flex;
   flex-direction: column;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-  width: 100%;
-  color: ${({ theme }) => (theme.mode === 'dark' ? '#e2e8f0' : '#475569')};
-  font-weight: 400;
 `
 
-const CommunityLinks = styled.div`
+const TopSection = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 60%;
-  padding-bottom: 24px;
-  gap: 16px;
-  a {
-    color: ${({ theme }) => (theme.mode === 'dark' ? '#CBD5E0' : '#94a3b8')};
-    text-decoration: underline;
-  }
-  @media screen and (max-width: 768px) {
-    flex-direction: column-reverse;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-    padding: 24px 16px;
+  padding: 48px 0;
+  border-top: 1px solid
+    ${({ theme }) => (theme.mode === 'dark' ? '#383838' : '#E2E8F0')};
+  border-bottom: 1px solid
+    ${({ theme }) => (theme.mode === 'dark' ? '#383838' : '#E2E8F0')};
+  flex-direction: column;
+  gap: 40px;
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 32px;
   }
 `
 
-const FooterLeftSide = styled.div`
+const LinksColumns = styled.div`
+  display: flex;
+  flex-direction: column;
+  row-gap: 36px;
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    column-gap: 64px;
+  }
+`
+
+const Column = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  font-size: 14px;
 `
 
-const FooterLeftSideLinks = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`
-
-const FooterRightSide = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  @media screen and (max-width: 768px) {
-    align-items: center;
-    padding: 8px;
-  }
-`
-
-const SubscribeForm = styled.form`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  @media screen and (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-`
-
-const FooterAlchemyCopyrightContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  width: 60%;
-
-  @media screen and (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-`
-
-const FooterCopyrightTextContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-
-  @media screen and (max-width: 768px) {
-    margin-top: 12px;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-`
-
-const FooterCopyrightText = styled.p`
-  white-space: nowrap;
+const ColumnTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.32px;
+  color: ${({ theme }) => (theme.mode === 'dark' ? '#FFFFFF' : '#000000')};
   margin: 0;
-  padding: 0;
 `
 
-const Separator = styled.span`
-  align-self: center;
+const FooterLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  &:hover {
+    color: #5167ff;
 
-  @media screen and (max-width: 768px) {
-    display: none;
+    svg {
+      /* Add hover effect to icon paths depending on if they use fill or stroke */
+      path[fill] {
+        fill: #5167ff;
+      }
+      path[stroke] {
+        stroke: #5167ff;
+      }
+    }
   }
 `
 
-export const CustomFooter: React.FC = () => {
-  const [isDark, setIsDark] = React.useState(
+const BottomSection = styled.div`
+  padding-top: 32px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 28px;
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+`
+
+const CopyrightTerms = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  flex-direction: column;
+  gap: 12px;
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    gap: 24px;
+  }
+`
+
+const TermsLink = styled.a`
+  text-decoration: none;
+  &:hover {
+    color: #5167ff;
+  }
+`
+
+export const CustomFooter: FC = () => {
+  const [isDark, setIsDark] = useState(
     document.documentElement.classList.contains('dark'),
   )
 
-  React.useEffect(() => {
+  useEffect(() => {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
@@ -147,52 +216,32 @@ export const CustomFooter: React.FC = () => {
   return (
     <StyledThemeProvider theme={theme}>
       <FooterContainer>
-        <CommunityLinks>
-          <FooterLeftSide>
-            <FooterLeftSideLinks>
-              <ChangelogIcon />
-              <span>
-                View the <a href="https://www.alchemy.com/blog">changelog</a>
-              </span>
-            </FooterLeftSideLinks>
-            <FooterLeftSideLinks>
-              <CommunityIcon />
-              <span>
-                Join our <a href="https://discord.gg/9GnAcXQYZ6">community</a>
-              </span>
-            </FooterLeftSideLinks>
-            <FooterLeftSideLinks>
-              <StatusIcon />
-              <span>
-                Check our <a href="https://status.alchemy.com">status</a>
-              </span>
-            </FooterLeftSideLinks>
-          </FooterLeftSide>
-          <FooterRightSide>
-            <SubscribeForm>
-              <iframe
-                title="Substack form"
-                src="https://alchemysupercharged.substack.com/embed"
-                width="320"
-                height="280"
-              ></iframe>
-            </SubscribeForm>
-          </FooterRightSide>
-        </CommunityLinks>
-        <FooterAlchemyCopyrightContainer>
-          {isDark ? <LogoDark /> : <LogoLight />}
-          <FooterCopyrightTextContainer>
-            <FooterCopyrightText>
-              &copy; {new Date().getFullYear()} Alchemy Insights, Inc.
-            </FooterCopyrightText>
-            <Separator>·</Separator>
-            <FooterCopyrightText>
-              <a href="https://www.alchemy.com/terms-conditions/terms/">
-                Terms of Service
-              </a>
-            </FooterCopyrightText>
-          </FooterCopyrightTextContainer>
-        </FooterAlchemyCopyrightContainer>
+        <FooterWrapper>
+          <TopSection>
+            <LinksColumns>
+              {columns.map(({ title, links }) => (
+                <Column key={title}>
+                  <ColumnTitle>{title}</ColumnTitle>
+                  {links.map(({ href, text, Icon }) => (
+                    <FooterLink key={text} href={href}>
+                      <Icon isDark={isDark} />
+                      <span>{text}</span>
+                    </FooterLink>
+                  ))}
+                </Column>
+              ))}
+            </LinksColumns>
+          </TopSection>
+          <BottomSection>
+            <AlchemyLogo isDark={isDark} />
+            <CopyrightTerms>
+              <TermsLink href="https://legal.alchemy.com/#contract-kduihkaqm">
+                Terms & Conditions
+              </TermsLink>
+              <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
+            </CopyrightTerms>
+          </BottomSection>
+        </FooterWrapper>
       </FooterContainer>
     </StyledThemeProvider>
   )

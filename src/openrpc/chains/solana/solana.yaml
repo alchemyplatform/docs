@@ -27,6 +27,11 @@ methods:
         description: Optional configuration object for additional settings.
         schema:
           $ref: "./components/account.yaml#/components/schemas/GetAccountInfoConfig"
+    examples:
+      - name: getAccountInfo example
+        params:
+          - name: Pubkey
+            value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
     result:
       name: Account information
       description: Returns details of the account including balance, ownership, and other relevant data.
@@ -46,6 +51,11 @@ methods:
         description: Optional configuration object containing additional settings.
         schema:
           $ref: "./components/account.yaml#/components/schemas/GetBalanceConfig"
+    examples:
+      - name: getBalance example
+        params:
+          - name: Pubkey
+            value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
     result:
       name: Lamport balance
       description: Returns the balance in lamports of the account queried.
@@ -67,6 +77,13 @@ methods:
         description: Optional configuration object.
         schema:
           $ref: "./components/account.yaml#/components/schemas/GetMultipleAccountsConfig"
+    examples:
+      - name: getMultipleAccounts example
+        params:
+          - name: Pubkeys
+            value:
+              - "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+              - "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
     result:
       name: Account information
       description: An array of JSON objects containing account details.
@@ -88,6 +105,11 @@ methods:
         description: Optional configuration object containing additional settings.
         schema:
           $ref: "./components/account.yaml#/components/schemas/GetTokenAccountBalanceConfig"
+    examples:
+      - name: getTokenAccountBalance example
+        params:
+          - name: Token account Pubkey
+            value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
     result:
       name: Token account balance
       description: The balance of the SPL Token account.
@@ -119,6 +141,11 @@ methods:
         description: Optional configuration object containing additional settings.
         schema:
           $ref: "./components/account.yaml#/components/schemas/GetTokenAccountsByOwnerConfig"
+    examples:
+      - name: getTokenAccountsByOwner example
+        params:
+          - name: Token owner Pubkey
+            value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
     result:
       name: Token accounts
       description: An array of JSON objects representing the token accounts owned by the specified Pubkey.
@@ -160,6 +187,13 @@ methods:
         description: Optional configuration object.
         schema:
           $ref: "./components/airdrop.yaml#/components/schemas/RequestAirdropConfig"
+    examples:
+      - name: requestAirdrop example
+        params:
+          - name: Pubkey
+            value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+          - name: Lamports
+            value: 1000000000000000000
     result:
       name: Transaction signature
       description: Transaction Signature of the airdrop.
@@ -180,6 +214,11 @@ methods:
         description: Optional configuration object containing additional settings.
         schema:
           $ref: "./components/block.yaml#/components/schemas/GetBlockConfig"
+    examples:
+      - name: getBlock example
+        params:
+          - name: slot
+            value: 237158054
     result:
       name: Block information
       description: Returns block information or null if the block is not confirmed.
@@ -204,6 +243,13 @@ methods:
         description: Optional configuration object.
         schema:
           $ref: "./components/block.yaml#/components/schemas/GetBlocksConfig"
+    examples:
+      - name: getBlocks (full example)
+        params:
+          - name: start_slot
+            value: 237158000
+          - name: end_slot
+            value: 237158050
     result:
       name: List of confirmed blocks
       description: Returns an array of u64 integers listing confirmed blocks.
@@ -228,6 +274,13 @@ methods:
         description: Optional configuration object.
         schema:
           $ref: "./components/block.yaml#/components/schemas/GetBlocksConfig"
+    examples:
+      - name: getBlocksWithLimit (with configuration)
+        params:
+          - name: start_slot
+            value: 237158000
+          - name: limit
+            value: 5
     result:
       name: List of confirmed blocks
       description: Returns an array of u64 integers listing confirmed blocks starting at the start_slot.
@@ -242,6 +295,11 @@ methods:
         description: Block number, identified by Slot.
         schema:
           type: integer
+    examples:
+      - name: getBlockCommitment example
+        params:
+          - name: block
+            value: 237158054
     result:
       name: Block commitment
       description: Returns the commitment and total active stake for the block.
@@ -256,6 +314,9 @@ methods:
         description: Optional configuration object containing additional settings.
         schema:
           $ref: "./components/block.yaml#/components/schemas/GetBlockProductionConfig"
+    examples:
+      - name: getBlockProduction example
+        params: []
     result:
       name: Block production information
       description: Returns block production information for the specified range.
@@ -270,6 +331,11 @@ methods:
         description: Block number, identified by Slot.
         schema:
           $ref: "./components/block.yaml#/components/schemas/GetBlockTimeParams"
+    examples:
+      - name: getBlockTime example
+        params:
+          - name: block
+            value: 237158054
     result:
       name: Estimated production time
       description: The estimated production time of the block as a Unix timestamp.

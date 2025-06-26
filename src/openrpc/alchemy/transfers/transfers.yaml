@@ -15,93 +15,51 @@ methods:
   - name: alchemy_getAssetTransfers
     description: The Transfers API allows you to easily fetch historical transactions for any address across Ethereum and supported L2s including Polygon, Arbitrum, and Optimism.
     params:
-      - name: fromBlock
-        required: false
-        description: "Inclusive from block (hex string, int, 'latest', or 'indexed'). Defaults to 0x0."
-        schema:
-          type: string
-          default: "0x0"
-
-      - name: toBlock
-        required: false
-        description: "Inclusive to block (hex string, int, 'latest', or 'indexed'). Defaults to 'latest'."
-        schema:
-          type: string
-          default: "latest"
-
-      - name: fromAddress
-        required: false
-        description: "Hex string 'from' address. Default is wildcard (any address)."
-        schema:
-          $ref: "../_shared/components.yaml#/components/schemas/address"
-
-      - name: toAddress
-        required: false
-        description: "Hex string 'to' address. Default is wildcard (any address)."
-        schema:
-          $ref: "../_shared/components.yaml#/components/schemas/address"
-        # Example default from the spec:
-        # default: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1"
-
-      - name: contractAddresses
-        required: false
-        description: "Filter for ERC20/721/1155 transfers by contract address. Defaults to wildcard (any address)."
-        schema:
-          type: array
-          items:
-            $ref: "../_shared/components.yaml#/components/schemas/address"
-
-      - name: category
+      - name: assetTransferParams
         required: true
-        description: "Array of transfer categories: external, internal, erc20, erc721, erc1155, specialnft."
         schema:
-          type: array
-          items:
-            type: string
-            enum:
-              - external
-              - internal
-              - erc20
-              - erc721
-              - erc1155
-              - specialnft
-
-      - name: order
-        required: false
-        description: "Return results in ascending (asc) or descending (desc) order. Defaults to 'asc'."
-        schema:
-          type: string
-          enum:
-            - asc
-            - desc
-
-      - name: withMetadata
-        required: false
-        description: "Include additional metadata about each transfer event. Defaults to false."
-        schema:
-          type: boolean
-          default: false
-
-      - name: excludeZeroValue
-        required: false
-        description: "Whether to exclude transfers with zero value. Defaults to true."
-        schema:
-          type: boolean
-          default: true
-
-      - name: maxCount
-        required: false
-        description: "Max hex string number of results to return per call. Defaults to 0x3e8 (1000)."
-        schema:
-          type: string
-          default: "0x3e8"
-
-      - name: pageKey
-        required: false
-        description: "UUID for pagination. If more results are available, use the pageKey returned in the response to fetch the next page."
-        schema:
-          type: string
-
+          type: object
+          properties:
+            fromBlock:
+              type: string
+              default: "0x0"
+            toBlock:
+              type: string
+              default: "latest"
+            fromAddress:
+              type: string
+              default: "0x0000000000000000000000000000000000000000"
+            toAddress:
+              type: string
+              default: "0x0000000000000000000000000000000000000000"
+            excludeZeroValue:
+              type: boolean
+              default: true
+            category:
+              type: array
+              items:
+                type: string
+                enum:
+                  - external
+                  - internal
+                  - erc20
+                  - erc721
+                  - erc1155
+                  - specialnft
+            order:
+              type: string
+              enum:
+                - asc
+                - desc
+            withMetadata:
+              type: boolean
+              default: false
+            maxCount:
+              type: string
+              default: "0x3e8"
+            pageKey:
+              type: string
+              default: "0x0"
     result:
       name: Asset transfers
       description: "Returns the list of transfers, and a pageKey if additional results remain."
