@@ -13,22 +13,22 @@ import XIcon from './assets/XIcon.js'
 
 const columns = [
   {
-    title: 'Support & Platform',
+    title: 'Support & platform',
     links: [
       {
         href: 'https://www.alchemy.com/support',
-        text: 'Get help on our support hub',
+        text: 'FAQs and support',
         Icon: SupportHubIcon,
       },
       {
-        href: 'https://www.alchemy.com/contact-sales',
-        text: 'Questions? Contact sales',
-        Icon: EmailIcon,
+        href: 'https://status.alchemy.com',
+        text: 'Platform status',
+        Icon: StatusIcon,
       },
       {
-        href: 'https://status.alchemy.com',
-        text: 'Check out our platform status',
-        Icon: StatusIcon,
+        href: 'https://www.alchemy.com/contact-sales',
+        text: 'Contact sales',
+        Icon: EmailIcon,
       },
     ],
   },
@@ -37,12 +37,12 @@ const columns = [
     links: [
       {
         href: 'https://www.alchemy.com/docs/llms.txt',
-        text: 'Using AI? View our llms.txt',
+        text: 'llms.txt for AI builders',
         Icon: RobotIcon,
       },
       {
         href: 'https://www.alchemy.com/university',
-        text: 'Learn more on Alchemy University',
+        text: 'Alchemy University',
         Icon: AlchemyUniversityIcon,
       },
     ],
@@ -52,7 +52,7 @@ const columns = [
     links: [
       {
         href: 'https://alchemysupercharged.substack.com/subscribe?just_signed_up=true&skip_redirect_check=true&utm_medium=web&utm_source=embed',
-        text: 'Subscribe to our Newsletter',
+        text: 'Subscribe to our newsletter',
         Icon: NewsletterIcon,
       },
       {
@@ -70,33 +70,27 @@ const columns = [
 ]
 
 const FooterContainer = styled.div`
-  padding: 0 24px 48px;
-  font-family: Inter, sans-serif;
+  padding: 32px 0;
   color: ${({ theme }) => (theme.mode === 'dark' ? '#FBFDFF' : '#020617')};
 `
 
 const FooterWrapper = styled.div`
-  max-width: 1010px;
+  width: 100%;
   margin: 0 auto;
+  padding: 0 24px;
   display: flex;
   flex-direction: column;
+
+  @media screen and (min-width: 768px) {
+    width: 60%;
+    padding: 0;
+  }
 `
 
 const TopSection = styled.div`
-  display: flex;
-  padding: 48px 0;
-  border-top: 1px solid
-    ${({ theme }) => (theme.mode === 'dark' ? '#383838' : '#E2E8F0')};
+  padding-bottom: 64px;
   border-bottom: 1px solid
-    ${({ theme }) => (theme.mode === 'dark' ? '#383838' : '#E2E8F0')};
-  flex-direction: column;
-  gap: 40px;
-
-  @media screen and (min-width: 768px) {
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 32px;
-  }
+    ${({ theme }) => (theme.mode === 'dark' ? '#3f3f40' : '#d4d4e8')};
 `
 
 const LinksColumns = styled.div`
@@ -107,6 +101,7 @@ const LinksColumns = styled.div`
   @media screen and (min-width: 768px) {
     flex-direction: row;
     column-gap: 64px;
+    justify-content: space-between;
   }
 `
 
@@ -131,7 +126,7 @@ const FooterLink = styled.a`
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
   &:hover {
@@ -150,15 +145,19 @@ const FooterLink = styled.a`
 `
 
 const BottomSection = styled.div`
-  padding-top: 32px;
+  justify-content: center;
+  padding-top: 18px;
+  font-size: 14px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   flex-direction: column;
   gap: 28px;
+  margin-top: 140px;
 
   @media screen and (min-width: 768px) {
     flex-direction: row;
-    justify-content: space-between;
+    margin-top: 0;
   }
 `
 
@@ -182,6 +181,13 @@ const TermsLink = styled.a`
   &:hover {
     color: #5167ff;
   }
+`
+
+const LogoColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 14px;
 `
 
 export const CustomFooter: FC = () => {
@@ -219,6 +225,9 @@ export const CustomFooter: FC = () => {
         <FooterWrapper>
           <TopSection>
             <LinksColumns>
+              <LogoColumn>
+                <AlchemyLogo isDark={isDark} />
+              </LogoColumn>
               {columns.map(({ title, links }) => (
                 <Column key={title}>
                   <ColumnTitle>{title}</ColumnTitle>
@@ -233,12 +242,11 @@ export const CustomFooter: FC = () => {
             </LinksColumns>
           </TopSection>
           <BottomSection>
-            <AlchemyLogo isDark={isDark} />
             <CopyrightTerms>
               <TermsLink href="https://legal.alchemy.com/#contract-kduihkaqm">
                 Terms & Conditions
               </TermsLink>
-              <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
+              <span>{new Date().getFullYear()} Alchemy Insights, Inc</span>
             </CopyrightTerms>
           </BottomSection>
         </FooterWrapper>
