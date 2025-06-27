@@ -233,7 +233,7 @@ export const Codeblock: React.FC = () => {
 
   return (
     <StyledThemeProvider theme={theme}>
-      <h3 className="mb-6">Query the blockchain in seconds</h3>
+      <h3 className="mb-6">Query the blockchain instantly</h3>
       <CodeBlockContainer>
         <div style={{ padding: '24px 24px 0px' }}>
           <div

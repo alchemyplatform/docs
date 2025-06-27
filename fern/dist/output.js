@@ -28745,7 +28745,7 @@ const Yo = G2(),
         children: [
           W.jsx("h3", {
             className: "mb-6",
-            children: "Query the blockchain in seconds",
+            children: "Query the blockchain instantly",
           }),
           W.jsxs(O2, {
             children: [
