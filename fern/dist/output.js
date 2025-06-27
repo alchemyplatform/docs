@@ -11256,13 +11256,12 @@ const Bw = ({ isDark: n = !1 }) =>
     },
   ],
   Lw = dt.div`
-  padding: 32px 0;
+  padding: 16px 24px 54px;
   color: ${({ theme: n }) => (n.mode === "dark" ? "#FBFDFF" : "#020617")};
 `,
   Nw = dt.div`
   width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
   display: flex;
   flex-direction: column;
 
@@ -11272,11 +11271,10 @@ const Bw = ({ isDark: n = !1 }) =>
   }
 `,
   Rw = dt.div`
-  padding-bottom: 64px;
+  padding-bottom: 48px;
   border-bottom: 1px solid
     ${({ theme: n }) => (n.mode === "dark" ? "#3f3f40" : "#d4d4e8")};
   display: flex;
-  justify-content: center;
 
   @media screen and (min-width: 768px) {
     display: block;
@@ -11338,7 +11336,7 @@ const Bw = ({ isDark: n = !1 }) =>
   align-items: center;
   flex-direction: column;
   gap: 28px;
-  margin-top: 70px;
+  margin-top: 36px;
 
   @media screen and (min-width: 768px) {
     flex-direction: row;
@@ -11372,9 +11370,7 @@ const Bw = ({ isDark: n = !1 }) =>
   font-size: 14px;
 
   @media screen and (max-width: 768px) {
-    flex-direction: row;
-    justify-content: center;
-    margin-bottom: 28px;
+    margin-bottom: 12px;
   }
 `,
   Hw = () => {

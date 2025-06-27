@@ -70,14 +70,13 @@ const columns = [
 ]
 
 const FooterContainer = styled.div`
-  padding: 32px 0;
+  padding: 16px 24px 54px;
   color: ${({ theme }) => (theme.mode === 'dark' ? '#FBFDFF' : '#020617')};
 `
 
 const FooterWrapper = styled.div`
   width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
   display: flex;
   flex-direction: column;
 
@@ -88,11 +87,10 @@ const FooterWrapper = styled.div`
 `
 
 const TopSection = styled.div`
-  padding-bottom: 64px;
+  padding-bottom: 48px;
   border-bottom: 1px solid
     ${({ theme }) => (theme.mode === 'dark' ? '#3f3f40' : '#d4d4e8')};
   display: flex;
-  justify-content: center;
 
   @media screen and (min-width: 768px) {
     display: block;
@@ -159,7 +157,7 @@ const BottomSection = styled.div`
   align-items: center;
   flex-direction: column;
   gap: 28px;
-  margin-top: 70px;
+  margin-top: 36px;
 
   @media screen and (min-width: 768px) {
     flex-direction: row;
@@ -196,9 +194,7 @@ const LogoColumn = styled.div`
   font-size: 14px;
 
   @media screen and (max-width: 768px) {
-    flex-direction: row;
-    justify-content: center;
-    margin-bottom: 28px;
+    margin-bottom: 12px;
   }
 `
 
