@@ -11275,6 +11275,12 @@ const Bw = ({ isDark: n = !1 }) =>
   padding-bottom: 64px;
   border-bottom: 1px solid
     ${({ theme: n }) => (n.mode === "dark" ? "#3f3f40" : "#d4d4e8")};
+  display: flex;
+  justify-content: center;
+
+  @media screen and (min-width: 768px) {
+    display: block;
+  }
 `,
   Mw = dt.div`
   display: flex;
@@ -11332,7 +11338,7 @@ const Bw = ({ isDark: n = !1 }) =>
   align-items: center;
   flex-direction: column;
   gap: 28px;
-  margin-top: 140px;
+  margin-top: 70px;
 
   @media screen and (min-width: 768px) {
     flex-direction: row;
@@ -11364,6 +11370,12 @@ const Bw = ({ isDark: n = !1 }) =>
   flex-direction: column;
   gap: 16px;
   font-size: 14px;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
 `,
   Hw = () => {
     const [n, t] = z.useState(
@@ -28343,8 +28355,8 @@ const $2 = [
   { value: "arb-mainnet", label: "Arbitrum" },
   { value: "base-mainnet", label: "Base" },
   { value: "opt-mainnet", label: "Optimism" },
-  { value: "solana-mainnet", label: "Solana" },
   { value: "polygon-mainnet", label: "Polygon PoS" },
+  { value: "solana-mainnet", label: "Solana" },
 ];
 var os = ((n) => (
   (n.alchemy_getAssetTransfers = "alchemy_getAssetTransfers"),
