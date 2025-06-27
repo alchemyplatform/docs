@@ -11439,6 +11439,7 @@ const Bw = ({ isDark: n = !1 }) =>
                   }),
                   W.jsxs("span", {
                     children: [
+                      "© ",
                       new Date().getFullYear(),
                       " Alchemy Insights, Inc",
                     ],

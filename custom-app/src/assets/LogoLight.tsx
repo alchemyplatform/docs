@@ -1,10 +1,8 @@
-import type { FC } from 'react'
-
 interface LogoLightProps {
   isDark?: boolean
 }
 
-export const LogoLight: FC<LogoLightProps> = ({ isDark = false }) => {
+export const LogoLight = ({ isDark = false }: LogoLightProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

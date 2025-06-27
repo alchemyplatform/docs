@@ -254,7 +254,7 @@ export const CustomFooter: FC = () => {
               <TermsLink href="https://legal.alchemy.com/#contract-kduihkaqm">
                 Terms & Conditions
               </TermsLink>
-              <span>{new Date().getFullYear()} Alchemy Insights, Inc</span>
+              <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
             </CopyrightTerms>
           </BottomSection>
         </FooterWrapper>
