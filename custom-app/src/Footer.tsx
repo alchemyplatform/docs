@@ -10,6 +10,7 @@ import RobotIcon from './assets/RobotIcon.js'
 import StatusIcon from './assets/StatusIcon.js'
 import SupportHubIcon from './assets/SupportHubIcon.js'
 import XIcon from './assets/XIcon.js'
+import { BuiltByFern } from './assets/BuiltByFern.js'
 
 const columns = [
   {
@@ -177,6 +178,33 @@ const CopyrightTerms = styled.div`
   @media screen and (min-width: 768px) {
     flex-direction: row;
     gap: 24px;
+    width: 100%;
+    justify-content: space-between;
+  }
+`
+
+const LeftTerms = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+  }
+`
+
+const RightTerms = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+
+  @media screen and (min-width: 768px) {
+    margin-top: 0;
+    justify-content: flex-end;
   }
 `
 
@@ -251,10 +279,15 @@ export const CustomFooter: FC = () => {
           </TopSection>
           <BottomSection>
             <CopyrightTerms>
-              <TermsLink href="https://legal.alchemy.com/#contract-kduihkaqm">
-                Terms & Conditions
-              </TermsLink>
-              <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
+              <LeftTerms>
+                <TermsLink href="https://legal.alchemy.com/#contract-kduihkaqm">
+                  Terms & Conditions
+                </TermsLink>
+                <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
+              </LeftTerms>
+              <RightTerms>
+                <BuiltByFern />
+              </RightTerms>
             </CopyrightTerms>
           </BottomSection>
         </FooterWrapper>

@@ -56,6 +56,7 @@ const render = async () => {
     if (fernFooterContainer) fernFooterContainer.style.display = 'block'
     if (codeBlockContainer) codeBlockContainer.style.display = 'block'
 
+    // Remove the default built with fern link since we add one in the Footer component.
     document.getElementById('builtwithfern')?.remove()
   }
 }
