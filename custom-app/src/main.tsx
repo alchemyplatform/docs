@@ -1,8 +1,8 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { CustomFooter } from './Footer.js'
 import { Codeblock } from './Codeblock.js'
+import { CustomFooter } from './Footer.js'
 
 const FERN_FOOTER_CONTAINER_ID = 'fern-footer'
 
@@ -81,11 +81,6 @@ window.addEventListener('load', async () => {
       )
     if (shouldRender) {
       await render()
-    }
-
-    // Optionally: Remove custom footer if not on /docs
-    if (currentPath !== '/docs' && document.getElementById('alchemy-footer')) {
-      document.getElementById('alchemy-footer')?.remove()
     }
   }).observe(document.body, { childList: true, subtree: true })
 })
