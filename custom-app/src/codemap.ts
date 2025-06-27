@@ -26,8 +26,8 @@ export const chainOptions = [
   { value: Chains.arbitrumMainnet as string, label: 'Arbitrum' },
   { value: Chains.baseMainnet as string, label: 'Base' },
   { value: Chains.optimismMainnet as string, label: 'Optimism' },
-  { value: Chains.solanaMainnet as string, label: 'Solana' },
   { value: Chains.polygonMainnet as string, label: 'Polygon PoS' },
+  { value: Chains.solanaMainnet as string, label: 'Solana' },
 ]
 
 export enum ApiFunction {

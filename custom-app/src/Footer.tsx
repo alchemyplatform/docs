@@ -91,6 +91,12 @@ const TopSection = styled.div`
   padding-bottom: 64px;
   border-bottom: 1px solid
     ${({ theme }) => (theme.mode === 'dark' ? '#3f3f40' : '#d4d4e8')};
+  display: flex;
+  justify-content: center;
+
+  @media screen and (min-width: 768px) {
+    display: block;
+  }
 `
 
 const LinksColumns = styled.div`
@@ -153,7 +159,7 @@ const BottomSection = styled.div`
   align-items: center;
   flex-direction: column;
   gap: 28px;
-  margin-top: 140px;
+  margin-top: 70px;
 
   @media screen and (min-width: 768px) {
     flex-direction: row;
@@ -188,6 +194,12 @@ const LogoColumn = styled.div`
   flex-direction: column;
   gap: 16px;
   font-size: 14px;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
 `
 
 export const CustomFooter: FC = () => {
