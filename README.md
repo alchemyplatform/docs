@@ -55,10 +55,10 @@ This will start a local server with live reloading. Visit `http://localhost:3020
 
 #### Building Custom Components
 
-In some cases we need to use custom-built components that require styling outside the standard Fern capabilities. Currently, Fern does not support building/rendering Custom JS + React locally, so first you'll need to build the custom component:
+In some cases we need to use custom-built components that require styling outside the standard Fern capabilities. Currently, Fern does not support building/rendering Custom JS + React locally, so first you'll need to build the custom components:
 
 ```bash
-cd footer/  # using the custom footer component as an example
+cd custom-app/
 pnpm install  # if you need to install dependencies
 pnpm run build
 ```
