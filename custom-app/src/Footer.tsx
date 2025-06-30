@@ -3,6 +3,7 @@ import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
 import AlchemyLogo from './assets/AlchemyLogo.js'
 import AlchemyUniversityIcon from './assets/AlchemyUniversityIcon.js'
+import { BuiltByFern } from './assets/BuiltByFern.js'
 import DiscordIcon from './assets/DiscordIcon.js'
 import EmailIcon from './assets/EmailIcon.js'
 import NewsletterIcon from './assets/NewsletterIcon.js'
@@ -10,7 +11,6 @@ import RobotIcon from './assets/RobotIcon.js'
 import StatusIcon from './assets/StatusIcon.js'
 import SupportHubIcon from './assets/SupportHubIcon.js'
 import XIcon from './assets/XIcon.js'
-import { BuiltByFern } from './assets/BuiltByFern.js'
 
 const columns = [
   {
@@ -62,7 +62,7 @@ const columns = [
         Icon: XIcon,
       },
       {
-        href: 'https://discord.gg/9GnAcXQYZ6',
+        href: 'https://discord.gg/alchemy-builders',
         text: 'Join our discord',
         Icon: DiscordIcon,
       },
@@ -71,31 +71,26 @@ const columns = [
 ]
 
 const FooterContainer = styled.div`
-  padding: 16px 24px 54px;
+  padding: 48px 24px 54px;
   color: ${({ theme }) => (theme.mode === 'dark' ? '#FBFDFF' : '#020617')};
 `
 
 const FooterWrapper = styled.div`
+  max-width: 1010px;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-
-  @media screen and (min-width: 768px) {
-    width: 60%;
-    padding: 0;
-  }
+  padding: 0 24px;
 `
 
 const TopSection = styled.div`
-  padding-bottom: 48px;
+  padding: 48px 0px;
+  border-top: 1px solid
+    ${({ theme }) => (theme.mode === 'dark' ? '#3f3f40' : '#d4d4e8')};
   border-bottom: 1px solid
     ${({ theme }) => (theme.mode === 'dark' ? '#3f3f40' : '#d4d4e8')};
   display: flex;
-
-  @media screen and (min-width: 768px) {
-    display: block;
-  }
 `
 
 const LinksColumns = styled.div`
