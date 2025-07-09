@@ -111,7 +111,7 @@ components:
           required: true
           description: The hash of the block to retrieve.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+            $ref: "./base-types.yaml#/components/schemas/hash32"
         - name: Hydrated transactions
           required: true
           description: If true, returns full transaction objects; if false, returns only transaction hashes.
@@ -123,8 +123,8 @@ components:
         description: The block object containing various properties of the block.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/block.yaml#/components/schemas/Block"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - $ref: "./block.yaml#/components/schemas/Block"
       examples:
         - name: eth_getBlockByHash example
           params:
@@ -176,7 +176,7 @@ components:
           required: true
           description: The block number or special tags like 'latest', 'earliest', or 'pending'.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTag"
         - name: Hydrated transactions
           required: true
           description: If true, returns full transaction objects; if false, returns only transaction hashes.
@@ -188,8 +188,8 @@ components:
         description: The block object containing various properties of the block.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/block.yaml#/components/schemas/Block"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - $ref: "./block.yaml#/components/schemas/Block"
       examples:
         - name: eth_getBlockByNumber example
           params:
@@ -241,15 +241,15 @@ components:
           required: true
           description: The hash of the block.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+            $ref: "./base-types.yaml#/components/schemas/hash32"
       result:
         name: Transaction count
         description: The number of transactions in the block as a hexadecimal string.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
             - title: Transaction count
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_getBlockTransactionCountByHash example
           params:
@@ -267,15 +267,15 @@ components:
           required: true
           description: The block number or special tags like 'latest', 'earliest', or 'pending'.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTag"
       result:
         name: Transaction count
         description: The number of transactions in the block as a hexadecimal string.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
             - title: Transaction count
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_getBlockTransactionCountByNumber example
           params:
@@ -294,7 +294,7 @@ components:
         name: Chain ID
         description: The chain ID of the current network in hexadecimal format.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_chainId example
           params: []
@@ -310,7 +310,7 @@ components:
         name: Block number
         description: The block number of the most recently mined block as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_blockNumber example
           params: []
@@ -361,17 +361,17 @@ components:
           required: true
           description: The transaction call object containing the details of the message call.
           schema:
-            $ref: "../_components/evm/transaction.yaml#/components/schemas/GenericTransaction"
+            $ref: "./transaction.yaml#/components/schemas/GenericTransaction"
         - name: Block
           required: false
           description: The block number, tag, or hash at which to execute the call. Defaults to `'latest'` if not provided.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
       result:
         name: Return data
         description: The return value of the executed contract function, encoded as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+          $ref: "./base-types.yaml#/components/schemas/bytes"
       examples:
         - name: eth_call example
           params:
@@ -393,17 +393,17 @@ components:
           required: true
           description: The transaction object for which to estimate gas usage.
           schema:
-            $ref: "../_components/evm/transaction.yaml#/components/schemas/GenericTransaction"
+            $ref: "./transaction.yaml#/components/schemas/GenericTransaction"
         - name: Block
           required: false
           description: The block number or tag at which to estimate gas usage. Defaults to `'latest'` if not provided.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTag"
       result:
         name: Gas used
         description: The estimated amount of gas required for the transaction, as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_estimateGas example
           params:
@@ -424,12 +424,12 @@ components:
           required: true
           description: The data to hash, encoded as a hexadecimal string.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+            $ref: "./base-types.yaml#/components/schemas/bytes"
       result:
         name: Hash
         description: The Keccak-256 hash of the input data, as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+          $ref: "./base-types.yaml#/components/schemas/hash32"
       examples:
         - name: web3_sha3 example
           params:
@@ -449,7 +449,7 @@ components:
         description: The current gas price in wei, as a hexadecimal string.
         schema:
           title: Gas price
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_gasPrice example
           params: []
@@ -466,12 +466,12 @@ components:
           required: true
           description: The filter options object to specify the filter criteria for logs.
           schema:
-            $ref: "../_components/evm/filter.yaml#/components/schemas/Filter"
+            $ref: "./filter.yaml#/components/schemas/Filter"
       result:
         name: Filter identifier
         description: A hexadecimal string representing the ID of the created filter.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_newFilter example
           params:
@@ -493,7 +493,7 @@ components:
         name: Filter identifier
         description: A hexadecimal string representing the ID of the created filter.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_newBlockFilter example
           params: []
@@ -509,7 +509,7 @@ components:
           required: true
           description: The ID of the filter to uninstall.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "./base-types.yaml#/components/schemas/uint"
       result:
         name: Success
         description: true if the filter was successfully uninstalled, `false` otherwise.
@@ -532,12 +532,12 @@ components:
           required: true
           description: The ID of the filter to poll for changes.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "./base-types.yaml#/components/schemas/uint"
       result:
         name: Log objects
         description: An array of log objects that have occurred since the last poll.
         schema:
-          $ref: "../_components/evm/filter.yaml#/components/schemas/FilterResults"
+          $ref: "./filter.yaml#/components/schemas/FilterResults"
       examples:
         - name: eth_getFilterChanges example
           params:
@@ -575,12 +575,12 @@ components:
           required: true
           description: The ID of the filter to retrieve logs for.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "./base-types.yaml#/components/schemas/uint"
       result:
         name: Log objects
         description: An array of all log objects matching the filter since its creation.
         schema:
-          $ref: "../_components/evm/filter.yaml#/components/schemas/FilterResults"
+          $ref: "./filter.yaml#/components/schemas/FilterResults"
       examples:
         - name: eth_getFilterLogs example
           params:
@@ -631,12 +631,12 @@ components:
           required: true
           description: The filter options object to specify the criteria for logs retrieval.
           schema:
-            $ref: "../_components/evm/filter.yaml#/components/schemas/Filter"
+            $ref: "./filter.yaml#/components/schemas/Filter"
       result:
         name: Log objects
         description: An array of log objects matching the filter criteria.
         schema:
-          $ref: "../_components/evm/filter.yaml#/components/schemas/FilterResults"
+          $ref: "./filter.yaml#/components/schemas/FilterResults"
       examples:
         - name: eth_getLogs example
           params:
@@ -679,17 +679,17 @@ components:
           required: true
           description: The address of the account to query the balance for.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+            $ref: "./base-types.yaml#/components/schemas/address"
         - name: Block
           required: true
           description: The block number, tag, or hash at which to retrieve the balance. Can be a block number, 'latest', 'earliest', 'pending', or a block hash.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
       result:
         name: Balance
         description: The balance of the account in wei, encoded as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_getBalance example
           params:
@@ -709,22 +709,22 @@ components:
           required: true
           description: The address of the contract to read storage from.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+            $ref: "./base-types.yaml#/components/schemas/address"
         - name: Storage slot
           required: true
           description: The index position of the storage slot to retrieve, as a hexadecimal string.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint256"
+            $ref: "./base-types.yaml#/components/schemas/uint256"
         - name: Block
           required: true
           description: The block number, tag, or hash at which to retrieve the storage value.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
       result:
         name: Value
         description: The value stored at the given storage slot, encoded as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+          $ref: "./base-types.yaml#/components/schemas/bytes"
       examples:
         - name: eth_getStorageAt example
           params:
@@ -746,17 +746,17 @@ components:
           required: true
           description: The address of the account to get the transaction count for.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+            $ref: "./base-types.yaml#/components/schemas/address"
         - name: Block
           required: true
           description: The block number, tag, or hash at which to retrieve the transaction count.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
       result:
         name: Transaction count
         description: The number of transactions sent from the address, as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "./base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_getTransactionCount example
           params:
@@ -776,17 +776,17 @@ components:
           required: true
           description: The address of the contract to get code from.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+            $ref: "./base-types.yaml#/components/schemas/address"
         - name: Block
           required: true
           description: The block number, tag, or hash at which to retrieve the code.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
       result:
         name: Bytecode
         description: The code from the specified address, as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+          $ref: "./base-types.yaml#/components/schemas/bytes"
       examples:
         - name: eth_getCode example
           params:
@@ -816,7 +816,7 @@ components:
         name: Subscription ID
         description: A unique identifier for the subscription, returned as a 32-byte hex string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+          $ref: "./base-types.yaml#/components/schemas/hash32"
       examples:
         - name: eth_subscribe example
           params:
@@ -833,7 +833,7 @@ components:
         - name: Subscription ID
           description: The identifier of the subscription to cancel.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+            $ref: "./base-types.yaml#/components/schemas/hash32"
       result:
         name: Unsubscribe Result
         description: A boolean indicating whether the subscription was successfully canceled.
@@ -861,12 +861,12 @@ components:
           required: true
           description: The raw transaction data to submit, encoded as a hexadecimal string.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+            $ref: "./base-types.yaml#/components/schemas/bytes"
       result:
         name: Transaction hash
         description: The hash of the submitted transaction, as a hexadecimal string.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+          $ref: "./base-types.yaml#/components/schemas/hash32"
       examples:
         - name: eth_sendRawTransaction example
           params:
@@ -885,14 +885,14 @@ components:
           required: true
           description: The hash of the transaction to retrieve.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+            $ref: "./base-types.yaml#/components/schemas/hash32"
       result:
         name: Transaction information
         description: The transaction object containing various properties of the transaction.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/transaction.yaml#/components/schemas/TransactionInfo"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - $ref: "./transaction.yaml#/components/schemas/TransactionInfo"
       examples:
         - name: eth_getTransactionByHash example
           params:
@@ -925,19 +925,19 @@ components:
           required: true
           description: The hash of the block containing the transaction.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+            $ref: "./base-types.yaml#/components/schemas/hash32"
         - name: Transaction index
           required: true
           description: The index position of the transaction in the block's transaction list, as a hexadecimal string.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "./base-types.yaml#/components/schemas/uint"
       result:
         name: Transaction information
         description: The transaction object containing various properties of the transaction.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/transaction.yaml#/components/schemas/TransactionInfo"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - $ref: "./transaction.yaml#/components/schemas/TransactionInfo"
       examples:
         - name: eth_getTransactionByBlockHashAndIndex example
           params:
@@ -972,19 +972,19 @@ components:
           required: true
           description: The block number or tag ('latest', 'earliest', 'pending') containing the transaction.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTag"
         - name: Transaction index
           required: true
           description: The index position of the transaction in the block's transaction list, as a hexadecimal string.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "./base-types.yaml#/components/schemas/uint"
       result:
         name: Transaction information
         description: The transaction object containing various properties of the transaction.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/transaction.yaml#/components/schemas/TransactionInfo"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - $ref: "./transaction.yaml#/components/schemas/TransactionInfo"
       examples:
         - name: eth_getTransactionByBlockNumberAndIndex example
           params:
@@ -1019,14 +1019,14 @@ components:
           required: true
           description: The hash of the transaction for which to get the receipt.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+            $ref: "./base-types.yaml#/components/schemas/hash32"
       result:
         name: Receipt information
         description: The transaction receipt object containing various properties of the transaction receipt.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/receipt.yaml#/components/schemas/ReceiptInfo"
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - $ref: "./receipt.yaml#/components/schemas/ReceiptInfo"
       examples:
         - name: eth_getTransactionReceipt example
           params:

@@ -63,17 +63,17 @@ components:
           required: true
           description: The block number, tag, or hash to retrieve receipts from.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
       result:
         name: Receipts information
         description: An array of transaction receipt objects.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
             - title: Receipts information
               type: array
               items:
-                $ref: "../_components/evm/receipt.yaml#/components/schemas/ReceiptInfo"
+                $ref: "../evm/receipt.yaml#/components/schemas/ReceiptInfo"
       examples:
         - name: eth_getBlockReceipts example
           params:
@@ -136,19 +136,19 @@ components:
           required: true
           description: The hash of the block containing the uncle.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
         - name: Uncle index
           required: true
           description: The index position of the uncle in the block's uncles array.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
       result:
         name: Uncle block information
         description: The uncle block object, or null if not found.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/block.yaml#/components/schemas/Block"
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "../evm/block.yaml#/components/schemas/Block"
       examples:
         - name: eth_getUncleByBlockHashAndIndex example
           params:
@@ -187,19 +187,19 @@ components:
           required: true
           description: The block number or special tags like 'latest', 'earliest', or 'pending'.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
         - name: Uncle index
           required: true
           description: The index position of the uncle in the block's uncles array.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
       result:
         name: Uncle block information
         description: The uncle block object, or null if not found.
         schema:
           oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-            - $ref: "../_components/evm/block.yaml#/components/schemas/Block"
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "../evm/block.yaml#/components/schemas/Block"
       examples:
         - name: eth_getUncleByBlockNumberAndIndex example
           params:
@@ -242,7 +242,7 @@ components:
           oneOf:
             - type: boolean
               # enum: [false]
-            - $ref: "../_components/evm/client.yaml#/components/schemas/SyncingStatus"
+            - $ref: "../evm/client.yaml#/components/schemas/SyncingStatus"
       examples:
         - name: eth_syncing example (syncing)
           params: []
@@ -269,7 +269,7 @@ components:
           title: Accounts
           type: array
           items:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
       examples:
         - name: eth_accounts example
           params: []
@@ -320,12 +320,12 @@ components:
           required: true
           description: The object containing all simulation details such as calls, overrides, etc.
           schema:
-            $ref: "../_components/evm/simulate.yaml#/components/schemas/SimulateRequest"
+            $ref: "../evm/simulate.yaml#/components/schemas/SimulateRequest"
       result:
         name: Simulation result
         description: The result of the simulation.
         schema:
-          $ref: "../_components/evm/simulate.yaml#/components/schemas/SimulateResult"
+          $ref: "../evm/simulate.yaml#/components/schemas/SimulateResult"
       examples:
         - name: eth_simulateV1 example
           params:
@@ -422,12 +422,12 @@ components:
           required: true
           description: The transaction object for which to generate an access list.
           schema:
-            $ref: "../_components/evm/transaction.yaml#/components/schemas/GenericTransaction"
+            $ref: "../evm/transaction.yaml#/components/schemas/GenericTransaction"
         - name: Block
           required: false
           description: The block number or tag at which to create the access list. Defaults to `'latest'` if not provided.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
       result:
         name: Access list result
         description: An object containing the access list and gas used for the transaction.
@@ -439,7 +439,7 @@ components:
             accessList:
               title: Access list
               description: The generated access list for the transaction.
-              $ref: "../_components/evm/transaction.yaml#/components/schemas/AccessList"
+              $ref: "../evm/transaction.yaml#/components/schemas/AccessList"
             error:
               title: Error
               description: Any error encountered during access list generation.
@@ -447,7 +447,7 @@ components:
             gasUsed:
               title: Gas used
               description: The estimated gas used for the transaction with the access list, as a hexadecimal string.
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_createAccessList example
           params:
@@ -476,7 +476,7 @@ components:
         description: The current maximum priority fee per gas in wei, as a hexadecimal string.
         schema:
           title: Max priority fee per gas
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_maxPriorityFeePerGas example
           params: []
@@ -493,12 +493,12 @@ components:
           description: The number of blocks in the requested range. Must be greater than zero. Clients may return fewer blocks if not all blocks are available.
           required: true
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
         - name: newestBlock
           description: The highest block number of the requested range, or 'latest' for the most recent block.
           required: true
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
         - name: rewardPercentiles
           description: An optional array of percentile values (between 0 and 100) in ascending order. For each block in the requested range, the transactions are sorted by effective priority fee per gas, and the corresponding effective priority fee per gas at each percentile is returned.
           required: false
@@ -521,13 +521,13 @@ components:
             oldestBlock:
               title: Oldest block
               description: The block number of the oldest block in the returned range.
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
             baseFeePerGas:
               title: Base fee per gas array
               description: An array of block base fees per gas in wei. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-1559 blocks.
               type: array
               items:
-                $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
             gasUsedRatio:
               title: Gas used ratio
               description: An array of block gas used ratios. These are calculated as the ratio of `gasUsed` and `gasLimit`.
@@ -543,13 +543,13 @@ components:
                 description: An array of effective priority fee per gas values (in wei) for the requested percentiles for a single block.
                 type: array
                 items:
-                  $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+                  $ref: "../evm/base-types.yaml#/components/schemas/uint"
             baseFeePerBlobGas:
               title: Base fee per blob gas array
               description: An array of block base fees per blob gas in wei. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-4844 blocks.
               type: array
               items:
-                $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
             blobGasUsedRatio:
               title: Blob gas used ratio
               description: An array of block blob gas used ratios. These are calculated as the ratio of `blobGasUsed` and the maximum blob gas per block.
@@ -618,7 +618,7 @@ components:
         name: Filter identifier
         description: A hexadecimal string representing the ID of the created filter.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
       examples:
         - name: eth_newPendingTransactionFilter example
           params: []
@@ -635,7 +635,7 @@ components:
           required: true
           description: The address of the account to generate the proof for.
           schema:
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
         - name: StorageKeys
           required: true
           description: An array of storage keys (slots) to generate proofs for.
@@ -643,17 +643,17 @@ components:
             title: Storage keys
             type: array
             items:
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/bytesMax32"
+              $ref: "../evm/base-types.yaml#/components/schemas/bytesMax32"
         - name: Block
           required: true
           description: The block number, tag, or hash at which to generate the proof.
           schema:
-            $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
       result:
         name: Account proof
         description: An object containing the account proof and storage proofs.
         schema:
-          $ref: "../_components/evm/state.yaml#/components/schemas/AccountProof"
+          $ref: "../evm/state.yaml#/components/schemas/AccountProof"
       examples:
         - name: eth_getProof example
           params:
@@ -689,7 +689,7 @@ components:
         name: Blob Base Fee
         description: The base fee per blob gas, in wei, as a hexadecimal encoded unsigned integer.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+          $ref: "../evm/base-types.yaml#/components/schemas/bytes"
       examples:
         - name: eth_blobBaseFee example
           params: []
@@ -705,8 +705,8 @@ components:
           description: A block hash or block number to retrieve blob sidecars for.
           schema:
             oneOf:
-              - $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
-              - $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              - $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              - $ref: "../evm/base-types.yaml#/components/schemas/uint"
       result:
         name: Blob Sidecars
         description: An array of blob sidecar objects.
@@ -717,13 +717,13 @@ components:
             required: [index, blob, kzgCommitment, kzgProof]
             properties:
               index:
-                $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
               blob:
-                $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+                $ref: "../evm/base-types.yaml#/components/schemas/bytes"
               kzgCommitment:
-                $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes48"
+                $ref: "../evm/base-types.yaml#/components/schemas/bytes48"
               kzgProof:
-                $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes96"
+                $ref: "../evm/base-types.yaml#/components/schemas/bytes96"
       examples:
         - name: eth_getBlobSidecars example
           params:
@@ -765,8 +765,8 @@ components:
           description: The block hash or block number.
           schema:
             oneOf:
-              - $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
-              - $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              - $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              - $ref: "../evm/base-types.yaml#/components/schemas/uint"
       result:
         name: Transaction Receipts
         description: An array of transaction receipt objects for the block's transactions.
