@@ -788,3 +788,35 @@ components:
                 blockNumber: "0x123456"
                 gasUsed: "0x5208"
                 logs: []
+
+    # Other methods
+    eth_getRootHash:
+      # Polygon specific method
+      name: eth_getRootHash
+      description: Returns the root hash for a specified block range.
+      params:
+        - name: fromBlock
+          required: true
+          description: The block number from which the range starts.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        - name: toBlock
+          required: true
+          description: The block number where the range ends.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: RootHash
+        description: The root hash of the specified block range.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      examples:
+        - name: eth_getRootHash example
+          params:
+            - name: fromBlock
+              value: "1000000"
+            - name: toBlock
+              value: "1000010"
+          result:
+            name: RootHash
+            value: "0xabc123...def456"
