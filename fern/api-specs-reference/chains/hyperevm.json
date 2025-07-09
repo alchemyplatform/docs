@@ -2,18 +2,14 @@
   "$schema": "https://meta.open-rpc.org/",
   "openrpc": "1.2.4",
   "info": {
-    "title": "Alchemy Abstract JSON-RPC Specification",
-    "description": "A specification of the standard JSON-RPC methods for Abstract.",
+    "title": "Alchemy Hyperevm JSON-RPC Specification",
+    "description": "A specification of the standard JSON-RPC methods for Hyperevm.",
     "version": "0.0.0"
   },
   "servers": [
     {
-      "url": "https://abstract-mainnet.g.alchemy.com/v2",
-      "name": "Abstract Mainnet"
-    },
-    {
-      "url": "https://abstract-testnet.g.alchemy.com/v2",
-      "name": "Abstract Testnet"
+      "url": "https://hyperliquid-mainnet.g.alchemy.com/v2",
+      "name": "HyperEVM Mainnet"
     }
   ],
   "methods": [
@@ -179,7 +175,7 @@
         {
           "name": "Block",
           "required": false,
-          "description": "The block number, tag, or hash at which to execute the call. Defaults to `'latest'` if not provided.",
+          "description": "The block number, tag, or hash at which to execute the call. Please note only the `'latest'` block option is supported.",
           "schema": {
             "title": "Block number, tag, or block hash",
             "anyOf": [
@@ -397,7 +393,7 @@
         {
           "name": "Block",
           "required": false,
-          "description": "The block number or tag at which to estimate gas usage. Defaults to `'latest'` if not provided.",
+          "description": "The block number or tag at which to estimate gas usage. Please note only the `'latest'` block option is supported.",
           "schema": {
             "title": "Block number or tag",
             "oneOf": [
@@ -446,12 +442,180 @@
       ]
     },
     {
+      "name": "eth_feeHistory",
+      "summary": "Returns historical base fee per gas and priority fee per gas data for a range of blocks.",
+      "description": "Returns transaction base fee per gas and effective priority fee per gas for the requested block range.",
+      "params": [
+        {
+          "name": "blockCount",
+          "description": "The number of blocks in the requested range. Must be greater than zero. Clients may return fewer blocks if not all blocks are available.",
+          "required": true,
+          "schema": {
+            "title": "hex encoded unsigned integer",
+            "type": "string",
+            "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+          }
+        },
+        {
+          "name": "newestBlock",
+          "description": "The highest block number of the requested range, or 'latest' for the most recent block.",
+          "required": true,
+          "schema": {
+            "title": "Block number or tag",
+            "oneOf": [
+              {
+                "title": "Block number",
+                "type": "string",
+                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+              },
+              {
+                "title": "Block tag",
+                "type": "string",
+                "enum": ["earliest", "finalized", "safe", "latest", "pending"],
+                "description": "`earliest`: The lowest numbered block the client has available; `finalized`: The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination; `safe`: The most recent block that is safe from re-orgs under honest majority and certain synchronicity assumptions; `latest`: The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions; `pending`: A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from local mempool. Before the merge transition is finalized, any call querying for `finalized` or `safe` block MUST be responded to with `-39001: Unknown block` error"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardPercentiles",
+          "description": "An optional array of percentile values (between 0 and 100) in ascending order.",
+          "required": false,
+          "schema": {
+            "title": "Reward percentiles",
+            "type": "array",
+            "items": {
+              "title": "Reward percentile",
+              "description": "Floating point value between 0 and 100.",
+              "type": "number"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "Fee history result",
+        "description": "Fee history for the returned block range. This can be a subsection of the requested range if not all blocks are available.",
+        "schema": {
+          "title": "FeeHistoryResult",
+          "description": "Fee history results.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "oldestBlock": {
+              "title": "Oldest block",
+              "type": "string",
+              "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+            },
+            "baseFeePerGas": {
+              "title": "Base fee per gas array",
+              "type": "array",
+              "items": {
+                "title": "hex encoded unsigned integer",
+                "type": "string",
+                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+              }
+            },
+            "gasUsedRatio": {
+              "title": "Gas used ratio",
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "reward": {
+              "title": "Reward array",
+              "description": "A two-dimensional array of effective priority fees per gas.",
+              "type": "array",
+              "items": {
+                "title": "Reward for block",
+                "type": "array",
+                "items": {
+                  "title": "hex encoded unsigned integer",
+                  "type": "string",
+                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                }
+              }
+            },
+            "baseFeePerBlobGas": {
+              "title": "Base fee per blob gas array",
+              "type": "array",
+              "items": {
+                "title": "hex encoded unsigned integer",
+                "type": "string",
+                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+              }
+            },
+            "blobGasUsedRatio": {
+              "title": "Blob gas used ratio",
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "name": "eth_feeHistory example",
+          "params": [
+            {
+              "name": "blockCount",
+              "value": "0x5"
+            },
+            {
+              "name": "newestBlock",
+              "value": "latest"
+            },
+            {
+              "name": "rewardPercentiles",
+              "value": [20, 30]
+            }
+          ],
+          "result": {
+            "name": "Fee history result",
+            "value": {
+              "oldestBlock": "0x10b52f",
+              "baseFeePerGas": [
+                "0x3fa63a3f",
+                "0x37f999ee",
+                "0x3e36f20a",
+                "0x4099f79a",
+                "0x430d532d",
+                "0x46fcd4a4"
+              ],
+              "gasUsedRatio": [
+                0.017712333333333333, 0.9458865666666667, 0.6534561,
+                0.6517375666666667, 0.7347769666666667
+              ],
+              "reward": [
+                ["0x3b9aca00", "0x59682f00"],
+                ["0x3a13012", "0x3a13012"],
+                ["0x3a13012", "0x3a13012"],
+                ["0xf4240", "0xf4240"],
+                ["0xf4240", "0xf4240"]
+              ],
+              "baseFeePerBlobGas": [
+                "0x7b7609c19",
+                "0x6dbe41789",
+                "0x7223341d4",
+                "0x6574a002c",
+                "0x7223341d4",
+                "0x6574a002c"
+              ],
+              "blobGasUsedRatio": [0, 0.6666666666666666, 0, 1, 0]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "eth_gasPrice",
-      "description": "Returns the current price per gas in wei.",
+      "description": "Returns the base fee for the next small block.",
       "params": [],
       "result": {
         "name": "Gas price",
-        "description": "The current gas price in wei, as a hexadecimal string.",
+        "description": "Returns the base fee for the next small block.",
         "schema": {
           "title": "Gas price",
           "type": "string",
@@ -486,7 +650,7 @@
         {
           "name": "Block",
           "required": true,
-          "description": "The block number, tag, or hash at which to retrieve the balance. Can be a block number, 'latest', 'earliest', 'pending', or a block hash.",
+          "description": "The block number, tag, or hash at which to retrieve the balance. Please note only the `'latest'` block option is supported.",
           "schema": {
             "title": "Block number, tag, or block hash",
             "anyOf": [
@@ -2137,6 +2301,309 @@
       ]
     },
     {
+      "name": "eth_getBlockReceipts",
+      "description": "Returns the receipts of a block by number or hash.",
+      "params": [
+        {
+          "name": "Block number or tag or hash",
+          "required": true,
+          "description": "The block number, tag, or hash to retrieve receipts from.",
+          "schema": {
+            "title": "Block number, tag, or block hash",
+            "anyOf": [
+              {
+                "title": "Block number",
+                "type": "string",
+                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+              },
+              {
+                "title": "Block tag",
+                "type": "string",
+                "enum": ["earliest", "finalized", "safe", "latest", "pending"],
+                "description": "`earliest`: The lowest numbered block the client has available; `finalized`: The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination; `safe`: The most recent block that is safe from re-orgs under honest majority and certain synchronicity assumptions; `latest`: The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions; `pending`: A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from local mempool. Before the merge transition is finalized, any call querying for `finalized` or `safe` block MUST be responded to with `-39001: Unknown block` error"
+              },
+              {
+                "title": "Block hash",
+                "type": "string",
+                "pattern": "^0x[0-9a-f]{64}$"
+              }
+            ]
+          }
+        }
+      ],
+      "result": {
+        "name": "Receipts information",
+        "description": "An array of transaction receipt objects.",
+        "schema": {
+          "oneOf": [
+            {
+              "title": "Not Found (null)",
+              "type": "null"
+            },
+            {
+              "title": "Receipts information",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "Receipt information",
+                "required": [
+                  "blockHash",
+                  "blockNumber",
+                  "from",
+                  "cumulativeGasUsed",
+                  "gasUsed",
+                  "logs",
+                  "logsBloom",
+                  "transactionHash",
+                  "transactionIndex",
+                  "effectiveGasPrice"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "title": "type",
+                    "type": "string",
+                    "pattern": "^0x([0-9a-fA-F]?){1,2}$"
+                  },
+                  "transactionHash": {
+                    "title": "transaction hash",
+                    "type": "string",
+                    "pattern": "^0x[0-9a-f]{64}$"
+                  },
+                  "transactionIndex": {
+                    "title": "transaction index",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  },
+                  "blockHash": {
+                    "title": "block hash",
+                    "type": "string",
+                    "pattern": "^0x[0-9a-f]{64}$"
+                  },
+                  "blockNumber": {
+                    "title": "block number",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  },
+                  "from": {
+                    "title": "from",
+                    "type": "string",
+                    "pattern": "^0x[0-9a-fA-F]{40}$"
+                  },
+                  "to": {
+                    "title": "to",
+                    "description": "Address of the receiver or null in a contract creation transaction.",
+                    "oneOf": [
+                      {
+                        "title": "Contract Creation (null)",
+                        "type": "null"
+                      },
+                      {
+                        "title": "Recipient Address",
+                        "type": "string",
+                        "pattern": "^0x[0-9a-fA-F]{40}$"
+                      }
+                    ]
+                  },
+                  "cumulativeGasUsed": {
+                    "title": "cumulative gas used",
+                    "description": "The sum of gas used by this transaction and all preceding transactions in the same block.",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  },
+                  "gasUsed": {
+                    "title": "gas used",
+                    "description": "The amount of gas used for this specific transaction alone.",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  },
+                  "blobGasUsed": {
+                    "title": "blob gas used",
+                    "description": "The amount of blob gas used for this specific transaction. Only specified for blob transactions as defined by EIP-4844.",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  },
+                  "contractAddress": {
+                    "title": "contract address",
+                    "description": "The contract address created, if the transaction was a contract creation, otherwise null.",
+                    "oneOf": [
+                      {
+                        "title": "hex encoded address",
+                        "type": "string",
+                        "pattern": "^0x[0-9a-fA-F]{40}$"
+                      },
+                      {
+                        "title": "Null",
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "logs": {
+                    "title": "logs",
+                    "type": "array",
+                    "items": {
+                      "title": "log",
+                      "type": "object",
+                      "required": ["transactionHash"],
+                      "additionalProperties": false,
+                      "properties": {
+                        "removed": {
+                          "title": "removed",
+                          "type": "boolean"
+                        },
+                        "logIndex": {
+                          "title": "log index",
+                          "type": "string",
+                          "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                        },
+                        "transactionIndex": {
+                          "title": "transaction index",
+                          "type": "string",
+                          "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                        },
+                        "transactionHash": {
+                          "title": "transaction hash",
+                          "type": "string",
+                          "pattern": "^0x[0-9a-f]{64}$"
+                        },
+                        "blockHash": {
+                          "title": "block hash",
+                          "type": "string",
+                          "pattern": "^0x[0-9a-f]{64}$"
+                        },
+                        "blockNumber": {
+                          "title": "block number",
+                          "type": "string",
+                          "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                        },
+                        "address": {
+                          "title": "address",
+                          "type": "string",
+                          "pattern": "^0x[0-9a-fA-F]{40}$"
+                        },
+                        "data": {
+                          "title": "data",
+                          "type": "string",
+                          "pattern": "^0x[0-9a-f]*$"
+                        },
+                        "topics": {
+                          "title": "topics",
+                          "type": "array",
+                          "items": {
+                            "title": "32 hex encoded bytes",
+                            "type": "string",
+                            "pattern": "^0x[0-9a-f]{64}$"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "logsBloom": {
+                    "title": "logs bloom",
+                    "type": "string",
+                    "pattern": "^0x[0-9a-f]{512}$"
+                  },
+                  "root": {
+                    "title": "state root",
+                    "type": "string",
+                    "pattern": "^0x[0-9a-f]{64}$",
+                    "description": "The post-transaction state root. Only specified for transactions included before the Byzantium upgrade."
+                  },
+                  "status": {
+                    "title": "status",
+                    "description": "Either 1 (success) or 0 (failure). Only specified for transactions included after the Byzantium upgrade.",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  },
+                  "effectiveGasPrice": {
+                    "title": "effective gas price",
+                    "description": "The actual value per gas deducted from the sender's account. Before EIP-1559, this is equal to the transaction's gas price. After, it is equal to baseFeePerGas + min(maxFeePerGas - baseFeePerGas, maxPriorityFeePerGas).",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  },
+                  "blobGasPrice": {
+                    "title": "blob gas price",
+                    "description": "The actual value per gas deducted from the sender's account for blob gas. Only specified for blob transactions as defined by EIP-4844.",
+                    "type": "string",
+                    "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "name": "eth_getBlockReceipts example",
+          "params": [
+            {
+              "name": "Block number or tag or hash",
+              "value": "latest"
+            }
+          ],
+          "result": {
+            "name": "Receipts information",
+            "value": [
+              {
+                "blockHash": "0x19514ce955c65e4dd2cd41f435a75a46a08535b8fc16bc660f8092b32590b182",
+                "blockNumber": "0x6f55",
+                "contractAddress": null,
+                "cumulativeGasUsed": "0x18c36",
+                "from": "0x22896bfc68814bfd855b1a167255ee497006e730",
+                "gasUsed": "0x18c36",
+                "blobGasUsed": "0x20000",
+                "effectiveGasPrice": "0x9502f907",
+                "blobGasPrice": "0x32",
+                "logs": [
+                  {
+                    "address": "0xfd584430cafa2f451b4e2ebcf3986a21fff04350",
+                    "topics": [
+                      "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d",
+                      "0x4be29e0e4eb91f98f709d98803cba271592782e293b84a625e025cbb40197ba8",
+                      "0x000000000000000000000000835281a2563db4ebf1b626172e085dc406bfc7d2",
+                      "0x00000000000000000000000022896bfc68814bfd855b1a167255ee497006e730"
+                    ],
+                    "data": "0x",
+                    "blockNumber": "0x6f55",
+                    "transactionHash": "0x4a481e4649da999d92db0585c36cba94c18a33747e95dc235330e6c737c6f975",
+                    "transactionIndex": "0x0",
+                    "blockHash": "0x19514ce955c65e4dd2cd41f435a75a46a08535b8fc16bc660f8092b32590b182",
+                    "logIndex": "0x0",
+                    "removed": false
+                  }
+                ],
+                "logsBloom": "0x00000004000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000080020000000000000200010000000000000000000001000000800000000000000000000000000000000000000000000000000000100100000000000000000000008000000000000000000000000000000002000000000000000000000",
+                "status": "0x1",
+                "to": "0xfd584430cafa2f451b4e2ebcf3986a21fff04350",
+                "transactionHash": "0x4a481e4649da999d92db0585c36cba94c18a33747e95dc235330e6c737c6f975",
+                "transactionIndex": "0x0",
+                "type": "0x0"
+              },
+              {
+                "blockHash": "0x19514ce955c65e4dd2cd41f435a75a46a08535b8fc16bc660f8092b32590b182",
+                "blockNumber": "0x6f55",
+                "contractAddress": null,
+                "cumulativeGasUsed": "0x1de3e",
+                "from": "0x712e3a792c974b3e3dbe41229ad4290791c75a82",
+                "gasUsed": "0x5208",
+                "blobGasUsed": "0x20000",
+                "effectiveGasPrice": "0x9502f907",
+                "blobGasPrice": "0x32",
+                "logs": [],
+                "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "status": "0x1",
+                "to": "0xd42e2b1c14d02f1df5369a9827cb8e6f3f75f338",
+                "transactionHash": "0xefb83b4e3f1c317e8da0f8e2fbb2fe964f34ee184466032aeecac79f20eacaf6",
+                "transactionIndex": "0x1",
+                "type": "0x2"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "eth_getBlockTransactionCountByHash",
       "description": "Returns the number of transactions in a block from a block matching the given block hash.",
       "params": [
@@ -2260,7 +2727,7 @@
         {
           "name": "Block",
           "required": true,
-          "description": "The block number, tag, or hash at which to retrieve the code.",
+          "description": "The block number, tag, or hash at which to retrieve the code. Please note only the `'latest'` block option is supported.",
           "schema": {
             "title": "Block number, tag, or block hash",
             "anyOf": [
@@ -2320,7 +2787,7 @@
         {
           "name": "Filter",
           "required": true,
-          "description": "The filter options object to specify the criteria for logs retrieval.",
+          "description": "The filter options object to specify the criteria for logs retrieval. Up to 4 topics are supported & up to 50 blocks in query range.",
           "schema": {
             "title": "filter",
             "type": "object",
@@ -2502,205 +2969,8 @@
                 "topics": [
                   "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
                 ]
-              },
-              {
-                "logIndex": "0x0",
-                "removed": false,
-                "blockNumber": "0x238",
-                "blockHash": "0x98b0ec0f9fea0018a644959accbe69cd046a8582e89402e1ab0ada91cad644ed",
-                "transactionHash": "0xdb17aa1c2ce609132f599155d384c0bc5334c988a6c368056d7e167e23eee058",
-                "transactionIndex": "0x0",
-                "address": "0x42699a7612a82f1d9c36148af9c77354759b210b",
-                "data": "0x0000000000000000000000000000000000000000000000000000000000000007",
-                "topics": [
-                  "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
-                ]
               }
             ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "eth_getProof",
-      "description": "Returns the Merkle proof for a given account and optionally some storage keys.",
-      "params": [
-        {
-          "name": "Address",
-          "required": true,
-          "description": "The address of the account to generate the proof for.",
-          "schema": {
-            "title": "hex encoded address",
-            "type": "string",
-            "pattern": "^0x[0-9a-fA-F]{40}$"
-          }
-        },
-        {
-          "name": "StorageKeys",
-          "required": true,
-          "description": "An array of storage keys (slots) to generate proofs for.",
-          "schema": {
-            "title": "Storage keys",
-            "type": "array",
-            "items": {
-              "title": "32 hex encoded bytes",
-              "type": "string",
-              "pattern": "^0x[0-9a-f]{0,64}$"
-            }
-          }
-        },
-        {
-          "name": "Block",
-          "required": true,
-          "description": "The block number, tag, or hash at which to generate the proof.",
-          "schema": {
-            "title": "Block number, tag, or block hash",
-            "anyOf": [
-              {
-                "title": "Block number",
-                "type": "string",
-                "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
-              },
-              {
-                "title": "Block tag",
-                "type": "string",
-                "enum": ["earliest", "finalized", "safe", "latest", "pending"],
-                "description": "`earliest`: The lowest numbered block the client has available; `finalized`: The most recent crypto-economically secure block, cannot be re-orged outside of manual intervention driven by community coordination; `safe`: The most recent block that is safe from re-orgs under honest majority and certain synchronicity assumptions; `latest`: The most recent block in the canonical chain observed by the client, this block may be re-orged out of the canonical chain even under healthy/normal conditions; `pending`: A sample next block built by the client on top of `latest` and containing the set of transactions usually taken from local mempool. Before the merge transition is finalized, any call querying for `finalized` or `safe` block MUST be responded to with `-39001: Unknown block` error"
-              },
-              {
-                "title": "Block hash",
-                "type": "string",
-                "pattern": "^0x[0-9a-f]{64}$"
-              }
-            ]
-          }
-        }
-      ],
-      "result": {
-        "name": "Account proof",
-        "description": "An object containing the account proof and storage proofs.",
-        "schema": {
-          "title": "Account proof",
-          "type": "object",
-          "required": [
-            "address",
-            "accountProof",
-            "balance",
-            "codeHash",
-            "nonce",
-            "storageHash",
-            "storageProof"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "address": {
-              "title": "address",
-              "type": "string",
-              "pattern": "^0x[0-9a-fA-F]{40}$"
-            },
-            "accountProof": {
-              "title": "accountProof",
-              "type": "array",
-              "items": {
-                "title": "hex encoded bytes",
-                "type": "string",
-                "pattern": "^0x[0-9a-f]*$"
-              }
-            },
-            "balance": {
-              "title": "balance",
-              "type": "string",
-              "pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
-            },
-            "codeHash": {
-              "title": "codeHash",
-              "type": "string",
-              "pattern": "^0x[0-9a-f]{64}$"
-            },
-            "nonce": {
-              "title": "nonce",
-              "type": "string",
-              "pattern": "^0x([1-9a-f]+[0-9a-f]{0,15})|0$"
-            },
-            "storageHash": {
-              "title": "storageHash",
-              "type": "string",
-              "pattern": "^0x[0-9a-f]{64}$"
-            },
-            "storageProof": {
-              "title": "Storage proofs",
-              "type": "array",
-              "items": {
-                "title": "Storage proof",
-                "type": "object",
-                "required": ["key", "value", "proof"],
-                "additionalProperties": false,
-                "properties": {
-                  "key": {
-                    "title": "key",
-                    "type": "string",
-                    "pattern": "^0x[0-9a-f]{0,64}$"
-                  },
-                  "value": {
-                    "title": "value",
-                    "type": "string",
-                    "pattern": "^0x([1-9a-f]+[0-9a-f]{0,31})|0$"
-                  },
-                  "proof": {
-                    "title": "proof",
-                    "type": "array",
-                    "items": {
-                      "title": "hex encoded bytes",
-                      "type": "string",
-                      "pattern": "^0x[0-9a-f]*$"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "examples": [
-        {
-          "name": "eth_getProof example",
-          "params": [
-            {
-              "name": "Address",
-              "value": "0xe5cB067E90D5Cd1F8052B83562Ae670bA4A211a8"
-            },
-            {
-              "name": "StorageKeys",
-              "value": [
-                "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-                "0x283s34c8e2b1456f09832c71e5d6a0b4f8c9e1d3a2b5c7f0e6d4a8b2c1f3e5d7"
-              ]
-            },
-            {
-              "name": "Block",
-              "value": "latest"
-            }
-          ],
-          "result": {
-            "name": "Account proof",
-            "value": {
-              "accountProof": [
-                "0xf90211a06a718c2c9da77c253b12d7b2569657901e37bb691718f5dda1b86157ab1dd5eda0e7f19ed5e21bccc8d3260236b24f80ad88b3634f5d005f37b838881f0e12f1bda0abb301291704e4d92686c0f5f8ebb1734185321559b8d717ffdca95c99591976a0d0c2026bfab65c3b95276bfa82af9dec860b485f8857f293c148d63a2182128fa0c98044ec9a1273a218bed58b478277dd39173ad7b8edb95c200423a6bc8fc25fa056e5a55d9ddccdbf49362857200bbb1f042d61187c9f5f9ddcff5d2f1fc984a2a02a5b7200af424114f99a4b5f0a21c19aac82209e431ed80bfde177adb1004bdfa0026e4374f0518ff44a80fa374838ecb86cc64ac93bb710fea6dff4198f947b27a03fea341d87984673ad523177ed52f278bf4d8f97e6531c8ece932aeede4802f4a0bfe2f4a7fcb78f7e9f080dea7b6977fb1d88c441696e4456dad92b9d34ff0f43a02a3eb5c0edb14626c9c629601027bd60178bb2b688a67cea4d179fc432436615a0747355b8e02f3b884b4ffe5cea1619e32515fea064cca98208591af8c744e894a0874253737bae37f020ad3bb7e3292c7c4a63cdc158af6b33aaa4deaef016dccba03d8192bc1fc6aa1548912e763a0b5013a94399cefad7b47cf388873b2b794068a09b67f9737c6028d796bfd1c5da57a6f45824dc891f848ea0e1f8019d1fb5fba8a0aa871f9de8da85960fcd8a22cdf21c27f11e3966c14a6737ffd414b98dda00b280"
-              ],
-              "balance": "0x0",
-              "codeHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-              "nonce": "0x0",
-              "storageHash": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-              "storageProof": [
-                {
-                  "key": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-                  "proof": [
-                    "0xf90211a0c87222cccea2bf32759fcee9dbaacbe3ea4165dd6184af6773651c5e00e34a8ba0be90e6e5d1a67ab5587779c60ac136d6a96db62b84c04998a5f03a367346abd6a05344aa1c9ca2e3e56bf98fd718ec43728578d148e1967fbaf8bf17a2a073a0bda011a2f9312c3308640a0d6ceeae218747290f23806067456da1d444c65abae437a0b3097a108bfce79af6699da4ae3003cd4929f0b4576aad655c31cb725bde84c7a0c133d3c637e174f36a73c22b1039eb003da6374bc0929321241badb3efa3c4a9a0f13059f2301ad9862ce02e3f7f3f2c9ab78eb30583764d73654f7f1f8b1e86fda06544e3915748b18204e09df75ff20d2fa6bd8121e2e669699012d54590383d6fa070e3a8e093691581d58fadb560b510262a758037632cd8670d3a36df828976b7a062a88a2900544dc76a32255a6b2b2a2eef8fa68279700c00adc7508286702552a0a474aeebd5603dfce46a6ecd1ecd519068dc034a544fde03ac42d4018e60a334a0b7d528fc41c8fdc8ea18c6e7d0099270c777ec1403cf879d1f5134bdc12a6c6ca04440f1242e42c5bfa7c536591ab89c8e84bea417435871c32eef1e25295b20daa06a5dcfe3cc84cff9d3e3c3ae868cfba8f0dd111a90c3f85869dab5b893f96643a026b2fb9dd7d08b0ed2f1c44fbf875011412a384f86f751c92e1013248d4aa371a0c75597b2b789fc4e939b71937390ce9d7d53159431328ac52180eef08ef200f280"
-                  ],
-                  "value": "0x1"
-                }
-              ]
-            }
           }
         }
       ]
@@ -2732,7 +3002,7 @@
         {
           "name": "Block",
           "required": true,
-          "description": "The block number, tag, or hash at which to retrieve the storage value.",
+          "description": "The block number, tag, or hash at which to retrieve the storage value. Please note only the `'latest'` block option is supported.",
           "schema": {
             "title": "Block number, tag, or block hash",
             "anyOf": [
@@ -4522,7 +4792,7 @@
         {
           "name": "Block",
           "required": true,
-          "description": "The block number, tag, or hash at which to retrieve the transaction count.",
+          "description": "The block number, tag, or hash at which to retrieve the transaction count. Please note only the `'latest'` block option is supported.",
           "schema": {
             "title": "Block number, tag, or block hash",
             "anyOf": [
@@ -4663,21 +4933,21 @@
                 },
                 "cumulativeGasUsed": {
                   "title": "cumulative gas used",
+                  "description": "The sum of gas used by this transaction and all preceding transactions in the same block.",
                   "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                  "description": "The sum of gas used by this transaction and all preceding transactions in the same block."
+                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 },
                 "gasUsed": {
                   "title": "gas used",
+                  "description": "The amount of gas used for this specific transaction alone.",
                   "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                  "description": "The amount of gas used for this specific transaction alone."
+                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 },
                 "blobGasUsed": {
                   "title": "blob gas used",
+                  "description": "The amount of blob gas used for this specific transaction. Only specified for blob transactions as defined by EIP-4844.",
                   "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                  "description": "The amount of blob gas used for this specific transaction. Only specified for blob transactions as defined by EIP-4844."
+                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 },
                 "contractAddress": {
                   "title": "contract address",
@@ -4767,21 +5037,21 @@
                 },
                 "status": {
                   "title": "status",
+                  "description": "Either 1 (success) or 0 (failure). Only specified for transactions included after the Byzantium upgrade.",
                   "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                  "description": "Either 1 (success) or 0 (failure). Only specified for transactions included after the Byzantium upgrade."
+                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 },
                 "effectiveGasPrice": {
                   "title": "effective gas price",
+                  "description": "The actual value per gas deducted from the sender's account. Before EIP-1559, this is equal to the transaction's gas price. After, it is equal to baseFeePerGas + min(maxFeePerGas - baseFeePerGas, maxPriorityFeePerGas).",
                   "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                  "description": "The actual value per gas deducted from the sender's account. Before EIP-1559, this is equal to the transaction's gas price. After, it is equal to baseFeePerGas + min(maxFeePerGas - baseFeePerGas, maxPriorityFeePerGas)."
+                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 },
                 "blobGasPrice": {
                   "title": "blob gas price",
+                  "description": "The actual value per gas deducted from the sender's account for blob gas. Only specified for blob transactions as defined by EIP-4844.",
                   "type": "string",
-                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$",
-                  "description": "The actual value per gas deducted from the sender's account for blob gas. Only specified for blob transactions as defined by EIP-4844."
+                  "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
                 }
               }
             }
@@ -4808,7 +5078,7 @@
               "gasUsed": "0x5208",
               "effectiveGasPrice": "0x1",
               "logs": [],
-              "logsBloom": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
               "status": "0x1",
               "to": "0xf17f52151ebef6c7334fad080c5704d77216b732",
               "transactionHash": "0x504ce587a65bdbdb6414a0c6c16d86a04dd79bfcc4f2950eec9634b30ce5370f",
@@ -4820,53 +5090,36 @@
       ]
     },
     {
-      "name": "eth_sendRawTransaction",
-      "summary": "Submits a raw transaction to the network.",
-      "description": "Submits a raw transaction (serialized and signed) for broadcasting to the network. The transaction data should be encoded as a hexadecimal string starting with `0x`. You can create and sign a transaction externally using libraries like [web3.js](https://web3js.readthedocs.io/) or [ethers.js](https://docs.ethers.org/). \n\n**Note:** For [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) transactions, the raw form must be in the network format, which includes blobs, KZG commitments, and KZG proofs.\n",
-      "params": [
-        {
-          "name": "Transaction",
-          "required": true,
-          "description": "The raw transaction data to submit, encoded as a hexadecimal string.",
-          "schema": {
-            "title": "hex encoded bytes",
-            "type": "string",
-            "pattern": "^0x[0-9a-f]*$"
-          }
-        }
-      ],
+      "name": "eth_maxPriorityFeePerGas",
+      "description": "Always returns zero currently.",
+      "params": [],
       "result": {
-        "name": "Transaction hash",
-        "description": "The hash of the submitted transaction, as a hexadecimal string.",
+        "name": "Max priority fee per gas",
+        "description": "Always returns zero currently.",
         "schema": {
-          "title": "32 byte hex value",
+          "title": "Max priority fee per gas",
           "type": "string",
-          "pattern": "^0x[0-9a-f]{64}$"
+          "pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
         }
       },
       "examples": [
         {
-          "name": "eth_sendRawTransaction example",
-          "params": [
-            {
-              "name": "Transaction",
-              "value": "0xf869018203e882520894f17f52151ebef6c7334fad080c5704d77216b732881bc16d674ec80000801ba02da1c48b670996dcb1f447ef9ef00b33033c48a4fe938f420bec3e56bfd24071a062e0aa78a81bf0290afbc3a9d8e9a068e6d74caa66c5e0fa8a46deaae96b0833"
-            }
-          ],
+          "name": "eth_maxPriorityFeePerGas example",
+          "params": [],
           "result": {
-            "name": "Transaction hash",
-            "value": "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+            "name": "Max priority fee per gas",
+            "value": "0x773c23ba"
           }
         }
       ]
     },
     {
       "name": "eth_syncing",
-      "description": "Returns an object with data about the sync status or `false` if not syncing.",
+      "description": "Always returns false currently.",
       "params": [],
       "result": {
         "name": "Syncing status",
-        "description": "An object with synchronization status data when syncing, or `false` when not syncing.",
+        "description": "Always returns false currently.",
         "schema": {
           "oneOf": [
             {
@@ -4972,46 +5225,6 @@
           "result": {
             "name": "Client Version",
             "value": "Geth/v1.10.8-stable-26675454/linux-amd64/go1.16.6"
-          }
-        }
-      ]
-    },
-    {
-      "name": "web3_sha3",
-      "description": "Returns Keccak-256 (not the standardized SHA3-256) hash of the given data.",
-      "params": [
-        {
-          "name": "Data",
-          "required": true,
-          "description": "The data to hash, encoded as a hexadecimal string.",
-          "schema": {
-            "title": "hex encoded bytes",
-            "type": "string",
-            "pattern": "^0x[0-9a-f]*$"
-          }
-        }
-      ],
-      "result": {
-        "name": "Hash",
-        "description": "The Keccak-256 hash of the input data, as a hexadecimal string.",
-        "schema": {
-          "title": "32 byte hex value",
-          "type": "string",
-          "pattern": "^0x[0-9a-f]{64}$"
-        }
-      },
-      "examples": [
-        {
-          "name": "web3_sha3 example",
-          "params": [
-            {
-              "name": "Data",
-              "value": "0x68656c6c6f20776f726c64"
-            }
-          ],
-          "result": {
-            "name": "Hash",
-            "value": "0x47173285a8d734ad4162d1b2ca3c6f0d0fabc60b8d702d31fd8e5c98569c36f9"
           }
         }
       ]
