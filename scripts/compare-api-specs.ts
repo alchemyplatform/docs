@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -178,6 +179,38 @@ class DirectoryComparator {
 
     console.log("=".repeat(60));
   }
+
+  public showGitDiff(): void {
+    if (this.result.identical) {
+      console.log("No differences to show.");
+      return;
+    }
+
+    console.log("\n📊 Opening git diff to show detailed differences...\n");
+
+    try {
+      // Use git diff --no-index to compare directories outside of git context
+      execSync(
+        `git diff --no-index --color=always "${this.baseDir1}" "${this.baseDir2}" | less -R`,
+        {
+          stdio: "inherit",
+        },
+      );
+    } catch (error: unknown) {
+      // git diff --no-index exits with code 1 when differences are found, which is expected
+      if (error instanceof Error && "status" in error && error.status === 1) {
+        // This is expected when differences exist
+        return;
+      }
+      console.error(
+        "Error running git diff:",
+        error instanceof Error ? error.message : String(error),
+      );
+      console.log(
+        "\n💡 You can manually run: git diff --no-index fern/api-specs fern/api-specs-reference",
+      );
+    }
+  }
 }
 
 // Main execution
@@ -188,6 +221,11 @@ function main() {
   const comparator = new DirectoryComparator(dir1, dir2);
   const result = comparator.compare();
   comparator.printResults();
+
+  // If there are differences, show git diff
+  if (!result.identical) {
+    comparator.showGitDiff();
+  }
 
   // Exit with appropriate code
   process.exit(result.identical ? 0 : 1);
