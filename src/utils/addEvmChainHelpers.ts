@@ -57,7 +57,7 @@ url: https://docs.alchemy.com/reference/${chainName}-api-quickstart
 slug: reference/${chainName}-api-quickstart
 ---
 
-*To use the ${displayName} API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/) first!*
+*To use the ${displayName} API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
 
 ## Introduction
 
@@ -144,7 +144,7 @@ Create an \`index.js\` file in your project directory and paste the following co
   \`\`\`
 </CodeGroup>
 
-Remember to replace \`your-api-key\` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/).
+Remember to replace \`your-api-key\` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
 
 ### 4. Run Your Script
 
