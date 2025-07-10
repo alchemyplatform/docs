@@ -1,9 +1,5 @@
 /* eslint-disable no-shadow */
-var UTM_PARAMETERS = {
-    utm_source: "docs",
-    utm_medium: "referral",
-    utm_campaign: "docs_to_dashboard",
-  },
+var UTM_PARAMETERS = { utm_source: "docs", utm_medium: "referral" },
   DASHBOARD_DOMAIN = "dashboard.alchemy.com",
   DOCS_PATH_REGEX = /\/docs\/(.+)$/,
   DASHBOARD_URL_REGEX = /^https?:\/\/dashboard\.alchemy\.com/;
@@ -36,7 +32,6 @@ var UTM_PARAMETERS = {
               return (
                 r.searchParams.set("utm_source", UTM_PARAMETERS.utm_source),
                 r.searchParams.set("utm_medium", UTM_PARAMETERS.utm_medium),
-                r.searchParams.set("utm_campaign", UTM_PARAMETERS.utm_campaign),
                 r.searchParams.set("utm_content", t),
                 r.toString()
               );

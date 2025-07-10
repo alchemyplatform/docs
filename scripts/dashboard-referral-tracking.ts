@@ -18,7 +18,6 @@
 interface UTMParameters {
   utm_source: string;
   utm_medium: string;
-  utm_campaign: string;
 }
 
 interface TrackingAPI {
@@ -33,7 +32,6 @@ interface TrackingAPI {
 const UTM_PARAMETERS: UTMParameters = {
   utm_source: "docs",
   utm_medium: "referral",
-  utm_campaign: "docs_to_dashboard",
 };
 
 const DASHBOARD_DOMAIN = "dashboard.alchemy.com";
@@ -82,7 +80,6 @@ const DASHBOARD_URL_REGEX = /^https?:\/\/dashboard\.alchemy\.com/;
       // Add all UTM parameters
       urlObject.searchParams.set("utm_source", UTM_PARAMETERS.utm_source);
       urlObject.searchParams.set("utm_medium", UTM_PARAMETERS.utm_medium);
-      urlObject.searchParams.set("utm_campaign", UTM_PARAMETERS.utm_campaign);
       urlObject.searchParams.set("utm_content", utmContent);
 
       return urlObject.toString();
