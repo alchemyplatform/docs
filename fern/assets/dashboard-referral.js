@@ -32,10 +32,10 @@
     const e = t();
     let o = 0;
     document
-      .querySelectorAll('a[href*="dashboard.alchemy.com/signup"]')
+      .querySelectorAll('a[href*="dashboard.alchemy.com"]')
       .forEach((t) => {
         const r = t.getAttribute("href");
-        if (r && r.match(/^https?:\/\/dashboard\.alchemy\.com\/signup\/?$/)) {
+        if (r && r.match(/^https?:\/\/dashboard\.alchemy\.com/)) {
           const s = n(r, e);
           t.setAttribute("href", s),
             o++,
@@ -55,12 +55,12 @@
             if (e.nodeType === Node.ELEMENT_NODE) {
               const n =
                 e.querySelectorAll &&
-                e.querySelectorAll('a[href*="dashboard.alchemy.com/signup"]')
-                  .length > 0;
+                e.querySelectorAll('a[href*="dashboard.alchemy.com"]').length >
+                  0;
               (n ||
                 ("A" === e.tagName &&
                   e.href &&
-                  e.href.includes("dashboard.alchemy.com/signup"))) &&
+                  e.href.includes("dashboard.alchemy.com"))) &&
                 (t = !0);
             }
           });
