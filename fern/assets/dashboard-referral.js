@@ -1,84 +1,92 @@
 /* eslint-disable no-shadow */
-!(function () {
-  "use strict";
-  const e = {
+var UTM_PARAMETERS = {
     utm_source: "docs",
     utm_medium: "referral",
     utm_campaign: "docs_to_dashboard",
-  };
-  function t() {
-    const e = window.location.href,
+  },
+  DASHBOARD_DOMAIN = "dashboard.alchemy.com",
+  DOCS_PATH_REGEX = /\/docs\/(.+)$/,
+  DASHBOARD_URL_REGEX = /^https?:\/\/dashboard\.alchemy\.com/;
+!(function () {
+  "use strict";
+  function e() {
+    var e = window.location.href,
       t = window.location.pathname,
-      n = e.match(/\/docs\/(.+)$/);
-    return n
-      ? n[1].replace(/\//g, "_")
+      r = e.match(DOCS_PATH_REGEX);
+    return r && r[1]
+      ? r[1].replace(/\//g, "_")
       : t.replace(/^\//, "").replace(/\//g, "_") || "homepage";
   }
-  function n(t, n) {
-    try {
-      const o = new URL(t);
-      return (
-        o.searchParams.set("utm_source", e.utm_source),
-        o.searchParams.set("utm_medium", e.utm_medium),
-        o.searchParams.set("utm_campaign", e.utm_campaign),
-        o.searchParams.set("utm_content", n),
-        o.toString()
-      );
-    } catch (e) {
-      return console.warn("Error adding UTM parameters to URL:", t, e), t;
-    }
-  }
-  function o() {
-    const e = t();
-    let o = 0;
+  function t() {
+    var t = e();
     document
-      .querySelectorAll('a[href*="dashboard.alchemy.com"]')
-      .forEach((t) => {
-        const r = t.getAttribute("href");
-        if (r && r.match(/^https?:\/\/dashboard\.alchemy\.com/)) {
-          const s = n(r, e);
-          t.setAttribute("href", s),
-            o++,
-            t.setAttribute("data-utm-tracked", "true");
+      .querySelectorAll(
+        'a[href*="'.concat(
+          DASHBOARD_DOMAIN,
+          '"]:not([data-utm-tracked="true"])',
+        ),
+      )
+      .forEach(function (e) {
+        var r = e,
+          a = r.getAttribute("href");
+        if (a && DASHBOARD_URL_REGEX.test(a)) {
+          var n = (function (e, t) {
+            try {
+              var r = new URL(e);
+              return (
+                r.searchParams.set("utm_source", UTM_PARAMETERS.utm_source),
+                r.searchParams.set("utm_medium", UTM_PARAMETERS.utm_medium),
+                r.searchParams.set("utm_campaign", UTM_PARAMETERS.utm_campaign),
+                r.searchParams.set("utm_content", t),
+                r.toString()
+              );
+            } catch (t) {
+              return (
+                console.warn("Error adding UTM parameters to URL:", e, t), e
+              );
+            }
+          })(a, t);
+          r.setAttribute("href", n), r.setAttribute("data-utm-tracked", "true");
         }
-      }),
-      o > 0;
+      });
   }
   function r() {
-    o();
-    const e = new MutationObserver(function (e) {
-      let t = !1;
+    new MutationObserver(function (e) {
+      var r = !1;
       e.forEach(function (e) {
         "childList" === e.type &&
           e.addedNodes.length > 0 &&
           e.addedNodes.forEach(function (e) {
-            if (e.nodeType === Node.ELEMENT_NODE) {
-              const n =
-                e.querySelectorAll &&
-                e.querySelectorAll('a[href*="dashboard.alchemy.com"]').length >
-                  0;
-              (n ||
-                ("A" === e.tagName &&
-                  e.href &&
-                  e.href.includes("dashboard.alchemy.com"))) &&
-                (t = !0);
-            }
+            (function (e) {
+              if (e.nodeType !== Node.ELEMENT_NODE) return !1;
+              var t = e;
+              if ("A" === t.tagName) {
+                var r = t;
+                return Boolean(r.href) && r.href.includes(DASHBOARD_DOMAIN);
+              }
+              return (
+                !!t.querySelectorAll &&
+                t.querySelectorAll('a[href*="'.concat(DASHBOARD_DOMAIN, '"]'))
+                  .length > 0
+              );
+            })(e) && (r = !0);
           });
       }),
-        t && o();
-    });
-    e.observe(document.body, { childList: !0, subtree: !0 });
+        r && t();
+    }).observe(document.body, { childList: !0, subtree: !0 });
   }
-  function s(e) {
-    "loading" === document.readyState
-      ? document.addEventListener("DOMContentLoaded", e)
-      : e();
+  function a() {
+    t(), r();
   }
-  s(function () {
-    setTimeout(r, 100);
+  var n;
+  (n = function () {
+    setTimeout(a, 100);
   }),
+    "loading" === document.readyState
+      ? document.addEventListener("DOMContentLoaded", n)
+      : n(),
     window.addEventListener("popstate", function () {
-      setTimeout(o, 100);
+      setTimeout(t, 100);
     }),
-    (window.alchemyUTMTracking = { update: o, getCurrentSlug: t });
+    (window.alchemyUTMTracking = { update: t, getCurrentSlug: e });
 })();
