@@ -1,4 +1,4 @@
-/* eslint-disable no-shadow, no-console */
+/* eslint-disable no-shadow */
 !(function () {
   "use strict";
   const e = {
@@ -42,9 +42,7 @@
             t.setAttribute("data-utm-tracked", "true");
         }
       }),
-      o > 0 &&
-        (console.log(`✅ Updated ${o} dashboard links with UTM tracking`),
-        console.log(`📄 Page slug: ${e}`));
+      o > 0;
   }
   function r() {
     o();
