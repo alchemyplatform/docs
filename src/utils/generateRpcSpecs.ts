@@ -33,7 +33,7 @@ export const generateOpenRpcSpec = async (
           type: "string",
           default: "docs-demo",
           description:
-            "For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)",
+            "For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)",
         },
         required: true,
       },
