@@ -1,0 +1,43 @@
+---
+title: Make Your First Alchemy Request
+description: Learn how to send a blockchain request using Alchemy.
+subtitle: Learn how to send a blockchain request using Alchemy.
+url: https://docs.alchemy.com/docs/make-your-first-request
+slug: docs/make-your-first-request
+---
+
+👋 *New to Alchemy? Get access to Alchemy for free* ***[here](https://alchemy.com/?r=e68b2f77-7fc7-4ef7-8e9c-cdfea869b9b5)***.
+
+You can interact with Alchemy's infrastructure provider using JSON-RPC and your [command line](https://www.computerhope.com/jargon/c/commandi.htm).
+
+For manual requests, we recommend interacting with the `JSON-RPC` via `POST` requests. Simply pass in the `Content-Type: application/json` header and your query as the `POST` body with the following fields:
+
+* `jsonrpc`: The JSON-RPC version—currently, only `2.0` is supported.
+* `method`: The ETH API method. [See API reference.](/reference/ethereum-api-quickstart)
+* `params`: A list of parameters to pass to the method.
+* `id`: The ID of your request. Will be returned by the response so you can keep track of which request a response belongs to.
+
+Here is an example you can run from the Terminal/Windows/LINUX command line to retrieve the current gas price:
+
+<CodeGroup>
+  ```shell shell
+  curl https://eth-mainnet.g.alchemy.com/v2/demo \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"eth_gasPrice","params":[],"id":73}'
+  ```
+</CodeGroup>
+
+<Info>
+  Please remember to replace "demo" in the request URL with your actual Alchemy API key you created in the last step!
+</Info>
+
+Results:
+
+<CodeGroup>
+  ```json Result
+  { "id": 73,
+    "jsonrpc": "2.0",
+    "result": "0x09184e72a000" // 10000000000000 }
+  ```
+</CodeGroup>
