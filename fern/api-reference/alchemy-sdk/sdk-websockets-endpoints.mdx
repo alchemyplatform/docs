@@ -241,11 +241,12 @@ The following limits apply for WebSocket connections:
 
 # Error Codes
 
-| Error Code | Error Message                                                                                                                | Solution                                                                                                                                                         |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `32600`    | `"Sorry, the maximum batch request size is 1000. Please reduce the size of your request and try again."`                     | Occurs when user attempts to send high-volume JSON-RPC traffic over Websockets. We recommend this traffic be sent over HTTP instead to optimize server backends. |
-| `1008`     | `"WebSocket connection limit reached for this app. Please close existing connections and try again."`     | Triggered when the number of open WebSocket connections for the app reaches the allowed limit. Close unused connections to restore access.                       |
-| `1008`     | `" This app has exceeded its limit of open WebSockets. Please close some other connections first."`         | Triggered when the team previously exceeded the limit and tries to reconnect again before the backoff interval expires. Close existing connections and wait.     |
+| Error Code | Error Message                                                                                                                                         | Solution                                                                                                                                                         |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `32600`    | `"Sorry, the maximum batch request size is 1000. Please reduce the size of your request and try again."`                                              | Occurs when user attempts to send high-volume JSON-RPC traffic over Websockets. We recommend this traffic be sent over HTTP instead to optimize server backends. |
+| `1008`     | `"WebSocket connection limit reached for this app. Please close existing connections and try again."`                                                 | Triggered when the number of open WebSocket connections for the app reaches the allowed limit. Close unused connections to restore access.                       |
+| `1008`     | `" This app has exceeded its limit of open WebSockets. Please close some other connections first."`                                                   | Triggered when the team previously exceeded the limit and tries to reconnect again before the backoff interval expires. Close existing connections and wait.     |
+| `1008`     | `" You have exceeded the maximum number of concurrent requests on a single WebSocket. At most 200 concurrent requests are allowed per WebSocket."`  | Triggered when a client has too many pending JSON-RPC requests on a single WebSocket. Ensure each request completes before sending more.                         |
 
 ***
 
