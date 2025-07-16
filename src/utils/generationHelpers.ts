@@ -50,7 +50,4 @@ export const writeOpenRpcDoc = (
   filename: string,
   spec: OpenrpcDocument,
 ) =>
-  writeFileSync(
-    `${outputDir}/${filename}.json`,
-    JSON.stringify(spec, null, "\t"),
-  );
+  writeFileSync(`${outputDir}/${filename}.json`, JSON.stringify(spec, null, 2));
