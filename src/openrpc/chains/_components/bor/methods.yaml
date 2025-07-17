@@ -1,0 +1,109 @@
+components:
+  methods:
+    bor_getCurrentProposer:
+      name: bor_getCurrentProposer
+      description: Returns the address of the current proposer.
+      params: []
+      result:
+        name: ProposerAddress
+        description: The address of the current proposer.
+        schema:
+          $ref: "./base-types.yaml#/components/schemas/address"
+      examples:
+        - name: bor_getCurrentProposer example
+          params: []
+          result:
+            name: ProposerAddress
+            value: "0x1234567890abcdef1234567890abcdef12345678"
+
+    bor_getCurrentValidators:
+      name: bor_getCurrentValidators
+      description: Returns the current list of validators.
+      params: []
+      result:
+        name: Validators
+        description: A list of current validators with their details.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              ID:
+                type: integer
+                description: The ID of the validator.
+              accum:
+                type: integer
+                description: The proposer priority for the validator.
+              power:
+                type: integer
+                description: The voting power of the validator.
+              signer:
+                $ref: "./base-types.yaml#/components/schemas/address"
+                description: The address of the validator.
+      examples:
+        - name: bor_getCurrentValidators example
+          params: []
+          result:
+            name: Validators
+            value:
+              - ID: 1
+                accum: 100
+                power: 1000
+                signer: "0xabcdef1234567890abcdef1234567890abcdef12"
+              - ID: 2
+                accum: 200
+                power: 2000
+                signer: "0x1234567890abcdef1234567890abcdef12345678"
+
+    bor_getRootHash:
+      name: bor_getRootHash
+      description: Returns the root hash for a specified block range.
+      params:
+        - name: fromBlock
+          required: true
+          description: The block number from which the range starts.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/uint"
+        - name: toBlock
+          required: true
+          description: The block number where the range ends.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/uint"
+      result:
+        name: RootHash
+        description: The root hash of the specified block range.
+        schema:
+          $ref: "./base-types.yaml#/components/schemas/hash32"
+      examples:
+        - name: bor_getRootHash example
+          params:
+            - name: fromBlock
+              value: "1000000"
+            - name: toBlock
+              value: "1000010"
+          result:
+            name: RootHash
+            value: "0xdef456...abc123"
+
+    bor_getAuthor:
+      name: bor_getAuthor
+      description: Returns the author address of a given block.
+      params:
+        - name: Block number or tag
+          required: true
+          description: The block number or special tags like 'latest', 'earliest', or 'pending', encoded in hexadecimal format.
+          schema:
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Author address
+        description: The address of the author of the specified block.
+        schema:
+          $ref: "./base-types.yaml#/components/schemas/address"
+      examples:
+        - name: bor_getAuthor example
+          params:
+            - name: Block number or tag
+              value: "latest"
+          result:
+            name: Author address
+            value: "0xabc1234567890abcdef1234567890abcdef1234"

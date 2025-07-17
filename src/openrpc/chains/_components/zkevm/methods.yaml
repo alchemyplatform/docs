@@ -1,0 +1,234 @@
+components:
+  methods:
+    zkevm_consolidatedBlockNumber:
+      name: zkevm_consolidatedBlockNumber
+      summary: Returns the latest block number that is connected to the latest batch verified.
+      description: |
+        Retrieves the latest block number that is connected to the latest batch that has been verified on the network.
+      params: []
+      result:
+        name: Block Number
+        description: The latest block number connected to the latest verified batch, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_consolidatedBlockNumber example
+          params: []
+          result:
+            name: Block Number
+            value: "0x1"
+
+    zkevm_isBlockConsolidated:
+      name: zkevm_isBlockConsolidated
+      summary: Checks if a block is connected to a verified batch.
+      description: |
+        Returns `true` if the provided block number is connected to a batch that has already been verified; otherwise, returns `false`.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number to check.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Is Block Consolidated
+        description: true if the block is connected to a verified batch; false otherwise.
+        schema:
+          type: boolean
+      examples:
+        - name: zkevm_isBlockConsolidated example
+          params:
+            - name: blockNumber
+              value: "0x1"
+          result:
+            name: Is Block Consolidated
+            value: true
+
+    zkevm_isBlockVirtualized:
+      name: zkevm_isBlockVirtualized
+      summary: Checks if a block is connected to a virtualized batch.
+      description: |
+        Returns `true` if the provided block number is connected to a batch that has already been virtualized; otherwise, returns `false`.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number to check.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Is Block Virtualized
+        description: true if the block is connected to a virtualized batch; false otherwise.
+        schema:
+          type: boolean
+      examples:
+        - name: zkevm_isBlockVirtualized example
+          params:
+            - name: blockNumber
+              value: "0x1"
+          result:
+            name: Is Block Virtualized
+            value: true
+
+    zkevm_batchNumberByBlockNumber:
+      name: zkevm_batchNumberByBlockNumber
+      summary: Returns the batch number associated with a given block number.
+      description: |
+        Retrieves the batch number of the batch that is connected to the specified block number.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number for which to retrieve the associated batch number.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Batch Number
+        description: The batch number connected to the given block number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_batchNumberByBlockNumber example
+          params:
+            - name: blockNumber
+              value: "0x1"
+          result:
+            name: Batch Number
+            value: "0x1"
+
+    zkevm_batchNumber:
+      name: zkevm_batchNumber
+      summary: Returns the latest batch number.
+      description: |
+        Retrieves the latest batch number that has been processed on the network.
+      params: []
+      result:
+        name: Batch Number
+        description: The latest batch number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_batchNumber example
+          params: []
+          result:
+            name: Batch Number
+            value: "0x1"
+
+    zkevm_virtualBatchNumber:
+      name: zkevm_virtualBatchNumber
+      summary: Returns the latest virtual batch number.
+      description: |
+        Retrieves the latest virtual batch number that represents batches that are virtualized but not yet consolidated.
+      params: []
+      result:
+        name: Virtual Batch Number
+        description: The latest virtual batch number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_virtualBatchNumber example
+          params: []
+          result:
+            name: Virtual Batch Number
+            value: "0x1"
+
+    zkevm_verifiedBatchNumber:
+      name: zkevm_verifiedBatchNumber
+      summary: Returns the latest verified batch number.
+      description: |
+        Retrieves the latest batch number that has been verified and consolidated on the network.
+      params: []
+      result:
+        name: Verified Batch Number
+        description: The latest verified batch number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_verifiedBatchNumber example
+          params: []
+          result:
+            name: Verified Batch Number
+            value: "0x1"
+
+    zkevm_getBatchByNumber:
+      name: zkevm_getBatchByNumber
+      summary: Retrieves a batch by its number or tag.
+      description: |
+        Returns the details of a batch specified by its number or a special tag (`earliest`, `latest`). If `includeTransactions` is `true`, the full transaction objects are included; otherwise, only transaction hashes are returned.
+      params:
+        - name: batchNumberOrTag
+          required: true
+          description: The batch number or a tag (`earliest`, `latest`) to identify the batch.
+          schema:
+            oneOf:
+              - $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              - $ref: "./components/zkevm.yaml#/components/schemas/BatchNumberTag"
+        - name: includeTransactions
+          required: true
+          description: If `true`, returns full transaction objects; if `false`, returns only transaction hashes.
+          schema:
+            type: boolean
+      result:
+        name: Batch
+        description: The batch details corresponding to the given number or tag.
+        schema:
+          $ref: "./components/zkevm.yaml#/components/schemas/Batch"
+      examples:
+        - name: Batch without transaction details
+          description: Batch details with transaction hashes only.
+          params:
+            - name: batchNumberOrTag
+              value: "0x1"
+            - name: includeTransactions
+              value: false
+          result:
+            name: Batch
+            value:
+              number: "0x1"
+              coinbase: "0x0000000000000000000000000000000000000001"
+              stateRoot: "0x0000000000000000000000000000000000000000000000000000000000000001"
+              globalExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000002"
+              mainnetExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000003"
+              rollupExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000004"
+              accInputHash: "0x0000000000000000000000000000000000000000000000000000000000000006"
+              timestamp: "0x642af31f"
+              sendSequencesTxHash: "0x0000000000000000000000000000000000000000000000000000000000000007"
+              verifyBatchTxHash: "0x0000000000000000000000000000000000000000000000000000000000000008"
+              transactions:
+                - "0x0000000000000000000000000000000000000000000000000000000000000009"
+                - "0x0000000000000000000000000000000000000000000000000000000000000010"
+                - "0x0000000000000000000000000000000000000000000000000000000000000011"
+        - name: Batch with transaction details
+          description: Batch details with full transaction objects.
+          params:
+            - name: batchNumberOrTag
+              value: "0x1"
+            - name: includeTransactions
+              value: true
+          result:
+            name: Batch
+            value:
+              number: "0x1"
+              coinbase: "0x0000000000000000000000000000000000000001"
+              stateRoot: "0x0000000000000000000000000000000000000000000000000000000000000001"
+              globalExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000002"
+              mainnetExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000003"
+              rollupExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000004"
+              accInputHash: "0x0000000000000000000000000000000000000000000000000000000000000006"
+              timestamp: "0x642af31f"
+              sendSequencesTxHash: "0x0000000000000000000000000000000000000000000000000000000000000007"
+              verifyBatchTxHash: "0x0000000000000000000000000000000000000000000000000000000000000008"
+              transactions:
+                - nonce: "0x1"
+                  gasPrice: "0x123456"
+                  gas: "0x59D8"
+                  to: "0x0000000000000000000000000000000000000002"
+                  value: "0x1"
+                  input: "0x"
+                  v: "0xAAA"
+                  r: "0x0000000000000000000000000000000000000000000000000000000000000010"
+                  s: "0x0000000000000000000000000000000000000000000000000000000000000011"
+                  hash: "0x0000000000000000000000000000000000000000000000000000000000000012"
+                  from: "0x0000000000000000000000000000000000000003"
+                  blockHash: "0x0000000000000000000000000000000000000000000000000000000000000013"
+                  blockNumber: "0x1"
+                  transactionIndex: "0x0"
+                  chainId: "0x539"
+                  type: "0x0"
