@@ -13,7 +13,7 @@ components:
           required: true
           description: The hash of the block to retrieve.
           schema:
-            $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+            $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
         - name: verbosity
           required: false
           description: >
@@ -30,7 +30,7 @@ components:
         name: result
         description: The block object or hex string, depending on verbosity.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK"
+          $ref: "./block.yaml#/components/schemas/BTC_BLOCK"
       examples:
         - name: getblock example
           params:
@@ -75,12 +75,12 @@ components:
           required: true
           description: The height of the block to retrieve the hash for.
           schema:
-            $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HEIGHT"
+            $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HEIGHT"
       result:
         name: result
         description: The hash of the block at the specified height.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+          $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
       examples:
         - name: getblockhash example
           params:
@@ -102,7 +102,7 @@ components:
           required: true
           description: The block hash to retrieve the header for.
           schema:
-            $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+            $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
         - name: verbose
           required: false
           description: >
@@ -115,7 +115,7 @@ components:
         description: The block header as an object or hex string depending on verbose.
         schema:
           oneOf:
-            - $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HEADER"
+            - $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HEADER"
             - type: string
               description: Hex-encoded block header
       examples:
@@ -156,7 +156,7 @@ components:
         name: result
         description: The number of blocks in the current best blockchain.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HEIGHT"
+          $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HEIGHT"
       examples:
         - name: getblockcount example
           params: []
@@ -176,7 +176,7 @@ components:
         name: result
         description: The hash of the best block in the longest chain.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+          $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
       examples:
         - name: getbestblockhash example
           params: []
@@ -197,8 +197,8 @@ components:
           description: The block hash (string) or height (integer) of the target block.
           schema:
             oneOf:
-              - $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
-              - $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HEIGHT"
+              - $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
+              - $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HEIGHT"
         - name: stats
           required: false
           description: >
@@ -211,7 +211,7 @@ components:
         name: result
         description: A set of statistical metrics for the specified block.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_STATS"
+          $ref: "./block.yaml#/components/schemas/BTC_BLOCK_STATS"
       examples:
         - name: getblockstats example
           params:
@@ -266,7 +266,7 @@ components:
         name: result
         description: The difficulty of the current best block as a floating-point number.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/BTC_DIFFICULTY"
+          $ref: "./block.yaml#/components/schemas/BTC_DIFFICULTY"
       examples:
         - name: getdifficulty example
           params: []
@@ -288,7 +288,7 @@ components:
         schema:
           type: array
           items:
-            $ref: "./components/block.yaml#/components/schemas/BTC_CHAIN_TIP"
+            $ref: "./block.yaml#/components/schemas/BTC_CHAIN_TIP"
       examples:
         - name: getchaintips example
           params: []
@@ -327,7 +327,7 @@ components:
         name: result
         description: The calculated chain transaction statistics.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/BTC_CHAIN_TX_STATS"
+          $ref: "./block.yaml#/components/schemas/BTC_CHAIN_TX_STATS"
       examples:
         - name: getchaintxstats example
           params:
@@ -357,7 +357,7 @@ components:
         name: result
         description: Blockchain status information.
         schema:
-          $ref: "./components/client.yaml#/components/schemas/BTC_BLOCKCHAIN_INFO"
+          $ref: "./client.yaml#/components/schemas/BTC_BLOCKCHAIN_INFO"
       examples:
         - name: getblockchaininfo example
           params: []
@@ -475,7 +475,7 @@ components:
           required: true
           description: The Bitcoin address to validate.
           schema:
-            $ref: "./components/filter.yaml#/components/schemas/BTC_ADDRESS"
+            $ref: "./filter.yaml#/components/schemas/BTC_ADDRESS"
       result:
         name: result
         description: Validation result and metadata about the address.
@@ -530,12 +530,12 @@ components:
           required: true
           description: The Bitcoin address to use for the signature.
           schema:
-            $ref: "./components/filter.yaml#/components/schemas/BTC_ADDRESS"
+            $ref: "./filter.yaml#/components/schemas/BTC_ADDRESS"
         - name: signature
           required: true
           description: The base64-encoded signature provided by the signer.
           schema:
-            $ref: "./components/filter.yaml#/components/schemas/BTC_SIGNATURE"
+            $ref: "./filter.yaml#/components/schemas/BTC_SIGNATURE"
         - name: message
           required: true
           description: The message that was signed.
@@ -573,7 +573,7 @@ components:
           required: true
           description: The hex-encoded raw transaction.
           schema:
-            $ref: "./components/transaction.yaml#/components/schemas/BTC_TX_HEX"
+            $ref: "./transaction.yaml#/components/schemas/BTC_TX_HEX"
         - name: maxfeerate
           required: false
           description: >
@@ -630,7 +630,7 @@ components:
                 type: object
                 properties:
                   txid:
-                    $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                    $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
                   error:
                     type: string
                     description: Error message if the transaction failed
@@ -762,7 +762,7 @@ components:
           required: true
           description: The transaction ID whose ancestors to retrieve.
           schema:
-            $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+            $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
         - name: verbose
           required: false
           description: Whether to return detailed info (true) or just txids (false).
@@ -777,7 +777,7 @@ components:
             - type: array
               description: A list of ancestor transaction IDs.
               items:
-                $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
             - type: object
               additionalProperties:
                 type: object
@@ -848,7 +848,7 @@ components:
           required: true
           description: The transaction ID whose descendants to retrieve.
           schema:
-            $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+            $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
         - name: verbose
           required: false
           description: Whether to return detailed info (true) or just txids (false).
@@ -863,7 +863,7 @@ components:
             - type: array
               description: A list of descendant transaction IDs.
               items:
-                $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
             - type: object
               additionalProperties:
                 type: object
@@ -883,11 +883,11 @@ components:
                   depends:
                     type: array
                     items:
-                      $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                      $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
                   spentby:
                     type: array
                     items:
-                      $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                      $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
       examples:
         - name: Non-verbose example
           params:
@@ -958,7 +958,7 @@ components:
                   type: array
                   description: List of transaction IDs in the mempool.
                   items:
-                    $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                    $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
                 mempool_sequence:
                   type: integer
                   description: The mempool sequence number.
@@ -988,7 +988,7 @@ components:
                   ancestorsize:
                     type: integer
                   wtxid:
-                    $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                    $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
                   fees:
                     type: object
                     properties:
@@ -1151,7 +1151,7 @@ components:
           schema:
             type: array
             items:
-              $ref: "./components/transaction.yaml#/components/schemas/BTC_TX_HEX"
+              $ref: "./transaction.yaml#/components/schemas/BTC_TX_HEX"
         - name: maxfeerate
           required: false
           description: >
@@ -1167,7 +1167,7 @@ components:
             type: object
             properties:
               txid:
-                $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
               wtxid:
                 type: string
                 description: Witness transaction ID, if available.
@@ -1219,7 +1219,7 @@ components:
               type: integer
               description: The current block height.
             bestblock:
-              $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+              $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
             txouts:
               type: integer
               description: Total number of unspent outputs.
@@ -1274,7 +1274,7 @@ components:
           required: true
           description: The transaction ID to fetch.
           schema:
-            $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+            $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
         - name: verbose
           required: false
           description: Return verbose JSON or just the raw hex string.
@@ -1285,7 +1285,7 @@ components:
           required: false
           description: The block in which to look for the transaction (if not in the mempool).
           schema:
-            $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+            $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
       result:
         name: result
         description: Raw transaction data.
@@ -1296,9 +1296,9 @@ components:
             - type: object
               properties:
                 txid:
-                  $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                  $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
                 hash:
-                  $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+                  $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
                 size:
                   type: integer
                 vsize:
@@ -1308,7 +1308,7 @@ components:
                 locktime:
                   type: integer
                 blockhash:
-                  $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+                  $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
                 confirmations:
                   type: integer
                 time:
@@ -1340,7 +1340,7 @@ components:
           required: true
           description: The transaction ID.
           schema:
-            $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+            $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
         - name: n
           required: true
           description: The vout number.
@@ -1361,7 +1361,7 @@ components:
           nullable: true
           properties:
             bestblock:
-              $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+              $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
             confirmations:
               type: integer
               description: Number of confirmations for the transaction.
@@ -1424,12 +1424,12 @@ components:
           schema:
             type: array
             items:
-              $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+              $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
         - name: blockhash
           required: false
           description: The block in which to search for the txid(s). If omitted, the node will try to locate it.
           schema:
-            $ref: "./components/block.yaml#/components/schemas/BTC_BLOCK_HASH"
+            $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
       result:
         name: result
         description: A hex-encoded proof that the specified transactions are part of a block.
@@ -1459,7 +1459,7 @@ components:
           required: true
           description: The transaction hex string to decode.
           schema:
-            $ref: "./components/transaction.yaml#/components/schemas/BTC_TX_HEX"
+            $ref: "./transaction.yaml#/components/schemas/BTC_TX_HEX"
         - name: iswitness
           required: false
           description: >
@@ -1473,7 +1473,7 @@ components:
           type: object
           properties:
             txid:
-              $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+              $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
             hash:
               type: string
               description: The transaction hash (differs from txid for witness transactions).
@@ -1493,7 +1493,7 @@ components:
                 type: object
                 properties:
                   txid:
-                    $ref: "./components/filter.yaml#/components/schemas/BTC_TX_ID"
+                    $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
                   vout:
                     type: integer
                   scriptSig:
@@ -1585,7 +1585,7 @@ components:
           required: true
           description: The hex-encoded script.
           schema:
-            $ref: "./components/transaction.yaml#/components/schemas/BTC_SCRIPT_HEX"
+            $ref: "./transaction.yaml#/components/schemas/BTC_SCRIPT_HEX"
       result:
         name: result
         description: Decoded script information.
