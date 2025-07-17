@@ -11,6 +11,12 @@ jobs:
       deployments: write
       pull-requests: write
     steps:
+      - name: Skip if from fork
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]]; then
+            echo "PR is from a fork and cannot access Fern token — exiting early."
+            exit 0  # Early exit successfully
+          fi
       - name: Checkout repository
         uses: actions/checkout@v4
 
