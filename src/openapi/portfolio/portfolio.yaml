@@ -394,6 +394,15 @@ components:
           description: Whether to include each chain's native token in the response (e.g. ETH on Ethereum). The native token will have a null contract address.
           example: false
           default: false
+        includeErc20Tokens:
+          type: boolean
+          description: Whether to include ERC-20 tokens in the response.
+          example: false
+          default: true
+        pageKey:
+          $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+        pageSize:
+          $ref: "../nft/nft.yaml#/components/schemas/pageSize"
       required:
         - addresses
 
@@ -419,6 +428,45 @@ components:
           description: Whether to include each chain's native token in the response (e.g. ETH on Ethereum). The native token will have a null contract address.
           example: false
           default: false
+        includeErc20Tokens:
+          type: boolean
+          description: Whether to include ERC-20 tokens in the response.
+          example: false
+          default: true
+      required:
+        - addresses
+
+    ByAddressRequestWithOptionsAndPaging:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: >
+            Array of address and networks pairs (limit 2 pairs, max 5 networks each). Networks should match network enums.
+          items:
+            $ref: "#/components/schemas/AddressItem"
+        withMetadata:
+          description: "Boolean - if set to `true`, returns metadata. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`."
+          type: boolean
+          default: true
+        withPrices:
+          description: "Boolean - if set to `true`, returns token prices. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`."
+          type: boolean
+          default: true
+        includeNativeTokens:
+          type: boolean
+          description: Whether to include each chain's native token in the response (e.g. ETH on Ethereum). The native token will have a null contract address.
+          example: false
+          default: false
+        includeErc20Tokens:
+          type: boolean
+          description: Whether to include ERC-20 tokens in the response.
+          example: false
+          default: true
+        pageKey:
+          $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+        pageSize:
+          $ref: "../nft/nft.yaml#/components/schemas/pageSize"
       required:
         - addresses
 
