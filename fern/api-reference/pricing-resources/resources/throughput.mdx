@@ -6,25 +6,19 @@ url: https://docs.alchemy.com/reference/throughput
 slug: reference/throughput
 ---
 
-<Info>
-  Getting hit with rate limits?
-
-  [Talk to our team](https://www.alchemy.com/contact-sales) to increase your throughput.
-</Info>
-
 ## What is throughput?
 
-Throughput is a measure of the number of requests your application can send per second. It is often known as the applications "rate limit".
-
-If a large number of requests are sent at the same time, you may hit your throughput capacity. However, under Alchemy's elastic throughput system, users are *guaranteed* their given throughput limit (measured in [compute units per second](/reference/throughput#scroll-what-are-compute-units-per-second-cups)), but will often experience higher throughput in practice.
-
-In most instances, hitting your throughput limit will not affect your user's experience engaging with your application. As long as retries are implemented, the requests will go through in the following second. As a general rule of thumb, if you are experiencing **under 30%** rate limited requests, [using retries](/reference/throughput#retries) is the best solution.
+"Throughput" refers to the volume of requests you can successfully send to Alchemy within a given time frame — and is primarily governed by the throughput limit set for your account.
 
 ***
 
-## Elastic Throughput
+## How throughput on Alchemy works
 
-With Alchemy's elastic throughput system, users often experience higher throughput than their guaranteed limit outlined above.
+Throughput is defined in terms of CU/s (Compute Units Per Second). Some key aspects:
+
+* Throughput is now configured at the account level (no longer per app), meaning the combined usage of all your Alchemy apps counts toward your overall throughput limit.
+* Limits are evaluated over a 10-second rolling window using a token bucket algorithm with strict refill rates. For example, a Free tier customer with a 500 CU/s limit can consume up to 5,000 CUs over any 10-second period. This design helps accommodate short-term traffic spikes without exceeding the overall limit.
+* Throughput limits scale based on your [plan tier](https://www.alchemy.com/docs/reference/pricing-plans).
 
 ***
 
@@ -60,7 +54,7 @@ You will receive a JSON-RPC error response with error code 429. For example, the
 
 ## Retries
 
-There are several options for implementing retries. For a deep dive into each option, check out **[How to Implement Retries](/docs/how-to-implement-retries)**.
+There are several options for implementing retries. For a deep dive into each option, check out **[How to Implement Retries](/reference/how-to-implement-retries)**.
 
 All you need to do to easily handle 429 errors is to retry the request. This will ensure a great user experiences with any API even if you aren't hitting rate limits. Once you've implemented retries, [test out the behavior](/reference/throughput#test-rate-limits-retries) to make sure they work as expected.
 
@@ -113,24 +107,18 @@ To test out your implementation of retries, we created a test app on each networ
 
 [wss://eth-mainnet.g.alchemy.com/v2/J038e3gaccJC6Ue0BrvmpjzxsdfGly9n]()
 
-### Ethereum Goerli, Polygon Mumbai (and other testnets)
-
-<Warning>
-  While you can use the Goerli testnet, we caution against it as the Ethereum Foundation has announced that [Goerli will soon be deprecated](https://www.alchemy.com/blog/goerli-faucet-deprecation).
-
-  We therefore recommend using [Sepolia](https://www.alchemy.com/overviews/sepolia-testnet) testnet as Alchemy has full Sepolia support and a free [Sepolia faucet](https://sepoliafaucet.com/) also.
-</Warning>
+### Ethereum Sepolia, Polygon Amoy (and other testnets)
 
 #### HTTP
 
-[https://eth-goerli.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO](https://eth-goerli.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO)
+[https://eth-sepolia.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO](https://eth-sepolia.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO)
 
 #### WebSocket
 
-[\<wss://eth-goerli.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO>]()
+[\<wss://eth-sepolia.g.alchemy.com/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO>]()
 
 ***
 
-## Final Tips
+## Any Other Questions?
 
-Use a different key for each part of your project (e.g., frontend, backend, development) to isolate throughput usage to each use case. This also splits monitoring across different parts of your project, making it easier to debug issues and monitor usage.
+Reach out to support@alchemy.com with any questions!
