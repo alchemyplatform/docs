@@ -14,6 +14,49 @@ servers:
   - url: https://bitcoin-testnet.g.alchemy.com/v2
     name: Bitcoin Testnet
 methods:
+  - name: verifymessage
+    summary: Verify a signed message
+    description: >
+      Verifies a message signature using the corresponding Bitcoin address.
+      Returns true if the signature is valid and matches the given address.
+
+      > ⚠ This endpoint is only available with
+      [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast)
+      access.
+    params:
+      - name: address
+        required: true
+        description: The Bitcoin address to use for the signature.
+        schema:
+          $ref: ./filter.yaml#/components/schemas/BTC_ADDRESS
+      - name: signature
+        required: true
+        description: The base64-encoded signature provided by the signer.
+        schema:
+          $ref: ./filter.yaml#/components/schemas/BTC_SIGNATURE
+      - name: message
+        required: true
+        description: The message that was signed.
+        schema:
+          type: string
+    result:
+      name: result
+      description: Whether the signature is valid for the message and address.
+      schema:
+        type: boolean
+    examples:
+      - name: verifymessage example
+        params:
+          - name: address
+            value: 1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY
+          - name: signature
+            value: >-
+              G9oR+mz9QwPZq2boSmjdtbX0VNdD+dLOFRzJ93ZDHNwhnOtJb1EDAKCK3NmPIzctQDAazX9gh3d+zdoFKc69bQ4=
+          - name: message
+            value: Test message from Bitcoin
+        result:
+          name: result
+          value: true
   - $ref: >-
       ../_components/bitcoin/methods.yaml#/components/methods/decoderawtransaction
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/decodescript
@@ -45,43 +88,4 @@ methods:
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/submitpackage
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/testmempoolaccept
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/validateaddress
-  - name: verifymessage
-    summary: Verify a signed message
-    description: >
-      Verifies a message signature using the corresponding Bitcoin address.
-      Returns true if the signature is valid and matches the given address.
-
-      > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
-    params:
-      - name: address
-        required: true
-        description: The Bitcoin address to use for the signature.
-        schema:
-          $ref: "./filter.yaml#/components/schemas/BTC_ADDRESS"
-      - name: signature
-        required: true
-        description: The base64-encoded signature provided by the signer.
-        schema:
-          $ref: "./filter.yaml#/components/schemas/BTC_SIGNATURE"
-      - name: message
-        required: true
-        description: The message that was signed.
-        schema:
-          type: string
-    result:
-      name: result
-      description: Whether the signature is valid for the message and address.
-      schema:
-        type: boolean
-    examples:
-      - name: verifymessage example
-        params:
-          - name: address
-            value: "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY"
-          - name: signature
-            value: "G9oR+mz9QwPZq2boSmjdtbX0VNdD+dLOFRzJ93ZDHNwhnOtJb1EDAKCK3NmPIzctQDAazX9gh3d+zdoFKc69bQ4="
-          - name: message
-            value: "Test message from Bitcoin"
-        result:
-          name: result
-          value: true
+  - $ref: ../_components/bitcoin/methods.yaml#/components/methods/verifymessage
