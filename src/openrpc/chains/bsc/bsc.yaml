@@ -783,6 +783,74 @@ methods:
                   - "0xf90211a0c87222cccea2bf32759fcee9dbaacbe3ea4165dd6184af6773651c5e00e34a8ba0be90e6e5d1a67ab5587779c60ac136d6a96db62b84c04998a5f03a367346abd6a05344aa1c9ca2e3e56bf98fd718ec43728578d148e1967fbaf8bf17a2a073a0bda011a2f9312c3308640a0d6ceeae218747290f23806067456da1d444c65abae437a0b3097a108bfce79af6699da4ae3003cd4929f0b4576aad655c31cb725bde84c7a0c133d3c637e174f36a73c22b1039eb003da6374bc0929321241badb3efa3c4a9a0f13059f2301ad9862ce02e3f7f3f2c9ab78eb30583764d73654f7f1f8b1e86fda06544e3915748b18204e09df75ff20d2fa6bd8121e2e669699012d54590383d6fa070e3a8e093691581d58fadb560b510262a758037632cd8670d3a36df828976b7a062a88a2900544dc76a32255a6b2b2a2eef8fa68279700c00adc7508286702552a0a474aeebd5603dfce46a6ecd1ecd519068dc034a544fde03ac42d4018e60a334a0b7d528fc41c8fdc8ea18c6e7d0099270c777ec1403cf879d1f5134bdc12a6c6ca04440f1242e42c5bfa7c536591ab89c8e84bea417435871c32eef1e25295b20daa06a5dcfe3cc84cff9d3e3c3ae868cfba8f0dd111a90c3f85869dab5b893f96643a026b2fb9dd7d08b0ed2f1c44fbf875011412a384f86f751c92e1013248d4aa371a0c75597b2b789fc4e939b71937390ce9d7d53159431328ac52180eef08ef200f280"
                 value: "0x1"
 
+  - name: eth_newFilter
+    description: Creates a filter object based on filter options to notify when state changes (logs).
+    params:
+      - name: Filter
+        required: true
+        description: The filter options object to specify the filter criteria for logs.
+        schema:
+          $ref: "./components/filter.yaml#/components/schemas/Filter"
+    result:
+      name: Filter identifier
+      description: A hexadecimal string representing the ID of the created filter.
+      schema:
+        $ref: "./components/base-types.yaml#/components/schemas/uint"
+    examples:
+      - name: eth_newFilter example
+        params:
+          - name: Filter
+            value:
+              fromBlock: "0x137d3c2"
+              toBlock: "0x137d3c3"
+              address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+              topics: []
+        result:
+          name: Filter identifier
+          value: "0x01"
+
+  - name: eth_getFilterChanges
+    description: Polls for changes in the filter with the given ID (created using `eth_newFilter`). Returns an array of logs which occurred since the last poll.
+    params:
+      - name: Filter identifier
+        required: true
+        description: The ID of the filter to poll for changes.
+        schema:
+          $ref: "./components/base-types.yaml#/components/schemas/uint"
+    result:
+      name: Log objects
+      description: An array of log objects that have occurred since the last poll.
+      schema:
+        $ref: "./components/filter.yaml#/components/schemas/FilterResults"
+    examples:
+      - name: eth_getFilterChanges example
+        params:
+          - name: Filter identifier
+            value: "0x01"
+        result:
+          name: Log objects
+          value:
+            - logIndex: "0x0"
+              removed: false
+              blockNumber: "0x233"
+              blockHash: "0xfc139f5e2edee9e9c888d8df9a2d2226133a9bd87c88ccbd9c930d3d4c9f9ef5"
+              transactionHash: "0x66e7a140c8fa27fe98fde923defea7562c3ca2d6bb89798aabec65782c08f63d"
+              transactionIndex: "0x0"
+              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
+              data: "0x0000000000000000000000000000000000000000000000000000000000000004"
+              topics:
+                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
+            - logIndex: "0x0"
+              removed: false
+              blockNumber: "0x238"
+              blockHash: "0x98b0ec0f9fea0018a644959accbe69cd046a8582e89402e1ab0ada91cad644ed"
+              transactionHash: "0xdb17aa1c2ce609132f599155d384c0bc5334c988a6c368056d7e167e23eee058"
+              transactionIndex: "0x0"
+              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
+              data: "0x0000000000000000000000000000000000000000000000000000000000000007"
+              topics:
+                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
+
   # Submit methods
   - name: eth_sendRawTransaction
     summary: Submits a raw transaction to the network.
