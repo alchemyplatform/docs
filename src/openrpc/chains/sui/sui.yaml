@@ -7,9 +7,9 @@ info:
   description: A specification of the standard JSON-RPC methods for Sui.
   version: 0.0.0
 servers:
-  - url: https://sui-mainnet.alchemy-blast.com/v2
+  - url: https://sui-mainnet.g.alchemy.com/v2
     name: Sui Mainnet
-  - url: https://sui-sepolia.alchemy-blast.com/v2
+  - url: https://sui-testnet.g.alchemy.com/v2
     name: Sui Testnet
 
 methods:
@@ -54,6 +54,111 @@ methods:
               - "9NnjyPG8V2TPCSbNE391KDyge42AwV3vUD7aNtQQ9eqS"
             checkpointCommitments: []
             validatorSignature: "r8/5+Rm7niIlndcnvjSJ/vZLPrH3xY/ePGYTvrVbTascoQSpS+wsGlC+bQBpzIwA"
+
+  - method: sui_getEvents
+    name: Get Events by Transaction Digest
+    description: Returns all events emitted during the execution of a transaction, identified by its digest.
+    params:
+      - name: transaction_digest
+        description: Digest (ID) of the transaction to retrieve events from.
+        required: true
+        schema:
+          type: string
+    result:
+      type: array
+      description: A list of events emitted by the transaction.
+      items:
+        type: object
+        properties:
+          id:
+            type: object
+            description: Unique identifier for the event within the transaction.
+            properties:
+              txDigest:
+                type: string
+                description: Transaction digest the event belongs to.
+              eventSeq:
+                type: string
+                description: Sequence number of the event in the transaction.
+          packageId:
+            type: string
+            description: ID of the Move package emitting the event.
+          transactionModule:
+            type: string
+            description: Name of the Move module that emitted the event.
+          sender:
+            type: string
+            description: Address of the sender that triggered the event.
+          type:
+            type: string
+            description: Fully qualified name of the event type (e.g., package::module::EventName).
+          parsedJson:
+            type: object
+            description: Parsed JSON contents of the event payload.
+            properties:
+              balance_manager_id:
+                type: string
+                description: ID of the balance manager involved in the event.
+              base_asset_quantity_canceled:
+                type: string
+                description: Amount of base asset canceled in the order.
+              client_order_id:
+                type: string
+                description: Client-defined identifier for the order.
+              is_bid:
+                type: boolean
+                description: Indicates whether the order was a bid.
+              order_id:
+                type: string
+                description: Unique ID of the canceled order.
+              original_quantity:
+                type: string
+                description: Original quantity of the order before cancellation.
+              pool_id:
+                type: string
+                description: Pool identifier where the order was placed.
+              price:
+                type: string
+                description: Price level associated with the canceled order.
+              timestamp:
+                type: string
+                description: Timestamp of the event in milliseconds.
+              trader:
+                type: string
+                description: Address of the trader associated with the order.
+          bcsEncoding:
+            type: string
+            description: Encoding format used for the binary canonical serialization (BCS) payload.
+          bcs:
+            type: string
+            description: Base64-encoded BCS data representing the raw event.
+    examples:
+      - request:
+          method: sui_getEvents
+          params:
+            - "5PCRAN3BLaHJsFcVx8MikVrwFyJ53q4YGMqJjhTtvVmF"
+        response:
+          result:
+            - id:
+                txDigest: "5PCRAN3BLaHJsFcVx8MikVrwFyJ53q4YGMqJjhTtvVmF"
+                eventSeq: "0"
+              packageId: "0xcaf6ba059d539a97646d47f0b9ddf843e138d215e2a12ca1f4585d386f7aec3a"
+              transactionModule: "pool"
+              sender: "0xffd4f043057226453aeba59732d41c6093516f54823ebc3a16d17f8a77d2f0ad"
+              type: "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809::order::OrderCanceled"
+              parsedJson:
+                balance_manager_id: "0x47dcbbc8561fe3d52198336855f0983878152a12524749e054357ac2e3573d58"
+                base_asset_quantity_canceled: "39900000000"
+                client_order_id: "5697276"
+                is_bid: true
+                order_id: "8447391300650109801851172"
+                original_quantity: "39900000000"
+                pool_id: "0x56a1c985c1f1123181d6b881714793689321ba24301b3585eec427436eb1c76d"
+                price: "457933"
+                timestamp: "1752846629592"
+                trader: "0xffd4f043057226453aeba59732d41c6093516f54823ebc3a16d17f8a77d2f0ad"
+              bcsEncoding: "base64"
+              bcs: "R9y7yFYf49UhmDNoVfCYOHgVKhJSR0ngVDV6wuNXPVhWocmFwfESMYHWuIFxR5NokyG6JDAbNYXuxCdDbrHHbSTph///////zfwGAAAAAAD87lYAAAAAAP/U8EMFciZFOuullzLUHGCTUW9Ugj68OhbRf4p30vCtzfwGAAAAAAABAK85SgkAAAAArzlKCQAAANj6zB2YAQAA"
 
   - name: sui_getCheckpoints
     summary: Return paginated list of checkpoints
@@ -2034,6 +2139,55 @@ methods:
                 previousTransaction: "DsYAh2efV1nD4UuEQXMeicPBgeYD4UbQSDpLg9mKTMzc"
             nextCursor: "0xb770280feece9abe5f4683ee9a1b5baa76e3426d3dd46e9e17ae45a294d8a486"
             hasNextPage: false
+
+  - name: suix_getCoinMetadata
+    summary: Get metadata for a specific coin
+    description: Retrieves metadata (name, symbol, decimals, etc.) for a given coin type.
+    params:
+      - name: coinType
+        required: true
+        description: The Move type of the coin (e.g. `0x2::sui::SUI`)
+        schema:
+          type: string
+    result:
+      name: result
+      description: Metadata about the requested coin.
+      schema:
+        type: object
+        properties:
+          decimals:
+            type: integer
+            description: Number of decimals the coin uses.
+          name:
+            type: string
+            description: Full name of the coin.
+          symbol:
+            type: string
+            description: Coin symbol or ticker.
+          description:
+            type: string
+            description: Optional description for the coin.
+          iconUrl:
+            type: string
+            nullable: true
+            description: Optional icon URL.
+          id:
+            type: string
+            description: Unique ID of the coin metadata object.
+    examples:
+      - name: Metadata for SUI coin
+        params:
+          - name: coinType
+            value: "0x2::sui::SUI"
+        result:
+          name: result
+          value:
+            decimals: 9
+            name: "Sui"
+            symbol: "SUI"
+            description: ""
+            iconUrl: null
+            id: "0x9258181f5ceac8dbffb7030890243caed69a9599d2886d957a9cb7656af3bdb3"
 
   - name: suix_getCommitteeInfo
     summary: Return the committee information for a specific epoch
