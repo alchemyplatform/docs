@@ -27,11 +27,11 @@ The API specifications generated in this repository are automatically published 
 You can find the complete list of all available API specs at:
 **https://dev-docs.alchemy.com/metadata.json**
 
-The metadata.json file contains URLs for all published specs, organized by API type and blockchain network. This includes:
+Each individual API spec can be found via a simple URL pattern:
 
-* **REST API specs** (OpenAPI): Located at `https://dev-docs.alchemy.com/alchemy/rest/{api-name}.json`
-* **JSON-RPC specs** (OpenRPC): Located at `https://dev-docs.alchemy.com/alchemy/json-rpc/{api-name}.json`
-* **Chain-specific specs** (OpenRPC): Located at `https://dev-docs.alchemy.com/chains/{chain-name}.json`
+* **REST API specs** (OpenAPI): `https://dev-docs.alchemy.com/alchemy/rest/{api-name}.json`
+* **JSON-RPC specs** (OpenRPC): `https://dev-docs.alchemy.com/alchemy/json-rpc/{api-name}.json`
+* **Chain-specific specs** (OpenRPC): `https://dev-docs.alchemy.com/chains/{chain-name}.json`
 
 ## Getting Started
 
