@@ -43,6 +43,116 @@ components:
               checkpointCommitments: []
               validatorSignature: "r8/5+Rm7niIlndcnvjSJ/vZLPrH3xY/ePGYTvrVbTascoQSpS+wsGlC+bQBpzIwA"
 
+    sui_getEvents:
+      name: sui_getEvents
+      summary: Get Events by Transaction Digest
+      description: >
+        Returns all events emitted during the execution of a transaction, identified by its digest.
+      params:
+        - name: transaction_digest
+          required: true
+          description: Digest (ID) of the transaction to retrieve events from.
+          schema:
+            type: string
+      result:
+        name: result
+        description: A list of events emitted by the transaction.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: object
+                description: Unique identifier for the event within the transaction.
+                properties:
+                  txDigest:
+                    type: string
+                    description: Transaction digest the event belongs to.
+                  eventSeq:
+                    type: string
+                    description: Sequence number of the event in the transaction.
+              packageId:
+                type: string
+                description: ID of the Move package emitting the event.
+              transactionModule:
+                type: string
+                description: Name of the Move module that emitted the event.
+              sender:
+                type: string
+                description: Address of the sender that triggered the event.
+              type:
+                type: string
+                description: Fully qualified name of the event type (e.g., package::module::EventName).
+              parsedJson:
+                type: object
+                description: Parsed JSON contents of the event payload.
+                properties:
+                  balance_manager_id:
+                    type: string
+                    description: ID of the balance manager involved in the event.
+                  base_asset_quantity_canceled:
+                    type: string
+                    description: Amount of base asset canceled in the order.
+                  client_order_id:
+                    type: string
+                    description: Client-defined identifier for the order.
+                  is_bid:
+                    type: boolean
+                    description: Indicates whether the order was a bid.
+                  order_id:
+                    type: string
+                    description: Unique ID of the canceled order.
+                  original_quantity:
+                    type: string
+                    description: Original quantity of the order before cancellation.
+                  pool_id:
+                    type: string
+                    description: Pool identifier where the order was placed.
+                  price:
+                    type: string
+                    description: Price level associated with the canceled order.
+                  timestamp:
+                    type: string
+                    description: Timestamp of the event in milliseconds.
+                  trader:
+                    type: string
+                    description: Address of the trader associated with the order.
+              bcsEncoding:
+                type: string
+                description: Encoding format used for the binary canonical serialization (BCS) payload.
+              bcs:
+                type: string
+                description: Base64-encoded BCS data representing the raw event.
+      examples:
+        - name: Events for a transaction
+          params:
+            - name: transaction_digest
+              value: "5PCRAN3BLaHJsFcVx8MikVrwFyJ53q4YGMqJjhTtvVmF"
+          result:
+            name: result
+            value:
+              - id:
+                  txDigest: "5PCRAN3BLaHJsFcVx8MikVrwFyJ53q4YGMqJjhTtvVmF"
+                  eventSeq: "0"
+                packageId: "0xcaf6ba059d539a97646d47f0b9ddf843e138d215e2a12ca1f4585d386f7aec3a"
+                transactionModule: "pool"
+                sender: "0xffd4f043057226453aeba59732d41c6093516f54823ebc3a16d17f8a77d2f0ad"
+                type: "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809::order::OrderCanceled"
+                parsedJson:
+                  balance_manager_id: "0x47dcbbc8561fe3d52198336855f0983878152a12524749e054357ac2e3573d58"
+                  base_asset_quantity_canceled: "39900000000"
+                  client_order_id: "5697276"
+                  is_bid: true
+                  order_id: "8447391300650109801851172"
+                  original_quantity: "39900000000"
+                  pool_id: "0x56a1c985c1f1123181d6b881714793689321ba24301b3585eec427436eb1c76d"
+                  price: "457933"
+                  timestamp: "1752846629592"
+                  trader: "0xffd4f043057226453aeba59732d41c6093516f54823ebc3a16d17f8a77d2f0ad"
+                bcsEncoding: "base64"
+                bcs: "R9y7yFYf49UhmDNoVfCYOHgVKhJSR0ngVDV6wuNXPVhWocmFwfESMYHWuIFxR5NokyG6JDAbNYXuxCdDbrHHbSTph///////zfwGAAAAAAD87lYAAAAAAP/U8EMFciZFOuullzLUHGCTUW9Ugj68OhbRf4p30vCtzfwGAAAAAAABAK85SgkAAAAArzlKCQAAANj6zB2YAQAA"
+
     sui_getCheckpoints:
       name: sui_getCheckpoints
       summary: Return paginated list of checkpoints

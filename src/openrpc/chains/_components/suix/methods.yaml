@@ -293,6 +293,56 @@ components:
               nextCursor: "0xb770280feece9abe5f4683ee9a1b5baa76e3426d3dd46e9e17ae45a294d8a486"
               hasNextPage: false
 
+    suix_getCoinMetadata:
+      name: suix_getCoinMetadata
+      summary: Get metadata for a specific coin
+      description: Retrieves metadata (name, symbol, decimals, etc.) for a given coin type.
+      params:
+        - name: coinType
+          required: true
+          description: The Move type of the coin (e.g. `0x2::sui::SUI`)
+          schema:
+            type: string
+      result:
+        name: result
+        description: Metadata about the requested coin.
+        schema:
+          type: object
+          properties:
+            decimals:
+              type: integer
+              description: Number of decimals the coin uses.
+            name:
+              type: string
+              description: Full name of the coin.
+            symbol:
+              type: string
+              description: Coin symbol or ticker.
+            description:
+              type: string
+              description: Optional description for the coin.
+            iconUrl:
+              type: string
+              nullable: true
+              description: Optional icon URL.
+            id:
+              type: string
+              description: Unique ID of the coin metadata object.
+      examples:
+        - name: Metadata for SUI coin
+          params:
+            - name: coinType
+              value: "0x2::sui::SUI"
+          result:
+            name: result
+            value:
+              decimals: 9
+              name: "Sui"
+              symbol: "SUI"
+              description: ""
+              iconUrl: null
+              id: "0x9258181f5ceac8dbffb7030890243caed69a9599d2886d957a9cb7656af3bdb3"
+
     suix_getCommitteeInfo:
       name: suix_getCommitteeInfo
       summary: Return the committee information for a specific epoch
