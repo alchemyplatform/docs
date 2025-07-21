@@ -352,7 +352,13 @@ paths:
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
         - $ref: "#/components/parameters/withTokenBalances"
         # - $ref: '#/components/parameters/block'
         - $ref: "#/components/parameters/pageKey"
@@ -431,7 +437,13 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
       responses:
         "200":
           description: "Returns whether the specified contract is marked as spam."
@@ -878,7 +890,13 @@ paths:
       tags: ["NFT Spam Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/addressRequired"
+        - name: address
+          description: String - The address to check for spam status.
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
         - name: isSpam
           in: query
           required: true
@@ -1244,7 +1262,13 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
       responses:
         "200":
           description: ""
@@ -1644,7 +1668,20 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/addressRequired"
+        - name: address
+          description: String - The address to check for spam status.
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
+        - name: isSpam
+          description: Boolean - Whether the address is spam.
+          in: query
+          schema:
+            type: boolean
+            default: true
+          required: true
       responses:
         "200":
           description: ""
