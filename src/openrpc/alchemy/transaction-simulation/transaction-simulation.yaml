@@ -44,7 +44,37 @@ methods:
       name: Simulation result
       description: The asset changes resulting from the transaction simulation.
       schema:
-        $ref: "../_shared/components.yaml#/components/schemas/SimulateAssetChangesResult"
+        type: object
+        properties:
+          changes:
+            type: array
+            items:
+              type: object
+              properties:
+                assetType:
+                  type: string
+                changeType:
+                  type: string
+                from:
+                  type: string
+                to:
+                  type: string
+                rawAmount:
+                  type: string
+                contractAddress:
+                  type: string
+                tokenId:
+                  type: ["string", "null"]
+                decimals:
+                  type: integer
+                symbol:
+                  type: string
+                name:
+                  type: string
+                logo:
+                  type: string
+                amount:
+                  type: string
     examples:
       - name: Simulate transferring USDC
         params:
@@ -91,18 +121,8 @@ methods:
                 $ref: "../_shared/components.yaml#/components/schemas/address"
               to:
                 $ref: "../_shared/components.yaml#/components/schemas/address"
-              value:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
               data:
                 $ref: "../_shared/components.yaml#/components/schemas/bytesAnyCase"
-              gas:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
-              gasPrice:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
-              maxFeePerGas:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
-              maxPriorityFeePerGas:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
             required:
               - to
     result:
@@ -111,7 +131,37 @@ methods:
       schema:
         type: array
         items:
-          $ref: "../_shared/components.yaml#/components/schemas/SimulateExecutionResult"
+          type: object
+          properties:
+            changes:
+              type: array
+              items:
+                type: object
+                properties:
+                  assetType:
+                    type: string
+                  changeType:
+                    type: string
+                  from:
+                    type: string
+                  to:
+                    type: string
+                  rawAmount:
+                    type: string
+                  contractAddress:
+                    type: string
+                  tokenId:
+                    type: ["string", "null"]
+                  decimals:
+                    type: integer
+                  symbol:
+                    type: string
+                  name:
+                    type: string
+                  logo:
+                    type: string
+                  amount:
+                    type: string
     examples:
       - name: Bundle simulation example
         params:
@@ -161,8 +211,6 @@ methods:
               $ref: "../_shared/components.yaml#/components/schemas/address"
             to:
               $ref: "../_shared/components.yaml#/components/schemas/address"
-            value:
-              $ref: "../_shared/components.yaml#/components/schemas/uint"
             data:
               $ref: "../_shared/components.yaml#/components/schemas/bytesAnyCase"
             gas:
@@ -271,25 +319,54 @@ methods:
                 $ref: "../_shared/components.yaml#/components/schemas/address"
               to:
                 $ref: "../_shared/components.yaml#/components/schemas/address"
-              value:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
               data:
                 $ref: "../_shared/components.yaml#/components/schemas/bytesAnyCase"
-              gas:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
-              gasPrice:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
-              maxFeePerGas:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
-              maxPriorityFeePerGas:
-                $ref: "../_shared/components.yaml#/components/schemas/uint"
             required:
               - to
     result:
       name: Execution simulation
       description: The decoded execution traces and logs from simulating multiple transactions in a bundle.
       schema:
-        $ref: "../_shared/components.yaml#/components/schemas/SimulateExecutionResult"
+        type: array
+        items:
+          type: object
+          properties:
+            calls:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  from:
+                    type: string
+                  to:
+                    type: string
+                  value:
+                    type: string
+                  gas:
+                    type: string
+                  gasUsed:
+                    type: string
+                  input:
+                    type: string
+                  output:
+                    type: string
+                  error:
+                    type: string
+            logs:
+              type: array
+              items:
+                type: object
+                properties:
+                  address:
+                    type: string
+                  data:
+                    type: string
+                  topics:
+                    type: array
+                    items:
+                      type: string
     examples:
       - name: Bundle simulation example
         params:
