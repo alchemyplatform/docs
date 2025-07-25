@@ -1234,3 +1234,40 @@ methods:
       description: Returns token accounts matching the specified criteria.
       schema:
         $ref: "./components/account.yaml#/components/schemas/TokenAccountsList"
+
+  - name: alchemy_requestFeePayer
+    description: Requests fee and rent sponsorship for a Solana transaction and returns the fully-signed `serializedTransaction` (now containing the fee-payer signature).
+    params:
+      - name: policyId
+        required: true
+        description: The Gas Manager Policy ID or list of Gas Manager Policy IDs.
+        schema:
+          oneOf:
+            - type: string
+              format: uuid
+            - type: array
+              items:
+                type: string
+                format: uuid
+      - name: serializedTransaction
+        required: true
+        description: The unsigned transaction produced by tx.serialize(). It may already contain a feePayer; the service will overwrite it with the sponsoring account and add the fee-payer signature.
+        schema:
+          type: string
+          pattern: "^[A-Za-z0-9+/]+={0,2}$"
+    examples:
+      - name: alchemy_requestFeePayer example
+        params:
+          - name: policyId
+            value: "69d524a7-e932-4214-8673-dcdcba31bb42"
+          - name: serializedTransaction
+            value: "AgICAQMEBQYHCAkKCwwNDg8BCg=="
+    result:
+      name: Signed transaction
+      description: Response object containing the fully-signed transaction ready for sendRawTransaction.
+      schema:
+        type: object
+        properties:
+          serializedTransaction:
+            type: string
+            description: The transaction after the service sets the feePayer field and adds the fee-payer signature.
