@@ -914,3 +914,82 @@ methods:
             transactionHash: "0x504ce587a65bdbdb6414a0c6c16d86a04dd79bfcc4f2950eec9634b30ce5370f"
             transactionIndex: "0x0"
             type: "0x0"
+
+  - name: eth_bigBlockGasPrice
+    description: Returns the base fee for the next big block.
+    params: []
+    result:
+      name: Big block gas price
+      description: The hexadecimal value of the base fee for the next big block
+      schema:
+        $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+    examples:
+      - name: eth_bigBlockGasPrice example
+        params: []
+        result:
+          name: Big block gas price
+          value: "0x5f5e100"
+
+  - name: eth_usingBigBlocks
+    description: Returns whether the address is using big blocks.
+    params:
+      - name: Address
+        required: true
+        description: The address to check if it is using big blocks.
+        schema:
+          $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+    result:
+      name: Using big blocks
+      description: Whether the address is using big blocks.
+      schema:
+        type: boolean
+    examples:
+      - name: eth_usingBigBlocks example
+        params:
+          - name: Address
+            value: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        result:
+          name: Using big blocks
+          value: true
+
+  - name: eth_getSystemTxsByBlockHash
+    description: Similar to the "getTransaction" analogs but returns the system transactions that originate from HyperCore.
+    params:
+      - name: Block hash
+        required: true
+        description: The hash of the block to get the system transactions for.
+        schema:
+          $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+    result:
+      name: System transactions
+      description: The system transactions for the block.
+      schema:
+        type: array
+        items:
+          $ref: "../_components/evm/transaction.yaml#/components/schemas/TransactionInfo"
+    examples:
+      - name: eth_getSystemTxsByBlockHash example
+        params:
+          - name: Block hash
+            value: "0x2b8a8abf36210994fa52d281f70927acd7dfde8909f5216ab0e4558f17227614"
+
+  - name: eth_getSystemTxsByBlockNumber
+    description: Similar to the "getTransaction" analogs but returns the system transactions that originate from HyperCore.
+    params:
+      - name: Block
+        required: true
+        description: The block number or tag ('latest', 'earliest', 'pending') containing the transaction.
+        schema:
+          $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
+    result:
+      name: System transactions
+      description: The system transactions for the block.
+      schema:
+        type: array
+        items:
+          $ref: "../_components/evm/transaction.yaml#/components/schemas/TransactionInfo"
+    examples:
+      - name: eth_getSystemTxsByBlockNumber example
+        params:
+          - name: Block
+            value: "latest"
