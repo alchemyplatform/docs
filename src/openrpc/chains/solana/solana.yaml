@@ -161,6 +161,71 @@ methods:
         items:
           $ref: "./components/account.yaml#/components/schemas/TokenAccount"
 
+  - name: getTokenAccountsByDelegate
+    description: Returns all SPL Token accounts delegated to the provided account.
+    params:
+      - name: Delegate Pubkey
+        required: true
+        description: The Pubkey of the account delegate to query.
+        schema:
+          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Token filter
+        required: false
+        description: A filter object containing either the Mint Pubkey or the Token program Pubkey.
+        schema:
+          type: object
+          properties:
+            mint:
+              $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+              description: The Pubkey of the specific token Mint to limit accounts to.
+            programId:
+              $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+              description: The Pubkey of the Token program that owns the accounts.
+      - name: Configuration
+        required: false
+        description: Optional configuration object containing additional settings.
+        schema:
+          $ref: "./components/account.yaml#/components/schemas/GetTokenAccountsByDelegateConfig"
+    examples:
+      - name: getTokenAccountsByDelegate example
+        params:
+          - name: Delegate Pubkey
+            value: "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T"
+          - name: Token filter
+            value:
+              programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    result:
+      name: Token accounts
+      description: An array of JSON objects representing the token accounts delegated to the specified Pubkey.
+      schema:
+        type: array
+        items:
+          $ref: "./components/account.yaml#/components/schemas/TokenAccount"
+
+  - name: getTokenLargestAccounts
+    description: Returns the 20 largest accounts of a particular SPL Token type.
+    params:
+      - name: Token Mint Pubkey
+        required: true
+        description: The Pubkey of the token Mint to query.
+        schema:
+          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object.
+        schema:
+          $ref: "./components/account.yaml#/components/schemas/GetTokenLargestAccountsConfig"
+    examples:
+      - name: getTokenLargestAccounts example
+        params:
+          - name: Token Mint Pubkey
+            value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    result:
+      name: Largest token accounts
+      description: An array of the 20 largest accounts of the specified token type.
+      schema:
+        $ref: "./components/account.yaml#/components/schemas/TokenLargestAccountsList"
+
   - name: getLargestAccounts
     description: Returns the 20 largest accounts, by lamport balance.
     params:
@@ -174,6 +239,30 @@ methods:
       description: An array of objects containing the address of the account and its lamport balance.
       schema:
         $ref: "./components/account.yaml#/components/schemas/LargestAccountsList"
+
+  - name: getStakeActivation
+    description: Returns epoch activation information for a stake account.
+    params:
+      - name: Stake account Pubkey
+        required: true
+        description: Pubkey of the stake account to query.
+        schema:
+          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object.
+        schema:
+          $ref: "./components/account.yaml#/components/schemas/StakeActivationConfig"
+    examples:
+      - name: getStakeActivation example
+        params:
+          - name: Stake account Pubkey
+            value: "CYRJWqiSjLitBAcRxPvWpgX3s5TvmN2SuRY3eEYypFvT"
+    result:
+      name: Stake activation info
+      description: Returns epoch activation information for the stake account.
+      schema:
+        $ref: "./components/account.yaml#/components/schemas/StakeActivation"
 
   # Airdrop methods
   - name: requestAirdrop
@@ -705,6 +794,23 @@ methods:
       schema:
         $ref: "./components/state.yaml#/components/schemas/VersionInfo"
 
+  - name: getTransactionCount
+    description: Returns the current transaction count from the ledger.
+    params:
+      - name: Configuration
+        required: false
+        description: Optional configuration object.
+        schema:
+          $ref: "./components/state.yaml#/components/schemas/GetTransactionCountConfig"
+    examples:
+      - name: getTransactionCount example
+        params: []
+    result:
+      name: Transaction count
+      description: The current transaction count from the ledger.
+      schema:
+        $ref: "./components/state.yaml#/components/schemas/TransactionCount"
+
   # Supply methods
   - name: getSupply
     description: Returns information about the current supply of lamports.
@@ -840,3 +946,293 @@ methods:
       description: The details of a confirmed transaction.
       schema:
         $ref: "./components/transaction.yaml#/components/schemas/TransactionDetails"
+
+  - name: getAsset
+    description: Returns information about a single digital asset.
+    params:
+      - name: Asset ID
+        required: true
+        description: The ID of the asset to retrieve.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for display formatting.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetAssetConfig"
+    examples:
+      - name: getAsset example
+        params:
+          - name: Asset ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: Asset information
+      description: Returns detailed information about the specified digital asset.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/Asset"
+
+  - name: getAssets
+    description: Returns information about multiple digital assets.
+    params:
+      - name: Asset IDs
+        required: true
+        description: An array of asset IDs to retrieve.
+        schema:
+          type: array
+          items:
+            $ref: "./components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetAssetsConfig"
+    examples:
+      - name: getAssets example
+        params:
+          - name: Asset IDs
+            value:
+              - "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+              - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
+    result:
+      name: Assets list
+      description: Returns detailed information about the specified digital assets.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetProof
+    description: Returns the merkle proof for a compressed digital asset.
+    params:
+      - name: Asset ID
+        required: true
+        description: The ID of the compressed asset to get proof for.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/AssetId"
+    examples:
+      - name: getAssetProof example
+        params:
+          - name: Asset ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: Asset proof
+      description: Returns the merkle proof for the specified compressed asset.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetProof"
+
+  - name: getAssetProofs
+    description: Returns merkle proofs for multiple compressed digital assets.
+    params:
+      - name: Asset IDs
+        required: true
+        description: An array of compressed asset IDs to get proofs for.
+        schema:
+          type: array
+          items:
+            $ref: "./components/asset.yaml#/components/schemas/AssetId"
+    examples:
+      - name: getAssetProofs example
+        params:
+          - name: Asset IDs
+            value:
+              - "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+              - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
+    result:
+      name: Asset proofs
+      description: Returns merkle proofs for the specified compressed assets.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetProofList"
+
+  - name: getAssetsByAuthority
+    description: Returns assets filtered by their authority.
+    params:
+      - name: Authority address
+        required: true
+        description: The authority address to filter assets by.
+        schema:
+          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetAssetsByAuthorityConfig"
+    examples:
+      - name: getAssetsByAuthority example
+        params:
+          - name: Authority address
+            value: "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1"
+    result:
+      name: Assets by authority
+      description: Returns assets filtered by the specified authority.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetsByOwner
+    description: Returns assets owned by the specified address.
+    params:
+      - name: Owner address
+        required: true
+        description: The owner address to filter assets by.
+        schema:
+          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetAssetsByOwnerConfig"
+    examples:
+      - name: getAssetsByOwner example
+        params:
+          - name: Owner address
+            value: "N4f6zftYsuu4yT7icsjLwh4i6pB1zvvKbseHj2NmSQw"
+    result:
+      name: Assets by owner
+      description: Returns assets owned by the specified address.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetsByGroup
+    description: Returns assets filtered by their group information.
+    params:
+      - name: Group key
+        required: true
+        description: The group key to filter assets by.
+        schema:
+          type: string
+      - name: Group value
+        required: true
+        description: The group value to filter assets by.
+        schema:
+          type: string
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetAssetsByGroupConfig"
+    examples:
+      - name: getAssetsByGroup example
+        params:
+          - name: Group key
+            value: "collection"
+          - name: Group value
+            value: "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w"
+    result:
+      name: Assets by group
+      description: Returns assets filtered by the specified group.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetsByCreator
+    description: Returns assets created by the specified address.
+    params:
+      - name: Creator address
+        required: true
+        description: The creator address to filter assets by.
+        schema:
+          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetAssetsByCreatorConfig"
+    examples:
+      - name: getAssetsByCreator example
+        params:
+          - name: Creator address
+            value: "D3XrkNZz6wx6cofot7Zohsf2KSsu2ArngNk8VqU9cTY3"
+    result:
+      name: Assets by creator
+      description: Returns assets created by the specified address.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetList"
+
+  - name: searchAssets
+    description: Search for assets using a complex set of filter criteria.
+    params:
+      - name: Search filters
+        required: false
+        description: Object containing search criteria and filters.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/SearchAssetsConfig"
+    examples:
+      - name: searchAssets example
+        params:
+          - name: Search filters
+            value:
+              interface: "V1_NFT"
+              ownerAddress: "N4f6zftYsuu4yT7icsjLwh4i6pB1zvvKbseHj2NmSQw"
+              limit: 50
+    result:
+      name: Search results
+      description: Returns assets matching the specified search criteria.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetSignatures
+    description: Returns signatures for transactions that have interacted with the given asset.
+    params:
+      - name: Asset ID
+        required: true
+        description: The ID of the asset to get signatures for.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for pagination.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetAssetSignaturesConfig"
+    examples:
+      - name: getAssetSignatures example
+        params:
+          - name: Asset ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: Asset signatures
+      description: Returns signatures for transactions involving the specified asset.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/AssetSignatureList"
+
+  - name: getNftEditions
+    description: Returns all editions of a given master NFT.
+    params:
+      - name: Master NFT ID
+        required: true
+        description: The ID of the master NFT to get editions for.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for pagination.
+        schema:
+          $ref: "./components/asset.yaml#/components/schemas/GetNftEditionsConfig"
+    examples:
+      - name: getNftEditions example
+        params:
+          - name: Master NFT ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: NFT editions
+      description: Returns all editions of the specified master NFT.
+      schema:
+        $ref: "./components/asset.yaml#/components/schemas/NftEditionList"
+
+  - name: getTokenAccounts
+    description: Returns token accounts based on the specified filters.
+    params:
+      - name: Configuration
+        required: false
+        description: Configuration object for filtering and pagination.
+        schema:
+          $ref: "./components/account.yaml#/components/schemas/GetTokenAccountsConfig"
+    examples:
+      - name: getTokenAccounts example
+        params:
+          - name: Configuration
+            value:
+              mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+              limit: 100
+    result:
+      name: Token accounts
+      description: Returns token accounts matching the specified criteria.
+      schema:
+        $ref: "./components/account.yaml#/components/schemas/TokenAccountsList"
+
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getLeaderSchedule
