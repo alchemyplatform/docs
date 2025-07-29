@@ -299,71 +299,45 @@ const columns = [
  * COMPONENT
  */
 
-export const AlchemyFooter = () => {
-  const [isDark, setIsDark] = React.useState(
-    document.documentElement.classList.contains("dark"),
-  );
-
-  React.useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.target === document.documentElement &&
-          mutation.attributeName === "class"
-        ) {
-          setIsDark(document.documentElement.classList.contains("dark"));
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div id="AlchemyFooter">
-      <div className="FooterContainer">
-        <div className="FooterWrapper">
-          <div className="TopSection">
-            <div className="LinksColumns">
-              <div className="LogoColumn">
-                <AlchemyLogo isDark={isDark} />
-              </div>
-              {columns.map(({ title, links }) => (
-                <div className="Column" key={title}>
-                  <div className="ColumnTitle">{title}</div>
-                  {links.map(({ href, text, Icon }) => (
-                    <a className="FooterLink" key={text} href={href}>
-                      {Icon ? <Icon isDark={isDark} /> : null}
-                      <span>{text}</span>
-                    </a>
-                  ))}
-                </div>
-              ))}
+export const AlchemyFooter = () => (
+  <div id="AlchemyFooter">
+    <div className="FooterContainer">
+      <div className="FooterWrapper">
+        <div className="TopSection">
+          <div className="LinksColumns">
+            <div className="LogoColumn">
+              <AlchemyLogo />
             </div>
+            {columns.map(({ title, links }) => (
+              <div className="Column" key={title}>
+                <div className="ColumnTitle">{title}</div>
+                {links.map(({ href, text, Icon }) => (
+                  <a className="FooterLink" key={text} href={href}>
+                    <Icon />
+                    <span>{text}</span>
+                  </a>
+                ))}
+              </div>
+            ))}
           </div>
-          <div className="BottomSection">
-            <div className="CopyrightTerms">
-              <div className="LeftTerms">
-                <a
-                  className="TermsLink"
-                  href="https://legal.alchemy.com/#contract-kduihkaqm"
-                >
-                  Terms & Conditions
-                </a>
-                <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
-              </div>
-              <div className="RightTerms">
-                <BuiltByFern />
-              </div>
+        </div>
+        <div className="BottomSection">
+          <div className="CopyrightTerms">
+            <div className="LeftTerms">
+              <a
+                className="TermsLink"
+                href="https://legal.alchemy.com/#contract-kduihkaqm"
+              >
+                Terms & Conditions
+              </a>
+              <span>© {new Date().getFullYear()} Alchemy Insights, Inc</span>
+            </div>
+            <div className="RightTerms">
+              <BuiltByFern />
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  </div>
+);
