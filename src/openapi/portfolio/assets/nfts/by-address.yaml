@@ -9,7 +9,18 @@ requestBody:
   content:
     application/json:
       schema:
-        $ref: "./../../portfolio.yaml#/components/schemas/ByAddressRequestWithNFTOptionsAndPaging"
+        allOf:
+          - $ref: "./../../portfolio.yaml#/components/schemas/ByAddressRequestWithNFTOptionsAndPaging"
+          - type: object
+            properties:
+              orderBy:
+                type: string
+                enum: ["transferTime"]
+                description: "Field to order results by"
+              sortOrder:
+                type: string
+                enum: ["asc", "desc"]
+                description: "Sort order for results"
 responses:
   "200":
     description: Successful response!
