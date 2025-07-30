@@ -1,0 +1,119 @@
+---
+title: Set up
+description: Set up authentication for your smart wallet application.
+slug: authentication/setup/setup
+---
+
+# Authentication Setup
+
+Configure authentication for your smart wallet application using Alchemy's Account Kit.
+
+## Installation
+
+<Tabs>
+  <Tab title="React">
+    ```bash
+    npm install @account-kit/react @account-kit/core
+    ```
+
+    ## Configuration
+
+    ```typescript
+    import { AlchemyAccountsUIConfig, createConfig } from "@account-kit/react";
+
+    const config: AlchemyAccountsUIConfig = createConfig({
+      apiKey: "your-api-key",
+      chain: sepolia,
+      auth: {
+        sections: [
+          { type: "email_otp" },
+          { type: "passkey" },
+          { type: "social", authProviderId: "google" }
+        ]
+      }
+    });
+    ```
+
+    ## Provider Setup
+
+    ```typescript
+    import { AlchemyAccountProvider } from "@account-kit/react";
+
+    export function App() {
+      return (
+        <AlchemyAccountProvider config={config} queryClient={queryClient}>
+          <YourApp />
+        </AlchemyAccountProvider>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="React Native">
+    ```bash
+    npm install @account-kit/react-native @account-kit/core
+    ```
+
+    ## Configuration
+
+    ```typescript
+    import { createConfig } from "@account-kit/react-native";
+
+    const config = createConfig({
+      apiKey: "your-api-key",
+      chain: sepolia,
+      auth: {
+        sections: [
+          { type: "email_otp" },
+          { type: "passkey" }
+        ]
+      }
+    });
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```bash
+    npm install @account-kit/core @account-kit/signer
+    ```
+
+    ## Configuration
+
+    ```typescript
+    import { createConfig } from "@account-kit/core";
+
+    const config = createConfig({
+      apiKey: "your-api-key",
+      chain: sepolia,
+      auth: {
+        email: { enabled: true },
+        passkey: { enabled: true }
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Environment Variables
+
+Create a `.env` file with your configuration:
+
+```bash
+ALCHEMY_API_KEY=your-alchemy-api-key
+ALCHEMY_GAS_POLICY_ID=your-gas-policy-id
+```
+
+## Authentication Methods
+
+Account Kit supports multiple authentication methods:
+
+* **[Email OTP](/docs/wallets/authentication/login-methods/email-otp)**: Email-based one-time passwords
+* **[Email Magic Link](/docs/wallets/authentication/login-methods/email-magic-link)**: Passwordless email authentication
+* **[Social Login](/docs/wallets/authentication/login-methods/social-login)**: OAuth with Google, Facebook, etc.
+* **[Passkey](/docs/wallets/authentication/login-methods/passkey-signup)**: WebAuthn-based authentication
+
+## Next Steps
+
+* [Configure UI Components](/docs/wallets/authentication/setup/ui-components)
+* [Set up login methods](/docs/wallets/authentication/login-methods)
+* [Enable MFA](/docs/wallets/authentication/mfa/mfa-overview)

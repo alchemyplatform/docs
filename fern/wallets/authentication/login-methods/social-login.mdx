@@ -1,0 +1,695 @@
+---
+title: "Social Login"
+description: "Enable authentication using popular social providers like Google, Apple, and more"
+slug: social-login
+---
+
+# Social Login Authentication
+
+Enable users to authenticate using their existing social media accounts. Social login provides a familiar and convenient authentication method that reduces friction and improves user conversion rates.
+
+## Supported Providers
+
+Account Kit supports the following social authentication providers:
+
+* **Google** - Most popular social login option
+* **Apple** - Required for iOS apps, growing on web
+* **Facebook** - Wide user base, good conversion
+* **Twitter/X** - Popular among certain demographics
+* **Discord** - Great for gaming and community apps
+* **GitHub** - Perfect for developer-focused applications
+
+## Setup
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { useAuthenticate, useUser } from "@alchemy/aa-alchemy/react";
+
+    function SocialLogin() {
+      const user = useUser();
+      const { authenticate, isPending } = useAuthenticate();
+
+      const handleSocialLogin = async (provider: string) => {
+        try {
+          await authenticate({
+            type: "oauth",
+            authProviderId: provider,
+            mode: "popup", // or "redirect"
+          });
+        } catch (error) {
+          console.error(`${provider} login failed:`, error);
+        }
+      };
+
+      if (user) {
+        return (
+          <div className="welcome">
+            <img src={user.avatar} alt="Profile" />
+            <h3>Welcome, {user.name}!</h3>
+            <p>{user.email}</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="social-login">
+          <h2>Sign in to your account</h2>
+          
+          <div className="social-buttons">
+            <button 
+              onClick={() => handleSocialLogin("google")}
+              disabled={isPending}
+              className="social-btn google"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </button>
+            
+            <button 
+              onClick={() => handleSocialLogin("apple")}
+              disabled={isPending}
+              className="social-btn apple"
+            >
+              <AppleIcon />
+              Continue with Apple
+            </button>
+            
+            <button 
+              onClick={() => handleSocialLogin("facebook")}
+              disabled={isPending}
+              className="social-btn facebook"
+            >
+              <FacebookIcon />
+              Continue with Facebook
+            </button>
+          </div>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```javascript
+    import { Web3AuthSigner } from "@alchemy/aa-signers/web3auth";
+    import { createAlchemySmartAccountClient } from "@alchemy/aa-alchemy";
+
+    class SocialAuthentication {
+      constructor() {
+        this.web3AuthSigner = new Web3AuthSigner({
+          clientId: "YOUR_WEB3AUTH_CLIENT_ID",
+          chainConfig: {
+            chainNamespace: "eip155",
+            chainId: "0xaa36a7", // Sepolia
+          },
+          web3AuthNetwork: "sapphire_mainnet", // or "testnet"
+        });
+      }
+
+      async authenticateWithGoogle() {
+        try {
+          await this.web3AuthSigner.authenticate({
+            loginProvider: "google",
+            extraLoginOptions: {
+              domain: "yourapp.com",
+              login_hint: "user@example.com",
+            },
+          });
+          
+          return await this.createSmartAccount();
+        } catch (error) {
+          throw new Error(`Google authentication failed: ${error.message}`);
+        }
+      }
+
+      async authenticateWithApple() {
+        try {
+          await this.web3AuthSigner.authenticate({
+            loginProvider: "apple",
+            extraLoginOptions: {
+              domain: "yourapp.com",
+            },
+          });
+          
+          return await this.createSmartAccount();
+        } catch (error) {
+          throw new Error(`Apple authentication failed: ${error.message}`);
+        }
+      }
+
+      async createSmartAccount() {
+        const client = createAlchemySmartAccountClient({
+          apiKey: "YOUR_ALCHEMY_API_KEY",
+          chain: sepolia,
+          signer: this.web3AuthSigner,
+        });
+
+        return client;
+      }
+
+      async getUserInfo() {
+        return await this.web3AuthSigner.getUserInfo();
+      }
+    }
+
+    // Usage
+    const socialAuth = new SocialAuthentication();
+
+    // Google login
+    try {
+      const client = await socialAuth.authenticateWithGoogle();
+      const userInfo = await socialAuth.getUserInfo();
+      console.log("User:", userInfo);
+    } catch (error) {
+      console.error("Authentication failed:", error);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Provider Configuration
+
+### Google OAuth Setup
+
+```tsx
+const googleConfig = {
+  clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+  
+  // Google-specific options
+  extraLoginOptions: {
+    // Custom domain for hosted domain restriction
+    hd: "yourcompany.com",
+    
+    // Prompt for account selection
+    prompt: "select_account",
+    
+    // Request specific scopes
+    scope: "openid email profile",
+    
+    // Custom login hint
+    login_hint: "user@example.com",
+  },
+};
+```
+
+### Apple OAuth Setup
+
+```tsx
+const appleConfig = {
+  clientId: process.env.REACT_APP_APPLE_CLIENT_ID,
+  
+  // Apple-specific options
+  extraLoginOptions: {
+    // Custom domain
+    domain: "yourapp.com",
+    
+    // Response mode
+    response_mode: "form_post",
+    
+    // Requested scopes
+    scope: "name email",
+  },
+};
+```
+
+### Facebook OAuth Setup
+
+```tsx
+const facebookConfig = {
+  clientId: process.env.REACT_APP_FACEBOOK_APP_ID,
+  
+  // Facebook-specific options
+  extraLoginOptions: {
+    // Custom domain
+    domain: "yourapp.com",
+    
+    // Requested permissions
+    scope: "email,public_profile",
+    
+    // Response type
+    response_type: "code",
+  },
+};
+```
+
+## Complete Configuration
+
+### Web3Auth Configuration
+
+```tsx
+import { Web3AuthSigner } from "@alchemy/aa-signers/web3auth";
+
+const web3AuthConfig = {
+  clientId: "YOUR_WEB3AUTH_CLIENT_ID",
+  
+  // Chain configuration
+  chainConfig: {
+    chainNamespace: "eip155",
+    chainId: "0xaa36a7", // Sepolia testnet
+    rpcTarget: "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY",
+    displayName: "Ethereum Sepolia Testnet",
+    blockExplorer: "https://sepolia.etherscan.io",
+    ticker: "ETH",
+    tickerName: "Ethereum",
+  },
+  
+  // Web3Auth network
+  web3AuthNetwork: "sapphire_mainnet", // or "testnet" for development
+  
+  // UI configuration
+  uiConfig: {
+    theme: "light", // or "dark"
+    loginMethodsOrder: ["google", "apple", "facebook", "twitter"],
+    appLogo: "https://yourapp.com/logo.png",
+    appName: "YourApp",
+  },
+  
+  // Adapter configuration
+  adapterSettings: {
+    loginConfig: {
+      google: {
+        verifier: "YOUR_GOOGLE_VERIFIER",
+        typeOfLogin: "google",
+        clientId: "YOUR_GOOGLE_CLIENT_ID",
+      },
+      apple: {
+        verifier: "YOUR_APPLE_VERIFIER", 
+        typeOfLogin: "apple",
+        clientId: "YOUR_APPLE_CLIENT_ID",
+      },
+      facebook: {
+        verifier: "YOUR_FACEBOOK_VERIFIER",
+        typeOfLogin: "facebook", 
+        clientId: "YOUR_FACEBOOK_APP_ID",
+      },
+    },
+  },
+};
+
+const web3AuthSigner = new Web3AuthSigner(web3AuthConfig);
+```
+
+### Account Kit Integration
+
+```tsx
+import { createConfig } from "@alchemy/aa-alchemy/react";
+
+const config = createConfig({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  
+  // Social login configuration
+  signerConnection: {
+    web3auth: {
+      clientId: "YOUR_WEB3AUTH_CLIENT_ID",
+      network: "sapphire_mainnet",
+      
+      // Custom UI configuration
+      uiConfig: {
+        theme: "light",
+        appLogo: "https://yourapp.com/logo.png",
+        appName: "YourApp",
+        
+        // Customize login methods
+        loginMethodsOrder: ["google", "apple", "facebook"],
+        
+        // Hide specific providers
+        hideWalletConnectButton: true,
+        hideTorusButton: true,
+      },
+      
+      // Provider-specific settings
+      loginConfig: {
+        google: {
+          name: "Google",
+          verifier: "YOUR_GOOGLE_VERIFIER",
+          typeOfLogin: "google",
+          clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        },
+        apple: {
+          name: "Apple",
+          verifier: "YOUR_APPLE_VERIFIER",
+          typeOfLogin: "apple", 
+          clientId: process.env.REACT_APP_APPLE_CLIENT_ID,
+        },
+      },
+    },
+  },
+});
+```
+
+## Custom Social Login UI
+
+### Custom Provider Buttons
+
+```tsx
+import { useAuthenticate } from "@alchemy/aa-alchemy/react";
+
+const socialProviders = [
+  {
+    id: "google",
+    name: "Google",
+    icon: GoogleIcon,
+    bgColor: "bg-white",
+    textColor: "text-gray-900",
+    borderColor: "border-gray-300",
+  },
+  {
+    id: "apple", 
+    name: "Apple",
+    icon: AppleIcon,
+    bgColor: "bg-black",
+    textColor: "text-white",
+    borderColor: "border-black",
+  },
+  {
+    id: "facebook",
+    name: "Facebook", 
+    icon: FacebookIcon,
+    bgColor: "bg-blue-600",
+    textColor: "text-white",
+    borderColor: "border-blue-600",
+  },
+  {
+    id: "discord",
+    name: "Discord",
+    icon: DiscordIcon,
+    bgColor: "bg-indigo-600",
+    textColor: "text-white", 
+    borderColor: "border-indigo-600",
+  },
+];
+
+function CustomSocialLogin() {
+  const { authenticate, isPending } = useAuthenticate();
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+
+  const handleSocialLogin = async (providerId: string) => {
+    setLoadingProvider(providerId);
+    
+    try {
+      await authenticate({
+        type: "oauth",
+        authProviderId: providerId,
+      });
+    } catch (error) {
+      console.error(`${providerId} login failed:`, error);
+    } finally {
+      setLoadingProvider(null);
+    }
+  };
+
+  return (
+    <div className="social-login-grid">
+      {socialProviders.map((provider) => (
+        <button
+          key={provider.id}
+          onClick={() => handleSocialLogin(provider.id)}
+          disabled={isPending}
+          className={`
+            flex items-center justify-center gap-3 px-4 py-3 rounded-lg
+            border transition-all duration-200 font-medium
+            ${provider.bgColor} ${provider.textColor} ${provider.borderColor}
+            hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+          `}
+        >
+          {loadingProvider === provider.id ? (
+            <LoadingSpinner className="w-5 h-5" />
+          ) : (
+            <provider.icon className="w-5 h-5" />
+          )}
+          Continue with {provider.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+### Responsive Social Login
+
+```tsx
+function ResponsiveSocialLogin() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  return (
+    <div className={`social-login ${isMobile ? "mobile" : "desktop"}`}>
+      {isMobile ? (
+        // Mobile: Stack vertically
+        <div className="flex flex-col gap-3">
+          <SocialButton provider="google" />
+          <SocialButton provider="apple" />
+          <SocialButton provider="facebook" />
+        </div>
+      ) : (
+        // Desktop: Grid layout
+        <div className="grid grid-cols-2 gap-3">
+          <SocialButton provider="google" />
+          <SocialButton provider="apple" />
+          <SocialButton provider="facebook" />
+          <SocialButton provider="discord" />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Error Handling
+
+### Social Login Error States
+
+```tsx
+function SocialLoginWithErrorHandling() {
+  const { authenticate, isPending } = useAuthenticate();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSocialLogin = async (provider: string) => {
+    setError(null);
+    
+    try {
+      await authenticate({
+        type: "oauth",
+        authProviderId: provider,
+      });
+    } catch (error: any) {
+      // Handle specific social login errors
+      switch (error.code) {
+        case "POPUP_BLOCKED":
+          setError("Popup was blocked. Please allow popups and try again.");
+          break;
+        case "USER_CANCELLED":
+          setError("Login was cancelled.");
+          break;
+        case "NETWORK_ERROR":
+          setError("Network error. Please check your connection.");
+          break;
+        case "PROVIDER_ERROR":
+          setError(`${provider} authentication failed. Please try again.`);
+          break;
+        case "INSUFFICIENT_PERMISSIONS":
+          setError("Required permissions were not granted.");
+          break;
+        default:
+          setError("Authentication failed. Please try again.");
+      }
+    }
+  };
+
+  return (
+    <div>
+      {error && (
+        <div className="error-banner">
+          <AlertIcon />
+          <span>{error}</span>
+          <button onClick={() => setError(null)}>×</button>
+        </div>
+      )}
+      
+      <CustomSocialLogin onLogin={handleSocialLogin} />
+    </div>
+  );
+}
+```
+
+## User Profile Management
+
+### Accessing User Information
+
+```tsx
+import { useUser } from "@alchemy/aa-alchemy/react";
+
+function UserProfile() {
+  const user = useUser();
+
+  if (!user) return null;
+
+  return (
+    <div className="user-profile">
+      <div className="profile-header">
+        <img
+          src={user.avatar || "/default-avatar.png"}
+          alt="Profile"
+          className="avatar"
+        />
+        <div className="user-info">
+          <h3>{user.name || "Anonymous User"}</h3>
+          <p>{user.email}</p>
+          <span className="provider-badge">
+            {user.provider} • {user.verifier}
+          </span>
+        </div>
+      </div>
+      
+      <div className="profile-details">
+        <DetailItem label="User ID" value={user.sub} />
+        <DetailItem label="Provider" value={user.provider} />
+        <DetailItem label="Email Verified" value={user.emailVerified} />
+        <DetailItem label="Created" value={user.createdAt} />
+      </div>
+    </div>
+  );
+}
+```
+
+### Profile Update Flow
+
+```tsx
+function ProfileUpdate() {
+  const user = useUser();
+  const [profile, setProfile] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+  });
+
+  const handleUpdateProfile = async () => {
+    try {
+      // Update profile via your backend API
+      await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      
+      // Refresh user data
+      window.location.reload();
+    } catch (error) {
+      console.error("Profile update failed:", error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleUpdateProfile}>
+      <input
+        type="text"
+        value={profile.name}
+        onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
+        placeholder="Full Name"
+      />
+      
+      <input
+        type="email"
+        value={profile.email}
+        onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+        placeholder="Email Address"
+      />
+      
+      <button type="submit">Update Profile</button>
+    </form>
+  );
+}
+```
+
+## Security Best Practices
+
+### OAuth Security Configuration
+
+```tsx
+const secureOAuthConfig = {
+  // Use PKCE for security
+  usePKCE: true,
+  
+  // Validate state parameter
+  validateState: true,
+  
+  // Secure cookie settings
+  cookieConfig: {
+    secure: true,
+    sameSite: "strict",
+    httpOnly: true,
+  },
+  
+  // Token validation
+  tokenValidation: {
+    validateIssuer: true,
+    validateAudience: true,
+    clockTolerance: 60, // 60 seconds
+  },
+};
+```
+
+### Domain Restrictions
+
+```tsx
+const restrictedConfig = {
+  // Limit to specific domains
+  allowedDomains: ["yourapp.com", "www.yourapp.com"],
+  
+  // Redirect URI validation
+  redirectUris: [
+    "https://yourapp.com/auth/callback",
+    "https://www.yourapp.com/auth/callback",
+  ],
+  
+  // CORS settings
+  corsSettings: {
+    allowedOrigins: ["https://yourapp.com"],
+    credentials: true,
+  },
+};
+```
+
+## Testing Social Login
+
+### Development Setup
+
+```tsx
+// Mock social authentication for testing
+const mockSocialAuth = {
+  async authenticate({ provider }: { provider: string }) {
+    if (process.env.NODE_ENV === "development") {
+      // Return mock user data
+      return {
+        user: {
+          id: "mock-user-id",
+          email: "test@example.com",
+          name: "Test User",
+          provider: provider,
+          avatar: "https://example.com/avatar.jpg",
+        },
+      };
+    }
+    
+    // Real implementation for production
+    return realSocialAuth.authenticate({ provider });
+  },
+};
+```
+
+## Next Steps
+
+* [Configure custom social providers](/docs/wallets/authentication/login-methods/custom-social-providers)
+* [Set up passkey authentication](/docs/wallets/authentication/login-methods/passkey-signup)
+* [Add multi-factor authentication](/docs/wallets/authentication/mfa/mfa-overview)
+* [Customize authentication UI](/docs/wallets/authentication/setup/whitelabel)

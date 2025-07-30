@@ -1,0 +1,118 @@
+---
+title: Email OTP
+description: Implement email-based one-time password authentication.
+slug: authentication/login-methods/email-otp
+---
+
+# Email OTP Authentication
+
+Enable users to authenticate using email-based one-time passwords (OTP). This method sends a temporary code to the user's email address for verification.
+
+## Overview
+
+Email OTP provides a secure authentication method that doesn't require users to remember complex passwords. Users simply enter their email address and receive a verification code.
+
+<Tabs>
+  <Tab title="React">
+    ## Setup
+
+    ```typescript
+    import { useAuthModal, useSignerStatus } from "@account-kit/react";
+
+    export function EmailOTPLogin() {
+      const { openAuthModal } = useAuthModal();
+      const { isConnected } = useSignerStatus();
+
+      return (
+        <div>
+          {!isConnected ? (
+            <button onClick={() => openAuthModal({ initialAuthType: "email" })}>
+              Sign in with Email
+            </button>
+          ) : (
+            <div>Connected!</div>
+          )}
+        </div>
+      );
+    }
+    ```
+
+    ## Configuration
+
+    Configure email OTP in your Alchemy config:
+
+    ```typescript
+    import { AlchemyAccountsUIConfig } from "@account-kit/react";
+
+    const config: AlchemyAccountsUIConfig = {
+      auth: {
+        sections: [
+          {
+            type: "email_otp"
+          }
+        ]
+      }
+    };
+    ```
+  </Tab>
+
+  <Tab title="React Native">
+    ## Setup
+
+    ```typescript
+    import { useAuthModal, useSignerStatus } from "@account-kit/react-native";
+
+    export function EmailOTPLogin() {
+      const { openAuthModal } = useAuthModal();
+      const { isConnected } = useSignerStatus();
+
+      return (
+        <View>
+          {!isConnected ? (
+            <TouchableOpacity onPress={() => openAuthModal({ initialAuthType: "email" })}>
+              <Text>Sign in with Email</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text>Connected!</Text>
+          )}
+        </View>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ## Setup
+
+    ```typescript
+    import { createConfig } from "@account-kit/core";
+
+    const config = createConfig({
+      auth: {
+        email: {
+          enabled: true
+        }
+      }
+    });
+
+    // Authenticate with email OTP
+    const result = await signer.authenticate({
+      type: "email",
+      email: "user@example.com"
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+* **Email Validation**: Always validate email addresses before sending OTP codes
+* **Rate Limiting**: Implement rate limiting to prevent abuse
+* **Code Expiration**: Set appropriate expiration times for OTP codes
+* **Fallback Options**: Provide alternative authentication methods
+
+## Next Steps
+
+* [Configure MFA](/docs/wallets/authentication/mfa/mfa-overview)
+* [Customize the UI](/docs/wallets/authentication/setup/ui-components)
+* [Add social login](/docs/wallets/authentication/login-methods/social-login)

@@ -1,0 +1,113 @@
+---
+title: Modular Account
+description: Learn about Alchemy's Modular Account smart wallet implementation.
+slug: authorization/smart-account-types/modular-account
+---
+
+# Modular Account
+
+Modular Account is Alchemy's advanced smart account implementation that provides extensible functionality through a modular plugin architecture.
+
+## Overview
+
+Modular Account offers advanced features beyond Light Account:
+
+* **Plugin Architecture**: Extend functionality with custom modules
+* **Advanced Authorization**: Complex multi-sig and role-based permissions
+* **Upgradeable Logic**: Modular upgrade system for new features
+* **Custom Validation**: Flexible transaction validation rules
+
+## Key Features
+
+### Plugin System
+
+Add functionality through modules:
+
+* **Session Key Plugins**: Temporary authorization modules
+* **Multi-owner Plugins**: Support for multiple account owners
+* **Custom Logic**: Application-specific business logic
+
+### Enhanced Security
+
+* Multi-factor authentication integration
+* Hardware wallet compatibility
+* Custom spending policies
+
+## Implementation
+
+<Tabs>
+  <Tab title="React">
+    ```typescript
+    import { ModularAccount } from "@account-kit/smart-contracts";
+    import { useSmartAccountClient } from "@account-kit/react";
+
+    export function CreateModularAccount() {
+      const { client, isLoadingClient } = useSmartAccountClient({
+        type: "ModularAccount",
+        version: "v2.0.0",
+      });
+
+      if (isLoadingClient) return <div>Loading...</div>;
+
+      return (
+        <div>
+          <p>Modular Account Address: {client?.account?.address}</p>
+          <p>Plugins: {client?.account?.plugins?.length || 0}</p>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```typescript
+    import { createModularAccount } from "@account-kit/smart-contracts";
+    import { createSmartAccountClient } from "@account-kit/core";
+
+    const account = await createModularAccount({
+      signer,
+      chain,
+      transport: http("https://eth-sepolia.g.alchemy.com/v2/your-api-key"),
+      version: "v2.0.0",
+    });
+
+    const client = createSmartAccountClient({
+      account,
+      chain,
+      transport: http("https://eth-sepolia.g.alchemy.com/v2/your-api-key"),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Adding Plugins
+
+Install and configure plugins:
+
+```typescript
+// Add multi-owner plugin
+const multiOwnerPlugin = {
+  address: "0x..." as Address,
+  initData: encodeAbiParameters(
+    [{ type: "address[]" }],
+    [[owner1, owner2, owner3]]
+  ),
+};
+
+await client.installPlugin({
+  plugin: multiOwnerPlugin,
+});
+```
+
+## Contract Details
+
+* **Architecture**: Diamond proxy pattern for modularity
+* **Upgradability**: Plugin-based upgrade system
+* **Gas Efficiency**: Optimized for complex operations
+* **Audits**: Comprehensive security audits
+
+## Next Steps
+
+* [Configure multi-owner setup](/docs/wallets/authorization/smart-account-types/multi-owner-light-account)
+* [Set up session keys](/docs/wallets/authorization/policies/session-keys)
+* [Add custom plugins](/docs/wallets/authorization/policies/spending-policies)

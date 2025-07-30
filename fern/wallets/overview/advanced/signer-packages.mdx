@@ -1,0 +1,364 @@
+---
+title: "Signer Packages"
+description: "Understanding and using different signer packages with Account Kit"
+slug: signer-packages
+---
+
+# Signer Packages
+
+Signers are responsible for creating cryptographic signatures that authorize transactions and operations in your smart wallet. Account Kit provides multiple signer packages to support different authentication methods and use cases.
+
+## Overview
+
+Signers in Account Kit implement the `SmartAccountSigner` interface and provide:
+
+* **Authentication** - Verify user identity
+* **Signature generation** - Create cryptographic signatures
+* **Key management** - Handle private key operations
+* **Authorization** - Control access to wallet functions
+
+## Available Signer Packages
+
+### Core Signers
+
+#### LocalAccountSigner
+
+For development and testing with private keys:
+
+```typescript
+import { LocalAccountSigner } from "@alchemy/aa-core";
+import { generatePrivateKey } from "viem";
+
+const privateKey = generatePrivateKey();
+const signer = LocalAccountSigner.privateKeyToAccountSigner(privateKey);
+```
+
+**Use cases:**
+
+* Development and testing
+* Server-side applications
+* Automated scripts
+
+**Security considerations:**
+
+* Store private keys securely
+* Never expose keys in client-side code
+* Use environment variables
+
+### External Signers
+
+#### Magic Link Signer
+
+Passwordless authentication using magic links:
+
+```typescript
+import { MagicSigner } from "@alchemy/aa-signers/magic";
+
+const magicSigner = new MagicSigner({
+  apiKey: "YOUR_MAGIC_API_KEY",
+});
+
+// Authenticate with email
+await magicSigner.authenticate({
+  email: "user@example.com",
+});
+```
+
+**Features:**
+
+* Email-based authentication
+* No password required
+* Mobile-friendly
+* Social login support
+
+#### Web3Auth Signer
+
+Social login and multi-factor authentication:
+
+```typescript
+import { Web3AuthSigner } from "@alchemy/aa-signers/web3auth";
+
+const web3AuthSigner = new Web3AuthSigner({
+  clientId: "YOUR_WEB3AUTH_CLIENT_ID",
+  chainConfig: {
+    chainNamespace: "eip155",
+    chainId: "0xaa36a7", // Sepolia
+  },
+});
+
+await web3AuthSigner.authenticate({
+  init: async () => {
+    await web3AuthSigner.inner.initModal();
+  },
+  connect: async () => {
+    await web3AuthSigner.inner.connect();
+  },
+});
+```
+
+**Features:**
+
+* Google, Facebook, Twitter login
+* Multi-factor authentication
+* Threshold key management
+* White-label solutions
+
+#### Turnkey Signer
+
+Enterprise-grade key management:
+
+```typescript
+import { TurnkeySigner } from "@alchemy/aa-signers/turnkey";
+
+const turnkeySigner = new TurnkeySigner({
+  apiBaseUrl: "https://api.turnkey.com",
+  defaultOrganizationId: "YOUR_ORG_ID",
+});
+
+// Authenticate with Turnkey
+await turnkeySigner.authenticate({
+  organizationId: "YOUR_ORG_ID",
+  privateKeyId: "YOUR_PRIVATE_KEY_ID",
+  apiKeyName: "YOUR_API_KEY_NAME",
+  apiPrivateKey: "YOUR_API_PRIVATE_KEY",
+});
+```
+
+**Features:**
+
+* Enterprise security
+* Hardware security modules (HSM)
+* Compliance features
+* Multi-party computation (MPC)
+
+#### Privy Signer
+
+Embedded wallets with social authentication:
+
+```typescript
+import { PrivySigner } from "@alchemy/aa-signers/privy";
+
+const privySigner = new PrivySigner({
+  appId: "YOUR_PRIVY_APP_ID",
+});
+
+// Authenticate user
+await privySigner.authenticate({
+  loginMethod: "email", // or "sms", "google", etc.
+});
+```
+
+**Features:**
+
+* Embedded wallet creation
+* Social and email authentication
+* Recovery mechanisms
+* Cross-platform support
+
+#### Fireblocks Signer
+
+Institutional-grade custody:
+
+```typescript
+import { FireblocksSigner } from "@alchemy/aa-signers/fireblocks";
+
+const fireblocksSigner = new FireblocksSigner({
+  apiKey: "YOUR_FIREBLOCKS_API_KEY",
+  privateKey: "YOUR_FIREBLOCKS_PRIVATE_KEY",
+  baseUrl: "https://api.fireblocks.io",
+});
+```
+
+**Features:**
+
+* Institutional custody
+* MPC technology
+* Compliance and reporting
+* Multi-signature support
+
+## Custom Signer Implementation
+
+You can create custom signers by implementing the `SmartAccountSigner` interface:
+
+```typescript
+import { SmartAccountSigner, type SmartAccountAuthenticator } from "@alchemy/aa-core";
+
+class CustomSigner implements SmartAccountSigner {
+  inner: SmartAccountAuthenticator;
+  
+  constructor(params: CustomSignerParams) {
+    // Initialize your custom authenticator
+    this.inner = new CustomAuthenticator(params);
+  }
+
+  async getAddress(): Promise<Address> {
+    // Return the signer's address
+    return this.inner.getAddress();
+  }
+
+  async signMessage(message: string | Uint8Array): Promise<Hex> {
+    // Sign a message
+    return this.inner.signMessage(message);
+  }
+
+  async signTypedData(params: SignTypedDataParams): Promise<Hex> {
+    // Sign typed data (EIP-712)
+    return this.inner.signTypedData(params);
+  }
+
+  async authenticate(params: CustomAuthParams): Promise<void> {
+    // Implement your authentication logic
+    await this.inner.authenticate(params);
+  }
+}
+```
+
+## Signer Selection Guide
+
+### For Development
+
+**Recommended:** `LocalAccountSigner`
+
+* Quick setup
+* Full control
+* No external dependencies
+
+### For Consumer Applications
+
+**Email-based:** `MagicSigner`
+
+* Familiar UX
+* Passwordless
+* Good conversion rates
+
+**Social login:** `Web3AuthSigner` or `PrivySigner`
+
+* Multiple auth options
+* Broad user appeal
+* Established providers
+
+### For Enterprise
+
+**High security:** `TurnkeySigner` or `FireblocksSigner`
+
+* Institutional grade
+* Compliance features
+* Advanced security
+
+**Custom needs:** Custom implementation
+
+* Full control
+* Specific requirements
+* Integration flexibility
+
+## Best Practices
+
+### Security
+
+* **Never expose private keys** in client-side code
+* **Use HTTPS** for all signer communications
+* **Validate signatures** before processing
+* **Implement timeouts** for authentication flows
+* **Store credentials securely** using proper key management
+
+### User Experience
+
+* **Provide clear instructions** for authentication steps
+* **Handle errors gracefully** with helpful messages
+* **Show loading states** during authentication
+* **Implement retry logic** for network failures
+* **Cache authentication** when appropriate
+
+### Performance
+
+* **Reuse signer instances** when possible
+* **Batch operations** to reduce signature requests
+* **Implement connection pooling** for external services
+* **Monitor response times** and optimize bottlenecks
+
+## Integration Examples
+
+### React Integration
+
+```tsx
+import { useMemo } from "react";
+import { MagicSigner } from "@alchemy/aa-signers/magic";
+import { useSmartAccountClient } from "@alchemy/aa-alchemy/react";
+
+function WalletComponent() {
+  const signer = useMemo(
+    () => new MagicSigner({
+      apiKey: process.env.REACT_APP_MAGIC_API_KEY!,
+    }),
+    []
+  );
+
+  const { client } = useSmartAccountClient({
+    type: "LightAccount",
+    signer,
+  });
+
+  return (
+    <div>
+      {/* Your wallet UI */}
+    </div>
+  );
+}
+```
+
+### Multi-Signer Setup
+
+```typescript
+// Support multiple authentication methods
+class MultiSigner {
+  private currentSigner: SmartAccountSigner | null = null;
+  
+  async authenticateWithEmail(email: string) {
+    const magicSigner = new MagicSigner({ apiKey: "..." });
+    await magicSigner.authenticate({ email });
+    this.currentSigner = magicSigner;
+  }
+  
+  async authenticateWithSocial(provider: string) {
+    const web3AuthSigner = new Web3AuthSigner({ clientId: "..." });
+    await web3AuthSigner.authenticate({ provider });
+    this.currentSigner = web3AuthSigner;
+  }
+  
+  getCurrentSigner(): SmartAccountSigner {
+    if (!this.currentSigner) {
+      throw new Error("No signer authenticated");
+    }
+    return this.currentSigner;
+  }
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Authentication failures:**
+
+* Check API keys and configuration
+* Verify network connectivity
+* Review provider-specific documentation
+
+**Signature errors:**
+
+* Ensure message format is correct
+* Verify chain ID matches
+* Check signer initialization
+
+**Performance issues:**
+
+* Implement proper caching
+* Use connection pooling
+* Monitor external service status
+
+## Next Steps
+
+* [Learn about infrastructure packages](/docs/wallets/overview/advanced/infra-packages)
+* [Set up authentication](/docs/wallets/authentication/setup/setup)
+* [Explore smart account types](/docs/wallets/authorization/smart-account-types/light-account)
+* [View API reference](/docs/wallets/sdk-reference/api/signer-types)

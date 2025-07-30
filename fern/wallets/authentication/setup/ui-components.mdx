@@ -1,0 +1,69 @@
+---
+title: UI Components
+description: Use pre-built UI components for authentication.
+slug: authentication/setup/ui-components
+---
+
+# UI Components
+
+Account Kit provides pre-built UI components to streamline authentication in your application.
+
+## Auth Modal
+
+The auth modal provides a complete authentication flow:
+
+```typescript
+import { useAuthModal } from "@account-kit/react";
+
+export function LoginButton() {
+  const { openAuthModal } = useAuthModal();
+
+  return (
+    <button onClick={() => openAuthModal()}>
+      Sign In
+    </button>
+  );
+}
+```
+
+## Customization
+
+Customize the appearance and behavior:
+
+```typescript
+const { openAuthModal } = useAuthModal();
+
+// Open with specific auth method
+openAuthModal({ 
+  initialAuthType: "email" 
+});
+
+// Customize appearance
+const config = createConfig({
+  auth: {
+    sections: [
+      { type: "email_otp" },
+      { type: "passkey" }
+    ],
+    addPasskeyOnSignup: true
+  },
+  ui: {
+    theme: {
+      borderRadius: "sm",
+      primaryColor: { light: "#FF6B35", dark: "#FF8C69" }
+    }
+  }
+});
+```
+
+## Components Overview
+
+* **AuthModal**: Complete authentication flow
+* **ConnectButton**: Connection status and controls
+* **ProfileCard**: User profile information
+* **WalletBalance**: Account balance display
+
+## Next Steps
+
+* [Implement whitelabel solution](/docs/wallets/authentication/setup/whitelabel)
+* [Configure login methods](/docs/wallets/authentication/login-methods)

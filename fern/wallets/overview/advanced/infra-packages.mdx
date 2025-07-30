@@ -1,0 +1,445 @@
+---
+title: "Infrastructure Packages"
+description: "Understanding the core infrastructure packages that power Account Kit"
+slug: infra-packages
+---
+
+# Infrastructure Packages
+
+Account Kit is built on a modular architecture with several core infrastructure packages that handle different aspects of smart wallet functionality. Understanding these packages helps you customize and extend your implementation.
+
+## Core Architecture
+
+Account Kit consists of several key packages:
+
+* **@alchemy/aa-core** - Core abstractions and interfaces
+* **@alchemy/aa-alchemy** - Alchemy-specific implementations
+* **@alchemy/aa-accounts** - Smart account implementations
+* **@alchemy/aa-signers** - Authentication and signing providers
+
+## @alchemy/aa-core
+
+The foundation package providing core abstractions and utilities.
+
+### Key Components
+
+#### SmartAccountClient
+
+The main interface for interacting with smart accounts:
+
+```typescript
+import { createSmartAccountClient } from "@alchemy/aa-core";
+
+const client = createSmartAccountClient({
+  transport: http("https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY"),
+  chain: sepolia,
+  account: smartAccount,
+});
+```
+
+**Core methods:**
+
+* `sendUserOperation()` - Send transactions
+* `simulateUserOperation()` - Simulate before sending
+* `getUserOperationReceipt()` - Get transaction receipt
+* `getAddress()` - Get account address
+
+#### BaseSmartContractAccount
+
+Abstract base class for smart account implementations:
+
+```typescript
+export abstract class BaseSmartContractAccount implements SmartContractAccount {
+  abstract getAccountInitCode(): Promise<Hex>;
+  abstract getAddress(): Promise<Address>;
+  abstract encodeBatchExecute(txs: BatchUserOperationCallData): Promise<Hex>;
+  abstract encodeExecute(tx: UserOperationCallData): Promise<Hex>;
+  abstract signUserOperationHash(uoHash: Hex): Promise<Hex>;
+}
+```
+
+#### Transport Layer
+
+Handles communication with blockchain nodes:
+
+```typescript
+import { http, createPublicClient } from "viem";
+
+const transport = http("https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY");
+const publicClient = createPublicClient({
+  chain: sepolia,
+  transport,
+});
+```
+
+### Utilities
+
+#### Address Utilities
+
+```typescript
+import { 
+  isValidAddress,
+  getAccountAddress,
+  isSmartContractAccount 
+} from "@alchemy/aa-core";
+
+// Validate addresses
+const isValid = isValidAddress("0x...");
+
+// Check if address is a smart contract
+const isContract = await isSmartContractAccount({
+  client,
+  address: "0x...",
+});
+```
+
+#### Gas Utilities
+
+```typescript
+import { 
+  estimateUserOperationGas,
+  getUserOperationHash 
+} from "@alchemy/aa-core";
+
+// Estimate gas for user operation
+const gasEstimate = await estimateUserOperationGas({
+  client,
+  userOperation,
+});
+```
+
+## @alchemy/aa-alchemy
+
+Alchemy-specific implementations and optimizations.
+
+### AlchemyProvider
+
+Enhanced provider with Alchemy-specific features:
+
+```typescript
+import { AlchemyProvider } from "@alchemy/aa-alchemy";
+
+const provider = new AlchemyProvider({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  entryPointAddress: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+});
+```
+
+**Features:**
+
+* Enhanced gas estimation
+* Bundler integration
+* Gas manager support
+* Debug endpoints
+
+### createAlchemySmartAccountClient
+
+Convenience function for creating optimized clients:
+
+```typescript
+import { createAlchemySmartAccountClient } from "@alchemy/aa-alchemy";
+
+const client = createAlchemySmartAccountClient({
+  apiKey: "YOUR_API_KEY",
+  chain: sepolia,
+  account: smartAccount,
+  gasManagerConfig: {
+    policyId: "YOUR_POLICY_ID",
+  },
+});
+```
+
+### Gas Manager Integration
+
+```typescript
+// Configure gas sponsorship
+const clientWithGasManager = createAlchemySmartAccountClient({
+  apiKey: "YOUR_API_KEY",
+  chain: sepolia,
+  account,
+  gasManagerConfig: {
+    policyId: "YOUR_POLICY_ID",
+    entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+  },
+});
+```
+
+### Bundler Services
+
+```typescript
+// Custom bundler configuration
+const client = createAlchemySmartAccountClient({
+  apiKey: "YOUR_API_KEY",
+  chain: sepolia,
+  account,
+  opts: {
+    bundlerUrl: "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY",
+    rpcUrl: "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY",
+  },
+});
+```
+
+## @alchemy/aa-accounts
+
+Smart account implementations following ERC-4337 standard.
+
+### LightAccount
+
+Optimized smart account implementation:
+
+```typescript
+import { createLightAccount } from "@alchemy/aa-accounts";
+
+const lightAccount = await createLightAccount({
+  chain: sepolia,
+  signer,
+  factoryAddress: "0x...", // Optional custom factory
+  salt: 0n, // Optional salt for deterministic addresses
+});
+```
+
+**Features:**
+
+* Gas optimized
+* Single owner by default
+* Upgradeable to MultiOwnerLightAccount
+* ERC-1271 signature validation
+
+### MultiOwnerLightAccount
+
+Extended version with multiple owners:
+
+```typescript
+import { createMultiOwnerLightAccount } from "@alchemy/aa-accounts";
+
+const multiOwnerAccount = await createMultiOwnerLightAccount({
+  chain: sepolia,
+  signer,
+  owners: ["0x...", "0x..."], // Multiple owner addresses
+});
+```
+
+### ModularAccount
+
+Plugin-based account with advanced features:
+
+```typescript
+import { createModularAccount } from "@alchemy/aa-accounts";
+
+const modularAccount = await createModularAccount({
+  chain: sepolia,
+  signer,
+  factoryAddress: "0x...",
+  plugins: [
+    // Plugin configurations
+  ],
+});
+```
+
+## @alchemy/aa-signers
+
+Authentication and signing provider implementations.
+
+### Signer Interface
+
+All signers implement the `SmartAccountSigner` interface:
+
+```typescript
+interface SmartAccountSigner {
+  getAddress(): Promise<Address>;
+  signMessage(message: string | Uint8Array): Promise<Hex>;
+  signTypedData(params: SignTypedDataParams): Promise<Hex>;
+  authenticate(params: AuthParams): Promise<void>;
+}
+```
+
+### Available Signers
+
+* **LocalAccountSigner** - Private key signing
+* **MagicSigner** - Magic Link authentication
+* **Web3AuthSigner** - Social login
+* **TurnkeySigner** - Enterprise key management
+* **FireblocksSigner** - Institutional custody
+* **PrivySigner** - Embedded wallets
+
+## Package Interactions
+
+```mermaid
+graph TD
+    A[Application] --> B[@alchemy/aa-alchemy]
+    B --> C[@alchemy/aa-core]
+    B --> D[@alchemy/aa-accounts]
+    B --> E[@alchemy/aa-signers]
+    
+    C --> F[SmartAccountClient]
+    C --> G[BaseSmartContractAccount]
+    C --> H[Transport Layer]
+    
+    D --> I[LightAccount]
+    D --> J[MultiOwnerLightAccount]
+    D --> K[ModularAccount]
+    
+    E --> L[LocalAccountSigner]
+    E --> M[MagicSigner]
+    E --> N[Web3AuthSigner]
+```
+
+## Custom Package Development
+
+### Creating Custom Accounts
+
+```typescript
+import { BaseSmartContractAccount } from "@alchemy/aa-core";
+
+export class CustomSmartAccount extends BaseSmartContractAccount {
+  constructor(params: CustomAccountParams) {
+    super(params);
+  }
+
+  async getAccountInitCode(): Promise<Hex> {
+    // Implementation for account deployment
+  }
+
+  async encodeExecute(tx: UserOperationCallData): Promise<Hex> {
+    // Implementation for single transaction
+  }
+
+  async encodeBatchExecute(txs: BatchUserOperationCallData): Promise<Hex> {
+    // Implementation for batch transactions
+  }
+
+  async signUserOperationHash(uoHash: Hex): Promise<Hex> {
+    // Implementation for signing user operations
+  }
+}
+```
+
+### Custom Provider Implementation
+
+```typescript
+import { SmartAccountProvider } from "@alchemy/aa-core";
+
+export class CustomProvider extends SmartAccountProvider {
+  constructor(config: CustomProviderConfig) {
+    super({
+      chain: config.chain,
+      transport: http(config.rpcUrl),
+      entryPointAddress: config.entryPointAddress,
+    });
+  }
+
+  // Override methods for custom behavior
+  async estimateUserOperationGas(userOp: UserOperationRequest) {
+    // Custom gas estimation logic
+    return super.estimateUserOperationGas(userOp);
+  }
+}
+```
+
+## Performance Optimization
+
+### Client Caching
+
+```typescript
+// Reuse client instances
+const clientCache = new Map<string, SmartAccountClient>();
+
+function getClient(apiKey: string, chain: Chain): SmartAccountClient {
+  const cacheKey = `${apiKey}-${chain.id}`;
+  
+  if (!clientCache.has(cacheKey)) {
+    const client = createAlchemySmartAccountClient({
+      apiKey,
+      chain,
+      account,
+    });
+    clientCache.set(cacheKey, client);
+  }
+  
+  return clientCache.get(cacheKey)!;
+}
+```
+
+### Batch Operations
+
+```typescript
+// Batch multiple operations for efficiency
+const batchOperations = [
+  { target: "0x...", data: "0x...", value: 0n },
+  { target: "0x...", data: "0x...", value: 0n },
+  { target: "0x...", data: "0x...", value: 0n },
+];
+
+const result = await client.sendUserOperation({
+  uo: batchOperations,
+});
+```
+
+## Testing and Debugging
+
+### Mock Implementations
+
+```typescript
+// Create mock implementations for testing
+const mockSigner: SmartAccountSigner = {
+  async getAddress() {
+    return "0x1234567890123456789012345678901234567890";
+  },
+  async signMessage(message) {
+    return "0xmocksignature";
+  },
+  async signTypedData(params) {
+    return "0xmocksignature";
+  },
+  async authenticate(params) {
+    // Mock authentication
+  },
+};
+```
+
+### Debug Mode
+
+```typescript
+// Enable debug logging
+const client = createAlchemySmartAccountClient({
+  apiKey: "YOUR_API_KEY",
+  chain: sepolia,
+  account,
+  opts: {
+    debug: true, // Enable debug logging
+  },
+});
+```
+
+## Migration and Upgrades
+
+### Version Compatibility
+
+Keep packages in sync:
+
+```json
+{
+  "dependencies": {
+    "@alchemy/aa-core": "^3.0.0",
+    "@alchemy/aa-alchemy": "^3.0.0",
+    "@alchemy/aa-accounts": "^3.0.0",
+    "@alchemy/aa-signers": "^3.0.0"
+  }
+}
+```
+
+### Breaking Changes
+
+Check migration guides when upgrading:
+
+* Review changelog for breaking changes
+* Test thoroughly in development
+* Update integration code as needed
+
+## Next Steps
+
+* [Set up authentication](/docs/wallets/authentication/setup/setup)
+* [Choose a smart account type](/docs/wallets/authorization/smart-account-types/light-account)
+* [Send your first transaction](/docs/wallets/transactions/send-operations/send-user-operations)
+* [Explore React components](/docs/wallets/sdk-reference/react/components)

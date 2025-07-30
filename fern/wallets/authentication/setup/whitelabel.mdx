@@ -1,0 +1,609 @@
+---
+title: "Whitelabel Setup"
+description: "Customize the authentication experience with whitelabel configuration"
+slug: whitelabel
+---
+
+# Whitelabel Setup
+
+Create a fully customized authentication experience that matches your brand by configuring Account Kit's whitelabel options. Remove Alchemy branding and customize the entire user interface.
+
+## Overview
+
+Whitelabel configuration allows you to:
+
+* **Custom branding** - Use your logos, colors, and styling
+* **Remove Alchemy branding** - Create a seamless brand experience
+* **Custom UI components** - Build your own authentication interface
+* **Flexible theming** - Match your application's design system
+
+## Basic Whitelabel Configuration
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { AccountKitProvider, createConfig } from "@alchemy/aa-alchemy/react";
+
+    const config = createConfig({
+      apiKey: "YOUR_ALCHEMY_API_KEY",
+      chain: sepolia,
+      ssr: false,
+      
+      // Whitelabel configuration
+      ui: {
+        theme: {
+          // Remove Alchemy branding
+          showAlchemyAttribution: false,
+          
+          // Custom colors
+          primaryColor: "#6366f1",
+          borderRadius: "8px",
+          
+          // Custom fonts
+          fontFamily: "'Inter', sans-serif",
+        },
+        
+        // Custom modal configuration
+        modalConfig: {
+          showWalletIcon: false,
+          title: "Sign in to YourApp",
+          subtitle: "Connect your wallet to get started",
+        },
+      },
+    });
+
+    export default function App() {
+      return (
+        <AccountKitProvider config={config}>
+          <YourApp />
+        </AccountKitProvider>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```javascript
+    import { createAlchemySmartAccountClient } from "@alchemy/aa-alchemy";
+
+    const client = createAlchemySmartAccountClient({
+      apiKey: "YOUR_ALCHEMY_API_KEY",
+      chain: sepolia,
+      account,
+      
+      // UI customization
+      ui: {
+        theme: {
+          showAlchemyAttribution: false,
+          primaryColor: "#6366f1",
+          borderRadius: "8px",
+          fontFamily: "'Inter', sans-serif",
+        },
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Advanced Theme Customization
+
+### Complete Theme Override
+
+```tsx
+const customTheme = {
+  // Disable Alchemy branding
+  showAlchemyAttribution: false,
+  
+  // Colors
+  colors: {
+    primary: "#6366f1",
+    secondary: "#64748b",
+    success: "#10b981",
+    warning: "#f59e0b",
+    error: "#ef4444",
+    background: "#ffffff",
+    surface: "#f8fafc",
+    text: {
+      primary: "#0f172a",
+      secondary: "#64748b",
+      muted: "#94a3b8",
+    },
+    border: "#e2e8f0",
+  },
+  
+  // Typography
+  typography: {
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    fontSize: {
+      xs: "12px",
+      sm: "14px",
+      md: "16px",
+      lg: "18px",
+      xl: "20px",
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+    },
+  },
+  
+  // Spacing
+  spacing: {
+    xs: "4px",
+    sm: "8px",
+    md: "16px",
+    lg: "24px",
+    xl: "32px",
+  },
+  
+  // Border radius
+  borderRadius: {
+    sm: "4px",
+    md: "8px",
+    lg: "12px",
+    xl: "16px",
+    full: "9999px",
+  },
+  
+  // Shadows
+  shadows: {
+    sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+    md: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+    lg: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+  },
+};
+
+const config = createConfig({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  ui: {
+    theme: customTheme,
+  },
+});
+```
+
+### Modal Customization
+
+```tsx
+const config = createConfig({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  ui: {
+    theme: {
+      showAlchemyAttribution: false,
+    },
+    modalConfig: {
+      // Custom modal appearance
+      title: "Welcome to YourApp",
+      subtitle: "Sign in to access your account",
+      showWalletIcon: false,
+      
+      // Custom logo
+      logoUrl: "https://yourdomain.com/logo.png",
+      logoAlt: "YourApp Logo",
+      
+      // Modal positioning
+      position: "center", // "center" | "top" | "bottom"
+      
+      // Custom styles
+      styles: {
+        modal: {
+          maxWidth: "400px",
+          borderRadius: "16px",
+          boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+        },
+        backdrop: {
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          backdropFilter: "blur(4px)",
+        },
+      },
+    },
+  },
+});
+```
+
+## Custom Authentication Components
+
+### Building Custom Login Interface
+
+```tsx
+import { 
+  useAuthenticate, 
+  useAuthModal, 
+  useUser 
+} from "@alchemy/aa-alchemy/react";
+
+function CustomAuthComponent() {
+  const user = useUser();
+  const { authenticate } = useAuthenticate();
+  const { openAuthModal, closeAuthModal } = useAuthModal();
+  
+  const handleEmailLogin = async (email: string) => {
+    try {
+      await authenticate({
+        type: "email",
+        email,
+      });
+    } catch (error) {
+      console.error("Authentication failed:", error);
+    }
+  };
+  
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      await authenticate({
+        type: "oauth",
+        authProviderId: provider,
+      });
+    } catch (error) {
+      console.error("Social login failed:", error);
+    }
+  };
+
+  if (user) {
+    return (
+      <div className="auth-success">
+        <h2>Welcome, {user.email}!</h2>
+        <button onClick={() => user.logout()}>
+          Sign Out
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="custom-auth">
+      <div className="auth-header">
+        <img src="/your-logo.png" alt="YourApp" />
+        <h2>Sign in to YourApp</h2>
+        <p>Create your smart wallet to get started</p>
+      </div>
+      
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        handleEmailLogin(email);
+      }}>
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter your email"
+          className="email-input"
+          required
+        />
+        <button type="submit" className="primary-button">
+          Continue with Email
+        </button>
+      </form>
+      
+      <div className="divider">
+        <span>or</span>
+      </div>
+      
+      <div className="social-buttons">
+        <button 
+          onClick={() => handleSocialLogin("google")}
+          className="social-button google"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </button>
+        
+        <button 
+          onClick={() => handleSocialLogin("apple")}
+          className="social-button apple"
+        >
+          <AppleIcon />
+          Continue with Apple
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Custom CSS Styling
+
+```css
+.custom-auth {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-header img {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.auth-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.auth-header p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.email-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.email-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.primary-button {
+  width: 100%;
+  padding: 12px 16px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.primary-button:hover {
+  background: #5856eb;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  color: #6b7280;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #d1d5db;
+}
+
+.divider span {
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.social-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.social-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+```
+
+## Environment-Specific Configuration
+
+### Development Environment
+
+```tsx
+const developmentConfig = createConfig({
+  apiKey: "YOUR_DEV_API_KEY",
+  chain: sepolia,
+  ui: {
+    theme: {
+      // Keep Alchemy attribution in development
+      showAlchemyAttribution: true,
+      primaryColor: "#f59e0b", // Yellow for dev
+    },
+    modalConfig: {
+      title: "YourApp (Development)",
+    },
+  },
+});
+```
+
+### Production Environment
+
+```tsx
+const productionConfig = createConfig({
+  apiKey: "YOUR_PROD_API_KEY",
+  chain: mainnet,
+  ui: {
+    theme: {
+      // Remove attribution in production
+      showAlchemyAttribution: false,
+      primaryColor: "#6366f1",
+    },
+    modalConfig: {
+      title: "YourApp",
+      logoUrl: "https://yourdomain.com/logo.png",
+    },
+  },
+});
+
+const config = process.env.NODE_ENV === "production" 
+  ? productionConfig 
+  : developmentConfig;
+```
+
+## Custom Loading States
+
+```tsx
+import { useAuthModal } from "@alchemy/aa-alchemy/react";
+
+function CustomLoadingComponent() {
+  const { isLoading, error } = useAuthModal();
+  
+  if (error) {
+    return (
+      <div className="error-state">
+        <ErrorIcon />
+        <h3>Authentication Failed</h3>
+        <p>{error.message}</p>
+        <button onClick={() => window.location.reload()}>
+          Try Again
+        </button>
+      </div>
+    );
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="loading-state">
+        <div className="spinner" />
+        <p>Setting up your wallet...</p>
+      </div>
+    );
+  }
+  
+  return null;
+}
+```
+
+## Responsive Design
+
+```tsx
+const responsiveConfig = createConfig({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  ui: {
+    theme: {
+      showAlchemyAttribution: false,
+    },
+    modalConfig: {
+      // Responsive modal styles
+      styles: {
+        modal: {
+          width: "100%",
+          maxWidth: "400px",
+          margin: "16px",
+        },
+        
+        // Mobile-specific styles
+        "@media (max-width: 640px)": {
+          modal: {
+            maxWidth: "calc(100vw - 32px)",
+            borderRadius: "12px",
+          },
+        },
+      },
+    },
+  },
+});
+```
+
+## Testing Whitelabel Configuration
+
+```tsx
+// Test component for whitelabel features
+function WhitelabelTest() {
+  const [theme, setTheme] = useState("light");
+  const [showAttribution, setShowAttribution] = useState(false);
+  
+  const config = createConfig({
+    apiKey: "YOUR_ALCHEMY_API_KEY",
+    chain: sepolia,
+    ui: {
+      theme: {
+        showAlchemyAttribution: showAttribution,
+        primaryColor: theme === "dark" ? "#8b5cf6" : "#6366f1",
+        // Add other theme-specific properties
+      },
+    },
+  });
+  
+  return (
+    <div>
+      <div className="test-controls">
+        <label>
+          <input
+            type="checkbox"
+            checked={showAttribution}
+            onChange={(e) => setShowAttribution(e.target.checked)}
+          />
+          Show Alchemy Attribution
+        </label>
+        
+        <select 
+          value={theme} 
+          onChange={(e) => setTheme(e.target.value)}
+        >
+          <option value="light">Light Theme</option>
+          <option value="dark">Dark Theme</option>
+        </select>
+      </div>
+      
+      <AccountKitProvider config={config}>
+        <YourAuthComponent />
+      </AccountKitProvider>
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+### Brand Consistency
+
+* **Use consistent colors** across your application and auth flow
+* **Match typography** with your existing design system
+* **Maintain spacing** that feels natural with your UI
+* **Test on all devices** to ensure responsive behavior
+
+### User Experience
+
+* **Clear messaging** - Explain what users are signing up for
+* **Progress indicators** - Show loading states during authentication
+* **Error handling** - Provide helpful error messages
+* **Accessibility** - Ensure keyboard navigation and screen reader support
+
+### Performance
+
+* **Lazy load components** - Only load auth UI when needed
+* **Optimize images** - Compress logos and assets
+* **Minimize bundle size** - Only include necessary styling
+* **Cache configuration** - Reuse config objects when possible
+
+## Next Steps
+
+* [Configure login methods](/docs/wallets/authentication/login-methods/email-otp)
+* [Set up multi-factor authentication](/docs/wallets/authentication/mfa/mfa-overview)
+* [Customize React components](/docs/wallets/sdk-reference/react/components)
+* [Learn about theming](/docs/wallets/overview/concepts/smart-wallets)

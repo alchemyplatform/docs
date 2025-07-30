@@ -1,0 +1,637 @@
+---
+title: "Batch Transactions"
+description: "Send multiple transactions in a single user operation for efficiency and atomicity"
+slug: batch-transactions
+---
+
+# Batch Transactions
+
+Batch transactions allow you to execute multiple operations atomically in a single user operation. This reduces gas costs, improves efficiency, and ensures all operations succeed or fail together.
+
+## Overview
+
+Batch transactions enable you to:
+
+* **Reduce gas costs** - Single user operation for multiple actions
+* **Atomic execution** - All operations succeed or fail together
+* **Improved UX** - Single signature for multiple transactions
+* **Efficient bundling** - Optimize blockchain interactions
+
+## Basic Batch Transaction
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { useSmartAccountClient } from "@alchemy/aa-alchemy/react";
+    import { parseEther, encodeFunctionData } from "viem";
+
+    function BatchTransactionExample() {
+      const { client } = useSmartAccountClient();
+
+      const handleBatchTransaction = async () => {
+        if (!client) return;
+
+        try {
+          // Define multiple operations
+          const batchOperations = [
+            {
+              target: "0x1234567890123456789012345678901234567890",
+              data: "0x",
+              value: parseEther("0.1"), // Send 0.1 ETH
+            },
+            {
+              target: "0xTokenContractAddress",
+              data: encodeFunctionData({
+                abi: erc20Abi,
+                functionName: "transfer",
+                args: ["0xRecipientAddress", parseEther("100")],
+              }),
+              value: 0n,
+            },
+            {
+              target: "0xNFTContractAddress", 
+              data: encodeFunctionData({
+                abi: erc721Abi,
+                functionName: "safeTransferFrom",
+                args: [client.account.address, "0xRecipientAddress", 123n],
+              }),
+              value: 0n,
+            },
+          ];
+
+          // Send batch transaction
+          const userOpHash = await client.sendUserOperation({
+            uo: batchOperations,
+          });
+
+          // Wait for confirmation
+          const receipt = await client.waitForUserOperationTransaction({
+            hash: userOpHash,
+          });
+
+          console.log("Batch transaction successful:", receipt.transactionHash);
+        } catch (error) {
+          console.error("Batch transaction failed:", error);
+        }
+      };
+
+      return (
+        <button onClick={handleBatchTransaction}>
+          Send Batch Transaction
+        </button>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```javascript
+    import { createAlchemySmartAccountClient } from "@alchemy/aa-alchemy";
+    import { parseEther, encodeFunctionData } from "viem";
+
+    async function sendBatchTransaction(client) {
+      // Define batch operations
+      const operations = [
+        // Operation 1: Send ETH
+        {
+          target: "0x1234567890123456789012345678901234567890",
+          data: "0x",
+          value: parseEther("0.1"),
+        },
+        
+        // Operation 2: Transfer ERC-20 tokens
+        {
+          target: "0xTokenContractAddress",
+          data: encodeFunctionData({
+            abi: [
+              {
+                name: "transfer",
+                type: "function", 
+                inputs: [
+                  { name: "to", type: "address" },
+                  { name: "amount", type: "uint256" },
+                ],
+              },
+            ],
+            functionName: "transfer",
+            args: ["0xRecipientAddress", parseEther("100")],
+          }),
+          value: 0n,
+        },
+        
+        // Operation 3: Approve token spending
+        {
+          target: "0xTokenContractAddress",
+          data: encodeFunctionData({
+            abi: [
+              {
+                name: "approve",
+                type: "function",
+                inputs: [
+                  { name: "spender", type: "address" },
+                  { name: "amount", type: "uint256" },
+                ],
+              },
+            ],
+            functionName: "approve", 
+            args: ["0xSpenderAddress", parseEther("1000")],
+          }),
+          value: 0n,
+        },
+      ];
+
+      try {
+        // Send batch user operation
+        const userOpHash = await client.sendUserOperation({
+          uo: operations,
+        });
+
+        console.log("Batch transaction submitted:", userOpHash);
+
+        // Wait for transaction to be mined
+        const receipt = await client.waitForUserOperationTransaction({
+          hash: userOpHash,
+        });
+
+        console.log("Batch transaction confirmed:", receipt);
+        return receipt;
+      } catch (error) {
+        console.error("Batch transaction failed:", error);
+        throw error;
+      }
+    }
+
+    // Usage
+    const client = createAlchemySmartAccountClient({
+      apiKey: "YOUR_ALCHEMY_API_KEY",
+      chain: sepolia,
+      account: smartAccount,
+    });
+
+    await sendBatchTransaction(client);
+    ```
+  </Tab>
+</Tabs>
+
+## Common Batch Transaction Patterns
+
+### DeFi Operations
+
+```tsx
+async function defiBatchTransaction(client: SmartAccountClient) {
+  const operations = [
+    // 1. Approve USDC spending
+    {
+      target: USDC_ADDRESS,
+      data: encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [UNISWAP_ROUTER_ADDRESS, parseUnits("1000", 6)],
+      }),
+      value: 0n,
+    },
+    
+    // 2. Swap USDC for ETH
+    {
+      target: UNISWAP_ROUTER_ADDRESS,
+      data: encodeFunctionData({
+        abi: uniswapRouterAbi,
+        functionName: "swapExactTokensForETH",
+        args: [
+          parseUnits("1000", 6), // amount in
+          0n, // min amount out
+          [USDC_ADDRESS, WETH_ADDRESS], // path
+          client.account.address, // to
+          Math.floor(Date.now() / 1000) + 300, // deadline
+        ],
+      }),
+      value: 0n,
+    },
+    
+    // 3. Deposit ETH to lending protocol
+    {
+      target: AAVE_POOL_ADDRESS,
+      data: encodeFunctionData({
+        abi: aavePoolAbi,
+        functionName: "deposit",
+        args: [
+          ETH_ADDRESS,
+          parseEther("0.5"),
+          client.account.address,
+          0,
+        ],
+      }),
+      value: parseEther("0.5"),
+    },
+  ];
+
+  return await client.sendUserOperation({ uo: operations });
+}
+```
+
+### NFT Batch Operations
+
+```tsx
+async function nftBatchOperations(client: SmartAccountClient) {
+  const operations = [
+    // 1. Mint NFT
+    {
+      target: NFT_CONTRACT_ADDRESS,
+      data: encodeFunctionData({
+        abi: nftAbi,
+        functionName: "mint",
+        args: [client.account.address, 1],
+      }),
+      value: parseEther("0.1"), // mint fee
+    },
+    
+    // 2. Set approval for marketplace
+    {
+      target: NFT_CONTRACT_ADDRESS,
+      data: encodeFunctionData({
+        abi: erc721Abi,
+        functionName: "setApprovalForAll",
+        args: [MARKETPLACE_ADDRESS, true],
+      }),
+      value: 0n,
+    },
+    
+    // 3. List NFT for sale
+    {
+      target: MARKETPLACE_ADDRESS,
+      data: encodeFunctionData({
+        abi: marketplaceAbi,
+        functionName: "listItem",
+        args: [
+          NFT_CONTRACT_ADDRESS,
+          1, // token ID
+          parseEther("1"), // price
+        ],
+      }),
+      value: 0n,
+    },
+  ];
+
+  return await client.sendUserOperation({ uo: operations });
+}
+```
+
+### Multi-Token Transfer
+
+```tsx
+async function multiTokenTransfer(
+  client: SmartAccountClient,
+  recipients: Array<{ address: string; amount: string }>
+) {
+  const operations = recipients.map(({ address, amount }) => ({
+    target: TOKEN_ADDRESS,
+    data: encodeFunctionData({
+      abi: erc20Abi,
+      functionName: "transfer",
+      args: [address, parseEther(amount)],
+    }),
+    value: 0n,
+  }));
+
+  return await client.sendUserOperation({ uo: operations });
+}
+
+// Usage: Send tokens to multiple recipients
+await multiTokenTransfer(client, [
+  { address: "0x1111...", amount: "100" },
+  { address: "0x2222...", amount: "200" },
+  { address: "0x3333...", amount: "50" },
+]);
+```
+
+## Advanced Batch Patterns
+
+### Conditional Batch Execution
+
+```tsx
+async function conditionalBatch(client: SmartAccountClient) {
+  // Check conditions before batching
+  const balance = await client.readContract({
+    address: TOKEN_ADDRESS,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [client.account.address],
+  });
+
+  const operations = [];
+
+  // Only add operations based on conditions
+  if (balance > parseEther("100")) {
+    operations.push({
+      target: TOKEN_ADDRESS,
+      data: encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: ["0xRecipient", parseEther("50")],
+      }),
+      value: 0n,
+    });
+  }
+
+  if (operations.length > 0) {
+    return await client.sendUserOperation({ uo: operations });
+  }
+}
+```
+
+### Dynamic Batch Building
+
+```tsx
+class BatchBuilder {
+  private operations: Array<{
+    target: string;
+    data: string;
+    value: bigint;
+  }> = [];
+
+  addEthTransfer(to: string, amount: bigint) {
+    this.operations.push({
+      target: to,
+      data: "0x",
+      value: amount,
+    });
+    return this;
+  }
+
+  addTokenTransfer(tokenAddress: string, to: string, amount: bigint) {
+    this.operations.push({
+      target: tokenAddress,
+      data: encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: [to, amount],
+      }),
+      value: 0n,
+    });
+    return this;
+  }
+
+  addContractCall(
+    contractAddress: string,
+    abi: any,
+    functionName: string,
+    args: any[],
+    value: bigint = 0n
+  ) {
+    this.operations.push({
+      target: contractAddress,
+      data: encodeFunctionData({
+        abi,
+        functionName,
+        args,
+      }),
+      value,
+    });
+    return this;
+  }
+
+  async execute(client: SmartAccountClient) {
+    if (this.operations.length === 0) {
+      throw new Error("No operations to execute");
+    }
+
+    const userOpHash = await client.sendUserOperation({
+      uo: this.operations,
+    });
+
+    // Clear operations after execution
+    this.operations = [];
+
+    return userOpHash;
+  }
+}
+
+// Usage
+const batch = new BatchBuilder()
+  .addEthTransfer("0x1111...", parseEther("0.1"))
+  .addTokenTransfer(TOKEN_ADDRESS, "0x2222...", parseEther("100"))
+  .addContractCall(
+    CONTRACT_ADDRESS,
+    contractAbi,
+    "someFunction",
+    ["arg1", "arg2"]
+  );
+
+await batch.execute(client);
+```
+
+## Error Handling and Recovery
+
+### Batch Transaction Validation
+
+```tsx
+async function validateBatchOperations(
+  client: SmartAccountClient,
+  operations: Array<{ target: string; data: string; value: bigint }>
+) {
+  // Validate each operation before sending
+  for (const [index, operation] of operations.entries()) {
+    try {
+      // Simulate the operation
+      await client.simulateUserOperation({
+        uo: [operation],
+      });
+    } catch (error) {
+      throw new Error(`Operation ${index} validation failed: ${error.message}`);
+    }
+  }
+
+  // If all validations pass, send the batch
+  return await client.sendUserOperation({ uo: operations });
+}
+```
+
+### Partial Failure Handling
+
+```tsx
+async function batchWithFallback(
+  client: SmartAccountClient,
+  operations: Array<{ target: string; data: string; value: bigint }>
+) {
+  try {
+    // Try to send all operations in batch
+    return await client.sendUserOperation({ uo: operations });
+  } catch (error) {
+    console.warn("Batch failed, trying individual operations:", error);
+
+    // Fall back to individual operations
+    const results = [];
+    for (const operation of operations) {
+      try {
+        const result = await client.sendUserOperation({ uo: [operation] });
+        results.push({ success: true, result });
+      } catch (opError) {
+        results.push({ success: false, error: opError });
+      }
+    }
+
+    return results;
+  }
+}
+```
+
+## Gas Optimization
+
+### Estimating Batch Gas
+
+```tsx
+async function estimateBatchGas(
+  client: SmartAccountClient,
+  operations: Array<{ target: string; data: string; value: bigint }>
+) {
+  try {
+    // Estimate gas for the batch
+    const gasEstimate = await client.estimateUserOperationGas({
+      uo: operations,
+    });
+
+    console.log("Batch gas estimate:", {
+      callGasLimit: gasEstimate.callGasLimit,
+      verificationGasLimit: gasEstimate.verificationGasLimit,
+      preVerificationGas: gasEstimate.preVerificationGas,
+    });
+
+    // Calculate total gas cost
+    const totalGas = 
+      gasEstimate.callGasLimit +
+      gasEstimate.verificationGasLimit +
+      gasEstimate.preVerificationGas;
+
+    return {
+      totalGas,
+      gasPrice: gasEstimate.maxFeePerGas,
+      estimatedCost: totalGas * gasEstimate.maxFeePerGas,
+    };
+  } catch (error) {
+    console.error("Gas estimation failed:", error);
+    throw error;
+  }
+}
+```
+
+### Optimizing Operation Order
+
+```tsx
+function optimizeBatchOrder(operations: BatchOperation[]) {
+  // Sort operations for optimal gas usage
+  return operations.sort((a, b) => {
+    // ETH transfers first (lower gas)
+    if (a.data === "0x" && b.data !== "0x") return -1;
+    if (a.data !== "0x" && b.data === "0x") return 1;
+    
+    // Sort by gas complexity
+    return a.data.length - b.data.length;
+  });
+}
+```
+
+## Real-World Examples
+
+### DeFi Portfolio Rebalancing
+
+```tsx
+async function rebalancePortfolio(client: SmartAccountClient) {
+  const operations = [
+    // 1. Withdraw from lending protocol
+    {
+      target: COMPOUND_CTOKEN_ADDRESS,
+      data: encodeFunctionData({
+        abi: cTokenAbi,
+        functionName: "redeem",
+        args: [parseEther("1000")],
+      }),
+      value: 0n,
+    },
+    
+    // 2. Swap half to different token
+    {
+      target: UNISWAP_ROUTER_ADDRESS,
+      data: encodeFunctionData({
+        abi: uniswapRouterAbi,
+        functionName: "swapExactTokensForTokens",
+        args: [
+          parseEther("500"),
+          0n,
+          [TOKEN_A_ADDRESS, TOKEN_B_ADDRESS],
+          client.account.address,
+          Math.floor(Date.now() / 1000) + 300,
+        ],
+      }),
+      value: 0n,
+    },
+    
+    // 3. Deposit new tokens to yield farm
+    {
+      target: YIELD_FARM_ADDRESS,
+      data: encodeFunctionData({
+        abi: yieldFarmAbi,
+        functionName: "deposit",
+        args: [parseEther("500")],
+      }),
+      value: 0n,
+    },
+  ];
+
+  return await client.sendUserOperation({ uo: operations });
+}
+```
+
+### NFT Collection Management
+
+```tsx
+async function manageNFTCollection(client: SmartAccountClient) {
+  const operations = [
+    // Batch mint multiple NFTs
+    ...Array.from({ length: 5 }, (_, i) => ({
+      target: NFT_CONTRACT_ADDRESS,
+      data: encodeFunctionData({
+        abi: nftAbi,
+        functionName: "mint",
+        args: [client.account.address, i + 1],
+      }),
+      value: parseEther("0.01"), // mint fee per NFT
+    })),
+    
+    // Set metadata for all minted NFTs
+    {
+      target: NFT_CONTRACT_ADDRESS,
+      data: encodeFunctionData({
+        abi: nftAbi,
+        functionName: "setBaseURI",
+        args: ["https://api.example.com/metadata/"],
+      }),
+      value: 0n,
+    },
+  ];
+
+  return await client.sendUserOperation({ uo: operations });
+}
+```
+
+## Best Practices
+
+### Performance Tips
+
+1. **Order operations efficiently** - Simple operations first
+2. **Validate before sending** - Use simulation to catch errors
+3. **Optimize gas limits** - Set appropriate limits for each operation
+4. **Handle failures gracefully** - Implement fallback strategies
+
+### Security Considerations
+
+1. **Validate all inputs** - Ensure addresses and amounts are correct
+2. **Check balances** - Verify sufficient funds before operations
+3. **Use timeouts** - Set appropriate deadlines for time-sensitive operations
+4. **Monitor for MEV** - Be aware of potential front-running
+
+## Next Steps
+
+* [Learn about gas sponsorship](/docs/wallets/transactions/gas-sponsorship/sponsor-gas)
+* [Explore bundler APIs](/docs/wallets/transactions/bundler-apis/bundler-methods)
+* [Send tokens efficiently](/docs/wallets/transactions/send-operations/send-tokens)
+* [Understand user operations](/docs/wallets/transactions/bundler-apis/user-operation)

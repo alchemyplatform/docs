@@ -1,0 +1,518 @@
+---
+title: "Email Magic Link"
+description: "Implement passwordless authentication using email magic links"
+slug: email-magic-link
+---
+
+# Email Magic Link Authentication
+
+Enable passwordless authentication using magic links sent to users' email addresses. This provides a secure and user-friendly way to authenticate without requiring password management.
+
+## Overview
+
+Magic link authentication sends a unique, time-limited link to the user's email address. When clicked, the link automatically authenticates the user and creates or accesses their smart wallet.
+
+**Benefits:**
+
+* **Passwordless** - No need to remember passwords
+* **Secure** - Links are time-limited and single-use
+* **User-friendly** - Familiar email-based flow
+* **Cross-device** - Works on any device with email access
+
+## Setup
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { useAuthenticate, useUser } from "@alchemy/aa-alchemy/react";
+
+    function MagicLinkAuth() {
+      const user = useUser();
+      const { authenticate, isPending } = useAuthenticate();
+      const [email, setEmail] = useState("");
+      const [linkSent, setLinkSent] = useState(false);
+
+      const handleSendMagicLink = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        try {
+          await authenticate({
+            type: "email",
+            email,
+            redirectUrl: window.location.origin + "/auth/callback",
+          });
+          setLinkSent(true);
+        } catch (error) {
+          console.error("Failed to send magic link:", error);
+        }
+      };
+
+      if (user) {
+        return <div>Welcome, {user.email}!</div>;
+      }
+
+      if (linkSent) {
+        return (
+          <div className="magic-link-sent">
+            <h3>Check your email</h3>
+            <p>We've sent a magic link to {email}</p>
+            <p>Click the link to complete your sign-in</p>
+          </div>
+        );
+      }
+
+      return (
+        <form onSubmit={handleSendMagicLink}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            required
+          />
+          <button type="submit" disabled={isPending}>
+            {isPending ? "Sending..." : "Send Magic Link"}
+          </button>
+        </form>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```javascript
+    import { MagicSigner } from "@alchemy/aa-signers/magic";
+    import { createAlchemySmartAccountClient } from "@alchemy/aa-alchemy";
+
+    class MagicLinkAuthentication {
+      constructor(apiKey) {
+        this.magicSigner = new MagicSigner({
+          apiKey: "YOUR_MAGIC_API_KEY",
+        });
+      }
+
+      async sendMagicLink(email, redirectUrl) {
+        try {
+          await this.magicSigner.authenticate({
+            email,
+            showUI: false, // Handle UI yourself
+          });
+          
+          return { success: true, message: "Magic link sent!" };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      }
+
+      async createSmartAccount() {
+        const client = createAlchemySmartAccountClient({
+          apiKey: "YOUR_ALCHEMY_API_KEY",
+          chain: sepolia,
+          signer: this.magicSigner,
+        });
+
+        return client;
+      }
+
+      async getUser() {
+        const user = await this.magicSigner.getUser();
+        return user;
+      }
+    }
+
+    // Usage
+    const auth = new MagicLinkAuthentication();
+
+    // Send magic link
+    const result = await auth.sendMagicLink(
+      "user@example.com",
+      "https://yourapp.com/auth/callback"
+    );
+
+    if (result.success) {
+      console.log("Magic link sent successfully");
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Configuration Options
+
+### Basic Configuration
+
+```tsx
+const config = createConfig({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  
+  // Magic link configuration
+  signerConnection: {
+    magic: {
+      apiKey: "YOUR_MAGIC_API_KEY",
+      options: {
+        // Customize magic link behavior
+        redirectURI: "https://yourapp.com/auth/callback",
+        loginOptions: {
+          // Email domain validation
+          emailDomainWhitelist: ["yourcompany.com"],
+        },
+      },
+    },
+  },
+});
+```
+
+### Advanced Configuration
+
+```tsx
+const magicConfig = {
+  apiKey: "YOUR_MAGIC_API_KEY",
+  network: {
+    rpcUrl: "https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY",
+    chainId: 11155111, // Sepolia
+  },
+  
+  // UI customization
+  theme: {
+    primaryColor: "#6366f1",
+    isDarkMode: false,
+  },
+  
+  // Security settings
+  testMode: process.env.NODE_ENV === "development",
+  
+  // Locale settings
+  locale: "en_US",
+};
+
+const magicSigner = new MagicSigner(magicConfig);
+```
+
+## Handling Magic Link Callbacks
+
+### React Router Setup
+
+```tsx
+import { useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useAuthenticate } from "@alchemy/aa-alchemy/react";
+
+function AuthCallback() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { completeAuthentication } = useAuthenticate();
+  
+  useEffect(() => {
+    const handleCallback = async () => {
+      const token = searchParams.get("magic_credential");
+      
+      if (token) {
+        try {
+          await completeAuthentication({ token });
+          navigate("/dashboard");
+        } catch (error) {
+          console.error("Authentication failed:", error);
+          navigate("/auth?error=auth_failed");
+        }
+      }
+    };
+    
+    handleCallback();
+  }, [searchParams, navigate, completeAuthentication]);
+  
+  return (
+    <div className="auth-callback">
+      <div className="spinner" />
+      <p>Completing authentication...</p>
+    </div>
+  );
+}
+```
+
+### Next.js API Route
+
+```typescript
+// pages/api/auth/callback.ts
+import type { NextApiRequest, NextApiResponse } from "next";
+import { MagicSigner } from "@alchemy/aa-signers/magic";
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
+
+  try {
+    const { token } = req.body;
+    
+    const magicSigner = new MagicSigner({
+      apiKey: process.env.MAGIC_API_KEY!,
+    });
+    
+    // Validate the magic link token
+    const user = await magicSigner.validateToken(token);
+    
+    if (user) {
+      // Set session or JWT token
+      res.setHeader("Set-Cookie", `auth-token=${token}; Path=/; HttpOnly`);
+      return res.status(200).json({ success: true, user });
+    }
+    
+    return res.status(401).json({ message: "Invalid token" });
+  } catch (error) {
+    console.error("Auth callback error:", error);
+    return res.status(500).json({ message: "Authentication failed" });
+  }
+}
+```
+
+## Email Customization
+
+### Custom Email Templates
+
+```tsx
+const magicConfig = {
+  apiKey: "YOUR_MAGIC_API_KEY",
+  
+  // Custom email template
+  loginOptions: {
+    customTemplate: {
+      subject: "Sign in to YourApp",
+      template: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="text-align: center; padding: 40px 20px;">
+            <img src="https://yourapp.com/logo.png" alt="YourApp" style="width: 80px; height: 80px;">
+            <h1 style="color: #333; margin: 20px 0;">Welcome to YourApp</h1>
+            <p style="color: #666; font-size: 16px; line-height: 1.5;">
+              Click the button below to securely sign in to your account.
+            </p>
+            <a href="{{MAGIC_LINK}}" 
+               style="display: inline-block; background: #6366f1; color: white; 
+                      padding: 12px 24px; border-radius: 8px; text-decoration: none; 
+                      font-weight: 500; margin: 20px 0;">
+              Sign In to YourApp
+            </a>
+            <p style="color: #999; font-size: 14px; margin-top: 40px;">
+              This link will expire in 15 minutes. If you didn't request this, you can safely ignore this email.
+            </p>
+          </div>
+        </div>
+      `,
+    },
+  },
+};
+```
+
+### Branded Email Configuration
+
+```tsx
+const brandedMagicConfig = {
+  apiKey: "YOUR_MAGIC_API_KEY",
+  
+  // Brand customization
+  branding: {
+    companyName: "YourApp",
+    logoUrl: "https://yourapp.com/logo.png",
+    primaryColor: "#6366f1",
+    backgroundColor: "#ffffff",
+  },
+  
+  // Email settings
+  emailSettings: {
+    fromEmail: "noreply@yourapp.com",
+    fromName: "YourApp Team",
+  },
+};
+```
+
+## Security Considerations
+
+### Link Expiration
+
+```tsx
+const secureConfig = {
+  apiKey: "YOUR_MAGIC_API_KEY",
+  
+  // Security settings
+  security: {
+    // Link expires after 15 minutes
+    linkLifespan: 900, // seconds
+    
+    // Require email verification
+    requireEmailVerification: true,
+    
+    // Rate limiting
+    rateLimiting: {
+      maxAttempts: 5,
+      windowMs: 15 * 60 * 1000, // 15 minutes
+    },
+  },
+};
+```
+
+### Domain Validation
+
+```tsx
+const domainConfig = {
+  apiKey: "YOUR_MAGIC_API_KEY",
+  
+  loginOptions: {
+    // Only allow specific email domains
+    emailDomainWhitelist: [
+      "yourcompany.com",
+      "partner.com",
+    ],
+    
+    // Block specific domains
+    emailDomainBlacklist: [
+      "tempmail.com",
+      "10minutemail.com",
+    ],
+  },
+};
+```
+
+## Error Handling
+
+### Common Error Scenarios
+
+```tsx
+function MagicLinkAuthWithErrorHandling() {
+  const { authenticate, isPending } = useAuthenticate();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAuthentication = async (email: string) => {
+    setError(null);
+    
+    try {
+      await authenticate({
+        type: "email",
+        email,
+      });
+    } catch (error: any) {
+      // Handle specific error types
+      switch (error.code) {
+        case "INVALID_EMAIL":
+          setError("Please enter a valid email address");
+          break;
+        case "RATE_LIMITED":
+          setError("Too many attempts. Please try again later");
+          break;
+        case "DOMAIN_NOT_ALLOWED":
+          setError("Email domain not supported");
+          break;
+        case "NETWORK_ERROR":
+          setError("Network error. Please check your connection");
+          break;
+        default:
+          setError("Authentication failed. Please try again");
+      }
+    }
+  };
+
+  return (
+    <div>
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+      {/* Rest of component */}
+    </div>
+  );
+}
+```
+
+## User Experience Best Practices
+
+### Loading States
+
+```tsx
+function MagicLinkWithLoading() {
+  const [stage, setStage] = useState<"input" | "sending" | "sent">("input");
+
+  const handleSendLink = async (email: string) => {
+    setStage("sending");
+    
+    try {
+      await authenticate({ type: "email", email });
+      setStage("sent");
+    } catch (error) {
+      setStage("input");
+      // Handle error
+    }
+  };
+
+  return (
+    <div>
+      {stage === "input" && (
+        <EmailInput onSubmit={handleSendLink} />
+      )}
+      
+      {stage === "sending" && (
+        <div className="sending-state">
+          <Spinner />
+          <p>Sending magic link...</p>
+        </div>
+      )}
+      
+      {stage === "sent" && (
+        <div className="success-state">
+          <CheckIcon />
+          <h3>Check your email</h3>
+          <p>We've sent you a magic link</p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Mobile Optimization
+
+```tsx
+const mobileOptimizedConfig = {
+  apiKey: "YOUR_MAGIC_API_KEY",
+  
+  // Mobile-specific settings
+  mobile: {
+    // Use deep links for mobile apps
+    useDeepLinks: true,
+    
+    // Custom mobile redirect
+    mobileRedirectUrl: "yourapp://auth/callback",
+    
+    // Optimize for mobile browsers
+    optimizeForMobile: true,
+  },
+};
+```
+
+## Testing
+
+### Development Testing
+
+```tsx
+// Mock magic link for testing
+const mockMagicSigner = {
+  async authenticate({ email }: { email: string }) {
+    if (process.env.NODE_ENV === "development") {
+      // Skip actual email sending in development
+      console.log(`Mock magic link sent to ${email}`);
+      return Promise.resolve();
+    }
+    
+    // Real implementation for production
+    return realMagicSigner.authenticate({ email });
+  },
+};
+```
+
+## Next Steps
+
+* [Set up social login](/docs/wallets/authentication/login-methods/social-login)
+* [Configure passkey authentication](/docs/wallets/authentication/login-methods/passkey-signup)
+* [Add multi-factor authentication](/docs/wallets/authentication/mfa/mfa-overview)
+* [Customize the UI](/docs/wallets/authentication/setup/whitelabel)

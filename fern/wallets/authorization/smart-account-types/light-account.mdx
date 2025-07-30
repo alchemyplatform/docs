@@ -1,0 +1,105 @@
+---
+title: Light Account
+description: Learn about Alchemy's Light Account smart wallet implementation.
+slug: authorization/smart-account-types/light-account
+---
+
+# Light Account
+
+Light Account is Alchemy's flagship smart account implementation, providing a secure and gas-efficient solution for account abstraction.
+
+## Overview
+
+Light Account offers:
+
+* **ERC-4337 Compliance**: Full compatibility with account abstraction standards
+* **Gas Optimization**: Efficient bytecode designed for minimal gas consumption
+* **Security**: Audited and battle-tested smart contract implementation
+* **Flexibility**: Support for various ownership models and upgrade patterns
+
+## Features
+
+### Single Owner Model
+
+Light Account supports a single owner who can:
+
+* Execute transactions
+* Add and remove session keys
+* Transfer ownership
+* Upgrade the account implementation
+
+### Session Keys
+
+Temporary keys that can perform specific actions:
+
+* Time-bound permissions
+* Spending limits
+* Contract interaction restrictions
+
+## Implementation
+
+<Tabs>
+  <Tab title="React">
+    ```typescript
+    import { LightAccount } from "@account-kit/smart-contracts";
+    import { useSmartAccountClient } from "@account-kit/react";
+
+    export function CreateLightAccount() {
+      const { client, isLoadingClient } = useSmartAccountClient({
+        type: "LightAccount",
+      });
+
+      if (isLoadingClient) return <div>Loading...</div>;
+
+      return (
+        <div>
+          <p>Light Account Address: {client?.account?.address}</p>
+        </div>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```typescript
+    import { createLightAccount } from "@account-kit/smart-contracts";
+    import { createSmartAccountClient } from "@account-kit/core";
+
+    const account = await createLightAccount({
+      signer,
+      chain,
+      transport: http("https://eth-sepolia.g.alchemy.com/v2/your-api-key"),
+    });
+
+    const client = createSmartAccountClient({
+      account,
+      chain,
+      transport: http("https://eth-sepolia.g.alchemy.com/v2/your-api-key"),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Contract Details
+
+* **Implementation**: Minimal proxy pattern for gas efficiency
+* **Upgradability**: UUPS upgradeable pattern
+* **Audits**: Audited by leading security firms
+* **Gas Costs**: ~100k gas for deployment, ~21k for transfers
+
+## Supported Networks
+
+Light Account is deployed on:
+
+* Ethereum Mainnet
+* Sepolia Testnet
+* Polygon
+* Arbitrum
+* Optimism
+* Base
+
+## Next Steps
+
+* [Configure session keys](/docs/wallets/authorization/policies/session-keys)
+* [Set up gas sponsorship](/docs/wallets/transactions/gas-sponsorship/sponsor-gas)
+* [Send transactions](/docs/wallets/transactions/send-operations/send-user-operations)

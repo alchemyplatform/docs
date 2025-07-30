@@ -1,0 +1,452 @@
+---
+title: "Custom Social Providers"
+description: "Configure custom OAuth providers for social authentication"
+slug: custom-social-providers
+---
+
+# Custom Social Providers
+
+Extend Account Kit's social authentication beyond the built-in providers by configuring custom OAuth providers. This allows you to integrate with any OAuth 2.0 compliant service.
+
+## Overview
+
+Custom social providers enable authentication with:
+
+* **Enterprise SSO** - Company-specific identity providers
+* **Regional providers** - Local social networks and services
+* **Custom OAuth services** - Your own OAuth implementation
+* **Specialized platforms** - Industry-specific authentication services
+
+## Configuration
+
+### Basic Custom Provider Setup
+
+```tsx
+import { createConfig } from "@alchemy/aa-alchemy/react";
+
+const config = createConfig({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  
+  signerConnection: {
+    web3auth: {
+      clientId: "YOUR_WEB3AUTH_CLIENT_ID",
+      network: "sapphire_mainnet",
+      
+      // Custom provider configuration
+      loginConfig: {
+        "custom-provider": {
+          name: "Custom Provider",
+          verifier: "YOUR_CUSTOM_VERIFIER",
+          typeOfLogin: "custom",
+          
+          // OAuth configuration
+          clientId: "YOUR_CUSTOM_CLIENT_ID",
+          authorizationUrl: "https://provider.com/oauth/authorize",
+          tokenUrl: "https://provider.com/oauth/token",
+          userInfoUrl: "https://provider.com/api/user",
+          
+          // Required scopes
+          scope: "openid email profile",
+          
+          // Custom parameters
+          customParameters: {
+            response_type: "code",
+            grant_type: "authorization_code",
+          },
+        },
+      },
+    },
+  },
+});
+```
+
+### Enterprise SSO Provider
+
+```tsx
+const enterpriseConfig = {
+  "company-sso": {
+    name: "Company SSO",
+    verifier: "company-sso-verifier",
+    typeOfLogin: "jwt",
+    
+    // OIDC configuration
+    clientId: process.env.REACT_APP_COMPANY_SSO_CLIENT_ID,
+    issuer: "https://sso.company.com",
+    
+    // Custom claim mapping
+    claimMapping: {
+      email: "email",
+      name: "full_name",
+      picture: "avatar_url",
+      sub: "employee_id",
+    },
+    
+    // Additional validation
+    validateIssuer: true,
+    validateAudience: true,
+    
+    // Custom parameters
+    customParameters: {
+      prompt: "login",
+      max_age: "3600",
+    },
+  },
+};
+```
+
+## Implementation Examples
+
+### LinkedIn OAuth Provider
+
+```tsx
+const linkedinProvider = {
+  "linkedin": {
+    name: "LinkedIn",
+    verifier: "linkedin-verifier",
+    typeOfLogin: "linkedin",
+    
+    clientId: process.env.REACT_APP_LINKEDIN_CLIENT_ID,
+    authorizationUrl: "https://www.linkedin.com/oauth/v2/authorization",
+    tokenUrl: "https://www.linkedin.com/oauth/v2/accessToken",
+    userInfoUrl: "https://api.linkedin.com/v2/people/~",
+    
+    scope: "r_liteprofile r_emailaddress",
+    
+    // Custom field mapping
+    userInfoMapping: {
+      id: "id",
+      email: "elements[0]['handle~'].emailAddress",
+      name: "localizedFirstName + ' ' + localizedLastName",
+      picture: "profilePicture.displayImage~.elements[0].identifiers[0].identifier",
+    },
+  },
+};
+```
+
+### Microsoft Azure AD
+
+```tsx
+const azureAdProvider = {
+  "azure-ad": {
+    name: "Microsoft",
+    verifier: "azure-ad-verifier",
+    typeOfLogin: "azure_ad",
+    
+    clientId: process.env.REACT_APP_AZURE_CLIENT_ID,
+    tenant: "your-tenant-id", // or "common" for multi-tenant
+    
+    // Azure AD specific URLs
+    authorizationUrl: "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize",
+    tokenUrl: "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
+    userInfoUrl: "https://graph.microsoft.com/v1.0/me",
+    
+    scope: "openid email profile User.Read",
+    
+    // Azure AD specific parameters
+    customParameters: {
+      response_mode: "form_post",
+      prompt: "select_account",
+    },
+  },
+};
+```
+
+### Okta OIDC Provider
+
+```tsx
+const oktaProvider = {
+  "okta": {
+    name: "Okta",
+    verifier: "okta-verifier",
+    typeOfLogin: "jwt",
+    
+    clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
+    issuer: "https://your-domain.okta.com/oauth2/default",
+    
+    // OIDC Discovery
+    discoveryUrl: "https://your-domain.okta.com/oauth2/default/.well-known/openid_configuration",
+    
+    scope: "openid email profile",
+    
+    // Okta specific settings
+    customParameters: {
+      response_type: "code",
+      state: "state-{uuid}",
+      nonce: "nonce-{uuid}",
+    },
+  },
+};
+```
+
+## Custom Authentication Flow
+
+### Using Custom Provider in React
+
+```tsx
+import { useAuthenticate } from "@alchemy/aa-alchemy/react";
+
+function CustomProviderAuth() {
+  const { authenticate, isPending } = useAuthenticate();
+
+  const handleCustomLogin = async (providerId: string) => {
+    try {
+      await authenticate({
+        type: "oauth",
+        authProviderId: providerId,
+        
+        // Custom authentication options
+        extraLoginOptions: {
+          domain: "yourapp.com",
+          prompt: "login",
+          max_age: 0, // Force fresh authentication
+        },
+      });
+    } catch (error) {
+      console.error(`${providerId} login failed:`, error);
+    }
+  };
+
+  return (
+    <div className="custom-providers">
+      <button onClick={() => handleCustomLogin("company-sso")}>
+        Sign in with Company SSO
+      </button>
+      
+      <button onClick={() => handleCustomLogin("linkedin")}>
+        Sign in with LinkedIn
+      </button>
+      
+      <button onClick={() => handleCustomLogin("azure-ad")}>
+        Sign in with Microsoft
+      </button>
+    </div>
+  );
+}
+```
+
+### JavaScript Implementation
+
+```javascript
+import { Web3AuthSigner } from "@alchemy/aa-signers/web3auth";
+
+class CustomProviderAuth {
+  constructor() {
+    this.web3AuthSigner = new Web3AuthSigner({
+      clientId: "YOUR_WEB3AUTH_CLIENT_ID",
+      chainConfig: {
+        chainNamespace: "eip155",
+        chainId: "0xaa36a7",
+      },
+      
+      // Add custom providers
+      loginConfig: {
+        "linkedin": linkedinProvider.linkedin,
+        "azure-ad": azureAdProvider["azure-ad"],
+        "company-sso": enterpriseConfig["company-sso"],
+      },
+    });
+  }
+
+  async authenticateWithCustomProvider(providerId, options = {}) {
+    try {
+      await this.web3AuthSigner.authenticate({
+        loginProvider: providerId,
+        extraLoginOptions: options,
+      });
+      
+      return await this.web3AuthSigner.getUserInfo();
+    } catch (error) {
+      throw new Error(`${providerId} authentication failed: ${error.message}`);
+    }
+  }
+
+  async authenticateWithLinkedIn() {
+    return await this.authenticateWithCustomProvider("linkedin", {
+      scope: "r_liteprofile r_emailaddress",
+    });
+  }
+
+  async authenticateWithAzureAD(tenant = "common") {
+    return await this.authenticateWithCustomProvider("azure-ad", {
+      tenant,
+      prompt: "select_account",
+    });
+  }
+}
+```
+
+## Verifier Setup
+
+### Creating Custom Verifiers
+
+Custom verifiers need to be set up in your Web3Auth dashboard:
+
+1. **Login to Web3Auth Dashboard**
+2. **Create New Verifier**
+3. **Configure OAuth Details**:
+   * Verifier Name
+   * OAuth Provider
+   * Client ID
+   * JWK Endpoint (for JWT verification)
+
+### Verifier Configuration
+
+```json
+{
+  "verifierName": "custom-provider-verifier",
+  "verifierType": "oauth",
+  "clientId": "your-oauth-client-id",
+  "domain": "https://yourapp.com",
+  "verifierSubIdentifier": "sub",
+  "isEmailFactorEnabled": true,
+  "jwksEndpoint": "https://provider.com/.well-known/jwks.json"
+}
+```
+
+## Error Handling
+
+```tsx
+function CustomProviderWithErrorHandling() {
+  const [error, setError] = useState<string | null>(null);
+  const { authenticate } = useAuthenticate();
+
+  const handleCustomAuth = async (providerId: string) => {
+    setError(null);
+    
+    try {
+      await authenticate({
+        type: "oauth",
+        authProviderId: providerId,
+      });
+    } catch (error: any) {
+      // Handle custom provider errors
+      switch (error.code) {
+        case "PROVIDER_NOT_CONFIGURED":
+          setError("Provider not properly configured");
+          break;
+        case "INVALID_CLIENT_ID":
+          setError("Invalid client ID for provider");
+          break;
+        case "SCOPE_NOT_GRANTED":
+          setError("Required permissions not granted");
+          break;
+        case "CUSTOM_PROVIDER_ERROR":
+          setError(`Provider error: ${error.details}`);
+          break;
+        default:
+          setError("Authentication failed with custom provider");
+      }
+    }
+  };
+
+  return (
+    <div>
+      {error && (
+        <div className="error-message">{error}</div>
+      )}
+      {/* Custom provider buttons */}
+    </div>
+  );
+}
+```
+
+## Testing Custom Providers
+
+### Development Testing
+
+```tsx
+// Mock custom provider for testing
+const mockCustomProvider = {
+  async authenticate({ provider, options }) {
+    if (process.env.NODE_ENV === "development") {
+      // Return mock data based on provider
+      const mockUsers = {
+        "company-sso": {
+          id: "emp123",
+          email: "employee@company.com",
+          name: "John Employee",
+          department: "Engineering",
+        },
+        "linkedin": {
+          id: "linkedin123",
+          email: "user@linkedin.com",
+          name: "LinkedIn User",
+          headline: "Software Engineer",
+        },
+      };
+      
+      return mockUsers[provider] || {};
+    }
+    
+    // Real implementation
+    return realCustomProvider.authenticate({ provider, options });
+  },
+};
+```
+
+### Integration Testing
+
+```typescript
+// Test custom provider integration
+describe("Custom Provider Authentication", () => {
+  test("should authenticate with LinkedIn", async () => {
+    const auth = new CustomProviderAuth();
+    const user = await auth.authenticateWithLinkedIn();
+    
+    expect(user).toHaveProperty("email");
+    expect(user).toHaveProperty("name");
+    expect(user.provider).toBe("linkedin");
+  });
+  
+  test("should handle invalid provider", async () => {
+    const auth = new CustomProviderAuth();
+    
+    await expect(
+      auth.authenticateWithCustomProvider("invalid-provider")
+    ).rejects.toThrow("Provider not configured");
+  });
+});
+```
+
+## Security Considerations
+
+### OAuth Security Best Practices
+
+```tsx
+const secureCustomProvider = {
+  "secure-provider": {
+    name: "Secure Provider",
+    verifier: "secure-provider-verifier",
+    typeOfLogin: "jwt",
+    
+    // Security settings
+    validateIssuer: true,
+    validateAudience: true,
+    validateSignature: true,
+    
+    // Token validation
+    clockTolerance: 60, // 60 seconds
+    maxAge: 3600, // 1 hour
+    
+    // PKCE for added security
+    usePKCE: true,
+    
+    // State parameter validation
+    validateState: true,
+    
+    // Secure redirect handling
+    allowedRedirectUris: [
+      "https://yourapp.com/auth/callback",
+      "https://www.yourapp.com/auth/callback",
+    ],
+  },
+};
+```
+
+## Next Steps
+
+* [Set up passkey authentication](/docs/wallets/authentication/login-methods/passkey-signup)
+* [Configure multi-factor authentication](/docs/wallets/authentication/mfa/mfa-overview)
+* [Customize authentication UI](/docs/wallets/authentication/setup/whitelabel)
+* [Learn about session management](/docs/wallets/authorization/policies/session-keys)

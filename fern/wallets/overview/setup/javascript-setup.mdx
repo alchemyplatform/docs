@@ -1,0 +1,227 @@
+---
+title: "JavaScript Setup"
+description: "Set up Account Kit in your JavaScript application"
+slug: javascript-setup
+---
+
+# JavaScript Setup
+
+Learn how to integrate Account Kit into your JavaScript application to enable smart wallet functionality with embedded accounts and user authentication.
+
+## Installation
+
+Install the Account Kit JavaScript SDK and its peer dependencies:
+
+```bash
+npm install @alchemy/aa-alchemy @alchemy/aa-core @alchemy/aa-accounts
+# or
+yarn add @alchemy/aa-alchemy @alchemy/aa-core @alchemy/aa-accounts
+```
+
+## Configuration
+
+### 1. Set up your Alchemy API Key
+
+First, obtain your API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) and configure it in your application.
+
+```javascript
+import { AlchemyProvider } from "@alchemy/aa-alchemy";
+import { sepolia } from "viem/chains";
+
+const provider = new AlchemyProvider({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+});
+```
+
+### 2. Initialize Smart Account Client
+
+Create and configure your smart account client:
+
+```javascript
+import { createLightAccount } from "@alchemy/aa-accounts";
+import { createAlchemySmartAccountClient } from "@alchemy/aa-alchemy";
+import { sepolia } from "viem/chains";
+
+const smartAccountClient = await createAlchemySmartAccountClient({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  account: await createLightAccount({
+    signer, // Your signer implementation
+    chain: sepolia,
+  }),
+});
+```
+
+## Basic Usage
+
+### Creating a Signer
+
+Before creating a smart account, you need a signer. Here are several options:
+
+#### Using a Private Key Signer:
+
+```javascript
+import { LocalAccountSigner } from "@alchemy/aa-core";
+import { generatePrivateKey } from "viem";
+
+const privateKey = generatePrivateKey();
+const signer = LocalAccountSigner.privateKeyToAccountSigner(privateKey);
+```
+
+#### Using Magic Link:
+
+```javascript
+import { MagicSigner } from "@alchemy/aa-signers/magic";
+
+const magicSigner = new MagicSigner({
+  apiKey: "YOUR_MAGIC_API_KEY",
+});
+
+await magicSigner.authenticate({
+  email: "user@example.com",
+});
+```
+
+### Sending Transactions
+
+```javascript
+// Send a simple transaction
+const txHash = await smartAccountClient.sendUserOperation({
+  uo: {
+    target: "0x...", // destination address
+    data: "0x", // transaction data
+    value: 0n, // value in wei
+  },
+});
+
+// Wait for the transaction to be mined
+const txReceipt = await smartAccountClient.waitForUserOperationTransaction({
+  hash: txHash,
+});
+
+console.log("Transaction successful:", txReceipt.transactionHash);
+```
+
+### Batch Transactions
+
+Send multiple transactions in a single user operation:
+
+```javascript
+const batchTxHash = await smartAccountClient.sendUserOperation({
+  uo: [
+    {
+      target: "0x...",
+      data: "0x",
+      value: parseEther("0.1"),
+    },
+    {
+      target: "0x...",
+      data: "0x",
+      value: parseEther("0.2"),
+    },
+  ],
+});
+```
+
+## Advanced Configuration
+
+### Custom Gas Manager
+
+Configure gas sponsorship for your users:
+
+```javascript
+import { createAlchemySmartAccountClient } from "@alchemy/aa-alchemy";
+
+const clientWithGasManager = createAlchemySmartAccountClient({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  account,
+  gasManagerConfig: {
+    policyId: "YOUR_POLICY_ID",
+  },
+});
+```
+
+### Custom Bundler Configuration
+
+```javascript
+const client = createAlchemySmartAccountClient({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+  account,
+  opts: {
+    bundlerUrl: "https://custom-bundler.com",
+    gasEstimator: customGasEstimator,
+  },
+});
+```
+
+## Environment Setup
+
+### Browser Environment
+
+For browser applications, ensure you have proper CORS configuration and consider using environment variables for sensitive data:
+
+```javascript
+// Use environment variables for API keys
+const apiKey = process.env.ALCHEMY_API_KEY;
+
+// Initialize client
+const client = createAlchemySmartAccountClient({
+  apiKey,
+  chain: sepolia,
+  account,
+});
+```
+
+### Node.js Environment
+
+For server-side applications:
+
+```javascript
+import dotenv from "dotenv";
+dotenv.config();
+
+const client = createAlchemySmartAccountClient({
+  apiKey: process.env.ALCHEMY_API_KEY,
+  chain: sepolia,
+  account,
+});
+```
+
+## Error Handling
+
+Implement proper error handling for your wallet operations:
+
+```javascript
+try {
+  const txHash = await smartAccountClient.sendUserOperation({
+    uo: {
+      target: "0x...",
+      data: "0x",
+    },
+  });
+  
+  console.log("Transaction sent:", txHash);
+} catch (error) {
+  if (error.code === "INSUFFICIENT_FUNDS") {
+    console.error("Insufficient funds for transaction");
+  } else if (error.code === "USER_REJECTED") {
+    console.error("User rejected the transaction");
+  } else {
+    console.error("Transaction failed:", error.message);
+  }
+}
+```
+
+## Next Steps
+
+* [Learn about smart wallet concepts](/docs/wallets/overview/concepts/smart-wallets)
+* [Set up user authentication](/docs/wallets/authentication/setup/setup)
+* [Send your first transaction](/docs/wallets/transactions/send-operations/send-user-operations)
+* [Explore JavaScript utilities](/docs/wallets/sdk-reference/javascript/utilities)
+
+## Need Help?
+
+If you encounter issues during setup, check out our [troubleshooting guide](/docs/wallets/overview/getting-started#troubleshooting) or reach out to our support team.

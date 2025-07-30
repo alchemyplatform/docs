@@ -1,0 +1,79 @@
+---
+title: React Setup
+description: Set up smart wallets in your React application.
+slug: overview/setup/react-setup
+---
+
+# React Setup
+
+Get started with Alchemy's Account Kit in your React application.
+
+## Installation
+
+```bash
+npm install @account-kit/react @account-kit/core
+```
+
+## Quick Start
+
+1. **Configure your app**:
+
+```typescript
+import { AlchemyAccountsUIConfig, createConfig } from "@account-kit/react";
+import { sepolia } from "@account-kit/infra";
+
+const config: AlchemyAccountsUIConfig = createConfig({
+  apiKey: "your-alchemy-api-key",
+  chain: sepolia,
+});
+```
+
+2. **Wrap your app with the provider**:
+
+```typescript
+import { AlchemyAccountProvider } from "@account-kit/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
+export function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AlchemyAccountProvider config={config}>
+        <YourApp />
+      </AlchemyAccountProvider>
+    </QueryClientProvider>
+  );
+}
+```
+
+3. **Add authentication**:
+
+```typescript
+import { useAuthModal, useUser, useLogout } from "@account-kit/react";
+
+export function AuthComponent() {
+  const user = useUser();
+  const { openAuthModal } = useAuthModal();
+  const { logout } = useLogout();
+
+  return (
+    <div>
+      {user ? (
+        <div>
+          <p>Welcome, {user.email}!</p>
+          <button onClick={() => logout()}>Logout</button>
+        </div>
+      ) : (
+        <button onClick={() => openAuthModal()}>Login</button>
+      )}
+    </div>
+  );
+}
+```
+
+## Next Steps
+
+* [Configure authentication methods](/docs/wallets/authentication/setup/setup)
+* [Customize UI components](/docs/wallets/authentication/setup/ui-components)
+* [Send your first transaction](/docs/wallets/transactions/send-operations/send-user-operations)

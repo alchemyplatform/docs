@@ -1,0 +1,141 @@
+---
+title: "React Native Setup"
+description: "Set up Account Kit in your React Native application"
+slug: react-native-setup
+---
+
+# React Native Setup
+
+Learn how to integrate Account Kit into your React Native application to enable smart wallet functionality with embedded accounts and user authentication.
+
+## Installation
+
+Install the Account Kit React Native SDK and its peer dependencies:
+
+```bash
+npm install @alchemy/aa-alchemy @alchemy/aa-core @alchemy/aa-accounts
+# or
+yarn add @alchemy/aa-alchemy @alchemy/aa-core @alchemy/aa-accounts
+```
+
+## Configuration
+
+### 1. Set up your Alchemy API Key
+
+First, obtain your API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) and configure it in your application.
+
+```typescript
+import { AlchemyProvider } from "@alchemy/aa-alchemy";
+import { sepolia } from "viem/chains";
+
+const provider = new AlchemyProvider({
+  apiKey: "YOUR_ALCHEMY_API_KEY",
+  chain: sepolia,
+});
+```
+
+### 2. Initialize Account Kit
+
+Set up the Account Kit provider with your configuration:
+
+```typescript
+import { AccountKitProvider } from "@alchemy/aa-alchemy/react-native";
+
+export default function App() {
+  return (
+    <AccountKitProvider
+      config={{
+        apiKey: "YOUR_ALCHEMY_API_KEY",
+        chain: sepolia,
+      }}
+    >
+      <YourApp />
+    </AccountKitProvider>
+  );
+}
+```
+
+## Basic Usage
+
+### Creating a Smart Account
+
+```typescript
+import { useSmartAccountClient } from "@alchemy/aa-alchemy/react-native";
+import { useEffect } from "react";
+
+function WalletComponent() {
+  const { client, isLoading } = useSmartAccountClient();
+
+  useEffect(() => {
+    if (client) {
+      console.log("Smart account address:", client.getAddress());
+    }
+  }, [client]);
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
+
+  return (
+    <View>
+      <Text>Smart Wallet Ready!</Text>
+    </View>
+  );
+}
+```
+
+### User Authentication
+
+Implement user authentication with embedded accounts:
+
+```typescript
+import { useAuthModal, useUser } from "@alchemy/aa-alchemy/react-native";
+
+function AuthComponent() {
+  const user = useUser();
+  const { openAuthModal } = useAuthModal();
+
+  return (
+    <View>
+      {user ? (
+        <Text>Welcome, {user.email}!</Text>
+      ) : (
+        <Button title="Sign In" onPress={openAuthModal} />
+      )}
+    </View>
+  );
+}
+```
+
+## Platform-Specific Configuration
+
+### iOS Configuration
+
+Add the following to your `ios/YourApp/Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+### Android Configuration
+
+Add internet permission to your `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+## Next Steps
+
+* [Learn about smart wallet concepts](/docs/wallets/overview/concepts/smart-wallets)
+* [Set up user authentication](/docs/wallets/authentication/setup/setup)
+* [Send your first transaction](/docs/wallets/transactions/send-operations/send-user-operations)
+* [Explore React Native hooks](/docs/wallets/sdk-reference/react-native/hooks)
+
+## Need Help?
+
+If you encounter issues during setup, check out our [troubleshooting guide](/docs/wallets/overview/getting-started#troubleshooting) or reach out to our support team.
