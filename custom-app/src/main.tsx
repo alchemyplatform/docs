@@ -3,17 +3,7 @@ import { createRoot } from 'react-dom/client'
 
 import { Codeblock } from './Codeblock.js'
 
-const FERN_FOOTER_CONTAINER_ID = 'fern-footer'
-
 const render = async () => {
-  // Get or create fern-footer container
-  let fernFooterContainer = document.getElementById(FERN_FOOTER_CONTAINER_ID)
-  if (!fernFooterContainer) {
-    fernFooterContainer = document.createElement('div')
-    fernFooterContainer.setAttribute('id', FERN_FOOTER_CONTAINER_ID)
-    document.body.appendChild(fernFooterContainer)
-  }
-
   // Get or create code-block-id container
   let codeBlockContainer = document.getElementById('code-block-id')
   if (!codeBlockContainer) {
@@ -31,7 +21,6 @@ const render = async () => {
   )
 
   // Show the container after rendering
-  if (fernFooterContainer) fernFooterContainer.style.display = 'block'
   if (codeBlockContainer) codeBlockContainer.style.display = 'block'
 
   // Remove the default built with fern link since we add one in the Footer component.
@@ -47,16 +36,11 @@ window.addEventListener('load', async () => {
     await render()
   }
 
-  new MutationObserver(async (mutations) => {
+  new MutationObserver(async () => {
     const currentPath = window.location.pathname.replace(/\/+$/, '')
     // Only render if on /docs and footer is missing
-    const shouldRender =
-      currentPath === '/docs' &&
-      mutations.some(
-        (mutation) =>
-          mutation.type === 'childList' &&
-          !document.getElementById('alchemy-footer'),
-      )
+    const shouldRender = currentPath === '/docs'
+
     if (shouldRender) {
       await render()
     }
