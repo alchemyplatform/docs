@@ -239,6 +239,11 @@ export const Codeblock: React.FC = () => {
     }
 
     initHighlighter()
+
+    // Cleanup function to dispose of highlighter when component unmounts
+    return () => {
+      highlighter?.dispose()
+    }
   }, [])
 
   React.useEffect(() => {

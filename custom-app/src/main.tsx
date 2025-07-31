@@ -12,6 +12,11 @@ const render = async () => {
     document.body.appendChild(codeBlockContainer)
   }
 
+  // Check if already rendered
+  if (codeBlockContainer.hasChildNodes()) {
+    return
+  }
+
   // Render Codeblock into code-block-id container
   const codeBlockRoot = createRoot(codeBlockContainer)
   codeBlockRoot.render(
@@ -21,28 +26,18 @@ const render = async () => {
   )
 
   // Show the container after rendering
-  if (codeBlockContainer) codeBlockContainer.style.display = 'block'
+  codeBlockContainer.style.display = 'block'
 
   // Remove the default built with fern link since we add one in the Footer component.
   document.getElementById('builtwithfern')?.remove()
 }
 
-// Use 'load' event instead of 'DOMContentLoaded' for App Router
+// Use 'load' event for page loads
 window.addEventListener('load', async () => {
   // Only render on /docs or /docs/
-  const initalPath = window.location.pathname.replace(/\/+$/, '')
+  const currentPath = window.location.pathname.replace(/\/+$/, '')
 
-  if (initalPath === '/docs') {
+  if (currentPath === '/docs') {
     await render()
   }
-
-  new MutationObserver(async () => {
-    const currentPath = window.location.pathname.replace(/\/+$/, '')
-    // Only render if on /docs and footer is missing
-    const shouldRender = currentPath === '/docs'
-
-    if (shouldRender) {
-      await render()
-    }
-  }).observe(document.body, { childList: true, subtree: true })
 })
