@@ -26900,7 +26900,13 @@ window.addEventListener("load", async () => {
       return;
     }
     a === "/docs" &&
-      o.some((c) => c.type === "childList" && !document.getElementById(Nc)) &&
+      o.some((c) => {
+        var d;
+        return (
+          c.type === "childList" &&
+          !((d = document.getElementById(Nc)) != null && d.hasChildNodes())
+        );
+      }) &&
       (await Mh());
   });
   t.observe(document.body, { childList: !0, subtree: !0 });
