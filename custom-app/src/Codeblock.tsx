@@ -225,7 +225,10 @@ export const Codeblock: React.FC = () => {
   React.useEffect(() => {
     const initHighlighter = async () => {
       const highlighterCore = await createHighlighterCore({
-        langs: [import('@shikijs/langs/bash'), import('@shikijs/langs/json')],
+        langs: [
+          import('@shikijs/langs-precompiled/bash'),
+          import('@shikijs/langs-precompiled/json'),
+        ],
         themes: [
           import('@shikijs/themes/github-light'),
           import('@shikijs/themes/material-theme-darker'),
