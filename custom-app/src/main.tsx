@@ -47,16 +47,19 @@ window.addEventListener('load', async () => {
   const observer = new MutationObserver(async (mutations) => {
     const currentPath = window.location.pathname.replace(/\/+$/, '')
 
+    const onHomepage = currentPath === '/docs'
+    if (!onHomepage) {
+      return
+    }
+
     // Only render if on /docs and CodeBlock is missing after a DOM change
-    const shouldRender =
-      currentPath === '/docs' &&
-      mutations.some((mutation) => {
-        const isChildList = mutation.type === 'childList'
-        const elementMissingOrEmpty = !document
-          .getElementById(CODE_BLOCK_ID) // UPDATE THIS if we change which components are rendered in custom-app
-          ?.hasChildNodes()
-        return isChildList && elementMissingOrEmpty
-      })
+    const shouldRender = mutations.some((mutation) => {
+      const isChildList = mutation.type === 'childList'
+      const elementMissingOrEmpty = !document
+        .getElementById(CODE_BLOCK_ID) // UPDATE THIS if we change which components are rendered in custom-app
+        ?.hasChildNodes()
+      return isChildList && elementMissingOrEmpty
+    })
 
     if (shouldRender) {
       await render()

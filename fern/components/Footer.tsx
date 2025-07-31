@@ -202,7 +202,7 @@ const DiscordIcon = () => (
 );
 
 export const BuiltByFern = () => (
-  <div
+  <a
     className="FernLogo flex items-baseline gap-1 mx-auto my-8 w-fit"
     href="https://buildwithfern.com/?utm_campaign=buildWith&amp;utm_medium=docs&amp;utm_source=alchemy.docs.buildwithfern.com"
     data-state="closed"
@@ -230,7 +230,7 @@ export const BuiltByFern = () => (
         className="fill-(color:--grayscale-a10)"
       ></path>
     </svg>
-  </div>
+  </a>
 );
 
 /**
