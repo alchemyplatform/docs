@@ -17,11 +17,6 @@ const render = async () => {
     document.body.appendChild(codeBlockContainer)
   }
 
-  // Check if already rendered
-  if (codeBlockContainer.hasChildNodes()) {
-    return
-  }
-
   // Create root only once, reuse it
   if (!codeBlockRoot) {
     codeBlockRoot = createRoot(codeBlockContainer)
