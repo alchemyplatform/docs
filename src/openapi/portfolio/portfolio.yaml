@@ -29,9 +29,9 @@ paths:
   ####################################################
   # Transaction History API
   ####################################################
-  "/{apiKey}/transactions/history/by-address":
-    post:
-      $ref: "./transactions/history/by-address.yaml"
+  # "/{apiKey}/transactions/history/by-address":
+  #   post:
+  #     $ref: "./transactions/history/by-address.yaml"
   ####################################################
   # NFT APIs  (Deprecated / Older)
   ####################################################
@@ -352,7 +352,7 @@ components:
         addresses:
           type: array
           description: >
-            Array of address and networks pairs (limit 2 pairs, max 5 networks each). Networks should match network enums.
+            Array of wallet addresses and the networks to query them on. Maximum 2 addresses and maximum 5 networks per address.
           items:
             $ref: "#/components/schemas/AddressItem"
       required:
@@ -377,6 +377,8 @@ components:
           type: integer
           description: "Sets the maximum number of items per page (Max: 50)"
           default: 25
+        pageKey:
+          $ref: "../nft/nft.yaml#/components/schemas/pageKey"
       required:
         - addresses
 
@@ -392,8 +394,14 @@ components:
         includeNativeTokens:
           type: boolean
           description: Whether to include each chain's native token in the response (e.g. ETH on Ethereum). The native token will have a null contract address.
-          example: false
-          default: false
+          example: true
+          default: true
+        includeErc20Tokens:
+          description: "Boolean - if set to `true`, returns ERC-20 tokens. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`."
+          type: boolean
+          default: true
+        pageKey:
+          $ref: "../nft/nft.yaml#/components/schemas/pageKey"
       required:
         - addresses
 
@@ -403,7 +411,7 @@ components:
         addresses:
           type: array
           description: >
-            Array of address and networks pairs (limit 2 pairs, max 5 networks each). Networks should match network enums.
+            Array of wallet addresses and the networks to query them on. Maximum 2 addresses and maximum 5 networks per address.
           items:
             $ref: "#/components/schemas/AddressItem"
         withMetadata:
@@ -417,8 +425,14 @@ components:
         includeNativeTokens:
           type: boolean
           description: Whether to include each chain's native token in the response (e.g. ETH on Ethereum). The native token will have a null contract address.
-          example: false
-          default: false
+          example: true
+          default: true
+        includeErc20Tokens:
+          description: "Boolean - if set to `true`, returns ERC-20 tokens. Setting this to false will reduce payload size and may result in a faster API call. Defaults to `true`."
+          type: boolean
+          default: true
+        pageKey:
+          $ref: "../nft/nft.yaml#/components/schemas/pageKey"
       required:
         - addresses
 
@@ -448,7 +462,7 @@ components:
         addresses:
           type: array
           description: >
-            Array of address and networks pairs (limit 2 pairs, max 5 networks each). Networks should match network enums.
+            Array of wallet addresses and the networks to query them on. Maximum 2 addresses and maximum 5 networks per address.
           items:
             $ref: "#/components/schemas/AddressItem"
         withMetadata:
@@ -636,6 +650,8 @@ components:
               description: List of token balances by address.
               items:
                 $ref: "#/components/schemas/TokenBalancesResponseItem"
+            pageKey:
+              $ref: "../nft/nft.yaml#/components/schemas/pageKey"
       required:
         - data
 
