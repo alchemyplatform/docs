@@ -1,12 +1,9 @@
 import React from 'react'
-import type { Root } from 'react-dom/client'
 import { createRoot } from 'react-dom/client'
 
 import { Codeblock } from './Codeblock.js'
 
 const CODE_BLOCK_ID = 'code-block-id'
-
-let codeBlockRoot: Root | null = null
 
 const render = async () => {
   console.log('🎯 render() called')
@@ -30,14 +27,7 @@ const render = async () => {
     console.log('📭 Container is empty, proceeding with render')
   }
 
-  // Create root only once, reuse it
-  if (!codeBlockRoot) {
-    console.log('🌱 Creating new React root')
-    codeBlockRoot = createRoot(codeBlockContainer)
-  } else {
-    console.log('🌱 Reusing existing React root')
-  }
-
+  const codeBlockRoot = createRoot(codeBlockContainer)
   // Render Codeblock into code-block-id container
   console.log('⚛️ Rendering Codeblock component')
   codeBlockRoot.render(
