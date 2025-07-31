@@ -14,7 +14,7 @@ slug: reference/optimism-api-quickstart
 
 ## 1. Choose a package manager (npm or yarn)
 
-For this guide, we will be using npm or yarn as our package manager to install either `alchemy-sdk` or any other packages.
+For this guide, we will be using npm or yarn as our package manager.
 
 ### npm
 
@@ -40,52 +40,17 @@ To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lan
   ```
 </CodeGroup>
 
-## 3. Install Alchemy-SDK
-
-Run the following command to install the Alchemy SDK with npm or yarn.
-
-<CodeGroup>
-  ```text npm
-  npm install alchemy-sdk
-  ```
-
-  ```text yarn
-  yarn add alchemy-sdk
-  ```
-</CodeGroup>
-
-## 4. Make your first request
+## 3. Make your first request
 
 You are all set now to use Optimism API and make your first request. For instance, lets make a request to `get latest block`. Create an `index.js` file and paste the following code snippet into the file.
 
-<CodeGroup>
-  ```javascript index.js
-  const { Network, Alchemy } = require("alchemy-sdk");
-
-  // Optional Config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.OPT_MAINNET, // Replace with your network.
-  };
-
-  const alchemy = new Alchemy(settings);
-
-  async function main() {
-    const latestBlock = await alchemy.core.getBlockNumber();
-    console.log("The latest block number is", latestBlock);
-  }
-
-  main();
-  ```
-</CodeGroup>
-
-## 5. Run script
-
-To run the above node script, use cmd `node index.js`, and you should see the output.
 
 <CodeGroup>
-  ```text shell
-  The latest block number is 43869847
+  ```shell curl
+  curl https://opt-mainnet.g.alchemy.com/v2/demo \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
   ```
 </CodeGroup>
 
@@ -97,14 +62,5 @@ You must not stop here! Want to build your first Dapp on Optimism and use Optimi
 
 Check out the following tutorials to learn how to build on Optimism:
 
-* [Optimism SDK Examples](/reference/optimism-sdk-examples)
 * [Optimism API FAQ](/reference/optimism-api-faq)
 * [How to Add Optimism To Metamask](/docs/how-to-add-optimism-to-metamask)
-
-For full documentation on the available endpoints for alchemy-sdk, check the github repo:
-
-[![GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](alchemy-sdk-js.png)](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-[![github.com](favicon.ico)github.com](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-[GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](https://github.com/alchemyplatform/alchemy-sdk-js)

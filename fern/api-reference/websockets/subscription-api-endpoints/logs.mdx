@@ -48,40 +48,6 @@ An object with the following fields:
   {"jsonrpc":"2.0","id": 1, "method": "eth_subscribe", "params": ["logs", {"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "topics": ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]}]}
   ```
 
-  ```javascript alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-  import { ethers } from "ethers";
-
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
-
-  // This filter could also be generated with the Contract or
-  // Interface API. If address is not specified, any address
-  // matches and if topics is not specified, any log matches
-  const filter = {
-    address: "dai.tokens.ethers.eth",
-    topics: [ethers.utils.id("Transfer(address,address,uint256)")],
-  };
-
-  alchemy.ws.on(filter, (log, event) => {
-    // Emitted whenever a DAI token transfer occurs
-  });
-
-  // Notice this is an array of topic-sets and is identical to
-  // using a filter with no address (i.e. match any address)
-  const topicSets = [
-    ethers.utils.id("Transfer(address,address,uint256)"),
-    null,
-    [address1, address2],
-  ];
-
-  alchemy.ws.on(topicSets, (log, event) => {
-    // Emitted any token is sent TO either address
-  });
-  ```
 </CodeGroup>
 
 # Result
