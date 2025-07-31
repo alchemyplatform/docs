@@ -43,15 +43,17 @@ const render = async () => {
 
 window.addEventListener('load', async () => {
   // Only render on /docs or /docs/
-  const currentPath = window.location.pathname.replace(/\/+$/, '')
+  const initialPath = window.location.pathname.replace(/\/+$/, '')
 
   // Initial render if on /docs
-  if (currentPath === '/docs') {
+  if (initialPath === '/docs') {
     await render()
   }
 
   // Set up observer to re-render when component gets unmounted
   const observer = new MutationObserver(async (mutations) => {
+    const currentPath = window.location.pathname.replace(/\/+$/, '')
+
     // Clean up observer if we leave /docs
     if (currentPath !== '/docs') {
       observer.disconnect()
