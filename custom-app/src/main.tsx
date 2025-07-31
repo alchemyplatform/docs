@@ -1,14 +1,19 @@
 import React from 'react'
+import type { Root } from 'react-dom/client'
 import { createRoot } from 'react-dom/client'
 
 import { Codeblock } from './Codeblock.js'
 
+const CODE_BLOCK_ID = 'code-block-id'
+
+let codeBlockRoot: Root | null = null
+
 const render = async () => {
   // Get or create code-block-id container
-  let codeBlockContainer = document.getElementById('code-block-id')
+  let codeBlockContainer = document.getElementById(CODE_BLOCK_ID)
   if (!codeBlockContainer) {
     codeBlockContainer = document.createElement('div')
-    codeBlockContainer.setAttribute('id', 'code-block-id')
+    codeBlockContainer.setAttribute('id', CODE_BLOCK_ID)
     document.body.appendChild(codeBlockContainer)
   }
 
@@ -17,8 +22,12 @@ const render = async () => {
     return
   }
 
+  // Create root only once, reuse it
+  if (!codeBlockRoot) {
+    codeBlockRoot = createRoot(codeBlockContainer)
+  }
+
   // Render Codeblock into code-block-id container
-  const codeBlockRoot = createRoot(codeBlockContainer)
   codeBlockRoot.render(
     <React.StrictMode>
       <Codeblock />
@@ -32,12 +41,36 @@ const render = async () => {
   document.getElementById('builtwithfern')?.remove()
 }
 
-// Use 'load' event for page loads
 window.addEventListener('load', async () => {
   // Only render on /docs or /docs/
   const currentPath = window.location.pathname.replace(/\/+$/, '')
 
+  // Initial render if on /docs
   if (currentPath === '/docs') {
     await render()
   }
+
+  // Set up observer to re-render when component gets unmounted
+  const observer = new MutationObserver(async (mutations) => {
+    // Clean up observer if we leave /docs
+    if (currentPath !== '/docs') {
+      observer.disconnect()
+      return
+    }
+
+    // Only render if on /docs and CodeBlock is missing after a DOM change
+    const shouldRender =
+      currentPath === '/docs' &&
+      mutations.some(
+        (mutation) =>
+          mutation.type === 'childList' &&
+          !document.getElementById(CODE_BLOCK_ID), // UPDATE THIS if we change which components are rendered in custom-app
+      )
+
+    if (shouldRender) {
+      await render()
+    }
+  })
+
+  observer.observe(document.body, { childList: true, subtree: true })
 })
