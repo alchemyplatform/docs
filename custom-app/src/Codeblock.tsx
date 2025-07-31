@@ -1,19 +1,21 @@
 import React from 'react'
+import type { HighlighterCore } from 'shiki/core'
+import { createHighlighterCore } from 'shiki/core'
+import { createJavaScriptRawEngine } from 'shiki/engine/javascript'
 import styled, { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import type { DefaultTheme } from 'styled-components/dist/types.js'
-import { codeToHtml } from 'shiki'
 import { CodeblockSelect } from './CodeblockSelect'
 
 import {
-  CodeBlockLanguage,
-  Chains,
   ApiFunction,
-  languageOptions,
   chainOptions,
-  loadCodeExamples,
-  solanaApiFunctions,
+  Chains,
+  CodeBlockLanguage,
   ethereumApiFunctions,
   ethMainnetOnlyApiFunctions,
+  languageOptions,
+  loadCodeExamples,
+  solanaApiFunctions,
 } from './codemap.ts'
 
 const CODE_MAP = loadCodeExamples()
@@ -216,20 +218,49 @@ export const Codeblock: React.FC = () => {
   }
 
   const [codeHtml, setCodeHtml] = React.useState<string>('')
+  const [highlighter, setHighlighter] = React.useState<HighlighterCore | null>(
+    null,
+  )
+
+  React.useEffect(() => {
+    const initHighlighter = async () => {
+      const highlighterCore = await createHighlighterCore({
+        langs: [
+          import('@shikijs/langs-precompiled/bash'),
+          import('@shikijs/langs-precompiled/json'),
+        ],
+        themes: [
+          import('@shikijs/themes/github-light'),
+          import('@shikijs/themes/material-theme-darker'),
+        ],
+        engine: createJavaScriptRawEngine(),
+      })
+      setHighlighter(highlighterCore)
+    }
+
+    initHighlighter()
+  }, [])
 
   React.useEffect(() => {
     const generateCodeHtml = async () => {
-      const html = await codeToHtml(code, {
-        lang: language,
-        themes: {
-          light: 'github-light',
-          dark: 'material-theme-darker',
-        },
-      })
-      setCodeHtml(html)
+      if (!highlighter) return // Wait for highlighter to be ready
+
+      try {
+        const html = await highlighter.codeToHtml(code, {
+          lang: language,
+          themes: {
+            light: 'github-light',
+            dark: 'material-theme-darker',
+          },
+        })
+        setCodeHtml(html)
+      } catch (error) {
+        console.error('Error generating code HTML:', error)
+        setCodeHtml(`<pre><code>${code}</code></pre>`) // Fallback
+      }
     }
     generateCodeHtml()
-  }, [code, language, isDark])
+  }, [code, language, isDark, highlighter])
 
   return (
     <StyledThemeProvider theme={theme}>
