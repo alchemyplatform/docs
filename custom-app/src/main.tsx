@@ -69,6 +69,11 @@ const initializeApp = async () => {
   observer.observe(document.body, { childList: true, subtree: true })
 }
 
+type WindowWithInitializeApp = Window &
+  typeof globalThis & { initializeApp: () => void }
+// Expose initializeApp globally for MDX to call
+;(window as WindowWithInitializeApp).initializeApp = initializeApp
+
 // Run immediately when script loads (for direct navigation to homepage)
 initializeApp()
 
