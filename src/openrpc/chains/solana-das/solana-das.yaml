@@ -1,0 +1,300 @@
+$schema: https://meta.open-rpc.org/
+openrpc: 1.2.4
+info:
+  title: Alchemy Solana JSON-RPC Specification
+  description: A specification of the standard JSON-RPC methods for Solana.
+  version: 0.0.0
+servers:
+  - url: https://solana-mainnet.g.alchemy.com/v2
+    name: Solana Mainnet
+  - url: https://solana-devnet.g.alchemy.com/v2
+    name: Solana Devnet
+
+methods:
+  - name: getAsset
+    description: Returns information about a single digital asset.
+    params:
+      - name: Asset ID
+        required: true
+        description: The ID of the asset to retrieve.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for display formatting.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetAssetConfig"
+    examples:
+      - name: getAsset example
+        params:
+          - name: Asset ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: Asset information
+      description: Returns detailed information about the specified digital asset.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/Asset"
+
+  - name: getAssets
+    description: Returns information about multiple digital assets.
+    params:
+      - name: Asset IDs
+        required: true
+        description: An array of asset IDs to retrieve.
+        schema:
+          type: array
+          items:
+            $ref: "../solana/components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetAssetsConfig"
+    examples:
+      - name: getAssets example
+        params:
+          - name: Asset IDs
+            value:
+              - "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+              - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
+    result:
+      name: Assets list
+      description: Returns detailed information about the specified digital assets.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetProof
+    description: Returns the merkle proof for a compressed digital asset.
+    params:
+      - name: Asset ID
+        required: true
+        description: The ID of the compressed asset to get proof for.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/AssetId"
+    examples:
+      - name: getAssetProof example
+        params:
+          - name: Asset ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: Asset proof
+      description: Returns the merkle proof for the specified compressed asset.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetProof"
+
+  - name: getAssetProofs
+    description: Returns merkle proofs for multiple compressed digital assets.
+    params:
+      - name: Asset IDs
+        required: true
+        description: An array of compressed asset IDs to get proofs for.
+        schema:
+          type: array
+          items:
+            $ref: "../solana/components/asset.yaml#/components/schemas/AssetId"
+    examples:
+      - name: getAssetProofs example
+        params:
+          - name: Asset IDs
+            value:
+              - "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+              - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
+    result:
+      name: Asset proofs
+      description: Returns merkle proofs for the specified compressed assets.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetProofList"
+
+  - name: getAssetsByAuthority
+    description: Returns assets filtered by their authority.
+    params:
+      - name: Authority address
+        required: true
+        description: The authority address to filter assets by.
+        schema:
+          $ref: "../solana/components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetAssetsByAuthorityConfig"
+    examples:
+      - name: getAssetsByAuthority example
+        params:
+          - name: Authority address
+            value: "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1"
+    result:
+      name: Assets by authority
+      description: Returns assets filtered by the specified authority.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetsByOwner
+    description: Returns assets owned by the specified address.
+    params:
+      - name: Owner address
+        required: true
+        description: The owner address to filter assets by.
+        schema:
+          $ref: "../solana/components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetAssetsByOwnerConfig"
+    examples:
+      - name: getAssetsByOwner example
+        params:
+          - name: Owner address
+            value: "N4f6zftYsuu4yT7icsjLwh4i6pB1zvvKbseHj2NmSQw"
+    result:
+      name: Assets by owner
+      description: Returns assets owned by the specified address.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetsByGroup
+    description: Returns assets filtered by their group information.
+    params:
+      - name: Group key
+        required: true
+        description: The group key to filter assets by.
+        schema:
+          type: string
+      - name: Group value
+        required: true
+        description: The group value to filter assets by.
+        schema:
+          type: string
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetAssetsByGroupConfig"
+    examples:
+      - name: getAssetsByGroup example
+        params:
+          - name: Group key
+            value: "collection"
+          - name: Group value
+            value: "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w"
+    result:
+      name: Assets by group
+      description: Returns assets filtered by the specified group.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetsByCreator
+    description: Returns assets created by the specified address.
+    params:
+      - name: Creator address
+        required: true
+        description: The creator address to filter assets by.
+        schema:
+          $ref: "../solana/components/base-types.yaml#/components/schemas/Pubkey"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for sorting and pagination.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetAssetsByCreatorConfig"
+    examples:
+      - name: getAssetsByCreator example
+        params:
+          - name: Creator address
+            value: "D3XrkNZz6wx6cofot7Zohsf2KSsu2ArngNk8VqU9cTY3"
+    result:
+      name: Assets by creator
+      description: Returns assets created by the specified address.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetList"
+
+  - name: searchAssets
+    description: Search for assets using a complex set of filter criteria.
+    params:
+      - name: Search filters
+        required: false
+        description: Object containing search criteria and filters.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/SearchAssetsConfig"
+    examples:
+      - name: searchAssets example
+        params:
+          - name: Search filters
+            value:
+              interface: "V1_NFT"
+              ownerAddress: "N4f6zftYsuu4yT7icsjLwh4i6pB1zvvKbseHj2NmSQw"
+              limit: 50
+    result:
+      name: Search results
+      description: Returns assets matching the specified search criteria.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetList"
+
+  - name: getAssetSignatures
+    description: Returns signatures for transactions that have interacted with the given asset.
+    params:
+      - name: Asset ID
+        required: true
+        description: The ID of the asset to get signatures for.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for pagination.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetAssetSignaturesConfig"
+    examples:
+      - name: getAssetSignatures example
+        params:
+          - name: Asset ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: Asset signatures
+      description: Returns signatures for transactions involving the specified asset.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/AssetSignatureList"
+
+  - name: getNftEditions
+    description: Returns all editions of a given master NFT.
+    params:
+      - name: Master NFT ID
+        required: true
+        description: The ID of the master NFT to get editions for.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/AssetId"
+      - name: Configuration
+        required: false
+        description: Optional configuration object for pagination.
+        schema:
+          $ref: "../solana/components/asset.yaml#/components/schemas/GetNftEditionsConfig"
+    examples:
+      - name: getNftEditions example
+        params:
+          - name: Master NFT ID
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+    result:
+      name: NFT editions
+      description: Returns all editions of the specified master NFT.
+      schema:
+        $ref: "../solana/components/asset.yaml#/components/schemas/NftEditionList"
+
+  - name: getTokenAccounts
+    description: Returns token accounts based on the specified filters.
+    params:
+      - name: Configuration
+        required: false
+        description: Configuration object for filtering and pagination.
+        schema:
+          $ref: "../solana/components/account.yaml#/components/schemas/GetTokenAccountsConfig"
+    examples:
+      - name: getTokenAccounts example
+        params:
+          - name: Configuration
+            value:
+              mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+              limit: 100
+    result:
+      name: Token accounts
+      description: Returns token accounts matching the specified criteria.
+      schema:
+        $ref: "../solana/components/account.yaml#/components/schemas/TokenAccountsList"
