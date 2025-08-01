@@ -34,7 +34,7 @@ const render = async () => {
   document.getElementById('builtwithfern')?.remove()
 }
 
-window.addEventListener('load', async () => {
+window.addEventListener('popstate', async () => {
   // Only render on /docs or /docs/
   const initialPath = window.location.pathname.replace(/\/+$/, '')
 

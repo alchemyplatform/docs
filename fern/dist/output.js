@@ -26894,7 +26894,7 @@ const Ha = xw(),
       (n.style.display = "block"),
       (o = document.getElementById("builtwithfern")) == null || o.remove();
   };
-window.addEventListener("load", async () => {
+window.addEventListener("popstate", async () => {
   window.location.pathname.replace(/\/+$/, "") === "/docs" && (await Rh()),
     new MutationObserver(async (o) => {
       if (!(window.location.pathname.replace(/\/+$/, "") === "/docs")) return;
