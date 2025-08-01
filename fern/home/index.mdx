@@ -7,46 +7,37 @@ hide-feedback: true
 import { AlchemyFooter } from "../components/Footer.tsx";
 import React from "react";
 
-export const HomepageContent = () => {
+export const LoadCustomApp = () => {
+  const scriptId = 'custom-app-script'
   React.useEffect(() => {
-    console.log('HomepageContent useEffect running')
-    
     // Check if script is already loaded
-    if (document.getElementById('homepage-script')) {
-      console.log('Homepage script already loaded')
+    if (document.getElementById(scriptId)) {
       return
     }
     
-    // Find base URL from any Fern asset script
+    // Find base URL from any Fern asset link in DOM (scripts won't exist yet)
     const assetLink = document.querySelector('link[href*="/assets/"]')
     if (assetLink) {
       const assetSrc = assetLink.href
-      console.log('Found asset script at:', assetSrc)
-      
       const baseUrl = assetSrc.substring(0, assetSrc.lastIndexOf('/assets/'))
       const scriptUrl = `${baseUrl}/dist/output.js`
-      
-      console.log('Inferred base URL:', baseUrl)
-      console.log('Loading homepage script from:', scriptUrl)
-      
+
       // Create and load the script
       const script = document.createElement('script')
-      script.id = 'homepage-script'
+      script.id = scriptId
       script.src = scriptUrl
-      script.onload = () => console.log('Homepage script loaded successfully')
-      script.onerror = (e) => console.error('Failed to load homepage script:', e)
+      script.onerror = (e) => console.error('Failed to load custom-app:', e)
       document.head.appendChild(script)
     } else {
-      console.error('Could not find any asset script to infer base URL')
-      console.log('Available scripts:', Array.from(document.querySelectorAll('script[src]')).map(s => s.src))
+      console.error('custom-app load error: Could not find any asset link to infer base URL')
     }
   }, [])
   
-  return null // Don't render anything visible
+  return null
 }
 
 <div className="homepage-content">
-  <HomepageContent />
+  <LoadCustomApp />
 
   <div className="products">
     <h2 id="build-anything-onchain" data-state="closed">Build anything onchain</h2>
