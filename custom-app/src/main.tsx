@@ -34,7 +34,7 @@ const render = async () => {
   document.getElementById('builtwithfern')?.remove()
 }
 
-window.addEventListener('popstate', async () => {
+const initializeApp = async () => {
   // Only render on /docs or /docs/
   const initialPath = window.location.pathname.replace(/\/+$/, '')
 
@@ -67,4 +67,10 @@ window.addEventListener('popstate', async () => {
   })
 
   observer.observe(document.body, { childList: true, subtree: true })
-})
+}
+
+// Run immediately when script loads (for direct navigation to homepage)
+initializeApp()
+
+// Also run on popstate (for back/forward navigation)
+window.addEventListener('popstate', initializeApp)
