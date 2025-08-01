@@ -35,6 +35,7 @@ const render = async () => {
 }
 
 const initializeApp = async () => {
+  console.log('initializeApp')
   // Only render on /docs or /docs/
   const initialPath = window.location.pathname.replace(/\/+$/, '')
 
@@ -78,4 +79,7 @@ type WindowWithInitializeApp = Window &
 initializeApp()
 
 // Also run on popstate (for back/forward navigation)
-window.addEventListener('popstate', initializeApp)
+window.addEventListener('popstate', () => {
+  console.log('popstate')
+  initializeApp()
+})
