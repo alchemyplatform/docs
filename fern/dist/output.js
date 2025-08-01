@@ -26911,9 +26911,7 @@ const Ha = Sw(),
   };
 window.initializeApp = su;
 su();
-window.addEventListener("popstate", () => {
-  console.log("popstate"), su();
-});
+window.addEventListener("popstate", su);
 const Iw = Object.freeze({
     displayName: "Shell",
     name: "shellscript",
