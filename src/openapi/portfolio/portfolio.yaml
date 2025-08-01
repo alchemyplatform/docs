@@ -611,6 +611,9 @@ components:
           description: List of tokens by address, with prices and metadata.
           items:
             $ref: "#/components/schemas/TokensResponseItem"
+        pageKey:
+          $ref:
+            "../nft/nft.yaml#/components/schemas/pageKey"
             # should references prices for the prices one.
       required:
         - data
@@ -618,12 +621,12 @@ components:
     TokensResponseItem:
       type: object
       properties:
-        network:
-          type: string
-          description: Network identifier.
         address:
           type: string
           description: Wallet address.
+        network:
+          type: string
+          description: Network identifier.
         tokenAddress:
           type: string
           description: Token address.
@@ -631,7 +634,20 @@ components:
           type: string
           description: Balance of that particular token.
         tokenMetadata:
-          $ref: "./components/schemas.yaml#/alchemy_getTokenMetadata"
+          type: object
+          properties:
+            decimals:
+              type: integer
+              description: Number of decimals the token uses
+            logo:
+              type: string
+              description: URL of the token's logo image
+            name:
+              type: string
+              description: Token's name
+            symbol:
+              type: string
+              description: Token's symbol
         tokenPrices:
           $ref: "../prices/prices.yaml#/components/schemas/AddressPriceResponseItem"
       required:
@@ -971,27 +987,9 @@ components:
         - value
         - lastUpdatedAt
 
-    # Unused
-    # AddressPricesResponse:
-    #   type: object
-    #   properties:
-    #     data:
-    #       type: array
-    #       description: List of token prices by address.
-    #       items:
-    #         $ref: "#/components/schemas/AddressPriceResponseItem"
-    #   required:
-    #     - data
-
     AddressPriceResponseItem:
       type: object
       properties:
-        network:
-          type: string
-          description: Network identifier.
-        address:
-          type: string
-          description: Token contract address.
         prices:
           type: array
           description: List of price information.
