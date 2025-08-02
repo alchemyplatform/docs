@@ -1,0 +1,392 @@
+---
+title: Solana Websockets
+description: Stream real-time Solana data using standard WebSockets.
+subtitle: Stream real-time Solana data using standard WebSockets.
+url: https://docs.alchemy.com/reference/solana-websockets
+slug: reference/solana-websockets
+---
+
+## RPC WebSocket API
+
+Stream real-time Solana data using standard WebSockets.
+
+***
+
+## Introduction
+
+Alchemy provides a standard Solana WebSocket interface that allows you to receive real-time updates about accounts, programs, transactions, and blockchain state. Our WebSocket implementation follows the standard Solana WebSocket API, making it compatible with existing Solana clients and libraries, while benefiting from Alchemy’s infrastructure for improved reliability.
+
+***
+
+## Connection Setup
+
+To connect to the Alchemy WebSocket endpoint, use the following URL format:
+
+`wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>`
+
+Replace `<YOUR_API_KEY>` with your Alchemy API key. You can also use our other network endpoints:
+
+* **Mainnet:** `wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>`
+* **Devnet:** `wss://solana-devnet.g.alchemy.com/v2/<YOUR_API_KEY>`
+
+***
+
+## Subscription Methods
+
+Alchemy supports all standard Solana WebSocket subscription methods:
+
+***
+
+### Account Subscriptions
+
+Subscribe to changes for a specific account:
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "accountSubscribe",
+  "params": [
+    "9PejEmViKHgUkVFWN57cNEZnFS4Qo6SzsLj5UPAXfDTF",
+    {
+      "encoding": "jsonParsed",
+      "commitment": "confirmed"
+    }
+  ]
+}
+```
+
+#### Response
+
+```json
+{
+  "jsonrpc": "2.0",
+  "result": 23784,
+  "id": 1
+}
+```
+
+#### Notification
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "accountNotification",
+  "params": {
+    "result": {
+      "context": {
+        "slot": 5199307
+      },
+      "value": {
+        "data": ["base64-encoded-data", "base64"],
+        "executable": false,
+        "lamports": 1000000000,
+        "owner": "11111111111111111111111111111111",
+        "rentEpoch": 18
+      }
+    },
+    "subscription": 23784
+  }
+}
+```
+
+***
+
+### Program Subscriptions
+
+Subscribe to changes for all accounts owned by a program:
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "programSubscribe",
+  "params": [
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    {
+      "encoding": "jsonParsed",
+      "commitment": "confirmed"
+    }
+  ]
+}
+```
+
+#### Response
+
+```json
+{
+  "jsonrpc": "2.0",
+  "result": 24040,
+  "id": 1
+}
+```
+
+***
+
+### Logs Subscriptions
+
+Subscribe to transaction log messages:
+
+#### Subscribe to all logs
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "logsSubscribe",
+  "params": [
+    "all",
+    {
+      "commitment": "confirmed"
+    }
+  ]
+}
+```
+
+#### Subscribe to specific program logs
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "logsSubscribe",
+  "params": [
+    {
+      "mentions": ["11111111111111111111111111111111"]
+    },
+    {
+      "commitment": "confirmed"
+    }
+  ]
+}
+```
+
+***
+
+### Signature Subscriptions
+
+Subscribe to transaction status updates:
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "signatureSubscribe",
+  "params": [
+    "5UfDuA1mQcZeb7BZyWU5T6CvZsYqsRwBUHFyMeTzwcnn8S6W9vzVDjp3NgjV7qHJQvw5qQbbGvGxoULZKHGUdSmo",
+    {
+      "commitment": "confirmed"
+    }
+  ]
+}
+```
+
+***
+
+### Slot Subscriptions
+
+Subscribe to new slots:
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "slotSubscribe"
+}
+```
+
+***
+
+### Slot Updates Subscriptions
+
+> TBD if we’ll support this. Not for Beta.
+
+Subscribe to detailed information about slots:
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "slotsUpdatesSubscribe"
+}
+```
+
+***
+
+### Root Subscriptions
+
+Subscribe to new roots (finalized blocks):
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "rootSubscribe"
+}
+```
+
+***
+
+## Unsubscribing
+
+To stop receiving updates for any subscription:
+
+#### Request
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "unsubscribe",
+  "params": [23784]
+}
+```
+
+#### Response
+
+```json
+{
+  "jsonrpc": "2.0",
+  "result": true,
+  "id": 1
+}
+```
+
+Replace the number in the `params` array with your actual subscription ID.
+
+***
+
+## JavaScript Examples
+
+### Program Subscribe Example
+
+```js
+const WebSocket = require('ws');
+
+const ws = new WebSocket('wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>');
+
+function sendRequest(ws) {
+    const request = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "programSubscribe",
+        params: [
+            "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+            {
+                encoding: "jsonParsed"
+            }
+        ]
+    };
+    ws.send(JSON.stringify(request));
+}
+
+function startPing(ws) {
+    setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.ping();
+            console.log('Ping sent');
+        }
+    }, 30000);
+}
+
+ws.on('open', function open() {
+    console.log('WebSocket is open');
+    sendRequest(ws);
+    startPing(ws);
+});
+
+ws.on('message', function incoming(data) {
+    const messageStr = data.toString('utf8');
+    try {
+        const messageObj = JSON.parse(messageStr);
+        console.log('Received:', messageObj);
+    } catch (e) {
+        console.error('Failed to parse JSON:', e);
+    }
+});
+
+ws.on('error', function error(err) {
+    console.error('WebSocket error:', err);
+});
+
+ws.on('close', function close() {
+    console.log('WebSocket is closed');
+});
+```
+
+***
+
+### Signature Subscribe Example
+
+```js
+const WebSocket = require('ws');
+
+const ws = new WebSocket('wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>');
+
+function sendRequest(ws) {
+    const request = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "signatureSubscribe",
+        params: [
+            "2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b",
+            {
+                commitment: "finalized",
+                enableReceivedNotification: false
+            }
+        ]
+    };
+    ws.send(JSON.stringify(request));
+}
+
+function startPing(ws) {
+    setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.ping();
+            console.log('Ping sent');
+        }
+    }, 30000);
+}
+
+ws.on('open', function open() {
+    console.log('WebSocket is open');
+    sendRequest(ws);
+    startPing(ws);
+});
+
+ws.on('message', function incoming(data) {
+    const messageStr = data.toString('utf8');
+    try {
+        const messageObj = JSON.parse(messageStr);
+        console.log('Received:', messageObj);
+    } catch (e) {
+        console.error('Failed to parse JSON:', e);
+    }
+});
+
+ws.on('error', function error(err) {
+    console.error('WebSocket error:', err);
+});
+
+ws.on('close', function close() {
+    console.log('WebSocket is closed');
+});
+```
+
+***
+
+## Error Handling
+
+WebSocket errors follow the JSON-RPC 2.0 specification.
