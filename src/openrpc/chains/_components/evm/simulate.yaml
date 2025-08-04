@@ -37,7 +37,22 @@ components:
       properties:
         baseFeePerGas:
           $ref: "./base-types.yaml#/components/schemas/uint"
-          description: The base fee per gas for the block, encoded as hex.
+          description: Hexadecimal value for the base fee per gas for the block.
+        feeRecipient:
+          $ref: "./base-types.yaml#/components/schemas/address"
+          description: Address of the fee recipient for the block proposal.
+        gasLimit:
+          $ref: "./base-types.yaml#/components/schemas/uint"
+          description: Hexadecimal value that represents the maximum amount of gas that transactions are allowed to consume.
+        number:
+          $ref: "./base-types.yaml#/components/schemas/uint"
+          description: Hexadecimal block number.
+        prevRandao:
+          $ref: "./base-types.yaml#/components/schemas/hash32"
+          description: The previous value of randomness, which is used as a source of randomness for various protocol operations.
+        time:
+          $ref: "./base-types.yaml#/components/schemas/uint"
+          description: Hexadecimal value representing the Unix epoch time in seconds.
 
     StateOverrides:
       type: object
@@ -48,8 +63,27 @@ components:
         type: object
         properties:
           balance:
+            $ref: "./base-types.yaml#/components/schemas/uint256"
+            description: Hexadecimal value representing the account balance.
+          nonce:
             $ref: "./base-types.yaml#/components/schemas/uint"
-            description: The new balance to set for the account, encoded as hex.
+            description: Hexadecimal temporary nonce value for the call execution.
+          code:
+            $ref: "./base-types.yaml#/components/schemas/bytes"
+            description: Bytecode to inject into the account.
+          state:
+            type: object
+            description: Storage slot overrides (bytes32 => bytes32).
+            additionalProperties:
+              $ref: "./base-types.yaml#/components/schemas/bytes32"
+          stateDiff:
+            type: object
+            description: Individual storage slot overrides (bytes32 => bytes32).
+            additionalProperties:
+              $ref: "./base-types.yaml#/components/schemas/bytes32"
+          movePrecompileToAddress:
+            $ref: "./base-types.yaml#/components/schemas/address"
+            description: Address of precompile to relocate to this account's address
 
     CallObject:
       type: object
@@ -61,12 +95,27 @@ components:
         to:
           $ref: "./base-types.yaml#/components/schemas/address"
           description: The recipient of the transaction.
+        gas:
+          $ref: "./base-types.yaml#/components/schemas/uint"
+          description: Gas limit for the transaction execution.
+        gasPrice:
+          $ref: "./base-types.yaml#/components/schemas/uint"
+          description: Gas price per unit in wei.
         maxFeePerGas:
           $ref: "./base-types.yaml#/components/schemas/uint"
-          description: The maximum fee per gas the sender is willing to pay.
+          description: Maximum total fee per gas the sender is willing to pay.
+        maxPriorityFeePerGas:
+          $ref: "./base-types.yaml#/components/schemas/uint"
+          description: Maximum priority fee per gas the sender is willing to pay.
         value:
           $ref: "./base-types.yaml#/components/schemas/uint"
-          description: The value sent with the transaction, hex-encoded.
+          description: Value to send with the transaction in wei.
+        data:
+          $ref: "./base-types.yaml#/components/schemas/bytes"
+          description: Transaction data.
+        input:
+          $ref: "./base-types.yaml#/components/schemas/bytes"
+          description: Transaction input data (alias for data).
 
     ##
     ## Simulation response objects
