@@ -572,3 +572,71 @@ methods:
             $ref: "./components/base-types.yaml#/components/schemas/TXN_HASH"
         required:
           - transaction_hash
+
+  - name: starknet_estimateMessageFee
+    summary: Estimates the resources required by the l1_handler transaction induced by the message.
+    description: Estimates the resources required by the l1_handler transaction induced by the message.
+    params:
+      - name: MSG_FROM_L1
+        description: The Message from L1 object
+        required: true
+        schema:
+          type: object
+          title: Message from L1
+          properties:
+            from_address:
+              type: string
+              description: The address of the L1 contract sending the message
+            to_address:
+              type: string
+              description: The target L2 address the message is sent to
+            entry_point_selector:
+              type: string
+              description: The selector of the l1_handler in invoke in the target contract
+            payload:
+              type: array
+              description: The payload of the message
+          required:
+            - from_address
+            - to_address
+            - entry_point_selector
+            - payload
+      - name: block_id
+        description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
+        required: true
+        schema:
+          title: Block id
+          $ref: "./components/block.yaml#/components/schemas/BLOCK_ID"
+    result:
+      name: result
+      description: Array of fee estimation results
+      schema:
+        type: array
+        title: Message fee estimate
+        items:
+          type: object
+          properties:
+            l1_data_gas_consumed:
+              type: string
+              description: The amount of Layer 1 data gas consumed by the transaction
+            l1_data_gas_price:
+              type: string
+              description: The price per unit of Layer 1 data gas (in WEI)
+            l1_gas_consumed:
+              type: string
+              description: The amount of Layer 1 execution gas consumed by the transaction
+            l1_gas_price:
+              type: string
+              description: The price per unit of Layer 1 execution gas (in WEI)
+            l2_gas_consumed:
+              type: string
+              description: The amount of Layer 2 gas consumed by the transaction
+            l2_gas_price:
+              type: string
+              description: The price per unit of Layer 2 gas (in WEI)
+            overall_fee:
+              type: string
+              description: The total estimated fee for the transaction in WEI, computed using all gas consumed and respective prices
+            unit:
+              type: string
+              description: The unit in which the overall fee is expressed
