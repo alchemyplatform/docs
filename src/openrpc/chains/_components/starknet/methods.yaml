@@ -573,3 +573,380 @@ components:
               $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
           required:
             - transaction_hash
+
+    starknet_estimateMessageFee:
+      name: starknet_estimateMessageFee
+      summary: Estimates the resources required by the l1_handler transaction induced by the message.
+      description: Estimates the resources required by the l1_handler transaction induced by the message.
+      paramStructure: by-name
+      params:
+        - name: MSG_FROM_L1
+          description: The Message from L1 object
+          required: true
+          schema:
+            type: object
+            title: Message from L1
+            properties:
+              from_address:
+                type: string
+                description: The address of the L1 contract sending the message
+              to_address:
+                type: string
+                description: The target L2 address the message is sent to
+              entry_point_selector:
+                type: string
+                description: The selector of the l1_handler in invoke in the target contract
+              payload:
+                type: array
+                description: The payload of the message
+            required:
+              - from_address
+              - to_address
+              - entry_point_selector
+              - payload
+        - name: block_id
+          description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: Array of fee estimation results
+        schema:
+          type: array
+          title: Message fee estimate
+          items:
+            type: object
+            properties:
+              l1_data_gas_consumed:
+                type: string
+                description: The amount of Layer 1 data gas consumed by the transaction
+              l1_data_gas_price:
+                type: string
+                description: The price per unit of Layer 1 data gas (in WEI)
+              l1_gas_consumed:
+                type: string
+                description: The amount of Layer 1 execution gas consumed by the transaction
+              l1_gas_price:
+                type: string
+                description: The price per unit of Layer 1 execution gas (in WEI)
+              l2_gas_consumed:
+                type: string
+                description: The amount of Layer 2 gas consumed by the transaction
+              l2_gas_price:
+                type: string
+                description: The price per unit of Layer 2 gas (in WEI)
+              overall_fee:
+                type: string
+                description: The total estimated fee for the transaction in WEI, computed using all gas consumed and respective prices
+              unit:
+                type: string
+                description: The unit in which the overall fee is expressed
+
+    starknet_getBlockWithReceipts:
+      name: starknet_getBlockWithReceipts
+      description: Returns detailed block information, including full transactions and receipts, corresponding to the provided block ID.
+      paramStructure: by-name
+      params:
+        - name: block_id
+          description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The result object which can be one of the following object
+        schema:
+          type: object
+          title: BLOCK_WITH_RECEIPTS
+          properties:
+            status:
+              type: string
+              description: The block status, which can be one of - 'PENDING', 'ACCEPTED_ON_L2', 'ACCEPTED_ON_L1', 'REJECTED'
+            block_hash:
+              type: string
+              description: The block hash
+            parent_hash:
+              type: string
+              description: The parent block hash
+            block_number:
+              type: string
+              description: The block number (its height)
+            new_root:
+              type: string
+              description: The new global state root
+            timestamp:
+              type: integer
+              description: The time in which the block was created, encoded in Unix time
+            sequencer_address:
+              type: string
+              description: The StarkNet identity of the sequencer submitting this block
+            l1_gas_price:
+              type: object
+              properties:
+                price_in_fri:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in fri (10^-18 strk)
+                price_in_wei:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in wei
+            l1_data_gas_price:
+              type: object
+              properties:
+                price_in_fri:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in fri (10^-18 strk)
+                price_in_wei:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in wei
+            l1_da_mode:
+              type: string
+              description: It specifies whether the data of this block is published via blob data or calldata. It can be one of - 'BLOB' or 'CALLDATA'
+            starknet_version:
+              type: string
+              description: The semver of the current Starknet protocol
+            transactions:
+              type: object
+              properties:
+                transaction:
+                  type: object
+                  oneOf:
+                    - type: object
+                      title: INVOKE_TXN_V0
+                      properties:
+                        type:
+                          type: string
+                          description: The type of declare. It can take only one value - 'INVOKE'
+                        max_fee:
+                          type: string
+                          description: The maximal fee that can be charged for including the transaction
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        contract_address:
+                          type: string
+                          description: The address of the contract
+                        entry_point_selector:
+                          type: string
+                          description: The entry point selector
+                        calldata:
+                          type: array
+                          description: The parameters passed to the constructor
+                    - type: object
+                      title: INVOKE_TXN_V1
+                      properties:
+                        type:
+                          type: string
+                          description: The type of declare. It can take only one value - 'INVOKE'
+                        sender_address:
+                          type: string
+                          description: The sender address
+                        calldata:
+                          type: array
+                          description: The parameters passed to the constructor
+                        max_fee:
+                          type: string
+                          description: The maximal fee that can be charged for including the transaction
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        nonce:
+                          type: string
+                          description: The nonce value
+                    - type: object
+                      title: INVOKE_TXN_V3
+                      properties:
+                        type:
+                          type: string
+                          description: The type of declare. It can take only one value - 'INVOKE'
+                        sender_address:
+                          type: string
+                          description: The sender address
+                        calldata:
+                          type: array
+                          description: The parameters passed to the constructor
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        nonce:
+                          type: string
+                          description: The nonce value
+                        resource_bounds:
+                          type: object
+                          properties:
+                            l1_gas:
+                              type: object
+                              description: The max amount and max price per unit of L1 gas used in this tx
+                              properties:
+                                max_amount:
+                                  type: string
+                                  description: The max amount of the resource that can be used in the tx
+                                max_price_per_unit:
+                                  type: string
+                                  description: The max price per unit of this resource for this tx
+                            l2_gas:
+                              type: object
+                              description: The max amount and max price per unit of L2 gas used in this tx
+                              properties:
+                                max_amount:
+                                  type: string
+                                  description: The max amount of the resource that can be used in the tx
+                                max_price_per_unit:
+                                  type: string
+                                  description: The max price per unit of this resource for this tx
+                        tip:
+                          type: string
+                          description: The tip for the transaction
+                        paymaster_data:
+                          type: array
+                          description: The data needed to allow the paymaster to pay for the transaction in native tokens
+                        account_deployment_data:
+                          type: array
+                          description: The data needed to deploy the account contract from which this tx will be initiated
+                        nonce_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's nonce (an account has a nonce per DA mode). It can be one of 'L1' or 'L2'
+                        fee_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's balance from which fee will be charged. It can be one of 'L1' or 'L2'
+
+    starknet_traceBlockTransactions:
+      name: starknet_traceBlockTransactions
+      description: Returns the trace of the transactions in the block.
+      paramStructure: by-name
+      params:
+        - name: block_id
+          description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The traces of the transactions in the block
+        schema:
+          title: Block Transaction Traces
+          type: array
+          items:
+            title: Transaction Trace
+            type: object
+            properties:
+              transaction_hash:
+                title: Transaction hash
+                $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+              trace_root:
+                title: Trace root
+                $ref: "./transaction.yaml#/components/schemas/BROADCASTED_INVOKE_TXN"
+            required:
+              - transaction_hash
+              - trace_root
+
+    starknet_specVersion:
+      name: starknet_specVersion
+      description: Return the active version of the Starknet JSON-RPC specification in use.
+      paramStructure: by-name
+      params: []
+      result:
+        name: result
+        description: The version of the Starknet JSON-RPC specification
+        schema:
+          type: string
+          description: The version of the Starknet JSON-RPC specification
+
+    starknet_getTransactionStatus:
+      name: starknet_getTransactionStatus
+      description: Gets the transaction status (possibly reflecting that the tx is still in the mempool, or dropped from it).
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the transaction to get the status of
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        description: The status of the transaction
+        schema:
+          type: object
+          properties:
+            finality_status:
+              type: string
+              description: The finality status of the transaction, including the case the txn is still in the mempool or failed validation during the block construction phase
+              enum:
+                - RECEIVED
+                - REJECTED
+                - ACCEPTED_ON_L2
+                - ACCEPTED_ON_L1
+            execution_status:
+              type: string
+              description: The execution status of the transaction
+              enum:
+                - SUCCEEDED
+                - REVERTED
+          required:
+            - finality_status
+            - execution_status
+
+    starknet_simulateTransactions:
+      name: starknet_simulateTransactions
+      description: Simulates the execution of the specified transactions at the specified block.
+      paramStructure: by-name
+      params:
+        - name: transactions
+          description: A sequence of Starknet transactions to simulate. If multiple transactions are provided, each transaction is simulated on the state resulting from applying the previous transactions.
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "./transaction.yaml#/components/schemas/TXN"
+        - name: block_id
+          description: The block identifier
+          required: true
+          schema:
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: simulation_flags
+          description: A set of flags used for simulation
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - SKIP_VALIDATE
+                - SKIP_FEE_CHARGE
+      result:
+        name: result
+        description: A sequence of transaction simulation results
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              transaction_trace:
+                $ref: "./transaction.yaml#/components/schemas/BROADCASTED_INVOKE_TXN"
+                description: An execution trace of the transaction
+              fee_estimation:
+                type: object
+                description: An estimate of the fee required for the network to process the transaction
+                properties:
+                  gas_price:
+                    type: integer
+                  gas_usage:
+                    type: integer
+                  overall_fee:
+                    type: integer
+            required:
+              - transaction_trace
+              - fee_estimation
