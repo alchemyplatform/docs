@@ -159,7 +159,7 @@ components:
           schema:
             oneOf:
               - $ref: "../evm/base-types.yaml#/components/schemas/uint"
-              - $ref: "./components/zkevm.yaml#/components/schemas/BatchNumberTag"
+              - $ref: "./schemas.yaml#/components/schemas/BatchNumberTag"
         - name: includeTransactions
           required: true
           description: If `true`, returns full transaction objects; if `false`, returns only transaction hashes.
@@ -169,7 +169,7 @@ components:
         name: Batch
         description: The batch details corresponding to the given number or tag.
         schema:
-          $ref: "./components/zkevm.yaml#/components/schemas/Batch"
+          $ref: "./schemas.yaml#/components/schemas/Batch"
       examples:
         - name: Batch without transaction details
           description: Batch details with transaction hashes only.
@@ -232,3 +232,31 @@ components:
                   transactionIndex: "0x0"
                   chainId: "0x539"
                   type: "0x0"
+
+    zkevm_getBroadcastURI:
+      name: zkevm_getBroadcastURI
+      description: Returns the Broadcast URL of the Trusted Sequencer that has been configured.
+      params: []
+      result:
+        name: Broadcast URI
+        description: The configured broadcast URL of the trusted sequencer
+        schema:
+          type: string
+      examples:
+        - name: zkevm_getBroadcastURI example
+          params: []
+          result:
+            name: Broadcast URI
+            value: "https://sequencer.zkevm.polygon.technology/broadcast"
+
+    eth_getCompilers:
+      name: eth_getCompilers
+      description: Returns a list of available compilers in the client.
+      params: []
+      result:
+        name: Compilers
+        description: An array of available compilers
+        schema:
+          type: array
+          items:
+            type: string
