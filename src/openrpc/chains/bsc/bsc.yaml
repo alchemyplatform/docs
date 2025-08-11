@@ -3,14 +3,14 @@
 $schema: https://meta.open-rpc.org/
 openrpc: 1.2.4
 info:
-  title: Alchemy Base JSON-RPC Specification
-  description: A specification of the standard JSON-RPC methods for Base.
+  title: Alchemy BSC JSON-RPC Specification
+  description: A specification of the standard JSON-RPC methods for BSC.
   version: 0.0.0
 servers:
-  - url: https://base-mainnet.g.alchemy.com/v2
-    name: Base Mainnet
-  - url: https://base-sepolia.g.alchemy.com/v2
-    name: Base Sepolia
+  - url: https://bnb-mainnet.g.alchemy.com/v2
+    name: BSC Mainnet
+  - url: https://bnb-testnet.g.alchemy.com/v2
+    name: BSC Testnet
 
 methods:
   # Block methods
@@ -79,7 +79,7 @@ methods:
             parentBeaconBlockRoot: "0x95c4dbd5b19f6fe3cbc3183be85ff4e85ebe75c5b4fc911f1c91e5b7a554a685"
 
   - name: eth_getBlockByNumber
-    description: Returns information about a block by its number. Use the `pending` tag to retrieve the latest Flashblock.
+    description: Returns information about a block by its number.
     params:
       - name: Block number or tag
         required: true
@@ -242,78 +242,6 @@ methods:
           name: Uncle count
           value: "0x1"
 
-  - name: eth_getBlockReceipts
-    description: Returns the receipts of a block by number or hash.
-    params:
-      - name: Block number or tag or hash
-        required: true
-        description: The block number, tag, or hash to retrieve receipts from.
-        schema:
-          $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
-    result:
-      name: Receipts information
-      description: An array of transaction receipt objects.
-      schema:
-        oneOf:
-          - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
-          - title: Receipts information
-            type: array
-            items:
-              $ref: "../_components/evm/receipt.yaml#/components/schemas/ReceiptInfo"
-    examples:
-      - name: eth_getBlockReceipts example
-        params:
-          - name: Block number or tag or hash
-            value: "latest"
-        result:
-          name: Receipts information
-          value:
-            - blockHash: "0x19514ce955c65e4dd2cd41f435a75a46a08535b8fc16bc660f8092b32590b182"
-              blockNumber: "0x6f55"
-              contractAddress: null
-              cumulativeGasUsed: "0x18c36"
-              from: "0x22896bfc68814bfd855b1a167255ee497006e730"
-              gasUsed: "0x18c36"
-              blobGasUsed: "0x20000"
-              effectiveGasPrice: "0x9502f907"
-              blobGasPrice: "0x32"
-              logs:
-                - address: "0xfd584430cafa2f451b4e2ebcf3986a21fff04350"
-                  topics:
-                    - "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
-                    - "0x4be29e0e4eb91f98f709d98803cba271592782e293b84a625e025cbb40197ba8"
-                    - "0x000000000000000000000000835281a2563db4ebf1b626172e085dc406bfc7d2"
-                    - "0x00000000000000000000000022896bfc68814bfd855b1a167255ee497006e730"
-                  data: "0x"
-                  blockNumber: "0x6f55"
-                  transactionHash: "0x4a481e4649da999d92db0585c36cba94c18a33747e95dc235330e6c737c6f975"
-                  transactionIndex: "0x0"
-                  blockHash: "0x19514ce955c65e4dd2cd41f435a75a46a08535b8fc16bc660f8092b32590b182"
-                  logIndex: "0x0"
-                  removed: false
-              logsBloom: "0x00000004000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000080020000000000000200010000000000000000000001000000800000000000000000000000000000000000000000000000000000100100000000000000000000008000000000000000000000000000000002000000000000000000000"
-              status: "0x1"
-              to: "0xfd584430cafa2f451b4e2ebcf3986a21fff04350"
-              transactionHash: "0x4a481e4649da999d92db0585c36cba94c18a33747e95dc235330e6c737c6f975"
-              transactionIndex: "0x0"
-              type: "0x0"
-            - blockHash: "0x19514ce955c65e4dd2cd41f435a75a46a08535b8fc16bc660f8092b32590b182"
-              blockNumber: "0x6f55"
-              contractAddress: null
-              cumulativeGasUsed: "0x1de3e"
-              from: "0x712e3a792c974b3e3dbe41229ad4290791c75a82"
-              gasUsed: "0x5208"
-              blobGasUsed: "0x20000"
-              effectiveGasPrice: "0x9502f907"
-              blobGasPrice: "0x32"
-              logs: []
-              logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-              status: "0x1"
-              to: "0xd42e2b1c14d02f1df5369a9827cb8e6f3f75f338"
-              transactionHash: "0xefb83b4e3f1c317e8da0f8e2fbb2fe964f34ee184466032aeecac79f20eacaf6"
-              transactionIndex: "0x1"
-              type: "0x2"
-
   - name: eth_getUncleByBlockHashAndIndex
     description: Returns information about an uncle of a block by hash and uncle index.
     params:
@@ -456,25 +384,6 @@ methods:
           name: Syncing status
           value: false
 
-  - name: eth_accounts
-    description: Returns a list of addresses owned by the client.
-    params: []
-    result:
-      name: Accounts
-      description: An array of account addresses owned by the client. Can be empty if no accounts are available.
-      schema:
-        title: Accounts
-        type: array
-        items:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
-    examples:
-      - name: eth_accounts example
-        params: []
-        result:
-          name: Accounts
-          value:
-            - "0xd1f5279be4b4dd94133a23dee1b23f5bfc0db1d0"
-
   - name: eth_blockNumber
     description: Returns the number of the most recent block.
     params: []
@@ -489,22 +398,6 @@ methods:
         result:
           name: Block number
           value: "0x2377"
-
-  - name: eth_protocolVersion
-    description: Returns the current protocol version used by the client.
-    params: []
-    result:
-      name: Protocol Version
-      description: The protocol version as a hexadecimal string.
-      schema:
-        title: Protocol Version
-        type: string
-    examples:
-      - name: eth_protocolVersion example
-        params: []
-        result:
-          name: Protocol Version
-          value: "0x3f"
 
   - name: net_version
     description: Returns the network ID that the client is connected to.
@@ -615,57 +508,6 @@ methods:
           name: Gas used
           value: "0x5208"
 
-  - name: eth_createAccessList
-    description: Generates an access list for a transaction.
-    params:
-      - name: Transaction
-        required: true
-        description: The transaction object for which to generate an access list.
-        schema:
-          $ref: "../_components/evm/transaction.yaml#/components/schemas/GenericTransaction"
-      - name: Block
-        required: false
-        description: The block number or tag at which to create the access list. Defaults to `'latest'` if not provided.
-        schema:
-          $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
-    result:
-      name: Access list result
-      description: An object containing the access list and gas used for the transaction.
-      schema:
-        title: Access list result
-        type: object
-        additionalProperties: false
-        properties:
-          accessList:
-            title: Access list
-            description: The generated access list for the transaction.
-            $ref: "../_components/evm/transaction.yaml#/components/schemas/AccessList"
-          error:
-            title: Error
-            description: Any error encountered during access list generation.
-            type: string
-          gasUsed:
-            title: Gas used
-            description: The estimated gas used for the transaction with the access list, as a hexadecimal string.
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    examples:
-      - name: eth_createAccessList example
-        params:
-          - name: Transaction
-            value:
-              from: "0xaea8f8f781326bfe6a7683c2bd48dd6aa4d3ba63"
-              data: "0x608060806080608155"
-          - name: Block
-            value: "latest"
-        result:
-          name: Access list result
-          value:
-            accessList:
-              - address: "0xa02457e5dfd32bda5fc7e1f1b008aa5979568150"
-                storageKeys:
-                  - "0x0000000000000000000000000000000000000000000000000000000000000081"
-            gasUsed: "0x125f8"
-
   - name: web3_sha3
     description: Returns Keccak-256 (not the standardized SHA3-256) hash of the given data.
     params:
@@ -705,309 +547,7 @@ methods:
           name: Gas price
           value: "0x3e8"
 
-  - name: eth_maxPriorityFeePerGas
-    description: Returns the current maximum priority fee per gas in wei.
-    params: []
-    result:
-      name: Max priority fee per gas
-      description: The current maximum priority fee per gas in wei, as a hexadecimal string.
-      schema:
-        title: Max priority fee per gas
-        $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    examples:
-      - name: eth_maxPriorityFeePerGas example
-        params: []
-        result:
-          name: Max priority fee per gas
-          value: "0x773c23ba"
-
-  - name: eth_feeHistory
-    summary: Returns historical base fee per gas and priority fee per gas data for a range of blocks.
-    description: Returns transaction base fee per gas and effective priority fee per gas for the requested block range.
-    params:
-      - name: blockCount
-        description: The number of blocks in the requested range. Must be greater than zero. Clients may return fewer blocks if not all blocks are available.
-        required: true
-        schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-      - name: newestBlock
-        description: The highest block number of the requested range, or 'latest' for the most recent block.
-        required: true
-        schema:
-          $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTag"
-      - name: rewardPercentiles
-        description: An optional array of percentile values (between 0 and 100) in ascending order. For each block in the requested range, the transactions are sorted by effective priority fee per gas, and the corresponding effective priority fee per gas at each percentile is returned.
-        required: false
-        schema:
-          title: Reward percentiles
-          type: array
-          items:
-            title: Reward percentile
-            description: Floating point value between 0 and 100.
-            type: number
-    result:
-      name: Fee history result
-      description: Fee history for the returned block range. This can be a subsection of the requested range if not all blocks are available.
-      schema:
-        title: FeeHistoryResult
-        description: Fee history results.
-        type: object
-        additionalProperties: false
-        properties:
-          oldestBlock:
-            title: Oldest block
-            description: The block number of the oldest block in the returned range.
-            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-          baseFeePerGas:
-            title: Base fee per gas array
-            description: An array of block base fees per gas in wei. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-1559 blocks.
-            type: array
-            items:
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-          gasUsedRatio:
-            title: Gas used ratio
-            description: An array of block gas used ratios. These are calculated as the ratio of `gasUsed` and `gasLimit`.
-            type: array
-            items:
-              type: number
-          reward:
-            title: Reward array
-            description: A two-dimensional array of effective priority fees per gas at the requested reward percentiles. This property is omitted if `rewardPercentiles` was not specified.
-            type: array
-            items:
-              title: Reward for block
-              description: An array of effective priority fee per gas values (in wei) for the requested percentiles for a single block.
-              type: array
-              items:
-                $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-          baseFeePerBlobGas:
-            title: Base fee per blob gas array
-            description: An array of block base fees per blob gas in wei. This includes the next block after the newest of the returned range, because this value can be derived from the newest block. Zeroes are returned for pre-EIP-4844 blocks.
-            type: array
-            items:
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-          blobGasUsedRatio:
-            title: Blob gas used ratio
-            description: An array of block blob gas used ratios. These are calculated as the ratio of `blobGasUsed` and the maximum blob gas per block.
-            type: array
-            items:
-              type: number
-    examples:
-      - name: eth_feeHistory example
-        params:
-          - name: blockCount
-            value: "0x5"
-          - name: newestBlock
-            value: "latest"
-          - name: rewardPercentiles
-            value:
-              - 20
-              - 30
-        result:
-          name: Fee history result
-          value:
-            oldestBlock: "0x10b52f"
-            baseFeePerGas:
-              - "0x3fa63a3f"
-              - "0x37f999ee"
-              - "0x3e36f20a"
-              - "0x4099f79a"
-              - "0x430d532d"
-              - "0x46fcd4a4"
-            gasUsedRatio:
-              - 0.017712333333333333
-              - 0.9458865666666667
-              - 0.6534561
-              - 0.6517375666666667
-              - 0.7347769666666667
-            reward:
-              - - "0x3b9aca00"
-                - "0x59682f00"
-              - - "0x3a13012"
-                - "0x3a13012"
-              - - "0x3a13012"
-                - "0x3a13012"
-              - - "0xf4240"
-                - "0xf4240"
-              - - "0xf4240"
-                - "0xf4240"
-            baseFeePerBlobGas:
-              - "0x7b7609c19"
-              - "0x6dbe41789"
-              - "0x7223341d4"
-              - "0x6574a002c"
-              - "0x7223341d4"
-              - "0x6574a002c"
-            blobGasUsedRatio:
-              - 0.0
-              - 0.6666666666666666
-              - 0.0
-              - 1.0
-              - 0.0
-
   # Filter methods
-  - name: eth_newFilter
-    description: Creates a filter object based on filter options to notify when state changes (logs).
-    params:
-      - name: Filter
-        required: true
-        description: The filter options object to specify the filter criteria for logs.
-        schema:
-          $ref: "../_components/evm/filter.yaml#/components/schemas/Filter"
-    result:
-      name: Filter identifier
-      description: A hexadecimal string representing the ID of the created filter.
-      schema:
-        $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    examples:
-      - name: eth_newFilter example
-        params:
-          - name: Filter
-            value:
-              fromBlock: "0x137d3c2"
-              toBlock: "0x137d3c3"
-              address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              topics: []
-        result:
-          name: Filter identifier
-          value: "0x01"
-
-  - name: eth_newBlockFilter
-    description: Creates a filter in the node to notify when new blocks arrive.
-    params: []
-    result:
-      name: Filter identifier
-      description: A hexadecimal string representing the ID of the created filter.
-      schema:
-        $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    examples:
-      - name: eth_newBlockFilter example
-        params: []
-        result:
-          name: Filter identifier
-          value: "0x01"
-
-  - name: eth_newPendingTransactionFilter
-    description: Creates a filter in the node to notify when new pending transactions arrive.
-    params: []
-    result:
-      name: Filter identifier
-      description: A hexadecimal string representing the ID of the created filter.
-      schema:
-        $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    examples:
-      - name: eth_newPendingTransactionFilter example
-        params: []
-        result:
-          name: Filter identifier
-          value: "0x01"
-
-  - name: eth_uninstallFilter
-    description: Uninstalls a filter with the given ID.
-    params:
-      - name: Filter identifier
-        required: true
-        description: The ID of the filter to uninstall.
-        schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    result:
-      name: Success
-      description: true if the filter was successfully uninstalled, `false` otherwise.
-      schema:
-        type: boolean
-    examples:
-      - name: eth_uninstallFilter example
-        params:
-          - name: Filter identifier
-            value: "0x01"
-        result:
-          name: Success
-          value: true
-
-  - name: eth_getFilterChanges
-    description: Polls for changes in the filter with the given ID (created using `eth_newFilter`). Returns an array of logs which occurred since the last poll.
-    params:
-      - name: Filter identifier
-        required: true
-        description: The ID of the filter to poll for changes.
-        schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    result:
-      name: Log objects
-      description: An array of log objects that have occurred since the last poll.
-      schema:
-        $ref: "../_components/evm/filter.yaml#/components/schemas/FilterResults"
-    examples:
-      - name: eth_getFilterChanges example
-        params:
-          - name: Filter identifier
-            value: "0x01"
-        result:
-          name: Log objects
-          value:
-            - logIndex: "0x0"
-              removed: false
-              blockNumber: "0x233"
-              blockHash: "0xfc139f5e2edee9e9c888d8df9a2d2226133a9bd87c88ccbd9c930d3d4c9f9ef5"
-              transactionHash: "0x66e7a140c8fa27fe98fde923defea7562c3ca2d6bb89798aabec65782c08f63d"
-              transactionIndex: "0x0"
-              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
-              data: "0x0000000000000000000000000000000000000000000000000000000000000004"
-              topics:
-                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
-            - logIndex: "0x0"
-              removed: false
-              blockNumber: "0x238"
-              blockHash: "0x98b0ec0f9fea0018a644959accbe69cd046a8582e89402e1ab0ada91cad644ed"
-              transactionHash: "0xdb17aa1c2ce609132f599155d384c0bc5334c988a6c368056d7e167e23eee058"
-              transactionIndex: "0x0"
-              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
-              data: "0x0000000000000000000000000000000000000000000000000000000000000007"
-              topics:
-                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
-
-  - name: eth_getFilterLogs
-    description: Returns an array of all logs matching the filter with the given ID (created using `eth_newFilter`).
-    params:
-      - name: Filter identifier
-        required: true
-        description: The ID of the filter to retrieve logs for.
-        schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    result:
-      name: Log objects
-      description: An array of all log objects matching the filter since its creation.
-      schema:
-        $ref: "../_components/evm/filter.yaml#/components/schemas/FilterResults"
-    examples:
-      - name: eth_getFilterLogs example
-        params:
-          - name: Filter identifier
-            value: "0x01"
-        result:
-          name: Log objects
-          value:
-            - logIndex: "0x0"
-              removed: false
-              blockNumber: "0x233"
-              blockHash: "0xfc139f5e2edee9e9c888d8df9a2d2226133a9bd87c88ccbd9c930d3d4c9f9ef5"
-              transactionHash: "0x66e7a140c8fa27fe98fde923defea7562c3ca2d6bb89798aabec65782c08f63d"
-              transactionIndex: "0x0"
-              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
-              data: "0x0000000000000000000000000000000000000000000000000000000000000004"
-              topics:
-                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
-            - logIndex: "0x0"
-              removed: false
-              blockNumber: "0x238"
-              blockHash: "0x98b0ec0f9fea0018a644959accbe69cd046a8582e89402e1ab0ada91cad644ed"
-              transactionHash: "0xdb17aa1c2ce609132f599155d384c0bc5334c988a6c368056d7e167e23eee058"
-              transactionIndex: "0x0"
-              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
-              data: "0x0000000000000000000000000000000000000000000000000000000000000007"
-              topics:
-                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
-
   - name: eth_getLogs
     description: |
       Returns an array of all logs matching the specified filter.
@@ -1069,7 +609,7 @@ methods:
 
   # State methods
   - name: eth_getBalance
-    description: Returns the balance of the account of a given address. Use the `pending` tag to get the address balance in the latest Flashblock.
+    description: Returns the balance of the account of a given address.
     params:
       - name: Address
         required: true
@@ -1134,7 +674,7 @@ methods:
           value: "0x0000000000000000000000000000000000000000000000000000000000000000"
 
   - name: eth_getTransactionCount
-    description: Returns the number of transactions sent from an address. Use the `pending` tag to get the address nonce in the latest Flashblock.
+    description: Returns the number of transactions sent from an address.
     params:
       - name: Address
         required: true
@@ -1243,158 +783,73 @@ methods:
                   - "0xf90211a0c87222cccea2bf32759fcee9dbaacbe3ea4165dd6184af6773651c5e00e34a8ba0be90e6e5d1a67ab5587779c60ac136d6a96db62b84c04998a5f03a367346abd6a05344aa1c9ca2e3e56bf98fd718ec43728578d148e1967fbaf8bf17a2a073a0bda011a2f9312c3308640a0d6ceeae218747290f23806067456da1d444c65abae437a0b3097a108bfce79af6699da4ae3003cd4929f0b4576aad655c31cb725bde84c7a0c133d3c637e174f36a73c22b1039eb003da6374bc0929321241badb3efa3c4a9a0f13059f2301ad9862ce02e3f7f3f2c9ab78eb30583764d73654f7f1f8b1e86fda06544e3915748b18204e09df75ff20d2fa6bd8121e2e669699012d54590383d6fa070e3a8e093691581d58fadb560b510262a758037632cd8670d3a36df828976b7a062a88a2900544dc76a32255a6b2b2a2eef8fa68279700c00adc7508286702552a0a474aeebd5603dfce46a6ecd1ecd519068dc034a544fde03ac42d4018e60a334a0b7d528fc41c8fdc8ea18c6e7d0099270c777ec1403cf879d1f5134bdc12a6c6ca04440f1242e42c5bfa7c536591ab89c8e84bea417435871c32eef1e25295b20daa06a5dcfe3cc84cff9d3e3c3ae868cfba8f0dd111a90c3f85869dab5b893f96643a026b2fb9dd7d08b0ed2f1c44fbf875011412a384f86f751c92e1013248d4aa371a0c75597b2b789fc4e939b71937390ce9d7d53159431328ac52180eef08ef200f280"
                 value: "0x1"
 
-  # Subscription methods
-  - name: eth_subscribe
-    description: Subscribes to specific event types and returns a subscription ID to receive asynchronous notifications via the `eth_subscription` method.
+  - name: eth_newFilter
+    description: Creates a filter object based on filter options to notify when state changes (logs).
     params:
-      - name: Subscription Type
-        description: The type of event to subscribe to (e.g., "newHeads", "logs", "newPendingTransactions", "syncing").
+      - name: Filter
+        required: true
+        description: The filter options object to specify the filter criteria for logs.
         schema:
-          type: string
-      - name: Options
-        description: Optional subscription parameters, such as filtering topics for `logs`.
-        schema:
-          type: object
-          additionalProperties: true
+          $ref: "../_components/evm/filter.yaml#/components/schemas/Filter"
     result:
-      name: Subscription ID
-      description: A unique identifier for the subscription, returned as a 32-byte hex string.
+      name: Filter identifier
+      description: A hexadecimal string representing the ID of the created filter.
       schema:
-        $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+        $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
     examples:
-      - name: eth_subscribe example
+      - name: eth_newFilter example
         params:
-          - name: Subscription Type
-            value: "newHeads"
+          - name: Filter
+            value:
+              fromBlock: "0x137d3c2"
+              toBlock: "0x137d3c3"
+              address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+              topics: []
         result:
-          name: Subscription ID
-          value: "0x9c7c3f3c3c63b1b89ac0c1e0b0d3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8090a1b"
+          name: Filter identifier
+          value: "0x01"
 
-  - name: eth_unsubscribe
-    description: Cancels an active subscription given its subscription ID.
+  - name: eth_getFilterChanges
+    description: Polls for changes in the filter with the given ID (created using `eth_newFilter`). Returns an array of logs which occurred since the last poll.
     params:
-      - name: Subscription ID
-        description: The identifier of the subscription to cancel.
+      - name: Filter identifier
+        required: true
+        description: The ID of the filter to poll for changes.
         schema:
-          $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+          $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
     result:
-      name: Unsubscribe Result
-      description: A boolean indicating whether the subscription was successfully canceled.
+      name: Log objects
+      description: An array of log objects that have occurred since the last poll.
       schema:
-        type: boolean
+        $ref: "../_components/evm/filter.yaml#/components/schemas/FilterResults"
     examples:
-      - name: Unsubscribe example
+      - name: eth_getFilterChanges example
         params:
-          - name: Subscription ID
-            value: "0x9c7c3f3c3c63b1b89ac0c1e0b0d3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8090a1b"
+          - name: Filter identifier
+            value: "0x01"
         result:
-          name: Unsubscribe Result
-          value: true
-
-  # Blob methods
-  - name: eth_blobBaseFee
-    description: Returns the base fee per blob gas in wei for the current block.
-    params: []
-    result:
-      name: Blob Base Fee
-      description: The base fee per blob gas, in wei, as a hexadecimal encoded unsigned integer.
-      schema:
-        $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
-    examples:
-      - name: eth_blobBaseFee example
-        params: []
-        result:
-          name: Blob Base Fee
-          value: "0x3b9aca00"
-
-  - name: eth_getBlobSidecars
-    description: Returns the blob sidecars for a given block, identified by block hash or block number.
-    params:
-      - name: Block Identifier
-        description: A block hash or block number to retrieve blob sidecars for.
-        schema:
-          oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    result:
-      name: Blob Sidecars
-      description: An array of blob sidecar objects.
-      schema:
-        type: array
-        items:
-          type: object
-          required: [index, blob, kzgCommitment, kzgProof]
-          properties:
-            index:
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-            blob:
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
-            kzgCommitment:
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes48"
-            kzgProof:
-              $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes96"
-    examples:
-      - name: eth_getBlobSidecars example
-        params:
-          - name: Block Identifier
-            value: "0x41a5d8ffcc7ba7bbf3670caff9a2d95a63a4f31be905f86f5c44e25c2dfb30ed"
-        result:
-          name: Blob Sidecars
+          name: Log objects
           value:
-            - index: "0x0"
-              blob: "0x..."
-              kzgCommitment: "0x..."
-              kzgProof: "0x..."
-
-  - name: eth_getFinalizedHeader
-    description: Returns the latest finalized execution payload header.
-    params: []
-    result:
-      name: Finalized Header
-      description: The finalized execution block header.
-      schema:
-        type: object
-        additionalProperties: true
-    examples:
-      - name: eth_getFinalizedHeader example
-        params: []
-        result:
-          name: Finalized Header
-          value:
-            parentHash: "0xabc123..."
-            number: "0x123456"
-            stateRoot: "0xdef456..."
-
-  - name: eth_getTransactionReceiptsByBlock
-    description: Returns the transaction receipts for all transactions in a given block.
-    params:
-      - name: Block Identifier
-        description: The block hash or block number.
-        schema:
-          oneOf:
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
-            - $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
-    result:
-      name: Transaction Receipts
-      description: An array of transaction receipt objects for the block's transactions.
-      schema:
-        type: array
-        items:
-          type: object
-          additionalProperties: true
-    examples:
-      - name: eth_getTransactionReceiptsByBlock example
-        params:
-          - name: Block Identifier
-            value: "0x91b1b84c7a4d7f17126f7186e0dd1bdc21c2d334a78b4034c0d3705797698c27"
-        result:
-          name: Transaction Receipts
-          value:
-            - transactionHash: "0xabc123..."
-              status: "0x1"
-              blockNumber: "0x123456"
-              gasUsed: "0x5208"
-              logs: []
+            - logIndex: "0x0"
+              removed: false
+              blockNumber: "0x233"
+              blockHash: "0xfc139f5e2edee9e9c888d8df9a2d2226133a9bd87c88ccbd9c930d3d4c9f9ef5"
+              transactionHash: "0x66e7a140c8fa27fe98fde923defea7562c3ca2d6bb89798aabec65782c08f63d"
+              transactionIndex: "0x0"
+              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
+              data: "0x0000000000000000000000000000000000000000000000000000000000000004"
+              topics:
+                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
+            - logIndex: "0x0"
+              removed: false
+              blockNumber: "0x238"
+              blockHash: "0x98b0ec0f9fea0018a644959accbe69cd046a8582e89402e1ab0ada91cad644ed"
+              transactionHash: "0xdb17aa1c2ce609132f599155d384c0bc5334c988a6c368056d7e167e23eee058"
+              transactionIndex: "0x0"
+              address: "0x42699a7612a82f1d9c36148af9c77354759b210b"
+              data: "0x0000000000000000000000000000000000000000000000000000000000000007"
+              topics:
+                - "0x04474795f5b996ff80cb47c148d4c5ccdbe09ef27551820caa9c2f8ed149cce3"
 
   # Submit methods
   - name: eth_sendRawTransaction
@@ -1425,7 +880,7 @@ methods:
 
   # Transaction methods
   - name: eth_getTransactionByHash
-    description: Returns information about a transaction requested by transaction hash. Flashblocks enabled.
+    description: Returns information about a transaction requested by transaction hash.
     params:
       - name: Transaction hash
         required: true
@@ -1556,7 +1011,7 @@ methods:
             s: "0x5e863be3829812c81439f0ae9d8ecb832b531d651fb234c848d1bf45e62be8b9"
 
   - name: eth_getTransactionReceipt
-    description: Returns the receipt of a transaction by transaction hash. Flashblocks enabled.
+    description: Returns the receipt of a transaction by transaction hash.
     params:
       - name: Transaction hash
         required: true

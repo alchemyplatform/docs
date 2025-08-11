@@ -3,14 +3,14 @@
 $schema: https://meta.open-rpc.org/
 openrpc: 1.2.4
 info:
-  title: Alchemy Base JSON-RPC Specification
-  description: A specification of the standard JSON-RPC methods for Base.
+  title: Alchemy Arbitrum JSON-RPC Specification
+  description: A specification of the standard JSON-RPC methods for Arbitrum.
   version: 0.0.0
 servers:
-  - url: https://base-mainnet.g.alchemy.com/v2
-    name: Base Mainnet
-  - url: https://base-sepolia.g.alchemy.com/v2
-    name: Base Sepolia
+  - url: https://arb-mainnet.g.alchemy.com/v2
+    name: Arbitrum Mainnet
+  - url: https://arb-sepolia.g.alchemy.com/v2
+    name: Arbitrum Sepolia
 
 methods:
   # Block methods
@@ -79,7 +79,7 @@ methods:
             parentBeaconBlockRoot: "0x95c4dbd5b19f6fe3cbc3183be85ff4e85ebe75c5b4fc911f1c91e5b7a554a685"
 
   - name: eth_getBlockByNumber
-    description: Returns information about a block by its number. Use the `pending` tag to retrieve the latest Flashblock.
+    description: Returns information about a block by its number.
     params:
       - name: Block number or tag
         required: true
@@ -585,6 +585,107 @@ methods:
           name: Return data
           value: "0x"
 
+  - name: eth_simulateV1
+    description: Enables simulation of complex transactions and state changes without modifying the blockchain.
+    params:
+      - name: Simulation object
+        required: true
+        description: The object containing all simulation details such as calls, overrides, etc.
+        schema:
+          $ref: "../_components/evm/simulate.yaml#/components/schemas/SimulateRequest"
+    result:
+      name: Simulation result
+      description: The result of the simulation.
+      schema:
+        $ref: "../_components/evm/simulate.yaml#/components/schemas/SimulateResult"
+    examples:
+      - name: eth_simulateV1 example
+        params:
+          - name: Simulation object
+            value:
+              blockStateCalls:
+                - blockOverrides:
+                    baseFeePerGas: "0x9"
+                  stateOverrides:
+                    "0xc000000000000000000000000000000000000000":
+                      balance: "0x4a817c800"
+                  calls:
+                    - from: "0xc000000000000000000000000000000000000000"
+                      to: "0xc000000000000000000000000000000000000001"
+                      maxFeePerGas: "0xf"
+                      value: "0x1"
+                    - from: "0xc000000000000000000000000000000000000000"
+                      to: "0xc000000000000000000000000000000000000002"
+                      maxFeePerGas: "0xf"
+                      value: "0x1"
+              validation: true
+              traceTransfers: true
+          - name: Block
+            value: "latest"
+        result:
+          name: Simulation result
+          value:
+            - baseFeePerGas: "0x9"
+              blobGasUsed: "0x0"
+              calls:
+                - returnData: "0x"
+                  logs:
+                    - address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                      topics:
+                        - "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        - "0x000000000000000000000000c000000000000000000000000000000000000000"
+                        - "0x000000000000000000000000c000000000000000000000000000000000000001"
+                      data: "0x0000000000000000000000000000000000000000000000000000000000000001"
+                      blockNumber: "0x1530a5e"
+                      transactionHash: "0x40e61ffc135d1d280646e8951141828e0fad81fd330b1c1a75454163f8c8ca34"
+                      transactionIndex: "0x0"
+                      blockHash: "0x105b451ea332730fe2d316d983b9a406b6d4a022ee6e83e02bcae17a94f8c87b"
+                      logIndex: "0x0"
+                      removed: false
+                  gasUsed: "0x5208"
+                  status: "0x1"
+                - returnData: "0x"
+                  logs:
+                    - address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                      topics:
+                        - "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                        - "0x000000000000000000000000c000000000000000000000000000000000000000"
+                        - "0x000000000000000000000000c000000000000000000000000000000000000002"
+                      data: "0x0000000000000000000000000000000000000000000000000000000000000001"
+                      blockNumber: "0x1530a5e"
+                      transactionHash: "0x204d575c2f68b43a32423bc05491e8dafa71913e3e6d223aa5128cbd23562ecd"
+                      transactionIndex: "0x1"
+                      blockHash: "0x105b451ea332730fe2d316d983b9a406b6d4a022ee6e83e02bcae17a94f8c87b"
+                      logIndex: "0x1"
+                      removed: false
+                  gasUsed: "0x5208"
+                  status: "0x1"
+              difficulty: "0x0"
+              excessBlobGas: "0x3b80000"
+              extraData: "0x"
+              gasLimit: "0x22550dd"
+              gasUsed: "0xa410"
+              hash: "0x105b451ea332730fe2d316d983b9a406b6d4a022ee6e83e02bcae17a94f8c87b"
+              logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              miner: "0x1f9090aae28b8a3dceadf281b0f12828e676c326"
+              mixHash: "0x0000000000000000000000000000000000000000000000000000000000000000"
+              nonce: "0x0000000000000000"
+              number: "0x1530a5e"
+              parentBeaconBlockRoot: "0x0000000000000000000000000000000000000000000000000000000000000000"
+              parentHash: "0x513a0aa73024f294cdbcb0312af0c920850035f0552d7349ebb30717de30b1cc"
+              receiptsRoot: "0x75308898d571eafb5cd8cde8278bf5b3d13c5f6ec074926de3bb895b519264e1"
+              sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+              size: "0x29c"
+              stateRoot: "0x65ea44c8bd5f9edbf269b6446b460b3e7378abb25c78fd5d70f0e2ef59296b25"
+              timestamp: "0x67f43327"
+              transactions:
+                - "0x40e61ffc135d1d280646e8951141828e0fad81fd330b1c1a75454163f8c8ca34"
+                - "0x204d575c2f68b43a32423bc05491e8dafa71913e3e6d223aa5128cbd23562ecd"
+              transactionsRoot: "0xd6902f31ae9d2169b77cd88611c6afd691ea5a7e604e44c71f663fda0c5d1c28"
+              uncles: []
+              withdrawals: []
+              withdrawalsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+
   - name: eth_estimateGas
     description: Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
     params:
@@ -1069,7 +1170,7 @@ methods:
 
   # State methods
   - name: eth_getBalance
-    description: Returns the balance of the account of a given address. Use the `pending` tag to get the address balance in the latest Flashblock.
+    description: Returns the balance of the account of a given address.
     params:
       - name: Address
         required: true
@@ -1134,7 +1235,7 @@ methods:
           value: "0x0000000000000000000000000000000000000000000000000000000000000000"
 
   - name: eth_getTransactionCount
-    description: Returns the number of transactions sent from an address. Use the `pending` tag to get the address nonce in the latest Flashblock.
+    description: Returns the number of transactions sent from an address.
     params:
       - name: Address
         required: true
@@ -1425,7 +1526,7 @@ methods:
 
   # Transaction methods
   - name: eth_getTransactionByHash
-    description: Returns information about a transaction requested by transaction hash. Flashblocks enabled.
+    description: Returns information about a transaction requested by transaction hash.
     params:
       - name: Transaction hash
         required: true
@@ -1556,7 +1657,7 @@ methods:
             s: "0x5e863be3829812c81439f0ae9d8ecb832b531d651fb234c848d1bf45e62be8b9"
 
   - name: eth_getTransactionReceipt
-    description: Returns the receipt of a transaction by transaction hash. Flashblocks enabled.
+    description: Returns the receipt of a transaction by transaction hash.
     params:
       - name: Transaction hash
         required: true
@@ -1592,5 +1693,3 @@ methods:
             transactionHash: "0x504ce587a65bdbdb6414a0c6c16d86a04dd79bfcc4f2950eec9634b30ce5370f"
             transactionIndex: "0x0"
             type: "0x0"
-
-  - $ref: "../_components/custom/methods.yaml#/components/methods/eth_simulateV1"
