@@ -1,0 +1,69 @@
+---
+title: Alchemy MCP Server
+description: Guide to learn about and use Alchemy's latest MCP Server.
+subtitle: Guide to learn about and use Alchemy's latest MCP Server.
+url: https://dashboard.alchemy.com/alchemy-mcp-server
+slug: docs/alchemy-mcp-server
+---
+
+A Model Context Protocol (MCP) server that enables AI agents to interact with Alchemy's blockchain APIs in a structured way. This allows agents to query blockchain data directly without writing any code.
+
+## Quick Setup
+
+To quickly set up the Alchemy MCP server, add this configuration to your MCP config file (typically found in Claude Desktop or Cursor settings):
+
+```
+{
+  "mcpServers": {
+    "alchemy": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@alchemy/mcp-server"
+      ],
+      "env": {
+        "ALCHEMY_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+> Want to learn more about Alchemy's MCP Server? Read more below!
+
+## What is an MCP Server?
+
+**MCP** (Model Context Protocol) is a framework for building tool servers that Large Language Models (LLMs) can call. When an MCP client (like Claude, Cursor, or ChatGPT) connects to an MCP server, the server returns a list of available tools the LLM can use.
+
+For example, if the Alchemy MCP server exposes a tool called `fetchTokenPriceBySymbol`, the LLM immediately knows it can call that tool when a user asks about token prices.
+
+Without MCP, devs need to build their own custom integrations between LLMs and APIs, which meant every tool had its own setup and logic. MCP standardizes this process so any AI agent can work with any MCP-compliant tool server.
+
+This creates **composability** — multiple servers, each with different capabilities, can be connected to any AI agent with minimal setup. The Alchemy MCP Server follows this framework, making blockchain data accessible to agents in a consistent and reusable way.
+
+## How You Would Use The Alchemy MCP Server
+
+AI agents like Claude, Cursor, and ChatGPT are “chat agents” by default. To work with MCP, they act as **MCP clients**.
+
+Within an MCP client like Cursor, you can define an `mcp.json` configuration file that specifies:
+
+* Which MCP servers the agent should connect to
+* What environment variables and arguments to pass so the server runs correctly
+
+Once connected, the client instantly gains access to all the tools defined in the server, enabling the LLM to use them in real time.
+
+The main focus right now for Alchemy MCP is on:
+
+* Local developers using Claude Code or Cursor
+* Developers running AI agents locally that need access to blockchain data
+
+## Key Features of Alchemy MCP Server
+
+* Query token prices and price history (including flexible time frame queries)
+* Get NFT ownership information and contract data
+* View transaction history across multiple networks
+* Check token balances across multiple blockchain networks
+* Retrieve detailed asset transfers with filtering
+* Send transactions via Smart Contract Accounts (requires configured wallet agent server)
+* Execute token swaps via DEX protocols (requires configured wallet agent server)
+* And more
