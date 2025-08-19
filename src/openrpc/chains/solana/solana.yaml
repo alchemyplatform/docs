@@ -11,9 +11,35 @@ servers:
     name: Solana Mainnet
   - url: https://solana-devnet.g.alchemy.com/v2
     name: Solana Devnet
-
 methods:
-  # Account methods
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/alchemy_getProgramAccounts
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/alchemy_getTokenAccountsByDelegate
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/alchemy_getTokenAccountsByOwner
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/alchemy_getTokenLargestAccounts
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/alchemy_requestFeePayer
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/get_solana_token_metadata
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAsset
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAssetProof
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAssetProofs
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAssets
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/getAssetsByAuthority
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAssetsByCreator
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAssetsByGroup
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAssetsByOwner
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getAssetSignatures
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getLeaderSchedule
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getNftEditions
+  - $ref: ../_components/solana/methods.yaml#/components/methods/getTokenAccounts
+  - $ref: ../_components/solana/methods.yaml#/components/methods/searchAssets
+  - $ref: >-
+      ../_components/solana/methods.yaml#/components/methods/sendStakedTransaction
   - name: getAccountInfo
     description: Returns all information associated with the account of provided Pubkey.
     params:
@@ -21,23 +47,24 @@ methods:
         required: true
         description: Pubkey of the account to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object for additional settings.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/GetAccountInfoConfig"
+          $ref: ./components/account.yaml#/components/schemas/GetAccountInfoConfig
     examples:
       - name: getAccountInfo example
         params:
           - name: Pubkey
-            value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+            value: GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q
     result:
       name: Account information
-      description: Returns details of the account including balance, ownership, and other relevant data.
+      description: >-
+        Returns details of the account including balance, ownership, and other
+        relevant data.
       schema:
-        $ref: "./components/account.yaml#/components/schemas/AccountInfo"
-
+        $ref: ./components/account.yaml#/components/schemas/AccountInfo
   - name: getBalance
     description: Returns the lamport balance of the account of the provided Pubkey.
     params:
@@ -45,23 +72,22 @@ methods:
         required: true
         description: Pubkey of the account to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/GetBalanceConfig"
+          $ref: ./components/account.yaml#/components/schemas/GetBalanceConfig
     examples:
       - name: getBalance example
         params:
           - name: Pubkey
-            value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+            value: GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q
     result:
       name: Lamport balance
       description: Returns the balance in lamports of the account queried.
       schema:
-        $ref: "./components/account.yaml#/components/schemas/LamportBalance"
-
+        $ref: ./components/account.yaml#/components/schemas/LamportBalance
   - name: getMultipleAccounts
     description: Returns the account information for a list of Pubkeys.
     params:
@@ -71,27 +97,27 @@ methods:
         schema:
           type: array
           items:
-            $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+            $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/GetMultipleAccountsConfig"
+          $ref: >-
+            ./components/account.yaml#/components/schemas/GetMultipleAccountsConfig
     examples:
       - name: getMultipleAccounts example
         params:
           - name: Pubkeys
             value:
-              - "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
-              - "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+              - GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q
+              - EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
     result:
       name: Account information
       description: An array of JSON objects containing account details.
       schema:
         type: array
         items:
-          $ref: "./components/account.yaml#/components/schemas/AccountInfo"
-
+          $ref: ./components/account.yaml#/components/schemas/AccountInfo
   - name: getTokenAccountBalance
     description: Returns the token balance of an SPL Token account.
     params:
@@ -99,23 +125,23 @@ methods:
         required: true
         description: The Pubkey of the token account to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/GetTokenAccountBalanceConfig"
+          $ref: >-
+            ./components/account.yaml#/components/schemas/GetTokenAccountBalanceConfig
     examples:
       - name: getTokenAccountBalance example
         params:
           - name: Token account Pubkey
-            value: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
+            value: 3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa
     result:
       name: Token account balance
       description: The balance of the SPL Token account.
       schema:
-        $ref: "./components/account.yaml#/components/schemas/TokenBalance"
-
+        $ref: ./components/account.yaml#/components/schemas/TokenBalance
   - name: getTokenAccountsByOwner
     description: Returns all SPL Token accounts owned by the specified token owner.
     params:
@@ -123,44 +149,48 @@ methods:
         required: true
         description: The Pubkey of the account owner to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Token filter
         required: false
-        description: A filter object containing either the Mint Pubkey or the Token program Pubkey.
+        description: >-
+          A filter object containing either the Mint Pubkey or the Token program
+          Pubkey.
         schema:
           type: object
           properties:
             mint:
-              $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+              $ref: ./components/base-types.yaml#/components/schemas/Pubkey
               description: The Pubkey of the specific token Mint to limit accounts to.
             programId:
-              $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+              $ref: ./components/base-types.yaml#/components/schemas/Pubkey
               description: The Pubkey of the Token program that owns the accounts.
       - name: Configuration
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/GetTokenAccountsByOwnerConfig"
+          $ref: >-
+            ./components/account.yaml#/components/schemas/GetTokenAccountsByOwnerConfig
     examples:
       - name: getTokenAccountsByOwner example
         params:
           - name: Token owner Pubkey
-            value: "7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1"
+            value: 7atgF8KQo4wJrD5ATGX7t1V2zVvykPJbFfNeVf1icFv1
           - name: Token filter
             value:
-              programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+              programId: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
           - name: Configuration
             value:
-              commitment: "finalized"
-              encoding: "jsonParsed"
+              commitment: finalized
+              encoding: jsonParsed
     result:
       name: Token accounts
-      description: An array of JSON objects representing the token accounts owned by the specified Pubkey.
+      description: >-
+        An array of JSON objects representing the token accounts owned by the
+        specified Pubkey.
       schema:
         type: array
         items:
-          $ref: "./components/account.yaml#/components/schemas/TokenAccount"
-
+          $ref: ./components/account.yaml#/components/schemas/TokenAccount
   - name: getTokenAccountsByDelegate
     description: Returns all SPL Token accounts delegated to the provided account.
     params:
@@ -168,40 +198,44 @@ methods:
         required: true
         description: The Pubkey of the account delegate to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Token filter
         required: false
-        description: A filter object containing either the Mint Pubkey or the Token program Pubkey.
+        description: >-
+          A filter object containing either the Mint Pubkey or the Token program
+          Pubkey.
         schema:
           type: object
           properties:
             mint:
-              $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+              $ref: ./components/base-types.yaml#/components/schemas/Pubkey
               description: The Pubkey of the specific token Mint to limit accounts to.
             programId:
-              $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+              $ref: ./components/base-types.yaml#/components/schemas/Pubkey
               description: The Pubkey of the Token program that owns the accounts.
       - name: Configuration
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/GetTokenAccountsByDelegateConfig"
+          $ref: >-
+            ./components/account.yaml#/components/schemas/GetTokenAccountsByDelegateConfig
     examples:
       - name: getTokenAccountsByDelegate example
         params:
           - name: Delegate Pubkey
-            value: "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T"
+            value: 4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T
           - name: Token filter
             value:
-              programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+              programId: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
     result:
       name: Token accounts
-      description: An array of JSON objects representing the token accounts delegated to the specified Pubkey.
+      description: >-
+        An array of JSON objects representing the token accounts delegated to
+        the specified Pubkey.
       schema:
         type: array
         items:
-          $ref: "./components/account.yaml#/components/schemas/TokenAccount"
-
+          $ref: ./components/account.yaml#/components/schemas/TokenAccount
   - name: getTokenLargestAccounts
     description: Returns the 20 largest accounts of a particular SPL Token type.
     params:
@@ -209,23 +243,23 @@ methods:
         required: true
         description: The Pubkey of the token Mint to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/GetTokenLargestAccountsConfig"
+          $ref: >-
+            ./components/account.yaml#/components/schemas/GetTokenLargestAccountsConfig
     examples:
       - name: getTokenLargestAccounts example
         params:
           - name: Token Mint Pubkey
-            value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            value: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
     result:
       name: Largest token accounts
       description: An array of the 20 largest accounts of the specified token type.
       schema:
-        $ref: "./components/account.yaml#/components/schemas/TokenLargestAccountsList"
-
+        $ref: ./components/account.yaml#/components/schemas/TokenLargestAccountsList
   - name: getLargestAccounts
     description: Returns the 20 largest accounts, by lamport balance.
     params:
@@ -233,13 +267,14 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/LargestAccountsConfig"
+          $ref: ./components/account.yaml#/components/schemas/LargestAccountsConfig
     result:
       name: Largest accounts
-      description: An array of objects containing the address of the account and its lamport balance.
+      description: >-
+        An array of objects containing the address of the account and its
+        lamport balance.
       schema:
-        $ref: "./components/account.yaml#/components/schemas/LargestAccountsList"
-
+        $ref: ./components/account.yaml#/components/schemas/LargestAccountsList
   - name: getStakeActivation
     description: Returns epoch activation information for a stake account.
     params:
@@ -247,24 +282,22 @@ methods:
         required: true
         description: Pubkey of the stake account to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/account.yaml#/components/schemas/StakeActivationConfig"
+          $ref: ./components/account.yaml#/components/schemas/StakeActivationConfig
     examples:
       - name: getStakeActivation example
         params:
           - name: Stake account Pubkey
-            value: "CYRJWqiSjLitBAcRxPvWpgX3s5TvmN2SuRY3eEYypFvT"
+            value: CYRJWqiSjLitBAcRxPvWpgX3s5TvmN2SuRY3eEYypFvT
     result:
       name: Stake activation info
       description: Returns epoch activation information for the stake account.
       schema:
-        $ref: "./components/account.yaml#/components/schemas/StakeActivation"
-
-  # Airdrop methods
+        $ref: ./components/account.yaml#/components/schemas/StakeActivation
   - name: requestAirdrop
     description: Requests an airdrop of lamports to a Pubkey.
     params:
@@ -272,7 +305,7 @@ methods:
         required: true
         description: The Pubkey of the account to receive lamports.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Lamports
         required: true
         description: The number of lamports to airdrop, as a "u64".
@@ -282,12 +315,12 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/airdrop.yaml#/components/schemas/RequestAirdropConfig"
+          $ref: ./components/airdrop.yaml#/components/schemas/RequestAirdropConfig
     examples:
       - name: requestAirdrop example
         params:
           - name: Pubkey
-            value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+            value: GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q
           - name: Lamports
             value: 1000000000000000000
     result:
@@ -295,10 +328,10 @@ methods:
       description: Transaction Signature of the airdrop.
       schema:
         type: string
-
-  # Block methods
   - name: getBlock
-    description: Returns identity and transaction information about a confirmed block in the ledger.
+    description: >-
+      Returns identity and transaction information about a confirmed block in
+      the ledger.
     params:
       - name: slot
         required: true
@@ -309,7 +342,7 @@ methods:
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/GetBlockConfig"
+          $ref: ./components/block.yaml#/components/schemas/GetBlockConfig
     examples:
       - name: getBlock example
         params:
@@ -319,8 +352,7 @@ methods:
       name: Block information
       description: Returns block information or null if the block is not confirmed.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/BlockInfo"
-
+        $ref: ./components/block.yaml#/components/schemas/BlockInfo
   - name: getBlocks
     description: Returns a list of confirmed blocks between two slots.
     params:
@@ -338,7 +370,7 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/GetBlocksConfig"
+          $ref: ./components/block.yaml#/components/schemas/GetBlocksConfig
     examples:
       - name: getBlocks (full example)
         params:
@@ -350,8 +382,7 @@ methods:
       name: List of confirmed blocks
       description: Returns an array of u64 integers listing confirmed blocks.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/SlotList"
-
+        $ref: ./components/block.yaml#/components/schemas/SlotList
   - name: getBlocksWithLimit
     description: Returns a list of confirmed blocks starting at the given slot.
     params:
@@ -369,7 +400,7 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/GetBlocksConfig"
+          $ref: ./components/block.yaml#/components/schemas/GetBlocksConfig
     examples:
       - name: getBlocksWithLimit (with configuration)
         params:
@@ -379,10 +410,11 @@ methods:
             value: 5
     result:
       name: List of confirmed blocks
-      description: Returns an array of u64 integers listing confirmed blocks starting at the start_slot.
+      description: >-
+        Returns an array of u64 integers listing confirmed blocks starting at
+        the start_slot.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/SlotList"
-
+        $ref: ./components/block.yaml#/components/schemas/SlotList
   - name: getBlockCommitment
     description: Returns the commitment for a particular block.
     params:
@@ -400,16 +432,17 @@ methods:
       name: Block commitment
       description: Returns the commitment and total active stake for the block.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/GetBlockCommitmentResult"
-
+        $ref: ./components/block.yaml#/components/schemas/GetBlockCommitmentResult
   - name: getBlockProduction
-    description: Returns recent block production information from the current or previous epoch.
+    description: >-
+      Returns recent block production information from the current or previous
+      epoch.
     params:
       - name: Configuration
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/GetBlockProductionConfig"
+          $ref: ./components/block.yaml#/components/schemas/GetBlockProductionConfig
     examples:
       - name: getBlockProduction example
         params: []
@@ -417,8 +450,7 @@ methods:
       name: Block production information
       description: Returns block production information for the specified range.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/BlockProductionInfo"
-
+        $ref: ./components/block.yaml#/components/schemas/BlockProductionInfo
   - name: getBlockTime
     description: Returns the estimated production time of a block.
     params:
@@ -426,7 +458,7 @@ methods:
         required: true
         description: Block number, identified by Slot.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/GetBlockTimeParams"
+          $ref: ./components/block.yaml#/components/schemas/GetBlockTimeParams
     examples:
       - name: getBlockTime example
         params:
@@ -436,17 +468,19 @@ methods:
       name: Estimated production time
       description: The estimated production time of the block as a Unix timestamp.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/EstimatedProductionTime"
-
+        $ref: ./components/block.yaml#/components/schemas/EstimatedProductionTime
   - name: getFirstAvailableBlock
-    description: Returns the slot of the lowest confirmed block that has not been purged from the ledger.
+    description: >-
+      Returns the slot of the lowest confirmed block that has not been purged
+      from the ledger.
     params: []
     result:
       name: Slot
-      description: The slot number of the lowest confirmed block that is still available in the ledger.
+      description: >-
+        The slot number of the lowest confirmed block that is still available in
+        the ledger.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/FirstAvailableBlockSlot"
-
+        $ref: ./components/block.yaml#/components/schemas/FirstAvailableBlockSlot
   - name: getGenesisHash
     description: Returns the genesis hash.
     params: []
@@ -454,8 +488,7 @@ methods:
       name: Genesis hash
       description: The genesis hash as a base-58 encoded string.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/GenesisHash"
-
+        $ref: ./components/block.yaml#/components/schemas/GenesisHash
   - name: getHighestSnapshotSlot
     description: Returns the highest slot information that the node has snapshots for.
     params: []
@@ -463,8 +496,7 @@ methods:
       name: Snapshot slot information
       description: Returns a JSON object with the highest full snapshot slot.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/HighestSnapshotSlot"
-
+        $ref: ./components/block.yaml#/components/schemas/HighestSnapshotSlot
   - name: getMaxRetransmitSlot
     description: Get the max slot seen from the retransmit stage.
     params: []
@@ -472,8 +504,7 @@ methods:
       name: Slot number
       description: The maximum slot number seen from the retransmit stage.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/MaxSlotResult"
-
+        $ref: ./components/block.yaml#/components/schemas/MaxSlotResult
   - name: getMaxShredInsertSlot
     description: Get the max slot seen from after shred insert.
     params: []
@@ -481,36 +512,37 @@ methods:
       name: Slot number
       description: The maximum slot number seen after shred insert.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/MaxSlotResult"
-
+        $ref: ./components/block.yaml#/components/schemas/MaxSlotResult
   - name: getBlockHeight
     description: Returns the current block height of the node.
     params:
       - name: Configuration
         required: false
-        description: Optional configuration object containing additional request parameters.
+        description: >-
+          Optional configuration object containing additional request
+          parameters.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/GetBlockHeightConfig"
+          $ref: ./components/block.yaml#/components/schemas/GetBlockHeightConfig
     result:
       name: Block height
       description: The current block height, as a u64 integer.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/BlockHeight"
-
+        $ref: ./components/block.yaml#/components/schemas/BlockHeight
   - name: getLatestBlockhash
     description: Returns the latest blockhash.
     params:
       - name: Configuration
         required: false
-        description: A configuration object with optional fields for specifying commitment and minimum context slot.
+        description: >-
+          A configuration object with optional fields for specifying commitment
+          and minimum context slot.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/GetLatestBlockhashConfig"
+          $ref: ./components/block.yaml#/components/schemas/GetLatestBlockhashConfig
     result:
       name: Latest Blockhash
       description: RpcResponse object with blockhash information.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/LatestBlockhash"
-
+        $ref: ./components/block.yaml#/components/schemas/LatestBlockhash
   - name: isBlockhashValid
     description: Returns whether a blockhash is still valid or not.
     params:
@@ -523,23 +555,22 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/block.yaml#/components/schemas/IsBlockhashValidParams"
+          $ref: ./components/block.yaml#/components/schemas/IsBlockhashValidParams
     result:
       name: Validity
       description: Indicates if the blockhash is still valid.
       schema:
-        $ref: "./components/block.yaml#/components/schemas/IsBlockhashValidResult"
-
-  # Cluster Program methods
+        $ref: ./components/block.yaml#/components/schemas/IsBlockhashValidResult
   - name: getClusterNodes
     description: Returns information about all the nodes participating in the cluster.
     params: []
     result:
       name: List of nodes
-      description: Returns an array of JSON objects, each containing information about a node in the cluster.
+      description: >-
+        Returns an array of JSON objects, each containing information about a
+        node in the cluster.
       schema:
-        $ref: "./components/cluster-program.yaml#/components/schemas/ClusterNodesList"
-
+        $ref: ./components/cluster-program.yaml#/components/schemas/ClusterNodesList
   - name: getHealth
     description: Returns the current health of the node.
     params: []
@@ -547,8 +578,7 @@ methods:
       name: Health status
       description: If the node is healthy, the result is "ok".
       schema:
-        $ref: "./components/cluster-program.yaml#/components/schemas/HealthStatus"
-
+        $ref: ./components/cluster-program.yaml#/components/schemas/HealthStatus
   - name: getIdentity
     description: Returns the identity pubkey for the current node.
     params: []
@@ -556,8 +586,7 @@ methods:
       name: Identity pubkey
       description: The identity pubkey of the current node.
       schema:
-        $ref: "./components/cluster-program.yaml#/components/schemas/NodeIdentity"
-
+        $ref: ./components/cluster-program.yaml#/components/schemas/NodeIdentity
   - name: getSlotLeader
     description: Returns the current slot leader.
     params:
@@ -565,13 +594,12 @@ methods:
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/state.yaml#/components/schemas/SlotConfig"
+          $ref: ./components/state.yaml#/components/schemas/SlotConfig
     result:
       name: Slot leader
       description: The node identity Pubkey as a base-58 encoded string.
       schema:
-        $ref: "./components/state.yaml#/components/schemas/SlotLeader"
-
+        $ref: ./components/state.yaml#/components/schemas/SlotLeader
   - name: getSlotLeaders
     description: Returns the slot leaders for a given slot range.
     params:
@@ -589,22 +617,23 @@ methods:
       name: Slot leaders
       description: An array of node identity public keys as base-58 encoded strings.
       schema:
-        $ref: "./components/state.yaml#/components/schemas/SlotLeaders"
-
+        $ref: ./components/state.yaml#/components/schemas/SlotLeaders
   - name: getVoteAccounts
-    description: Returns the account info and associated stake for all voting accounts in the current bank.
+    description: >-
+      Returns the account info and associated stake for all voting accounts in
+      the current bank.
     params:
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/cluster-program.yaml#/components/schemas/GetVoteAccountsConfig"
+          $ref: >-
+            ./components/cluster-program.yaml#/components/schemas/GetVoteAccountsConfig
     result:
       name: Vote accounts
       description: Information about current and delinquent vote accounts.
       schema:
-        $ref: "./components/cluster-program.yaml#/components/schemas/VoteAccounts"
-
+        $ref: ./components/cluster-program.yaml#/components/schemas/VoteAccounts
   - name: getProgramAccounts
     description: Returns all accounts owned by the provided program Pubkey.
     params:
@@ -612,21 +641,20 @@ methods:
         required: true
         description: The Pubkey of the program.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/cluster-program.yaml#/components/schemas/GetProgramAccountsConfig"
+          $ref: >-
+            ./components/cluster-program.yaml#/components/schemas/GetProgramAccountsConfig
     result:
       name: Program accounts
       description: An array of JSON objects containing program account details.
       schema:
         type: array
         items:
-          $ref: "./components/account.yaml#/components/schemas/ProgramAccount"
-
-  # Fee methods
+          $ref: ./components/account.yaml#/components/schemas/ProgramAccount
   - name: getFeeForMessage
     description: Get the fee the network will charge for a particular Message.
     params:
@@ -634,18 +662,17 @@ methods:
         required: true
         description: Base-64 encoded Message.
         schema:
-          $ref: "./components/fee.yaml#/components/schemas/FeeForMessageParams"
+          $ref: ./components/fee.yaml#/components/schemas/FeeForMessageParams
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/fee.yaml#/components/schemas/FeeForMessageConfig"
+          $ref: ./components/fee.yaml#/components/schemas/FeeForMessageConfig
     result:
       name: Fee for the message
       description: The fee corresponding to the message at the specified blockhash.
       schema:
-        $ref: "./components/fee.yaml#/components/schemas/FeeForMessageResult"
-
+        $ref: ./components/fee.yaml#/components/schemas/FeeForMessageResult
   - name: getMinimumBalanceForRentExemption
     description: Returns the minimum balance required to make an account rent exempt.
     params:
@@ -653,35 +680,41 @@ methods:
         required: true
         description: The account's data length in bytes.
         schema:
-          $ref: "./components/fee.yaml#/components/schemas/MinimumBalanceForRentExemptionParams"
+          $ref: >-
+            ./components/fee.yaml#/components/schemas/MinimumBalanceForRentExemptionParams
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/fee.yaml#/components/schemas/MinimumBalanceForRentExemptionConfig"
+          $ref: >-
+            ./components/fee.yaml#/components/schemas/MinimumBalanceForRentExemptionConfig
     result:
       name: Minimum balance for rent exemption
-      description: The minimum number of lamports required in the account to remain rent-free.
+      description: >-
+        The minimum number of lamports required in the account to remain
+        rent-free.
       schema:
-        $ref: "./components/fee.yaml#/components/schemas/MinimumBalanceForRentExemptionResult"
-
+        $ref: >-
+          ./components/fee.yaml#/components/schemas/MinimumBalanceForRentExemptionResult
   - name: getRecentPrioritizationFees
     description: Returns a list of prioritization fees from recent blocks.
     params:
       - name: Account addresses
         required: false
-        description: An array of up to 128 account addresses. If provided, the response will reflect a fee to land a transaction locking all of the provided accounts as writable.
+        description: >-
+          An array of up to 128 account addresses. If provided, the response
+          will reflect a fee to land a transaction locking all of the provided
+          accounts as writable.
         schema:
           type: array
           items:
-            $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+            $ref: ./components/base-types.yaml#/components/schemas/Pubkey
     result:
       name: Prioritization fees
       description: An array of prioritization fees observed in recent blocks.
       schema:
-        $ref: "./components/fee.yaml#/components/schemas/GetRecentPrioritizationFeesResult"
-
-  # Inflation methods
+        $ref: >-
+          ./components/fee.yaml#/components/schemas/GetRecentPrioritizationFeesResult
   - name: getInflationGovernor
     description: Returns the current inflation governor.
     params:
@@ -689,39 +722,40 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/state.yaml#/components/schemas/GetEpochInfoConfig"
+          $ref: ./components/state.yaml#/components/schemas/GetEpochInfoConfig
     result:
       name: Inflation governor details
       description: Returns a JSON object containing the inflation governor parameters.
       schema:
-        $ref: "./components/inflation.yaml#/components/schemas/InflationGovernor"
-
+        $ref: ./components/inflation.yaml#/components/schemas/InflationGovernor
   - name: getInflationRate
     description: Returns the specific inflation values for the current epoch.
     params: []
     result:
       name: Inflation rate details
-      description: Returns a JSON object containing the inflation values for the current epoch.
+      description: >-
+        Returns a JSON object containing the inflation values for the current
+        epoch.
       schema:
-        $ref: "./components/inflation.yaml#/components/schemas/InflationRate"
-
+        $ref: ./components/inflation.yaml#/components/schemas/InflationRate
   - name: getInflationReward
-    description: Returns the inflation or staking reward for a list of addresses for a specified epoch.
+    description: >-
+      Returns the inflation or staking reward for a list of addresses for a
+      specified epoch.
     params:
       - name: Addresses
         required: true
         description: An array of addresses to query.
         schema:
-          $ref: "./components/inflation.yaml#/components/schemas/InflationRewardParams"
+          $ref: >-
+            ./components/inflation.yaml#/components/schemas/InflationRewardParams
     result:
       name: Inflation reward details
       description: Returns a JSON array with reward details for each address.
       schema:
         type: array
         items:
-          $ref: "./components/inflation.yaml#/components/schemas/InflationReward"
-
-  # Performance methods
+          $ref: ./components/inflation.yaml#/components/schemas/InflationReward
   - name: getRecentPerformanceSamples
     description: Returns a list of recent performance samples, in reverse slot order.
     params:
@@ -736,9 +770,7 @@ methods:
       schema:
         type: array
         items:
-          $ref: "./components/performance.yaml#/components/schemas/PerformanceSample"
-
-  # State methods
+          $ref: ./components/performance.yaml#/components/schemas/PerformanceSample
   - name: getEpochInfo
     description: Returns information about the current epoch.
     params:
@@ -746,13 +778,12 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/state.yaml#/components/schemas/GetEpochInfoConfig"
+          $ref: ./components/state.yaml#/components/schemas/GetEpochInfoConfig
     result:
       name: Epoch information
       description: Returns an object containing information about the current epoch.
       schema:
-        $ref: "./components/state.yaml#/components/schemas/EpochInfo"
-
+        $ref: ./components/state.yaml#/components/schemas/EpochInfo
   - name: getEpochSchedule
     description: Returns the epoch schedule information from the cluster's genesis config.
     params: []
@@ -760,8 +791,7 @@ methods:
       name: Epoch schedule information
       description: Returns an object containing information about the epoch schedule.
       schema:
-        $ref: "./components/state.yaml#/components/schemas/EpochSchedule"
-
+        $ref: ./components/state.yaml#/components/schemas/EpochSchedule
   - name: getSlot
     description: Returns the slot that has reached the given or default commitment level.
     params:
@@ -769,13 +799,12 @@ methods:
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/state.yaml#/components/schemas/SlotConfig"
+          $ref: ./components/state.yaml#/components/schemas/SlotConfig
     result:
       name: Current slot
       description: The current slot at the specified commitment level.
       schema:
         type: integer
-
   - name: minimumLedgerSlot
     description: Returns the lowest slot that the node has information about in its ledger.
     params: []
@@ -783,8 +812,7 @@ methods:
       name: Minimum ledger slot
       description: The lowest slot number the node has information about.
       schema:
-        $ref: "./components/state.yaml#/components/schemas/MinimumLedgerSlot"
-
+        $ref: ./components/state.yaml#/components/schemas/MinimumLedgerSlot
   - name: getVersion
     description: Returns the current Solana version running on the node.
     params: []
@@ -792,8 +820,7 @@ methods:
       name: Version details
       description: The current Solana version running on the node.
       schema:
-        $ref: "./components/state.yaml#/components/schemas/VersionInfo"
-
+        $ref: ./components/state.yaml#/components/schemas/VersionInfo
   - name: getTransactionCount
     description: Returns the current transaction count from the ledger.
     params:
@@ -801,7 +828,8 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/state.yaml#/components/schemas/GetTransactionCountConfig"
+          $ref: >-
+            ./components/state.yaml#/components/schemas/GetTransactionCountConfig
     examples:
       - name: getTransactionCount example
         params: []
@@ -809,9 +837,7 @@ methods:
       name: Transaction count
       description: The current transaction count from the ledger.
       schema:
-        $ref: "./components/state.yaml#/components/schemas/TransactionCount"
-
-  # Supply methods
+        $ref: ./components/state.yaml#/components/schemas/TransactionCount
   - name: getSupply
     description: Returns information about the current supply of lamports.
     params:
@@ -819,13 +845,12 @@ methods:
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/supply.yaml#/components/schemas/GetSupplyConfig"
+          $ref: ./components/supply.yaml#/components/schemas/GetSupplyConfig
     result:
       name: Supply information
       description: An RpcResponse JSON object containing the current supply information.
       schema:
-        $ref: "./components/supply.yaml#/components/schemas/SupplyInfo"
-
+        $ref: ./components/supply.yaml#/components/schemas/SupplyInfo
   - name: getTokenSupply
     description: Returns the total supply of an SPL Token type.
     params:
@@ -833,19 +858,17 @@ methods:
         required: true
         description: The Pubkey of the token Mint to query.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/supply.yaml#/components/schemas/GetTokenSupplyConfig"
+          $ref: ./components/supply.yaml#/components/schemas/GetTokenSupplyConfig
     result:
       name: Token supply
       description: The total supply of the specified SPL Token.
       schema:
-        $ref: "./components/account.yaml#/components/schemas/TokenBalance"
-
-  # Transaction methods
+        $ref: ./components/account.yaml#/components/schemas/TokenBalance
   - name: sendTransaction
     description: Submits a signed transaction to the cluster for processing.
     params:
@@ -858,13 +881,14 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/transaction.yaml#/components/schemas/SendTransactionConfig"
+          $ref: >-
+            ./components/transaction.yaml#/components/schemas/SendTransactionConfig
     result:
       name: Transaction signature
       description: The first signature in the transaction, used as the transaction ID.
       schema:
-        $ref: "./components/transaction.yaml#/components/schemas/SendTransactionResult"
-
+        $ref: >-
+          ./components/transaction.yaml#/components/schemas/SendTransactionResult
   - name: simulateTransaction
     description: Simulates sending a transaction.
     params:
@@ -877,34 +901,37 @@ methods:
         required: false
         description: Optional configuration object containing additional options.
         schema:
-          $ref: "./components/transaction.yaml#/components/schemas/SimulateTransactionConfig"
+          $ref: >-
+            ./components/transaction.yaml#/components/schemas/SimulateTransactionConfig
     result:
       name: Simulated transaction result
       description: The result of simulating the transaction.
       schema:
-        $ref: "./components/transaction.yaml#/components/schemas/SimulatedTransactionResult"
-
+        $ref: >-
+          ./components/transaction.yaml#/components/schemas/SimulatedTransactionResult
   - name: getSignaturesForAddress
-    description: Returns signatures for confirmed transactions that include the given address.
+    description: >-
+      Returns signatures for confirmed transactions that include the given
+      address.
     params:
       - name: Account address
         required: true
         description: The account address.
         schema:
-          $ref: "./components/base-types.yaml#/components/schemas/Pubkey"
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
       - name: Configuration
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/transaction.yaml#/components/schemas/GetSignaturesForAddressConfig"
+          $ref: >-
+            ./components/transaction.yaml#/components/schemas/GetSignaturesForAddressConfig
     result:
       name: Transaction signatures
       description: An array of objects containing transaction signature information.
       schema:
         type: array
         items:
-          $ref: "./components/transaction.yaml#/components/schemas/SignatureInfo"
-
+          $ref: ./components/transaction.yaml#/components/schemas/SignatureInfo
   - name: getSignatureStatuses
     description: Returns the statuses of a list of transaction signatures.
     params:
@@ -919,15 +946,15 @@ methods:
         required: false
         description: Optional configuration object.
         schema:
-          $ref: "./components/transaction.yaml#/components/schemas/GetSignatureStatusesConfig"
+          $ref: >-
+            ./components/transaction.yaml#/components/schemas/GetSignatureStatusesConfig
     result:
       name: Transaction statuses
       description: An array containing the status of each transaction signature.
       schema:
         type: array
         items:
-          $ref: "./components/transaction.yaml#/components/schemas/TransactionStatus"
-
+          $ref: ./components/transaction.yaml#/components/schemas/TransactionStatus
   - name: getTransaction
     description: Returns transaction details for a confirmed transaction.
     params:
@@ -940,11 +967,10 @@ methods:
         required: false
         description: Optional configuration object containing additional settings.
         schema:
-          $ref: "./components/transaction.yaml#/components/schemas/GetTransactionConfig"
+          $ref: >-
+            ./components/transaction.yaml#/components/schemas/GetTransactionConfig
     result:
       name: Transaction details
       description: The details of a confirmed transaction.
       schema:
-        $ref: "./components/transaction.yaml#/components/schemas/TransactionDetails"
-
-  - $ref: ../_components/solana/methods.yaml#/components/methods/getLeaderSchedule
+        $ref: ./components/transaction.yaml#/components/schemas/TransactionDetails
