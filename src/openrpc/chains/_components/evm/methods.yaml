@@ -283,6 +283,200 @@ components:
             name: Return data
             value: "0x"
 
+    eth_callMany:
+      name: eth_callMany
+      description: >
+        Executes one or more *bundles* of `eth_call`-style transactions against an
+        ephemeral state, without committing state to the chain. Transactions within
+        each bundle are executed sequentially: state changes from earlier transactions
+        in the bundle are visible to later ones. You can optionally override selected
+        block header fields per bundle.
+
+      params:
+        - name: Bundles
+          required: true
+          description: >
+            A list of bundles to execute. Each bundle specifies a list of transactions
+            (executed in order) and may include a per-bundle block header override.
+          schema:
+            type: array
+            minItems: 1
+            items:
+              type: object
+              required: ["transactions"]
+              additionalProperties: false
+              properties:
+                transactions:
+                  description: Array of transaction call objects (same shape as `eth_call`).
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: "./transaction.yaml#/components/schemas/GenericTransaction"
+                blockOverride:
+                  description: >
+                    Optional execution-context block header overrides for this bundle.
+                    When provided, these supersede the Simulation context for that bundle.
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    blockNumber:
+                      $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+                    blockHash:
+                      $ref: "./base-types.yaml#/components/schemas/hash32"
+                    coinbase:
+                      $ref: "./base-types.yaml#/components/schemas/address"
+                    timestamp:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+                    difficulty:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+                    gasLimit:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+                    baseFee:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+
+        - name: Simulation context
+          required: true
+          description: >
+            The base context for the simulation. If a bundle supplies `blockOverride`,
+            it takes precedence for that bundle. `transactionIndex` is 0-based within
+            the referenced block.
+          schema:
+            type: object
+            required: ["blockNumber", "transactionIndex"]
+            additionalProperties: false
+            properties:
+              blockNumber:
+                $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+              transactionIndex:
+                type: integer
+                minimum: 0
+
+        - name: State overrides
+          required: false
+          description: >
+            Optional per-account state overrides applied during execution, identical
+            in shape to the `eth_call` state override parameter.
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties: false
+              properties:
+                balance:
+                  $ref: "./base-types.yaml#/components/schemas/uint"
+                nonce:
+                  $ref: "./base-types.yaml#/components/schemas/uint"
+                code:
+                  $ref: "./base-types.yaml#/components/schemas/bytes"
+                state:
+                  description: Full storage override (slot -> value, 32-byte hex).
+                  type: object
+                  additionalProperties:
+                    $ref: "./base-types.yaml#/components/schemas/hash32"
+                stateDiff:
+                  description: Partial storage diff (slot -> value, 32-byte hex).
+                  type: object
+                  additionalProperties:
+                    $ref: "./base-types.yaml#/components/schemas/hash32"
+
+        - name: Timeout
+          required: false
+          description: >
+            Maximum running time for the simulations in milliseconds. If omitted,
+            the node’s default is used (commonly 5000).
+          schema:
+            type: integer
+            minimum: 1
+
+      result:
+        name: Call results
+        description: >
+          A list with one entry per bundle. Each bundle entry is an array with one
+          result per transaction in that bundle, in execution order. Each transaction
+          result is either a successful return `value` (ABI-encoded bytes), or an
+          `error` describing the revert/failure.
+        schema:
+          type: array
+          items:
+            type: array
+            items:
+              oneOf:
+                - type: object
+                  additionalProperties: false
+                  required: ["value"]
+                  properties:
+                    value:
+                      $ref: "./base-types.yaml#/components/schemas/bytes"
+                - type: object
+                  additionalProperties: false
+                  required: ["error"]
+                  properties:
+                    error:
+                      type: object
+                      additionalProperties: false
+                      required: ["code", "message"]
+                      properties:
+                        code:
+                          type: integer
+                        message:
+                          type: string
+                        data:
+                          description: Optional ABI-encoded revert data (e.g., `Error(string)`).
+                          $ref: "./base-types.yaml#/components/schemas/bytes"
+
+      examples:
+        - name: eth_callMany — ERC-20 transfer + balanceOf at a fixed block
+          params:
+            - name: Bundles
+              value:
+                - transactions:
+                    - from: "0x1985ea6e9c68e1c272d8209f3b478ac2fdb25c87"
+                      to: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+                      gas: "0x0f4240"
+                      gasPrice: "0x7896e72a"
+                      # transfer(recipient, amount)
+                      data: "0xa9059cbb000000000000000000000000bc0e63965946815d105e7591407704e6e1964e590000000000000000000000000000000000000000000000000000000005f5e100"
+                    - to: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+                      gasPrice: "0x7896e72a"
+                      # balanceOf(owner)
+                      data: "0x70a08231000000000000000000000000bc0e63965946815d105e7591407704e6e1964e59"
+                  blockOverride:
+                    blockNumber: "0xbb5fe9"
+            - name: Simulation context
+              value:
+                blockNumber: "0xbb5fe9"
+                transactionIndex: 1
+            - name: State overrides
+              value: {}
+            - name: Timeout
+              value: 5000
+          result:
+            name: Call results
+            value:
+              - # bundle 0
+                - value: "0x0000000000000000000000000000000000000000000000000000000000000001" # transfer(bool) -> true
+                - value: "0x0000000000000000000000000000000000000000000000000000000005f5e100" # balanceOf -> 0x05f5e100
+
+        - name: eth_callMany — revert example
+          params:
+            - name: Bundles
+              value:
+                - transactions:
+                    - to: "0x0000000000000000000000000000000000000000"
+                      data: "0xdeadbeef" # invalid selector -> revert
+            - name: Simulation context
+              value:
+                blockNumber: "latest"
+                transactionIndex: 0
+          result:
+            name: Call results
+            value:
+              - # bundle 0
+                - error:
+                    code: -32000
+                    message: "execution reverted"
+                    data: "0x08c379a00000000000000000000000000000000000000000000000000000000000000020..."
+
     eth_estimateGas:
       name: eth_estimateGas
       description: Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
