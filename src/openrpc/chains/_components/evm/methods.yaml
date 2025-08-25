@@ -200,6 +200,98 @@ components:
             name: Chain ID
             value: "0x1"
 
+    eth_getAccount:
+      name: eth_getAccount
+      description: >
+        Retrieve account details (code hash, storage root, balance, nonce) for a given
+        address at a specified block number or tag.
+      params:
+        - name: address
+          required: true
+          description: The account address for which the information is to be retrieved.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/address"
+        - name: blockReference
+          required: true
+          description: >
+            The block number (hex quantity) or a tag: "latest", "pending", "safe", or "finalized".
+          schema:
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+      result:
+        name: Account information
+        description: Account fields at the requested block.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["codeHash", "storageRoot", "balance", "nonce"]
+          properties:
+            codeHash:
+              description: A 32-byte hash of the account's code (EOAs use keccak256(0x)).
+              $ref: "./base-types.yaml#/components/schemas/hash32"
+            storageRoot:
+              description: The Merkle Patricia trie root of the account's storage.
+              $ref: "./base-types.yaml#/components/schemas/hash32"
+            balance:
+              description: The current balance of the account in wei (hex quantity).
+              $ref: "./base-types.yaml#/components/schemas/uint"
+            nonce:
+              description: The transaction count of the account (hex quantity).
+              $ref: "./base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: eth_getAccount example
+          params:
+            - name: address
+              value: "0x8D97689C9818892B700e27F316cc3E41e17fBeb9"
+            - name: blockReference
+              value: "latest"
+          result:
+            name: Account information
+            value:
+              codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+              balance: "0xba862b54effa"
+              nonce: "0x23"
+
+    eth_submitWork:
+      name: eth_submitWork
+      description: >
+        Submit a proof-of-work solution (Ethash) consisting of a nonce, the header
+        PoW hash, and the mix digest. **Not supported on post-Merge Ethereum clients**;
+        many nodes will return JSON-RPC error -32601 (method not found).
+      params:
+        - name: nonce
+          required: true
+          description: The 8-byte nonce found by the miner.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/bytes8"
+        - name: hash
+          required: true
+          description: The block header's PoW hash (32-byte).
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/hash32"
+        - name: digest
+          required: true
+          description: The mix digest (32-byte).
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Submission accepted
+        description: Returns `true` if the provided solution is valid, otherwise `false`.
+        schema:
+          type: boolean
+      examples:
+        - name: eth_submitWork — accepted
+          params:
+            - name: nonce
+              value: "0x0000000000000001"
+            - name: hash
+              value: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+            - name: digest
+              value: "0xd1fe5700000000000000000000000000d1fe5700000000000000000000000000"
+          result:
+            name: Submission accepted
+            value: true
+
     eth_blockNumber:
       name: eth_blockNumber
       description: Returns the number of the most recent block.
