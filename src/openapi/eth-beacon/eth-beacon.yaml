@@ -1563,193 +1563,6 @@ paths:
                         exit_epoch: "18446744073709551615"
                         withdrawable_epoch: "18446744073709551615"
 
-  /eth/v2/debug/beacon/states/{state_id}:
-    get:
-      summary: "/v2/debug/beacon/states/{state_id}"
-      description: >
-        Returns the full **BeaconState** object for the given `state_id`.  
-        Depending on the `Accept` header, the response can be returned as JSON  
-        or serialized bytes in SSZ format.
-      tags:
-        - Ethereum Beacon API Endpoints
-      security:
-        - apiKey: []
-      parameters:
-        - name: state_id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: "head"
-          description: >
-            State identifier.  
-            Can be one of:  
-            `head` (canonical head in node's view),  
-            `genesis`,  
-            `finalized`,  
-            `justified`,  
-            `<slot>`,  
-            `<hex encoded stateRoot with 0x prefix>`.
-      responses:
-        "200":
-          description: Full BeaconState object.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  version:
-                    type: string
-                    description: Fork name / protocol version.
-                    example: "electra"
-                  execution_optimistic:
-                    type: boolean
-                    description: Whether the execution payload is optimistic.
-                  finalized:
-                    type: boolean
-                    description: Whether the state is finalized.
-                  data:
-                    type: object
-                    description: The BeaconState object.
-                    properties:
-                      genesis_time:
-                        type: string
-                        example: "1606824023"
-                      genesis_validators_root:
-                        type: string
-                        example: "0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95"
-                      slot:
-                        type: string
-                        example: "12304813"
-                      fork:
-                        type: object
-                        description: Fork data for this state.
-                        properties:
-                          previous_version:
-                            type: string
-                            example: "0x04000000"
-                          current_version:
-                            type: string
-                            example: "0x05000000"
-                          epoch:
-                            type: string
-                            example: "364032"
-                      latest_block_header:
-                        type: object
-                        properties:
-                          slot:
-                            type: string
-                            example: "12304812"
-                          proposer_index:
-                            type: string
-                            example: "356622"
-                          parent_root:
-                            type: string
-                            example: "0x9d7bf160847cebe069890d0d1811bd7665bff49fb65c311805ee0f124f4c7de2"
-                          state_root:
-                            type: string
-                            example: "0xb0850a65116ed2fdd74340230967f3688d076d3d9903e61d0de174ff9a09a385"
-                          body_root:
-                            type: string
-                            example: "0x1eec5d666b09799ad0b5e2909ba8393ef79b2aef2335ff41c0168066df5bd039"
-                      validators:
-                        type: array
-                        description: List of validators in this state.
-                        items:
-                          type: object
-                          properties:
-                            pubkey:
-                              type: string
-                              example: "0x842b273237caa03ff23a25e2664e5c9c6fb17342c0ec2f12b018cf0958cbe0e42f07500150bc5a9f8b44cfcf477e4a78"
-                            withdrawal_credentials:
-                              type: string
-                            effective_balance:
-                              type: string
-                            slashed:
-                              type: boolean
-                            activation_epoch:
-                              type: string
-                            exit_epoch:
-                              type: string
-                            withdrawable_epoch:
-                              type: string
-                      balances:
-                        type: array
-                        description: Balances corresponding to each validator.
-                        items:
-                          type: string
-                          example: "2048384789135"
-                      justification_bits:
-                        type: string
-                        example: "0x01"
-                      previous_justified_checkpoint:
-                        type: object
-                        properties:
-                          epoch: { type: string, example: "384528" }
-                          root:
-                            {
-                              type: string,
-                              example: "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267",
-                            }
-                      current_justified_checkpoint:
-                        type: object
-                        properties:
-                          epoch: { type: string, example: "384529" }
-                          root:
-                            {
-                              type: string,
-                              example: "0x352dd41c368cea0c91374483378ce9f65f7a7180ca6fa5e08ae17ca509d19c0c",
-                            }
-                      finalized_checkpoint:
-                        type: object
-                        properties:
-                          epoch: { type: string, example: "384528" }
-                          root:
-                            {
-                              type: string,
-                              example: "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267",
-                            }
-              examples:
-                response:
-                  summary: Example response
-                  value:
-                    version: "electra"
-                    execution_optimistic: false
-                    finalized: false
-                    data:
-                      genesis_time: "1606824023"
-                      genesis_validators_root: "0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95"
-                      slot: "12304813"
-                      fork:
-                        previous_version: "0x04000000"
-                        current_version: "0x05000000"
-                        epoch: "364032"
-                      latest_block_header:
-                        slot: "12304812"
-                        proposer_index: "356622"
-                        parent_root: "0x9d7bf160847cebe069890d0d1811bd7665bff49fb65c311805ee0f124f4c7de2"
-                        state_root: "0xb0850a65116ed2fdd74340230967f3688d076d3d9903e61d0de174ff9a09a385"
-                        body_root: "0x1eec5d666b09799ad0b5e2909ba8393ef79b2aef2335ff41c0168066df5bd039"
-                      validators:
-                        - pubkey: "0x842b273237caa03ff23a25e2664e5c9c6fb17342c0ec2f12b018cf0958cbe0e42f07500150bc5a9f8b44cfcf477e4a78"
-                          withdrawal_credentials: "0x02000000000000000000000039fd78fe6a72faae2ab5f1f053c253b2e3685c15"
-                          effective_balance: "2048000000000"
-                          slashed: false
-                          activation_epoch: "162260"
-                          exit_epoch: "18446744073709551615"
-                          withdrawable_epoch: "18446744073709551615"
-                      balances: ["2048384789135"]
-                      justification_bits: "0x01"
-                      previous_justified_checkpoint:
-                        epoch: "384528"
-                        root: "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267"
-                      current_justified_checkpoint:
-                        epoch: "384529"
-                        root: "0x352dd41c368cea0c91374483378ce9f65f7a7180ca6fa5e08ae17ca509d19c0c"
-                      finalized_checkpoint:
-                        epoch: "384528"
-                        root: "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267"
-
   /eth/v1/beacon/rewards/sync_committee/{block_id}:
     post:
       summary: "/v1/beacon/rewards/sync_committee/{block_id}"
@@ -2810,6 +2623,99 @@ paths:
                           root: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
                       signature: "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
                       committee_bits: "0x0000000000000001"
+
+  /eth/v1/validator/duties/attester/{epoch}:
+    post:
+      summary: "/v1/validator/duties/attester/{epoch}"
+      description: >
+        Requests the beacon node to provide a set of attestation duties, which should be performed by validators, for a particular epoch.
+        Duties should only need to be checked once per epoch, however a chain reorganization could occur, resulting in a change of duties.
+      tags:
+        - Ethereum Beacon API Endpoints
+      security:
+        - apiKey: []
+      parameters:
+        - name: epoch
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "387896"
+          description: >
+            Should only be allowed 1 epoch ahead.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: An array of the validator indices for which to obtain the duties.
+              items:
+                type: string
+              example: ["474200"]
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dependent_root:
+                    type: string
+                    description: Dependent root for these duties.
+                    example: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                  execution_optimistic:
+                    type: boolean
+                    description: Whether the execution payload is optimistic.
+                  data:
+                    type: array
+                    description: List of attester duties for the requested indices.
+                    items:
+                      type: object
+                      properties:
+                        pubkey:
+                          type: string
+                          description: Validator public key.
+                          example: "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                        validator_index:
+                          type: string
+                          description: Validator index.
+                          example: "1"
+                        committee_index:
+                          type: string
+                          description: Committee index for the validator at the duty slot.
+                          example: "1"
+                        committee_length:
+                          type: string
+                          description: Number of validators in the committee.
+                          example: "1"
+                        committees_at_slot:
+                          type: string
+                          description: Total number of committees at the duty slot.
+                          example: "1"
+                        validator_committee_index:
+                          type: string
+                          description: Position of the validator within the committee.
+                          example: "1"
+                        slot:
+                          type: string
+                          description: Slot at which the validator should attest.
+                          example: "1"
+              examples:
+                response:
+                  summary: Example response
+                  value:
+                    dependent_root: "0x017c4443db02f7e4ece54ada0ba2e1516596e39150261c59338b9b6f22d8fbeb"
+                    execution_optimistic: false
+                    data:
+                      - pubkey: "0x842b273237caa03ff23a25e2664e5c9c6fb17342c0ec2f12b018cf0958cbe0e42f07500150bc5a9f8b44cfcf477e4a78"
+                        validator_index: "474200"
+                        committees_at_slot: "64"
+                        committee_index: "44"
+                        committee_length: "528"
+                        validator_committee_index: "308"
+                        slot: "12412675"
 
   /eth/v1/validator/duties/proposer/{epoch}:
     get:
