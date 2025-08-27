@@ -650,7 +650,30 @@ components:
               type: string
               description: Token's symbol
         tokenPrices:
-          $ref: "../prices/prices.yaml#/components/schemas/AddressPriceResponseItem"
+          type: array
+          description: List of price information.
+          items:
+            type: object
+            properties:
+              currency:
+                type: string
+                example: "usd"
+              value:
+                type: string
+                example: "4608.2208671202"
+              lastUpdatedAt:
+                type: string
+                format: date-time
+                example: "2025-08-26T20:17:27Z"
+            required:
+              - currency
+              - value
+              - lastUpdatedAt
+        error:
+          type:
+            - string
+            - "null"
+          description: Error message if applicable.
       required:
         - network
         - address
@@ -987,25 +1010,6 @@ components:
         - currency
         - value
         - lastUpdatedAt
-
-    AddressPriceResponseItem:
-      type: object
-      properties:
-        prices:
-          type: array
-          description: List of price information.
-          items:
-            $ref: "#/components/schemas/Price"
-        error:
-          type:
-            - string
-            - "null"
-          description: Error message if applicable.
-      required:
-        - network
-        - address
-        - prices
-        - error
 
     # Unused
     # HistoricalPricesRequest:
