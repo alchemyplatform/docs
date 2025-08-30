@@ -9,11 +9,11 @@ servers:
 paths:
   /graphql/variables/{variable}:
     get:
-      summary: Read Variable Elements
+      summary: Get Variable Elements
       description: |
         This endpoint allows you to read the values within a Custom Webhook variable.
         It supports pagination with `limit` and `after` (and optionally `pageKey`) query parameters.
-      tags: ["Custom Webhook API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
         - $ref: "#/components/parameters/variable"
@@ -38,8 +38,11 @@ paths:
       operationId: read-custom-webhook-variable
     post:
       summary: Create a Variable
-      description: This endpoint allows you to create a variable that can be inserted into a Custom Webhook GraphQL statement
-      tags: ["Custom Webhook API Methods"]
+      description: |
+        This endpoint allows you to create a variable that can be inserted into a Custom Webhook GraphQL statement.
+
+        If the variable does not exist, it is created with the provided items. If it already exists, the call is additive: existing items are unchanged, new items are appended, and duplicates are ignored (no error is thrown).
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
         - $ref: "#/components/parameters/variable"
@@ -59,7 +62,7 @@ paths:
     delete:
       summary: Delete a Variable
       description: This endpoint allows you to delete a Custom Webhook variable
-      tags: ["Custom Webhook API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
         - $ref: "#/components/parameters/variable"
@@ -79,7 +82,7 @@ paths:
         Add and remove elements within a Custom Webhook variable
 
         <Info>The use of both `add` and `delete` arrays within a single request is currently not supported. Attempting to send both will result in a 400 error. To add and remove elements, make separate API calls for each action.</Info>
-      tags: ["Custom Webhook API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
         - $ref: "#/components/parameters/variable"
@@ -102,7 +105,7 @@ paths:
     get:
       summary: Get all webhooks
       description: This endpoint allows you to get all webhooks on your team.
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
       responses:
@@ -121,7 +124,7 @@ paths:
     get:
       summary: Get all addresses for an Address Activity webhook
       description: Paginated endpoint to list all of the addresses a given Address Activity webhook is subscribed to.
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
         - $ref: "#/components/parameters/webhook_id"
@@ -142,7 +145,7 @@ paths:
     post:
       summary: Create webhook
       description: "This endpoint allows you to create a webhook."
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
       requestBody:
@@ -166,7 +169,7 @@ paths:
       description: |
         Add or remove addresses from a specific webhook.
         *This webhook endpoint is idempotent, meaning that identical requests can be made once or several times with the same effect.*
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
       requestBody:
@@ -187,7 +190,7 @@ paths:
     put:
       summary: Replace webhook addresses
       description: "Replace entire list of addresses tracked in a given webhook."
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
       requestBody:
@@ -209,7 +212,7 @@ paths:
     put:
       summary: Update webhook status
       description: "Allows you to set status of webhooks to active or inactive."
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
       requestBody:
@@ -231,7 +234,7 @@ paths:
     patch:
       summary: Update webhook NFT filters
       description: "Add and remove webhook NFT filters"
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
       requestBody:
@@ -253,7 +256,7 @@ paths:
     get:
       summary: Get all webhook NFT filters
       description: Paginated endpoint to list all of the NFT filter objects a given webhook is subscribed to.
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
         - $ref: "#/components/parameters/webhook_id"
@@ -274,7 +277,7 @@ paths:
     delete:
       summary: Delete webhook
       description: "Allows you to delete a webhook."
-      tags: ["Notify API Methods"]
+      tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
         - $ref: "#/components/parameters/webhook_id"
@@ -334,7 +337,7 @@ components:
       required: false
       description: "The cursor that points to the end of the current set of results."
       schema:
-        type: string
+        $ref: "#/components/schemas/cursor"
   schemas:
     cursor:
       type: string
@@ -460,6 +463,9 @@ components:
             type: string
     replace_webhook_addresses:
       type: object
+      required:
+        - webhook_id
+        - addresses
       properties:
         webhook_id:
           type: string
@@ -471,6 +477,9 @@ components:
             type: string
     update_webhook:
       type: object
+      required:
+        - webhook_id
+        - is_active
       properties:
         webhook_id:
           type: string
