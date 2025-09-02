@@ -1,0 +1,491 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
+openapi: 3.1.0
+info:
+  title: 🎨 Solana DAS API
+  version: "1.0"
+  description: A specification of the Solana Digital Asset Services (DAS) methods for retrieving and managing digital assets on Solana.
+servers:
+  - url: https://solana-mainnet.g.alchemy.com/v2
+    description: Solana Mainnet
+  - url: https://solana-devnet.g.alchemy.com/v2
+    description: Solana Devnet
+tags:
+  - name: Solana DAS
+    description: Methods related to Solana Digital Asset Services
+paths:
+  "/v2/{apiKey}/getAsset":
+    get:
+      summary: getAsset
+      description: Returns information about a single digital asset.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: id
+          description: The ID of the asset to retrieve.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk"
+        - name: displayOptions
+          description: Optional configuration object for display formatting.
+          in: query
+          required: false
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Returns detailed information about the specified digital asset.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Asset information
+      operationId: getAsset
+
+  "/v2/{apiKey}/getAssets":
+    post:
+      summary: getAssets
+      description: Returns information about multiple digital assets.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  description: An array of asset IDs to retrieve.
+                  example:
+                    [
+                      "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss",
+                      "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo",
+                    ]
+                displayOptions:
+                  type: object
+                  description: Optional configuration object for sorting and pagination.
+      responses:
+        "200":
+          description: Returns detailed information about the specified digital assets.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Assets list
+      operationId: getAssets
+
+  "/v2/{apiKey}/getAssetProof":
+    get:
+      summary: getAssetProof
+      description: Returns the merkle proof for a compressed digital asset.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: id
+          description: The ID of the compressed asset to get proof for.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+      responses:
+        "200":
+          description: Returns the merkle proof for the specified compressed asset.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Asset proof
+      operationId: getAssetProof
+
+  "/v2/{apiKey}/getAssetProofs":
+    post:
+      summary: getAssetProofs
+      description: Returns merkle proofs for multiple compressed digital assets.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  description: An array of compressed asset IDs to get proofs for.
+                  example:
+                    [
+                      "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss",
+                      "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo",
+                    ]
+      responses:
+        "200":
+          description: Returns merkle proofs for the specified compressed assets.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Asset proofs
+      operationId: getAssetProofs
+
+  "/v2/{apiKey}/getAssetsByAuthority":
+    get:
+      summary: getAssetsByAuthority
+      description: Returns assets filtered by their authority.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: authorityAddress
+          description: The authority address to filter assets by.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW"
+        - name: page
+          description: Page number for pagination.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          description: Number of items per page.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Returns assets filtered by the specified authority.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Assets by authority
+      operationId: getAssetsByAuthority
+
+  "/v2/{apiKey}/getAssetsByOwner":
+    get:
+      summary: getAssetsByOwner
+      description: Returns assets owned by the specified address.
+
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: ownerAddress
+          description: The owner address to filter assets by.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+        - name: page
+          description: Page number for pagination.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          description: Number of items per page.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: sortBy
+          description: Sort criteria.
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ["created", "updated"]
+            default: "created"
+        - name: sortDirection
+          description: Sort direction.
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ["asc", "desc"]
+            default: "asc"
+        - name: showUnverifiedCollections
+          description: Whether to show unverified collections.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: showCollectionMetadata
+          description: Whether to show collection metadata.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: showFungible
+          description: Whether to show fungible tokens.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: showZeroBalance
+          description: Whether to show zero balance tokens.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Returns assets owned by the specified address.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Assets by owner
+      operationId: getAssetsByOwner
+
+  "/v2/{apiKey}/getAssetsByGroup":
+    get:
+      summary: getAssetsByGroup
+      description: Returns assets filtered by their group information.
+
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: groupKey
+          description: The group key to filter assets by.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "collection"
+        - name: groupValue
+          description: The group value to filter assets by.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w"
+        - name: page
+          description: Page number for pagination.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          description: Number of items per page.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Returns assets filtered by the specified group.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Assets by group
+      operationId: getAssetsByGroup
+
+  "/v2/{apiKey}/getAssetsByCreator":
+    get:
+      summary: getAssetsByCreator
+      description: Returns assets created by the specified address.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: creatorAddress
+          description: The creator address to filter assets by.
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          description: Page number for pagination.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          description: Number of items per page.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Returns assets created by the specified address.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Assets by creator
+      operationId: getAssetsByCreator
+
+  "/v2/{apiKey}/searchAssets":
+    post:
+      summary: searchAssets
+      description: Search for assets using a complex set of filter criteria.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ownerAddress:
+                  type: string
+                  description: Owner address to filter by.
+                  example: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+                tokenType:
+                  type: string
+                  description: Token type filter.
+                  example: "all"
+                limit:
+                  type: integer
+                  description: Number of results to return.
+                  example: 50
+      responses:
+        "200":
+          description: Returns assets matching the specified search criteria.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Search results
+      operationId: searchAssets
+
+  "/v2/{apiKey}/getAssetSignatures":
+    get:
+      summary: getAssetSignatures
+      description: Returns signatures for transactions that have interacted with the given asset.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: id
+          description: The ID of the asset to get signatures for.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "FNt6A9Mfnqbwc1tY7uwAguKQ1JcpBrxmhczDgbdJy5AC"
+        - name: page
+          description: Page number for pagination.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          description: Number of items per page.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Returns signatures for transactions involving the specified asset.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Asset signatures
+      operationId: getAssetSignatures
+
+  "/v2/{apiKey}/getNftEditions":
+    get:
+      summary: getNftEditions
+      description: Returns all editions of a given master NFT.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: id
+          description: The ID of the master NFT to get editions for.
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+        - name: page
+          description: Page number for pagination.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          description: Number of items per page.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Returns all editions of the specified master NFT.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: NFT editions
+      operationId: getNftEditions
+
+  "/v2/{apiKey}/getTokenAccounts":
+    get:
+      summary: getTokenAccounts
+      description: Returns token accounts based on the specified filters.
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - name: ownerAddress
+          description: The owner address to filter token accounts by.
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+        - name: page
+          description: Page number for pagination.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          description: Number of items per page.
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Returns token accounts matching the specified criteria.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Token accounts
+      operationId: getTokenAccounts
+
+components:
+  parameters:
+    apiKey:
+      name: apiKey
+      in: path
+      schema:
+        type: string
+      required: true
+      description: Your Alchemy API key
