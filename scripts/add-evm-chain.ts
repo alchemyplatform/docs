@@ -8,7 +8,6 @@ import {
   createDirectoryStructure,
   formatChainName,
   normalizeUrl,
-  updateChainApisOverview,
   updateDocsYml,
   validateChainName,
   validateUrl,
@@ -48,7 +47,7 @@ async function collectChainName(): Promise<string> {
     }
 
     if (checkIfChainExists(chainName)) {
-      console.error(`❌ Chain "${chainName}" already exists`);
+      console.error(`❌ Documentation for chain "${chainName}" already exists`);
       continue;
     }
 
@@ -63,39 +62,82 @@ async function collectIntroText(): Promise<string> {
 
 async function collectServers(displayName: string): Promise<Server[]> {
   const servers: Server[] = [];
-  console.info("\nEnter server URLs (press Enter with empty input to finish):");
+  console.info("\nEnter server URLs (at least one server is required):");
+  console.info("🔍 Starting server collection...");
 
+  // First server is required
+  let serverName: string;
   while (true) {
-    const serverName = await prompt(
+    console.info("🔍 Prompting for server name...");
+    serverName = await prompt(
       `Enter server name (e.g., "${displayName} Mainnet"): `,
     );
-    if (!serverName) break;
-
-    let serverUrl: string;
-    while (true) {
-      serverUrl = await prompt("Enter server URL: ");
-      if (!serverUrl) {
-        console.error("❌ Server URL cannot be empty");
-        continue;
-      }
-
-      const urlError = validateUrl(serverUrl);
-      if (urlError) {
-        console.error(`❌ ${urlError}`);
-        continue;
-      }
-
-      serverUrl = normalizeUrl(serverUrl);
-      break;
-    }
-
-    servers.push({ name: serverName, url: serverUrl });
-    console.info(`✅ Added server: ${serverName} - ${serverUrl}`);
+    console.info(`🔍 Got server name: "${serverName}"`);
+    if (serverName.trim()) break;
+    console.error("❌ Server name cannot be empty");
   }
 
-  if (servers.length === 0) {
-    console.error("❌ At least one server is required");
-    process.exit(1);
+  let serverUrl: string;
+  while (true) {
+    serverUrl = await prompt("Enter server URL: ");
+    if (!serverUrl) {
+      console.error("❌ Server URL cannot be empty");
+      continue;
+    }
+
+    const urlError = validateUrl(serverUrl);
+    if (urlError) {
+      console.error(`❌ ${urlError}`);
+      continue;
+    }
+
+    serverUrl = normalizeUrl(serverUrl);
+    break;
+  }
+
+  servers.push({ name: serverName, url: serverUrl });
+  console.info(`✅ Added server: ${serverName} - ${serverUrl}`);
+
+  // Ask if user wants to add more servers
+  while (true) {
+    const addMore = await prompt("\nAdd another server? (y/n): ");
+    if (addMore.toLowerCase() === "n" || addMore.toLowerCase() === "no") {
+      break;
+    }
+    if (addMore.toLowerCase() === "y" || addMore.toLowerCase() === "yes") {
+      // Collect additional server
+      let additionalServerName: string;
+      while (true) {
+        additionalServerName = await prompt(
+          `Enter server name (e.g., "${displayName} Testnet"): `,
+        );
+        if (additionalServerName.trim()) break;
+        console.error("❌ Server name cannot be empty");
+      }
+
+      let additionalServerUrl: string;
+      while (true) {
+        additionalServerUrl = await prompt("Enter server URL: ");
+        if (!additionalServerUrl) {
+          console.error("❌ Server URL cannot be empty");
+          continue;
+        }
+
+        const urlError = validateUrl(additionalServerUrl);
+        if (urlError) {
+          console.error(`❌ ${urlError}`);
+          continue;
+        }
+
+        additionalServerUrl = normalizeUrl(additionalServerUrl);
+        break;
+      }
+
+      servers.push({ name: additionalServerName, url: additionalServerUrl });
+      console.info(
+        `✅ Added server: ${additionalServerName} - ${additionalServerUrl}`,
+      );
+    }
   }
 
   return servers;
@@ -125,7 +167,6 @@ function logSuccess(chainName: string): void {
   console.info(`   - Generators: fern/apis/${chainName}/`);
   console.info("   - Sidebar: Updated in fern/docs.yml");
   console.info("\n📋 Files created:");
-  console.info(`   - ${chainName}.yaml (copied and modified from eth.yaml)`);
   console.info(`   - ${chainName}-api-quickstart.mdx`);
   console.info(`   - ${chainName}-api-faq.mdx`);
   console.info("   - generators.yaml");
@@ -149,7 +190,9 @@ async function main(): Promise<void> {
     console.info(`✅ Chain name: ${chainName} (${displayName})`);
 
     const introText = await collectIntroText();
+    console.info("🔍 About to collect servers...");
     const servers = await collectServers(displayName);
+    console.info(`🔍 Collected ${servers.length} servers`);
 
     // Create configuration object
     const config = createChainConfig(
@@ -170,7 +213,6 @@ async function main(): Promise<void> {
     // Update documentation
     console.info("📝 Updating documentation...");
     updateDocsYml(chainName, displayName);
-    updateChainApisOverview(chainName, displayName);
 
     // Log success
     logSuccess(chainName);
