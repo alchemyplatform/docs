@@ -49,25 +49,27 @@ const main = async () => {
   // Wait for all promises to complete
   await Promise.allSettled([...chainPromises, ...alchemyPromises]);
 
-  // Check for generation errors first - these should terminate the script immediately
+  // Report all errors at once
+  const errorMessages: string[] = [];
+
   if (genErrors.length > 0) {
-    throw new Error(
-      `Found ${genErrors.length} generation error(s):\n${genErrors.join("\n")}`,
-    );
+    errorMessages.push(`Found ${genErrors.length} generation error(s):`);
+    errorMessages.push(...genErrors.map((error) => `  ${error}`));
   }
 
-  // Report all missing tokens at once
   if (missingTokens.length > 0) {
-    const missingTokensMessages = missingTokens.map((token) => `  - ${token}`);
-    throw new Error(
-      `Found ${missingTokens.length} missing tokens. \n${missingTokensMessages.join("\n")}`,
-    );
+    errorMessages.push(`Found ${missingTokens.length} missing token(s):`);
+    errorMessages.push(...missingTokens.map((token) => `  - ${token}`));
+  }
+
+  if (errorMessages.length > 0) {
+    throw new Error(errorMessages.join("\n"));
   }
 
   console.info("All OpenRPC specs generated successfully!");
 };
 
 main().catch((error) => {
-  console.error("Script failed:", error);
+  console.error("OpenRPC spec generation failed:\n", error);
   process.exit(1);
 });
