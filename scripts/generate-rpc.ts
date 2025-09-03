@@ -1,7 +1,10 @@
 import { mkdirSync, readdirSync } from "fs";
 
 import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs";
-import { handleDerefErrors } from "../src/utils/generationHelpers";
+import {
+  type DerefErrorGroup,
+  handleDerefErrors,
+} from "../src/utils/generationHelpers";
 
 const isHiddenDir = (file: string) =>
   !file.startsWith("_") && !file.startsWith(".");
@@ -17,13 +20,14 @@ const main = async () => {
   mkdirSync(outputDir, { recursive: true });
 
   const missingTokens: string[] = [];
+  const genErrors: DerefErrorGroup[] = [];
 
   // Generate chains OpenRPC specs
   const chainPromises = allChainFiles.map(async (chain) => {
     try {
       await generateOpenRpcSpec(allChainsDir, outputDir, chain);
     } catch (err: unknown) {
-      handleDerefErrors(err, chain, missingTokens);
+      handleDerefErrors(err, chain, missingTokens, genErrors);
     }
   });
 
@@ -38,19 +42,25 @@ const main = async () => {
     try {
       await generateOpenRpcSpec(alchemyApisDir, alchemyOutputDir, api);
     } catch (err: unknown) {
-      handleDerefErrors(err, api, missingTokens);
+      handleDerefErrors(err, api, missingTokens, genErrors);
     }
   });
 
   // Wait for all promises to complete
   await Promise.allSettled([...chainPromises, ...alchemyPromises]);
 
+  // Check for generation errors first - these should terminate the script immediately
+  if (genErrors.length > 0) {
+    throw new Error(
+      `Found ${genErrors.length} generation error(s):\n${genErrors.join("\n")}`,
+    );
+  }
+
   // Report all missing tokens at once
   if (missingTokens.length > 0) {
-    console.error("Missing tokens found:");
-    missingTokens.forEach((token) => console.error(`  - ${token}`));
+    const missingTokensMessages = missingTokens.map((token) => `  - ${token}`);
     throw new Error(
-      `Found ${missingTokens.length} missing tokens. See details above.`,
+      `Found ${missingTokens.length} missing tokens. \n${missingTokensMessages.join("\n")}`,
     );
   }
 

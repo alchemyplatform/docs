@@ -52,14 +52,14 @@ export const writeOpenRpcDoc = (
 ) =>
   writeFileSync(`${outputDir}/${filename}.json`, JSON.stringify(spec, null, 2));
 
-export interface ErrorGroup {
+export interface DerefErrorGroup {
   stack: string;
   name: string;
   message: string;
-  errors: ErrorElement[];
+  errors: DerefError[];
 }
 
-export interface ErrorElement {
+interface DerefError {
   stack: string;
   code: string;
   name: string;
@@ -74,22 +74,20 @@ export interface ErrorElement {
 }
 
 /**
- * Handles dereferencing errors and collects missing tokens in a list
+ * Collects missing tokens and generation errors in a list
  */
 export const handleDerefErrors = (
   err: unknown,
   api: string,
   missingTokens: string[],
+  genErrors: unknown[],
 ) => {
-  const errorGroup = err as ErrorGroup;
-  if (errorGroup.errors) {
-    errorGroup.errors.forEach((error) => {
-      if (error.code === "EMISSINGPOINTER") {
-        missingTokens.push(`${api}: ${error.targetToken}`);
-      } else {
-        console.error(`Error dereferencing ${api}:`, errorGroup.errors);
-        throw err;
-      }
-    });
-  }
+  const errorGroup = err as DerefErrorGroup;
+  errorGroup.errors.forEach((error) => {
+    if (error.code === "EMISSINGPOINTER") {
+      missingTokens.push(`${api}: ${error.targetToken}`);
+    } else {
+      genErrors.push(error);
+    }
+  });
 };
