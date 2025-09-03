@@ -51,3 +51,45 @@ export const writeOpenRpcDoc = (
   spec: OpenrpcDocument,
 ) =>
   writeFileSync(`${outputDir}/${filename}.json`, JSON.stringify(spec, null, 2));
+
+export interface ErrorGroup {
+  stack: string;
+  name: string;
+  message: string;
+  errors: ErrorElement[];
+}
+
+export interface ErrorElement {
+  stack: string;
+  code: string;
+  name: string;
+  message: string;
+  source: string;
+  path: string[];
+  targetToken: string;
+  targetRef: string;
+  targetFound: string;
+  parentPath: string;
+  footprint: string;
+}
+
+/**
+ * Handles dereferencing errors and collects missing tokens in a list
+ */
+export const handleDerefErrors = (
+  err: unknown,
+  api: string,
+  missingTokens: string[],
+) => {
+  const errorGroup = err as ErrorGroup;
+  if (errorGroup.errors) {
+    errorGroup.errors.forEach((error) => {
+      if (error.code === "EMISSINGPOINTER") {
+        missingTokens.push(`${api}: ${error.targetToken}`);
+      } else {
+        console.error(`Error dereferencing ${api}:`, errorGroup.errors);
+        throw err;
+      }
+    });
+  }
+};
