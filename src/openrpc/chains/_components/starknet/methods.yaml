@@ -950,3 +950,290 @@ components:
             required:
               - transaction_trace
               - fee_estimation
+
+    # Pathfinder extension methods
+    pathfinder_getTransactionStatus:
+      name: pathfinder_getTransactionStatus
+      description: Returns a Pathfinder-style overall transaction status string for the given transaction hash.
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the requested transaction
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        description: Overall status of the transaction
+        schema:
+          type: string
+          enum:
+            - NOT_RECEIVED
+            - RECEIVED
+            - PENDING
+            - REJECTED
+            - ACCEPTED_ON_L1
+            - ACCEPTED_ON_L2
+            - REVERTED
+            - ABORTED
+
+    pathfinder_lastL1AcceptedBlockHashAndNumber:
+      name: pathfinder_lastL1AcceptedBlockHashAndNumber
+      description: Get the most recent block hash and number whose state is accepted on L1
+      params: []
+      result:
+        name: result
+        description: The latest L1-accepted block hash and number
+        schema:
+          title: L1-accepted block hash and number
+          type: object
+          properties:
+            block_hash:
+              title: Block hash
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_HASH"
+            block_number:
+              title: Block number
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_NUMBER"
+          required:
+            - block_hash
+            - block_number
+
+    starknet_getCompiledCasm:
+      name: starknet_getCompiledCasm
+      description: Get the Cairo assembly (CASM) compiled contract class for the given class hash
+      paramStructure: by-name
+      params:
+        - name: class_hash
+          description: The Sierra class hash whose compiled CASM will be returned
+          required: true
+          schema:
+            title: Field element
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+      result:
+        name: result
+        description: The compiled contract class in CASM format
+        schema:
+          title: CASM compiled contract class
+          type: object
+          properties:
+            sierra_program_hash:
+              title: Sierra program hash
+              description: The hash of the Sierra program from which this CASM was compiled
+              $ref: "./base-types.yaml#/components/schemas/FELT"
+            bytecode:
+              title: CASM bytecode
+              description: CASM program bytecode encoded as field elements
+              type: array
+              items:
+                $ref: "./base-types.yaml#/components/schemas/FELT"
+            entry_points_by_type:
+              title: Entry points by type
+              type: object
+              properties:
+                EXTERNAL:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      selector:
+                        $ref: "./base-types.yaml#/components/schemas/FELT"
+                      offset:
+                        type: integer
+                        minimum: 0
+                    required: [selector, offset]
+                L1_HANDLER:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      selector:
+                        $ref: "./base-types.yaml#/components/schemas/FELT"
+                      offset:
+                        type: integer
+                        minimum: 0
+                    required: [selector, offset]
+                CONSTRUCTOR:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      selector:
+                        $ref: "./base-types.yaml#/components/schemas/FELT"
+                      offset:
+                        type: integer
+                        minimum: 0
+                    required: [selector, offset]
+              required: [EXTERNAL, L1_HANDLER, CONSTRUCTOR]
+            compiler_version:
+              title: Compiler version
+              description: Version string of the Cairo compiler used to produce this CASM
+              type: string
+          required:
+            - sierra_program_hash
+            - bytecode
+            - entry_points_by_type
+
+    starknet_getMessagesStatus:
+      name: starknet_getMessagesStatus
+      description: Return statuses for L1↔L2 messages identified by message hashes and/or related transaction hashes
+      paramStructure: by-name
+      params:
+        - name: filter
+          description: Identify messages to query
+          required: true
+          schema:
+            title: Messages status filter
+            type: object
+            properties:
+              message_hashes:
+                title: Message hashes
+                type: array
+                items:
+                  $ref: "./base-types.yaml#/components/schemas/FELT"
+              l1_transaction_hash:
+                title: L1 transaction hash
+                type: string
+                description: Ethereum transaction hash that emitted one or more L1→L2 messages (0x-prefixed hex)
+              l2_transaction_hash:
+                title: L2 transaction hash
+                $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+            oneOf:
+              - required: [message_hashes]
+              - required: [l1_transaction_hash]
+              - required: [l2_transaction_hash]
+      result:
+        name: result
+        description: Message statuses for the requested identifiers
+        schema:
+          title: MessagesStatus
+          type: object
+          properties:
+            statuses:
+              type: array
+              items:
+                type: object
+                properties:
+                  message_hash:
+                    $ref: "./base-types.yaml#/components/schemas/FELT"
+                  direction:
+                    type: string
+                    enum: [L1_TO_L2, L2_TO_L1]
+                  status:
+                    type: string
+                    description: The status of the message
+                    enum:
+                      - UNKNOWN
+                      - SENT
+                      - RECEIVED
+                      - REJECTED
+                  l1_transaction_hash:
+                    type: string
+                    description: Ethereum transaction hash if known (0x-prefixed hex)
+                  l2_transaction_hash:
+                    $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+                required:
+                  - message_hash
+                  - direction
+                  - status
+
+    starknet_getStorageProof:
+      name: starknet_getStorageProof
+      description: Returns Merkle inclusion proofs for selected elements of the Starknet state at a given block
+      paramStructure: by-name
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: class_hashes
+          description: Class hashes to prove inclusion in the classes trie
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "./base-types.yaml#/components/schemas/FELT"
+        - name: contract_addresses
+          description: Contract addresses to prove inclusion in the contracts trie
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+        - name: contracts_storage_keys
+          description: Storage keys to prove for specific contracts
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                contract_address:
+                  $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+                storage_keys:
+                  type: array
+                  items:
+                    $ref: "./base-types.yaml#/components/schemas/STORAGE_KEY"
+              required:
+                - contract_address
+                - storage_keys
+      result:
+        name: result
+        description: Inclusion proofs for requested state elements at the given block
+        schema:
+          title: StorageProof
+          type: object
+          properties:
+            classes_proof:
+              description: Proofs for requested class hashes (if any)
+              type: array
+              items:
+                type: object
+                properties:
+                  class_hash:
+                    $ref: "./base-types.yaml#/components/schemas/FELT"
+                  proof:
+                    description: Merkle path nodes (top→bottom)
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - class_hash
+                  - proof
+            contracts_proof:
+              description: Proofs for requested contract addresses (if any)
+              type: array
+              items:
+                type: object
+                properties:
+                  contract_address:
+                    $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+                  proof:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - contract_address
+                  - proof
+            storage_proofs:
+              description: Proofs for requested (contract, storage_key) pairs (if any)
+              type: array
+              items:
+                type: object
+                properties:
+                  contract_address:
+                    $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+                  storage_key:
+                    $ref: "./base-types.yaml#/components/schemas/STORAGE_KEY"
+                  proof:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - contract_address
+                  - storage_key
+                  - proof
