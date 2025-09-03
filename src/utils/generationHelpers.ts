@@ -85,7 +85,9 @@ export const handleDerefErrors = (
   const errorGroup = err as DerefErrorGroup;
   errorGroup.errors.forEach((error) => {
     if (error.code === "EMISSINGPOINTER") {
-      missingTokens.push(`${api}: ${error.targetToken}`);
+      missingTokens.push(
+        `token: ${error.targetToken}\n    api: ${api}\n    source: ${error.source}`,
+      );
     } else {
       genErrors.push(error);
     }
