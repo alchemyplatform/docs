@@ -17,9 +17,7 @@ components:
             block_number:
               title: Block number
               $ref: "./base-types.yaml#/components/schemas/BLOCK_NUMBER"
-          required:
-            - block_hash
-            - block_number
+          required: [block_hash, block_number]
 
     starknet_blockNumber:
       name: starknet_blockNumber
@@ -172,8 +170,8 @@ components:
         Estimates the resources required by a given sequence of transactions when
         applied on a given state. If one of the transactions reverts or fails due
         to any reason (e.g., validation failure or an internal error), a
-        TRANSACTION_EXECUTION_ERROR is returned. For v0-2 transactions the estimate
-        is given in wei, and for v3 transactions it is given in fri.
+        TRANSACTION_EXECUTION_ERROR is returned. Fees for account transactions
+        are expressed in fri.
       params:
         - name: request
           description: The transaction to estimate
@@ -434,8 +432,7 @@ components:
                 transaction_hash:
                   title: transaction hash
                   $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
-              required:
-                - transaction_hash
+              required: [transaction_hash]
 
     starknet_getTransactionByHash:
       name: starknet_getTransactionByHash
@@ -459,8 +456,7 @@ components:
                 transaction_hash:
                   title: transaction hash
                   $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
-              required:
-                - transaction_hash
+              required: [transaction_hash]
 
     starknet_getTransactionReceipt:
       name: starknet_getTransactionReceipt
@@ -503,9 +499,7 @@ components:
             class_hash:
               title: Class hash
               $ref: "./base-types.yaml#/components/schemas/FELT"
-          required:
-            - transaction_hash
-            - class_hash
+          required: [transaction_hash, class_hash]
 
     starknet_pendingTransactions:
       name: starknet_pendingTransactions
@@ -545,13 +539,11 @@ components:
             contract_address:
               title: Contract address
               $ref: "./base-types.yaml#/components/schemas/FELT"
-          required:
-            - transaction_hash
-            - contract_address
+          required: [transaction_hash, contract_address]
 
     starknet_addInvokeTransaction:
       name: starknet_addInvokeTransaction
-      description: Submits an invoke transaction to the Starknet network. This can include either invoking a smart contract function or an account call (in version 1).
+      description: Submits an invoke transaction to the Starknet network to execute smart contract functions.
       paramStructure: by-name
       params:
         - name: invoke_transaction
@@ -571,8 +563,7 @@ components:
               title: Transaction hash
               description: The hash of the invoke transaction
               $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
-          required:
-            - transaction_hash
+          required: [transaction_hash]
 
     starknet_estimateMessageFee:
       name: starknet_estimateMessageFee
@@ -599,11 +590,7 @@ components:
               payload:
                 type: array
                 description: The payload of the message
-            required:
-              - from_address
-              - to_address
-              - entry_point_selector
-              - payload
+            required: [from_address, to_address, entry_point_selector, payload]
         - name: block_id
           description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
           required: true
@@ -714,59 +701,11 @@ components:
                   type: object
                   oneOf:
                     - type: object
-                      title: INVOKE_TXN_V0
-                      properties:
-                        type:
-                          type: string
-                          description: The type of declare. It can take only one value - 'INVOKE'
-                        max_fee:
-                          type: string
-                          description: The maximal fee that can be charged for including the transaction
-                        version:
-                          type: string
-                          description: The version of the transaction scheme
-                        signature:
-                          type: string
-                          description: The signature associated with the transaction
-                        contract_address:
-                          type: string
-                          description: The address of the contract
-                        entry_point_selector:
-                          type: string
-                          description: The entry point selector
-                        calldata:
-                          type: array
-                          description: The parameters passed to the constructor
-                    - type: object
-                      title: INVOKE_TXN_V1
-                      properties:
-                        type:
-                          type: string
-                          description: The type of declare. It can take only one value - 'INVOKE'
-                        sender_address:
-                          type: string
-                          description: The sender address
-                        calldata:
-                          type: array
-                          description: The parameters passed to the constructor
-                        max_fee:
-                          type: string
-                          description: The maximal fee that can be charged for including the transaction
-                        version:
-                          type: string
-                          description: The version of the transaction scheme
-                        signature:
-                          type: string
-                          description: The signature associated with the transaction
-                        nonce:
-                          type: string
-                          description: The nonce value
-                    - type: object
                       title: INVOKE_TXN_V3
                       properties:
                         type:
                           type: string
-                          description: The type of declare. It can take only one value - 'INVOKE'
+                          description: The type of transaction. It can take only one value - 'INVOKE'
                         sender_address:
                           type: string
                           description: The sender address
@@ -790,21 +729,29 @@ components:
                               description: The max amount and max price per unit of L1 gas used in this tx
                               properties:
                                 max_amount:
-                                  type: string
-                                  description: The max amount of the resource that can be used in the tx
+                                  {
+                                    type: string,
+                                    description: The max amount of the resource that can be used in the tx,
+                                  }
                                 max_price_per_unit:
-                                  type: string
-                                  description: The max price per unit of this resource for this tx
+                                  {
+                                    type: string,
+                                    description: The max price per unit of this resource for this tx,
+                                  }
                             l2_gas:
                               type: object
                               description: The max amount and max price per unit of L2 gas used in this tx
                               properties:
                                 max_amount:
-                                  type: string
-                                  description: The max amount of the resource that can be used in the tx
+                                  {
+                                    type: string,
+                                    description: The max amount of the resource that can be used in the tx,
+                                  }
                                 max_price_per_unit:
-                                  type: string
-                                  description: The max price per unit of this resource for this tx
+                                  {
+                                    type: string,
+                                    description: The max price per unit of this resource for this tx,
+                                  }
                         tip:
                           type: string
                           description: The tip for the transaction
@@ -820,6 +767,110 @@ components:
                         fee_data_availability_mode:
                           type: string
                           description: The storage domain of the account's balance from which fee will be charged. It can be one of 'L1' or 'L2'
+                    - type: object
+                      title: DECLARE_TXN_V3
+                      properties:
+                        type:
+                          type: string
+                          description: The type of transaction. It can take only one value - 'DECLARE'
+                        sender_address:
+                          type: string
+                          description: The address of the account contract sending the declaration transaction
+                        compiled_class_hash:
+                          type: string
+                          description: The hash of the Cairo assembly resulting from the Sierra compilation
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        nonce:
+                          type: string
+                          description: The nonce value
+                        class_hash:
+                          type: string
+                          description: The hash of the declared class
+                        resource_bounds:
+                          type: object
+                          properties:
+                            l1_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                            l2_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                        tip:
+                          type: string
+                          description: The tip for the transaction
+                        paymaster_data:
+                          type: array
+                          description: Data needed to allow the paymaster to pay for the transaction in native tokens
+                        account_deployment_data:
+                          type: array
+                          description: Data needed to deploy the account contract from which this transaction will be initiated
+                        nonce_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's nonce. It can be one of 'L1' or 'L2'
+                        fee_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's balance from which the fee will be charged. It can be one of 'L1' or 'L2'
+                    - type: object
+                      title: DEPLOY_ACCOUNT_TXN_V3
+                      properties:
+                        type:
+                          type: string
+                          description: The type of transaction. It can take only one value - 'DEPLOY_ACCOUNT'
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        nonce:
+                          type: string
+                          description: The nonce value
+                        contract_address_salt:
+                          type: string
+                          description: The salt for the address of the deployed contract
+                        constructor_calldata:
+                          type: array
+                          description: The parameters passed to the constructor
+                        class_hash:
+                          type: string
+                          description: The hash of the deployed contract's class
+                        resource_bounds:
+                          type: object
+                          properties:
+                            l1_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                            l2_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                        tip:
+                          type: string
+                          description: The tip for the transaction
+                        paymaster_data:
+                          type: array
+                          description: Data needed to allow the paymaster to pay for the transaction in native tokens
+                        account_deployment_data:
+                          type: array
+                          description: Data needed to deploy the account contract from which this transaction will be initiated
+                        nonce_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's nonce. It can be one of 'L1' or 'L2'
+                        fee_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's balance from which the fee will be charged. It can be one of 'L1' or 'L2'
 
     starknet_traceBlockTransactions:
       name: starknet_traceBlockTransactions
@@ -848,9 +899,7 @@ components:
               trace_root:
                 title: Trace root
                 $ref: "./transaction.yaml#/components/schemas/BROADCASTED_INVOKE_TXN"
-            required:
-              - transaction_hash
-              - trace_root
+            required: [transaction_hash, trace_root]
 
     starknet_specVersion:
       name: starknet_specVersion
@@ -884,20 +933,12 @@ components:
             finality_status:
               type: string
               description: The finality status of the transaction, including the case the txn is still in the mempool or failed validation during the block construction phase
-              enum:
-                - RECEIVED
-                - REJECTED
-                - ACCEPTED_ON_L2
-                - ACCEPTED_ON_L1
+              enum: [RECEIVED, REJECTED, ACCEPTED_ON_L2, ACCEPTED_ON_L1]
             execution_status:
               type: string
               description: The execution status of the transaction
-              enum:
-                - SUCCEEDED
-                - REVERTED
-          required:
-            - finality_status
-            - execution_status
+              enum: [SUCCEEDED, REVERTED]
+          required: [finality_status, execution_status]
 
     starknet_simulateTransactions:
       name: starknet_simulateTransactions
@@ -923,9 +964,7 @@ components:
             type: array
             items:
               type: string
-              enum:
-                - SKIP_VALIDATE
-                - SKIP_FEE_CHARGE
+              enum: [SKIP_VALIDATE, SKIP_FEE_CHARGE]
       result:
         name: result
         description: A sequence of transaction simulation results
@@ -941,15 +980,10 @@ components:
                 type: object
                 description: An estimate of the fee required for the network to process the transaction
                 properties:
-                  gas_price:
-                    type: integer
-                  gas_usage:
-                    type: integer
-                  overall_fee:
-                    type: integer
-            required:
-              - transaction_trace
-              - fee_estimation
+                  gas_price: { type: integer }
+                  gas_usage: { type: integer }
+                  overall_fee: { type: integer }
+            required: [transaction_trace, fee_estimation]
 
     # Pathfinder extension methods
     pathfinder_getTransactionStatus:
@@ -969,14 +1003,16 @@ components:
         schema:
           type: string
           enum:
-            - NOT_RECEIVED
-            - RECEIVED
-            - PENDING
-            - REJECTED
-            - ACCEPTED_ON_L1
-            - ACCEPTED_ON_L2
-            - REVERTED
-            - ABORTED
+            [
+              NOT_RECEIVED,
+              RECEIVED,
+              PENDING,
+              REJECTED,
+              ACCEPTED_ON_L1,
+              ACCEPTED_ON_L2,
+              REVERTED,
+              ABORTED,
+            ]
 
     pathfinder_lastL1AcceptedBlockHashAndNumber:
       name: pathfinder_lastL1AcceptedBlockHashAndNumber
@@ -995,9 +1031,7 @@ components:
             block_number:
               title: Block number
               $ref: "./base-types.yaml#/components/schemas/BLOCK_NUMBER"
-          required:
-            - block_hash
-            - block_number
+          required: [block_hash, block_number]
 
     starknet_getCompiledCasm:
       name: starknet_getCompiledCasm
@@ -1069,10 +1103,7 @@ components:
               title: Compiler version
               description: Version string of the Cairo compiler used to produce this CASM
               type: string
-          required:
-            - sierra_program_hash
-            - bytecode
-            - entry_points_by_type
+          required: [sierra_program_hash, bytecode, entry_points_by_type]
 
     starknet_getMessagesStatus:
       name: starknet_getMessagesStatus
@@ -1122,20 +1153,13 @@ components:
                   status:
                     type: string
                     description: The status of the message
-                    enum:
-                      - UNKNOWN
-                      - SENT
-                      - RECEIVED
-                      - REJECTED
+                    enum: [UNKNOWN, SENT, RECEIVED, REJECTED]
                   l1_transaction_hash:
                     type: string
                     description: Ethereum transaction hash if known (0x-prefixed hex)
                   l2_transaction_hash:
                     $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
-                required:
-                  - message_hash
-                  - direction
-                  - status
+                required: [message_hash, direction, status]
 
     starknet_getStorageProof:
       name: starknet_getStorageProof
@@ -1178,9 +1202,7 @@ components:
                   type: array
                   items:
                     $ref: "./base-types.yaml#/components/schemas/STORAGE_KEY"
-              required:
-                - contract_address
-                - storage_keys
+              required: [contract_address, storage_keys]
       result:
         name: result
         description: Inclusion proofs for requested state elements at the given block
@@ -1201,9 +1223,7 @@ components:
                     type: array
                     items:
                       type: string
-                required:
-                  - class_hash
-                  - proof
+                required: [class_hash, proof]
             contracts_proof:
               description: Proofs for requested contract addresses (if any)
               type: array
@@ -1216,9 +1236,7 @@ components:
                     type: array
                     items:
                       type: string
-                required:
-                  - contract_address
-                  - proof
+                required: [contract_address, proof]
             storage_proofs:
               description: Proofs for requested (contract, storage_key) pairs (if any)
               type: array
@@ -1233,7 +1251,4 @@ components:
                     type: array
                     items:
                       type: string
-                required:
-                  - contract_address
-                  - storage_key
-                  - proof
+                required: [contract_address, storage_key, proof]
