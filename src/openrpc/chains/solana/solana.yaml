@@ -13,17 +13,7 @@ servers:
     name: Solana Devnet
 methods:
   - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/alchemy_getProgramAccounts
-  - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/alchemy_getTokenAccountsByDelegate
-  - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/alchemy_getTokenAccountsByOwner
-  - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/alchemy_getTokenLargestAccounts
-  - $ref: >-
       ../_components/solana/methods.yaml#/components/methods/alchemy_requestFeePayer
-  - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/get_solana_token_metadata
   - $ref: ../_components/solana/methods.yaml#/components/methods/getAccountInfo
   - $ref: ../_components/solana/methods.yaml#/components/methods/getBalance
   - $ref: ../_components/solana/methods.yaml#/components/methods/getBlock
@@ -70,29 +60,129 @@ methods:
   - $ref: ../_components/solana/methods.yaml#/components/methods/getSlot
   - $ref: ../_components/solana/methods.yaml#/components/methods/getSlotLeader
   - $ref: ../_components/solana/methods.yaml#/components/methods/getSlotLeaders
-  - $ref: ../_components/solana/methods.yaml#/components/methods/getStakeActivation
   - $ref: ../_components/solana/methods.yaml#/components/methods/getSupply
   - $ref: >-
       ../_components/solana/methods.yaml#/components/methods/getTokenAccountBalance
-  - $ref: ../_components/solana/methods.yaml#/components/methods/getTokenAccounts
-  - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/getTokenAccountsByDelegate
   - $ref: >-
       ../_components/solana/methods.yaml#/components/methods/getTokenAccountsByOwner
-  - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/getTokenLargestAccounts
   - $ref: ../_components/solana/methods.yaml#/components/methods/getTokenSupply
   - $ref: ../_components/solana/methods.yaml#/components/methods/getTransaction
-  - $ref: ../_components/solana/methods.yaml#/components/methods/getTransactionCount
   - $ref: ../_components/solana/methods.yaml#/components/methods/getVersion
   - $ref: ../_components/solana/methods.yaml#/components/methods/getVoteAccounts
   - $ref: ../_components/solana/methods.yaml#/components/methods/isBlockhashValid
   - $ref: ../_components/solana/methods.yaml#/components/methods/minimumLedgerSlot
   - $ref: ../_components/solana/methods.yaml#/components/methods/requestAirdrop
-  - $ref: >-
-      ../_components/solana/methods.yaml#/components/methods/sendStakedTransaction
   - $ref: ../_components/solana/methods.yaml#/components/methods/sendTransaction
   - $ref: ../_components/solana/methods.yaml#/components/methods/simulateTransaction
+  - name: getTokenAccountsByDelegate
+    description: Returns all SPL Token accounts delegated to the provided account.
+    params:
+      - name: Delegate Pubkey
+        required: true
+        description: The Pubkey of the account delegate to query.
+        schema:
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
+      - name: Token filter
+        required: false
+        description: >-
+          A filter object containing either the Mint Pubkey or the Token program
+          Pubkey.
+        schema:
+          type: object
+          properties:
+            mint:
+              $ref: ./components/base-types.yaml#/components/schemas/Pubkey
+              description: The Pubkey of the specific token Mint to limit accounts to.
+            programId:
+              $ref: ./components/base-types.yaml#/components/schemas/Pubkey
+              description: The Pubkey of the Token program that owns the accounts.
+      - name: Configuration
+        required: false
+        description: Optional configuration object containing additional settings.
+        schema:
+          $ref: >-
+            ./components/account.yaml#/components/schemas/GetTokenAccountsByDelegateConfig
+    examples:
+      - name: getTokenAccountsByDelegate example
+        params:
+          - name: Delegate Pubkey
+            value: 4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T
+          - name: Token filter
+            value:
+              programId: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+    result:
+      name: Token accounts
+      description: >-
+        An array of JSON objects representing the token accounts delegated to
+        the specified Pubkey.
+      schema:
+        type: array
+        items:
+          $ref: ./components/account.yaml#/components/schemas/TokenAccount
+  - name: getTokenLargestAccounts
+    description: Returns the 20 largest accounts of a particular SPL Token type.
+    params:
+      - name: Token Mint Pubkey
+        required: true
+        description: The Pubkey of the token Mint to query.
+        schema:
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
+      - name: Configuration
+        required: false
+        description: Optional configuration object.
+        schema:
+          $ref: >-
+            ./components/account.yaml#/components/schemas/GetTokenLargestAccountsConfig
+    examples:
+      - name: getTokenLargestAccounts example
+        params:
+          - name: Token Mint Pubkey
+            value: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+    result:
+      name: Largest token accounts
+      description: An array of the 20 largest accounts of the specified token type.
+      schema:
+        $ref: ./components/account.yaml#/components/schemas/TokenLargestAccountsList
+  - name: getStakeActivation
+    description: Returns epoch activation information for a stake account.
+    params:
+      - name: Stake account Pubkey
+        required: true
+        description: Pubkey of the stake account to query.
+        schema:
+          $ref: ./components/base-types.yaml#/components/schemas/Pubkey
+      - name: Configuration
+        required: false
+        description: Optional configuration object.
+        schema:
+          $ref: ./components/account.yaml#/components/schemas/StakeActivationConfig
+    examples:
+      - name: getStakeActivation example
+        params:
+          - name: Stake account Pubkey
+            value: CYRJWqiSjLitBAcRxPvWpgX3s5TvmN2SuRY3eEYypFvT
+    result:
+      name: Stake activation info
+      description: Returns epoch activation information for the stake account.
+      schema:
+        $ref: ./components/account.yaml#/components/schemas/StakeActivation
+  - name: getTransactionCount
+    description: Returns the current transaction count from the ledger.
+    params:
+      - name: Configuration
+        required: false
+        description: Optional configuration object.
+        schema:
+          $ref: >-
+            ./components/state.yaml#/components/schemas/GetTransactionCountConfig
+    examples:
+      - name: getTransactionCount example
+        params: []
+    result:
+      name: Transaction count
+      description: The current transaction count from the ledger.
+      schema:
+        $ref: ./components/state.yaml#/components/schemas/TransactionCount
 x-bot-ignore:
   - getAsset
   - getAssetProof
@@ -112,3 +202,7 @@ x-bot-ignore:
   - getTokenAccountsByDelegate
   - getTransactionCount
   - getTokenLargestAccounts
+  - alchemy_getProgramAccounts
+  - alchemy_getTokenAccountsByDelegate
+  - alchemy_getTokenLargestAccounts
+  - sendStakedTransaction
