@@ -7,6 +7,364 @@ hide-feedback: true
 
 import { AlchemyFooter } from "../components/Footer.tsx";
 
+<style jsx>{`
+  :root {
+    --light-mode-text-color: 56, 56, 56;
+    --dark-mode-text-color: 237, 237, 237;
+    overflow-x: hidden;
+  }
+
+  /* Hide anchor links and arrows on links */
+  [data-radix-popper-content-wrapper]:has(span[id^="radix-"]),
+  .fern-mdx-link svg.external-link-icon {
+    display: none !important;
+  }
+
+  .fern-mdx-link {
+    text-decoration: none !important;
+  }
+
+  /* Layout containers */
+  .homepage-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 100px;
+    margin-bottom: 0;
+    z-index: 2;
+    position: relative;
+    background-color: var(--background);
+    font-family: "Inter", sans-serif;
+
+    @media (min-width: 1024px) {
+      padding-top: 48px;
+    }
+
+    @media (max-width: 768px) {
+      padding: 0 24px;
+
+      .build-anything-onchain {
+        font-size: 24px;
+      }
+    }
+
+    h2 {
+      font-size: 36px;
+      font-weight: 500;
+    }
+
+    h3 {
+      font-size: 24px;
+      font-weight: 500;
+    }
+  }
+
+  .products,
+  .use-cases,
+  .footer {
+    max-width: 1010px;
+    padding: 0 24px;
+  }
+
+  @media (max-width: 768px) {
+    .products,
+    .use-cases {
+      flex-direction: column-reverse;
+      align-items: center;
+      width: 100%;
+      gap: 50px;
+      padding: 24px 0;
+    }
+
+    .footer {
+      flex-direction: column-reverse;
+      align-items: center;
+      gap: 50px;
+      padding: 24px 16px;
+      width: 100%;
+    }
+  }
+
+  .homepage-code-block {
+    max-width: 1010px;
+    padding: 0 24px;
+    width: 100%;
+    margin: 80px 0;
+
+    @media (max-width: 768px) {
+      display: none !important;
+    }
+  }
+
+  .description {
+    font-size: 16px;
+    font-weight: 400;
+    color: #111;
+    margin: 8px 0;
+  }
+
+  .cta {
+    font-size: 14px;
+    font-weight: 500;
+
+    svg {
+      margin-left: 4px !important;
+      height: 12px !important;
+      width: 12px !important;
+    }
+  }
+
+  .text-body {
+    color: black !important;
+  }
+
+  .use-cases .text-body {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+
+  .footer .text-body {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+
+  :is(.dark) .description,
+  :is(.dark) .text-body,
+  :is(.dark) .use-cases .text-body {
+    color: rgb(var(--dark-mode-text-color)) !important;
+  }
+
+  :is(.dark) .cta .fern-mdx-link,
+  :is(.dark) .cta .fern-mdx-link .fern-mdx-icon {
+    color: rgb(var(--dark-mode-text-color)) !important;
+  }
+
+  :is(.light) .cta .fern-mdx-link,
+  :is(.light) .cta .fern-mdx-link .fern-mdx-icon {
+    color: rgb(var(--light-mode-text-color)) !important;
+  }
+
+  :is(.dark) .cta .fern-mdx-link:hover,
+  :is(.dark) .cta .fern-mdx-link:hover .fern-mdx-icon,
+  :is(.light) .cta .fern-mdx-link:hover,
+  :is(.light) .cta .fern-mdx-link:hover .fern-mdx-icon {
+    color: #5167ff !important;
+  }
+
+  .arrow,
+  .circle,
+  .star,
+  .diamond {
+    background: black;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  .arrow {
+    width: 14px;
+    height: 12px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='14' height='12' viewBox='0 0 14 12' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 0L9.77128 6.4L13.9282 12L7 11.2L0.0717969 12L4.22872 6.4L7 0Z'/%3E%3C/svg%3E%0A");
+    mask-image: url("data:image/svg+xml,%3Csvg width='14' height='12' viewBox='0 0 14 12' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 0L9.77128 6.4L13.9282 12L7 11.2L0.0717969 12L4.22872 6.4L7 0Z'/%3E%3C/svg%3E%0A");
+  }
+
+  .circle {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='8' fill='%2300BBFF'/%3E%3C/svg%3E%0A");
+    mask-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='8' fill='%2300BBFF'/%3E%3C/svg%3E%0A");
+  }
+
+  .star {
+    width: 14px;
+    height: 16px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='14' height='16' viewBox='0 0 14 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 0L8.52786 5.35366L13.9282 4L10.0557 8L13.9282 12L8.52786 10.6463L7 16L5.47214 10.6463L0.0717969 12L3.94427 8L0.0717969 4L5.47214 5.35366L7 0Z' fill='%23F99436'/%3E%3C/svg%3E%0A");
+    mask-image: url("data:image/svg+xml,%3Csvg width='14' height='16' viewBox='0 0 14 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 0L8.52786 5.35366L13.9282 4L10.0557 8L13.9282 12L8.52786 10.6463L7 16L5.47214 10.6463L0.0717969 12L3.94427 8L0.0717969 4L5.47214 5.35366L7 0Z' fill='%23F99436'/%3E%3C/svg%3E%0A");
+  }
+
+  .diamond {
+    width: 17px;
+    height: 17px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='17' height='17' viewBox='0 0 17 17' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='8.48523' y='0.0294342' width='12' height='12' transform='rotate(45 8.48523 0.0294342)' fill='%23363FF9'/%3E%3C/svg%3E%0A");
+    mask-image: url("data:image/svg+xml,%3Csvg width='17' height='17' viewBox='0 0 17 17' fill='black' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='8.48523' y='0.0294342' width='12' height='12' transform='rotate(45 8.48523 0.0294342)' fill='%23363FF9'/%3E%3C/svg%3E%0A");
+  }
+
+  .use-case-card {
+    display: flex;
+    align-items: flex-start;
+    text-align: left;
+    padding: 6px 24px 6px 0;
+    gap: 24px;
+  }
+
+  .use-case-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .use-case-card-header h3 {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+
+  .use-case-icon-container {
+    min-width: 36px;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .product-card {
+    min-height: 285px !important;
+    padding: 32px !important;
+    border: var(--accent-3) 1px solid;
+    color: black !important;
+  }
+
+  .product-card .arrow,
+  .product-card .diamond,
+  .product-card .circle,
+  .product-card .star {
+    margin-bottom: 12px;
+  }
+
+  .product-card-title {
+    font-weight: 600 !important;
+    font-size: 20px !important;
+  }
+
+  .product-card-description {
+    width: 75% !important;
+    font-weight: 400;
+    font-size: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .product-card-description {
+      width: 100% !important;
+    }
+  }
+
+  :is(.dark) .product-card {
+    color: rgb(var(--dark-mode-text-color)) !important;
+    background: linear-gradient(
+        206.24deg,
+        rgba(17, 17, 17, 0.9) 24.78%,
+        #111 71.15%
+      ),
+      url(https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/star-background.svg);
+  }
+
+  .dark-blue-bg:hover {
+    box-shadow: 0 0 0.75rem 0 rgba(54, 80, 249, 0.2) !important;
+  }
+
+  .yellow-bg:hover {
+    box-shadow: 0 0 0.75rem 0 rgba(249, 148, 54, 0.2) !important;
+  }
+
+  .pink-bg:hover {
+    box-shadow: 0 0 0.75rem 0 rgba(236, 54, 249, 0.2) !important;
+  }
+
+  .light-blue-bg:hover {
+    box-shadow: 0 0 0.75rem 0 rgba(0, 187, 255, 0.2) !important;
+  }
+
+  :is(.light) .dark-blue-bg,
+  :is(.light) .yellow-bg,
+  :is(.light) .pink-bg,
+  :is(.light) .light-blue-bg {
+    background-blend-mode: color-burn;
+    background-repeat: no-repeat;
+  }
+
+  :is(.light) .dark-blue-bg {
+    background: url(https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/star-background.svg),
+      linear-gradient(
+        15deg,
+        rgba(255, 255, 255, 0.8) 40%,
+        rgba(54, 80, 249, 0.2) 100%
+      );
+  }
+
+  :is(.light) .yellow-bg {
+    background: url(https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/star-background.svg),
+      linear-gradient(
+        15deg,
+        rgba(255, 255, 255, 0.8) 40%,
+        rgba(249, 148, 54, 0.2) 100%
+      );
+  }
+
+  :is(.light) .pink-bg {
+    background: url(https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/star-background.svg),
+      linear-gradient(
+        15deg,
+        rgba(255, 255, 255, 0.8) 40%,
+        rgba(236, 54, 249, 0.2) 100%
+      );
+  }
+
+  :is(.light) .light-blue-bg {
+    background: url(https://fern-image-hosting.s3.us-east-1.amazonaws.com/alchemy/star-background.svg),
+      linear-gradient(
+        15deg,
+        rgba(255, 255, 255, 0.8) 40%,
+        rgba(0, 187, 255, 0.2) 100%
+      );
+  }
+
+  :is(.dark) .dark-blue-bg .diamond {
+    background: #3650f9;
+  }
+
+  :is(.dark) .yellow-bg .star {
+    background: #f99436;
+  }
+
+  :is(.dark) .pink-bg .arrow {
+    background: #f68eff;
+  }
+
+  :is(.dark) .light-blue-bg .circle {
+    background: #00bbf9;
+  }
+
+  .footer {
+    text-align: center;
+  }
+
+  .footer div,
+  .use-cases div {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .footer:first-child {
+    gap: 64px !important;
+  }
+
+  .footer-card {
+    border-radius: 24px !important;
+    padding: 16px;
+  }
+
+  .footer-card-arrow {
+    justify-self: center;
+    margin: 10px auto 24px;
+  }
+
+  :is(.dark) .footer-card {
+    background-color: #111;
+    border: var(--accent-3) 1px solid !important;
+  }
+
+  .guides-to-get-started {
+    margin-bottom: 36px;
+  }
+`}</style>
+
 <div className="homepage-content">
   <div className="products">
     <h2 className="build-anything-onchain" data-state="closed">Build anything onchain</h2>
