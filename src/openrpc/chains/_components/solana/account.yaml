@@ -147,3 +147,126 @@ components:
       items:
         $ref: "#/components/schemas/LargestAccount"
       description: List of the 20 largest accounts.
+    StakeActivationConfig:
+      title: StakeActivation Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        epoch:
+          type: integer
+          description: Epoch for which to calculate activation details.
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+    StakeActivation:
+      title: Stake Activation
+      type: object
+      properties:
+        state:
+          type: string
+          enum:
+            - active
+            - inactive
+            - activating
+            - deactivating
+          description: The stake account's activation state.
+        active:
+          type: integer
+          description: Stake active during the epoch.
+        inactive:
+          type: integer
+          description: Stake inactive during the epoch.
+    GetTokenAccountsByDelegateConfig:
+      title: GetTokenAccountsByDelegate Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        dataSlice:
+          $ref: "./base-types.yaml#/components/schemas/DataSlice"
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          description: Encoding format for account data.
+    GetTokenLargestAccountsConfig:
+      title: GetTokenLargestAccounts Configuration
+      type: object
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+    TokenLargestAccount:
+      title: Token Largest Account
+      type: object
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Address of the token account.
+        amount:
+          type: string
+          description: Raw amount in the account, without decimals.
+        decimals:
+          type: integer
+          description: Number of decimals configured for the token's mint.
+        uiAmount:
+          type: number
+          nullable: true
+          description: Token amount using mint-prescribed decimals. **DEPRECATED**
+        uiAmountString:
+          type: string
+          description: Token amount as a string, using mint-prescribed decimals.
+    TokenLargestAccountsList:
+      title: Token Largest Accounts List
+      type: array
+      items:
+        $ref: "#/components/schemas/TokenLargestAccount"
+      description: List of the 20 largest token accounts.
+    GetTokenAccountsConfig:
+      title: GetTokenAccounts Configuration
+      type: object
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The mint address to filter token accounts by.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The owner address to filter token accounts by.
+        programId:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The program ID to filter accounts by.
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        dataSlice:
+          $ref: "./base-types.yaml#/components/schemas/DataSlice"
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          description: Encoding format for account data.
+        limit:
+          type: integer
+          description: The maximum number of token accounts to retrieve.
+          maximum: 1000
+          default: 100
+        cursor:
+          type: string
+          description: Cursor for pagination.
+    TokenAccountsList:
+      title: Token Accounts List
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of token accounts.
+        limit:
+          type: integer
+          description: Number of token accounts returned.
+        cursor:
+          type: string
+          nullable: true
+          description: Cursor for pagination.
+        token_accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/TokenAccount"
+          description: Array of token accounts.
