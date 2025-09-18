@@ -392,9 +392,8 @@ export function createDirectoryStructure(chainName: string): {
   );
   const generatorsDir = path.join(process.cwd(), "fern", "apis", chainName);
 
-  fs.mkdirSync(chainDir, { recursive: true });
+  // Only create the quickstart directory since we're only creating quickstart and FAQ files
   fs.mkdirSync(quickstartDir, { recursive: true });
-  fs.mkdirSync(generatorsDir, { recursive: true });
 
   return { chainDir, quickstartDir, generatorsDir };
 }
@@ -408,7 +407,7 @@ export function writeChainFiles(
   },
 ): void {
   const { chainName, displayName, introText, servers } = config;
-  const { chainDir: _chainDir, quickstartDir, generatorsDir } = directories;
+  const { quickstartDir } = directories;
 
   // Create quickstart guide
   const quickstartContent = generateQuickstartMarkdown(
@@ -427,11 +426,6 @@ export function writeChainFiles(
   const faqContent = generateFaqMarkdown(displayName, chainName, introText);
   const faqPath = path.join(quickstartDir, `${chainName}-api-faq.mdx`);
   fs.writeFileSync(faqPath, faqContent);
-
-  // Create generators.yaml
-  const generatorsContent = generateGeneratorsYaml(chainName);
-  const generatorsPath = path.join(generatorsDir, "generators.yaml");
-  fs.writeFileSync(generatorsPath, generatorsContent);
 }
 
 export function checkIfChainExists(chainName: string): boolean {
