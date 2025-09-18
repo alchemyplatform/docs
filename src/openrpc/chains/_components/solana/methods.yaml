@@ -213,6 +213,10 @@ components:
           params:
             - name: slot
               value: 237158054
+            - name: Configuration
+              value:
+                encoding: "json"
+                transactionDetails: "none"
       result:
         name: Block information
         description: Returns block information or null if the block is not confirmed.
@@ -898,3 +902,116 @@ components:
         description: The details of a confirmed transaction.
         schema:
           $ref: "./transaction.yaml#/components/schemas/TransactionDetails"
+    getTokenAccountsByDelegate:
+      name: getTokenAccountsByDelegate
+      description: Returns all SPL Token accounts delegated to the provided account.
+      params:
+        - name: Delegate Pubkey
+          required: true
+          description: The Pubkey of the account delegate to query.
+          schema:
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: Token filter
+          required: false
+          description: >-
+            A filter object containing either the Mint Pubkey or the Token program
+            Pubkey.
+          schema:
+            type: object
+            properties:
+              mint:
+                $ref: ./base-types.yaml#/components/schemas/Pubkey
+                description: The Pubkey of the specific token Mint to limit accounts to.
+              programId:
+                $ref: ./base-types.yaml#/components/schemas/Pubkey
+                description: The Pubkey of the Token program that owns the accounts.
+        - name: Configuration
+          required: false
+          description: Optional configuration object containing additional settings.
+          schema:
+            $ref: >-
+              ./account.yaml#/components/schemas/GetTokenAccountsByDelegateConfig
+      examples:
+        - name: getTokenAccountsByDelegate example
+          params:
+            - name: Delegate Pubkey
+              value: 4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T
+            - name: Token filter
+              value:
+                programId: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+      result:
+        name: Token accounts
+        description: >-
+          An array of JSON objects representing the token accounts delegated to
+          the specified Pubkey.
+        schema:
+          type: array
+          items:
+            $ref: ./account.yaml#/components/schemas/TokenAccount
+    getTokenLargestAccounts:
+      name: getTokenLargestAccounts
+      description: Returns the 20 largest accounts of a particular SPL Token type.
+      params:
+        - name: Token Mint Pubkey
+          required: true
+          description: The Pubkey of the token Mint to query.
+          schema:
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: Configuration
+          required: false
+          description: Optional configuration object.
+          schema:
+            $ref: >-
+              ./account.yaml#/components/schemas/GetTokenLargestAccountsConfig
+      examples:
+        - name: getTokenLargestAccounts example
+          params:
+            - name: Token Mint Pubkey
+              value: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+      result:
+        name: Largest token accounts
+        description: An array of the 20 largest accounts of the specified token type.
+        schema:
+          $ref: ./account.yaml#/components/schemas/TokenLargestAccountsList
+    getStakeActivation:
+      name: getStakeActivation
+      description: Returns epoch activation information for a stake account.
+      params:
+        - name: Stake account Pubkey
+          required: true
+          description: Pubkey of the stake account to query.
+          schema:
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: Configuration
+          required: false
+          description: Optional configuration object.
+          schema:
+            $ref: ./account.yaml#/components/schemas/StakeActivationConfig
+      examples:
+        - name: getStakeActivation example
+          params:
+            - name: Stake account Pubkey
+              value: CYRJWqiSjLitBAcRxPvWpgX3s5TvmN2SuRY3eEYypFvT
+      result:
+        name: Stake activation info
+        description: Returns epoch activation information for the stake account.
+        schema:
+          $ref: ./account.yaml#/components/schemas/StakeActivation
+    getTransactionCount:
+      name: getTransactionCount
+      description: Returns the current transaction count from the ledger.
+      params:
+        - name: Configuration
+          required: false
+          description: Optional configuration object.
+          schema:
+            $ref: >-
+              ./state.yaml#/components/schemas/GetTransactionCountConfig
+      examples:
+        - name: getTransactionCount example
+          params: []
+      result:
+        name: Transaction count
+        description: The current transaction count from the ledger.
+        schema:
+          $ref: ./state.yaml#/components/schemas/TransactionCount
