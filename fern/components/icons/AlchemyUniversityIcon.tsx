@@ -5,7 +5,10 @@ const AlchemyUniversityIcon = () => (
     height="16"
     viewBox="0 0 16 16"
     fill="none"
+    role="img"
+    aria-label="Alchemy University Icon"
   >
+    <title>Alchemy University Icon</title>
     <path
       d="M14.8223 13.4397V2.00037L12.3848 2V3.07335H13.4866V12.3663H12.3848V13.4397H14.8223Z"
       fill="currentColor"
