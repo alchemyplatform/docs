@@ -1,0 +1,114 @@
+---
+title: Set up Alchemy with Viem
+description: Learn how to send a blockchain request via a script using Alchemy.
+subtitle: Learn how to send a blockchain request via a script using Alchemy.
+url: https://docs.alchemy.com/docs/set-up-alchemy-with-viem
+slug: docs/set-up-alchemy-with-viem
+---
+
+> 👋 **Don't have an API Key?** [Start here](/docs/create-an-api-key) before setting up your project!
+
+### What is Viem?
+
+Viem is a set of modules, which you can use in JavaScript or Typescript, helping you interface with Ethereum or Ethereum Virtual Machine (EVM) chains.
+
+You will use it in this guide, configuring it with your Alchemy API URL, so you can read and write to the blockchain of your choice.
+
+If you're new to viem, check out [our 60 minute video diving into it](https://youtu.be/P9oUqVsHBkA) and the [viem docs](https://viem.sh/docs/introduction) are a great place to start as well!
+
+Let's get started!
+
+### 🔧 Prerequisites
+
+1. **Node.js**
+   * Required to run JavaScript/TypeScript outside the browser.
+   * Install **Node.js 18 or later** (viem requires modern Node features).
+   * Download from: [https://nodejs.org/](https://nodejs.org/)
+
+2. **npm** (comes with Node.js)
+   * Default package manager bundled with Node.
+   * Automatically installed when you install Node.js.
+
+<Steps>
+  <Step title="Project Setup and Installation">
+    From your [command line](https://www.computerhope.com/jargon/c/commandi.htm), create a new project directory and install Viem:
+
+    <CodeGroup>
+      ```shell npm
+      # Create and enter project directory
+      mkdir project && cd project
+      # Initialize a new Node.js project
+      npm init -y
+      # Install viem
+      npm install viem
+      ```
+
+      ```shell pnpm
+      # Create and enter project directory
+      mkdir project && cd project
+      # Initialize a new Node.js project
+      pnpm init
+      # Install viem
+      pnpm add viem
+      ```
+
+      ```shell yarn
+      # Create and enter project directory
+      mkdir project && cd project
+      # Initialize a new Node.js project
+      yarn init -y
+      # Install viem
+      yarn add viem
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Create Script">
+    Create a file named `index.js` and add the following contents, replacing `demo` with your Alchemy API Key:
+
+    <CodeGroup>
+      ```javascript index.js
+      import { createPublicClient, http } from "viem";
+      import { mainnet } from "viem/chains";
+
+      const client = createPublicClient({
+        chain: mainnet,
+        transport: http("https://eth-mainnet.g.alchemy.com/v2/demo"),
+      });
+
+      async function getLatestBlockNumber() {
+        const blockNumber = await client.getBlockNumber();
+        console.log("Latest block number:", blockNumber);
+      }
+
+      getLatestBlockNumber();
+      ```
+    </CodeGroup>
+
+    <Info>
+      You can find the documentation of viem's [getBlockNumber](https://viem.sh/docs/actions/public/getBlockNumber) which is configured to call out to [eth\_blockNumber](/docs/node/ethereum/ethereum-api-endpoints/eth-block-number) on the Alchemy API.
+    </Info>
+  </Step>
+
+  <Step title="Run It">
+    <CodeGroup>
+      ```shell shell
+      node index.js
+      ```
+    </CodeGroup>
+
+    This should return the latest block number in your console:
+
+    <CodeGroup>
+      ```shell shell
+      The latest block number is 11043912
+      ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+Woo! Congrats! You just wrote your first web3 script using Alchemy and sent your first request to your Alchemy API endpoint 🎉
+
+You can visit your [request logs](https://dashboard.alchemy.com/logs) to see the full details of the request come through the API!
+
+<Markdown src="./shared-next-steps.mdx" />
