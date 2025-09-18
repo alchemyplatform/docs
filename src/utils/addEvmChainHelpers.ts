@@ -373,37 +373,25 @@ ${tableRows.join("\n")}
 }
 
 export function createDirectoryStructure(chainName: string): {
-  chainDir: string;
   quickstartDir: string;
-  generatorsDir: string;
 } {
-  const chainDir = path.join(
-    process.cwd(),
-    "src",
-    "openrpc",
-    "chains",
-    chainName,
-  );
   const quickstartDir = path.join(
     process.cwd(),
     "fern",
     "api-reference",
     chainName,
   );
-  const generatorsDir = path.join(process.cwd(), "fern", "apis", chainName);
 
   // Only create the quickstart directory since we're only creating quickstart and FAQ files
   fs.mkdirSync(quickstartDir, { recursive: true });
 
-  return { chainDir, quickstartDir, generatorsDir };
+  return { quickstartDir };
 }
 
 export function writeChainFiles(
   config: ChainConfig,
   directories: {
-    chainDir: string;
     quickstartDir: string;
-    generatorsDir: string;
   },
 ): void {
   const { chainName, displayName, introText, servers } = config;
