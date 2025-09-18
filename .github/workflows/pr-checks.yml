@@ -70,6 +70,8 @@ jobs:
     outputs:
       preview-url: ${{ steps.preview-action.outputs.url }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Generate Preview
         id: preview-action
         uses: ./.github/actions/generate-preview
@@ -85,7 +87,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Link Checker
         id: lychee
