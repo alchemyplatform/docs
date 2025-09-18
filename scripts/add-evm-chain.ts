@@ -8,7 +8,6 @@ import {
   createDirectoryStructure,
   formatChainName,
   normalizeUrl,
-  updateDocsYml,
   validateChainName,
   validateUrl,
   writeChainFiles,
@@ -158,30 +157,22 @@ function createChainConfig(
 }
 
 function logSuccess(chainName: string): void {
-  console.info("\n🎉 Successfully created new EVM chain!");
+  console.info("\n🎉 Successfully created quickstart and FAQ guides!");
   console.info("📍 Locations:");
-  console.info(
-    `   - OpenRPC: src/openrpc/chains/${chainName}/${chainName}.yaml`,
-  );
   console.info(`   - Quickstart: fern/api-reference/${chainName}/`);
-  console.info(`   - Generators: fern/apis/${chainName}/`);
-  console.info("   - Sidebar: Updated in fern/docs.yml");
   console.info("\n📋 Files created:");
   console.info(`   - ${chainName}-api-quickstart.mdx`);
   console.info(`   - ${chainName}-api-faq.mdx`);
-  console.info("   - generators.yaml");
   console.info("\n💡 Next steps:");
   console.info("1. Review the generated files");
-  console.info("2. Remove any methods that are not supported by this chain");
-  console.info("3. Add any chain-specific methods if needed");
-  console.info("4. Customize the FAQ content with chain-specific information");
-  console.info("5. Customize the emoji for chain section in docs.yml");
-  console.info("6. Run the generation script: pnpm run generate");
-  console.info("7. Run the docs locally to preview: pnpm run dev");
+  console.info("2. Customize the FAQ content with chain-specific information");
+  console.info(
+    "3. Manually add the guides to your documentation structure if needed",
+  );
 }
 
 async function main(): Promise<void> {
-  console.info("🚀 Adding new EVM chain to API references\n");
+  console.info("🚀 Creating quickstart and FAQ guides for new EVM chain\n");
 
   try {
     // Collect user input
@@ -206,13 +197,9 @@ async function main(): Promise<void> {
     console.info("\n📁 Creating directory structure...");
     const directories = createDirectoryStructure(chainName);
 
-    // Write all files
-    console.info("📝 Creating files...");
+    // Write only quickstart and FAQ files
+    console.info("📝 Creating quickstart and FAQ files...");
     writeChainFiles(config, directories);
-
-    // Update documentation
-    console.info("📝 Updating documentation...");
-    updateDocsYml(chainName, displayName);
 
     // Log success
     logSuccess(chainName);
