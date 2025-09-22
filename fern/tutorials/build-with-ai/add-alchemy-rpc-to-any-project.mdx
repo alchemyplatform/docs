@@ -1,0 +1,508 @@
+---
+title: Add Alchemy RPC To Any Project
+description: Learn how to add a server-safe Alchemy JSON RPC endpoint to any project using Cursor
+subtitle: Learn how to add a server-safe Alchemy JSON RPC endpoint to any project using Cursor
+url: https://docs.alchemy.com/docs/add-alchemy-rpc-to-any-project
+slug: docs/add-alchemy-rpc-to-any-project
+---
+
+This guide helps you add a server safe Alchemy JSON RPC endpoint into almost any repo using a single Cursor prompt. Your Alchemy URL stays in `.env.local` on the server. The client never sees it.
+
+***
+
+## What the one shot prompt sets up
+
+* A JSON RPC proxy that forwards requests to Alchemy
+* Multi network selection via a small `x-chain` header
+* A generic `ALCHEMY_API_URL` plus optional per chain overrides
+* Smart scaffolding based on your project type:
+  * Next.js App Router → `app/api/rpc/route.ts` (Edge)
+  * Next.js Pages Router → `pages/api/rpc.ts`
+  * Non Next.js → a small Node server at `server/rpc-proxy.mjs` with an npm script
+* Environment files:
+  * Writes `.env.example`
+  * Creates `.env.local` from `.env.example` with a terminal command if it does not already exist
+  * Ensures `.env.local` is in `.gitignore`
+* Optional helper and self test:
+  * Next.js helper `lib/rpc.ts`
+  * Dev self test page for App Router projects at `/rpc-selftest`
+
+***
+
+## Prerequisites
+
+* [Cursor](https://cursor.sh/) is open at your project root
+* You can run a local dev server for your framework
+* You have an [Alchemy API Key](https://dashboard.alchemy.com/?a=index) ready to paste into `.env.local`
+* Optional for smoother automation in Cursor:
+  * Enable Auto run for the terminal
+  * Add a small command allowlist like `npm run dev`, `node`, `mkdir`, `touch`
+
+***
+
+## What is the `x-chain` header
+
+The `x-chain` header tells your proxy which network to use for a given request. Your app adds this header when it calls `/api/rpc`. The proxy reads it and selects the matching Alchemy URL from your server env. The header is not sent to Alchemy.
+
+**Supported values out of the box**
+
+| `x-chain`          | First env it tries                      | Fallback if not set |
+|--------------------|-----------------------------------------|---------------------|
+| `eth-mainnet`      | `ALCHEMY_API_URL_ETH_MAINNET`           | `ALCHEMY_API_URL`   |
+| `base-mainnet`     | `ALCHEMY_API_URL_BASE_MAINNET`          | `ALCHEMY_API_URL`   |
+| `optimism-mainnet` | `ALCHEMY_API_URL_OPTIMISM_MAINNET`      | `ALCHEMY_API_URL`   |
+| `arbitrum-mainnet` | `ALCHEMY_API_URL_ARBITRUM_MAINNET`      | `ALCHEMY_API_URL`   |
+| `polygon-mainnet`  | `ALCHEMY_API_URL_POLYGON_MAINNET`       | `ALCHEMY_API_URL`   |
+
+If you omit the header, the proxy assumes `eth-mainnet`.
+
+**Resolution flow**
+
+1. Read `x-chain` from the request. Default to `eth-mainnet` if missing.
+2. Try the chain specific env var.
+3. If not set, fall back to `ALCHEMY_API_URL`.
+4. If neither exists, return a clear 500 with guidance.
+
+***
+
+## Env file keys you will set
+
+After the prompt runs it will create `.env.example` and `.env.local` (if missing). Replace `<KEY>` with your real key:
+
+```env
+# Generic default used when no chain specific URL is set
+ALCHEMY_API_URL=https://eth-mainnet.g.alchemy.com/v2/<KEY>
+
+# Optional per chain overrides
+ALCHEMY_API_URL_ETH_MAINNET=https://eth-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_BASE_MAINNET=https://base-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_OPTIMISM_MAINNET=https://opt-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_ARBITRUM_MAINNET=https://arb-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_POLYGON_MAINNET=https://polygon-mainnet.g.alchemy.com/v2/<KEY>
+```
+
+Use only `ALCHEMY_API_URL` if you want a single default network. Add per chain URLs when you want to route by `x-chain`.
+
+***
+
+## How to run
+
+1. Open Cursor at your project root
+2. Paste the one shot prompt from the next section into Cursor chat
+3. Let Cursor write files and run the terminal command that creates `.env.local`
+4. Open `.env.local` and replace `<KEY>` with your real Alchemy key(s)
+5. Start your dev server and verify:
+   * Next.js App Router: open `http://localhost:3000/rpc-selftest`
+   * Next.js Pages Router: use the curl commands the prompt writes to `docs/RPC-TEST.md`
+   * Non Next.js: run `npm run rpc-proxy` and POST to `http://localhost:8787/rpc`
+
+***
+
+## How to call the proxy
+
+Send JSON RPC 2.0 to `/api/rpc` in Next.js, or to `http://localhost:8787/rpc` in the fallback Node server. Choose the network with `x-chain`. If you omit it, the proxy uses the generic `ALCHEMY_API_URL`.
+
+**curl example**
+
+```bash
+curl -s -X POST http://localhost:3000/api/rpc \
+  -H 'content-type: application/json' \
+  -H 'x-chain: base-mainnet' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
+```
+
+**fetch example**
+
+```ts
+await fetch("/api/rpc", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "x-chain": "eth-mainnet",
+  },
+  body: JSON.stringify({
+    jsonrpc: "2.0",
+    id: Date.now(),
+    method: "eth_getBalance",
+    params: ["0xYourAddress", "latest"],
+  }),
+});
+```
+
+***
+
+## One shot Cursor prompt
+
+Paste everything below into Cursor chat from your project root.
+
+```text
+You are scaffolding a flexible Alchemy JSON-RPC proxy. Apply changes directly in the repo. Do not echo full files unless I ask later.
+
+===============================================================================
+Step 0 — Detect environment and set "@/..." alias if Next.js
+===============================================================================
+1) If an /app directory exists → Next.js App Router mode.
+2) Else if a /pages directory exists → Next.js Pages Router mode.
+3) Else → Fallback Node mode.
+
+If in a Next.js mode, open tsconfig.json and ensure:
+  "baseUrl": "."
+  "paths": { "@/*": ["./*"] }
+Add them if missing while preserving all other options.
+
+===============================================================================
+Step 1 — Env templates and .gitignore (CREATE BOTH FILES)
+===============================================================================
+1) Create a file named .env.example with exactly these lines:
+
+# Generic default upstream (used if no chain-specific env is set)
+ALCHEMY_API_URL=https://eth-mainnet.g.alchemy.com/v2/<KEY>
+
+# Optional chain-specific overrides
+ALCHEMY_API_URL_ETH_MAINNET=https://eth-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_BASE_MAINNET=https://base-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_OPTIMISM_MAINNET=https://opt-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_ARBITRUM_MAINNET=https://arb-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_URL_POLYGON_MAINNET=https://polygon-mainnet.g.alchemy.com/v2/<KEY>
+
+2) In the TERMINAL, create .env.local if it does not already exist by copying from .env.example (do not overwrite existing):
+node -e "const fs=require('fs');if(!fs.existsSync('.env.local')){fs.copyFileSync('.env.example','.env.local');console.log('Created .env.local from .env.example');}else{console.log('.env.local already exists, not modified');}"
+
+3) Open .gitignore. If it does not already include a line for .env.local, append:
+.env.local
+
+===============================================================================
+Step 2 — RPC proxy (create ONE implementation based on the detected mode)
+===============================================================================
+
+--- A) Next.js App Router (app/api/rpc/route.ts, Edge) ---
+If /app exists, create app/api/rpc/route.ts with this content:
+
+------------------------------------------------------------
+import { NextRequest, NextResponse } from "next/server";
+
+export const runtime = "edge";
+
+// Optional per-chain envs, fallback to generic ALCHEMY_API_URL
+const URLS: Record<string, string | undefined> = {
+  "eth-mainnet": process.env.ALCHEMY_API_URL_ETH_MAINNET,
+  "base-mainnet": process.env.ALCHEMY_API_URL_BASE_MAINNET,
+  "optimism-mainnet": process.env.ALCHEMY_API_URL_OPTIMISM_MAINNET,
+  "arbitrum-mainnet": process.env.ALCHEMY_API_URL_ARBITRUM_MAINNET,
+  "polygon-mainnet": process.env.ALCHEMY_API_URL_POLYGON_MAINNET,
+};
+
+export async function POST(request: NextRequest) {
+  const chain = request.headers.get("x-chain") || "eth-mainnet";
+  const upstream = URLS[chain] || process.env.ALCHEMY_API_URL;
+  if (!upstream) {
+    return NextResponse.json(
+      { error: \`Missing upstream for chain "\${chain}". Set ALCHEMY_API_URL or chain-specific env.\` },
+      { status: 500 }
+    );
+  }
+
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const res = await fetch(upstream, {
+    method: "POST",
+    headers: { "content-type": "application/json" }, // do not forward cookies or browser headers
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  let json: any;
+  try {
+    json = await res.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Upstream returned non-JSON", status: res.status },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json(json, {
+    status: res.ok ? 200 : res.status || 502,
+    headers: { "cache-control": "no-store" },
+  });
+}
+------------------------------------------------------------
+
+--- B) Next.js Pages Router (pages/api/rpc.ts) ---
+Else if /pages exists, create pages/api/rpc.ts with this content:
+
+------------------------------------------------------------
+import type { NextApiRequest, NextApiResponse } from "next";
+
+const URLS: Record<string, string | undefined> = {
+  "eth-mainnet": process.env.ALCHEMY_API_URL_ETH_MAINNET,
+  "base-mainnet": process.env.ALCHEMY_API_URL_BASE_MAINNET,
+  "optimism-mainnet": process.env.ALCHEMY_API_URL_OPTIMISM_MAINNET,
+  "arbitrum-mainnet": process.env.ALCHEMY_API_URL_ARBITRUM_MAINNET,
+  "polygon-mainnet": process.env.ALCHEMY_API_URL_POLYGON_MAINNET,
+};
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const chain = (req.headers["x-chain"] as string) || "eth-mainnet";
+  const upstream = URLS[chain] || process.env.ALCHEMY_API_URL;
+  if (!upstream) {
+    return res
+      .status(500)
+      .json({ error: \`Missing upstream for chain "\${chain}". Set ALCHEMY_API_URL or chain-specific env.\` });
+  }
+
+  const payload = req.body ?? {};
+
+  const upstreamRes = await fetch(upstream, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: typeof payload === "string" ? payload : JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  let data: any = null;
+  try {
+    data = await upstreamRes.json();
+  } catch {
+    return res.status(502).json({ error: "Upstream returned non-JSON", status: upstreamRes.status });
+  }
+
+  res.setHeader("cache-control", "no-store");
+  return res.status(upstreamRes.ok ? 200 : upstreamRes.status || 502).json(data);
+}
+------------------------------------------------------------
+
+--- C) Fallback Node mode (server/rpc-proxy.mjs + npm script) ---
+Else (no /app and no /pages), create server/rpc-proxy.mjs with this content:
+
+------------------------------------------------------------
+import http from "node:http";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
+
+// Minimal dotenv loader for .env.local or .env
+function loadDotEnv() {
+  const files = [".env.local", ".env"];
+  for (const f of files) {
+    const p = resolve(process.cwd(), f);
+    if (existsSync(p)) {
+      const text = readFileSync(p, "utf8");
+      for (const line of text.split(/\\r?\\n/)) {
+        const m = line.match(/^\\s*([A-Z0-9_]+)\\s*=\\s*(.*)\\s*$/);
+        if (!m) continue;
+        const [, k, raw] = m;
+        if (process.env[k]) continue;
+        const v = raw.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+        process.env[k] = v;
+      }
+    }
+  }
+}
+loadDotEnv();
+
+// Chain map with optional overrides, fallback to generic ALCHEMY_API_URL
+const URLS = {
+  "eth-mainnet": process.env.ALCHEMY_API_URL_ETH_MAINNET,
+  "base-mainnet": process.env.ALCHEMY_API_URL_BASE_MAINNET,
+  "optimism-mainnet": process.env.ALCHEMY_API_URL_OPTIMISM_MAINNET,
+  "arbitrum-mainnet": process.env.ALCHEMY_API_URL_ARBITRUM_MAINNET,
+  "polygon-mainnet": process.env.ALCHEMY_API_URL_POLYGON_MAINNET,
+};
+
+const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
+
+const server = http.createServer(async (req, res) => {
+  // CORS for local dev
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-chain");
+
+  if (req.method === "OPTIONS") {
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
+
+  if (req.url !== "/rpc" || req.method !== "POST") {
+    res.statusCode = 404;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ error: "Not found" }));
+    return;
+  }
+
+  const chain = req.headers["x-chain"]?.toString() || "eth-mainnet";
+  const upstream = URLS[chain] || process.env.ALCHEMY_API_URL;
+  if (!upstream) {
+    res.statusCode = 500;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ error: \`Missing upstream for chain "\${chain}". Set ALCHEMY_API_URL or chain-specific env.\` }));
+    return;
+  }
+
+  let body = "";
+  for await (const chunk of req) body += chunk;
+  const payload = body || "{}";
+
+  try {
+    const upstreamRes = await fetch(upstream, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: payload,
+      cache: "no-store",
+    });
+    const text = await upstreamRes.text();
+    res.statusCode = upstreamRes.ok ? 200 : upstreamRes.status || 502;
+    res.setHeader("content-type", "application/json");
+    res.setHeader("cache-control", "no-store");
+    res.end(text);
+  } catch (e) {
+    res.statusCode = 502;
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify({ error: "Upstream fetch failed", detail: String(e) }));
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(\`[rpc-proxy] listening on http://localhost:\${PORT}/rpc\`);
+});
+------------------------------------------------------------
+
+Also, if in Fallback Node mode, update package.json to include this script (add or merge without removing existing scripts):
+"rpc-proxy": "node server/rpc-proxy.mjs"
+
+===============================================================================
+Step 3 — Optional tiny helper and self-test (Next.js modes only)
+===============================================================================
+If in a Next.js mode, create lib/rpc.ts with this content:
+
+------------------------------------------------------------
+type JsonRpcError = { code: number; message: string; data?: unknown };
+type JsonRpcResponse<T = unknown> = { jsonrpc: "2.0"; id: number | string; result?: T; error?: JsonRpcError };
+
+export async function rpc<T = unknown>(
+  method: string,
+  params: unknown[] = [],
+  chain: "eth-mainnet" | "base-mainnet" | "optimism-mainnet" | "arbitrum-mainnet" | "polygon-mainnet" = "eth-mainnet"
+): Promise<T> {
+  const res = await fetch("/api/rpc", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-chain": chain },
+    body: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), method, params }),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(\`RPC HTTP \${res.status}\${text ? \`: \${text}\` : ""}\`);
+  }
+  const data = (await res.json()) as JsonRpcResponse<T>;
+  if (data.error) throw new Error(data.error.message || "RPC error");
+  return data.result as T;
+}
+------------------------------------------------------------
+
+If in App Router mode, create a dev-only page at app/rpc-selftest/page.tsx with this content:
+
+------------------------------------------------------------
+"use client";
+import { useEffect, useState } from "react";
+import { rpc } from "@/lib/rpc";
+
+function hexToInt(h: string) { try { return parseInt(h, 16); } catch { return NaN; } }
+
+export default function SelfTest() {
+  const [ethBlock, setEthBlock] = useState<number | null>(null);
+  const [baseBlock, setBaseBlock] = useState<number | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const ethHex = await rpc<string>("eth_blockNumber", [], "eth-mainnet");
+        const baseHex = await rpc<string>("eth_blockNumber", [], "base-mainnet");
+        setEthBlock(hexToInt(ethHex));
+        setBaseBlock(hexToInt(baseHex));
+      } catch (e: any) {
+        setErr(e?.message ?? "Unknown error");
+      }
+    })();
+  }, []);
+
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-2xl font-semibold">RPC proxy self test</h1>
+      <p className="text-sm text-gray-600 mt-1">Calls /api/rpc with x-chain header.</p>
+      {err ? (
+        <p className="mt-4 text-red-600">Error: {err}</p>
+      ) : (
+        <div className="mt-4 space-y-2">
+          <div>eth-mainnet block: <b>{ethBlock ?? "…"}</b></div>
+          <div>base-mainnet block: <b>{baseBlock ?? "…"}</b></div>
+        </div>
+      )}
+    </div>
+  );
+}
+------------------------------------------------------------
+
+If in Pages Router mode, create docs/RPC-TEST.md with these contents (no code fences needed):
+# RPC proxy test
+
+With the dev server running:
+
+curl -s -X POST http://localhost:3000/api/rpc \
+  -H 'content-type: application/json' \
+  -H 'x-chain: eth-mainnet' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
+
+curl -s -X POST http://localhost:3000/api/rpc \
+  -H 'content-type: application/json' \
+  -H 'x-chain: base-mainnet' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
+------------------------------------------------------------
+
+===============================================================================
+Step 4 — Final instructions for the developer (print in chat)
+===============================================================================
+Tell me:
+- Which mode was detected (App Router, Pages Router, or Fallback Node).
+- Which files you created or updated.
+- Next steps:
+  - Open .env.local and replace <KEY> with your real Alchemy keys (or set per-chain URLs).
+  - If Next.js: run npm run dev.
+      - App Router: visit http://localhost:3000/rpc-selftest
+      - Pages Router: use the curl examples in docs/RPC-TEST.md
+  - If Fallback Node: run npm run rpc-proxy and POST JSON-RPC to http://localhost:8787/rpc with optional header x-chain.
+```
+
+***
+
+## Troubleshooting
+
+* **500 Missing upstream**\
+  Add `ALCHEMY_API_URL` or a chain specific URL to `.env.local`. Restart your server.
+
+* **400 Invalid JSON body**\
+  Ensure your request body is valid JSON and follows JSON RPC 2.0:
+  `{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}`
+
+* **502 Upstream returned non JSON**\
+  Check your Alchemy URL and key. Verify with `eth_chainId`.
+
+***
+
+## Quick verification checklist
+
+* `.env.example` and `.env.local` both exist
+* One of `ALCHEMY_API_URL` or a chain specific URL is set in `.env.local`
+* App Router projects open `http://localhost:3000/rpc-selftest` and show block numbers for two chains
+* Pages Router projects can run the curl commands in `docs/RPC-TEST.md` without errors
