@@ -872,6 +872,45 @@ components:
                           type: string
                           description: The storage domain of the account's balance from which the fee will be charged. It can be one of 'L1' or 'L2'
 
+    starknet_traceTransaction:
+      name: starknet_traceTransaction
+      description: Returns the trace of a specific transaction, including internal calls and execution details.
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the transaction to trace
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        description: The execution trace of the transaction
+        schema:
+          title: Transaction Trace
+          type: object
+          properties:
+            type:
+              title: Transaction type
+              type: string
+              description: The type of transaction (e.g., "INVOKE")
+              enum: ["INVOKE", "DECLARE", "DEPLOY_ACCOUNT", "L1_HANDLER"]
+            execute_invocation:
+              $ref: "./transaction.yaml#/components/schemas/INVOCATION_TRACE"
+            validate_invocation:
+              $ref: "./transaction.yaml#/components/schemas/INVOCATION_TRACE"
+            fee_transfer_invocation:
+              $ref: "./transaction.yaml#/components/schemas/INVOCATION_TRACE"
+            execution_resources:
+              title: Overall execution resources
+              type: object
+              properties:
+                l1_gas: { title: L1 gas, type: integer }
+                l2_gas: { title: L2 gas, type: integer }
+                l1_data_gas: { title: L1 data gas, type: integer }
+              required: [l1_gas, l2_gas, l1_data_gas]
+          required: [type, execute_invocation, execution_resources]
+
     starknet_traceBlockTransactions:
       name: starknet_traceBlockTransactions
       description: Returns the trace of the transactions in the block.

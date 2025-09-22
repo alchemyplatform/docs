@@ -358,3 +358,172 @@ components:
       description: A transaction that has been broadcasted to the network
       allOf:
         - $ref: "#/components/schemas/DEPLOY_ACCOUNT_TXN"
+
+    INVOCATION_TRACE:
+      title: Invocation trace
+      type: object
+      properties:
+        call_type:
+          title: Call type
+          type: string
+        calldata:
+          title: Calldata
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+        caller_address:
+          title: Caller address
+          $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+        calls:
+          title: Internal calls
+          type: array
+          items:
+            $ref: "#/components/schemas/CALL_TRACE"
+        class_hash:
+          title: Class hash
+          $ref: "./base-types.yaml#/components/schemas/FELT"
+        contract_address:
+          title: Contract address
+          $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+        entry_point_selector:
+          title: Entry point selector
+          $ref: "./base-types.yaml#/components/schemas/FELT"
+        entry_point_type:
+          title: Entry point type
+          type: string
+          enum: ["EXTERNAL", "L1_HANDLER", "CONSTRUCTOR"]
+        events:
+          title: Events
+          type: array
+          items:
+            $ref: "#/components/schemas/EVENT_TRACE"
+        execution_resources:
+          title: Execution resources
+          type: object
+          properties:
+            l1_gas: { title: L1 gas, type: integer }
+            l2_gas: { title: L2 gas, type: integer }
+          required: [l1_gas, l2_gas]
+        is_reverted:
+          title: Is reverted
+          type: boolean
+        messages:
+          title: Messages
+          type: array
+          items:
+            $ref: "./withdrawal.yaml#/components/schemas/MSG_TO_L1"
+        result:
+          title: Result
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+      required:
+        [
+          call_type,
+          calldata,
+          caller_address,
+          calls,
+          class_hash,
+          contract_address,
+          entry_point_selector,
+          entry_point_type,
+          events,
+          execution_resources,
+          is_reverted,
+          messages,
+          result,
+        ]
+
+    CALL_TRACE:
+      title: Nested call trace
+      type: object
+      properties:
+        call_type:
+          title: Call type
+          type: string
+        calldata:
+          title: Calldata
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+        caller_address:
+          title: Caller address
+          $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+        calls:
+          title: Nested calls
+          type: array
+          items:
+            $ref: "#/components/schemas/CALL_TRACE" # <-- recursion fixed
+        class_hash:
+          title: Class hash
+          $ref: "./base-types.yaml#/components/schemas/FELT"
+        contract_address:
+          title: Contract address
+          $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+        entry_point_selector:
+          title: Entry point selector
+          $ref: "./base-types.yaml#/components/schemas/FELT"
+        entry_point_type:
+          title: Entry point type
+          type: string
+          enum: ["EXTERNAL", "L1_HANDLER", "CONSTRUCTOR"]
+        events:
+          title: Events
+          type: array
+          items:
+            $ref: "#/components/schemas/EVENT_TRACE"
+        execution_resources:
+          title: Execution resources
+          type: object
+          properties:
+            l1_gas: { title: L1 gas, type: integer }
+            l2_gas: { title: L2 gas, type: integer }
+          required: [l1_gas, l2_gas]
+        is_reverted:
+          title: Is reverted
+          type: boolean
+        messages:
+          title: Messages
+          type: array
+          items:
+            $ref: "./withdrawal.yaml#/components/schemas/MSG_TO_L1"
+        result:
+          title: Result
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+      required:
+        [
+          call_type,
+          calldata,
+          caller_address,
+          calls,
+          class_hash,
+          contract_address,
+          entry_point_selector,
+          entry_point_type,
+          events,
+          execution_resources,
+          is_reverted,
+          messages,
+          result,
+        ]
+
+    EVENT_TRACE:
+      title: Event
+      type: object
+      properties:
+        data:
+          title: Event data
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+        keys:
+          title: Event keys
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+        order:
+          title: Event order
+          type: integer
+      required: [data, keys, order]
