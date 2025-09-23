@@ -7,42 +7,61 @@ servers: # servers are also specified at the method level, if there isn't a spec
   - url: https://{network}.g.alchemy.com/nft
     variables:
       network:
+        default: eth-mainnet
         enum:
           - eth-mainnet
           - eth-sepolia
-          - eth-holesky
-          - avax-mainnet
-          - avax-fuji
-          - zksync-mainnet
-          - opt-mainnet
-          - polygon-mainnet
-          - polygon-amoy
-          - arb-mainnet
-          - arb-sepolia
-          - fantom-mainnet
-          - fantom-testnet
-          - blast-mainnet
-          - blast-sepolia
-          - base-mainnet
-          - base-sepolia
-          - soneium-mainnet
-          - soneium-minato
-          - scroll-mainnet
-          - scroll-sepolia
-          - shape-mainnet
-          - shape-sepolia
-          - lens-sepolia
-          - starknet-mainnet
-          - starknet-sepolia
-          - rootstock-mainnet
-          - rootstock-testnet
-          - linea-mainnet
-          - linea-sepolia
-          - settlus-septestnet
           - abstract-mainnet
           - abstract-testnet
           - apechain-mainnet
-        default: eth-mainnet
+          - apechain-curtis
+          - arb-mainnet
+          - arb-sepolia
+          - arbnova-mainnet
+          - avax-mainnet
+          - avax-fuji
+          - base-mainnet
+          - base-sepolia
+          - berachain-mainnet
+          - blast-mainnet
+          - blast-sepolia
+          - bnb-mainnet
+          - celo-mainnet
+          - gnosis-mainnet
+          - gnosis-chiado
+          - lens-mainnet
+          - lens-sepolia
+          - linea-mainnet
+          - linea-sepolia
+          - polygon-mainnet
+          - polygon-amoy
+          - monad-testnet
+          - opt-mainnet
+          - opt-sepolia
+          - ronin-mainnet
+          - ronin-saigon
+          - rootstock-mainnet
+          - rootstock-testnet
+          - scroll-mainnet
+          - scroll-sepolia
+          - settlus-mainnet
+          - settlus-septestnet
+          - shape-mainnet
+          - shape-sepolia
+          - soneium-mainnet
+          - soneium-minato
+          - starknet-mainnet
+          - starknet-sepolia
+          - unichain-mainnet
+          - unichain-sepolia
+          - worldchain-mainnet
+          - worldchain-sepolia
+          - zetachain-mainnet
+          - zetachain-testnet
+          - zksync-mainnet
+          - zksync-sepolia
+          - zora-mainnet
+          - zora-sepolia
 paths:
   ## Below are all the v3 methods
   "/v3/{apiKey}/getNFTsForOwner":
@@ -352,7 +371,13 @@ paths:
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
         - $ref: "#/components/parameters/withTokenBalances"
         # - $ref: '#/components/parameters/block'
         - $ref: "#/components/parameters/pageKey"
@@ -431,7 +456,13 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
       responses:
         "200":
           description: "Returns whether the specified contract is marked as spam."
@@ -878,7 +909,13 @@ paths:
       tags: ["NFT Spam Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/addressRequired"
+        - name: address
+          description: String - The address to check for spam status.
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
         - name: isSpam
           in: query
           required: true
@@ -1244,7 +1281,13 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
       responses:
         "200":
           description: ""
@@ -1644,7 +1687,20 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/addressRequired"
+        - name: address
+          description: String - The address to check for spam status.
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
+        - name: isSpam
+          description: Boolean - Whether the address is spam.
+          in: query
+          schema:
+            type: boolean
+            default: true
+          required: true
       responses:
         "200":
           description: ""
@@ -1654,6 +1710,7 @@ paths:
                 type: string
                 description: 'String - "Address was successfully reported as spam" if calling the API was successful. '
       operationId: reportSpam
+
   ## End of v2 methods
 
 components:
@@ -2460,9 +2517,41 @@ components:
           description: "String - ISO timestamp of the last cache refresh for the information returned in the metadata field."
         acquiredAt:
           $ref: "#/components/schemas/acquiredAt"
+        animation:
+          $ref: "#/components/schemas/animation"
+        mint:
+          $ref: "#/components/schemas/mint"
+        owners:
+          $ref: "#/components/schemas/owners"
         #balance:
         #  type: string
         #  description: 'String - Token balance'
+    animation:
+      type: object
+      properties:
+        cachedUrl:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+        orginalUrl:
+          type: string
+    mint:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+          description: "Address that minted the NFT"
+        blockNumber:
+          type: integer
+          description: "Block number when the NFT was minted"
+        timestamp:
+          type: string
+          description: "Timestamp when the NFT was minted"
+        transactionHash:
+          type: string
+          description: "Transaction hash of the mint transaction"
     acquiredAt:
       type: object
       description: "Only present if the request specified `orderBy=transferTime`."
@@ -2501,6 +2590,9 @@ components:
         discordUrl:
           type: string
           description: "The discord URL of the collection"
+        bannerImageUrl:
+          type: string
+          description: "The banner image URL of the collection"
         lastIngestedAt:
           type: string
           description: "The timestamp when the collection was last ingested by us"

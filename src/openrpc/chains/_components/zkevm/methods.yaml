@@ -159,7 +159,7 @@ components:
           schema:
             oneOf:
               - $ref: "../evm/base-types.yaml#/components/schemas/uint"
-              - $ref: "./components/zkevm.yaml#/components/schemas/BatchNumberTag"
+              - $ref: "./schemas.yaml#/components/schemas/BatchNumberTag"
         - name: includeTransactions
           required: true
           description: If `true`, returns full transaction objects; if `false`, returns only transaction hashes.
@@ -169,7 +169,7 @@ components:
         name: Batch
         description: The batch details corresponding to the given number or tag.
         schema:
-          $ref: "./components/zkevm.yaml#/components/schemas/Batch"
+          $ref: "./schemas.yaml#/components/schemas/Batch"
       examples:
         - name: Batch without transaction details
           description: Batch details with transaction hashes only.
@@ -232,3 +232,101 @@ components:
                   transactionIndex: "0x0"
                   chainId: "0x539"
                   type: "0x0"
+
+    zkevm_getBroadcastURI:
+      name: zkevm_getBroadcastURI
+      description: Returns the Broadcast URL of the Trusted Sequencer that has been configured.
+      params: []
+      result:
+        name: Broadcast URI
+        description: The configured broadcast URL of the trusted sequencer
+        schema:
+          type: string
+      examples:
+        - name: zkevm_getBroadcastURI example
+          params: []
+          result:
+            name: Broadcast URI
+            value: "https://sequencer.zkevm.polygon.technology/broadcast"
+
+    zkevm_estimateFee:
+      name: zkevm_estimateFee
+      summary: Estimates the total transaction fee (wei) for a given transaction.
+      description: |
+        Returns the estimated transaction fee for executing the provided transaction
+        on Polygon zkEVM, taking into account zkEVM's effective gas pricing.
+        This method accepts the same transaction call object as `eth_estimateGas`
+        and returns `gasUsed * estimatedGasPrice` as a hex-encoded wei value.
+      params:
+        - name: transaction
+          required: true
+          description: Transaction call object (same shape as `eth_estimateGas`).
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              from:
+                $ref: "../evm/base-types.yaml#/components/schemas/address"
+              to:
+                $ref: "../evm/base-types.yaml#/components/schemas/address"
+              gas:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              gasPrice:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              maxFeePerGas:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              maxPriorityFeePerGas:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              value:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              data:
+                $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+      result:
+        name: Estimated Fee
+        description: The estimated total fee in wei as a hex-encoded quantity.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_estimateFee example
+          params:
+            - name: transaction
+              value:
+                from: "0x0000000000000000000000000000000000000001"
+                to: "0x0000000000000000000000000000000000000002"
+                value: "0x186a0"
+                data: "0x"
+          result:
+            name: Estimated Fee
+            value: "0x1"
+
+    zkevm_estimateGasPrice:
+      name: zkevm_estimateGasPrice
+      summary: Estimates the effective gas price (wei) for Polygon zkEVM.
+      description: |
+        Returns the current estimated effective gas price to use for transactions on Polygon zkEVM
+        as a hex-encoded wei value. This value can be multiplied by the estimated gas used to
+        approximate total fees (see `zkevm_estimateFee`).
+      params: []
+      result:
+        name: Estimated Gas Price
+        description: The suggested effective gas price in wei, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_estimateGasPrice example
+          params: []
+          result:
+            name: Estimated Gas Price
+            value: "0x3b9aca00"
+
+    eth_getCompilers:
+      name: eth_getCompilers
+      description: Returns a list of available compilers in the client.
+      params: []
+      result:
+        name: Compilers
+        description: An array of available compilers
+        schema:
+          type: array
+          items:
+            type: string

@@ -820,3 +820,185 @@ components:
           result:
             name: RootHash
             value: "0xabc123...def456"
+
+    eth_sendPrivateTransaction:
+      name: eth_sendPrivateTransaction
+      description: Send a single private transaction through Flashbots. Private transactions are sent directly to validators and not included in the public mempool.
+      params:
+        - name: tx
+          required: true
+          description: Raw, signed transaction.
+          schema:
+            $ref: "./components.yaml#/components/schemas/bytesAnyCase"
+            default: "0x02f87205158459682f00850c51e9727a82520894477db63b8e73aea96f201c3c4f5e8fbfcdd18b5c87038d7ea4c6800080c080a0312d6375e578ab953a41456d4be583a46dced97a9e38f349bb8e7b63d14cfc1ea001daea40332180670568a1864e6d3f910b194903128d4a0a5c499597f3f6ff40"
+        - name: maxBlockNumber
+          required: false
+          description: Hex-encoded number for the highest block number in which the transaction should be included.
+          schema:
+            $ref: "./components.yaml#/components/schemas/uintHexAnyCase"
+            default: "0x2540BE400"
+        - name: preferences
+          required: false
+          description: Transaction preferences.
+          schema:
+            type: object
+            properties:
+              fast:
+                type: boolean
+                description: Sends transaction with fast mode when true.
+      result:
+        name: Transaction Hash
+        description: Returns the transaction hash (32-byte hex string).
+        schema:
+          $ref: "./components.yaml#/components/schemas/hash32AnyCase"
+      examples:
+        - name: eth_sendPrivateTransaction example
+          params:
+            - name: tx
+              value: "0x02f87205158459682f00850c51e9727a82520894477db63b8e73aea96f201c3c4f5e8fbfcdd18b5c87038d7ea4c6800080c080a0312d6375e578ab953a41456d4be583a46dced97a9e38f349bb8e7b63d14cfc1ea001daea40332180670568a1864e6d3f910b194903128d4a0a5c499597f3f6ff40"
+            - name: maxBlockNumber
+              value: "0x2540be400"
+            - name: preferences
+              value:
+                fast: true
+          result:
+            name: Transaction Hash
+            value: "0xb1770efb14906e509893b6190359658208ae64d0c56e22f748a1b0869885559e"
+
+    eth_cancelPrivateTransaction:
+      name: eth_cancelPrivateTransaction
+      description: Request to cancel a private transaction that was sent via eth_sendPrivateTransaction.
+      params:
+        - name: txHash
+          required: true
+          description: Transaction hash for the private transaction to be cancelled.
+          schema:
+            $ref: "./components.yaml#/components/schemas/hash32AnyCase"
+      result:
+        name: Cancellation Status
+        description: Returns true if the transaction was successfully cancelled, false otherwise.
+        schema:
+          type: boolean
+      examples:
+        - name: eth_cancelPrivateTransaction example
+          params:
+            - name: txHash
+              value: "0xb1770efb14906e509893b6190359658208ae64d0c56e22f748a1b0869885559e"
+          result:
+            name: Cancellation Status
+            value: true
+
+    eth_baseFee:
+      name: eth_baseFee
+      description: Returns the base fee for the next block.
+      params: []
+      result:
+        name: Base fee
+        description: The hex value of the base fee for the next block.
+        schema:
+          type: string
+      examples:
+        - name: eth_baseFee example
+          params: []
+          result:
+            name: Base fee
+            value: "0x34630b8a00"
+
+    eth_getAssetBalance:
+      name: eth_getAssetBalance
+      description: Get an account's non-AVAX balance.
+      params:
+        - name: address
+          required: true
+          description: The owner of the asset
+          schema:
+            $ref: "../../_components/evm/base-types.yaml#/components/schemas/address"
+        - name: blk
+          required: true
+          description: The block number or hash which to retrieve the balance
+          schema:
+            type: string
+        - name: assetID
+          required: true
+          description: The id of the asset for which the balance is requested
+          schema:
+            type: string
+      result:
+        name: Asset balance
+        description: The balance of an asset.
+        schema:
+          type: string
+      examples:
+        - name: eth_getAssetBalance example
+          params:
+            - name: address
+              value: "0x8723e5773847A4Eb5FeEDabD9320802c5c812F46"
+            - name: blk
+              value: "latest"
+            - name: assetID
+              value: "3RvKBAmQnfYionFXMfW5P8TDZgZiogKbHjM8cjpu16LKAgF5T"
+          result:
+            name: Asset balance
+            value: "0x1388"
+
+    eth_getChainConfig:
+      name: eth_getChainConfig
+      description: Returns the chain config of the blockchain.
+      params: []
+      result:
+        name: Chain config
+        description: The chain config of the blockchain.
+        schema:
+          type: object
+          properties:
+            chainId:
+              type: integer
+              description: The chain ID of the blockchain
+            feeConfig:
+              type: object
+              properties:
+                gasLimit:
+                  type: integer
+                  description: The gas limit per block
+                targetBlockRate:
+                  type: integer
+                  description: The target block rate
+                minBlockGasCost:
+                  type: integer
+                  description: The minimum block gas cost
+                maxBlockGasCost:
+                  type: integer
+                  description: The maximum block gas cost
+            feeManagerConfig:
+              type: object
+              properties:
+                adminAddresses:
+                  type: array
+                  items:
+                    type: string
+                    description: The admin addresses
+                blockTimestamp:
+                  type: integer
+                  description: The block timestamp for the fee manager config
+            upgrades:
+              type: object
+              properties:
+                precompileUpgrades:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      feeManagerConfig:
+                        type: object
+                        properties:
+                          adminAddresses:
+                            type: array
+                            items:
+                              type: string
+                              description: The admin addresses
+                          blockTimestamp:
+                            type: integer
+                            description: The block timestamp for the fee manager config
+                          disable:
+                            type: boolean
+                            description: Whether to disable the upgrade

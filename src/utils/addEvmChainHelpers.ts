@@ -173,6 +173,7 @@ Congratulations! You've made your first request to the ${displayName} network. Y
 export function generateFaqMarkdown(
   displayName: string,
   chainName: string,
+  introText: string,
 ): string {
   return `---
 title: ${displayName} API FAQ
@@ -182,19 +183,32 @@ url: https://docs.alchemy.com/reference/${chainName}-api-faq
 slug: reference/${chainName}-api-faq
 ---
 
-# ${displayName} API FAQ
-
 ## What is ${displayName}?
-
-${displayName} is an EVM-compatible blockchain that provides developers with a familiar environment for building decentralized applications.
-
-## What methods are supported on ${displayName}?
-
-${displayName} supports standard Ethereum JSON-RPC methods. Some chain-specific methods may vary. Please check the ${displayName} API endpoints documentation for a complete list.
+${introText}
 
 ## How do I get started with ${displayName}?
-
 Check out our [${displayName} API Quickstart guide](./${chainName}-api-quickstart) to get started building on ${displayName}.
+
+## What is the ${displayName} API?
+The ${displayName} API allows developers to interface with the ${displayName} mainnet. With this API, developers can execute transactions, query on-chain data, and interact with the ${displayName} network, relying on a JSON-RPC standard.
+
+## Is ${displayName} EVM compatible?
+Yes, ${displayName} is EVM compatible.
+
+## What API does ${displayName} use?
+${displayName} uses the JSON-RPC API standard. This API is crucial for any blockchain interaction on the ${displayName} network, allowing users to read block/transaction data, query chain information, execute smart contracts, and store data on-chain.
+
+## What methods are supported on ${displayName}?
+${displayName} supports standard Ethereum JSON-RPC methods. Some chain-specific methods may vary. Please check the ${displayName} API endpoints documentation for a complete list.
+
+## What is a ${displayName} API key?
+When accessing the ${displayName} network via a node provider like Alchemy, ${displayName} developers use an API key to send transactions and retrieve data from the network. For the best development experience, we recommend that you [sign up for a free API key](https://dashboard.alchemy.com/signup)!
+
+## Which libraries support ${displayName}?
+Common Ethereum libraries like [ethers.js](https://docs.ethers.org/v5/) should be compatible with ${displayName}, given its EVM nature.
+
+## My question isn’t here, where can I get help?
+If you have any questions or feedback, please contact us at support@alchemy.com or open a ticket in the dashboard.
 `;
 }
 
@@ -205,60 +219,16 @@ export function generateGeneratorsYaml(chainName: string): string {
 `;
 }
 
-export function createChainYaml(
-  chainName: string,
-  displayName: string,
-  servers: Server[],
-): string {
-  const ethYamlPath = path.join(
-    process.cwd(),
-    "src",
-    "openrpc",
-    "chains",
-    "eth",
-    "eth.yaml",
-  );
-
-  if (!fs.existsSync(ethYamlPath)) {
-    throw new Error("eth.yaml template file not found");
-  }
-
-  let ethYamlContent = fs.readFileSync(ethYamlPath, "utf8");
-
-  // Replace the title and description
-  ethYamlContent = ethYamlContent.replace(
-    "title: Alchemy Ethereum JSON-RPC Specification",
-    `title: Alchemy ${displayName} JSON-RPC Specification`,
-  );
-  ethYamlContent = ethYamlContent.replace(
-    "description: A specification of the standard JSON-RPC methods for Ethereum.",
-    `description: A specification of the standard JSON-RPC methods for ${displayName}.`,
-  );
-
-  // Replace the servers section
-  const serversSection = servers
-    .map((server) => `  - url: ${server.url}\n    name: ${server.name}`)
-    .join("\n");
-
-  const serversRegex = /servers:\n( {2}- url: .*\n {4}name: .*\n?)+/;
-  ethYamlContent = ethYamlContent.replace(
-    serversRegex,
-    `servers:\n${serversSection}\n`,
-  );
-
-  return ethYamlContent;
-}
-
 export function updateDocsYml(chainName: string, displayName: string): void {
   const docsYmlPath = path.join(process.cwd(), "fern", "docs.yml");
   const docsContent = fs.readFileSync(docsYmlPath, "utf8");
 
-  const analyticsIndex = docsContent.indexOf("analytics:");
-  if (analyticsIndex === -1) {
+  const indexToPutNewSectionIn = docsContent.indexOf("- tab: data");
+  if (indexToPutNewSectionIn === -1) {
     throw new Error("Could not find analytics section in docs.yml");
   }
 
-  const newSection = `      - section: ${displayName}
+  const newSection = `    - section: ${displayName}
         contents:
           - page: ${displayName} API Quickstart
             path: api-reference/${chainName}/${chainName}-api-quickstart.mdx
@@ -269,9 +239,10 @@ export function updateDocsYml(chainName: string, displayName: string): void {
         slug: ${chainName}
 `;
 
-  const beforeAnalytics = docsContent.substring(0, analyticsIndex);
-  const afterAnalytics = docsContent.substring(analyticsIndex);
-  const updatedContent = beforeAnalytics + newSection + "\n" + afterAnalytics;
+  const beforeAnalytics = docsContent.substring(0, indexToPutNewSectionIn);
+  const afterAnalytics = docsContent.substring(indexToPutNewSectionIn);
+  const updatedContent =
+    beforeAnalytics + newSection + "\n" + "  " + afterAnalytics;
 
   fs.writeFileSync(docsYmlPath, updatedContent);
 }
@@ -402,47 +373,29 @@ ${tableRows.join("\n")}
 }
 
 export function createDirectoryStructure(chainName: string): {
-  chainDir: string;
   quickstartDir: string;
-  generatorsDir: string;
 } {
-  const chainDir = path.join(
-    process.cwd(),
-    "src",
-    "openrpc",
-    "chains",
-    chainName,
-  );
   const quickstartDir = path.join(
     process.cwd(),
     "fern",
     "api-reference",
     chainName,
   );
-  const generatorsDir = path.join(process.cwd(), "fern", "apis", chainName);
 
-  fs.mkdirSync(chainDir, { recursive: true });
+  // Only create the quickstart directory since we're only creating quickstart and FAQ files
   fs.mkdirSync(quickstartDir, { recursive: true });
-  fs.mkdirSync(generatorsDir, { recursive: true });
 
-  return { chainDir, quickstartDir, generatorsDir };
+  return { quickstartDir };
 }
 
 export function writeChainFiles(
   config: ChainConfig,
   directories: {
-    chainDir: string;
     quickstartDir: string;
-    generatorsDir: string;
   },
 ): void {
   const { chainName, displayName, introText, servers } = config;
-  const { chainDir, quickstartDir, generatorsDir } = directories;
-
-  // Create chain YAML file
-  const chainYamlContent = createChainYaml(chainName, displayName, servers);
-  const chainYamlPath = path.join(chainDir, `${chainName}.yaml`);
-  fs.writeFileSync(chainYamlPath, chainYamlContent);
+  const { quickstartDir } = directories;
 
   // Create quickstart guide
   const quickstartContent = generateQuickstartMarkdown(
@@ -458,23 +411,22 @@ export function writeChainFiles(
   fs.writeFileSync(quickstartPath, quickstartContent);
 
   // Create FAQ
-  const faqContent = generateFaqMarkdown(displayName, chainName);
+  const faqContent = generateFaqMarkdown(displayName, chainName, introText);
   const faqPath = path.join(quickstartDir, `${chainName}-api-faq.mdx`);
   fs.writeFileSync(faqPath, faqContent);
-
-  // Create generators.yaml
-  const generatorsContent = generateGeneratorsYaml(chainName);
-  const generatorsPath = path.join(generatorsDir, "generators.yaml");
-  fs.writeFileSync(generatorsPath, generatorsContent);
 }
 
 export function checkIfChainExists(chainName: string): boolean {
-  const chainDir = path.join(
+  // Check if documentation files already exist instead of OpenRPC chain files
+  const quickstartDir = path.join(
     process.cwd(),
-    "src",
-    "openrpc",
-    "chains",
+    "fern",
+    "api-reference",
     chainName,
   );
-  return fs.existsSync(chainDir);
+  const quickstartFile = path.join(
+    quickstartDir,
+    `${chainName}-api-quickstart.mdx`,
+  );
+  return fs.existsSync(quickstartFile);
 }

@@ -21,6 +21,7 @@ export const generateOpenRpcSpec = async (
     dereference: {
       preservedProperties: ["title", "description", "type", "pattern"],
     },
+    continueOnError: true,
   })) as DerefedOpenRpcDoc;
 
   const fullSpec = {

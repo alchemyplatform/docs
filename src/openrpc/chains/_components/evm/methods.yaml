@@ -200,6 +200,98 @@ components:
             name: Chain ID
             value: "0x1"
 
+    eth_getAccount:
+      name: eth_getAccount
+      description: >
+        Retrieve account details (code hash, storage root, balance, nonce) for a given
+        address at a specified block number or tag.
+      params:
+        - name: address
+          required: true
+          description: The account address for which the information is to be retrieved.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/address"
+        - name: blockReference
+          required: true
+          description: >
+            The block number (hex quantity) or a tag: "latest", "pending", "safe", or "finalized".
+          schema:
+            $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+      result:
+        name: Account information
+        description: Account fields at the requested block.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["codeHash", "storageRoot", "balance", "nonce"]
+          properties:
+            codeHash:
+              description: A 32-byte hash of the account's code (EOAs use keccak256(0x)).
+              $ref: "./base-types.yaml#/components/schemas/hash32"
+            storageRoot:
+              description: The Merkle Patricia trie root of the account's storage.
+              $ref: "./base-types.yaml#/components/schemas/hash32"
+            balance:
+              description: The current balance of the account in wei (hex quantity).
+              $ref: "./base-types.yaml#/components/schemas/uint"
+            nonce:
+              description: The transaction count of the account (hex quantity).
+              $ref: "./base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: eth_getAccount example
+          params:
+            - name: address
+              value: "0x8D97689C9818892B700e27F316cc3E41e17fBeb9"
+            - name: blockReference
+              value: "latest"
+          result:
+            name: Account information
+            value:
+              codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              storageRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+              balance: "0xba862b54effa"
+              nonce: "0x23"
+
+    eth_submitWork:
+      name: eth_submitWork
+      description: >
+        Submit a proof-of-work solution (Ethash) consisting of a nonce, the header
+        PoW hash, and the mix digest. **Not supported on post-Merge Ethereum clients**;
+        many nodes will return JSON-RPC error -32601 (method not found).
+      params:
+        - name: nonce
+          required: true
+          description: The 8-byte nonce found by the miner.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/bytes8"
+        - name: hash
+          required: true
+          description: The block header's PoW hash (32-byte).
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/hash32"
+        - name: digest
+          required: true
+          description: The mix digest (32-byte).
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Submission accepted
+        description: Returns `true` if the provided solution is valid, otherwise `false`.
+        schema:
+          type: boolean
+      examples:
+        - name: eth_submitWork — accepted
+          params:
+            - name: nonce
+              value: "0x0000000000000001"
+            - name: hash
+              value: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+            - name: digest
+              value: "0xd1fe5700000000000000000000000000d1fe5700000000000000000000000000"
+          result:
+            name: Submission accepted
+            value: true
+
     eth_blockNumber:
       name: eth_blockNumber
       description: Returns the number of the most recent block.
@@ -282,6 +374,200 @@ components:
           result:
             name: Return data
             value: "0x"
+
+    eth_callMany:
+      name: eth_callMany
+      description: >
+        Executes one or more *bundles* of `eth_call`-style transactions against an
+        ephemeral state, without committing state to the chain. Transactions within
+        each bundle are executed sequentially: state changes from earlier transactions
+        in the bundle are visible to later ones. You can optionally override selected
+        block header fields per bundle.
+
+      params:
+        - name: Bundles
+          required: true
+          description: >
+            A list of bundles to execute. Each bundle specifies a list of transactions
+            (executed in order) and may include a per-bundle block header override.
+          schema:
+            type: array
+            minItems: 1
+            items:
+              type: object
+              required: ["transactions"]
+              additionalProperties: false
+              properties:
+                transactions:
+                  description: Array of transaction call objects (same shape as `eth_call`).
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: "./transaction.yaml#/components/schemas/GenericTransaction"
+                blockOverride:
+                  description: >
+                    Optional execution-context block header overrides for this bundle.
+                    When provided, these supersede the Simulation context for that bundle.
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    blockNumber:
+                      $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+                    blockHash:
+                      $ref: "./base-types.yaml#/components/schemas/hash32"
+                    coinbase:
+                      $ref: "./base-types.yaml#/components/schemas/address"
+                    timestamp:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+                    difficulty:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+                    gasLimit:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+                    baseFee:
+                      $ref: "./base-types.yaml#/components/schemas/uint"
+
+        - name: Simulation context
+          required: true
+          description: >
+            The base context for the simulation. If a bundle supplies `blockOverride`,
+            it takes precedence for that bundle. `transactionIndex` is 0-based within
+            the referenced block.
+          schema:
+            type: object
+            required: ["blockNumber", "transactionIndex"]
+            additionalProperties: false
+            properties:
+              blockNumber:
+                $ref: "./block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+              transactionIndex:
+                type: integer
+                minimum: 0
+
+        - name: State overrides
+          required: false
+          description: >
+            Optional per-account state overrides applied during execution, identical
+            in shape to the `eth_call` state override parameter.
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties: false
+              properties:
+                balance:
+                  $ref: "./base-types.yaml#/components/schemas/uint"
+                nonce:
+                  $ref: "./base-types.yaml#/components/schemas/uint"
+                code:
+                  $ref: "./base-types.yaml#/components/schemas/bytes"
+                state:
+                  description: Full storage override (slot -> value, 32-byte hex).
+                  type: object
+                  additionalProperties:
+                    $ref: "./base-types.yaml#/components/schemas/hash32"
+                stateDiff:
+                  description: Partial storage diff (slot -> value, 32-byte hex).
+                  type: object
+                  additionalProperties:
+                    $ref: "./base-types.yaml#/components/schemas/hash32"
+
+        - name: Timeout
+          required: false
+          description: >
+            Maximum running time for the simulations in milliseconds. If omitted,
+            the node’s default is used (commonly 5000).
+          schema:
+            type: integer
+            minimum: 1
+
+      result:
+        name: Call results
+        description: >
+          A list with one entry per bundle. Each bundle entry is an array with one
+          result per transaction in that bundle, in execution order. Each transaction
+          result is either a successful return `value` (ABI-encoded bytes), or an
+          `error` describing the revert/failure.
+        schema:
+          type: array
+          items:
+            type: array
+            items:
+              oneOf:
+                - type: object
+                  additionalProperties: false
+                  required: ["value"]
+                  properties:
+                    value:
+                      $ref: "./base-types.yaml#/components/schemas/bytes"
+                - type: object
+                  additionalProperties: false
+                  required: ["error"]
+                  properties:
+                    error:
+                      type: object
+                      additionalProperties: false
+                      required: ["code", "message"]
+                      properties:
+                        code:
+                          type: integer
+                        message:
+                          type: string
+                        data:
+                          description: Optional ABI-encoded revert data (e.g., `Error(string)`).
+                          $ref: "./base-types.yaml#/components/schemas/bytes"
+
+      examples:
+        - name: eth_callMany — ERC-20 transfer + balanceOf at a fixed block
+          params:
+            - name: Bundles
+              value:
+                - transactions:
+                    - from: "0x1985ea6e9c68e1c272d8209f3b478ac2fdb25c87"
+                      to: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+                      gas: "0x0f4240"
+                      gasPrice: "0x7896e72a"
+                      # transfer(recipient, amount)
+                      data: "0xa9059cbb000000000000000000000000bc0e63965946815d105e7591407704e6e1964e590000000000000000000000000000000000000000000000000000000005f5e100"
+                    - to: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+                      gasPrice: "0x7896e72a"
+                      # balanceOf(owner)
+                      data: "0x70a08231000000000000000000000000bc0e63965946815d105e7591407704e6e1964e59"
+                  blockOverride:
+                    blockNumber: "0xbb5fe9"
+            - name: Simulation context
+              value:
+                blockNumber: "0xbb5fe9"
+                transactionIndex: 1
+            - name: State overrides
+              value: {}
+            - name: Timeout
+              value: 5000
+          result:
+            name: Call results
+            value:
+              - # bundle 0
+                - value: "0x0000000000000000000000000000000000000000000000000000000000000001" # transfer(bool) -> true
+                - value: "0x0000000000000000000000000000000000000000000000000000000005f5e100" # balanceOf -> 0x05f5e100
+
+        - name: eth_callMany — revert example
+          params:
+            - name: Bundles
+              value:
+                - transactions:
+                    - to: "0x0000000000000000000000000000000000000000"
+                      data: "0xdeadbeef" # invalid selector -> revert
+            - name: Simulation context
+              value:
+                blockNumber: "latest"
+                transactionIndex: 0
+          result:
+            name: Call results
+            value:
+              - # bundle 0
+                - error:
+                    code: -32000
+                    message: "execution reverted"
+                    data: "0x08c379a00000000000000000000000000000000000000000000000000000000000000020..."
 
     eth_estimateGas:
       name: eth_estimateGas
@@ -519,11 +805,11 @@ components:
 
         | Chain | Free | Pay As You Go | Enterprise |
         |-------|------|---------------|------------|
-        | Ethereum and Layer 2s (Ethereum, Base, Optimism, Arbitrum, Worldchain) | unlimited | unlimited | unlimited |
-        | Polygon | 500 | 2000 | unlimited |
-        | Monad | 500 | 1000 | unlimited |
-        | BSC | 500 | 10000 | 10000 |
-        | All Other Chains | 500 | 10000 | unlimited |
+        | Ethereum and Layer 2s (Ethereum, Base, Optimism, Arbitrum, Worldchain) | 10 | unlimited | unlimited |
+        | Polygon | 10 | 2000 | unlimited |
+        | Monad | 10 | 1000 | 1000 |
+        | BSC | 10 | 10000 | 10000 |
+        | All Other Chains | 10 | 10000 | unlimited |
       params:
         - name: Filter
           required: true
@@ -947,3 +1233,44 @@ components:
               transactionHash: "0x504ce587a65bdbdb6414a0c6c16d86a04dd79bfcc4f2950eec9634b30ce5370f"
               transactionIndex: "0x0"
               type: "0x0"
+
+    eth_sendRawTransactionSync:
+      name: eth_sendRawTransactionSync
+      description: Sends a raw transaction to the network and waits for the transaction to be mined.
+      params:
+        - name: Transaction data
+          required: true
+          description: The signed transaction data, RLP-encoded and hex-encoded.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/bytes"
+        - name: Timeout
+          required: false
+          description: Maximum wait time in milliseconds. Must be a positive integer between 1 and the node-configured maximum timeout.
+          schema:
+            type: integer
+            minimum: 1
+      result:
+        name: Receipt information
+        description: The transaction receipt object containing various properties of the transaction receipt.
+        schema:
+          oneOf:
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - $ref: "./receipt.yaml#/components/schemas/ReceiptInfo"
+      examples:
+        - name: eth_sendRawTransactionSync example
+          params:
+            - name: Transaction data
+              value: "0xf869018203e882520894f17f52151ebef6c7334fad080c5704d77216b732881bc16d674ec80000801ba02da1c48b670996dcb1f447ef9ef00b33033c48a4fe938f420bec3e56bfd24071a062e0aa78a81bf0290afbc3a9d8e9a068e6d74caa66c5e0fa8a46deaae96b0833"
+            - name: Timeout
+              value: 5000
+          result:
+            name: Receipt information
+            value:
+              transactionHash: "0x1234abcd..."
+              blockHash: "0xabcd1234..."
+              blockNumber: "0x10d4f"
+              cumulativeGasUsed: "0x5208"
+              gasUsed: "0x5208"
+              contractAddress: null
+              logs: []
+              status: "0x1"

@@ -7,8 +7,6 @@ components:
       description: >
         Returns the total balance for each coin type owned by the specified address,
         including the number of coin objects and any locked amounts.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: owner
           required: true
@@ -54,8 +52,6 @@ components:
       description: >
         Returns a paginated list of all Coin objects owned by the specified address.
         Each Coin object includes metadata such as coin type, balance, and transaction history.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: owner
           required: true
@@ -150,8 +146,6 @@ components:
       description: >
         Returns the total coin balance for a single coin type owned by the specified address.
         If no coin type is specified, defaults to the native SUI coin type.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: owner
           required: true
@@ -203,8 +197,6 @@ components:
       description: >
         Returns all Coin objects of the specified coin type owned by the given address.
         If the coin type is not provided, defaults to `0x2::sui::SUI`.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: owner
           required: true
@@ -293,14 +285,62 @@ components:
               nextCursor: "0xb770280feece9abe5f4683ee9a1b5baa76e3426d3dd46e9e17ae45a294d8a486"
               hasNextPage: false
 
+    suix_getCoinMetadata:
+      name: suix_getCoinMetadata
+      summary: Get metadata for a specific coin
+      description: Retrieves metadata (name, symbol, decimals, etc.) for a given coin type.
+      params:
+        - name: coinType
+          required: true
+          description: The Move type of the coin (e.g. `0x2::sui::SUI`)
+          schema:
+            type: string
+      result:
+        name: result
+        description: Metadata about the requested coin.
+        schema:
+          type: object
+          properties:
+            decimals:
+              type: integer
+              description: Number of decimals the coin uses.
+            name:
+              type: string
+              description: Full name of the coin.
+            symbol:
+              type: string
+              description: Coin symbol or ticker.
+            description:
+              type: string
+              description: Optional description for the coin.
+            iconUrl:
+              type: string
+              nullable: true
+              description: Optional icon URL.
+            id:
+              type: string
+              description: Unique ID of the coin metadata object.
+      examples:
+        - name: Metadata for SUI coin
+          params:
+            - name: coinType
+              value: "0x2::sui::SUI"
+          result:
+            name: result
+            value:
+              decimals: 9
+              name: "Sui"
+              symbol: "SUI"
+              description: ""
+              iconUrl: null
+              id: "0x9258181f5ceac8dbffb7030890243caed69a9599d2886d957a9cb7656af3bdb3"
+
     suix_getCommitteeInfo:
       name: suix_getCommitteeInfo
       summary: Return the committee information for a specific epoch
       description: >
         Retrieves the list of validator public keys and their voting power for the specified epoch.
         If no epoch is specified, the latest available epoch is used by default.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: epoch
           required: false
@@ -351,8 +391,6 @@ components:
       description: >
         Retrieves all delegated staking positions associated with the specified Sui address.
         Each entry includes the validator address, the staking pool, and the individual stake details such as amount, status, and epochs.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: owner
           required: true
@@ -435,8 +473,6 @@ components:
       description: >
         Returns information about one or more staking positions specified by their `stakedSuiId`.
         If a stake has been withdrawn, its status will be `"Unstaked"`.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: staked_sui_ids
           required: true
@@ -511,8 +547,6 @@ components:
       summary: Coin Query API – Return total supply for a coin
       description: >
         Returns the total supply of a specific coin type on the network.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: coin_type
           required: true
@@ -545,8 +579,6 @@ components:
       description: >
         Returns a paginated list of events that match the given query criteria.
         You can filter by sender, package, module, event type, and more. Supports pagination and ordering.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: query
           required: true
@@ -601,8 +633,6 @@ components:
       description: >
         Returns a paginated list of transaction blocks that match the given query criteria. 
         You can filter by input object, sender, transaction kind, and more. Supports pagination and ordering.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: query
           required: true
@@ -665,8 +695,6 @@ components:
       summary: Get a dynamic field object by name
       description: >
         Returns information about a specific dynamic field object, identified by its parent object ID and field name.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: parent_object_id
           required: true
@@ -716,8 +744,6 @@ components:
       description: >
         Returns the reference gas price (in MIST) for the network. This value represents the suggested fee per unit
         of gas and can be used to estimate transaction costs.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params: []
       result:
         name: result
@@ -737,8 +763,6 @@ components:
       description: >
         Returns the resolved address for the provided SuiNS name. This is typically used to map human-readable names
         (e.g., example.sui) to their corresponding Sui addresses.
-
-        > ⚠ This endpoint is only available with [Blast](https://www.alchemy.com/docs/reference/introduction-to-blast) access.
       params:
         - name: name
           required: true

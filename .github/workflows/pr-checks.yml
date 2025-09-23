@@ -1,0 +1,98 @@
+name: Run checks on PR
+
+on: pull_request
+
+jobs:
+  open-api-specs:
+    name: OpenAPI Specs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Validate REST API specs
+        run: pnpm run generate:rest
+
+  rpc-specs:
+    name: JSON-RPC Specs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Validate RPC specs
+        run: pnpm run generate:rpc
+
+  lint:
+    name: Lint Files
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Run ESLint
+        run: pnpm run lint:eslint
+
+  fern-check:
+    name: Fern Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Generate API Specs
+        run: pnpm run generate
+
+      - name: Check API is valid
+        run: pnpm fern check
+
+  generate-preview:
+    name: Generate Fern Preview
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    outputs:
+      preview-url: ${{ steps.preview-action.outputs.url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Generate Preview
+        id: preview-action
+        uses: ./.github/actions/generate-preview
+        with:
+          github-token: ${{ github.token }}
+          fern-token: ${{ secrets.FERN_TOKEN }}
+          ref: ${{ github.head_ref }}
+
+  link-check:
+    name: Link Check
+    runs-on: ubuntu-latest
+    needs: generate-preview
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Link Checker
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: ". --base-url ${{ needs.generate-preview.outputs.preview-url }}"
+          fail: true

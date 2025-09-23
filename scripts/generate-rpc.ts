@@ -1,37 +1,75 @@
 import { mkdirSync, readdirSync } from "fs";
 
 import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs";
+import {
+  type DerefErrorGroup,
+  handleDerefErrors,
+} from "../src/utils/generationHelpers";
 
 const isHiddenDir = (file: string) =>
   !file.startsWith("_") && !file.startsWith(".");
 
-const schemasRoot = "src/openrpc";
-const outputRoot = "fern/api-specs";
+const SCHEMAS_ROOT = "src/openrpc";
+const OUTPUT_ROOT = "fern/api-specs";
 
-// generate chains OpenRPC specs
-const allChainsDir = `${schemasRoot}/chains`;
-const outputDir = `${outputRoot}/chains`;
-const allChainFiles = readdirSync(allChainsDir).filter(isHiddenDir);
+const main = async () => {
+  const allChainsDir = `${SCHEMAS_ROOT}/chains`;
+  const outputDir = `${OUTPUT_ROOT}/chains`;
+  const allChainFiles = readdirSync(allChainsDir).filter(isHiddenDir);
 
-mkdirSync(outputDir, { recursive: true });
+  mkdirSync(outputDir, { recursive: true });
 
-allChainFiles.forEach((chain) =>
-  generateOpenRpcSpec(allChainsDir, outputDir, chain).catch((err) => {
-    console.error(err);
-    throw err;
-  }),
-);
+  const missingTokens: string[] = [];
+  const genErrors: DerefErrorGroup[] = [];
 
-// generate alchemy API OpenRPC specs
-const alchemyApisDir = `${schemasRoot}/alchemy`;
-const alchemyOutputDir = `${outputRoot}/alchemy/json-rpc`;
-const allAlchemyApiFiles = readdirSync(alchemyApisDir).filter(isHiddenDir);
+  // Generate chains OpenRPC specs
+  const chainPromises = allChainFiles.map(async (chain) => {
+    try {
+      await generateOpenRpcSpec(allChainsDir, outputDir, chain);
+    } catch (err: unknown) {
+      handleDerefErrors(err, chain, missingTokens, genErrors);
+    }
+  });
 
-mkdirSync(alchemyOutputDir, { recursive: true });
+  // generate alchemy API OpenRPC specs
+  const alchemyApisDir = `${SCHEMAS_ROOT}/alchemy`;
+  const alchemyOutputDir = `${OUTPUT_ROOT}/alchemy/json-rpc`;
+  const allAlchemyApiFiles = readdirSync(alchemyApisDir).filter(isHiddenDir);
 
-allAlchemyApiFiles.forEach((api) =>
-  generateOpenRpcSpec(alchemyApisDir, alchemyOutputDir, api).catch((err) => {
-    console.error(err);
-    throw err;
-  }),
-);
+  mkdirSync(alchemyOutputDir, { recursive: true });
+
+  const alchemyPromises = allAlchemyApiFiles.map(async (api) => {
+    try {
+      await generateOpenRpcSpec(alchemyApisDir, alchemyOutputDir, api);
+    } catch (err: unknown) {
+      handleDerefErrors(err, api, missingTokens, genErrors);
+    }
+  });
+
+  // Wait for all promises to complete
+  await Promise.allSettled([...chainPromises, ...alchemyPromises]);
+
+  // Report all errors at once
+  const errorMessages: string[] = [];
+
+  if (genErrors.length > 0) {
+    errorMessages.push(`Found ${genErrors.length} generation error(s):`);
+    errorMessages.push(...genErrors.map((error) => `  ${error}`));
+  }
+
+  if (missingTokens.length > 0) {
+    errorMessages.push(`Found ${missingTokens.length} missing token(s):`);
+    errorMessages.push(...missingTokens.map((token) => `  - ${token}`));
+  }
+
+  if (errorMessages.length > 0) {
+    throw new Error(errorMessages.join("\n"));
+  }
+
+  console.info("All OpenRPC specs generated successfully!");
+};
+
+main().catch((error) => {
+  console.error("OpenRPC spec generation failed:\n", error);
+  process.exit(1);
+});
