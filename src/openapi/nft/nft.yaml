@@ -7,48 +7,67 @@ servers: # servers are also specified at the method level, if there isn't a spec
   - url: https://{network}.g.alchemy.com/nft
     variables:
       network:
+        default: eth-mainnet
         enum:
           - eth-mainnet
           - eth-sepolia
-          - eth-holesky
-          - avax-mainnet
-          - avax-fuji
-          - zksync-mainnet
-          - opt-mainnet
-          - polygon-mainnet
-          - polygon-amoy
-          - arb-mainnet
-          - arb-sepolia
-          - fantom-mainnet
-          - fantom-testnet
-          - blast-mainnet
-          - blast-sepolia
-          - base-mainnet
-          - base-sepolia
-          - soneium-mainnet
-          - soneium-minato
-          - scroll-mainnet
-          - scroll-sepolia
-          - shape-mainnet
-          - shape-sepolia
-          - lens-sepolia
-          - starknet-mainnet
-          - starknet-sepolia
-          - rootstock-mainnet
-          - rootstock-testnet
-          - linea-mainnet
-          - linea-sepolia
-          - settlus-septestnet
           - abstract-mainnet
           - abstract-testnet
           - apechain-mainnet
-        default: eth-mainnet
+          - apechain-curtis
+          - arb-mainnet
+          - arb-sepolia
+          - arbnova-mainnet
+          - avax-mainnet
+          - avax-fuji
+          - base-mainnet
+          - base-sepolia
+          - berachain-mainnet
+          - blast-mainnet
+          - blast-sepolia
+          - bnb-mainnet
+          - celo-mainnet
+          - gnosis-mainnet
+          - gnosis-chiado
+          - lens-mainnet
+          - lens-sepolia
+          - linea-mainnet
+          - linea-sepolia
+          - polygon-mainnet
+          - polygon-amoy
+          - monad-testnet
+          - opt-mainnet
+          - opt-sepolia
+          - ronin-mainnet
+          - ronin-saigon
+          - rootstock-mainnet
+          - rootstock-testnet
+          - scroll-mainnet
+          - scroll-sepolia
+          - settlus-mainnet
+          - settlus-septestnet
+          - shape-mainnet
+          - shape-sepolia
+          - soneium-mainnet
+          - soneium-minato
+          - starknet-mainnet
+          - starknet-sepolia
+          - unichain-mainnet
+          - unichain-sepolia
+          - worldchain-mainnet
+          - worldchain-sepolia
+          - zetachain-mainnet
+          - zetachain-testnet
+          - zksync-mainnet
+          - zksync-sepolia
+          - zora-mainnet
+          - zora-sepolia
 paths:
   ## Below are all the v3 methods
   "/v3/{apiKey}/getNFTsForOwner":
     get:
       summary: NFTs By Owner
-      description: getNFTsForOwner - Retrieves all NFTs currently owned by a specified address. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getNFTsForOwner - Retrieves all NFTs currently owned by a specified address. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/owner"
@@ -62,12 +81,6 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/pageKey"
         - $ref: "#/components/parameters/pageSize"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the list of all NFTs owned by the given address and satisfying the given input parameters."
@@ -100,7 +113,7 @@ paths:
   "/v3/{apiKey}/getNFTsForContract":
     get:
       summary: NFTs By Contract
-      description: getNFTsForContract - Retrieves all NFTs associated with a specific NFT contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getNFTsForContract - Retrieves all NFTs associated with a specific NFT contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -109,12 +122,6 @@ paths:
         - $ref: "#/components/parameters/startToken"
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/tokenUriTimeoutInMs"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a list of NFTs associated with the specified contract address."
@@ -135,7 +142,7 @@ paths:
   "/v3/{apiKey}/getNFTsForCollection":
     get:
       summary: NFTs By Collection
-      description: getNFTsForCollection - Retrieves all NFTs associated with a specific NFT collection. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getNFTsForCollection - Retrieves all NFTs associated with a specific NFT collection. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -145,31 +152,6 @@ paths:
         - $ref: "#/components/parameters/startToken"
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/tokenUriTimeoutInMs"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print total NFT collection returned in the response:
-              alchemy.nft
-                .getNftsForContract("0x61fce80d72363b731425c3a2a46a1a5fed9814b2")
-                .then(console.log);
       responses:
         "200":
           description: "Returns a list of NFTs associated with the specified collection."
@@ -202,7 +184,7 @@ paths:
   "/v3/{apiKey}/getNFTMetadata":
     get:
       summary: NFT Metadata By Token ID
-      description: getNFTMetadata - Retrieves the metadata associated with a specific NFT. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getNFTMetadata - Retrieves the metadata associated with a specific NFT. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -211,12 +193,6 @@ paths:
         - $ref: "#/components/parameters/tokenType"
         - $ref: "#/components/parameters/tokenUriTimeoutInMs"
         - $ref: "#/components/parameters/refreshCache"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the metadata of the specified NFT."
@@ -228,7 +204,7 @@ paths:
   "/v3/{apiKey}/getNFTMetadataBatch":
     post:
       summary: NFT Metadata By Token ID [Batch]
-      description: getNFTMetadataBatch - Retrieves metadata for up to 100 specified NFT contracts in a single request. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getNFTMetadataBatch - Retrieves metadata for up to 100 specified NFT contracts in a single request. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -259,12 +235,6 @@ paths:
                   $ref: "#/components/schemas/tokenUriTimeoutInMs"
                 refreshCache:
                   $ref: "#/components/schemas/refreshCache"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns an array of NFT metadata corresponding to the batch query."
@@ -279,17 +249,11 @@ paths:
   "/v3/{apiKey}/getContractMetadata":
     get:
       summary: Contract Metadata By Address
-      description: getContractMetadata - Retrieves high-level collection or contract-level information for an NFT. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getContractMetadata - Retrieves high-level collection or contract-level information for an NFT. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the contract metadata for the specified address."
@@ -301,17 +265,11 @@ paths:
   "/v3/{apiKey}/getCollectionMetadata":
     get:
       summary: Collection Metadata By Slug
-      description: getCollectionMetadata - Retrieves high-level collection or contract-level information for an NFT collection. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getCollectionMetadata - Retrieves high-level collection or contract-level information for an NFT collection. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/collectionSlugRequired"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the collection metadata for the specified slug."
@@ -331,11 +289,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: "Returns confirmation of cache invalidation along with the number of tokens invalidated."
@@ -375,12 +328,6 @@ paths:
                     ]
                   items:
                     $ref: "#/components/schemas/contractAddress"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns an array of contract metadata corresponding to the batch query."
@@ -395,18 +342,12 @@ paths:
   "/v3/{apiKey}/getOwnersForNFT":
     get:
       summary: Owners By NFT
-      description: getOwnersForNFT - Retrieves the owner(s) for a specific token. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getOwnersForNFT - Retrieves the owner(s) for a specific token. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
         - $ref: "#/components/parameters/tokenId"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the owner(s) of the specified NFT."
@@ -426,21 +367,21 @@ paths:
   "/v3/{apiKey}/getOwnersForContract":
     get:
       summary: Owners By Contract
-      description: getOwnersForContract - Retrieves all owners associated with a specific NFT contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: getOwnersForContract - Retrieves all owners associated with a specific NFT contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
         - $ref: "#/components/parameters/withTokenBalances"
         # - $ref: '#/components/parameters/block'
         - $ref: "#/components/parameters/pageKey"
           description: String - used for contracts with >50,000 owners. `pageKey` field can be passed back as request parameter to get the next page of results.
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a list of all owners for the specified contract."
@@ -466,7 +407,7 @@ paths:
       description: |
         Returns a list of all spam contracts marked by Alchemy.
 
-        <Note>Please note that this API endpoint is only available to paid tier customers. Upgrade your account [here](https://dashboard.alchemy.com/account/).</Note>
+        <Note>Please note that this API endpoint is only available to paid tier customers. Upgrade your account [here](https://dashboard.alchemy.com/account).</Note>
 
         <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast. More to come soon!</Note>
       tags: ["NFT Spam Endpoints"]
@@ -480,12 +421,6 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a list of all spam contracts marked by Alchemy."
@@ -507,7 +442,7 @@ paths:
       description: |
         Determines whether a specific contract is marked as spam by Alchemy.
 
-        <Note>Please note that this API endpoint is only available to paid tier customers. Upgrade your account [here](https://dashboard.alchemy.com/account/).</Note>
+        <Note>Please note that this API endpoint is only available to paid tier customers. Upgrade your account [here](https://dashboard.alchemy.com/account).</Note>
 
         <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast. More to come soon!</Note>
       tags: ["NFT Spam Endpoints"]
@@ -521,13 +456,13 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
       responses:
         "200":
           description: "Returns whether the specified contract is marked as spam."
@@ -553,12 +488,6 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
         - $ref: "#/components/parameters/tokenId"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns whether the specified token is marked as an airdrop."
@@ -591,12 +520,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a summary of attribute prevalence for the specified NFT collection."
@@ -636,12 +559,6 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressDefault"
         - $ref: "#/components/parameters/collectionSlug"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the floor prices of the specified NFT collection across different marketplaces."
@@ -678,19 +595,13 @@ paths:
       description: |
         Searches for a keyword across metadata of all ERC-721 and ERC-1155 smart contracts.
 
-        <Warning>This endpoint is currently in BETA. Please report any feedback you have for this endpoint via Alchemy's [Discord](https://discord.gg/alchemy).</Warning>
+        <Warning>This endpoint is currently in BETA. If you have any questions or feedback, please contact us at support@alchemy.com or open a ticket in the dashboard.</Warning>
 
         <Note>Please note that this endpoint is only available on **Ethereum**, **Polygon**, **Arbitrum**, **Optimism** & **Base** networks.</Note>
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/query"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the list of NFT contracts where the metadata has one or more keywords from the search string."
@@ -705,18 +616,12 @@ paths:
   "/v3/{apiKey}/isHolderOfContract":
     get:
       summary: Is Holder Of Contract
-      description: isHolderOfContract - Determines whether a specific wallet holds any NFT from a given contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains?service=token-api&utm_source=readme&utm_medium=link&utm_campaign=docs_method_chains_link_v1_tokens).
+      description: isHolderOfContract - Determines whether a specific wallet holds any NFT from a given contract. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
       tags: ["NFT Ownership Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/wallet"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns whether the specified wallet holds any NFT from the given contract."
@@ -750,12 +655,6 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
         - $ref: "#/components/parameters/tokenId"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns the rarity information for each attribute of the specified NFT."
@@ -814,12 +713,6 @@ paths:
         - $ref: "#/components/parameters/limit"
           description: Integer - The maximum number of NFT sales to return. Maximum and default values are 1000.
         - $ref: "#/components/parameters/pageKey"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a list of NFT sales that match the query parameters."
@@ -945,12 +838,6 @@ paths:
         - $ref: "#/components/parameters/excludeFilters"
         - $ref: "#/components/parameters/orderBy"
         - $ref: "#/components/parameters/spamConfidenceLevel"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a list of NFT contracts held by the specified owner address."
@@ -989,12 +876,6 @@ paths:
         - $ref: "#/components/parameters/withMetadata"
         - $ref: "#/components/parameters/includeFilters"
         - $ref: "#/components/parameters/excludeFilters"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a list of NFT collections held by the specified owner address."
@@ -1028,7 +909,13 @@ paths:
       tags: ["NFT Spam Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/addressRequired"
+        - name: address
+          description: String - The address to check for spam status.
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
         - name: isSpam
           in: query
           required: true
@@ -1036,12 +923,6 @@ paths:
             type: boolean
             description: "Whether the address is spam."
             default: true
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       responses:
         "200":
           description: "Returns a confirmation message if the address was successfully reported as spam."
@@ -1061,12 +942,6 @@ paths:
       tags: ["NFT Metadata Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-      x-readme:
-        samples-languages:
-          - javascript
-          - curl
-          - python
-          - go
       requestBody:
         content:
           application/json:
@@ -1124,30 +999,6 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/pageKey"
         - $ref: "#/components/parameters/pageSize"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Setup: npm install alchemy-sdk
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: demo, // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print all NFTs returned in the response:
-              alchemy.nft.getNftsForOwner("vitalik.eth").then(console.log);
       responses:
         "200":
           description: "Returns the list of all NFTs owned by the given address and satisfying the given input parameters."
@@ -1189,32 +1040,6 @@ paths:
         - $ref: "#/components/parameters/tokenType"
         - $ref: "#/components/parameters/tokenUriTimeoutInMs"
         - $ref: "#/components/parameters/refreshCache"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print NFT metadata returned in the response:
-              alchemy.nft.getNftMetadata(
-                "0x5180db8F5c931aaE63c74266b211F580155ecac8",
-                "1590"
-              ).then(console.log);
       responses:
         "200":
           description: ""
@@ -1257,32 +1082,6 @@ paths:
                   $ref: "#/components/schemas/tokenUriTimeoutInMs"
                 refreshCache:
                   $ref: "#/components/schemas/refreshCache"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print NFT metadata returned in the response:
-              alchemy.nft.getNftMetadata(
-                "0x5180db8F5c931aaE63c74266b211F580155ecac8",
-                "1590"
-              ).then(console.log);
       responses:
         "200":
           description: ""
@@ -1301,30 +1100,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              alchemy.nft
-                .getContractMetadata("0x61fce80d72363b731425c3a2a46a1a5fed9814b2")
-                .then(console.log);
       responses:
         "200":
           description: ""
@@ -1390,31 +1165,6 @@ paths:
         - $ref: "#/components/parameters/startToken"
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/tokenUriTimeoutInMs"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print total NFT collection returned in the response:
-              alchemy.nft
-                .getNftsForContract("0x61fce80d72363b731425c3a2a46a1a5fed9814b2")
-                .then(console.log);
       responses:
         "200":
           description: ""
@@ -1455,31 +1205,6 @@ paths:
         - $ref: "#/components/parameters/tokenId"
         - $ref: "#/components/parameters/pageKey"
         - $ref: "#/components/parameters/getOwnersForTokenPageSize"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print total NFT count returned in the response:
-              alchemy.nft.getOwnersForNft("0x5180db8F5c931aaE63c74266b211F580155ecac8", "1590").then(
-                console.log
-              );
       responses:
         "200":
           description: ""
@@ -1503,31 +1228,6 @@ paths:
         # - $ref: '#/components/parameters/block'
         - $ref: "#/components/parameters/pageKey"
           description: String - used for collections with >50,000 owners. `pageKey` field can be passed back as request parameter to get the next page of results.
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print total NFT count returned in the response:
-              alchemy.nft
-                .getOwnersForContract("0x61fce80d72363b731425c3a2a46a1a5fed9814b2")
-                .then(console.log);
       responses:
         "200":
           description: ""
@@ -1551,29 +1251,6 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print all spam NFT contracts returned in the response:
-              alchemy.nft.getSpamContracts().then(console.log);
       responses:
         "200":
           description: ""
@@ -1604,32 +1281,13 @@ paths:
               default: eth-mainnet
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print whether an NFT contract is spam
-              alchemy.nft
-                .isSpamContract("0x000440f08436a7b866d1ae42db5e0be801da722a")
-                .then(console.log);
+        - name: contractAddress
+          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
       responses:
         "200":
           description: ""
@@ -1648,11 +1306,6 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
         - $ref: "#/components/parameters/tokenId"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: ""
@@ -1670,11 +1323,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: ""
@@ -1706,31 +1354,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
-        code-samples:
-          - language: javascript
-            name: Alchemy SDK
-            code: |
-              // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-              // Setup: npm install alchemy-sdk
-              import { Network, Alchemy } from "alchemy-sdk";
-
-              // Optional Config object, but defaults to demo api-key and eth-mainnet.
-              const settings = {
-                apiKey: "demo", // Replace with your Alchemy API Key.
-                network: Network.ETH_MAINNET, // Replace with your network.
-              };
-
-              const alchemy = new Alchemy(settings);
-
-              // Print the NFT floor price for a contract
-              alchemy.nft
-                .getFloorPrice("0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d")
-                .then(console.log);
       responses:
         "200":
           description: ""
@@ -1778,11 +1401,6 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
         - $ref: "#/components/parameters/tokenId"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: ""
@@ -1823,11 +1441,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/query"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: "Returns the list of NFT contracts where the metadata has one or more keywords from the search string."
@@ -1860,11 +1473,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: ""
@@ -1896,11 +1504,6 @@ paths:
           in: query
           required: true
         - $ref: "#/components/parameters/contractAddressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: ""
@@ -1944,11 +1547,6 @@ paths:
         - $ref: "#/components/parameters/limit"
           description: Integer - The maximum number of NFT sales to return. Maximum and default values are 1000.
         - $ref: "#/components/parameters/pageKey"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: ""
@@ -2060,11 +1658,6 @@ paths:
         - $ref: "#/components/parameters/excludeFilters"
         - $ref: "#/components/parameters/orderBy"
         - $ref: "#/components/parameters/spamConfidenceLevel"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
       responses:
         "200":
           description: ""
@@ -2094,12 +1687,20 @@ paths:
       tags: ["NFT API V2 Methods (Older Version)"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - $ref: "#/components/parameters/addressRequired"
-      x-readme:
-        samples-languages:
-          - curl
-          - javascript
-          - python
+        - name: address
+          description: String - The address to check for spam status.
+          in: query
+          schema:
+            type: string
+            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
+          required: true
+        - name: isSpam
+          description: Boolean - Whether the address is spam.
+          in: query
+          schema:
+            type: boolean
+            default: true
+          required: true
       responses:
         "200":
           description: ""
@@ -2109,6 +1710,7 @@ paths:
                 type: string
                 description: 'String - "Address was successfully reported as spam" if calling the API was successful. '
       operationId: reportSpam
+
   ## End of v2 methods
 
 components:
@@ -2388,7 +1990,7 @@ components:
     apiKey:
       type: string
       default: docs-demo
-      description: For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)
+      description: For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)
     wallet:
       type: string
       default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
@@ -2744,7 +2346,7 @@ components:
           $ref: "#/components/schemas/collectionFloorPrice"
         description:
           type: string
-          description: "OpenSea collection description"
+          description: "OpenSea collection description. Note: this value is truncated to 255 characters."
         externalUrl:
           type: string
           description: "Collection homepage"
@@ -2915,9 +2517,41 @@ components:
           description: "String - ISO timestamp of the last cache refresh for the information returned in the metadata field."
         acquiredAt:
           $ref: "#/components/schemas/acquiredAt"
+        animation:
+          $ref: "#/components/schemas/animation"
+        mint:
+          $ref: "#/components/schemas/mint"
+        owners:
+          $ref: "#/components/schemas/owners"
         #balance:
         #  type: string
         #  description: 'String - Token balance'
+    animation:
+      type: object
+      properties:
+        cachedUrl:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+        orginalUrl:
+          type: string
+    mint:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+          description: "Address that minted the NFT"
+        blockNumber:
+          type: integer
+          description: "Block number when the NFT was minted"
+        timestamp:
+          type: string
+          description: "Timestamp when the NFT was minted"
+        transactionHash:
+          type: string
+          description: "Transaction hash of the mint transaction"
     acquiredAt:
       type: object
       description: "Only present if the request specified `orderBy=transferTime`."
@@ -2946,7 +2580,7 @@ components:
           description: "OpenSea CDN image URL"
         description:
           type: string
-          description: "OpenSea collection description"
+          description: "OpenSea collection description. Note: this value is truncated to 255 characters."
         externalUrl:
           type: string
           description: "Collection homepage"
@@ -2956,6 +2590,9 @@ components:
         discordUrl:
           type: string
           description: "The discord URL of the collection"
+        bannerImageUrl:
+          type: string
+          description: "The banner image URL of the collection"
         lastIngestedAt:
           type: string
           description: "The timestamp when the collection was last ingested by us"
@@ -3022,7 +2659,7 @@ components:
           $ref: "#/components/schemas/collectionFloorPrice"
         description:
           type: string
-          description: "OpenSea collection description"
+          description: "OpenSea collection description. Note: this value is truncated to 255 characters."
         externalUrl:
           type: string
           description: "Collection homepage"

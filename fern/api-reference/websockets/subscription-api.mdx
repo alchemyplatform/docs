@@ -1,5 +1,5 @@
 ---
-title: Subscription API Quickstart
+title: Subscription API Overview
 description: Learn how to subscribe to pending transactions, log events, new blocks and more using WebSockets on Ethereum, Polygon, Arbitrum, and Optimism.
 subtitle: Learn how to subscribe to pending transactions, log events, new blocks and more using WebSockets on Ethereum, Polygon, Arbitrum, and Optimism.
 url: https://docs.alchemy.com/reference/subscription-api
@@ -8,14 +8,11 @@ slug: reference/subscription-api
 
 # Getting Started
 
-There are two primary ways to use the Subscription API or WebSockets:
-
-1. [Using the Alchemy SDK](/reference/alchemy-sdk-quickstart) (recommended)
-2. [Using standard JSON-RPC methods](#using-json-rpc-requests-to-access-websockets)
+The primary way to use the Subscription API or WebSockets is through standard JSON-RPC methods. See the [Using JSON-RPC Requests section](#using-json-rpc-requests-to-access-websockets) below to get started.
 
 # Subscription API Endpoints
 
-For a full list of Subscription API endpoints and supported chains see the [Subscription API Endpoints](/reference/subscription-api-endpoints) doc, or if you're using the [Alchemy SDK](/reference/alchemy-sdk-quickstart) see [SDK WebSockets Endpoints](/reference/sdk-websockets-endpoints). Below are the subscription endpoints available and the corresponding docs for each of them.
+For a full list of Subscription API endpoints and supported chains see the [Subscription API Endpoints](/reference/subscription-api-endpoints) doc. Below are the subscription endpoints available and the corresponding docs for each of them.
 
 <Info>
   Note: `alchemy_minedTransactions` and `alchemy_pendingTransactions` are only
@@ -29,6 +26,8 @@ For a full list of Subscription API endpoints and supported chains see the [Subs
 | [newPendingTransactions](/reference/newpendingtransactions)           | Emits transaction hashes that are sent to the network and marked as "pending".                                         |
 | [newHeads](/reference/newheads)                                       | Emits new blocks that are added to the blockchain.                                                                     |
 | [logs](/reference/logs)                                               | Emits logs attached to a new block that match certain topic filters.                                                   |
+| [monadNewHeads](/reference/monadnewheads)                             | Fires a notification each time as soon as a block is Proposed and the node has a chance to speculatively execute.     |
+| [monadLogs](/reference/monadlogs)                                     | Emits logs attached to a new block that match certain topic filters as soon as the block is Proposed and the node has a chance to speculatively execute.                  |
 
 # What are WebSockets and how do they differ from HTTP?
 
@@ -40,13 +39,13 @@ Instead, an open WebSocket connection can push network updates to clients by all
 
 The `eth_subscribe` and `eth_unsubscribe` JSON-RPC methods allow you to access WebSockets.
 
-To begin, open a WebSocket using the WebSocket URL for your app. You can find your app's WebSocket URL by opening the app's page in [your dashboard](https://dashboard.alchemy.com/?a=30fdcb2c1f) and clicking "View Key".
+To begin, open a WebSocket using the WebSocket URL for your app. You can find your app's WebSocket URL by opening the app's page in [your dashboard](https://dashboard.alchemy.com/signup) and clicking "View Key".
 
 Note that your app's URL for WebSockets is different from its URL for HTTP requests, but both can be found in the app's "Network" tab.
 
 ![](2cbc56a-image.png)
 
-Next, install a command line tool for making WebSocket requests such as [wscat](https://github.com/websockets/wscat), or to make requests from your project files instead of the command line, check out the [Alchemy SDK](/reference/sdk-websockets-endpoints). Using `wscat`, you can send requests as follows:
+Next, install a command line tool for making WebSocket requests such as [wscat](https://github.com/websockets/wscat). Using `wscat`, you can send requests as follows:
 
 <CodeGroup>
   ```shell Shell
@@ -69,33 +68,6 @@ Next, install a command line tool for making WebSocket requests such as [wscat](
 
   < {"jsonrpc":"2.0","id":1,"result":true}
   ```
-
-  ```javascript Alchemy SDK
-  // Setup: npm install alchemy-sdk
-  import { Alchemy } from "alchemy-sdk";
-
-  // Optional config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-
-  const alchemy = new Alchemy(settings);
-
-  // Subscription for new blocks on Eth Mainnet.
-  alchemy.ws.on("block", (blockNumber) =>
-    console.log("The latest block number is", blockNumber),
-  );
-
-  // Subscription for Alchemy's pendingTransactions Enhanced API
-  alchemy.ws.on(
-    {
-      method: "alchemy_pendingTransactions",
-      toAddress: "vitalik.eth",
-    },
-    (tx) => console.log(tx),
-  );
-  ```
 </CodeGroup>
 
 <Warning>
@@ -114,20 +86,17 @@ Next, install a command line tool for making WebSocket requests such as [wscat](
 
 The following limits apply for WebSocket connections:
 
-* There is a limit of **20,000 WebSocket connections** per API Key as well as **1,000 parallel WebSocket subscriptions** per WebSocket connection, creating a maximum of **20 million subscriptions per application**.
-* The maximum size of a JSON-RPC `batch` request that can be sent over a WebSocket connection is 20
-* Free tier users will be limited to 10 concurrent requests per WebSocket connection.
+* There is a limit of **100 WebSocket connections** for the FREE tier and **2,000 WebSocket connections** for all other tiers, with a maximum of 50,000 connections per instance.
+* **No limits** on the number of **parallel** WebSocket subscriptions per WebSocket connection.
+* The maximum size of a JSON-RPC `batch` request that can be sent over a WebSocket connection is 1000
 
 ***
 
 # Error Codes
 
-| Error Code | Error Message                                                                                                                | Solution                                                                                                                                                         |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `32600`    | `"The maximum batch size that can be sent over a websocket connection is 10. Please decrease the batch size and try again."` | Occurs when user attempts to send high-volume JSON-RPC traffic over Websockets. We recommend this traffic be sent over HTTP instead to optimize server backends. |
-
-***
-
-# Example Projects
-
-* [How to Listen to NFT Mints](/docs/how-to-listen-to-nft-mints)
+| Error Code | Error Message                                                                                                                                         | Solution                                                                                                                                                         |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `32600`    | `"Sorry, the maximum batch request size is 1000. Please reduce the size of your request and try again."`                                              | Occurs when user attempts to send high-volume JSON-RPC traffic over Websockets. We recommend this traffic be sent over HTTP instead to optimize server backends. |
+| `1008`     | `"WebSocket connection limit reached for this app. Please close existing connections and try again."`                                                 | Triggered when the number of open WebSocket connections for the app reaches the allowed limit. Close unused connections to restore access.                       |
+| `1008`     | `" This app has exceeded its limit of open WebSockets. Please close some other connections first."`                                                   | Triggered when the team previously exceeded the limit and tries to reconnect again before the backoff interval expires. Close existing connections and wait.     |
+| `1008`     | `" You have exceeded the maximum number of concurrent requests on a single WebSocket. At most 200 concurrent requests are allowed per WebSocket."`  | Triggered when a client has too many pending JSON-RPC requests on a single WebSocket. Ensure each request completes before sending more.                         |

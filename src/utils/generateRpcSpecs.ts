@@ -21,6 +21,7 @@ export const generateOpenRpcSpec = async (
     dereference: {
       preservedProperties: ["title", "description", "type", "pattern"],
     },
+    continueOnError: true,
   })) as DerefedOpenRpcDoc;
 
   const fullSpec = {
@@ -33,7 +34,7 @@ export const generateOpenRpcSpec = async (
           type: "string",
           default: "docs-demo",
           description:
-            "For higher throughput, [create your own API key](https://alchemy.com/?a=docs-demo)",
+            "For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)",
         },
         required: true,
       },

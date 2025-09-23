@@ -1,0 +1,1293 @@
+components:
+  methods:
+    starknet_blockHashAndNumber:
+      name: starknet_blockHashAndNumber
+      description: Get the most recent accepted block hash and number
+      params: []
+      result:
+        name: result
+        description: The latest block hash and number
+        schema:
+          title: Starknet block hash and number result
+          type: object
+          properties:
+            block_hash:
+              title: Block hash
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_HASH"
+            block_number:
+              title: Block number
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_NUMBER"
+          required: [block_hash, block_number]
+
+    starknet_blockNumber:
+      name: starknet_blockNumber
+      description: Get the most recent accepted block number
+      params: []
+      result:
+        name: result
+        description: The latest block number
+        schema:
+          title: Block number
+          $ref: "./base-types.yaml#/components/schemas/BLOCK_NUMBER"
+
+    starknet_getBlockWithTxHashes:
+      name: starknet_getBlockWithTxHashes
+      description: Get block information with transaction hashes given the block id
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The resulting block information with transaction hashes
+        schema:
+          title: Starknet get block hash with tx hashes result
+          oneOf:
+            - title: Block with transaction hashes
+              $ref: "./block.yaml#/components/schemas/BLOCK_WITH_TX_HASHES"
+            - title: Pending block with transaction hashes
+              $ref: "./block.yaml#/components/schemas/PENDING_BLOCK_WITH_TX_HASHES"
+
+    starknet_getBlockWithTxs:
+      name: starknet_getBlockWithTxs
+      description: Get block information with full transactions given the block id
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The resulting block information with full transactions
+        schema:
+          title: Starknet get block with txs result
+          oneOf:
+            - title: Block with transactions
+              $ref: "./block.yaml#/components/schemas/BLOCK_WITH_TXS"
+            - title: Pending block with transactions
+              $ref: "./block.yaml#/components/schemas/PENDING_BLOCK_WITH_TXS"
+
+    starknet_getBlockTransactionCount:
+      name: starknet_getBlockTransactionCount
+      summary: Get the number of transactions in a block given a block id
+      description: Returns the number of transactions in the designated block.
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The number of transactions in the designated block
+        schema:
+          title: Block transaction count
+          type: integer
+          minimum: 0
+
+    # Client methods
+    starknet_chainId:
+      name: starknet_chainId
+      description: Return the currently configured StarkNet chain id
+      params: []
+      result:
+        name: result
+        description: The chain id this node is connected to
+        schema:
+          title: Chain id
+          $ref: "./client.yaml#/components/schemas/CHAIN_ID"
+
+    starknet_syncing:
+      name: starknet_syncing
+      description: Returns an object about the sync status, or false if the node is not syncing
+      params: []
+      result:
+        name: syncing
+        summary: >
+          The state of the synchronization, or false if the node is not
+          synchronizing
+        description: >
+          The status of the node, if it is currently synchronizing state. FALSE
+          otherwise
+        schema:
+          title: SyncingStatus
+          oneOf:
+            - type: boolean
+              title: "False"
+              description: Only legal value is FALSE here
+            - title: Sync status
+              $ref: "./block.yaml#/components/schemas/SYNC_STATUS"
+
+    # Execute methods
+    starknet_call:
+      name: starknet_call
+      summary: Call a StarkNet function without creating a StarkNet transaction
+      description: >
+        Calls a function in a contract and returns the return value. Using this
+        call will not create a transaction; hence, will not change the state
+      params:
+        - name: request
+          description: The details of the function call
+          required: true
+          schema:
+            title: Function call
+            $ref: "./client.yaml#/components/schemas/FUNCTION_CALL"
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag, for the block referencing the state or call the
+            transaction on.
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The function's return value
+        schema:
+          type: array
+          title: Field element
+          items:
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+
+    # Fee_market methods
+    starknet_estimateFee:
+      name: starknet_estimateFee
+      summary: Estimate the fee for StarkNet transactions
+      description: >
+        Estimates the resources required by a given sequence of transactions when
+        applied on a given state. If one of the transactions reverts or fails due
+        to any reason (e.g., validation failure or an internal error), a
+        TRANSACTION_EXECUTION_ERROR is returned. Fees for account transactions
+        are expressed in fri.
+      params:
+        - name: request
+          description: The transaction to estimate
+          required: true
+          schema:
+            type: array
+            description: >
+              A sequence of transactions to estimate, running each transaction on
+              the state resulting from applying all the previous ones
+            title: Transaction
+            items:
+              $ref: "./transaction.yaml#/components/schemas/BROADCASTED_TXN"
+        - name: simulation_flags
+          description: Describes what parts of the transaction should be executed
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "./base-types.yaml#/components/schemas/SIMULATION_FLAG_FOR_ESTIMATE_FEE"
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag, for the block referencing the state or call the
+            transaction on.
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The fee estimations
+        schema:
+          title: Estimation
+          type: array
+          description: >
+            A sequence of fee estimations where the i'th estimate corresponds to
+            the i'th transaction
+          items:
+            $ref: "./client.yaml#/components/schemas/FEE_ESTIMATE"
+
+    # Filter methods
+    starknet_getEvents:
+      name: starknet_getEvents
+      summary: Returns all events matching the given filter
+      description: Returns all event objects matching the conditions in the provided filter
+      params:
+        - name: filter
+          description: The conditions used to filter the returned events
+          required: true
+          schema:
+            title: Events request
+            allOf:
+              - title: Event filter
+                $ref: "./filter.yaml#/components/schemas/EVENT_FILTER"
+              - title: Result page request
+                $ref: "./filter.yaml#/components/schemas/RESULT_PAGE_REQUEST"
+      result:
+        name: events
+        description: All the event objects matching the filter
+        schema:
+          title: Events chunk
+          $ref: "./filter.yaml#/components/schemas/EVENTS_CHUNK"
+
+    # State methods
+    starknet_getStorageAt:
+      name: starknet_getStorageAt
+      description: Get the value of the storage at the given address and key
+      params:
+        - name: contract_address
+          description: The address of the contract to read from
+          required: true
+          schema:
+            title: Address
+            $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+        - name: key
+          description: The key to the storage value for the given contract
+          required: true
+          schema:
+            title: Storage key
+            $ref: "./base-types.yaml#/components/schemas/STORAGE_KEY"
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The value at the given key for the given contract. 0 if no value is found
+        schema:
+          title: Field element
+          $ref: "./base-types.yaml#/components/schemas/FELT"
+
+    starknet_getStateUpdate:
+      name: starknet_getStateUpdate
+      description: Get the information about the result of executing the requested block
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The information about the state update of the requested block
+        schema:
+          title: Starknet get state update result
+          oneOf:
+            - title: State update
+              $ref: "./block.yaml#/components/schemas/STATE_UPDATE"
+            - title: Pending state update
+              $ref: "./block.yaml#/components/schemas/PENDING_STATE_UPDATE"
+
+    starknet_getNonce:
+      name: starknet_getNonce
+      description: Get the nonce associated with the given address in the given block
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: contract_address
+          description: The address of the contract whose nonce we're seeking
+          required: true
+          schema:
+            title: Address
+            $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+      result:
+        name: result
+        description: The contract's nonce at the requested state
+        schema:
+          title: Field element
+          $ref: "./base-types.yaml#/components/schemas/FELT"
+
+    starknet_getClassHashAt:
+      name: starknet_getClassHashAt
+      description: Get the contract class hash in the given block for the contract deployed at the given address
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: contract_address
+          description: The address of the contract whose class hash will be returned
+          required: true
+          schema:
+            title: Address
+            $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+      result:
+        name: result
+        description: The class hash of the given contract
+        schema:
+          title: Field element
+          $ref: "./base-types.yaml#/components/schemas/FELT"
+
+    starknet_getClass:
+      name: starknet_getClass
+      description: Get the contract class definition in the given block associated with the given hash
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: class_hash
+          description: The hash of the requested contract class
+          required: true
+          schema:
+            title: Field element
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+      result:
+        name: result
+        description: The contract class, if found
+        schema:
+          title: Starknet get class result
+          oneOf:
+            - title: Deprecated contract class
+              $ref: "./state.yaml#/components/schemas/DEPRECATED_CONTRACT_CLASS"
+            - title: Contract class
+              $ref: "./state.yaml#/components/schemas/CONTRACT_CLASS"
+
+    starknet_getClassAt:
+      name: starknet_getClassAt
+      description: Get the contract class definition in the given block at the given address
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: contract_address
+          description: The address of the contract whose class definition will be returned
+          required: true
+          schema:
+            title: Address
+            $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+      result:
+        name: result
+        description: The contract class
+        schema:
+          title: Starknet get class at result
+          oneOf:
+            - title: Deprecated contract class
+              $ref: "./state.yaml#/components/schemas/DEPRECATED_CONTRACT_CLASS"
+            - title: Contract class
+              $ref: "./state.yaml#/components/schemas/CONTRACT_CLASS"
+
+    # Transaction methods
+    starknet_getTransactionByBlockIdAndIndex:
+      name: starknet_getTransactionByBlockIdAndIndex
+      summary: Get the details of a transaction by a given block id and index
+      description: >
+        Get the details of the transaction given by the identified block and index
+        in that block. If no transaction is found, null is returned.
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: index
+          description: The index in the block to search for the transaction
+          required: true
+          schema:
+            title: Index
+            type: integer
+            minimum: 0
+      result:
+        name: transactionResult
+        schema:
+          title: Transaction
+          allOf:
+            - $ref: "./transaction.yaml#/components/schemas/TXN"
+            - type: object
+              properties:
+                transaction_hash:
+                  title: transaction hash
+                  $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+              required: [transaction_hash]
+
+    starknet_getTransactionByHash:
+      name: starknet_getTransactionByHash
+      description: Get the details and status of a submitted transaction
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the requested transaction
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        schema:
+          title: Transaction
+          allOf:
+            - $ref: "./transaction.yaml#/components/schemas/TXN"
+            - type: object
+              properties:
+                transaction_hash:
+                  title: transaction hash
+                  $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+              required: [transaction_hash]
+
+    starknet_getTransactionReceipt:
+      name: starknet_getTransactionReceipt
+      description: Get the transaction receipt by the transaction hash
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the requested transaction
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        schema:
+          title: Transaction receipt with block info
+          $ref: "./receipt.yaml#/components/schemas/TXN_RECEIPT_WITH_BLOCK_INFO"
+
+    starknet_addDeclareTransaction:
+      name: starknet_addDeclareTransaction
+      description: Submits a class declaration transaction to the Starknet network. The transaction includes details about the new class to be added.
+      paramStructure: by-name
+      params:
+        - name: declare_transaction
+          description: The declaration transaction to be submitted
+          required: true
+          schema:
+            title: Declare transaction
+            $ref: "./transaction.yaml#/components/schemas/BROADCASTED_DECLARE_TXN"
+      result:
+        name: result
+        description: The result of the transaction submission
+        schema:
+          title: DeclareTransactionResult
+          type: object
+          properties:
+            transaction_hash:
+              title: Transaction hash
+              $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+            class_hash:
+              title: Class hash
+              $ref: "./base-types.yaml#/components/schemas/FELT"
+          required: [transaction_hash, class_hash]
+
+    starknet_pendingTransactions:
+      name: starknet_pendingTransactions
+      description: Returns the transactions currently in the transaction pool that have been recognized by this sequencer but not yet included in a block.
+      paramStructure: by-name
+      params: []
+      result:
+        name: result
+        description: List of transactions in the pending pool
+        schema:
+          title: Pending Transactions
+          type: array
+          items:
+            $ref: "./transaction.yaml#/components/schemas/TXN"
+
+    starknet_addDeployAccountTransaction:
+      name: starknet_addDeployAccountTransaction
+      description: Submits a new deploy account transaction to the Starknet network. This transaction initializes a new account contract on-chain with an associated address and class hash.
+      paramStructure: by-name
+      params:
+        - name: deploy_account_transaction
+          description: The deploy account transaction to be submitted
+          required: true
+          schema:
+            title: Deploy Account Transaction
+            $ref: "./transaction.yaml#/components/schemas/BROADCASTED_DEPLOY_ACCOUNT_TXN"
+      result:
+        name: result
+        description: The result of the transaction submission
+        schema:
+          title: DeployAccountTransactionResult
+          type: object
+          properties:
+            transaction_hash:
+              title: Transaction hash
+              $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+            contract_address:
+              title: Contract address
+              $ref: "./base-types.yaml#/components/schemas/FELT"
+          required: [transaction_hash, contract_address]
+
+    starknet_addInvokeTransaction:
+      name: starknet_addInvokeTransaction
+      description: Submits an invoke transaction to the Starknet network to execute smart contract functions.
+      paramStructure: by-name
+      params:
+        - name: invoke_transaction
+          description: The information needed to invoke the function or account
+          required: true
+          schema:
+            title: Invoke Transaction
+            $ref: "./transaction.yaml#/components/schemas/BROADCASTED_INVOKE_TXN"
+      result:
+        name: result
+        description: The result of the transaction submission
+        schema:
+          title: InvokeTransactionResult
+          type: object
+          properties:
+            transaction_hash:
+              title: Transaction hash
+              description: The hash of the invoke transaction
+              $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+          required: [transaction_hash]
+
+    starknet_estimateMessageFee:
+      name: starknet_estimateMessageFee
+      summary: Estimates the resources required by the l1_handler transaction induced by the message.
+      description: Estimates the resources required by the l1_handler transaction induced by the message.
+      paramStructure: by-name
+      params:
+        - name: MSG_FROM_L1
+          description: The Message from L1 object
+          required: true
+          schema:
+            type: object
+            title: Message from L1
+            properties:
+              from_address:
+                type: string
+                description: The address of the L1 contract sending the message
+              to_address:
+                type: string
+                description: The target L2 address the message is sent to
+              entry_point_selector:
+                type: string
+                description: The selector of the l1_handler in invoke in the target contract
+              payload:
+                type: array
+                description: The payload of the message
+            required: [from_address, to_address, entry_point_selector, payload]
+        - name: block_id
+          description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: Array of fee estimation results
+        schema:
+          type: array
+          title: Message fee estimate
+          items:
+            type: object
+            properties:
+              l1_data_gas_consumed:
+                type: string
+                description: The amount of Layer 1 data gas consumed by the transaction
+              l1_data_gas_price:
+                type: string
+                description: The price per unit of Layer 1 data gas (in WEI)
+              l1_gas_consumed:
+                type: string
+                description: The amount of Layer 1 execution gas consumed by the transaction
+              l1_gas_price:
+                type: string
+                description: The price per unit of Layer 1 execution gas (in WEI)
+              l2_gas_consumed:
+                type: string
+                description: The amount of Layer 2 gas consumed by the transaction
+              l2_gas_price:
+                type: string
+                description: The price per unit of Layer 2 gas (in WEI)
+              overall_fee:
+                type: string
+                description: The total estimated fee for the transaction in WEI, computed using all gas consumed and respective prices
+              unit:
+                type: string
+                description: The unit in which the overall fee is expressed
+
+    starknet_getBlockWithReceipts:
+      name: starknet_getBlockWithReceipts
+      description: Returns detailed block information, including full transactions and receipts, corresponding to the provided block ID.
+      paramStructure: by-name
+      params:
+        - name: block_id
+          description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The result object which can be one of the following object
+        schema:
+          type: object
+          title: BLOCK_WITH_RECEIPTS
+          properties:
+            status:
+              type: string
+              description: The block status, which can be one of - 'PENDING', 'ACCEPTED_ON_L2', 'ACCEPTED_ON_L1', 'REJECTED'
+            block_hash:
+              type: string
+              description: The block hash
+            parent_hash:
+              type: string
+              description: The parent block hash
+            block_number:
+              type: string
+              description: The block number (its height)
+            new_root:
+              type: string
+              description: The new global state root
+            timestamp:
+              type: integer
+              description: The time in which the block was created, encoded in Unix time
+            sequencer_address:
+              type: string
+              description: The StarkNet identity of the sequencer submitting this block
+            l1_gas_price:
+              type: object
+              properties:
+                price_in_fri:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in fri (10^-18 strk)
+                price_in_wei:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in wei
+            l1_data_gas_price:
+              type: object
+              properties:
+                price_in_fri:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in fri (10^-18 strk)
+                price_in_wei:
+                  type: string
+                  description: The price of one unit of the given resource, denominated in wei
+            l1_da_mode:
+              type: string
+              description: It specifies whether the data of this block is published via blob data or calldata. It can be one of - 'BLOB' or 'CALLDATA'
+            starknet_version:
+              type: string
+              description: The semver of the current Starknet protocol
+            transactions:
+              type: object
+              properties:
+                transaction:
+                  type: object
+                  oneOf:
+                    - type: object
+                      title: INVOKE_TXN_V3
+                      properties:
+                        type:
+                          type: string
+                          description: The type of transaction. It can take only one value - 'INVOKE'
+                        sender_address:
+                          type: string
+                          description: The sender address
+                        calldata:
+                          type: array
+                          description: The parameters passed to the constructor
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        nonce:
+                          type: string
+                          description: The nonce value
+                        resource_bounds:
+                          type: object
+                          properties:
+                            l1_gas:
+                              type: object
+                              description: The max amount and max price per unit of L1 gas used in this tx
+                              properties:
+                                max_amount:
+                                  {
+                                    type: string,
+                                    description: The max amount of the resource that can be used in the tx,
+                                  }
+                                max_price_per_unit:
+                                  {
+                                    type: string,
+                                    description: The max price per unit of this resource for this tx,
+                                  }
+                            l2_gas:
+                              type: object
+                              description: The max amount and max price per unit of L2 gas used in this tx
+                              properties:
+                                max_amount:
+                                  {
+                                    type: string,
+                                    description: The max amount of the resource that can be used in the tx,
+                                  }
+                                max_price_per_unit:
+                                  {
+                                    type: string,
+                                    description: The max price per unit of this resource for this tx,
+                                  }
+                        tip:
+                          type: string
+                          description: The tip for the transaction
+                        paymaster_data:
+                          type: array
+                          description: The data needed to allow the paymaster to pay for the transaction in native tokens
+                        account_deployment_data:
+                          type: array
+                          description: The data needed to deploy the account contract from which this tx will be initiated
+                        nonce_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's nonce (an account has a nonce per DA mode). It can be one of 'L1' or 'L2'
+                        fee_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's balance from which fee will be charged. It can be one of 'L1' or 'L2'
+                    - type: object
+                      title: DECLARE_TXN_V3
+                      properties:
+                        type:
+                          type: string
+                          description: The type of transaction. It can take only one value - 'DECLARE'
+                        sender_address:
+                          type: string
+                          description: The address of the account contract sending the declaration transaction
+                        compiled_class_hash:
+                          type: string
+                          description: The hash of the Cairo assembly resulting from the Sierra compilation
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        nonce:
+                          type: string
+                          description: The nonce value
+                        class_hash:
+                          type: string
+                          description: The hash of the declared class
+                        resource_bounds:
+                          type: object
+                          properties:
+                            l1_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                            l2_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                        tip:
+                          type: string
+                          description: The tip for the transaction
+                        paymaster_data:
+                          type: array
+                          description: Data needed to allow the paymaster to pay for the transaction in native tokens
+                        account_deployment_data:
+                          type: array
+                          description: Data needed to deploy the account contract from which this transaction will be initiated
+                        nonce_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's nonce. It can be one of 'L1' or 'L2'
+                        fee_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's balance from which the fee will be charged. It can be one of 'L1' or 'L2'
+                    - type: object
+                      title: DEPLOY_ACCOUNT_TXN_V3
+                      properties:
+                        type:
+                          type: string
+                          description: The type of transaction. It can take only one value - 'DEPLOY_ACCOUNT'
+                        version:
+                          type: string
+                          description: The version of the transaction scheme
+                        signature:
+                          type: string
+                          description: The signature associated with the transaction
+                        nonce:
+                          type: string
+                          description: The nonce value
+                        contract_address_salt:
+                          type: string
+                          description: The salt for the address of the deployed contract
+                        constructor_calldata:
+                          type: array
+                          description: The parameters passed to the constructor
+                        class_hash:
+                          type: string
+                          description: The hash of the deployed contract's class
+                        resource_bounds:
+                          type: object
+                          properties:
+                            l1_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                            l2_gas:
+                              type: object
+                              properties:
+                                max_amount: { type: string }
+                                max_price_per_unit: { type: string }
+                        tip:
+                          type: string
+                          description: The tip for the transaction
+                        paymaster_data:
+                          type: array
+                          description: Data needed to allow the paymaster to pay for the transaction in native tokens
+                        account_deployment_data:
+                          type: array
+                          description: Data needed to deploy the account contract from which this transaction will be initiated
+                        nonce_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's nonce. It can be one of 'L1' or 'L2'
+                        fee_data_availability_mode:
+                          type: string
+                          description: The storage domain of the account's balance from which the fee will be charged. It can be one of 'L1' or 'L2'
+
+    starknet_traceTransaction:
+      name: starknet_traceTransaction
+      description: Returns the trace of a specific transaction, including internal calls and execution details.
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the transaction to trace
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        description: The execution trace of the transaction
+        schema:
+          title: Transaction Trace
+          type: object
+          properties:
+            type:
+              title: Transaction type
+              type: string
+              description: The type of transaction (e.g., "INVOKE")
+              enum: ["INVOKE", "DECLARE", "DEPLOY_ACCOUNT", "L1_HANDLER"]
+            execute_invocation:
+              $ref: "./transaction.yaml#/components/schemas/INVOCATION_TRACE"
+            validate_invocation:
+              $ref: "./transaction.yaml#/components/schemas/INVOCATION_TRACE"
+            fee_transfer_invocation:
+              $ref: "./transaction.yaml#/components/schemas/INVOCATION_TRACE"
+            execution_resources:
+              title: Overall execution resources
+              type: object
+              properties:
+                l1_gas: { title: L1 gas, type: integer }
+                l2_gas: { title: L2 gas, type: integer }
+                l1_data_gas: { title: "L1 data gas", type: integer }
+              required: [l1_gas, l2_gas, l1_data_gas]
+          required: [type, execute_invocation, execution_resources]
+
+    starknet_traceBlockTransactions:
+      name: starknet_traceBlockTransactions
+      description: Returns the trace of the transactions in the block.
+      paramStructure: by-name
+      params:
+        - name: block_id
+          description: The hash of the requested block, the block number (height) of the requested block, or a block tag (latest or pending)
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+      result:
+        name: result
+        description: The traces of the transactions in the block
+        schema:
+          title: Block Transaction Traces
+          type: array
+          items:
+            title: Transaction Trace
+            type: object
+            properties:
+              transaction_hash:
+                title: Transaction hash
+                $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+              trace_root:
+                title: Trace root
+                $ref: "./transaction.yaml#/components/schemas/BROADCASTED_INVOKE_TXN"
+            required: [transaction_hash, trace_root]
+
+    starknet_specVersion:
+      name: starknet_specVersion
+      description: Return the active version of the Starknet JSON-RPC specification in use.
+      paramStructure: by-name
+      params: []
+      result:
+        name: result
+        description: The version of the Starknet JSON-RPC specification
+        schema:
+          type: string
+          description: The version of the Starknet JSON-RPC specification
+
+    starknet_getTransactionStatus:
+      name: starknet_getTransactionStatus
+      description: Gets the transaction status (possibly reflecting that the tx is still in the mempool, or dropped from it).
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the transaction to get the status of
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        description: The status of the transaction
+        schema:
+          type: object
+          properties:
+            finality_status:
+              type: string
+              description: The finality status of the transaction, including the case the txn is still in the mempool or failed validation during the block construction phase
+              enum: [RECEIVED, REJECTED, ACCEPTED_ON_L2, ACCEPTED_ON_L1]
+            execution_status:
+              type: string
+              description: The execution status of the transaction
+              enum: [SUCCEEDED, REVERTED]
+          required: [finality_status, execution_status]
+
+    starknet_simulateTransactions:
+      name: starknet_simulateTransactions
+      description: Simulates the execution of the specified transactions at the specified block.
+      paramStructure: by-name
+      params:
+        - name: transactions
+          description: A sequence of Starknet transactions to simulate. If multiple transactions are provided, each transaction is simulated on the state resulting from applying the previous transactions.
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "./transaction.yaml#/components/schemas/TXN"
+        - name: block_id
+          description: The block identifier
+          required: true
+          schema:
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: simulation_flags
+          description: A set of flags used for simulation
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [SKIP_VALIDATE, SKIP_FEE_CHARGE]
+      result:
+        name: result
+        description: A sequence of transaction simulation results
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              transaction_trace:
+                $ref: "./transaction.yaml#/components/schemas/BROADCASTED_INVOKE_TXN"
+                description: An execution trace of the transaction
+              fee_estimation:
+                type: object
+                description: An estimate of the fee required for the network to process the transaction
+                properties:
+                  gas_price: { type: integer }
+                  gas_usage: { type: integer }
+                  overall_fee: { type: integer }
+            required: [transaction_trace, fee_estimation]
+
+    # Pathfinder extension methods
+    pathfinder_getTransactionStatus:
+      name: pathfinder_getTransactionStatus
+      description: Returns a Pathfinder-style overall transaction status string for the given transaction hash.
+      paramStructure: by-name
+      params:
+        - name: transaction_hash
+          description: The hash of the requested transaction
+          required: true
+          schema:
+            title: Transaction hash
+            $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+      result:
+        name: result
+        description: Overall status of the transaction
+        schema:
+          type: string
+          enum:
+            [
+              NOT_RECEIVED,
+              RECEIVED,
+              PENDING,
+              REJECTED,
+              ACCEPTED_ON_L1,
+              ACCEPTED_ON_L2,
+              REVERTED,
+              ABORTED,
+            ]
+
+    pathfinder_lastL1AcceptedBlockHashAndNumber:
+      name: pathfinder_lastL1AcceptedBlockHashAndNumber
+      description: Get the most recent block hash and number whose state is accepted on L1
+      params: []
+      result:
+        name: result
+        description: The latest L1-accepted block hash and number
+        schema:
+          title: L1-accepted block hash and number
+          type: object
+          properties:
+            block_hash:
+              title: Block hash
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_HASH"
+            block_number:
+              title: Block number
+              $ref: "./base-types.yaml#/components/schemas/BLOCK_NUMBER"
+          required: [block_hash, block_number]
+
+    starknet_getCompiledCasm:
+      name: starknet_getCompiledCasm
+      description: Get the Cairo assembly (CASM) compiled contract class for the given class hash
+      paramStructure: by-name
+      params:
+        - name: class_hash
+          description: The Sierra class hash whose compiled CASM will be returned
+          required: true
+          schema:
+            title: Field element
+            $ref: "./base-types.yaml#/components/schemas/FELT"
+      result:
+        name: result
+        description: The compiled contract class in CASM format
+        schema:
+          title: CASM compiled contract class
+          type: object
+          properties:
+            sierra_program_hash:
+              title: Sierra program hash
+              description: The hash of the Sierra program from which this CASM was compiled
+              $ref: "./base-types.yaml#/components/schemas/FELT"
+            bytecode:
+              title: CASM bytecode
+              description: CASM program bytecode encoded as field elements
+              type: array
+              items:
+                $ref: "./base-types.yaml#/components/schemas/FELT"
+            entry_points_by_type:
+              title: Entry points by type
+              type: object
+              properties:
+                EXTERNAL:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      selector:
+                        $ref: "./base-types.yaml#/components/schemas/FELT"
+                      offset:
+                        type: integer
+                        minimum: 0
+                    required: [selector, offset]
+                L1_HANDLER:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      selector:
+                        $ref: "./base-types.yaml#/components/schemas/FELT"
+                      offset:
+                        type: integer
+                        minimum: 0
+                    required: [selector, offset]
+                CONSTRUCTOR:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      selector:
+                        $ref: "./base-types.yaml#/components/schemas/FELT"
+                      offset:
+                        type: integer
+                        minimum: 0
+                    required: [selector, offset]
+              required: [EXTERNAL, L1_HANDLER, CONSTRUCTOR]
+            compiler_version:
+              title: Compiler version
+              description: Version string of the Cairo compiler used to produce this CASM
+              type: string
+          required: [sierra_program_hash, bytecode, entry_points_by_type]
+
+    starknet_getMessagesStatus:
+      name: starknet_getMessagesStatus
+      description: Return statuses for L1↔L2 messages identified by message hashes and/or related transaction hashes
+      paramStructure: by-name
+      params:
+        - name: filter
+          description: Identify messages to query
+          required: true
+          schema:
+            title: Messages status filter
+            type: object
+            properties:
+              message_hashes:
+                title: Message hashes
+                type: array
+                items:
+                  $ref: "./base-types.yaml#/components/schemas/FELT"
+              l1_transaction_hash:
+                title: L1 transaction hash
+                type: string
+                description: Ethereum transaction hash that emitted one or more L1→L2 messages (0x-prefixed hex)
+              l2_transaction_hash:
+                title: L2 transaction hash
+                $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+            oneOf:
+              - required: [message_hashes]
+              - required: [l1_transaction_hash]
+              - required: [l2_transaction_hash]
+      result:
+        name: result
+        description: Message statuses for the requested identifiers
+        schema:
+          title: MessagesStatus
+          type: object
+          properties:
+            statuses:
+              type: array
+              items:
+                type: object
+                properties:
+                  message_hash:
+                    $ref: "./base-types.yaml#/components/schemas/FELT"
+                  direction:
+                    type: string
+                    enum: [L1_TO_L2, L2_TO_L1]
+                  status:
+                    type: string
+                    description: The status of the message
+                    enum: [UNKNOWN, SENT, RECEIVED, REJECTED]
+                  l1_transaction_hash:
+                    type: string
+                    description: Ethereum transaction hash if known (0x-prefixed hex)
+                  l2_transaction_hash:
+                    $ref: "./base-types.yaml#/components/schemas/TXN_HASH"
+                required: [message_hash, direction, status]
+
+    starknet_getStorageProof:
+      name: starknet_getStorageProof
+      description: Returns Merkle inclusion proofs for selected elements of the Starknet state at a given block
+      paramStructure: by-name
+      params:
+        - name: block_id
+          description: >
+            The hash of the requested block, or number (height) of the requested
+            block, or a block tag
+          required: true
+          schema:
+            title: Block id
+            $ref: "./block.yaml#/components/schemas/BLOCK_ID"
+        - name: class_hashes
+          description: Class hashes to prove inclusion in the classes trie
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "./base-types.yaml#/components/schemas/FELT"
+        - name: contract_addresses
+          description: Contract addresses to prove inclusion in the contracts trie
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+        - name: contracts_storage_keys
+          description: Storage keys to prove for specific contracts
+          required: false
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                contract_address:
+                  $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+                storage_keys:
+                  type: array
+                  items:
+                    $ref: "./base-types.yaml#/components/schemas/STORAGE_KEY"
+              required: [contract_address, storage_keys]
+      result:
+        name: result
+        description: Inclusion proofs for requested state elements at the given block
+        schema:
+          title: StorageProof
+          type: object
+          properties:
+            classes_proof:
+              description: Proofs for requested class hashes (if any)
+              type: array
+              items:
+                type: object
+                properties:
+                  class_hash:
+                    $ref: "./base-types.yaml#/components/schemas/FELT"
+                  proof:
+                    description: Merkle path nodes (top→bottom)
+                    type: array
+                    items:
+                      type: string
+                required: [class_hash, proof]
+            contracts_proof:
+              description: Proofs for requested contract addresses (if any)
+              type: array
+              items:
+                type: object
+                properties:
+                  contract_address:
+                    $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+                  proof:
+                    type: array
+                    items:
+                      type: string
+                required: [contract_address, proof]
+            storage_proofs:
+              description: Proofs for requested (contract, storage_key) pairs (if any)
+              type: array
+              items:
+                type: object
+                properties:
+                  contract_address:
+                    $ref: "./base-types.yaml#/components/schemas/ADDRESS"
+                  storage_key:
+                    $ref: "./base-types.yaml#/components/schemas/STORAGE_KEY"
+                  proof:
+                    type: array
+                    items:
+                      type: string
+                required: [contract_address, storage_key, proof]

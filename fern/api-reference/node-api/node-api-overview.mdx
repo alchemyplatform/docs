@@ -1,0 +1,90 @@
+---
+title: Node API Overview
+description: Use the Node API for low-level access to Alchemy-supported blockchains
+subtitle: Use the Node API for low-level access to Alchemy-supported blockchains
+url: https://docs.alchemy.com/reference/node-api-overview
+slug: docs/reference/node-api-overview
+---
+
+# Intro
+
+The Node API is our implementation of the standard [JSON-RPC API defined by Ethereum](https://ethereum.org/en/developers/docs/apis/json-rpc/). It also supports reading and writing data for non-EVM chains like Solana and Bitcoin.
+
+Use the Node API if you want to access the standard low-level interface for reading and writing to the blockchain of your choosing. For specific use cases and higher levels of abstraction, Alchemy also offers:
+
+* indexed speciality endpoints (ie. NFTs, Tokens, Transfers), use our [Data API](https://www.alchemy.com/docs/reference/data-api-overview).
+* account abstraction and smart wallet flows, use our [Wallet API](https://www.alchemy.com/docs/wallets).
+
+# Components of Node API
+
+<CardGroup cols={3}>
+  <Card title="Chain APIs" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Chain APIs"/>} href="chain-apis-overview">
+    Read & write interface for all blockchains supported by Alchemy.
+  </Card>
+
+  <Card title="WebSockets" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="WebSockets"/>} href="subscription-api">
+    Uses our Subscription API, for subscribing to pending transactions, log events, new blocks and more.
+  </Card>
+
+  <Card title="Trace API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Trace API"/>} href="/reference/trace-api-quickstart">
+    For insights into transactions processing and onchain activity.
+  </Card>
+
+  <Card title="Debug API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Debug API"/>} href="debug-api-quickstart">
+    Access to non-standard RPC methods for inspecting and debugging transactions.
+  </Card>
+</CardGroup>
+
+# When Should I Use the Node API?
+
+Use the Node API when your app needs direct, low-level access to blockchain data and functionality *without* relying on Alchemy's smart wallet abstractions or indexed data services.
+
+## Writing to a Blockchain
+
+Use the Node API if:
+
+* Your users are sending transactions, and you're not using Alchemy Smart Wallets.
+  * If You are using our wallets, check out the Wallet API, which supports:
+    * `sendUserOp`
+    * `estimateUserOpGas`
+    * and more account abstraction features
+
+### Examples of Node API *write* use cases
+
+* Sending ETH and ERC-20 tokens to/from users
+* Buying/selling NFTs in a marketplace
+* Simulating and inspecting transactions
+* Writing custom smart contract interactions
+
+### Key Node API endpoints
+
+* `eth_sendRawTransaction` - Submits a raw transaction (serialized and signed) for broadcasting to the network.
+
+## Reading from a Blockchain
+
+If your use case requires raw blockchain data, not indexed data like in our Data API, then the Node API is what you want:
+
+### Examples of Node API *read* use cases
+
+* Reading token balances
+* Polling logs and events
+
+### Key endpoints
+
+* `eth_getBalance` - Returns the balance of the account of a given address.
+* `eth_getLogs` - Returns an array of all logs matching the specified filter.
+* `eth_estimateGas` - Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
+* `eth_call` - Executes a new message call immediately without creating a transaction on the blockchain.
+
+# Summary
+
+The Node API is right for you if you are looking for a low-level way to:
+
+* Send and/or simulate transactions
+* Read raw blockchain state
+* Build tools or apps close to node-level logic
+
+Otherwise, consider the following APIs more optimized for higher-level abstractions:
+
+* [Data API](https://www.alchemy.com/docs/reference/data-overview): for fast, enriched, indexed queries (ie. historical token balances)
+* [Wallet API](https://www.alchemy.com/docs/wallets): for smart account flows (ie. account abstraction)

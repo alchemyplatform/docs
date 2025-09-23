@@ -1,0 +1,803 @@
+components:
+  schemas:
+    AssetId:
+      title: Asset ID
+      type: string
+      description: The ID of the asset, typically a base-58 encoded string.
+
+    DisplayOptions:
+      title: Display Options
+      type: object
+      description: Options for display formatting.
+      properties:
+        showUnverifiedCollections:
+          type: boolean
+          description: Display unverified collections.
+          default: false
+        showCollectionMetadata:
+          type: boolean
+          description: Display collection metadata.
+          default: false
+        showFungible:
+          type: boolean
+          description: Display all fungible tokens.
+          default: false
+        showNativeBalance:
+          type: boolean
+          description: Display native SOL balance.
+          default: false
+        showInscriptions:
+          type: boolean
+          description: Display inscriptions.
+          default: false
+        showZeroBalance:
+          type: boolean
+          description: Display assets with zero balance.
+          default: false
+        showGrandTotal:
+          type: boolean
+          description: Display grand total.
+          default: false
+
+    GetAssetConfig:
+      title: GetAsset Configuration
+      type: object
+      properties:
+        displayOptions:
+          $ref: "#/components/schemas/DisplayOptions"
+
+    GetAssetsConfig:
+      title: GetAssets Configuration
+      type: object
+      properties:
+        sortBy:
+          type: object
+          description: Sorting criteria for assets.
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+        limit:
+          type: integer
+          description: The maximum number of assets to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve assets before this cursor.
+        after:
+          type: string
+          description: Retrieve assets after this cursor.
+        displayOptions:
+          $ref: "#/components/schemas/DisplayOptions"
+
+    AssetInterface:
+      title: Asset Interface
+      type: string
+      enum:
+        - V1_NFT
+        - V1_PRINT
+        - LEGACY_NFT
+        - V2_NFT
+        - FungibleAsset
+        - Custom
+        - Identity
+        - Executable
+        - ProgrammableNFT
+      description: The interface of the asset.
+
+    AssetOwnership:
+      title: Asset Ownership
+      type: object
+      properties:
+        frozen:
+          type: boolean
+          description: Whether the asset is frozen.
+        delegated:
+          type: boolean
+          description: Whether the asset is delegated.
+        delegate:
+          type: string
+          nullable: true
+          description: The delegate of the asset, if any.
+        ownership_model:
+          type: string
+          enum:
+            - single
+            - token
+          description: The ownership model.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The owner of the asset.
+
+    AssetRoyalty:
+      title: Asset Royalty
+      type: object
+      properties:
+        royalty_model:
+          type: string
+          enum:
+            - creators
+            - fanout
+            - single
+          description: The royalty model.
+        target:
+          type: string
+          nullable: true
+          description: The target of the royalty.
+        percent:
+          type: number
+          description: The royalty percentage.
+        basis_points:
+          type: integer
+          description: The royalty in basis points.
+        primary_sale_happened:
+          type: boolean
+          description: Whether the primary sale has happened.
+        locked:
+          type: boolean
+          description: Whether the royalty is locked.
+
+    AssetCreator:
+      title: Asset Creator
+      type: object
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The address of the creator.
+        share:
+          type: integer
+          description: The creator's share percentage.
+        verified:
+          type: boolean
+          description: Whether the creator is verified.
+
+    AssetGrouping:
+      title: Asset Grouping
+      type: object
+      properties:
+        group_key:
+          type: string
+          description: The key of the group.
+        group_value:
+          type: string
+          description: The value of the group.
+
+    AssetAuthority:
+      title: Asset Authority
+      type: object
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The address of the authority.
+        scopes:
+          type: array
+          items:
+            type: string
+          description: The scopes of the authority.
+
+    AssetCompression:
+      title: Asset Compression
+      type: object
+      properties:
+        eligible:
+          type: boolean
+          description: Whether the asset is eligible for compression.
+        compressed:
+          type: boolean
+          description: Whether the asset is compressed.
+        data_hash:
+          type: string
+          nullable: true
+          description: The data hash of the compressed asset.
+        creator_hash:
+          type: string
+          nullable: true
+          description: The creator hash of the compressed asset.
+        asset_hash:
+          type: string
+          nullable: true
+          description: The asset hash of the compressed asset.
+        tree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          nullable: true
+          description: The merkle tree address.
+        seq:
+          type: integer
+          nullable: true
+          description: The sequence number.
+        leaf_id:
+          type: integer
+          nullable: true
+          description: The leaf ID in the merkle tree.
+
+    AssetContent:
+      title: Asset Content
+      type: object
+      properties:
+        $schema:
+          type: string
+          description: The schema version.
+        json_uri:
+          type: string
+          description: The URI of the JSON metadata.
+        files:
+          type: array
+          items:
+            type: object
+            properties:
+              uri:
+                type: string
+                description: The URI of the file.
+              cdn_uri:
+                type: string
+                nullable: true
+                description: The CDN URI of the file.
+              mime:
+                type: string
+                description: The MIME type of the file.
+        metadata:
+          type: object
+          properties:
+            attributes:
+              type: array
+              items:
+                type: object
+                properties:
+                  value:
+                    oneOf:
+                      - type: string
+                      - type: number
+                    description: The value of the attribute.
+                  trait_type:
+                    type: string
+                    description: The trait type of the attribute.
+            description:
+              type: string
+              description: The description of the asset.
+            name:
+              type: string
+              description: The name of the asset.
+            symbol:
+              type: string
+              description: The symbol of the asset.
+        links:
+          type: object
+          nullable: true
+          description: External links related to the asset.
+
+    Asset:
+      title: Asset
+      type: object
+      properties:
+        interface:
+          $ref: "#/components/schemas/AssetInterface"
+        id:
+          $ref: "#/components/schemas/AssetId"
+        content:
+          $ref: "#/components/schemas/AssetContent"
+        authorities:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetAuthority"
+        compression:
+          $ref: "#/components/schemas/AssetCompression"
+        grouping:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetGrouping"
+        royalty:
+          $ref: "#/components/schemas/AssetRoyalty"
+        creators:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetCreator"
+        ownership:
+          $ref: "#/components/schemas/AssetOwnership"
+        mutable:
+          type: boolean
+          description: Whether the asset is mutable.
+        burnt:
+          type: boolean
+          description: Whether the asset is burnt.
+        supply:
+          type: object
+          properties:
+            print_max_supply:
+              type: integer
+              nullable: true
+              description: The maximum print supply.
+            print_current_supply:
+              type: integer
+              nullable: true
+              description: The current print supply.
+            edition_nonce:
+              type: integer
+              nullable: true
+              description: The edition nonce.
+
+    AssetList:
+      title: Asset List
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of assets.
+        limit:
+          type: integer
+          description: Number of assets returned.
+        page:
+          type: integer
+          nullable: true
+          description: Current page number.
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+          description: Array of assets.
+
+    AssetProof:
+      title: Asset Proof
+      type: object
+      properties:
+        root:
+          type: string
+          description: The merkle tree root.
+        proof:
+          type: array
+          items:
+            type: string
+          description: The merkle proof path.
+        node_index:
+          type: integer
+          description: The node index in the tree.
+        leaf:
+          type: string
+          description: The leaf hash.
+        tree_id:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The merkle tree address.
+
+    AssetProofList:
+      title: Asset Proof List
+      type: array
+      items:
+        $ref: "#/components/schemas/AssetProof"
+      description: Array of asset proofs.
+
+    GetAssetsByAuthorityConfig:
+      title: GetAssetsByAuthority Configuration
+      type: object
+      properties:
+        sortBy:
+          type: object
+          description: Sorting criteria for assets.
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+        limit:
+          type: integer
+          description: The maximum number of assets to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve assets before this cursor.
+        after:
+          type: string
+          description: Retrieve assets after this cursor.
+        authorityAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The authority address to filter by.
+
+    GetAssetsByOwnerConfig:
+      title: GetAssetsByOwner Configuration
+      type: object
+      properties:
+        sortBy:
+          type: object
+          description: Sorting criteria for assets.
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+        limit:
+          type: integer
+          description: The maximum number of assets to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve assets before this cursor.
+        after:
+          type: string
+          description: Retrieve assets after this cursor.
+        options:
+          $ref: "#/components/schemas/DisplayOptions"
+
+    GetAssetsByGroupConfig:
+      title: GetAssetsByGroup Configuration
+      type: object
+      properties:
+        sortBy:
+          type: object
+          description: Sorting criteria for assets.
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+        limit:
+          type: integer
+          description: The maximum number of assets to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve assets before this cursor.
+        after:
+          type: string
+          description: Retrieve assets after this cursor.
+        groupKey:
+          type: string
+          description: The group key to filter by.
+        groupValue:
+          type: string
+          description: The group value to filter by.
+
+    GetAssetsByCreatorConfig:
+      title: GetAssetsByCreator Configuration
+      type: object
+      properties:
+        sortBy:
+          type: object
+          description: Sorting criteria for assets.
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+        limit:
+          type: integer
+          description: The maximum number of assets to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve assets before this cursor.
+        after:
+          type: string
+          description: Retrieve assets after this cursor.
+        creatorAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The creator address to filter by.
+        onlyVerified:
+          type: boolean
+          description: Only return assets where the creator is verified.
+          default: false
+
+    SearchAssetsConfig:
+      title: SearchAssets Configuration
+      type: object
+      properties:
+        sortBy:
+          type: object
+          description: Sorting criteria for assets.
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+        limit:
+          type: integer
+          description: The maximum number of assets to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve assets before this cursor.
+        after:
+          type: string
+          description: Retrieve assets after this cursor.
+        negate:
+          type: boolean
+          description: Invert the search filter.
+          default: false
+        conditionType:
+          type: string
+          enum:
+            - all
+            - any
+          description: Condition type for multiple filters.
+          default: all
+        interface:
+          $ref: "#/components/schemas/AssetInterface"
+        ownerAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The owner address to filter by.
+        ownerType:
+          type: string
+          enum:
+            - single
+            - token
+          description: The ownership model.
+        creatorAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The creator address to filter by.
+        creatorVerified:
+          type: boolean
+          description: Only include verified creators.
+        authorityAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The authority address to filter by.
+        grouping:
+          type: array
+          items:
+            type: string
+          description: Grouping criteria for assets.
+        delegateAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The delegate address to filter by.
+        frozen:
+          type: boolean
+          description: Filter by frozen status.
+        supply:
+          type: object
+          properties:
+            printMaxSupply:
+              type: integer
+              description: Maximum print supply filter.
+            printCurrentSupply:
+              type: integer
+              description: Current print supply filter.
+        mutable:
+          type: boolean
+          description: Filter by mutable status.
+        burnt:
+          type: boolean
+          description: Filter by burnt status.
+        jsonUri:
+          type: string
+          description: Filter by JSON URI.
+
+    GetAssetSignaturesConfig:
+      title: GetAssetSignatures Configuration
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: The maximum number of signatures to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve signatures before this cursor.
+        after:
+          type: string
+          description: Retrieve signatures after this cursor.
+        tree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The merkle tree address to filter by.
+
+    AssetSignature:
+      title: Asset Signature
+      type: object
+      properties:
+        signature:
+          type: string
+          description: The transaction signature.
+        slot:
+          type: integer
+          description: The slot number.
+        blockTime:
+          type: integer
+          nullable: true
+          description: The block time as a Unix timestamp.
+        instruction:
+          type: string
+          description: The instruction type.
+        tree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The merkle tree address.
+        leafIndex:
+          type: integer
+          nullable: true
+          description: The leaf index in the merkle tree.
+        seq:
+          type: integer
+          nullable: true
+          description: The sequence number.
+
+    AssetSignatureList:
+      title: Asset Signature List
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of signatures.
+        limit:
+          type: integer
+          description: Number of signatures returned.
+        page:
+          type: integer
+          nullable: true
+          description: Current page number.
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetSignature"
+          description: Array of asset signatures.
+
+    GetNftEditionsConfig:
+      title: GetNftEditions Configuration
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: The maximum number of editions to retrieve.
+          maximum: 1000
+          default: 100
+        page:
+          type: integer
+          description: The index of the "page" to retrieve.
+          default: 1
+        before:
+          type: string
+          description: Retrieve editions before this cursor.
+        after:
+          type: string
+          description: Retrieve editions after this cursor.
+
+    NftEdition:
+      title: NFT Edition
+      type: object
+      properties:
+        interface:
+          $ref: "#/components/schemas/AssetInterface"
+        id:
+          $ref: "#/components/schemas/AssetId"
+        content:
+          $ref: "#/components/schemas/AssetContent"
+        authorities:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetAuthority"
+        compression:
+          $ref: "#/components/schemas/AssetCompression"
+        grouping:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetGrouping"
+        royalty:
+          $ref: "#/components/schemas/AssetRoyalty"
+        creators:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetCreator"
+        ownership:
+          $ref: "#/components/schemas/AssetOwnership"
+        supply:
+          type: object
+          properties:
+            edition_nonce:
+              type: integer
+              nullable: true
+              description: The edition nonce.
+        mutable:
+          type: boolean
+          description: Whether the edition is mutable.
+        burnt:
+          type: boolean
+          description: Whether the edition is burnt.
+
+    NftEditionList:
+      title: NFT Edition List
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of editions.
+        limit:
+          type: integer
+          description: Number of editions returned.
+        page:
+          type: integer
+          nullable: true
+          description: Current page number.
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NftEdition"
+          description: Array of NFT editions.

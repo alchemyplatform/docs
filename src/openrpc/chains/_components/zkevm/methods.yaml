@@ -1,0 +1,332 @@
+components:
+  methods:
+    zkevm_consolidatedBlockNumber:
+      name: zkevm_consolidatedBlockNumber
+      summary: Returns the latest block number that is connected to the latest batch verified.
+      description: |
+        Retrieves the latest block number that is connected to the latest batch that has been verified on the network.
+      params: []
+      result:
+        name: Block Number
+        description: The latest block number connected to the latest verified batch, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_consolidatedBlockNumber example
+          params: []
+          result:
+            name: Block Number
+            value: "0x1"
+
+    zkevm_isBlockConsolidated:
+      name: zkevm_isBlockConsolidated
+      summary: Checks if a block is connected to a verified batch.
+      description: |
+        Returns `true` if the provided block number is connected to a batch that has already been verified; otherwise, returns `false`.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number to check.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Is Block Consolidated
+        description: true if the block is connected to a verified batch; false otherwise.
+        schema:
+          type: boolean
+      examples:
+        - name: zkevm_isBlockConsolidated example
+          params:
+            - name: blockNumber
+              value: "0x1"
+          result:
+            name: Is Block Consolidated
+            value: true
+
+    zkevm_isBlockVirtualized:
+      name: zkevm_isBlockVirtualized
+      summary: Checks if a block is connected to a virtualized batch.
+      description: |
+        Returns `true` if the provided block number is connected to a batch that has already been virtualized; otherwise, returns `false`.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number to check.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Is Block Virtualized
+        description: true if the block is connected to a virtualized batch; false otherwise.
+        schema:
+          type: boolean
+      examples:
+        - name: zkevm_isBlockVirtualized example
+          params:
+            - name: blockNumber
+              value: "0x1"
+          result:
+            name: Is Block Virtualized
+            value: true
+
+    zkevm_batchNumberByBlockNumber:
+      name: zkevm_batchNumberByBlockNumber
+      summary: Returns the batch number associated with a given block number.
+      description: |
+        Retrieves the batch number of the batch that is connected to the specified block number.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number for which to retrieve the associated batch number.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Batch Number
+        description: The batch number connected to the given block number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_batchNumberByBlockNumber example
+          params:
+            - name: blockNumber
+              value: "0x1"
+          result:
+            name: Batch Number
+            value: "0x1"
+
+    zkevm_batchNumber:
+      name: zkevm_batchNumber
+      summary: Returns the latest batch number.
+      description: |
+        Retrieves the latest batch number that has been processed on the network.
+      params: []
+      result:
+        name: Batch Number
+        description: The latest batch number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_batchNumber example
+          params: []
+          result:
+            name: Batch Number
+            value: "0x1"
+
+    zkevm_virtualBatchNumber:
+      name: zkevm_virtualBatchNumber
+      summary: Returns the latest virtual batch number.
+      description: |
+        Retrieves the latest virtual batch number that represents batches that are virtualized but not yet consolidated.
+      params: []
+      result:
+        name: Virtual Batch Number
+        description: The latest virtual batch number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_virtualBatchNumber example
+          params: []
+          result:
+            name: Virtual Batch Number
+            value: "0x1"
+
+    zkevm_verifiedBatchNumber:
+      name: zkevm_verifiedBatchNumber
+      summary: Returns the latest verified batch number.
+      description: |
+        Retrieves the latest batch number that has been verified and consolidated on the network.
+      params: []
+      result:
+        name: Verified Batch Number
+        description: The latest verified batch number, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_verifiedBatchNumber example
+          params: []
+          result:
+            name: Verified Batch Number
+            value: "0x1"
+
+    zkevm_getBatchByNumber:
+      name: zkevm_getBatchByNumber
+      summary: Retrieves a batch by its number or tag.
+      description: |
+        Returns the details of a batch specified by its number or a special tag (`earliest`, `latest`). If `includeTransactions` is `true`, the full transaction objects are included; otherwise, only transaction hashes are returned.
+      params:
+        - name: batchNumberOrTag
+          required: true
+          description: The batch number or a tag (`earliest`, `latest`) to identify the batch.
+          schema:
+            oneOf:
+              - $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              - $ref: "./schemas.yaml#/components/schemas/BatchNumberTag"
+        - name: includeTransactions
+          required: true
+          description: If `true`, returns full transaction objects; if `false`, returns only transaction hashes.
+          schema:
+            type: boolean
+      result:
+        name: Batch
+        description: The batch details corresponding to the given number or tag.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/Batch"
+      examples:
+        - name: Batch without transaction details
+          description: Batch details with transaction hashes only.
+          params:
+            - name: batchNumberOrTag
+              value: "0x1"
+            - name: includeTransactions
+              value: false
+          result:
+            name: Batch
+            value:
+              number: "0x1"
+              coinbase: "0x0000000000000000000000000000000000000001"
+              stateRoot: "0x0000000000000000000000000000000000000000000000000000000000000001"
+              globalExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000002"
+              mainnetExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000003"
+              rollupExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000004"
+              accInputHash: "0x0000000000000000000000000000000000000000000000000000000000000006"
+              timestamp: "0x642af31f"
+              sendSequencesTxHash: "0x0000000000000000000000000000000000000000000000000000000000000007"
+              verifyBatchTxHash: "0x0000000000000000000000000000000000000000000000000000000000000008"
+              transactions:
+                - "0x0000000000000000000000000000000000000000000000000000000000000009"
+                - "0x0000000000000000000000000000000000000000000000000000000000000010"
+                - "0x0000000000000000000000000000000000000000000000000000000000000011"
+        - name: Batch with transaction details
+          description: Batch details with full transaction objects.
+          params:
+            - name: batchNumberOrTag
+              value: "0x1"
+            - name: includeTransactions
+              value: true
+          result:
+            name: Batch
+            value:
+              number: "0x1"
+              coinbase: "0x0000000000000000000000000000000000000001"
+              stateRoot: "0x0000000000000000000000000000000000000000000000000000000000000001"
+              globalExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000002"
+              mainnetExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000003"
+              rollupExitRoot: "0x0000000000000000000000000000000000000000000000000000000000000004"
+              accInputHash: "0x0000000000000000000000000000000000000000000000000000000000000006"
+              timestamp: "0x642af31f"
+              sendSequencesTxHash: "0x0000000000000000000000000000000000000000000000000000000000000007"
+              verifyBatchTxHash: "0x0000000000000000000000000000000000000000000000000000000000000008"
+              transactions:
+                - nonce: "0x1"
+                  gasPrice: "0x123456"
+                  gas: "0x59D8"
+                  to: "0x0000000000000000000000000000000000000002"
+                  value: "0x1"
+                  input: "0x"
+                  v: "0xAAA"
+                  r: "0x0000000000000000000000000000000000000000000000000000000000000010"
+                  s: "0x0000000000000000000000000000000000000000000000000000000000000011"
+                  hash: "0x0000000000000000000000000000000000000000000000000000000000000012"
+                  from: "0x0000000000000000000000000000000000000003"
+                  blockHash: "0x0000000000000000000000000000000000000000000000000000000000000013"
+                  blockNumber: "0x1"
+                  transactionIndex: "0x0"
+                  chainId: "0x539"
+                  type: "0x0"
+
+    zkevm_getBroadcastURI:
+      name: zkevm_getBroadcastURI
+      description: Returns the Broadcast URL of the Trusted Sequencer that has been configured.
+      params: []
+      result:
+        name: Broadcast URI
+        description: The configured broadcast URL of the trusted sequencer
+        schema:
+          type: string
+      examples:
+        - name: zkevm_getBroadcastURI example
+          params: []
+          result:
+            name: Broadcast URI
+            value: "https://sequencer.zkevm.polygon.technology/broadcast"
+
+    zkevm_estimateFee:
+      name: zkevm_estimateFee
+      summary: Estimates the total transaction fee (wei) for a given transaction.
+      description: |
+        Returns the estimated transaction fee for executing the provided transaction
+        on Polygon zkEVM, taking into account zkEVM's effective gas pricing.
+        This method accepts the same transaction call object as `eth_estimateGas`
+        and returns `gasUsed * estimatedGasPrice` as a hex-encoded wei value.
+      params:
+        - name: transaction
+          required: true
+          description: Transaction call object (same shape as `eth_estimateGas`).
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              from:
+                $ref: "../evm/base-types.yaml#/components/schemas/address"
+              to:
+                $ref: "../evm/base-types.yaml#/components/schemas/address"
+              gas:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              gasPrice:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              maxFeePerGas:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              maxPriorityFeePerGas:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              value:
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              data:
+                $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+      result:
+        name: Estimated Fee
+        description: The estimated total fee in wei as a hex-encoded quantity.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_estimateFee example
+          params:
+            - name: transaction
+              value:
+                from: "0x0000000000000000000000000000000000000001"
+                to: "0x0000000000000000000000000000000000000002"
+                value: "0x186a0"
+                data: "0x"
+          result:
+            name: Estimated Fee
+            value: "0x1"
+
+    zkevm_estimateGasPrice:
+      name: zkevm_estimateGasPrice
+      summary: Estimates the effective gas price (wei) for Polygon zkEVM.
+      description: |
+        Returns the current estimated effective gas price to use for transactions on Polygon zkEVM
+        as a hex-encoded wei value. This value can be multiplied by the estimated gas used to
+        approximate total fees (see `zkevm_estimateFee`).
+      params: []
+      result:
+        name: Estimated Gas Price
+        description: The suggested effective gas price in wei, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zkevm_estimateGasPrice example
+          params: []
+          result:
+            name: Estimated Gas Price
+            value: "0x3b9aca00"
+
+    eth_getCompilers:
+      name: eth_getCompilers
+      description: Returns a list of available compilers in the client.
+      params: []
+      result:
+        name: Compilers
+        description: An array of available compilers
+        schema:
+          type: array
+          items:
+            type: string

@@ -1,0 +1,138 @@
+components:
+  methods:
+    linea_estimateGas:
+      name: linea_estimateGas
+      description: >
+        Generates and returns the estimated amount of gas required to allow the transaction to complete and be published on Ethereum.
+        This method does not submit the transaction to the blockchain. The priorityFeePerGas returned includes the cost of submitting
+        the transaction to Ethereum, which can vary based on the size of the calldata.
+      params:
+        - name: Call object
+          required: true
+          description: The transaction call object.
+          schema:
+            type: object
+            properties:
+              from:
+                type: string
+                description: 20-byte sender address.
+              to:
+                type: string
+                description: 20-byte recipient address.
+              gas:
+                type: string
+                description: Hexadecimal gas limit for execution.
+              gasPrice:
+                type: string
+                description: Hexadecimal gas price per unit.
+              maxPriorityFeePerGas:
+                type: string
+                description: Max priority fee per gas in wei.
+              maxFeePerGas:
+                type: string
+                description: Max total fee (base + priority) per gas in wei.
+              value:
+                type: string
+                description: Hexadecimal value of ETH to send with the transaction.
+              data:
+                type: string
+                description: ABI-encoded data (function selector + params).
+            required: []
+            additionalProperties: false
+
+        - name: State override object
+          required: false
+          description: Optional object to override account state for simulation.
+          schema:
+            type: object
+            description: Mapping of account addresses to temporary override objects.
+            additionalProperties:
+              type: object
+              properties:
+                balance:
+                  type: string
+                  description: Hexadecimal temporary balance override.
+                nonce:
+                  type: string
+                  description: Hexadecimal temporary nonce override.
+                code:
+                  type: string
+                  description: Temporary bytecode override.
+                stateDiff:
+                  type: object
+                  description: Storage slot override map.
+                  additionalProperties:
+                    type: string
+              required: []
+              additionalProperties: false
+
+      result:
+        name: Gas estimation result
+        description: Estimated gas limit, base fee, and priority fee.
+        schema:
+          type: object
+          properties:
+            gasLimit:
+              type: string
+              description: Recommended gas limit for the transaction.
+            baseFeePerGas:
+              type: string
+              description: Estimated base fee per gas in hexadecimal format.
+            priorityFeePerGas:
+              type: string
+              description: Estimated priority fee per gas in hexadecimal format.
+          required:
+            - gasLimit
+            - baseFeePerGas
+            - priorityFeePerGas
+          additionalProperties: false
+
+      examples:
+        - name: Simple ETH transfer
+          params:
+            - name: Call object
+              value:
+                from: "0x42c27251C710864Cf76f1b9918Ace3E585e6E21b"
+                value: "0x1"
+                gasPrice: "0x100000000"
+                gas: "0x21000"
+          result:
+            name: Gas estimation result
+            value:
+              gasLimit: "0xcf08"
+              baseFeePerGas: "0x7"
+              priorityFeePerGas: "0x43a82a4"
+
+    eth_estimateGas:
+      name: eth_estimateGas
+      description: |
+        Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
+
+        <Info> [linea_estimateGas](/docs/node/linea/linea-api-endpoints/linea-estimate-gas) uses the same inputs as the standard eth_estimateGas, but returns the recommended gas limit, the base fee per gas, and the priority fee per gas. We recommend using `linea_estimateGas` for more accurate results. </Info>
+      params:
+        - name: Transaction
+          required: true
+          description: The transaction object for which to estimate gas usage.
+          schema:
+            $ref: "../evm/transaction.yaml#/components/schemas/GenericTransaction"
+        - name: Block
+          required: false
+          description: The block number or tag at which to estimate gas usage. Defaults to `'latest'` if not provided.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Gas used
+        description: The estimated amount of gas required for the transaction, as a hexadecimal string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: eth_estimateGas example
+          params:
+            - name: Transaction
+              value:
+                from: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+                to: "0x44aa93095d6749a706051658b970b941c72c1d53"
+                value: "0x1"
+          result:
+            name: Gas used
+            value: "0x5208"

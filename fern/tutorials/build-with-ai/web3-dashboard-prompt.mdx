@@ -1,0 +1,545 @@
+---
+title: Web3 Dashboard with Cursor
+description: Learn how to build a Web3 dashboard using Cursor's AI capabilities
+subtitle: Learn how to build a Web3 dashboard using Cursor's AI capabilities
+url: https://dashboard.alchemy.com/web3-dashboard-prompt
+slug: docs/web3-dashboard-prompt
+---
+
+![preview](https://alchemyapi-res.cloudinary.com/image/upload/v1758518056/Screenshot_2025-09-21_at_10.14.11_PM_qdghwh.png)
+
+You can create the same Web3 Dashboard application show above using Cursor prompting.
+
+Follow the quick guide below in order to get started!
+
+## Create a NextJS Application
+
+Open a terminal and run the following:
+
+```bash
+npx create-next-app@latest my-web3-dashboard --ts --eslint --app --tailwind --yes
+```
+
+Then, cd into your newly created project by running
+
+```bash
+cd my-web3-dashboard
+```
+
+## Use Cursor Chat to Create Application from Scratch
+
+In your terminal, run `code .` in order to open the Cursor application. It should look like this after having run the command from the previous step:
+
+![](https://alchemyapi-res.cloudinary.com/image/upload/v1758518347/Screenshot_2025-09-21_at_10.19.02_PM_flwcdc.png)
+
+The Cursor chat should already be open, but if it isn't, type `CMD+I` in order to open it.
+
+Now, paste the following "one-shot" prompt in and press `Enter`:
+
+```bash
+You are setting up an Alchemy-backed balances experience that is correct out of the box.
+Apply changes directly in the repo. Do not echo files unless I ask later.
+
+===============================================================================
+Prep — verify App Router and add "@/..." alias
+===============================================================================
+1) Confirm there is an /app directory. If missing, stop and tell me.
+2) Open tsconfig.json. Ensure compilerOptions includes:
+   "baseUrl": "."
+   "paths": { "@/*": ["./*"] }
+   If either key is missing, add it while preserving other options.
+
+===============================================================================
+Environment and ignore
+===============================================================================
+1) Create .env.example at the repo root with exactly:
+
+ALCHEMY_API_URL_ETH_MAINNET=https://eth-mainnet.g.alchemy.com/v2/<KEY>
+ALCHEMY_API_KEY=<YOUR_ALCHEMY_API_KEY_FOR_DATA_AND_PRICES>
+
+2) If .gitignore does not already ignore .env.local, add a line for .env.local.
+
+===============================================================================
+Server route: JSON-RPC proxy (ETH Mainnet only)
+===============================================================================
+Create app/api/rpc/route.ts with:
+
+------------------------------------------------------------
+import { NextRequest, NextResponse } from "next/server";
+
+export const runtime = "edge";
+
+export async function POST(request: NextRequest) {
+  const url = process.env.ALCHEMY_API_URL_ETH_MAINNET;
+  if (!url) {
+    return NextResponse.json(
+      { error: "Missing ALCHEMY_API_URL_ETH_MAINNET in server env" },
+      { status: 500 }
+    );
+  }
+
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const upstream = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+
+  let data: any = null;
+  try {
+    data = await upstream.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Upstream returned non-JSON", status: upstream.status },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json(data, {
+    status: upstream.ok ? 200 : upstream.status || 502,
+    headers: { "cache-control": "no-store" },
+  });
+}
+------------------------------------------------------------
+
+===============================================================================
+Server route: all token balances on ETH Mainnet (exact math + pagination)
+===============================================================================
+Create app/api/tokens/route.ts with:
+
+------------------------------------------------------------
+import { NextRequest, NextResponse } from "next/server";
+
+export const runtime = "edge";
+
+const DATA_BASE = "https://api.g.alchemy.com/data/v1";
+
+// Simple 0x-address validation
+function isAddress(v: string) {
+  return /^0x[a-fA-F0-9]{40}$/.test(v);
+}
+
+// Format atomic balance string to a human decimal string using BigInt
+function formatUnits(atomic: string, decimals: number): string {
+  // Handle both hex (0x...) and decimal string formats
+  let bi: bigint;
+  if (atomic.startsWith('0x')) {
+    // Hex format from Alchemy API
+    bi = BigInt(atomic);
+  } else if (/^\d+$/.test(atomic)) {
+    // Decimal string format
+    bi = BigInt(atomic);
+  } else {
+    return "0";
+  }
+  
+  const d = Math.max(0, Math.min(36, Number.isFinite(decimals) ? decimals : 18));
+  const base = 10n ** BigInt(d);
+  const whole = bi / base;
+  const frac = bi % base;
+  if (frac === 0n) return whole.toString();
+  let fracStr = frac.toString().padStart(d, "0");
+  // trim trailing zeros
+  fracStr = fracStr.replace(/0+$/, "");
+  return `${whole.toString()}.${fracStr}`;
+}
+
+// Parse a human decimal string to Number for display/sorting (safe enough for UI)
+function toNumber(dec: string): number {
+  // Limit to ~15 significant digits to avoid FP weirdness in UI
+  const trimmed = dec.length > 24 ? dec.slice(0, 24) : dec;
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function pickUsdPrice(tokenPrices?: { currency: string; value: string }[]) {
+  const p = tokenPrices?.find((x) => x.currency?.toLowerCase() === "usd");
+  if (!p) return null;
+  const num = Number(p.value);
+  return Number.isFinite(num) ? num : null;
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { address } = await req.json();
+    
+    if (typeof address !== "string" || !isAddress(address)) {
+      return NextResponse.json({ error: "Invalid or missing address" }, { status: 400 });
+    }
+
+    const apiKey = process.env.ALCHEMY_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "Missing ALCHEMY_API_KEY" }, { status: 500 });
+    }
+
+    // Fetch all pages from Tokens By Wallet for ETH Mainnet
+    const url = `${DATA_BASE}/${apiKey}/assets/tokens/by-address`;
+    const baseBody: any = {
+      addresses: [{ address, networks: ["eth-mainnet"] }],
+      withMetadata: true,
+      withPrices: true,
+      includeNativeTokens: true,
+      includeErc20Tokens: true,
+    };
+
+    const tokens: any[] = [];
+    let pageKey: string | undefined = undefined;
+
+    do {
+      const body = pageKey ? { ...baseBody, pageKey } : baseBody;
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      });
+
+      if (!r.ok) {
+        const text = await r.text();
+        return NextResponse.json({ error: "Alchemy Data error", detail: text }, { status: 502 });
+      }
+
+      const j = await r.json();
+      const pageTokens = (j?.data?.tokens ?? []) as any[];
+      tokens.push(...pageTokens);
+      pageKey = j?.data?.pageKey || undefined;
+    } while (pageKey);
+
+    const positions = tokens
+      .map((t) => {
+        const meta = t.tokenMetadata ?? {};
+        const decimals =
+          typeof meta.decimals === "number" && meta.decimals !== null
+            ? meta.decimals
+            : meta.decimals !== null && Number.isFinite(Number(meta.decimals))
+            ? Number(meta.decimals)
+            : 18;
+
+        const atomic = String(t.tokenBalance ?? "0"); // base-10 atomic units
+        const balanceStr = formatUnits(atomic, decimals);
+        const balanceNum = toNumber(balanceStr);
+
+        const priceUsd = pickUsdPrice(t.tokenPrices) ?? null;
+        const valueUsd = priceUsd != null ? balanceNum * priceUsd : null;
+
+        return {
+          network: t.network || "eth-mainnet",
+          contractAddress: t.tokenAddress ?? null, // null = native ETH
+          symbol: meta.symbol ?? (t.tokenAddress ? "TOKEN" : "ETH"),
+          name: meta.name ?? null,
+          logo: meta.logo ?? null,
+          decimals,
+          balance: balanceStr, // human-readable string, exact
+          priceUsd,
+          valueUsd,
+        };
+      })
+      // keep dust if you want; here we hide zeros
+      .filter((p) => toNumber(p.balance) > 0)
+      .sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0));
+
+    const totalValue = positions.reduce((acc, p) => acc + (p.valueUsd ?? 0), 0);
+
+    return NextResponse.json(
+      {
+        address,
+        network: "eth-mainnet",
+        positions,
+        totalValue,
+        endpoints: {
+          rpcProxy: "/api/rpc",
+          rpcUpstreamTemplate: "https://eth-mainnet.g.alchemy.com/v2/<KEY>",
+          tokensByWallet: "POST https://api.g.alchemy.com/data/v1/:apiKey/assets/tokens/by-address",
+        },
+        computedAt: new Date().toISOString(),
+      },
+      { headers: { "cache-control": "no-store" } }
+    );
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message ?? "Unexpected error" }, { status: 400 });
+  }
+}
+------------------------------------------------------------
+
+===============================================================================
+Helper: tiny client/server RPC utility
+===============================================================================
+Create lib/rpc.ts with:
+
+------------------------------------------------------------
+type JsonRpcError = { code: number; message: string; data?: unknown };
+type JsonRpcResponse<T = unknown> = {
+  jsonrpc: "2.0";
+  id: number | string;
+  result?: T;
+  error?: JsonRpcError;
+};
+
+export async function rpc<T = unknown>(
+  method: string,
+  params: unknown[] | Record<string, unknown> = [],
+  init?: RequestInit
+): Promise<T> {
+  const res = await fetch("/api/rpc", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), method, params }),
+    cache: "no-store",
+    ...init,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`RPC HTTP ${res.status}${text ? `: ${text}` : ""}`);
+  }
+  const data = (await res.json()) as JsonRpcResponse<T>;
+  if (data.error) {
+    throw new Error(data.error.message || "RPC error");
+  }
+  return data.result as T;
+}
+------------------------------------------------------------
+
+===============================================================================
+Styled front end: replace the default page
+===============================================================================
+Replace app/page.tsx with:
+
+------------------------------------------------------------
+"use client";
+/*
+Setup for developers:
+1) Copy .env.example to .env.local and fill:
+   ALCHEMY_API_URL_ETH_MAINNET=https://eth-mainnet.g.alchemy.com/v2/<YOUR_KEY>
+   ALCHEMY_API_KEY=<YOUR_ALCHEMY_API_KEY_FOR_DATA_AND_PRICES>
+2) npm run dev, then open http://localhost:3000
+*/
+
+import { useMemo, useState } from "react";
+
+function usd(n: number) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n);
+  } catch {
+    return n.toFixed(2);
+  }
+}
+
+export default function Page() {
+  const [address, setAddress] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<any | null>(null);
+
+  const total = data?.totalValue ?? 0;
+  const tokenCount = data?.positions?.length ?? 0;
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    setData(null);
+    try {
+      const r = await fetch("/api/tokens", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ address }),
+      });
+      if (!r.ok) throw new Error(await r.text());
+      setData(await r.json());
+    } catch (e: any) {
+      setError(e?.message ?? "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const topSymbols = useMemo(() => {
+    return (data?.positions ?? []).slice(0, 3).map((p: any) => p.symbol).join(" · ");
+  }, [data]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 text-gray-900">
+      <div className="max-w-6xl mx-auto p-6">
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">My Web3 Dashboard</h1>
+            <p className="text-sm text-gray-600">
+              All token balances on Ethereum Mainnet. Precise balances with BigInt math. USD prices shown when available.
+            </p>
+          </div>
+          <div className="text-xs text-gray-500">
+            <span className="inline-block rounded-full bg-black text-white px-3 py-1">
+              Alchemy keys stay on the server
+            </span>
+          </div>
+        </header>
+
+        {/* Controls */}
+        <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+          <div className="md:col-span-2">
+            <label className="text-xs font-medium">Wallet address</label>
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="0x..."
+              className="w-full mt-1 rounded-2xl border px-3 py-2 focus:outline-none focus:ring-2"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={load}
+              disabled={loading || !address}
+              className="w-full rounded-2xl bg-black text-white px-4 py-2 disabled:opacity-50"
+            >
+              {loading ? "Loading…" : "Load balances"}
+            </button>
+          </div>
+        </section>
+
+        {error && (
+          <div className="mt-4 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">
+            {String(error)}
+          </div>
+        )}
+
+        {/* KPIs */}
+        {data && (
+          <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-2xl bg-white p-5 shadow">
+              <div className="text-xs text-gray-500">Total value (USD)</div>
+              <div className="text-2xl font-semibold">{usd(total)}</div>
+            </div>
+            <div className="rounded-2xl bg-white p-5 shadow">
+              <div className="text-xs text-gray-500">Tokens discovered</div>
+              <div className="text-2xl font-semibold">{tokenCount}</div>
+            </div>
+            <div className="rounded-2xl bg-white p-5 shadow">
+              <div className="text-xs text-gray-500">Top symbols</div>
+              <div className="text-2xl font-semibold truncate">{topSymbols || "—"}</div>
+            </div>
+          </section>
+        )}
+
+        {/* Endpoints used */}
+        <section className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-2xl bg-white p-5 shadow">
+            <div className="text-xs text-gray-500 mb-1">Alchemy Data API used</div>
+            <div className="font-mono text-sm break-all">
+              POST https://api.g.alchemy.com/data/v1/:apiKey/assets/tokens/by-address
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Called on the server at <span className="font-mono">/api/tokens</span> with your secret{" "}
+              <span className="font-mono">ALCHEMY_API_KEY</span>. Paginates with <span className="font-mono">pageKey</span>.
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white p-5 shadow">
+            <div className="text-xs text-gray-500 mb-1">JSON-RPC proxy</div>
+            <div className="font-mono text-sm break-all">
+              POST /api/rpc → https://eth-mainnet.g.alchemy.com/v2/&lt;KEY&gt;
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Use this for raw RPC like <span className="font-mono">eth_getBalance</span>. Keys never leave the server.
+            </p>
+          </div>
+        </section>
+
+        {/* Positions */}
+        {data?.positions?.length ? (
+          <section className="mt-6 rounded-2xl bg-white p-5 shadow overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500">
+                  <th className="py-2">Token</th>
+                  <th className="py-2">Network</th>
+                  <th className="py-2 text-right">Balance</th>
+                  <th className="py-2 text-right">Price (USD)</th>
+                  <th className="py-2 text-right">Value (USD)</th>
+                  <th className="py-2 text-right">Weight</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.positions.map((p: any, idx: number) => {
+                  const value = p.valueUsd ?? 0;
+                  const balanceDisplay =
+                    typeof p.balance === "string"
+                      ? Number(p.balance) > 0 && Number(p.balance) < 0.000001
+                        ? Number(p.balance).toExponential(3)
+                        : Number(p.balance).toLocaleString()
+                      : String(p.balance);
+                  const weight = data.totalValue ? (100 * value) / data.totalValue : 0;
+                  return (
+                    <tr key={idx} className="border-t">
+                      <td className="py-2 flex items-center gap-2">
+                        {p.logo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.logo} className="w-5 h-5 rounded-full" alt="" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-gray-200" />
+                        )}
+                        <div className="font-medium">{p.symbol}</div>
+                        <div className="text-xs text-gray-500">{p.name || ""}</div>
+                      </td>
+                      <td className="py-2">{p.network}</td>
+                      <td className="py-2 text-right">{balanceDisplay}</td>
+                      <td className="py-2 text-right">{p.priceUsd != null ? usd(p.priceUsd) : "—"}</td>
+                      <td className="py-2 text-right">{p.valueUsd != null ? usd(p.valueUsd) : "—"}</td>
+                      <td className="py-2 text-right">{weight.toFixed(1)}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        ) : null}
+
+        {!data && (
+          <section className="mt-8 rounded-2xl border border-dashed p-6 text-sm text-gray-600">
+            Enter an address and click Load balances to fetch tokens and prices using your server routes.
+          </section>
+        )}
+
+        <footer className="text-xs text-gray-500 mt-10">
+          Built with Next.js App Router. Exact balances via BigInt on the server. Alchemy keys stay on the server.
+        </footer>
+      </div>
+    </div>
+  );
+}
+------------------------------------------------------------
+
+===============================================================================
+Finish — run the dev server
+
+===============================================================================
+Key fixes included in this version:
+
+1. **Hex Balance Handling**: The `formatUnits` function now properly handles both hex (0x...) and decimal string formats from Alchemy API
+2. **Decimals Logic**: Fixed the decimals calculation to properly handle `null` values by checking for `null` explicitly before using `Number.isFinite()`
+3. **Token Logos**: Already included - displays logos when available from Alchemy metadata, with gray placeholder fallback
+4. **Exact Math**: Uses BigInt for precise balance calculations, avoiding floating-point precision issues
+5. **Pagination**: Automatically handles all pages of token data from Alchemy API
+6. **Error Handling**: Comprehensive error handling for API failures and invalid inputs
+```
+
+Make sure to select `Keep All` once Cursor is done making changes to your project!
+
+## Set up `.env`
+
+Once your project has been fully set up, create a `.env.local` file and copy in the format from the `.env.example` file that Cursor should have already created.
+
+Go to your Alchemy Dashboard and copy-paste it into your `.env.local` file.
+
+## Build Further
+
+The prompt above sets you up with a fully functional Web3 Dashboard, including an `/rpc` API endpoint so that you do not have to expose your Alchemy API key in the client-side.
+
+You can continue building further with Cursor by simply interacting with the chat tool, try a few of the following prompts:
+
+* "Make this Web3 Dashboard check balances across different chains"
+* "Add a dark mode toggle"

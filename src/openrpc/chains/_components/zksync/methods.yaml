@@ -1,0 +1,845 @@
+components:
+  methods:
+    zks_estimateFee:
+      name: zks_estimateFee
+      summary: Estimates the fee for a given call request.
+      description: Estimates the fee for a given call request.
+      params:
+        - name: Call object
+          required: true
+          description: The transaction call object containing details about the transaction.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/CallRequest"
+      result:
+        name: Fee estimation
+        description: The estimated gas and fee details for the given call request.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/FeeEstimate"
+      examples:
+        - name: zks_estimateFee example
+          params:
+            - name: Call object
+              value:
+                from: "0x1111111111111111111111111111111111111111"
+                to: "0x2222222222222222222222222222222222222222"
+                data: "0xffffffff"
+          result:
+            name: Fee estimation
+            value:
+              gas_limit: "0x1ea9a9"
+              max_fee_per_gas: "0x17d7840"
+              max_priority_fee_per_gas: "0x0"
+              gas_per_pubdata_limit: "0x5340"
+
+    zks_estimateGasL1ToL2:
+      name: zks_estimateGasL1ToL2
+      summary: Estimates the gas required for an L1 to L2 transaction.
+      description: Estimates the gas required for an L1 to L2 transaction.
+      params:
+        - name: Call object
+          required: true
+          description: The transaction call object containing details about the transaction.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/CallRequest"
+      result:
+        name: Gas estimate
+        description: The estimated gas amount in hexadecimal format.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zks_estimateGasL1ToL2 example
+          params:
+            - name: Call object
+              value:
+                from: "0x1111111111111111111111111111111111111111"
+                to: "0x2222222222222222222222222222222222222222"
+                data: "0xffffffff"
+          result:
+            name: Gas estimate
+            value: "0x25f64db"
+
+    zks_getTestnetPaymaster:
+      name: zks_getTestnetPaymaster
+      summary: Retrieves the testnet paymaster address.
+      description: Retrieves the testnet paymaster address, specifically for interactions within the testnet environment.
+      params: []
+      result:
+        name: Paymaster address
+        description: The address of the testnet paymaster.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+      examples:
+        - name: zks_getTestnetPaymaster example
+          params: []
+          result:
+            name: Paymaster address
+            value: "0x3cb2b87d10ac01736a65688f3e0fb1b070b3eea3"
+
+    zks_getBridgeContracts:
+      name: zks_getBridgeContracts
+      summary: Retrieves the addresses of canonical bridge contracts for zkSync Era.
+      description: Retrieves the addresses of canonical bridge contracts for zkSync Era.
+      params: []
+      result:
+        name: Bridge contracts
+        description: Object containing the addresses of bridge contracts.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/BridgeContracts"
+      examples:
+        - name: zks_getBridgeContracts example
+          params: []
+          result:
+            name: Bridge contracts
+            value:
+              l1Erc20DefaultBridge: "0x57891966931eb4bb6fb81430e6ce0a03aabde063"
+              l2Erc20DefaultBridge: "0x11f943b2c77b743ab90f4a0ae7d5a4e7fca3e102"
+              l1WethBridge: "0x0000000000000000000000000000000000000000"
+              l2WethBridge: "0x0000000000000000000000000000000000000000"
+
+    zks_L1ChainId:
+      name: zks_L1ChainId
+      summary: Retrieves the L1 chain ID.
+      description: Retrieves the L1 chain ID.
+      params: []
+      result:
+        name: L1 Chain ID
+        description: The hexadecimal representation of the L1 chain ID.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint64"
+      examples:
+        - name: zks_L1ChainId example
+          params: []
+          result:
+            name: L1 Chain ID
+            value: "0x1"
+
+    zks_getAllAccountBalances:
+      name: zks_getAllAccountBalances
+      summary: Gets all account balances for a given address.
+      description: Gets all account balances for a given address.
+      params:
+        - name: Address
+          required: true
+          description: The account address.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+      result:
+        name: Balances
+        description: An object mapping token addresses to their balances.
+        schema:
+          type: object
+          additionalProperties:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint256"
+      examples:
+        - name: zks_getAllAccountBalances example
+          params:
+            - name: Address
+              value: "0x98E9D288743839e96A8005a6B51C770Bbf7788C0"
+          result:
+            name: Balances
+            value:
+              "0x0000000000000000000000000000000000000000": "0x7c07ef5b520cb7d"
+
+    zks_getL2ToL1LogProof:
+      name: zks_getL2ToL1LogProof
+      summary: Retrieves the log proof for an L2 to L1 transaction.
+      description: Retrieves the log proof for an L2 to L1 transaction.
+      params:
+        - name: Transaction hash
+          required: true
+          description: The transaction hash.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        - name: Log index
+          required: false
+          description: Index of the log.
+          schema:
+            type: integer
+      result:
+        name: Log proof
+        description: The log proof for the specified transaction and log index.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/LogProof"
+      examples:
+        - name: zks_getL2ToL1LogProof example
+          params:
+            - name: Transaction hash
+              value: "0x2a1c6c74b184965c0cb015aae9ea134fd96215d2e4f4979cfec12563295f610e"
+          result:
+            name: Log proof
+            value:
+              proof:
+                - "0x8c48910df2ca7de509daf50b3182fcdf2dd6c422c6704054fd857d6c9516d6fc"
+                - "0xc5028885760b8b596c4fa11497c783752cb3a3fb3b8e6b52d7e54b9f1c63521e"
+                - "0xeb1f451eb8163723ee19940cf3a8f2a2afdf51100ce8ba25839bd94a057cda16"
+                - "0x7aabfd367dea2b5306b8071c246b99566dae551a1dbd40da791e66c4f696b236"
+                - "0xe4733f281f18ba3ea8775dd62d2fcd84011c8c938f16ea5790fd29a03bf8db89"
+                - "0x1798a1fd9c8fbb818c98cff190daa7cc10b6e5ac9716b4a2649f7c2ebcef2272"
+                - "0x66d7c5983afe44cf15ea8cf565b34c6c31ff0cb4dd744524f7842b942d08770d"
+                - "0xb04e5ee349086985f74b73971ce9dfe76bbed95c84906c5dffd96504e1e5396c"
+                - "0xac506ecb5465659b3a927143f6d724f91d8d9c4bdb2463aee111d9aa869874db"
+              id: 0
+              root: "0x920c63cb0066a08da45f0a9bf934517141bd72d8e5a51421a94b517bf49a0d39"
+
+    zks_L1BatchNumber:
+      name: zks_L1BatchNumber
+      summary: Retrieves the current L1 batch number.
+      description: Retrieves the current L1 batch number.
+      params: []
+      result:
+        name: L1 Batch Number
+        description: Hexadecimal representation of the current L1 batch number.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint64"
+      examples:
+        - name: zks_L1BatchNumber example
+          params: []
+          result:
+            name: L1 Batch Number
+            value: "0x72af2"
+
+    zks_getBlockDetails:
+      name: zks_getBlockDetails
+      summary: Retrieves details for a given block.
+      description: Retrieves details for a given block.
+      params:
+        - name: Block number
+          required: true
+          description: The number of the block.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/uint32"
+      result:
+        name: Block details
+        description: Detailed information about the specified block.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/BlockDetails"
+      examples:
+        - name: zks_getBlockDetails example
+          params:
+            - name: Block number
+              value: 140599
+          result:
+            name: Block details
+            value:
+              number: 140599
+              l1BatchNumber: 1617
+              timestamp: 1679815038
+              l1TxCount: 0
+              l2TxCount: 20
+              rootHash: "0xf1adac176fc939313eea4b72055db0622a10bbd9b7a83097286e84e471d2e7df"
+              status: "verified"
+              commitTxHash: "0xd045e3698f018cb233c3817eb53a41a4c5b28784ffe659da246aa33bda34350c"
+              committedAt: "2023-03-26T07:21:21.046817Z"
+              proveTxHash: "0x1591e9b16ff6eb029cc865614094b2e6dd872c8be40b15cc56164941ed723a1a"
+              provenAt: "2023-03-26T19:48:35.200565Z"
+              executeTxHash: "0xbb66aa75f437bb4255cf751badfc6b142e8d4d3a4e531c7b2e737a22870ff19e"
+              executedAt: "2023-03-27T07:44:52.187764Z"
+              l1GasPrice: 20690385511
+              l2FairGasPrice: 250000000
+              baseSystemContractsHashes:
+                bootloader: "0x010007793a328ef16cc7086708f7f3292ff9b5eed9e7e539c184228f461bf4ef"
+                default_aa: "0x0100067d861e2f5717a12c3e869cfb657793b86bbb0caa05cc1421f16c5217bc"
+              operatorAddress: "0xfeee860e7aae671124e9a4e61139f3a5085dfeee"
+              protocolVersion: "Version5"
+
+    zks_getTransactionDetails:
+      name: zks_getTransactionDetails
+      summary: Retrieves details for a given transaction.
+      description: Retrieves details for a given transaction.
+      params:
+        - name: Transaction hash
+          required: true
+          description: The hash of the transaction.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Transaction details
+        description: Detailed information about the specified transaction.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/TransactionDetails"
+      examples:
+        - name: zks_getTransactionDetails example
+          params:
+            - name: Transaction hash
+              value: "0x22de7debaa98758afdaee89f447ff43bab5da3de6acca7528b281cc2f1be2ee9"
+          result:
+            name: Transaction details
+            value:
+              isL1Originated: true
+              status: "verified"
+              fee: "0x0"
+              gasPerPubdata: "0x320"
+              initiatorAddress: "0x87869cb87c4fa78ca278df358e890ff73b42a39e"
+              receivedAt: "2023-03-03T23:52:24.169Z"
+              ethCommitTxHash: "0x3da5b6eda357189c9243c41c5a33b1b2ed0169be172705d74681a25217702772"
+              ethProveTxHash: "0x2f482d3ea163f5be0c2aca7819d0beb80415be1a310e845a2d726fbc4ac54c80"
+              ethExecuteTxHash: "0xdaff5fd7ff91333b161de54534b4bb6a78e5325329959a0863bf0aae2b0fdcc6"
+
+    zks_getBytecodeByHash:
+      name: zks_getBytecodeByHash
+      summary: Retrieves the bytecode of a transaction by its hash.
+      description: Retrieves the bytecode of a transaction by its hash.
+      params:
+        - name: Transaction hash
+          required: true
+          description: The hash of the transaction.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Bytecode
+        description: Array of the transaction's bytecode.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/Bytecode"
+      examples:
+        - name: zks_getBytecodeByHash example
+          params:
+            - name: Transaction hash
+              value: "0x0100067d861e2f5717a12c3e869cfb657793b86bbb0caa05cc1421f16c5217bc"
+          result:
+            name: Bytecode
+            value:
+              - 0
+              - 4
+              - 0
+              - 255
+              - 18
+              - 34
+
+    zks_getL1BatchBlockRange:
+      name: zks_getL1BatchBlockRange
+      summary: Returns the range of blocks contained within a batch given by the batch number.
+      description: Returns the range of blocks contained within a batch given by the batch number.
+      params:
+        - name: L1BatchNumber
+          required: true
+          description: The layer 1 batch number.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/uint32"
+      result:
+        name: Block range
+        description: Array containing the beginning and end block numbers in hexadecimal.
+        schema:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: zks_getL1BatchBlockRange example
+          params:
+            - name: L1BatchNumber
+              value: 12345
+          result:
+            name: Block range
+            value:
+              - "0x116fec"
+              - "0x117015"
+
+    zks_getL1BatchDetails:
+      name: zks_getL1BatchDetails
+      summary: Retrieves details for a given L1 batch.
+      description: Retrieves details for a given L1 batch.
+      params:
+        - name: L1 batch number
+          required: true
+          description: L1 batch number.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/uint32"
+      result:
+        name: L1 Batch Details
+        description: Detailed information about the specified L1 batch.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/L1BatchDetails"
+      examples:
+        - name: zks_getL1BatchDetails example
+          params:
+            - name: L1 batch number
+              value: 468355
+          result:
+            name: L1 Batch Details
+            value:
+              number: 468355
+              timestamp: 1711649164
+              l1TxCount: 1
+              l2TxCount: 2363
+              rootHash: "0x7b31ef880f09238f13b71a0f6bfea340b9c76d01bba0712af6aa0a4f224be167"
+              status: "verified"
+              commitTxHash: "0x5b2598bf1260d498c1c6a05326f7416ef2a602b8a1ac0f75b583cd6e08ae83cb"
+              committedAt: "2024-03-28T18:24:49.713730Z"
+              proveTxHash: "0xc02563331d0a83d634bc4190750e920fc26b57096ec72dd100af2ab037b43912"
+              provenAt: "2024-03-29T03:09:19.634524Z"
+              executeTxHash: "0xbe1ba1fdd17c2421cf2dabe2908fafa26ff4fa2190a7724d16295dd9df72b144"
+              executedAt: "2024-03-29T18:18:04.204270Z"
+              l1GasPrice: 47875552051
+              l2FairGasPrice: 25000000
+              baseSystemContractsHashes:
+                bootloader: "0x010007ede999d096c84553fb514d3d6ca76fbf39789dda76bfeda9f3ae06236e"
+                default_aa: "0x0100055b041eb28aff6e3a6e0f37c31fd053fc9ef142683b05e5f0aee6934066"
+
+    zks_getL2ToL1MsgProof:
+      name: zks_getL2ToL1MsgProof
+      summary: Retrieves the proof for an L2 to L1 message.
+      description: Retrieves the proof for an L2 to L1 message.
+      params:
+        - name: L2 block number
+          required: true
+          description: The L2 block number.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/uint32"
+        - name: Sender address
+          required: true
+          description: The sender's address.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+        - name: Message hash
+          required: true
+          description: The message hash.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        - name: Log position
+          required: false
+          description: The log position in L2.
+          schema:
+            type: integer
+      result:
+        name: Message Proof
+        description: The proof for the L2 to L1 message.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/MessageProof"
+      examples:
+        - name: zks_getL2ToL1MsgProof example
+          params:
+            - name: L2 block number
+              value: 100000
+            - name: Sender address
+              value: "0x1111111111111111111111111111111111111111"
+            - name: Message hash
+              value: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            - name: Log position
+              value: 0
+          result:
+            name: Message Proof
+            value:
+              proof:
+                - "0x8c48910df2ca7de509daf50b3182fcdf2dd6c422c6704054fd857d6c9516d6fc"
+              root: "0x920c63cb0066a08da45f0a9bf934517141bd72d8e5a51421a94b517bf49a0d39"
+              id: 0
+
+    zks_getMainContract:
+      name: zks_getMainContract
+      summary: Retrieves the address of the zkSync main contract.
+      description: Retrieves the address of the zkSync main contract.
+      params: []
+      result:
+        name: Main contract address
+        description: The address of the zkSync main contract.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+      examples:
+        - name: zks_getMainContract example
+          params: []
+          result:
+            name: Main contract address
+            value: "0x000000000000000000000000000000000000800a"
+
+    zks_getProof:
+      name: zks_getProof
+      summary: Generates Merkle proofs for storage values associated with a specific account.
+      description: This method generates Merkle proofs for one or more storage values associated with a specific account, accompanied by a proof of their authenticity.
+      params:
+        - name: Address
+          required: true
+          description: Account address to fetch storage values and proofs for.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+        - name: Storage keys
+          required: true
+          description: The storage keys in the account.
+          schema:
+            type: array
+            items:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes32"
+        - name: L1 batch number
+          required: true
+          description: Number of the L1 batch specifying the point in time at which the requested values are returned.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/uint32"
+      result:
+        name: Proof
+        description: The account details and proofs for storage keys.
+        schema:
+          $ref: "./schemas.yaml#/components/schemas/AccountProof"
+      examples:
+        - name: zks_getProof example
+          params:
+            - name: Address
+              value: "0x0000000000000000000000000000000000008003"
+            - name: Storage keys
+              value:
+                - "0x8b65c0cf1012ea9f393197eb24619fd814379b298b238285649e14f936a5eb12"
+            - name: L1 batch number
+              value: 354895
+          result:
+            name: Proof
+            value:
+              address: "0x0000000000000000000000000000000000008003"
+              storageProof:
+                - key: "0x8b65c0cf1012ea9f393197eb24619fd814379b298b238285649e14f936a5eb12"
+                  proof:
+                    - "0xe3e8e49a998b3abf8926f62a5a832d829aadc1b7e059f1ea59ffbab8e11edfb7"
+                  value: "0x0000000000000000000000000000000000000000000000000000000000000060"
+                  index: 27900957
+
+    zks_getRawBlockTransactions:
+      name: zks_getRawBlockTransactions
+      summary: Lists transactions in a block without processing them.
+      description: Lists transactions in a block without processing them.
+      params:
+        - name: Block number
+          required: true
+          description: Number of the block.
+          schema:
+            $ref: "./schemas.yaml#/components/schemas/uint32"
+      result:
+        name: Raw transactions
+        description: Array of raw transactions within the specified block.
+        schema:
+          type: array
+          items:
+            $ref: "./schemas.yaml#/components/schemas/RawTransaction"
+      examples:
+        - name: zks_getRawBlockTransactions example
+          params:
+            - name: Block number
+              value: 30098049
+          result:
+            name: Raw transactions
+            value:
+              - common_data:
+                  L2:
+                    nonce: 117
+                    fee:
+                      gas_limit: "0xbadbc"
+                      max_fee_per_gas: "0x202fbf0"
+                      max_priority_fee_per_gas: "0x0"
+                      gas_per_pubdata_limit: "0xc350"
+                    initiatorAddress: "0xe7734c4a8201af41db64da90eddb4c19bbf64710"
+                    signature:
+                      [
+                        203,
+                        118,
+                        119,
+                        63,
+                        1,
+                        54,
+                        91,
+                        252,
+                        188,
+                        23,
+                        120,
+                        51,
+                        4,
+                        28,
+                      ]
+                    transactionType: "EIP1559Transaction"
+                    input:
+                      hash: "0x970c9480960818b05832f7e5b76a0c46956003c34942e005672d7ddc537aaa59"
+                      data:
+                        [2, 249, 1, 111, 1305, 187, 2, 170, 21, 166, 251, 255]
+                    paymasterParams:
+                      paymaster: "0x0000000000000000000000000000000000000000"
+                      paymasterInput: []
+                execute:
+                  contractAddress: "0x5155704bb41fde152ad3e1ae402e8e8b9ba335d3"
+                  calldata: "0xfa0x5155704bb41fde152ad3e1ae402e8e8b9ba335d3"
+                  value: "0x0"
+                  factoryDeps: null
+                received_timestamp_ms: 1711649348872
+                raw_bytes: "0x02f9016f8201447580840202fbf"
+
+    zks_getBaseTokenL1Address:
+      name: zks_getBaseTokenL1Address
+      summary: Retrieves the L1 base token address.
+      description: Retrieves the L1 base token address.
+      params: []
+      result:
+        name: Base token L1 address
+        description: Layer 1 Ethereum address of base token.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+      examples:
+        - name: zks_getBaseTokenL1Address example
+          params: []
+          result:
+            name: Base token L1 address
+            value: "0x0000000000000000000000000000000000000001"
+
+    zks_getBridgehubContract:
+      name: zks_getBridgehubContract
+      summary: Retrieves the address of the zkSync bridgehub contract.
+      description: Retrieves the address of the zkSync bridgehub contract.
+      params: []
+      result:
+        name: Bridgehub contract address
+        description: Layer 1 Ethereum address of bridgehub contract.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+      examples:
+        - name: zks_getBridgehubContract example
+          params: []
+          result:
+            name: Bridgehub contract address
+            value: "0x303a465b659cbb0ab36ee643ea362c509eeb5213"
+
+    zks_getConfirmedTokens:
+      name: zks_getConfirmedTokens
+      summary: Retrieves the confirmed tokens on zkSync.
+      description: Retrieves the confirmed tokens on zkSync.
+      params:
+        - name: From token ID
+          required: true
+          description: Token ID from which to start listing.
+          schema:
+            type: integer
+            format: uint32
+        - name: Limit
+          required: true
+          description: Maximum number of tokens to list.
+          schema:
+            type: integer
+            format: uint8
+      result:
+        name: Confirmed tokens
+        description: List of confirmed tokens on zkSync.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              l1Address:
+                $ref: "../evm/base-types.yaml#/components/schemas/address"
+                description: Layer 1 address of the token (Ethereum)
+              l2Address:
+                $ref: "../evm/base-types.yaml#/components/schemas/address"
+                description: Layer 2 address of the token (ZKsync Chain)
+              name:
+                type: string
+                description: Name of the token
+              symbol:
+                type: string
+                description: Symbol of the token
+              decimals:
+                type: integer
+                format: uint8
+                description: Number of decimals the token uses
+      examples:
+        - name: zks_getConfirmedTokens example
+          params:
+            - name: From token ID
+              value: 1
+            - name: Limit
+              value: 3
+          result:
+            name: Confirmed tokens
+            value:
+              - l1Address: "0xb6ed7644c69416d67b522e20bc294a9a9b405b31"
+                l2Address: "0xfea352c0d005a1e4ac7e092ef14fca18b8e6c8fd"
+                name: "0xBitcoin Token"
+                symbol: "0xBTC"
+                decimals: 8
+
+    zks_getL1GasPrice:
+      name: zks_getL1GasPrice
+      summary: Retrieves the current L1 gas price.
+      description: Retrieves the current L1 gas price.
+      params: []
+      result:
+        name: L1 gas price
+        description: Current L1 gas price.
+        schema:
+          type: string
+          pattern: "^0x[a-fA-F0-9]+$"
+          description: Hex-encoded integer representing the L1 gas price
+      examples:
+        - name: zks_getL1GasPrice example
+          params: []
+          result:
+            name: L1 gas price
+            value: "0x11cccd9f58"
+
+    zks_getFeeParams:
+      name: zks_getFeeParams
+      summary: Retrieves the current fee parameters.
+      description: Retrieves the current fee parameters.
+      params: []
+      result:
+        name: Fee parameters
+        description: Current fee parameters.
+        schema:
+          type: object
+          properties:
+            V2:
+              type: object
+              description: Fee parameter configuration for the current version of the ZKsync protocol
+              properties:
+                config:
+                  type: object
+                  description: Settings related to transaction fee computation
+                  properties:
+                    minimal_l2_gas_price:
+                      type: integer
+                      format: uint64
+                      description: Minimal gas price on L2
+                    compute_overhead_part:
+                      type: number
+                      format: float64
+                      description: Compute overhead part in fee calculation
+                    pubdata_overhead_part:
+                      type: number
+                      format: float64
+                      description: Public data overhead part in fee calculation
+                    batch_overhead_l1_gas:
+                      type: integer
+                      format: uint64
+                      description: Overhead in L1 gas for a batch of transactions
+                    max_gas_per_batch:
+                      type: integer
+                      format: uint64
+                      description: Maximum gas allowed per batch
+                    max_pubdata_per_batch:
+                      type: integer
+                      format: uint64
+                      description: Maximum amount of public data allowed per batch
+                l1_gas_price:
+                  type: integer
+                  format: uint64
+                  description: Current L1 gas price
+                l1_pubdata_price:
+                  type: integer
+                  format: uint64
+                  description: Price of storing public data on L1
+      examples:
+        - name: zks_getFeeParams example
+          params: []
+          result:
+            name: Fee parameters
+            value:
+              V2:
+                config:
+                  minimal_l2_gas_price: 25000000
+                  compute_overhead_part: 0
+                  pubdata_overhead_part: 1
+                  batch_overhead_l1_gas: 800000
+                  max_gas_per_batch: 200000000
+                  max_pubdata_per_batch: 240000
+                l1_gas_price: 46226388803
+                l1_pubdata_price: 100780475095
+
+    zks_getProtocolVersion:
+      name: zks_getProtocolVersion
+      summary: Retrieves the current protocol version.
+      description: Retrieves the current protocol version.
+      params:
+        - name: Version ID
+          required: false
+          description: Specific version ID to query.
+          schema:
+            type: integer
+            format: uint16
+      result:
+        name: Protocol version
+        description: Current protocol version information.
+        schema:
+          type: object
+          properties:
+            version_id:
+              type: integer
+              format: uint16
+              description: Protocol version ID
+            timestamp:
+              type: integer
+              format: uint64
+              description: Unix timestamp of the version's activation
+            verification_keys_hashes:
+              type: object
+              description: Hashes of various verification keys used in the protocol
+            base_system_contracts:
+              type: object
+              description: Hashes of the base system contracts like bootloader and default AA
+            l2_system_upgrade_tx_hash:
+              type: string
+              pattern: "^0x[a-fA-F0-9]{64}$"
+              description: Hash of the transaction used for the system upgrade, if any
+      examples:
+        - name: zks_getProtocolVersion example
+          params: []
+          result:
+            name: Protocol version
+            value:
+              version_id: 22
+              timestamp: 1710264138
+              verification_keys_hashes:
+                params:
+                  recursion_node_level_vk_hash: "0x5a3ef282b21e12fe1f4438e5bb158fc5060b160559c5158c6389d62d9fe3d080"
+                  recursion_leaf_level_vk_hash: "0x400a4b532c6f072c00d1806ef299300d4c104f4ac55bd8698ade78894fcadc0a"
+                  recursion_circuits_set_vks_hash: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                recursion_scheduler_level_vk_hash: "0x063c6fb5c70404c2867f413a8e35563ad3d040b1ad8c11786231bfdba7b472c7"
+              base_system_contracts:
+                bootloader: "0x010007ede999d096c84553fb514d3d6ca76fbf39789dda76bfeda9f3ae06236e"
+                default_aa: "0x0100055b041eb28aff6e3a6e0f37c31fd053fc9ef142683b05e5f0aee6934066"
+              l2_system_upgrade_tx_hash: null
+
+    zks_sendRawTransactionWithDetailedOutput:
+      name: zks_sendRawTransactionWithDetailedOutput
+      summary: Executes a transaction and returns its hash, storage logs, and events that would have been generated if the transaction had already been included in the block.
+      description: Executes a transaction and returns its hash, storage logs, and events that would have been generated if the transaction had already been included in the block.
+      params:
+        - name: data
+          required: true
+          description: The signed transaction. Typically, signed with a library such as ethers.js.
+          schema:
+            type: string
+            pattern: "^0x[a-fA-F0-9]+$"
+            description: Hex-encoded transaction data
+      result:
+        name: Transaction details
+        description: Details about the transaction execution
+        schema:
+          type: object
+          properties:
+            transactionHash:
+              type: string
+              pattern: "^0x[a-fA-F0-9]{64}$"
+              description: Hash of the transaction
+            storageLogs:
+              type: array
+              description: Storage logs of the transaction
+              items:
+                type: object
+                properties:
+                  address:
+                    $ref: "../evm/base-types.yaml#/components/schemas/address"
+                  data:
+                    type: string
+                    pattern: "^0x[a-fA-F0-9]+$"
+                    description: Hex-encoded data of the log
+                  topics:
+                    type: array
+                    items:
+                      type: string
+                      pattern: "^0x[a-fA-F0-9]{64}$"
+                      description: Hex-encoded topic of the log
+      examples:
+        - name: zks_getL2FairGasPrice example
+          params: []
+          result:
+            name: Transaction details
+            value:
+              transactionHash: "0xd586a9381ac33a70d1c34704664209242ee90316878fc1695aa8e4cf553c8595"
+              storageLogs:
+                - address: "0x000000000000000000000000000000000000800b"
+                  key: "0x7"
+                  writtenValue: "0x40000000000000000000000006641f961"
+                - address: "0x000000000000000000000000000000000000800b"
+                  key: "0x6"
+                  writtenValue: "0x5f5e100"

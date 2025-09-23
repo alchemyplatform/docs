@@ -1,0 +1,66 @@
+---
+title: Dashboard SSO
+description: Guide to explain the Single Sign-On (SSO) available on the Alchemy Dashboard
+subtitle: Guide to explain the Single Sign-On (SSO) available on the Alchemy Dashboard
+url: https://dashboard.alchemy.com/signup
+slug: docs/dashboard-sso
+---
+
+Single Sign-On (SSO) allows your team to sign in to the Alchemy Dashboard through your Identity Provider (IdP) using a single set of credentials. This improves security and simplifies access management across your organization.
+
+We support SAML 2.0-based SSO for Enterprise customers. This feature is currently in beta and requires manual setup.
+
+To enable SSO for your team, contact [sso@alchemy.com](mailto:sso@alchemy.com).
+
+## Requirements
+
+To begin setup, you will need:
+
+* An Identity Provider (IdP) that supports SAML 2.0 (e.g., Okta, Entra ID, OneLogin)
+* Ability to configure a new SAML application within your IdP
+
+## Setup Instructions
+
+### 1. Create a new SAML application in your IdP
+
+Use the following values:
+
+* **ACS (Assertion Consumer Service) URL**:
+
+  ```shell
+  <https://prod-authchemy.us.auth0.com/login/callback?connection=><connection_name>
+  ```
+
+* **Audience (Entity ID)**:
+
+  ```shell
+  urn:auth0:prod-authchemy:<connection_name>
+  ```
+
+We will provide your unique `<connection_name>` when you initiate setup and reach out to us.
+
+### 2. Configure Attribute Mappings
+
+Your SAML assertion must include:
+
+```json
+{
+  "email": "email",
+  "name": "firstName",
+  "given_name": "firstName",
+  "family_name": "lastName"
+}
+```
+
+### 3. Share Metadata with Us
+
+Please send a brief email to [sso@alchemy.com](mailto:sso@alchemy.com) letting us know you’re ready to share your IdP metadata. We will reply with a **secure SendSafely link** where you can upload the following:
+
+* Identity Provider SSO URL
+* X.509 Certificate
+
+## Logging In
+
+Once setup is complete, users can log in at [dashboard.alchemy.com](https://dashboard.alchemy.com/signup) and will be redirected to your Identity Provider.
+
+For questions or support, contact [sso@alchemy.com](mailto:sso@alchemy.com).

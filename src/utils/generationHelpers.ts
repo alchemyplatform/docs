@@ -50,7 +50,46 @@ export const writeOpenRpcDoc = (
   filename: string,
   spec: OpenrpcDocument,
 ) =>
-  writeFileSync(
-    `${outputDir}/${filename}.json`,
-    JSON.stringify(spec, null, "\t"),
-  );
+  writeFileSync(`${outputDir}/${filename}.json`, JSON.stringify(spec, null, 2));
+
+export interface DerefErrorGroup {
+  stack: string;
+  name: string;
+  message: string;
+  errors: DerefError[];
+}
+
+interface DerefError {
+  stack: string;
+  code: string;
+  name: string;
+  message: string;
+  source: string;
+  path: string[];
+  targetToken: string;
+  targetRef: string;
+  targetFound: string;
+  parentPath: string;
+  footprint: string;
+}
+
+/**
+ * Collects missing tokens and generation errors in a list
+ */
+export const handleDerefErrors = (
+  err: unknown,
+  api: string,
+  missingTokens: string[],
+  genErrors: unknown[],
+) => {
+  const errorGroup = err as DerefErrorGroup;
+  errorGroup.errors.forEach((error) => {
+    if (error.code === "EMISSINGPOINTER") {
+      missingTokens.push(
+        `token: ${error.targetToken}\n    api: ${api}\n    source: ${error.source}`,
+      );
+    } else {
+      genErrors.push(error);
+    }
+  });
+};

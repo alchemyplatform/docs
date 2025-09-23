@@ -8,7 +8,8 @@ on:
       - main
     types:
       - completed
-
+  repository_dispatch:
+    types: [trigger-gh-pages-deploy]
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -16,7 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'repository_dispatch' }}
     permissions:
       contents: read
     steps:
@@ -25,6 +26,9 @@ jobs:
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
+
+      - name: Add aa-sdk docs to fern
+        uses: ./.github/actions/insert-wallets-tab
 
       - name: Run build script
         id: build

@@ -20,6 +20,19 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 > \[!WARNING]
 > Account Kit documentation is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
 
+## Consuming Specs
+
+The API specifications generated in this repository are automatically published to the `dev-docs.alchemy.com` domain. These published specs provide machine-readable definitions for all of Alchemy's APIs, including both REST (OpenAPI) and JSON-RPC (OpenRPC) endpoints.
+
+You can find the complete list of all available API specs at:
+**https://dev-docs.alchemy.com/metadata.json**
+
+Each individual API spec can be found via a simple URL pattern:
+
+* **REST API specs** (OpenAPI): `https://dev-docs.alchemy.com/alchemy/rest/{api-name}.json`
+* **JSON-RPC specs** (OpenRPC): `https://dev-docs.alchemy.com/alchemy/json-rpc/{api-name}.json`
+* **Chain-specific specs** (OpenRPC): `https://dev-docs.alchemy.com/chains/{chain-name}.json`
+
 ## Getting Started
 
 ### Prerequisites
@@ -55,10 +68,10 @@ This will start a local server with live reloading. Visit `http://localhost:3020
 
 #### Building Custom Components
 
-In some cases we need to use custom-built components that require styling outside the standard Fern capabilities. Currently, Fern does not support building/rendering Custom JS + React locally, so first you'll need to build the custom component:
+In some cases we need to use custom-built components that require styling outside the standard Fern capabilities. Currently, Fern does not support building/rendering Custom JS + React locally, so first you'll need to build the custom components:
 
 ```bash
-cd footer/  # using the custom footer component as an example
+cd custom-app/
 pnpm install  # if you need to install dependencies
 pnpm run build
 ```
