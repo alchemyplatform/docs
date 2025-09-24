@@ -235,11 +235,28 @@ methods:
             - $ref: "../_shared/components.yaml#/components/schemas/hash32"
             - $ref: "../_shared/components.yaml#/components/schemas/bytes"
             - $ref: "../_shared/components.yaml#/components/schemas/blockTag"
-      - name: Tracer
+      - name: Options
         required: false
-        description: Tracer object for the call.
+        description: Options for the call including tracer and state overrides.
         schema:
-          $ref: "../_shared/components.yaml#/components/schemas/tracer"
+          type: object
+          properties:
+            tracer:
+              $ref: "../_shared/components.yaml#/components/schemas/tracer"
+            stateOverrides:
+              type: object
+              description: Address-to-state mapping that allows overriding account state
+              additionalProperties:
+                type: object
+                properties:
+                  balance:
+                    type: string
+                    description: The balance to override for the account
+                  stateDiff:
+                    type: object
+                    description: Storage slot overrides for the account
+                    additionalProperties:
+                      type: string
     result:
       name: Call traces
       description: Array of call traces.
@@ -249,24 +266,37 @@ methods:
       - name: debug_traceCall example
         params:
           - name: Transaction Object
-            value: {}
+            value:
+              type: "0x02"
+              from: "0xcdd37ada79f589c15bd4f8fd2083dc88e34a2af2"
+              to: "0xdac17f958d2ee523a2206206994597c13d831ec7"
+              gas: "0xb59b"
+              value: "0x0"
+              data: "0xa9059cbb000000000000000000000000b29d1cef6da3262df35fdee71a176c62687e747d000000000000000000000000000000000000000000000000000000001e3f0ccc"
+              nonce: "0x8eaee"
+              accessList: []
+              maxPriorityFeePerGas: "0xb2d05e00"
+              maxFeePerGas: "0x1ceb1eec4"
           - name: Block identifier
-            value: "latest"
-          - name: Tracer
-            value: "callTracer"
+            value: "0x154bd82"
+          - name: Options
+            value:
+              tracer: "callTracer"
+              stateOverrides:
+                "0xdac17f958d2ee523a2206206994597c13d831ec7":
+                  stateDiff:
+                    "0x0000000000000000000000000000000000000000000000000000000000000007": "0x000000000000000000000000000000000000000000000000000000746a528800"
         result:
           name: "debug_traceCall response"
           value:
-            - name: "call trace"
-              value:
-                type: CALL
-                from: "0xe088776deabb472ffd2843e330e79c880a5f979e"
-                to: "0x70526cc7a6d6320b44122ea9d2d07670accc85a1"
-                value: "0x0"
-                gas: "0x7fffffffffffadf7"
-                gasUsed: "0x0"
-                input: "0x"
-                output: "0x"
+            type: CALL
+            from: "0xe088776deabb472ffd2843e330e79c880a5f979e"
+            to: "0x70526cc7a6d6320b44122ea9d2d07670accc85a1"
+            value: "0x0"
+            gas: "0x7fffffffffffadf7"
+            gasUsed: "0x0"
+            input: "0x"
+            output: "0x"
 
   - name: debug_traceTransaction
     description: Attempts to run the transaction in the exact same manner as it was executed on the network.
