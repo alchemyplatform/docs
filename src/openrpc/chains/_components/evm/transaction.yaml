@@ -360,32 +360,42 @@ components:
     GenericTransaction:
       type: object
       title: Transaction object generic to all types
+      description: Parameters describing a transaction/message call.
       additionalProperties: false
       properties:
         type:
           title: type
+          description: Transaction type byte (per EIP-2718), e.g., 0x0 (legacy), 0x1 (EIP-2930), 0x2 (EIP-1559), 0x3 (EIP-4844).
           $ref: "./base-types.yaml#/components/schemas/byte"
         nonce:
           title: nonce
+          description: Number of prior transactions sent from the sender account.
           $ref: "./base-types.yaml#/components/schemas/uint"
         to:
           title: to address
+          description: Recipient of the call. Use null to indicate contract creation.
           oneOf:
             - title: Contract Creation (null)
+              description: Null to create a contract; the address is derived from sender and nonce.
               type: "null"
             - title: Address
+              description: 20-byte address of the recipient account or contract.
               $ref: "./base-types.yaml#/components/schemas/address"
         from:
           title: from address
+          description: 20-byte address of the sender (msg.sender).
           $ref: "./base-types.yaml#/components/schemas/address"
         gas:
           title: gas limit
+          description: Maximum gas provided for execution.
           $ref: "./base-types.yaml#/components/schemas/uint"
         value:
           title: value
+          description: Amount of Ether to transfer with the call, in wei.
           $ref: "./base-types.yaml#/components/schemas/uint"
         input:
           title: input data
+          description: Calldata for the call (hex-encoded bytes).
           $ref: "./base-types.yaml#/components/schemas/bytes"
         gasPrice:
           title: gas price
@@ -405,7 +415,7 @@ components:
           $ref: "./base-types.yaml#/components/schemas/uint"
         accessList:
           title: accessList
-          description: EIP-2930 access list
+          description: EIP-2930 access list of pre-touched addresses and storage keys.
           $ref: "#/components/schemas/AccessList"
         blobVersionedHashes:
           title: blobVersionedHashes
@@ -415,7 +425,7 @@ components:
             $ref: "./base-types.yaml#/components/schemas/hash32"
         blobs:
           title: blobs
-          description: Raw blob data.
+          description: Raw EIP-4844 blob data (each item is a binary-encoded blob).
           type: array
           items:
             $ref: "./base-types.yaml#/components/schemas/bytes"
