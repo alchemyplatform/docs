@@ -30,16 +30,18 @@ Unsubscribe from different Astar event types with a regular RPC call with eth\_u
   ```
 
   ```javascript Viem
-  // npm install Viem
-  import { Alchemy, Network } from "Viem";
+  // npm install viem
+  import { createPublicClient, webSocket } from 'viem'
+  import { astar } from 'viem/chains'
 
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.OPT_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: astar,
+    transport: webSocket('wss://astar-mainnet.g.alchemy.com/v2/demo')
+  })
 
-  alchemy.ws.removeAllListeners();
+  // Unsubscribe from all watchers
+  // Call the unwatch function returned by watch methods
+  // Example: unwatch() - where unwatch was returned by watchPendingTransactions
   ```
 </CodeGroup>
 

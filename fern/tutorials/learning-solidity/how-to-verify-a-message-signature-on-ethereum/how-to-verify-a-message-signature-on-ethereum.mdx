@@ -243,14 +243,8 @@ The code above creates an asynchronous function that contains the necessary vari
       // Importing the hashMessage function which takes a string and converts it to a hash
       // We need this because the Ethers sign function takes a message hash
       // Note: We do not need this when using the Web3 library because the sign function automatically converts the message into a hash
-      const settings = {
-          apiKey: API_URL,
-          Network: Network.ETH_SEPOLIA,
-      };
-      const alchemy = new Alchemy(settings);
-      // initializing provider with Alchemy endpoint
-      const ethersAlchemyProvider = alchemy.config.getProvider();
-      // Creates a new provider instance with Alchemy to make requests using our API
+      // Creates a new provider instance with Alchemy using Ethers.js
+      const ethersAlchemyProvider = new ethers.JsonRpcProvider(API_URL);
     };
     
     main();
@@ -276,7 +270,7 @@ The code above creates an asynchronous function that contains the necessary vari
     const { hashMessage } = require("@ethersproject/hash");
     // Importing the hashMessage function which takes a string and converts it to a hash
     // We need this because the Ethers sign function takes a message hash 
-    const provider = new ethers.providers.AlchemyProvider("ropsten", API_URL);
+    const provider = new ethers.JsonRpcProvider(API_URL);
     // Creating Ethers provider instance
   };
 
