@@ -10,9 +10,9 @@ slug: docs/how-to-subscribe-to-pending-transactions-via-websocket-endpoints
   This tutorial uses the **[alchemy\_minedTransactions](/reference/alchemy-minedtransactions)** subscription endpoint.
 </Info>
 
-Alchemy provides the most effective method to subscribe to mined transactions, log events, and new blocks using WebSockets on Ethereum, Polygon, Arbitrum, and Optimism. By leveraging the Alchemy SDK, you're able to access direct subscription types by simply connecting to each endpoint. \[mined
+Alchemy provides the most effective method to subscribe to mined transactions, log events, and new blocks using WebSockets on Ethereum, Polygon, Arbitrum, and Optimism. You can access direct subscription types by connecting to WebSocket endpoints using modern Web3 libraries.
 
-In this tutorial, we will test and create a sample project using the [`alchemy_minedTransactions`](/reference/alchemy-minedtransactions) method offered by the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
+In this tutorial, we will test and create a sample project using the [`alchemy_minedTransactions`](/reference/alchemy-minedtransactions) method with Viem and Ethers.js.
 
 **What relevance does the `alchemy_minedTransactions` provide to users?**
 
@@ -140,17 +140,22 @@ By using **wscat**, you are able to verify the transaction immediately via the c
 
 ## Step 4: Create a Node project
 
-To build out a kick starter that leverages the **alchemy-sdk**, let's create an empty repository and install all node dependencies.
-
-To make requests to the SDK WebSockets Endpoints, we recommend using the [Alchemy SDK Quickstart](/reference/alchemy-sdk-quickstart).
+Let's create an empty repository and install the necessary dependencies for WebSocket connections. We can use either Viem or Ethers.js to manage WebSocket subscriptions.
 
 From your terminal, run the following commands:
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Viem
   mkdir mined-transactions && cd mined-transactions
   npm init -y
-  npm install --save alchemy-sdk
+  npm install viem
+  touch main.js
+  ```
+
+  ```shell Ethers.js
+  mkdir mined-transactions && cd mined-transactions
+  npm init -y
+  npm install ethers
   touch main.js
   ```
 </CodeGroup>
@@ -159,33 +164,76 @@ This will create a repository named `mined-transactions` that holds all the file
 
 Open this repo in your preferred code editor, where we'll write our code in the `main.js` file.
 
-## Step 5: Output Pending Transactions using alchemy-sdk
+## Step 5: Output Mined Transactions using WebSocket libraries
 
-Next, we’ll demonstrate how to use the Alchemy SDK to create an **alchemy\_minedTransactions** subscription.
+Next, we'll demonstrate how to use Viem or Ethers.js to subscribe to mined transactions.
 
 To make requests using Alchemy's minedTransactions API, we recommend reviewing the [alchemy\_minedTransactions docs](/reference/alchemy-minedtransactions).
 
 Next, add the following code to the `main.js` file, using your Alchemy API key:
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  // Installation: npm install alchemy-sdk
-  import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+  ```javascript Viem
+  import { createPublicClient, webSocket } from 'viem'
+  import { mainnet } from 'viem/chains'
 
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key
-    network: Network.ETH_MAINNET, // Replace with your network
-  };
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: webSocket('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+  })
 
-  const alchemy = new Alchemy(settings);
+  // Subscribe to new blocks to get mined transactions
+  const unsubscribe = client.watchBlocks({
+    onBlock: async (block) => {
+      console.log('New block:', block.number)
 
-  // Subscription for Alchemy's minedTransactions API
-  alchemy.ws.on(
-    {
-      method: AlchemySubscription.MINED_TRANSACTIONS,
-    },
-    (tx) => console.log(tx)
-  );
+      // Get all transactions in the block
+      const blockWithTxs = await client.getBlock({
+        blockNumber: block.number,
+        includeTransactions: true
+      })
+
+      console.log(`Block ${block.number} has ${blockWithTxs.transactions.length} transactions`)
+      blockWithTxs.transactions.forEach((tx, index) => {
+        if (index < 3) { // Show first 3 transactions for brevity
+          console.log('Mined transaction:', tx.hash)
+        }
+      })
+    }
+  })
+
+  console.log('Listening for mined transactions...')
+  ```
+
+  ```javascript Ethers.js
+  import { WebSocketProvider } from 'ethers'
+
+  const provider = new WebSocketProvider('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+
+  // Listen for new blocks to get mined transactions
+  provider.on('block', async (blockNumber) => {
+    try {
+      const block = await provider.getBlock(blockNumber, true) // true = include transactions
+
+      if (block && block.transactions) {
+        console.log(`Block ${blockNumber} has ${block.transactions.length} transactions`)
+
+        // Show first 3 transactions for brevity
+        block.transactions.slice(0, 3).forEach((tx) => {
+          console.log('Mined transaction:', {
+            hash: tx.hash,
+            from: tx.from,
+            to: tx.to,
+            value: tx.value?.toString()
+          })
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching block:', error)
+    }
+  })
+
+  console.log('Listening for mined transactions...')
   ```
 </CodeGroup>
 
@@ -249,53 +297,110 @@ It should look something like this:
   ```
 </CodeGroup>
 
-## Step 6: Filter Pending Transactions
+## Step 6: Filter Mined Transactions
 
-Next, we’ll demonstrate how to filter pending transactions using the **alchemy\_minedTransactions** subscription. The filters will input an address or an array of addresses that will output mined transactions based on the parameters. These filters are (`fromAddress`) indicating the address that will send the transaction and (`toAddress`) indicating the address that will receive the transaction.
+Next, we'll demonstrate how to filter mined transactions based on addresses. While standard WebSocket subscriptions don't offer built-in filtering, we can implement filtering logic in our application.
+
+<Warning>
+  Note: The Alchemy-enhanced `alchemy_minedTransactions` API provides native filtering by addresses, `includeRemoved`, and `hashesOnly`. For standard WebSocket subscriptions, we need to implement filtering manually as shown below.
+</Warning>
 
 Add the following code to the `main.js` file, using your Alchemy API key:
 
-<Warning>
-  Within the Subscription API method, we've added three filters: addresses, includeRemoved and hashesOnly. This will enable our request to the Alchemy minedTransactions API to be filtered based on the parameters that we've assigned.
-
-  Here is what each filter is doing:
-</Warning>
-
 <CodeGroup>
-  ```javascript Alchemy SDK
-  // Installation: npm install alchemy-sdk
-  import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+  ```javascript Viem with Filtering
+  import { createPublicClient, webSocket } from 'viem'
+  import { mainnet } from 'viem/chains'
 
-  const settings = {
-    apiKey: "<-- ALCHEMY APP API KEY -->", // Replace with your Alchemy API Key
-    network: Network.ETH_MAINNET, // Replace with your network
-  };
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: webSocket('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+  })
 
-  const alchemy = new Alchemy(settings);
+  // Address to filter for
+  const targetAddress = "0x473780deaf4a2ac070bbba936b0cdefe7f267dfc"
 
-  // Subscription for Alchemy's minedTransactions API
-  alchemy.ws.on(
-    {
-      method: AlchemySubscription.MINED_TRANSACTIONS,
-      addresses: [
-        {
-          from: "0x473780deaf4a2ac070bbba936b0cdefe7f267dfc",
-        },
-        {
-          to: "0x473780deaf4a2ac070bbba936b0cdefe7f267dfc",
-        },
-      ],
-      includeRemoved: true,
-      hashesOnly: false,
-    },
-    (tx) => console.log(tx)
-  );
+  // Subscribe to new blocks and filter transactions
+  const unsubscribe = client.watchBlocks({
+    onBlock: async (block) => {
+      try {
+        const blockWithTxs = await client.getBlock({
+          blockNumber: block.number,
+          includeTransactions: true
+        })
+
+        // Filter transactions by from/to address
+        const filteredTxs = blockWithTxs.transactions.filter(tx =>
+          tx.from?.toLowerCase() === targetAddress.toLowerCase() ||
+          tx.to?.toLowerCase() === targetAddress.toLowerCase()
+        )
+
+        if (filteredTxs.length > 0) {
+          console.log(`Block ${block.number}: Found ${filteredTxs.length} filtered transactions`)
+          filteredTxs.forEach(tx => {
+            console.log('Filtered mined transaction:', {
+              hash: tx.hash,
+              from: tx.from,
+              to: tx.to,
+              value: tx.value?.toString()
+            })
+          })
+        }
+      } catch (error) {
+        console.error('Error processing block:', error)
+      }
+    }
+  })
+
+  console.log(`Listening for mined transactions involving ${targetAddress}...`)
+  ```
+
+  ```javascript Ethers.js with Filtering
+  import { WebSocketProvider } from 'ethers'
+
+  const provider = new WebSocketProvider('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+
+  // Address to filter for
+  const targetAddress = "0x473780deaf4a2ac070bbba936b0cdefe7f267dfc"
+
+  // Listen for new blocks and filter transactions
+  provider.on('block', async (blockNumber) => {
+    try {
+      const block = await provider.getBlock(blockNumber, true)
+
+      if (block && block.transactions) {
+        // Filter transactions by from/to address
+        const filteredTxs = block.transactions.filter(tx =>
+          tx.from?.toLowerCase() === targetAddress.toLowerCase() ||
+          tx.to?.toLowerCase() === targetAddress.toLowerCase()
+        )
+
+        if (filteredTxs.length > 0) {
+          console.log(`Block ${blockNumber}: Found ${filteredTxs.length} filtered transactions`)
+          filteredTxs.forEach(tx => {
+            console.log('Filtered mined transaction:', {
+              hash: tx.hash,
+              from: tx.from,
+              to: tx.to,
+              value: tx.value?.toString()
+            })
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error processing block:', error)
+    }
+  })
+
+  console.log(`Listening for mined transactions involving ${targetAddress}...`)
   ```
 </CodeGroup>
 
 # Conclusion
 
-You now know how to use the Alchemy SDK to check for [mined transactions and filter](/reference/alchemy-minedtransactions) using various parameters.
+You now know how to use WebSocket connections with Viem and Ethers.js to [subscribe to mined transactions](/reference/alchemy-minedtransactions) and filter them based on addresses.
+
+For more advanced filtering capabilities, consider using Alchemy's enhanced `alchemy_minedTransactions` API which provides native filtering by addresses, `includeRemoved`, and `hashesOnly` parameters.
 
 If you enjoyed this tutorial, tweet us at **@Alchemy**.
 

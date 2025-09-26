@@ -19,12 +19,12 @@ Like most blockchain developers when they first start, you might have done some 
 ### 1. Alchemy does not store your private keys
 
 * This means that Alchemy's servers cannot sign and send transactions on your behalf. The reason for this is security purposes. Alchemy will never ask you to share your private key, and you should never share your private key with a hosted node (or anyone for that matter).
-* However, you can use the Wallet in the Alchemy SDK to sign your transactions. This Wallet exists only on your machine running the code, and cannot share your private key with anyone else.
-* You can read from the blockchain using Alchemy's core API, but to write to it you'll need to use the Alchemy SDK or an external wallet to sign your transactions before sending them through Alchemy.
+* However, you can use modern Web3 libraries like Viem or Ethers.js to sign your transactions. These wallets exist only on your machine running the code, and cannot share your private key with anyone else.
+* You can read from the blockchain using Alchemy's RPC API, but to write to it you'll need to use Web3 libraries or an external wallet to sign your transactions before sending them through Alchemy.
 
 ### 2. What is a "signer"?
 
-* Signers will sign transactions for you using your private key. In this tutorial, we'll be using the Alchemy SDK to sign our transaction, but you could also use any other web3 library. The Alchemy SDK Wallet implements a Signer.
+* Signers will sign transactions for you using your private key. In this tutorial, we'll be using Viem and Ethers.js to sign our transaction, but you could also use any other web3 library.
 * In the frontend, an excellent example of a signer would be [Metamask](https://metamask.io), which will sign and send transactions on your behalf.
 
 ### 3. Why do I need to sign my transactions?
@@ -38,8 +38,8 @@ Like most blockchain developers when they first start, you might have done some 
 
 ### 5. What is the web3 library?
 
-* The Alchemy SDK is a wrapper library around the standard JSON-RPC calls that are quite common to use in Ethereum development.
-* There are many different web3 libraries for different languages. In this tutorial, we'll use the Alchemy SDK which is written in JavaScript.
+* Modern Web3 libraries like Viem and Ethers.js are wrapper libraries around the standard JSON-RPC calls that are quite common to use in Ethereum development.
+* There are many different web3 libraries for different languages. In this tutorial, we'll use Viem and Ethers.js which are written in JavaScript.
 
 Okay, now that we have a few of these questions out of the way, let's move onto the tutorial. Feel free to contact us at <Markdown src="../../../../snippets/support-email.mdx" /> or open a ticket in the dashboard.
 
@@ -74,14 +74,14 @@ Create a new project directory from the [command line ](https://www.computerhope
   ```
 </CodeGroup>
 
-### 4. Install the [Alchemy SDK](/reference/alchemy-sdk-quickstart) and dotenv
+### 4. Install Viem/Ethers.js and dotenv
 
 Run the following command in your project directory:
 
 <CodeGroup>
   ```shell shell
   npm init --yes
-  npm install alchemy-sdk dotenv
+  npm install viem ethers dotenv
   ```
 </CodeGroup>
 
@@ -114,63 +114,95 @@ Great, now that we have our sensitive data protected in a `.env` file, let's sta
 Create a `sendTx.js` file, which is where we will configure and send our example transaction, and add the following lines of code to it:
 
 <CodeGroup>
-  ```javascript sendTx.js
-  const { Alchemy, Network, Wallet, Utils } = require("alchemy-sdk");
-  const dotenv = require("dotenv");
+  ```javascript Viem
+  import { createWalletClient, createPublicClient, http, parseEther, parseGwei } from 'viem'
+  import { privateKeyToAccount } from 'viem/accounts'
+  import { sepolia } from 'viem/chains'
+  import dotenv from 'dotenv'
 
-  dotenv.config();
-  const { API_KEY, PRIVATE_KEY } = process.env;
+  dotenv.config()
+  const { API_KEY, PRIVATE_KEY } = process.env
 
-  const settings = {
-    apiKey: API_KEY,
-    network: Network.ETH_SEPOLIA,
-  };
-  const alchemy = new Alchemy(settings);
+  const account = privateKeyToAccount(`0x${PRIVATE_KEY}`)
 
-  let wallet = new Wallet(PRIVATE_KEY);
+  const walletClient = createWalletClient({
+    account,
+    chain: sepolia,
+    transport: http(`https://eth-sepolia.g.alchemy.com/v2/${API_KEY}`)
+  })
+
+  const publicClient = createPublicClient({
+    chain: sepolia,
+    transport: http(`https://eth-sepolia.g.alchemy.com/v2/${API_KEY}`)
+  })
 
   async function main() {
-    const nonce = await alchemy.core.getTransactionCount(
-      wallet.address,
-      "latest"
-    );
-
-    let transaction = {
+    const hash = await walletClient.sendTransaction({
       to: "0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd",
-      value: Utils.parseEther("0.001"),
-      gasLimit: "21000",
-      maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
-      maxFeePerGas: Utils.parseUnits("20", "gwei"),
-      nonce: nonce,
-      type: 2,
-      chainId: 11155111,
-    };
+      value: parseEther("0.001"),
+      gas: 21000n,
+      maxPriorityFeePerGas: parseGwei("5"),
+      maxFeePerGas: parseGwei("20")
+    })
 
-    let rawTransaction = await wallet.signTransaction(transaction);
-    let tx = await alchemy.core.sendTransaction(rawTransaction);
-    console.log("Sent transaction", tx);
+    console.log("Sent transaction", hash)
+
+    // Wait for confirmation
+    const receipt = await publicClient.waitForTransactionReceipt({ hash })
+    console.log("Transaction confirmed", receipt)
   }
 
-  main();
+  main()
+  ```
+
+  ```javascript Ethers.js
+  import { ethers } from 'ethers'
+  import dotenv from 'dotenv'
+
+  dotenv.config()
+  const { API_KEY, PRIVATE_KEY } = process.env
+
+  const provider = new ethers.JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${API_KEY}`)
+  const wallet = new ethers.Wallet(PRIVATE_KEY, provider)
+
+  async function main() {
+    const transaction = {
+      to: "0xa238b6008Bc2FBd9E386A5d4784511980cE504Cd",
+      value: ethers.parseEther("0.001"),
+      gasLimit: 21000,
+      maxPriorityFeePerGas: ethers.parseUnits("5", "gwei"),
+      maxFeePerGas: ethers.parseUnits("20", "gwei"),
+      type: 2,
+    }
+
+    const tx = await wallet.sendTransaction(transaction)
+    console.log("Sent transaction", tx.hash)
+
+    // Wait for confirmation
+    const receipt = await tx.wait()
+    console.log("Transaction confirmed", receipt)
+  }
+
+  main()
   ```
 </CodeGroup>
 
 Now, before we jump into running this code, let's talk about some of the components here.
 
-* `Wallet`: This object stores your private key, and can be accessed to sign a transaction with your private key or to return your public address.
+* **Wallet/Account**: This object stores your private key, and can be used to sign transactions. In Viem, we create an account from a private key. In Ethers.js, we create a Wallet instance.
 
-* `nonce` : The nonce specification is used to keep track of the number of transactions sent from your address. We need this for security purposes and to prevent [replay attacks](). To get the number of transactions sent from your address we use [eth\_getTransactionCount](/reference/eth-gettransactioncount)
+* **Clients**: Viem uses separate clients for wallet operations (sending transactions) and public operations (reading blockchain data). Ethers.js combines these in the provider and wallet objects.
 
-* `transaction`: The transaction object has a few aspects we need to specify
+* **Transaction**: The transaction object has a few aspects we need to specify:
 
   * `to`: This is the address we want to send Eth to. In this case, we are sending Eth back to the [Sepolia faucet](https://sepoliafaucet.com/) we initially requested from.
-  * `gasLimit`: This is the maximum amount of gas you are willing to consume on a transaction. Standard limit is 21000 units.
+  * `gas`/`gasLimit`: This is the maximum amount of gas you are willing to consume on a transaction. Standard limit is 21000 units.
   * `value`: This is the amount we wish to send, specified in wei where 10^18 wei = 1 ETH
-  * `maxFeePerGas`: This is the total amount you are willing to pay per gas for the transaction to execute. Since EIP 1559, this field or the `maxPriorityFeePerGas` field is required. Specified in wei, where 10^18 wei = 1 ETH
-  * `nonce`: see above nonce definition. Nonce starts counting from zero.
-  * \[OPTIONAL] `data`: Used for sending additional information with your transfer, or calling a smart contract, not required for balance transfers, check out the note below.
+  * `maxFeePerGas`: This is the total amount you are willing to pay per gas for the transaction to execute. Since EIP 1559, this field or the `maxPriorityFeePerGas` field is required.
+  * `nonce`: Automatically handled by the libraries but can be manually specified if needed.
+  * \[OPTIONAL] `data`: Used for sending additional information with your transfer, or calling a smart contract, not required for balance transfers.
 
-* `rawTransaction`: To sign our transaction object we will use the `signTransaction` method of our wallet, generating a raw "signed" transaction.
+* **Transaction Signing and Sending**: Both libraries handle signing and sending automatically when using `sendTransaction`. The libraries automatically calculate the nonce and handle EIP-1559 fee structures.
 
 * `sendTransaction`: Once we have a signed transaction, we can send it off to be included in a subsequent block by using `sendTransaction`
 

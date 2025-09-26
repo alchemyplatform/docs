@@ -79,26 +79,63 @@ With `hashesOnly` = `false`
 
   ```
 
-  ```javascript alchemy-sdk
-  // Installation: npm install alchemy-sdk
-  import { Alchemy, Network, AlchemySubscription } from "alchemy-sdk";
+  ```javascript Viem
+  import { createPublicClient, webSocket } from 'viem'
+  import { mainnet } from 'viem/chains'
 
-  const settings = {
-    apiKey: "<-- ALCHEMY APP API KEY -->", // Replace with your Alchemy API Key
-    network: Network.ETH_MAINNET, // Replace with your network
-  };
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: webSocket('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+  })
 
-  const alchemy = new Alchemy(settings);
+  // Addresses to filter for
+  const fromAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  const toAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
 
-  // Subscription for Alchemy's pendingTransactions API
-  alchemy.ws.on(
-    {
-      method: AlchemySubscription.PENDING_TRANSACTIONS,
-      fromAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // Replace with address to receive pending transactions from this address
-      toAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // Replace with address to send  pending transactions to this address
-    },
-    (tx) => console.log(tx)
-  );
+  // Subscribe to pending transactions with filtering
+  const unsubscribe = client.watchPendingTransactions({
+    onTransactions: async (hashes) => {
+      for (const hash of hashes) {
+        try {
+          const tx = await client.getTransaction({ hash })
+
+          // Filter transactions by from/to address
+          if (tx.from?.toLowerCase() === fromAddress.toLowerCase() ||
+              tx.to?.toLowerCase() === toAddress.toLowerCase()) {
+            console.log('Filtered pending transaction:', tx)
+          }
+        } catch (error) {
+          continue // Skip transactions that can't be fetched
+        }
+      }
+    }
+  })
+  ```
+
+  ```javascript Ethers.js
+  import { WebSocketProvider } from 'ethers'
+
+  const provider = new WebSocketProvider('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+
+  // Addresses to filter for
+  const fromAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  const toAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+
+  // Listen for pending transactions with filtering
+  provider.on('pending', async (txHash) => {
+    try {
+      const tx = await provider.getTransaction(txHash)
+
+      if (tx && (
+        tx.from?.toLowerCase() === fromAddress.toLowerCase() ||
+        tx.to?.toLowerCase() === toAddress.toLowerCase()
+      )) {
+        console.log('Filtered pending transaction:', tx)
+      }
+    } catch (error) {
+      // Skip transactions that can't be fetched
+    }
+  })
   ```
 </CodeGroup>
 

@@ -66,15 +66,12 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-To make requests to the NFT API, use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
-
-You can also use `axios` or `fetch` alternatively.
+To make requests to the NFT API, you can use `fetch` or `axios`.
 
 <CodeGroup>
-  ```text Alchemy SDK
+  ```text Fetch
   mkdir nft-holders && cd nft-holders
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 
@@ -82,12 +79,6 @@ You can also use `axios` or `fetch` alternatively.
   mkdir nft-holders && cd nft-holders
   npm init -y
   npm install --save axios
-  touch main.js
-  ```
-
-  ```text Fetch
-  mkdir nft-holders && cd nft-holders
-  npm init -y
   touch main.js
   ```
 </CodeGroup>
@@ -111,36 +102,24 @@ Note that it is also possible to optionally set a `block` height parameter. We d
 Add the following code to the `main.js` file.
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Network } = require("alchemy-sdk");
+  ```javascript Fetch
+  // WOW contract address
+  const address = "0xe785E82358879F061BC3dcAC6f0444462D4b5330";
 
-  const config = {
-      apiKey: "<-- ALCHEMY API KEY -->",
-      network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getOwnersForCollection`;
+  const url = `${baseURL}?contractAddress=${address}`;
 
-  const main = async () => {
-
-      // WOW contract address
-      const address = "0xe785E82358879F061BC3dcAC6f0444462D4b5330";
-
-      // Get owners 
-      const owners = await alchemy.nft.getOwnersForContract(address);
-      console.log(owners);
+  var requestOptions = {
+    method: 'get',
+    redirect: 'follow'
   };
 
-  const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      } catch (error) {
-          console.log(error);
-          process.exit(1);
-      }
-  };
-
-  runMain();
+  fetch(url, requestOptions)
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.log('error', error))
   ```
 
   ```javascript Axios
@@ -149,9 +128,10 @@ Add the following code to the `main.js` file.
   // WOW contract address
   const address = "0xe785E82358879F061BC3dcAC6f0444462D4b5330";
 
-  // Alchemy URL
-  const baseURL = `<-- ALCHEMY HTTP URL -->`;
-  const url = `${baseURL}/getOwnersForCollection/?contractAddress=${address}`;
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getOwnersForCollection`;
+  const url = `${baseURL}?contractAddress=${address}`;
 
   const config = {
       method: 'get',
@@ -160,27 +140,8 @@ Add the following code to the `main.js` file.
 
   // Make the request and print the formatted response:
   axios(config)
-      .then(console.log)
+      .then(response => console.log(response.data))
       .catch(error => console.log('error', error));
-  ```
-
-  ```javascript Fetch
-  import fetch from 'node-fetch';
-
-  // WOW contract address
-  const address = "0xe785E82358879F061BC3dcAC6f0444462D4b5330";
-
-  const baseURL = "<-- ALCHEMY APP HTTP URL -->";
-  const url = `${baseURL}/getOwnersForCollection/?contractAddress=${address}`;
-
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => console.log)
-    .catch(error => console.log('error', error))
   ```
 </CodeGroup>
 
@@ -196,7 +157,7 @@ If all goes well, you should see output that looks something like this:
 
 ```shell
 {
-  owners: [
+  ownerAddresses: [
     '0x00189b281d7249950ecbe735653536c4a1821351',
     '0x0026691eed3d9ca5dcf7351dfbe113e6dfce528d',
     ........
@@ -204,7 +165,7 @@ If all goes well, you should see output that looks something like this:
     '0x05158928d3b7764187c691da53cef446aeb32f31',
     '0x05171c1ed768ccd3fe3b609f499b5405e4542682',
     '0x0522197898a464c83966eec76e441e391224e178',
-    ... 5465 more items
+    ... 5200 more items
   ]
 }
 ```

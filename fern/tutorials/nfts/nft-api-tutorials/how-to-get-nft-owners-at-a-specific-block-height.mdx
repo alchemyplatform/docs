@@ -81,15 +81,12 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-To make requests to the NFT API, use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
-
-You can also use `axios` or `fetch` alternatively.
+To make requests to the NFT API, you can use `fetch` or `axios`.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Fetch
   mkdir nft-ownership && cd nft-ownership
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 
@@ -97,12 +94,6 @@ You can also use `axios` or `fetch` alternatively.
   mkdir nft-ownership && cd nft-ownership
   npm init -y
   npm install --save axios
-  touch main.js
-  ```
-
-  ```shell Fetch
-  mkdir nft-ownership && cd nft-ownership
-  npm init -y
   touch main.js
   ```
 </CodeGroup>
@@ -127,39 +118,27 @@ Note that the `block` parameter is optional. If you do not set it, the API will 
 Add the following code to the `main.js` file.
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Network } = require("alchemy-sdk");
+  ```javascript Fetch
+  // BAYC contract address
+  const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
 
-  const config = {
-      apiKey: "<-- ALCHEMY API KEY -->",
-      network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  // Block number or height
+  const block = "15753215";
 
-  const main = async () => {
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getOwnersForCollection`;
+  const url = `${baseURL}?contractAddress=${address}&block=${block}`;
 
-      // BAYC contract address
-      const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
-
-      // Block number or height
-      const block = "15753215";
-
-      // Get owners 
-      const owners = await alchemy.nft.getOwnersForContract(address, false, block);
-      console.log(owners);
+  var requestOptions = {
+    method: 'get',
+    redirect: 'follow'
   };
 
-  const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      } catch (error) {
-          console.log(error);
-          process.exit(1);
-      }
-  };
-
-  runMain();
+  fetch(url, requestOptions)
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.log('error', error))
   ```
 
   ```javascript Axios
@@ -171,9 +150,10 @@ Add the following code to the `main.js` file.
   // Block number or height
   const block = "15753215";
 
-  // Alchemy URL
-  const baseURL = `<-- ALCHEMY HTTP URL -->`;
-  const url = `${baseURL}/getOwnersForCollection/?contractAddress=${address}&block=${block}`;
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getOwnersForCollection`;
+  const url = `${baseURL}?contractAddress=${address}&block=${block}`;
 
   const config = {
       method: 'get',
@@ -182,30 +162,8 @@ Add the following code to the `main.js` file.
 
   // Make the request and print the formatted response:
   axios(config)
-      .then(console.log)
+      .then(response => console.log(response.data))
       .catch(error => console.log('error', error));
-  ```
-
-  ```javascript Fetch
-  import fetch from 'node-fetch';
-
-  // BAYC contract address
-  const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
-
-  // Block number or height
-  const block = "15753215";
-
-  const baseURL = "<-- ALCHEMY APP HTTP URL -->";
-  const url = `${baseURL}/getOwnersForCollection/?contractAddress=${address}&block=${block}`;
-
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => console.log)
-    .catch(error => console.log('error', error))
   ```
 </CodeGroup>
 
@@ -221,7 +179,7 @@ If all goes well, you should see output that looks something like this:
 
 ```shell
 {
-  owners: [
+  ownerAddresses: [
     '0x000000000000000000000000000000000000dead',
     '0x000001f568875f378bf6d170b790967fe429c81a',
     '0x0001bb2a72173f3a1aaae96bd0ddb1f8be4f91b7',

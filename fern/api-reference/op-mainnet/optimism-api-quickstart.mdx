@@ -14,7 +14,7 @@ slug: reference/optimism-api-quickstart
 
 ## 1. Choose a package manager (npm or yarn)
 
-For this guide, we will be using npm or yarn as our package manager to install either `alchemy-sdk` or any other packages.
+For this guide, we will be using npm or yarn as our package manager to install Viem or Ethers.js.
 
 ### npm
 
@@ -40,17 +40,25 @@ To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lan
   ```
 </CodeGroup>
 
-## 3. Install Alchemy-SDK
+## 3. Install Web3 Library
 
-Run the following command to install the Alchemy SDK with npm or yarn.
+Run the following command to install Viem or Ethers.js with npm or yarn.
 
 <CodeGroup>
-  ```text npm
-  npm install alchemy-sdk
+  ```text Viem (npm)
+  npm install viem
   ```
 
-  ```text yarn
-  yarn add alchemy-sdk
+  ```text Viem (yarn)
+  yarn add viem
+  ```
+
+  ```text Ethers.js (npm)
+  npm install ethers
+  ```
+
+  ```text Ethers.js (yarn)
+  yarn add ethers
   ```
 </CodeGroup>
 
@@ -60,22 +68,20 @@ You are all set now to use Optimism API and make your first request. For instanc
 
 <CodeGroup>
   ```javascript index.js
-  const { Network, Alchemy } = require("alchemy-sdk");
+  import { createPublicClient, http } from 'viem'
+  import { optimism } from 'viem/chains'
 
-  // Optional Config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.OPT_MAINNET, // Replace with your network.
-  };
-
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: optimism,
+    transport: http('https://opt-mainnet.g.alchemy.com/v2/demo') // Replace 'demo' with your API Key
+  })
 
   async function main() {
-    const latestBlock = await alchemy.core.getBlockNumber();
-    console.log("The latest block number is", latestBlock);
+    const latestBlock = await client.getBlockNumber()
+    console.log('The latest block number is', latestBlock)
   }
 
-  main();
+  main()
   ```
 </CodeGroup>
 
@@ -101,10 +107,7 @@ Check out the following tutorials to learn how to build on Optimism:
 * [Optimism API FAQ](/reference/optimism-api-faq)
 * [How to Add Optimism To Metamask](/docs/how-to-add-optimism-to-metamask)
 
-For full documentation on the available endpoints for alchemy-sdk, check the github repo:
+For full documentation on modern Web3 libraries:
 
-[![GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](alchemy-sdk-js.png)](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-[![github.com](favicon.ico)github.com](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-[GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](https://github.com/alchemyplatform/alchemy-sdk-js)
+* **Viem**: [https://viem.sh](https://viem.sh) - TypeScript Interface for Ethereum
+* **Ethers.js**: [https://docs.ethers.org](https://docs.ethers.org) - Complete Ethereum library

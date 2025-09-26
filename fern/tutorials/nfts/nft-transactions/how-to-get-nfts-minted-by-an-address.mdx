@@ -56,276 +56,121 @@ To demonstrate how to get the NFT mint events from an address we're going to wal
   For a no-code demonstration of this request, check out Alchemy's [Composer tool](https://composer.alchemyapi.io/?composer_state=%7B%22chain%22%3A0%2C%22network%22%3A0%2C%22methodName%22%3A%22alchemy_getAssetTransfers%22%2C%22paramValues%22%3A%5B%7B%22excludeZeroValue%22%3Atrue%2C%22fromBlock%22%3A%220x0%22%2C%22toBlock%22%3A%22latest%22%2C%22fromAddress%22%3A%220x0000000000000000000000000000000000000000%22%2C%22toAddress%22%3A%220x5c43B1eD97e52d009611D89b74fA829FE4ac56b1%22%2C%22category%22%3A%5B%22external%22%2C%22erc721%22%2C%22erc1155%22%5D%7D%5D%7D)!
 </Check>
 
-Follow along with any of the code examples below to make the request.
-
-### Alchemy SDK (Recommended)
-
-[Alchemy's SDK](/reference/alchemy-sdk-quickstart) allows us to more efficiently interact with Alchemy's endpoints and make JSON-RPC requests.
-
-[![transfers\_api\_javascript\_scripts/nft-mints-alchemyweb3.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](transfers_api_javascript_scripts.png)](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/alchemyweb3/nft-mints/nft-mints-alchemyweb3.js)
-
-[![github.com](favicon.ico)github.com](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/alchemyweb3/nft-mints/nft-mints-alchemyweb3.js)
-
-[transfers\_api\_javascript\_scripts/nft-mints-alchemyweb3.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/alchemyweb3/nft-mints/nft-mints-alchemyweb3.js)
-
-NFT Mints GitHub Repo
-
-Ensure you are inside your project folder and type the following command in the terminal:
+Follow along with the code examples below to make the request.
 
 <CodeGroup>
-  ```shell Shell
-  npm install alchemy-sdk
-  ```
-</CodeGroup>
+  ```javascript Fetch
+  // nft-mints.js
 
-#### 2. Create a file for the script
-
-In your current directory, create a new file called `nft-mints-alchemy-sdk.js`
-
-Use your favorite file browser, code editor, or just directly in the terminal using the `touch` command like this:
-
-<CodeGroup>
-  ```shell Shell
-  touch nft-mints-alchemy-sdk.js
-  ```
-</CodeGroup>
-
-#### 3. Write script!
-
-Copy and paste in the following code snippet into your new file: `nft-mints-alchemy-sdk.js`
-
-<CodeGroup>
-  ```javascript nft-mints-alchemy-sdk.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
-
-  // Address we want get NFT mints from
-  const toAddress = "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1";
-
-  const res = await alchemy.core.getAssetTransfers({
-    fromBlock: "0x0",
-    fromAddress: "0x0000000000000000000000000000000000000000",
-    toAddress: toAddress,
-    excludeZeroValue: true,
-    category: ["erc721", "erc1155"],
-  });
-
-  // Print contract address and tokenId for each NFT (ERC721 or ERC1155):
-  for (const events of res.transfers) {
-    if (events.erc1155Metadata == null) {
-      console.log(
-        "ERC-721 Token Minted: ID- ",
-        events.tokenId,
-        " Contract- ",
-        events.rawContract.address
-      );
-    } else {
-      for (const erc1155 of events.erc1155Metadata) {
-        console.log(
-          "ERC-1155 Token Minted: ID- ",
-          erc1155.tokenId,
-          " Contract- ",
-          events.rawContract.address
-        );
-      }
-    }
-  }
-  ```
-</CodeGroup>
-
-#### 4. Run script!
-
-Now, on your command line, you can run the script by calling:
-
-<CodeGroup>
-  ```shell shell
-  node nft-mints-alchemy-sdk.js
-  ```
-</CodeGroup>
-
-### Node-Fetch
-
-If you're using [`node-fetch`](https://www.npmjs.com/package/node-fetch) a lightweight, common module that brings the Fetch API to Node.js and allows us to make our HTTP requests, below is a code snippet for the request you'd make!
-
-[![transfers\_api\_javascript\_scripts/nft-mints-fetch.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](transfers_api_javascript_scripts.png)](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/fetch/nft-mints/nft-mints-fetch.js)
-
-[![github.com](favicon.ico)github.com](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/fetch/nft-mints/nft-mints-fetch.js)
-
-[transfers\_api\_javascript\_scripts/nft-mints-fetch.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/fetch/nft-mints/nft-mints-fetch.js)
-
-NFT Mints GitHub Repo
-
-#### 1. Create a file.
-
-In your current directory, create a new file called `nft-mints-fetch.js` using your favorite file browser, code editor, or just directly in the terminal using the `touch` command like this:
-
-<CodeGroup>
-  ```shell nft-mints-fetch-file.js
-  touch nft-mints-fetch.js
-  ```
-</CodeGroup>
-
-#### 2. Write script!
-
-Copy and paste in the following code snippet into your new file: `nft-mints-fetch.js`
-
-<CodeGroup>
-  ```javascript nft-mints-fetch.js
-  import fetch from 'node-fetch';
-
-    // Replace with your Alchemy API key:
-    const apiKey = "demo"
-    const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
-    const fetchURL = `${baseURL}`;
-
+  const main = async () => {
     // Address we want get NFT mints from
     const toAddress = "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1";
 
-    let data = JSON.stringify({
-    "jsonrpc": "2.0",
-    "id": 0,
-    "method": "alchemy_getAssetTransfers",
-    "params": [
-      {
-        "fromBlock": "0x0",
-        "fromAddress": "0x0000000000000000000000000000000000000000",
-        "toAddress": toAddress,
-        "excludeZeroValue":true,
-        "category": ["erc721","erc1155"]
-      }
-    ]
-  });
+    // Replace with your Alchemy API key:
+    const apiKey = "<-- ALCHEMY APP API KEY -->";
 
-    var requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: data,
-      redirect: 'follow'
+    const requestBody = {
+      jsonrpc: "2.0",
+      id: 0,
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromBlock: "0x0",
+          fromAddress: "0x0000000000000000000000000000000000000000",
+          toAddress: toAddress,
+          excludeZeroValue: true,
+          category: ["erc721", "erc1155"]
+        }
+      ]
     };
 
-    fetch(fetchURL, requestOptions)
-      .then((res) => {
-        return res.json()
-      })
-      .then((jsonResponse) => {
-        //Print token name / asset value
-        //console.log(jsonResponse)
-        for (const events of jsonResponse.result.transfers) {
-            if (events.erc1155Metadata == null) {
-              console.log("ERC-721 Token Minted: ID- ", events.tokenId, " Contract- ", events.rawContract.address);
-            }
-            else{
-              for (const erc1155 of events.erc1155Metadata) {
-              console.log("ERC-1155 Token Minted: ID- ", erc1155.tokenId, " Contract- ", events.rawContract.address);
-              }
-            }
-        }
-      })
-      .catch((err) => {
-        // handle error
-        console.error(err);
+    try {
+      const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
       });
-  ```
-</CodeGroup>
 
-#### 3. Run script!
+      const data = await response.json();
 
-Now, on your command line, you can execute the script by calling:
-
-<CodeGroup>
-  ```shell shell
-  node nft-mints-fetch.js
-  ```
-</CodeGroup>
-
-### Axios
-
-If you're using Javascript [`axios`](https://www.axios.com/), a promise-based HTTP client for the browser and Node.js which allows us to make a raw request to the Alchemy API, below is a code snippet for the request you'd make!
-
-[![transfers\_api\_javascript\_scripts/nft-mints-axios.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](transfers_api_javascript_scripts.png)](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/axios/nft-mints/nft-mints-axios.js)
-
-[![github.com](favicon.ico)github.com](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/axios/nft-mints/nft-mints-axios.js)
-
-[transfers\_api\_javascript\_scripts/nft-mints-axios.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/axios/nft-mints/nft-mints-axios.js)
-
-NFT Mints GitHub Repo
-
-#### 1. Create a file.
-
-In your current directory, create a new file called `nft-mints-axios.js` using your favorite file browser, code editor, or just directly in the terminal using the `touch` command.
-
-<CodeGroup>
-  ```shell nft-mints-axios-file.js
-  touch nft-mints-axios.js
-  ```
-</CodeGroup>
-
-#### 2. Write script!
-
-Copy and paste in the following code snippet into your new file: `nft-mints-axios.js`
-
-<CodeGroup>
-  ```javascript nft-mints-axios.js
-  import axios from 'axios';
-
-    // Replace with your Alchemy API key:
-    const apiKey = "demo"
-    const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
-    const axiosURL = `${baseURL}`;
-
-    // Address we want get NFT mints from
-    const toAddress = "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1";
-
-    let data = JSON.stringify({
-    "jsonrpc": "2.0",
-    "id": 0,
-    "method": "alchemy_getAssetTransfers",
-    "params": [
-      {
-        "fromBlock": "0x0",
-        "fromAddress": "0x0000000000000000000000000000000000000000",
-        "toAddress": toAddress,
-        "excludeZeroValue":true,
-        "category": ["erc721","erc1155"]
-      }
-    ]
-  });
-
-    var requestOptions = {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      data: data,
-    };
-
-    const res = await axios(axiosURL, requestOptions);
-
-    // Print contract address and tokenId for each NFT:
-    for (const events of res.data.result.transfers) {
+      // Print contract address and tokenId for each NFT:
+      for (const events of data.result.transfers) {
         if (events.erc1155Metadata == null) {
-          console.log("ERC-721 Token Minted: ID- ", events.tokenId, " Contract- ", events.rawContract.address);
-        }
-        else{
+          console.log("ERC-721 Token Minted: ID-", events.tokenId, "Contract-", events.rawContract.address);
+        } else {
           for (const erc1155 of events.erc1155Metadata) {
-          console.log("ERC-1155 Token Minted: ID- ", erc1155.tokenId, " Contract- ", events.rawContract.address);
+            console.log("ERC-1155 Token Minted: ID-", erc1155.tokenId, "Contract-", events.rawContract.address);
           }
         }
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
+  };
+
+  main();
+  ```
+
+  ```javascript Axios
+  // nft-mints.js
+
+  const axios = require('axios');
+
+  const main = async () => {
+    // Address we want get NFT mints from
+    const toAddress = "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1";
+
+    // Replace with your Alchemy API key:
+    const apiKey = "<-- ALCHEMY APP API KEY -->";
+
+    const requestBody = {
+      jsonrpc: "2.0",
+      id: 0,
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromBlock: "0x0",
+          fromAddress: "0x0000000000000000000000000000000000000000",
+          toAddress: toAddress,
+          excludeZeroValue: true,
+          category: ["erc721", "erc1155"]
+        }
+      ]
+    };
+
+    try {
+      const response = await axios.post(
+        `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`,
+        requestBody,
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+
+      // Print contract address and tokenId for each NFT:
+      for (const events of response.data.result.transfers) {
+        if (events.erc1155Metadata == null) {
+          console.log("ERC-721 Token Minted: ID-", events.tokenId, "Contract-", events.rawContract.address);
+        } else {
+          for (const erc1155 of events.erc1155Metadata) {
+            console.log("ERC-1155 Token Minted: ID-", erc1155.tokenId, "Contract-", events.rawContract.address);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  main();
   ```
 </CodeGroup>
 
-#### 3. Run script!
-
-Now, on your command line, you can execute the script by calling:
+Run this script by calling:
 
 <CodeGroup>
   ```shell shell
-  node nft-mints-axios.js
+  node nft-mints.js
   ```
 </CodeGroup>
 
@@ -415,7 +260,7 @@ Below are the components of the each transfer in our response.
 
 There's lots of information we can pull from this response. One example you may be interested in displaying are: NFT contract standard (`ERC721` or `ERC1155`), `contractAddress`, and `tokenId`
 
-With our queried response saved as a JSON object, we can index through the transfers. In particular, we first access the transfers list and then iterate accross a few key parameters: `erc1155Metadata` , `tokenId`, and `rawContract`.
+With our queried response saved as a JSON object, we can index through the transfers. In particular, we first access the transfers list and then iterate across a few key parameters: `erc1155Metadata` , `tokenId`, and `rawContract`.
 
 The steps we want to take are:
 
@@ -430,13 +275,13 @@ The steps we want to take are:
 
 <CodeGroup>
   ```javascript nft-mints.js
-  for (const events of res.data.result.transfers) {
+  for (const events of data.result.transfers) {
         if (events.erc1155Metadata == null) {
-          console.log("ERC-721 Token Minted: ID- ", events.tokenId, " Contract- ", events.rawContract.address);
+          console.log("ERC-721 Token Minted: ID-", events.tokenId, "Contract-", events.rawContract.address);
         }
         else{
           for (const erc1155 of events.erc1155Metadata) {
-          console.log("ERC-1155 Token Minted: ID- ", erc1155.tokenId, " Contract- ", events.rawContract.address);
+          console.log("ERC-1155 Token Minted: ID-", erc1155.tokenId, "Contract-", events.rawContract.address);
           }
         }
     }

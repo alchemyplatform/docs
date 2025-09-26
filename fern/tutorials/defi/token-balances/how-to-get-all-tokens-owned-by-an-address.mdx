@@ -72,15 +72,15 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-To make requests to the Token API, use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
+To make requests to the Token API, use direct HTTP requests with fetch or axios.
 
 You can also use `axios` or `fetch` alternatively.
 
 <CodeGroup>
-  ```shell Alchemy Web3 (Recommended)
+  ```shell Simple Fetch (Recommended)
   mkdir token-balances && cd token-balances
   npm init -y
-  npm install --save alchemy-sdk
+  // fetch comes preinstalled with node versions 18 and higher
   touch main.js
   ```
 
@@ -116,22 +116,31 @@ This method takes one argument:
 Add the following code to the `main.js` file.
 
 <CodeGroup>
-  ```javascript Alchemy SDK (Recommended)
-  // Setup: npm install alchemy-sdk
-  const { Alchemy, Network } = require("alchemy-sdk");
-
-  const config = {
-    apiKey: "<-- ALCHEMY API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  ```javascript Simple Fetch (Recommended)
+  // Replace with your Alchemy API key:
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   const main = async () => {
     // Wallet address
     const address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
 
     // Get token balances
-    const balances = await alchemy.core.getTokenBalances(address);
+    const response = await fetch(baseURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "alchemy_getTokenBalances",
+        params: [address],
+        id: 1
+      })
+    });
+
+    const data = await response.json();
+    const balances = data.result;
 
     console.log(`The balances of ${address} address are:`, balances);
   };
@@ -291,22 +300,31 @@ We will use this method in conjunction with `getTokenBalances` method, to write 
 Replace the contents of `main.js` with the following:
 
 <CodeGroup>
-  ```javascript Alchemy Web3 (Recommended)
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  ```javascript Simple Fetch (Recommended)
+  // Replace with your Alchemy API key:
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   const main = async () => {
     // Wallet address
     const address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
 
     // Get token balances
-    const balances = await alchemy.core.getTokenBalances(address);
+    const response = await fetch(baseURL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "alchemy_getTokenBalances",
+        params: [address],
+        id: 1
+      })
+    });
+
+    const data = await response.json();
+    const balances = data.result;
 
     // Remove tokens with zero balance
     const nonZeroBalances = balances.tokenBalances.filter((token) => {
@@ -324,7 +342,21 @@ Replace the contents of `main.js` with the following:
       let balance = token.tokenBalance;
 
       // Get metadata of token
-      const metadata = await alchemy.core.getTokenMetadata(token.contractAddress);
+      const metadataResponse = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          method: "alchemy_getTokenMetadata",
+          params: [token.contractAddress],
+          id: 1
+        })
+      });
+
+      const metadataData = await metadataResponse.json();
+      const metadata = metadataData.result;
 
       // Compute token balance in human-readable format
       balance = balance / Math.pow(10, metadata.decimals);

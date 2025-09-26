@@ -8,23 +8,18 @@ slug: reference/token-api-quickstart
 
 # How to Query the Token API
 
-## Alchemy SDK (Recommended)
+## Fetch
 
-Install the `alchemy-sdk` module to easily interact with Alchemy APIs. We highly recommend the `alchemy-sdk` for WebSocket support, retries, and more.
-
-Check the Github repo here: [https://github.com/alchemyplatform/alchemy-sdk-js](https://github.com/alchemyplatform/alchemy-sdk-js)
+You can easily interact with Alchemy's Token API using simple fetch requests. No additional dependencies required with Node.js 18+.
 
 ### Installation
 
-Run the following command to install `alchemy-sdk` with `npm` or `yarn`
+No installation needed - `fetch` is built into Node.js 18 and higher.
 
 <CodeGroup>
-  ```shell npm
-  npm install alchemy-sdk
-  ```
-
-  ```shell yarn
-  yarn add alchemy-sdk
+  ```shell setup
+  # No dependencies needed - using built-in fetch
+  echo "Ready to use Token API!"
   ```
 </CodeGroup>
 
@@ -38,37 +33,67 @@ Run the following command to install `alchemy-sdk` with `npm` or `yarn`
 
 <CodeGroup>
   ```shell shell
-  touch alchemy-sdk-script.js
+  touch token-api-script.js
   ```
 </CodeGroup>
 
 And then paste the following code snippet into the file:
 
 <CodeGroup>
-  ```javascript alchemy-sdk-script.js
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript token-api-script.js
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
+  async function getTokenData() {
+    try {
+      // The wallet address / token we want to query for:
+      const ownerAddr = "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be";
+      const tokenAddr = "0x607f4c5bb672230e8672085532f7e901544a7375";
 
-  // The wallet address / token we want to query for:
-  const ownerAddr = "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be";
-  const balances = await alchemy.core.getTokenBalances(ownerAddr, [
-    "0x607f4c5bb672230e8672085532f7e901544a7375",
-  ]);
+      // Get token balances
+      const balanceResponse = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          method: "alchemy_getTokenBalances",
+          params: [ownerAddr, [tokenAddr]],
+          id: 1
+        })
+      });
 
-  // The token address we want to query for metadata:
-  const metadata = await alchemy.core.getTokenMetadata(
-    "0x607f4c5bb672230e8672085532f7e901544a7375"
-  );
+      const balanceData = await balanceResponse.json();
 
-  console.log("Token Balances:");
-  console.log(balances);
-  console.log("Token Metadata: ");
-  console.log(metadata);
+      // Get token metadata
+      const metadataResponse = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          method: "alchemy_getTokenMetadata",
+          params: [tokenAddr],
+          id: 2
+        })
+      });
+
+      const metadataData = await metadataResponse.json();
+
+      console.log("Token Balances:");
+      console.log(balanceData.result);
+      console.log("Token Metadata:");
+      console.log(metadataData.result);
+
+    } catch (error) {
+      console.error('Request failed:', error.message);
+    }
+  }
+
+  getTokenData();
   ```
 </CodeGroup>
 
@@ -76,7 +101,7 @@ From your command line, you can execute the script with:
 
 <CodeGroup>
   ```shell shell
-  node alchemy-sdk-script.js
+  node token-api-script.js
   ```
 </CodeGroup>
 

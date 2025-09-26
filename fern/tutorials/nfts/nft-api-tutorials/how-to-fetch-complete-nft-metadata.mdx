@@ -84,13 +84,12 @@ Alchemy's account dashboard where developers can create a new app on the Ethereu
 
 Let's now create an empty repository and install all node dependencies:
 
-1. Run the following commands in order to create your node project and install Alchemy SDK.
+1. Run the following commands in order to create your node project.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Fetch
   mkdir getNftMetadata && cd getNftMetadata
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 </CodeGroup>
@@ -106,30 +105,38 @@ Now our project is set up and we are ready to write code. We will write all our 
 
 ## Coding the Script
 
-The script below utilizes [getNFTMetadata](/reference/getnftmetadata) API through [Alchemy SDK](/reference/alchemy-sdk-quickstart) to fetch the metadata for of [World of Women](https://opensea.io/collection/world-of-women-nft) NFT Collection:
+The script below utilizes [getNFTMetadata](/reference/getnftmetadata) API through direct HTTP requests to fetch the metadata for of [World of Women](https://opensea.io/collection/world-of-women-nft) NFT Collection:
 
 <CodeGroup>
   ```javascript main.js
-  // Importing the required modules
-  const { Network, Alchemy } = require("alchemy-sdk");
-
-  // Configuring Alchemy SDK with your API key and network
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with the network your NFT is on.
-  };
-
-  // Creating an Alchemy instance to make calls to the Alchemy API
-  const alchemy = new Alchemy(settings);
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
 
   // Function to get the metadata of an NFT: accepts the NFT contract address and the token ID to get the metadata of
   async function getNFTMetadata(nftContractAddress, tokenId) {
-    // Making a call to the Alchemy API to get the metadata
-    const response = await alchemy.nft.getNftMetadata(
-      nftContractAddress,
-      tokenId
-    );
-    return response; // returning the metadata
+    try {
+      // Making a call to the Alchemy API to get the metadata
+      const url = `${baseURL}/getNFTMetadata?contractAddress=${nftContractAddress}&tokenId=${tokenId}`;
+
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+
+      const response = await fetch(url, requestOptions);
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Error:', data.error);
+        return null;
+      }
+
+      return data; // returning the metadata
+    } catch (error) {
+      console.error('Request failed:', error);
+      return null;
+    }
   }
 
   // main function that runs the script
@@ -139,7 +146,10 @@ The script below utilizes [getNFTMetadata](/reference/getnftmetadata) API throug
       "0xe785E82358879F061BC3dcAC6f0444462D4b5330", //  World of Women NFT contract address: Replace with your own NFT contract address
       "44" // Replace with the token id you want to get the metadata of
     );
-    console.log("NFT Metadata:\n", response); // logging the metadata to the console
+
+    if (response) {
+      console.log("NFT Metadata:\n", response); // logging the metadata to the console
+    }
   }
 
   // calling the main function to run the script
@@ -149,9 +159,8 @@ The script below utilizes [getNFTMetadata](/reference/getnftmetadata) API throug
 
 Let's break down the code in bullet points:
 
-* The script first imports the required modules
-* After that, it configures the Alchemy SDK with appropriate API key and network
-* Then it creates an Alchemy instance to make calls to the Alchemy API
+* The script first defines the required constants including API key and base URL
+* It configures the HTTP request parameters to make calls to the Alchemy API
 * The script defines a function `getNFTMetadata` that accepts an NFT contract address and a token ID as its arguments: This function will fetch the metadata of the specified NFT.
 * Inside the `getNFTMetadata` function, a call is made to the Alchemy API using the [`getNftMetadata`](/reference/getnftmetadata) method, passing the NFT contract address and token ID as parameters.
 * The `getNFTMetadata` function returns the fetched metadata as its output.

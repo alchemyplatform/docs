@@ -16,7 +16,7 @@ In the world of Web3 development, you might want to find all the contracts deplo
 
 ![2236](231792f-terminal-ss.png "terminal-ss.png")
 
-Alchemy SDK is the most comprehensive, stable, and powerful Javascript SDK available today to interact with the blockchain. We will be using Alchemy SDK's [getAssetTransfers](/reference/sdk-getassettransfers) method to fetch transaction data for a specific wallet address and, from there, extract the contracts deployed by it using the [getTransactionReceipt](/reference/sdk-gettransactionreceipt) method.
+We will be using Alchemy's [getAssetTransfers](/reference/alchemy-getassettransfers) API to fetch transaction data for a specific wallet address and, from there, extract the contracts deployed by it using the [eth_getTransactionReceipt](/reference/eth-gettransactionreceipt) method.
 
 ***
 
@@ -24,11 +24,11 @@ Alchemy SDK is the most comprehensive, stable, and powerful Javascript SDK avail
 
 To achieve our goal, we will follow these steps:
 
-1. First, we will use the [getAssetTransfers](/reference/sdk-getassettransfers) method of Alchemy SDK ([Alchemy's Transfers API](/reference/transfers-api-quickstart)) to fetch all transactions associated with the wallet address of interest. This method allows us to retrieve a list of transactions `to` or `from` the specified wallet address.
+1. First, we will use the [alchemy_getAssetTransfers](/reference/alchemy-getassettransfers) method ([Alchemy's Transfers API](/reference/transfers-api-quickstart)) to fetch all transactions associated with the wallet address of interest. This method allows us to retrieve a list of transactions `to` or `from` the specified wallet address.
 
 2. Next, we will filter the list of transactions to find only those where the `to` field is `null`. This condition indicates that the transaction resulted in the deployment of a new contract. This is true because when a contract is deployed, it does not have an address yet, as it does not exist on the blockchain. Therefore, the `to` field in the transaction is set to `null`.
 
-3. Finally, for each of the filtered transactions, we will call the [getTransactionReceipt](/reference/sdk-gettransactionreceipt) method. This method will return the transaction receipt containing the contract address for the newly deployed contract.
+3. Finally, for each of the filtered transactions, we will call the [eth_getTransactionReceipt](/reference/eth-gettransactionreceipt) method. This method will return the transaction receipt containing the contract address for the newly deployed contract.
 
 4. We will store the addresses of the deployed contracts in an array and finally log that array to the console.
 
@@ -76,13 +76,12 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-Run the following commands in order to create your node project and install Alchemy SDK.
+Run the following commands in order to create your node project.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Shell
   mkdir get-deployed-contracts && cd get-deployed-contracts
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 </CodeGroup>
@@ -99,73 +98,100 @@ Now our project is set up and we are ready to write code. We will write all our 
 
 ## Coding the Script
 
-The script below utilizes Alchemy's SDK to find all the contract addresses deployed by a wallet address:
+The script below utilizes Alchemy's API to find all the contract addresses deployed by a wallet address:
 
 <CodeGroup>
   ```javascript getDeployedContracts.js
-  // Import the necessary modules from the Alchemy SDK
-  const { Network, Alchemy } = require("alchemy-sdk");
-
-  // Initialize the Alchemy instance with the API key and network
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET,
-  });
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   // Define the asynchronous function that will retrieve deployed contracts
   async function findContractsDeployed(address) {
     const transfers = [];
+    let pageKey = undefined;
 
-    // Paginate through the results using getAssetTransfers method
-    let response = await alchemy.core.getAssetTransfers({
-      fromBlock: "0x0",
-      toBlock: "latest", // Fetch results up to the latest block
-      fromAddress: address, // Filter results to only include transfers from the specified address
-      excludeZeroValue: false, // Include transfers with a value of 0
-      category: ["external"], // Filter results to only include external transfers
-    });
-    transfers.push(...response.transfers);
+    // Paginate through the results using alchemy_getAssetTransfers method
+    do {
+      const requestBody = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "alchemy_getAssetTransfers",
+        params: [{
+          fromBlock: "0x0",
+          toBlock: "latest", // Fetch results up to the latest block
+          fromAddress: address, // Filter results to only include transfers from the specified address
+          excludeZeroValue: false, // Include transfers with a value of 0
+          category: ["external"], // Filter results to only include external transfers
+          ...(pageKey && { pageKey }) // Add pageKey if it exists
+        }]
+      };
 
-    // Continue fetching and aggregating results while there are more pages
-    while (response.pageKey) {
-      let pageKey = response.pageKey;
-      response = await alchemy.core.getAssetTransfers({
-        fromBlock: "0x0",
-        toBlock: "latest",
-        fromAddress: address,
-        excludeZeroValue: false,
-        category: ["external"],
-        pageKey: pageKey,
+      const response = await fetch(baseURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
       });
-      transfers.push(...response.transfers);
-    }
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error("Error:", data.error);
+        break;
+      }
+
+      transfers.push(...data.result.transfers);
+      pageKey = data.result.pageKey;
+    } while (pageKey);
 
     // Filter the transfers to only include contract deployments (where 'to' is null)
     const deployments = transfers.filter((transfer) => transfer.to === null);
     const txHashes = deployments.map((deployment) => deployment.hash);
 
     // Fetch the transaction receipts for each of the deployment transactions
-    const promises = txHashes.map((hash) =>
-      alchemy.core.getTransactionReceipt(hash)
-    );
+    const promises = txHashes.map(async (hash) => {
+      const requestBody = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "eth_getTransactionReceipt",
+        params: [hash]
+      };
+
+      const response = await fetch(baseURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+      return data.result;
+    });
 
     // Wait for all the transaction receipts to be fetched
     const receipts = await Promise.all(promises);
-    const contractAddresses = receipts.map((receipt) => receipt?.contractAddress);
+    const contractAddresses = receipts.map((receipt) => receipt?.contractAddress).filter(Boolean);
     return contractAddresses;
   }
 
   // Define the main function that will execute the script
   async function main() {
-    const address = "opensea.eth"; // Replace with the address you want to query the deployed contracts for - can be ENS name or address hash
+    const address = "0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b"; // Replace with the address you want to query the deployed contracts for
 
-    // Call the findContractsDeployed function to retrieve the array of deployed contracts
-    const contractAddresses = await findContractsDeployed(address);
+    try {
+      // Call the findContractsDeployed function to retrieve the array of deployed contracts
+      const contractAddresses = await findContractsDeployed(address);
 
-    // Log the contract addresses in a readable format by looping through the array
-    console.log(`The following contracts were deployed by ${address}:`);
-    for (let i = 0; i < contractAddresses.length; i++) {
-      console.log(`${i + 1}. ${contractAddresses[i]}`);
+      // Log the contract addresses in a readable format by looping through the array
+      console.log(`The following contracts were deployed by ${address}:`);
+      for (let i = 0; i < contractAddresses.length; i++) {
+        console.log(`${i + 1}. ${contractAddresses[i]}`);
+      }
+    } catch (error) {
+      console.error("Error:", error);
     }
   }
 
@@ -176,7 +202,7 @@ The script below utilizes Alchemy's SDK to find all the contract addresses deplo
 
 Let's break down the code in bullet points:
 
-* The script first imports the necessary modules from the Alchemy SDK and initializes an Alchemy instance with the provided API key and network.
+* The script defines the Alchemy API URL and uses fetch to make direct HTTP requests to Alchemy's endpoints.
 * Then, it defines an asynchronous function `findContractsDeployed` that accepts a wallet address as its argument.
 * Inside the `findContractsDeployed` function, it fetches the transaction history of the wallet address using Alchemy's [`getAssetTransfers`](/reference/sdk-getassettransfers) method.
 * The script paginates through the results and aggregates them in the `transfers` array.

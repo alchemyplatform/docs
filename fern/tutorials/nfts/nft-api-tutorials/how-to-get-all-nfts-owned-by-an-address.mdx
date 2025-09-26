@@ -76,10 +76,10 @@ To make requests to the NFT API, we recommend using the [Alchemy API Overview](/
 Alternatively, you can use `axios` or `fetch`.
 
 <CodeGroup>
-  ```shell Alchemy SDK (Recommended)
+  ```shell Simple Fetch (Recommended)
   mkdir nft-ownership && cd nft-ownership
   npm init -y
-  npm install --save alchemy-sdk
+  // fetch comes preinstalled with node versions 18 and higher
   touch main.js
   ```
 
@@ -120,21 +120,29 @@ You can also restrict the NFT collections by passing in an array of `contractAdd
 For more information on this, check out the [NFT API FAQ](/reference/nft-api). Add the following code to the `main.js` file:
 
 <CodeGroup>
-  ```javascript Alchemy SDK (Recommended)
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  ```javascript Simple Fetch (Recommended)
+  // Replace with your Alchemy API key:
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   const main = async () => {
+    // Wallet address or ENS name
+    const owner = "elanhapern.eth";
+
     // Get all NFTs
-    const nfts = await alchemy.nft.getNftsForOwner("elanhapern.eth");
+    const response = await fetch(`${baseURL}/getNFTs/?owner=${owner}`, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('API Error:', data.error);
+      return;
+    }
+
     // Print NFTs
-    console.log(nfts);
+    console.log(data);
   };
 
   const runMain = async () => {
@@ -280,9 +288,8 @@ The response you received in the previous step is not human-readable. Let's pars
 Replace the contents of `main.js` with the following:
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript Simple Fetch (Recommended)
+  // No setup required - uses built-in fetch
 
   const config = {
     apiKey: "<-- ALCHEMY APP API KEY -->",

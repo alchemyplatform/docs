@@ -46,9 +46,9 @@ For transaction information that originates from your target sender address, use
   **For a no-code view of the API request check out the [composer tool](https://composer.alchemyapi.io/?composer_state=%7B%22chain%22%3A0%2C%22network%22%3A0%2C%22methodName%22%3A%22alchemy_getAssetTransfers%22%2C%22paramValues%22%3A%5B%7B%22excludeZeroValue%22%3Atrue%2C%22toAddress%22%3A%22%22%2C%22toBlock%22%3A%22%22%2C%22fromAddress%22%3A%220x5c43B1eD97e52d009611D89b74fA829FE4ac56b1%22%2C%22fromBlock%22%3A%220x0%22%7D%5D%7D)**
 </Check>
 
-#### Alchemy SDK (Recommended)
+#### Fetch
 
-[Alchemy's SDK](/reference/alchemy-sdk-quickstart) allows us to more efficiently interact with Alchemy's endpoints and make JSON-RPC requests.
+You can easily interact with Alchemy's Transfers API using simple fetch requests. No additional dependencies required with Node.js 18+.
 
 [![transfers\_api\_javascript\_scripts/tx-history-from-alchemyweb3.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](transfers_api_javascript_scripts.png)](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/alchemyweb3/tx-history/tx-history-from-alchemyweb3.js)
 
@@ -56,48 +56,59 @@ For transaction information that originates from your target sender address, use
 
 [transfers\_api\_javascript\_scripts/tx-history-from-alchemyweb3.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/alchemyweb3/tx-history/tx-history-from-alchemyweb3.js)
 
-Ensure you are inside your project folder and type the following command in the terminal:
-
-<CodeGroup>
-  ```shell Shell
-  npm install alchemy-sdk
-  ```
-</CodeGroup>
+No installation needed - `fetch` is built into Node.js 18 and higher:
 
 ##### 1. Create a file.
 
-In your current directory, create a new file called `tx-history-from-alchemy-sdk.js`
+In your current directory, create a new file called `tx-history-from-fetch.js`
 
 Use your favorite file browser, code editor, or just directly in the terminal using the `touch` command like this:
 
 <CodeGroup>
   ```shell shell
-  touch tx-history-from-alchemy-sdk.js
+  touch tx-history-from-fetch.js
   ```
 </CodeGroup>
 
 ##### 2. Write script!
 
-Copy and paste the following code snippet into your new file: `tx-history-from-alchemy-sdk.js`
+Copy and paste the following code snippet into your new file: `tx-history-from-fetch.js`
 
 <CodeGroup>
-  ```javascript tx-history-from-alchemy-sdk.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript tx-history-from-fetch.js
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  async function getTransactionHistory() {
+    try {
+      const data = {
+        jsonrpc: "2.0",
+        id: 0,
+        method: "alchemy_getAssetTransfers",
+        params: [{
+          fromBlock: "0x0",
+          fromAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
+          category: ["external", "internal", "erc20", "erc721", "erc1155"]
+        }]
+      };
 
-  const data = await alchemy.core.getAssetTransfers({
-    fromBlock: "0x0",
-    fromAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
-    category: ["external", "internal", "erc20", "erc721", "erc1155"],
-  });
+      const response = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
 
-  console.log(data);
+      const result = await response.json();
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  getTransactionHistory();
   ```
 </CodeGroup>
 
@@ -107,7 +118,7 @@ Now, on your command line, you can execute the script by calling:
 
 <CodeGroup>
   ```shell shell
-  node tx-history-from-alchemy-sdk.js
+  node tx-history-from-fetch.js
   ```
 </CodeGroup>
 
@@ -252,9 +263,9 @@ Now, on your command line, you can execute the script by calling:
   \**For a no-code view of the API request check out the [composer tool](https://composer.alchemyapi.io/?composer_state=%7B%22chain%22%3A0%2C%22network%22%3A0%2C%22methodName%22%3A%22alchemy_getAssetTransfers%22%2C%22paramValues%22%3A%5B%7B%22excludeZeroValue%22%3Atrue%2C%22toAddress%22%3A%220x5c43B1eD97e52d009611D89b74fA829FE4ac56b1%22%2C%22toBlock%22%3A%22%22%2C%22fromAddress%22%3A%22%22%2C%22fromBlock%22%3A%220x0%22%7D%5D%7D)*
 </Check>
 
-#### Alchemy SDK (Recommended)
+#### JavaScript with Fetch (Recommended)
 
-[Alchemy's SDK](/reference/alchemy-sdk-quickstart) allows us to more efficiently interact with Alchemy's endpoints and make JSON-RPC requests.
+Using native fetch allows us to efficiently interact with Alchemy's endpoints and make JSON-RPC requests.
 
 [![transfers\_api\_javascript\_scripts/tx-history-to-alchemyweb3.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](transfers_api_javascript_scripts.png)](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/alchemyweb3/tx-history/tx-history-to-alchemyweb3.js)
 
@@ -266,44 +277,64 @@ Ensure you are inside your project folder and type the following command in the 
 
 <CodeGroup>
   ```shell Shell
-  npm install alchemy-sdk
+  # No installation needed - fetch is built-in to Node.js 18+ and browsers
   ```
 </CodeGroup>
 
 ##### 1. Create a file
 
-In your current directory, create a new file called `alchemy-sdk-transfers-to-script.js`
+In your current directory, create a new file called `transaction-history-script.js`
 
 Use your favorite file browser, code editor, or just directly in the terminal using the `touch` command like this:
 
 <CodeGroup>
   ```shell Shell
-  touch alchemy-sdk-transfers-to-script.js
+  touch transaction-history-script.js
   ```
 </CodeGroup>
 
 ##### 2. Write script!
 
-Copy and paste in the following code snippet into your new file: `alchemy-sdk-transfers-to-script.js`
+Copy and paste in the following code snippet into your new file:
 
 <CodeGroup>
-  ```javascript alchemy-sdk-transfers-to-script.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript transaction-history.js
+  // transaction-history.js
 
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
+  const main = async () => {
+    // Replace with your Alchemy API key
+    const apiKey = "<-- ALCHEMY APP API KEY -->";
+
+    const requestBody = {
+      jsonrpc: "2.0",
+      id: 0,
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromBlock: "0x0",
+          toAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
+          category: ["external", "internal", "erc20", "erc721", "erc1155"],
+        }
+      ]
+    };
+
+    try {
+      const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+      console.log('Transaction history:', data.result);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
-  const alchemy = new Alchemy(config);
 
-  const data = await alchemy.core.getAssetTransfers({
-    fromBlock: "0x0",
-    toAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
-    category: ["external", "internal", "erc20", "erc721", "erc1155"],
-  });
-
-  console.log(data);
+  main();
   ```
 </CodeGroup>
 
@@ -313,7 +344,7 @@ Now, on your command line, you can execute the script by calling:
 
 <CodeGroup>
   ```shell shell
-  node alchemy-sdk-transfers-to-script.js
+  node transaction-history.js
   ```
 </CodeGroup>
 
@@ -458,9 +489,9 @@ Now, on your command line, you can execute the script by calling:
 
 Now that we have made a query and can see the response, let's learn how to handle it. If you feel like jumping ahead and grabbing some pre-built code, choose a repo that matches your preferred library.
 
-### Alchemy SDK (Recommended)
+### Modern Web3 Libraries (Recommended)
 
-#### Parsing with `Alchemy SDK` Responses
+#### Parsing with Modern Web3 Library Responses
 
 [![transfers\_api\_javascript\_scripts/tx-history-parsed-alchemyweb3.js at main · alchemyplatform/transfers\_api\_javascript\_scripts](transfers_api_javascript_scripts.png)](https://github.com/alchemyplatform/transfers_api_javascript_scripts/blob/main/javascript/alchemyweb3/tx-history/tx-history-parsed-alchemyweb3.js)
 
@@ -574,19 +605,30 @@ Let's walk through an example that parses the returned JSON object.
 
 Whether we're querying via `alchemy web3`, `axios`, or `node-fetch`, we'll need to save the queried response object into a constant.
 
-### Alchemy SDK (Recommended)
+### Modern Web3 Libraries (Recommended)
 
-#### Saving response objects with `Alchemy SDK`
+#### Saving response objects with Modern Web3 Libraries
 
 <CodeGroup>
-  ```javascript Alchemy SDK (Recommended)
-  // Alchemy SDK
+  ```javascript Modern Web3 Libraries
+  // Using fetch for alchemy_getAssetTransfers API
 
-    const res = await alchemy.core.getAssetTransfers({
-  		  fromBlock: "0x0",
-  		  toAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
-        category: ["external", "internal", "erc20", "erc721", "erc1155"],
-    })
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_getAssetTransfers',
+        params: [{
+          fromBlock: "0x0",
+          toAddress: "0x5c43B1eD97e52d009611D89b74fA829FE4ac56b1",
+          category: ["external", "internal", "erc20", "erc721", "erc1155"]
+        }]
+      })
+    });
+
+    const res = await response.json();
   ```
 </CodeGroup>
 

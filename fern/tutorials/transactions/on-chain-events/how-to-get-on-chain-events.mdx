@@ -94,19 +94,17 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-To make requests, we will use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
-
-You can also use `ethers` or `cURL` alternatively.
+To make requests, we will use modern Web3 libraries like Viem or Ethers.js.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Viem
   mkdir my-project && cd my-project
   npm init -y
-  npm install --save alchemy-sdk
+  npm install --save viem
   touch main.js
   ```
 
-  ```shell ethers
+  ```shell Ethers.js
   mkdir my-project && cd my-project
   npm init -y
   npm install --save ethers
@@ -127,20 +125,21 @@ To get the event logs, we will use the [getLogs](/reference/sdk-getlogs) method.
 Add the following code to the `main.js` file.
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Utils } = require("alchemy-sdk");
+  ```javascript Viem
+  import { createPublicClient, http } from 'viem'
+  import { mainnet } from 'viem/chains'
 
   const apiKey = "<-- ALCHEMY API KEY -->";
-  const settings = {
-    apiKey: apiKey,
-  };
 
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: http(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`)
+  })
 
   const main = async () => {
-    let logs = await alchemy.core.getLogs({
-      fromBlock: "0x429d3b",
-      toBlock: "0x429d3b",
+    const logs = await client.getLogs({
+      fromBlock: 0x429d3bn,
+      toBlock: 0x429d3bn,
       address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907",
       topics: [
         "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
@@ -164,24 +163,28 @@ Add the following code to the `main.js` file.
   runMain();
   ```
 
-  ```javascript ethers
-  const ethers = require("ethers");
-  (async () => {
-    const provider = new ethers.providers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/your-api-key");
-    const logs = await provider.getLogs(
-      {
-        "fromBlock": "0x429d3b",
-        "toBlock": "0x429d3b",
-        "address": "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907",
-        "topics": [
+  ```javascript Ethers.js
+  import { ethers } from "ethers";
+
+  const apiKey = "<-- ALCHEMY API KEY -->";
+
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`);
+
+  const main = async () => {
+    const logs = await provider.getLogs({
+      fromBlock: "0x429d3b",
+      toBlock: "0x429d3b",
+      address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907",
+      topics: [
         "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
         "0x00000000000000000000000000b46c2526e227482e2ebb8f4c69e4674d262e75",
         "0x00000000000000000000000054a2d42a40f51259dedd1978f6c118a0f0eff078"
-        ]
-      }
-    );
+      ]
+    });
     console.log(logs);
-  })();
+  };
+
+  main().catch(console.error);
   ```
 </CodeGroup>
 

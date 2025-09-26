@@ -14,7 +14,7 @@ slug: reference/arbitrum-api-quickstart
 
 ## 1. Choose a package manager (npm or yarn)
 
-For this guide, we will be using npm or yarn as our package manager to install either `alchemy-sdk` or any other packages.
+For this guide, we will be using npm or yarn as our package manager to install Viem or Ethers.js.
 
 ### npm
 
@@ -40,42 +40,61 @@ To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lan
   ```
 </CodeGroup>
 
-## 3. Install Alchemy-SDK
+## 3. Install Web3 Library
 
-Run the following command to install the Alchemy SDK with npm or yarn.
+Run the following command to install Viem or Ethers.js with npm or yarn.
 
 <CodeGroup>
-  ```text npm
-  npm install alchemy-sdk
+  ```text Viem (npm)
+  npm install viem
   ```
 
-  ```text yarn
-  yarn add alchemy-sdk
+  ```text Viem (yarn)
+  yarn add viem
+  ```
+
+  ```text Ethers.js (npm)
+  npm install ethers
+  ```
+
+  ```text Ethers.js (yarn)
+  yarn add ethers
   ```
 </CodeGroup>
 
 ## 4. Make your first request
 
-You are all set now to use Arbitrum API and make your first request. For instance, lets make a request to `get latest block`. Create an `index.js` file and paste the following code snippet into the file.
+You are all set now to use Arbitrum API and make your first request. For instance, lets make a request to `get latest block`. Create an `index.js` file and paste one of the following code snippets into the file.
 
 <CodeGroup>
-  ```javascript index.js
-  const { Network, Alchemy } = require("alchemy-sdk");
+  ```javascript Viem
+  import { createPublicClient, http } from 'viem'
+  import { arbitrum } from 'viem/chains'
 
-  // Optional Config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ARB_MAINNET, // Replace with your network.
-  };
-
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: arbitrum,
+    transport: http('https://arb-mainnet.g.alchemy.com/v2/demo') // Replace 'demo' with your API Key
+  })
 
   async function main() {
-    const latestBlock = await alchemy.core.getBlockNumber();
-    console.log("The latest block number is", latestBlock);
+    const latestBlock = await client.getBlockNumber()
+    console.log('The latest block number is', latestBlock)
   }
 
-  main();
+  main()
+  ```
+
+  ```javascript Ethers.js
+  import { JsonRpcProvider } from 'ethers'
+
+  const provider = new JsonRpcProvider('https://arb-mainnet.g.alchemy.com/v2/demo') // Replace 'demo' with your API Key
+
+  async function main() {
+    const latestBlock = await provider.getBlockNumber()
+    console.log('The latest block number is', latestBlock)
+  }
+
+  main()
   ```
 </CodeGroup>
 
@@ -85,7 +104,7 @@ To run the above node script, use cmd `node index.js`, and you should see the ou
 
 <CodeGroup>
   ```text shell
-  The latest block number is 42421188
+  The latest block number is 42421188n
   ```
 </CodeGroup>
 
@@ -102,10 +121,7 @@ Check out the following tutorials to learn how to build on Arbitrum:
 * [Arbitrum API FAQ](/reference/arbitrum-api-faq)
 * [How to Add Arbitrum to Metamask](/docs/how-to-add-arbitrum-to-metamask)
 
-For full documentation on the available endpoints for alchemy-sdk, check the github repo:
+For full documentation on Web3 libraries, check out the official documentation:
 
-[![GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](alchemy-sdk-js.png)](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-[![github.com](favicon.ico)github.com](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-[GitHub - alchemyplatform/alchemy-sdk-js: The easiest way to connect your dApp to the blockchain.](https://github.com/alchemyplatform/alchemy-sdk-js)
+* [Viem Documentation](https://viem.sh) - Modern TypeScript interface for Ethereum
+* [Ethers.js Documentation](https://docs.ethers.org) - Complete Ethereum wallet implementation
