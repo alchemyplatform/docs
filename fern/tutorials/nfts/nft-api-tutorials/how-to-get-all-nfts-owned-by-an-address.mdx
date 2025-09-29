@@ -76,7 +76,7 @@ To make requests to the NFT API, we recommend using the [Alchemy API Overview](/
 Alternatively, you can use `axios` or `fetch`.
 
 <CodeGroup>
-  ```shell Simple Fetch (Recommended)
+  ```shell Fetch
   mkdir nft-ownership && cd nft-ownership
   npm init -y
   touch main.js
@@ -86,12 +86,6 @@ Alternatively, you can use `axios` or `fetch`.
   mkdir nft-ownership && cd nft-ownership
   npm init -y
   npm install --save axios
-  touch main.js
-  ```
-
-  ```shell Fetch
-  mkdir nft-ownership && cd nft-ownership
-  npm init -y
   touch main.js
   ```
 </CodeGroup>
@@ -119,7 +113,7 @@ You can also restrict the NFT collections by passing in an array of `contractAdd
 For more information on this, check out the [NFT API FAQ](/reference/nft-api). Add the following code to the `main.js` file:
 
 <CodeGroup>
-  ```javascript Simple Fetch (Recommended)
+  ```javascript Fetch
   // Replace with your Alchemy API key:
   const apiKey = "<-- ALCHEMY APP API KEY -->";
   const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
@@ -178,31 +172,15 @@ For more information on this, check out the [NFT API FAQ](/reference/nft-api). A
       .catch(error => console.log('error', error));
   ```
 
-  ```javascript Fetch
-  import fetch from 'node-fetch';
+  ````
+  </CodeGroup>
 
-  const baseURL = "<-- ALCHEMY APP HTTP URL -->";
-  const address = "elanhalpern.eth";
-  const url = `${baseURL}/getNFTs/?owner=${address}`;
+  Run this script by typing:
 
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => response.json())
-  	.then((data) => console.log(data))
-    .catch(error => console.log('error', error))
-  ```
-</CodeGroup>
-
-Run this script by typing:
-
-<CodeGroup>
+  <CodeGroup>
   ```shell shell
   node main.js
-  ```
+  ````
 </CodeGroup>
 
 You should then see an output that looks something like this:
@@ -287,7 +265,7 @@ The response you received in the previous step is not human-readable. Let's pars
 Replace the contents of `main.js` with the following:
 
 <CodeGroup>
-  ```javascript Simple Fetch (Recommended)
+  ```javascript Fetch
   // Replace with your Alchemy API key:
   const apiKey = "<-- ALCHEMY APP API KEY -->";
   const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
@@ -371,44 +349,15 @@ Replace the contents of `main.js` with the following:
       .catch(error => console.log('error', error));
   ```
 
-  ```javascript Fetch
-  import fetch from 'node-fetch';
+  ````
+  </CodeGroup>
 
-  const baseURL = "<-- ALCHEMY APP HTTP URL -->";
-  const address = "elanhalpern.eth";
-  const url = `${baseURL}/getNFTs/?owner=${address}`;
+  Run the script using:
 
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => response.json())
-    .then(data => {
-          // Parse output
-          const numNfts = data['totalCount'];
-          const nftList = data['ownedNfts'];
-
-          console.log(`Total NFTs owned by ${address}: ${numNfts} \n`);
-
-          let i = 1;
-
-          for (nft of nftList) {
-              console.log(`${i}. ${nft['metadata']['name']}`)
-              i++;
-          }
-    })
-    .catch(error => console.log('error', error))
-  ```
-</CodeGroup>
-
-Run the script using:
-
-<CodeGroup>
+  <CodeGroup>
   ```shell shell
   node main.js
-  ```
+  ````
 </CodeGroup>
 
 You should obtain an output that looks like this:
