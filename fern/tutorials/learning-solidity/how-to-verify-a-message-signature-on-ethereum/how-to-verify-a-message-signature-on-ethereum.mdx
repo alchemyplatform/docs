@@ -7,7 +7,7 @@ slug: docs/how-to-verify-a-message-signature-on-ethereum
 
 Message signatures can be generated with any arbitrary message and an Ethereum wallet’s private key. Message signatures can be used to create a verification system for any application requiring a user to prove their identity. For example, you might consider using this tutorial to create an application allowing users to e-sign documents or pdfs. Creating and verifying signatures does not require a connection to the Ethereum network because it utilizes a message, wallet address, and private key to generate a [signature hash](/docs/web3-glossary#hash). This means the entire process can occur off-chain and does not cost any gas to execute.
 
-In part one of this tutorial, we will explore how a signature can be generated and verified using the Alchemy SDK, the Web3.js library, or the Ethers.js library.
+In part one of this tutorial, we will explore how a signature can be generated and verified using Viem, Ethers.js, or Web3.js libraries.
 
 In part two, we will build upon what we learned in part one to build a full-stack signature generation DApp using ReactJS. With Ethers.js, we will use the provided starter files to create a frontend UI that lets you connect to a MetaMask wallet to sign/verify messages.
 
@@ -106,30 +106,20 @@ Press enter again to complete the prompt. If successful, a `package.json` file w
 
 The tools you will need to complete this tutorial are:
 
-* [Alchemy's SDK](/reference/alchemy-sdk-quickstart).
-* [Alchemy’s Web3 library](/docs/alchemy/documentation/alchemy-web3).
-* [Ethers.js](https://docs.ethers.io/v5/) to utilize their cryptographic functions and create unique signatures.
+* [Viem](https://viem.sh/) (recommended) or [Ethers.js](https://docs.ethers.org/v6/) to utilize their cryptographic functions and create unique signatures.
 * [dotenv](https://www.npmjs.com/package/dotenv) so that you can store your private key and API key safely.
 
 To install the above tools, ensure you are still inside your root folder and type the following commands in your terminal:
 
-**Alchemy SDK:**
+**Viem (Recommended):**
 
 <CodeGroup>
   ```shell shell
-  npm install alchemy-sdk
+  npm install viem
   ```
 </CodeGroup>
 
-**Alchemy’s Web3 library:**
-
-<CodeGroup>
-  ```shell shell
-  npm install @alch/alchemy-web3
-  ```
-</CodeGroup>
-
-**Ethers:**
+**Ethers.js:**
 
 <CodeGroup>
   ```shell shell
@@ -182,53 +172,55 @@ Copy the following into your `.env` file:
 
 ## Verify Message Signatures
 
-The following section provides three options for verifying message signatures:
+The following section provides two options for verifying message signatures:
 
-* Using the Alchemy SDK with Ethers.js.
-* Using the Web3.js library.
-* Using just the Ethers.js library.
+* Using Viem (recommended).
+* Using Ethers.js v6.
 
 Depending on your preferred library, feel free to use the appropriate tabs.
 
-In your root folder create a file named `AlchemySDK-VerifyMsg.js` and add the following lines of code to it:
+In your root folder create a file named `VerifyMsg.js` and add the following lines of code to it:
 
 <CodeGroup>
-  ```javascript AlchemySDK-VerifyMsg.js
-  const main = async () => {
-      require("dotenv").config();
-      const { API_URL, PRIVATE_KEY } = process.env;
-      const { ethers } = require("ethers");
-      const { hashMessage } = require("@ethersproject/hash");
-      const { Network, initializeAlchemy } = require("alchemy-sdk");
-      const settings = {
-          apiKey: API_URL,
-          Network: Network.ETH_SEPOLIA,
-      };
-      const alchemy = new Alchemy(settings);
-      const ethersAlchemyProvider = alchemy.config.getProvider();
-    };
-    
-    main();
-  ```
+  ```javascript Viem (Recommended)
+  import { createWalletClient, http } from 'viem'
+  import { privateKeyToAccount } from 'viem/accounts'
+  import { mainnet } from 'viem/chains'
 
-  ```javascript Alchemy-web3.js
-  const main = () => {
+  const main = async () => {
     require("dotenv").config();
     const { API_URL, PRIVATE_KEY } = process.env;
-    const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-    const web3 = createAlchemyWeb3(API_URL);
+
+    // Create account from private key
+    const account = privateKeyToAccount(PRIVATE_KEY);
+
+    // Create wallet client
+    const walletClient = createWalletClient({
+      account,
+      chain: mainnet,
+      transport: http(API_URL)
+    });
+
+    console.log('Wallet address:', account.address);
   };
 
   main();
   ```
 
   ```javascript Ethers.js
+  import { JsonRpcProvider, Wallet } from "ethers";
+
   const main = async () => {
     require("dotenv").config();
     const { API_URL, PRIVATE_KEY } = process.env;
-    const { ethers } = require("ethers");
-    const { hashMessage } = require("@ethersproject/hash");
-    const provider = new ethers.providers.AlchemyProvider("ropsten", API_URL);
+
+    // Create provider
+    const provider = new JsonRpcProvider(API_URL);
+
+    // Create wallet instance
+    const wallet = new Wallet(PRIVATE_KEY, provider);
+
+    console.log('Wallet address:', wallet.address);
   };
 
   main();
@@ -238,7 +230,7 @@ In your root folder create a file named `AlchemySDK-VerifyMsg.js` and add the fo
 The code above creates an asynchronous function that contains the necessary variables to start using Alchemy's provider with Ethers. Below, you can see the same code with commented explanations at each step:
 
 <CodeGroup>
-  ```javascript AlchemySDK-VerifyMsg.js
+  ```javascript EthersJS-VerifyMsg.js
   const main = async () => {
       require("dotenv").config();
       // Imports the secret .env file where our Private Key and API are stored
@@ -248,18 +240,10 @@ The code above creates an asynchronous function that contains the necessary vari
       // Importing Ethers library
       const { hashMessage } = require("@ethersproject/hash");
       // Importing the hashMessage function which takes a string and converts it to a hash
-      // We need this because the Ethers sign function takes a message hash 
+      // We need this because the Ethers sign function takes a message hash
       // Note: We do not need this when using the Web3 library because the sign function automatically converts the message into a hash
-      const { Network, initializeAlchemy } = require("alchemy-sdk");
-      // importing Alchemy SDK
-      const settings = {
-          apiKey: API_URL,
-          Network: Network.ETH_SEPOLIA,
-      };
-      const alchemy = new Alchemy(settings);
-      // initializing Alchemy SDK with our settings config
-      const ethersAlchemyProvider = alchemy.config.getProvider();
-      // Creates a new provider instance with Alchemy to make requests using our API
+      // Creates a new provider instance with Alchemy using Ethers.js
+      const ethersAlchemyProvider = new ethers.JsonRpcProvider(API_URL);
     };
     
     main();
@@ -285,7 +269,7 @@ The code above creates an asynchronous function that contains the necessary vari
     const { hashMessage } = require("@ethersproject/hash");
     // Importing the hashMessage function which takes a string and converts it to a hash
     // We need this because the Ethers sign function takes a message hash 
-    const provider = new ethers.providers.AlchemyProvider("ropsten", API_URL);
+    const provider = new ethers.JsonRpcProvider(API_URL);
     // Creating Ethers provider instance
   };
 
@@ -295,65 +279,81 @@ The code above creates an asynchronous function that contains the necessary vari
 
 In the same function, create a message to sign and a wallet instance, then use the wallet to both:
 
-1. Sign our message with the Ethers [`signMessage`](https://docs.ethers.io/v5/api/signer/#Signer-signMessage) function.
-2. Verify it with [`recoverAddress`](https://docs.ethers.io/v5/api/utils/address/#utils-recoverAddress).
+1. Sign our message with the library's `signMessage` function.
+2. Verify it with the verification utilities.
 
 The following code accomplishes the above and describes each action with commented notes:
 
 <CodeGroup>
-  ```javascript AlchemySDK-VerifyMsg.js
-  const message = "Let's verify the signature of this message!";
-  // Message we are signing
-  const walletInst = new ethers.Wallet(PRIVATE_KEY, ethersAlchemyProvider);
-  // Unlike Web3.js, Ethers seperates the provider instance and wallet instance, so we must also create a wallet instance
-  const signMessage = walletInst.signMessage(message);
-  // Using our wallet instance which holds our private key, we call the Ethers signMessage function and pass our message inside
-  const messageSigner = signMessage.then((value) => {
-  // Because Ethers signMessage function returns a promise we use .then() to await the fulfilled promise
-      const verifySigner = ethers.utils.recoverAddress(hashMessage(message),value);
-      return verifySigner;
-      // Now we verify the signature by calling the recoverAddress function which takes a message hash and signature hash and returns the signer address
-    });
-  ```
+  ```javascript Viem (Recommended)
+  import { createWalletClient, http } from 'viem'
+  import { privateKeyToAccount } from 'viem/accounts'
+  import { mainnet } from 'viem/chains'
+  import { verifyMessage } from 'viem'
 
-  ```javascript Alchemy-web3.js
-  const main = () => {
+  const main = async () => {
     require("dotenv").config();
     const { API_URL, PRIVATE_KEY } = process.env;
-    const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-    const web3 = createAlchemyWeb3(API_URL);
-    const message = "Hello!";
-    // Message we are signing
-    const signMessage = web3.eth.accounts.sign(message, PRIVATE_KEY);
-    // Create a variable that calls the Web3.js sign function.
-    // The sign function takes a message and a private key and returns a signature object with a unique signature hash  
-    const messageSigner = web3.eth.accounts.recover(message, signMessage.signature);
-    // Create another variable to verify the message signer using the web3.js recover function
-    // The recover function takes a message and signature hash and returns the signer's address.
+
+    // Create account from private key
+    const account = privateKeyToAccount(PRIVATE_KEY);
+
+    // Create wallet client
+    const walletClient = createWalletClient({
+      account,
+      chain: mainnet,
+      transport: http(API_URL)
+    });
+
+    const message = "Let's verify the signature of this message!";
+    console.log('Wallet address:', account.address);
+
+    // Sign the message
+    const signature = await walletClient.signMessage({
+      account,
+      message
+    });
+
+    // Verify the signature
+    const isValid = await verifyMessage({
+      address: account.address,
+      message,
+      signature
+    });
+
+    console.log('Signature:', signature);
+    console.log('Is valid signature:', isValid);
   };
 
   main();
   ```
 
   ```javascript Ethers.js
+  import { JsonRpcProvider, Wallet } from "ethers";
+  import { verifyMessage } from "ethers";
+
   const main = async () => {
     require("dotenv").config();
     const { API_URL, PRIVATE_KEY } = process.env;
-    const { ethers } = require("ethers");
-    const { hashMessage } = require("@ethersproject/hash");
-    const provider = new ethers.providers.AlchemyProvider("ropsten", API_URL);
+
+    // Create provider
+    const provider = new JsonRpcProvider(API_URL);
+
+    // Create wallet instance
+    const wallet = new Wallet(PRIVATE_KEY, provider);
 
     const message = "Let's verify the signature of this message!";
-    // Message we are signing
-    const walletInst = new ethers.Wallet(PRIVATE_KEY, provider);
-    // Unlike Web3.js, Ethers seperates the provider instance and wallet instance, so we must also create a wallet instance
-    const signMessage = walletInst.signMessage(message); 
-    // Using our wallet instance which holds our private key, we call the Ethers signMessage function and pass our message inside
-    const messageSigner = signMessage.then((value) => {
-      const verifySigner = ethers.utils.recoverAddress(hashMessage(message),value);
-      return verifySigner;
-      // Now we verify the signature by calling the recoverAddress function which takes a message hash and signature hash and returns the signer address
-    });
+    console.log('Wallet address:', wallet.address);
+
+    // Sign the message
+    const signature = await wallet.signMessage(message);
+
+    // Verify the signature by recovering the address
+    const recoveredAddress = verifyMessage(message, signature);
+
+    console.log('Signature:', signature);
+    console.log('Recovered address:', recoveredAddress);
+    console.log('Matches wallet:', recoveredAddress === wallet.address);
   };
 
   main();
@@ -375,56 +375,48 @@ Great! Now, we should add tests to check whether our message was signed and veri
 The following code is the entire script with the checks:
 
 <CodeGroup>
-  ```javascript AlchemySDK-VerifyMsg.js
+  ```javascript Viem (Recommended)
+  import { createWalletClient, http } from 'viem'
+  import { privateKeyToAccount } from 'viem/accounts'
+  import { mainnet } from 'viem/chains'
+  import { verifyMessage } from 'viem'
+
   const main = async () => {
-      require("dotenv").config();
-      const { API_URL, PRIVATE_KEY } = process.env;
-      const { ethers } = require("ethers");
-      const { hashMessage } = require("@ethersproject/hash");
-      const { Network, initializeAlchemy } = require("alchemy-sdk");
-      const settings = {
-          apiKey: API_URL,
-          Network: Network.ETH_SEPOLIA,
-      };
-      const alchemy = new Alchemy(settings);
-      const ethersAlchemyProvider = alchemy.config.getProvider();
-
-      const message = "Let's verify the signature of this message!";
-      const walletInst = new ethers.Wallet(PRIVATE_KEY, ethersAlchemyProvider);
-      const signMessage = walletInst.signMessage(message);
-
-      const messageSigner = signMessage.then((value) => {
-          const verifySigner = ethers.utils.recoverAddress(hashMessage(message),value);
-          return verifySigner;
-        });
-
-      try {
-        console.log("Success! The message: " +message+" was signed with the signature: " +await signMessage);
-        console.log("The signer was: " +await messageSigner);
-      } catch (err) {
-        console.log("Something went wrong while verifying your message signature: " + err);
-      }
-    };
-    
-    main();
-  ```
-
-  ```javascript Alchemy-web3.js
-  const main = () => {
     require("dotenv").config();
     const { API_URL, PRIVATE_KEY } = process.env;
-    const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-    const web3 = createAlchemyWeb3(API_URL);
-
-    const message = "Hello!";
-    const signMessage = web3.eth.accounts.sign(message, PRIVATE_KEY);
-    const messageSigner = web3.eth.accounts.recover(message, signMessage.signature);
 
     try {
-      console.log("Success! The message: "+message+" was signed with the signature: "+signMessage.signature);
-      console.log("The signer was: " +messageSigner);
+      // Create account from private key
+      const account = privateKeyToAccount(PRIVATE_KEY);
+
+      // Create wallet client
+      const walletClient = createWalletClient({
+        account,
+        chain: mainnet,
+        transport: http(API_URL)
+      });
+
+      const message = "Let's verify the signature of this message!";
+
+      // Sign the message
+      const signature = await walletClient.signMessage({
+        account,
+        message
+      });
+
+      // Verify the signature
+      const isValid = await verifyMessage({
+        address: account.address,
+        message,
+        signature
+      });
+
+      console.log("Success! The message: " + message + " was signed with the signature: " + signature);
+      console.log("The signer was: " + account.address);
+      console.log("Signature verification result: " + (isValid ? "Valid" : "Invalid"));
+
     } catch (err) {
-      console.log("Something went wrong while verifying your message signature: "+err);
+      console.log("Something went wrong while verifying your message signature: " + err);
     }
   };
 
@@ -432,25 +424,33 @@ The following code is the entire script with the checks:
   ```
 
   ```javascript Ethers.js
+  import { JsonRpcProvider, Wallet } from "ethers";
+  import { verifyMessage } from "ethers";
+
   const main = async () => {
     require("dotenv").config();
     const { API_URL, PRIVATE_KEY } = process.env;
-    const { ethers } = require("ethers");
-    const { hashMessage } = require("@ethersproject/hash");
-    const provider = new ethers.providers.AlchemyProvider("ropsten", API_URL);
-
-    const message = "Let's verify the signature of this message!";
-    const walletInst = new ethers.Wallet(PRIVATE_KEY, provider);
-    const signMessage = walletInst.signMessage(message);
-
-    const messageSigner = signMessage.then((value) => {
-      const verifySigner = ethers.utils.recoverAddress(hashMessage(message),value);
-      return verifySigner;
-    });
 
     try {
-      console.log("Success! The message: " +message+" was signed with the signature: " +await signMessage);
-      console.log("The signer was: " +await messageSigner);
+      // Create provider
+      const provider = new JsonRpcProvider(API_URL);
+
+      // Create wallet instance
+      const wallet = new Wallet(PRIVATE_KEY, provider);
+
+      const message = "Let's verify the signature of this message!";
+
+      // Sign the message
+      const signature = await wallet.signMessage(message);
+
+      // Verify the signature by recovering the address
+      const recoveredAddress = verifyMessage(message, signature);
+
+      console.log("Success! The message: " + message + " was signed with the signature: " + signature);
+      console.log("The signer was: " + wallet.address);
+      console.log("Recovered address: " + recoveredAddress);
+      console.log("Verification result: " + (recoveredAddress === wallet.address ? "Valid" : "Invalid"));
+
     } catch (err) {
       console.log("Something went wrong while verifying your message signature: " + err);
     }
@@ -464,7 +464,7 @@ To use your script, type the following command in your terminal:
 
 <CodeGroup>
   ```shell shell
-  node AlchemySDK-VerifyMsg.js
+  node VerifyMsg.js
   ```
 </CodeGroup>
 
@@ -474,9 +474,10 @@ If successful, the message signature hash and signer address should return somet
   ```shell shell
   Success! The message: Let's verify the signature of this message! was signed with the signature: 0x16a08da8a50dc4ec2abf080528440821fc749323c69b6d38d88b8dedc03961772a7da6a2c74fcbde325085e552fcb197673e2a4741189bd6f9d9e1d07236c37c1b
   The signer was: 0x5DAAC14781a5C4AF2B0673467364Cba46Da935dB
+  Signature verification result: Valid
   ```
 </CodeGroup>
 
 Awesome! You successfully signed a message and verified its signature!
 
-You now know how to verify message signatures using Web3.js and Ethers.js. Check out part two to learn how to create a signature generator DApp and verify signatures using MetaMask!
+You now know how to verify message signatures using Viem and Ethers.js. Check out part two to learn how to create a signature generator DApp and verify signatures using MetaMask!

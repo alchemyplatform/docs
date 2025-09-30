@@ -71,17 +71,14 @@ Once you have created your app, get your API key that we will use later in this 
 
 Let's create an empty repository and install all node dependencies.
 
-To make requests to the NFT API, we recommend using the [Alchemy SDK Quickstart](/reference/alchemy-sdk-quickstart).
-
-However, you can also use the `axios` or `fetch` libraries. We provide code samples for each
+To make requests to the NFT API, you can use direct HTTP requests with fetch or axios. We provide code samples for each.
 
 From your terminal, run the following commands:
 
 <CodeGroup>
-  ```shell Alchemy SDK (Recommended)
+  ```shell Fetch
   mkdir nft-owner && cd nft-owner
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 
@@ -119,15 +116,9 @@ For more information, check out the [NFT API QuickStart](/reference/nft-api-quic
 Next, add the following code to the `main.js` file, using your Alchemy API key:
 
 <CodeGroup>
-  ```javascript Alchemy SDK (Recommended) 
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  ```javascript Fetch
+  // Replace with your Alchemy API key:
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
 
   const main = async () => {
     // TIMEPieces contract address
@@ -136,9 +127,23 @@ Next, add the following code to the `main.js` file, using your Alchemy API key:
     // Safe Haven Token ID
     const tokenId = 4254;
 
+    // Alchemy URL
+    const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getOwnersForToken`;
+    const url = `${baseURL}?contractAddress=${address}&tokenId=${tokenId}`;
+
     // Get owner of NFT
-    const owner = await alchemy.nft.getOwnersForNft(address, tokenId);
-    console.log(owner);
+    const response = await fetch(url, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('API Error:', data.error);
+      return;
+    }
+
+    console.log(data);
   };
 
   const runMain = async () => {
@@ -182,8 +187,7 @@ Next, add the following code to the `main.js` file, using your Alchemy API key:
   ```
 
   ```javascript Fetch
-  import fetch from 'node-fetch';
-
+  
   // TIMEPieces contract address
   const address =
       '0xDd69da9a83ceDc730bc4d3C56E96D29Acc05eCDE'

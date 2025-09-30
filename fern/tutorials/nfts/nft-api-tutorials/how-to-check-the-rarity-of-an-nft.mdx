@@ -69,15 +69,12 @@ You will need these later.
 
 Let's now create an empty repository and install all node dependencies.
 
-To make requests to the NFT API, we will use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
-
-You can also use `axios` or `fetch` alternatively.
+To make requests to the NFT API, you can use `fetch` or `axios`.
 
 <CodeGroup>
-  ```text Alchemy SDK
+  ```text Fetch
   mkdir nft-rarity && cd nft-rarity
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 
@@ -85,12 +82,6 @@ You can also use `axios` or `fetch` alternatively.
   mkdir nft-rarity && cd nft-rarity
   npm init -y
   npm install --save axios
-  touch main.js
-  ```
-
-  ```text Fetch
-  mkdir nft-rarity && cd nft-rarity
-  npm init -y
   touch main.js
   ```
 </CodeGroup>
@@ -113,39 +104,42 @@ This method takes in two required arguments:
 Add the following code to the `main.js` file.
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Network } = require("alchemy-sdk");
+  ```javascript Fetch
+  // BAYC contract address
+  const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
 
-  const config = {
-      apiKey: "<-- ALCHEMY API KEY -->",
-      network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  // Token ID
+  const tokenId = 7090;
 
-  const main = async () => {
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY API KEY -->"
 
-      // BAYC contract address
-      const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
+  // Alchemy URL
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
+  const url = `${baseURL}/computeRarity/?contractAddress=${address}&tokenId=${tokenId}`;
 
-      // Token ID
-      const tokenId = 7090;
+  async function getRarityData() {
+    try {
+      var requestOptions = {
+        method: 'get',
+        redirect: 'follow'
+      };
 
-      // Get attributes and rarity data
-      const rarityData = await alchemy.nft.computeRarity(address, tokenId);
-      console.log(rarityData);
-  };
+      const response = await fetch(url, requestOptions);
+      const data = await response.json();
 
-  const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      } catch (error) {
-          console.log(error);
-          process.exit(1);
+      if (data.error) {
+        console.error('Error:', data.error);
+        return;
       }
-  };
 
-  runMain();
+      console.log(data);
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
+  }
+
+  getRarityData();
   ```
 
   ```javascript Axios
@@ -157,7 +151,7 @@ Add the following code to the `main.js` file.
   // Token ID
   const tokenId = 7090;
 
-  // Alchemy API key
+  // Replace with your Alchemy API Key
   const apiKey = "<-- ALCHEMY API KEY -->"
 
   // Alchemy URL
@@ -171,34 +165,8 @@ Add the following code to the `main.js` file.
 
   // Make the request and print the formatted response:
   axios(config)
-      .then(console.log)
+      .then(response => console.log(response.data))
       .catch(error => console.log('error', error));
-  ```
-
-  ```javascript Fetch
-  import fetch from 'node-fetch';
-
-  // BAYC contract address
-  const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
-
-  // Token ID
-  const tokenId = 7090;
-
-  // Alchemy API key
-  const apiKey = "<-- ALCHEMY API KEY -->"
-
-  // Alchemy URL
-  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
-  const url = `${baseURL}/computeRarity/?contractAddress=${address}&tokenId=${tokenId}`;
-
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => console.log)
-    .catch(error => console.log('error', error))
   ```
 </CodeGroup>
 

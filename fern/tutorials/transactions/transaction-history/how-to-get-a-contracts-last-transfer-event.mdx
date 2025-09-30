@@ -80,23 +80,15 @@ Press enter again to complete the prompt. If successful, a `package.json` file w
 
 ***
 
-## Install Alchemy's SDK
+## Using Native JavaScript
 
-[Alchemy's SDK](/reference/alchemy-sdk-quickstart) allows us to more efficiently interact with Alchemy's endpoints and make JSON-RPC requests.
-
-Ensure you are inside your project folder and type the following command in the terminal:
-
-<CodeGroup>
-  ```shell shell
-  npm install alchemy-sdk
-  ```
-</CodeGroup>
+Using native fetch allows us to efficiently interact with Alchemy's endpoints and make JSON-RPC requests.
 
 ***
 
 ## Get Contract's Last Transfer Event
 
-In this section, we will use Alchemy's \[Transfer API]ref:transfers-api) to retrieve the contract's last transfer event. The Alchemy SDK allows us to call the [`alchemy_getAssetTransfers`](/reference/alchemy-getassettransfers) function and filter transfers by passing in the following object parameters:
+In this section, we will use Alchemy's \[Transfer API]ref:transfers-api) to retrieve the contract's last transfer event. We can call the [`alchemy_getAssetTransfers`](/reference/alchemy-getassettransfers) function and filter transfers by passing in the following object parameters:
 
 | Property            | Description                                                                                                                                                                                                                                                                                                                                                                              | Requirements | Default                |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------- |
@@ -114,13 +106,37 @@ For reference, here is an example of how the above parameters could be passed in
 
 <CodeGroup>
   ```javascript FirstTransfer.js
-  alchemy.core.getAssetTransfers({
-      fromBlock: "0x0",
-      toBlock: "latest",
-      contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
-      excludeZeroValue: true,
-      category: ["erc721"],
-    });
+  const getFirstTransfer = async () => {
+    const apiKey = "<-- ALCHEMY APP API KEY -->";
+
+    const requestBody = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "alchemy_getAssetTransfers",
+      params: [{
+        fromBlock: "0x0",
+        toBlock: "latest",
+        contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
+        excludeZeroValue: true,
+        category: ["erc721"],
+      }]
+    };
+
+    try {
+      const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+      console.log("Example response:", data.result);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  getFirstTransfer();
   ```
 </CodeGroup>
 
@@ -128,26 +144,38 @@ To get started finding a contract's first transfer, let's create a file inside o
 
 <CodeGroup>
   ```javascript FirstTransfer.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
-
   const getFirstTransfer = async () => {
-    // Calling the getAssetTransfers function and filters using the following parameters
-    const allTransfers = await alchemy.core.getAssetTransfers({
-      fromBlock: "0x0",
-      contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"], // You can replace with contract of your choosing
-      excludeZeroValue: true,
-      category: ["erc721"],
-    });
+    const apiKey = "<-- ALCHEMY APP API KEY -->";
 
-    // printing the first indexed transfer event to console
-    console.log("First Transfer:", allTransfers.transfers[0]);
+    const requestBody = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromBlock: "0x0",
+          contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"], // You can replace with contract of your choosing
+          excludeZeroValue: true,
+          category: ["erc721"],
+        }
+      ]
+    };
+
+    try {
+      const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+      // printing the first indexed transfer event to console
+      console.log("First Transfer:", data.result.transfers[0]);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   getFirstTransfer();
@@ -211,24 +239,30 @@ To do this, we need to reorganize our code to make room for the while loop. Remo
 
 <CodeGroup>
   ```javascript LastTransfer.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
-
   const getLastTransfer = async () => {
-    const getTransfers = alchemy.core.getAssetTransfers({
-      fromBlock: "0x0",
-      toBlock: "latest",
-      contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
-      excludeZeroValue: true,
-      category: ["erc721"],
-    });
-    const firstPage = await getTransfers;
+    const apiKey = "<-- ALCHEMY APP API KEY -->";
+
+    const requestBody = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "alchemy_getAssetTransfers",
+      params: [{
+        fromBlock: "0x0",
+        toBlock: "latest",
+        contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
+        excludeZeroValue: true,
+        category: ["erc721"],
+      }]
+    };
+
+    try {
+      const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      });
+
+      const firstPage = await response.json();
     // *** remove these lines ***
     const firstPageLength = firstPage.transfers.length;
     console.log(firstPage.transfers[firstPageLength - 1]);
@@ -239,7 +273,10 @@ To do this, we need to reorganize our code to make room for the while loop. Remo
       console.log("Page key: none");
     }
     // *** ^^^^^^^^^^^^^^^^^^ ***
-  };
+  } catch (error) {
+    console.error("Error fetching transfers:", error);
+  }
+};
 
   getLastTransfer();
   ```
@@ -249,39 +286,51 @@ Now, replace lines 18-25 with the following code block:
 
 <CodeGroup>
   ```javascript LastTransfer.js
-  let pageKey = firstPage.pageKey;
+  let pageKey = firstPage.result.pageKey;
 
     try {
       if (pageKey) {
         let counter = 0;
         while (pageKey) {
-          const nextKey = alchemy.core.getAssetTransfers({
-            fromBlock: "0x0",
-            toBlock: "latest",
-            contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
-            excludeZeroValue: true,
-            category: ["erc721"],
-            pageKey: pageKey.toString(),
+          // Request next page with pagination
+          const nextRequestBody = {
+            jsonrpc: "2.0",
+            id: 1,
+            method: "alchemy_getAssetTransfers",
+            params: [{
+              fromBlock: "0x0",
+              toBlock: "latest",
+              contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
+              excludeZeroValue: true,
+              category: ["erc721"],
+              pageKey: pageKey.toString(),
+            }]
+          };
+
+          const nextResponse = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(nextRequestBody)
           });
 
-          const nextPage = await nextKey;
-          pageKey = nextPage.pageKey;
+          const nextPage = await nextResponse.json();
+          pageKey = nextPage.result.pageKey;
 
           if (pageKey) {
             counter += 1;
             console.log("Request #" + counter + " made!");
             continue;
           } else {
-            const nextPageLength = nextPage.transfers.length;
+            const nextPageLength = nextPage.result.transfers.length;
             const transferCount = counter * 1000 + nextPageLength;
             console.log("Last BAYC token transfer(#" + transferCount + "):");
-            console.log(nextPage.transfers[nextPageLength - 1]);
+            console.log(nextPage.result.transfers[nextPageLength - 1]);
             break;
           }
         }
       } else if (pageKey === undefined) {
-        const firstPageLength = firstPage.transfers.length;
-        console.log(firstPage.transfers[firstPageLength - 1]);
+        const firstPageLength = firstPage.result.transfers.length;
+        console.log(firstPage.result.transfers[firstPageLength - 1]);
       }
     } catch (err) {
       console.log("Something went wrong with your request: " + err);
@@ -297,58 +346,76 @@ Your entire `LastTransfer.js` script should look like this:
 
 <CodeGroup>
   ```javascript LastTransfer.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
-
   const getLastTransfer = async () => {
-    const getTransfers = alchemy.core.getAssetTransfers({
-      fromBlock: "0x0",
-      toBlock: "latest",
-      contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
-      excludeZeroValue: true,
-      category: ["erc721"],
-    });
+    const apiKey = "<-- ALCHEMY APP API KEY -->";
 
-    const firstPage = await getTransfers;
-    let pageKey = firstPage.pageKey;
+    // First request to get initial page
+    const firstRequestBody = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "alchemy_getAssetTransfers",
+      params: [{
+        fromBlock: "0x0",
+        toBlock: "latest",
+        contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
+        excludeZeroValue: true,
+        category: ["erc721"],
+      }]
+    };
 
     try {
+      const firstResponse = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(firstRequestBody)
+      });
+
+      const firstPage = await firstResponse.json();
+      let pageKey = firstPage.result.pageKey;
+
       if (pageKey) {
         let counter = 0;
         while (pageKey) {
-          const nextKey = alchemy.core.getAssetTransfers({
-            fromBlock: "0x0",
-            toBlock: "latest",
-            contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
-            excludeZeroValue: true,
-            category: ["erc721"],
-            pageKey: pageKey.toString(),
+          // Request next page using pageKey
+          const nextRequestBody = {
+            jsonrpc: "2.0",
+            id: 1,
+            method: "alchemy_getAssetTransfers",
+            params: [{
+              fromBlock: "0x0",
+              toBlock: "latest",
+              contractAddresses: ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"],
+              excludeZeroValue: true,
+              category: ["erc721"],
+              pageKey: pageKey.toString(),
+            }]
+          };
+
+          const nextResponse = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(nextRequestBody)
           });
 
-          const nextPage = await nextKey;
-          pageKey = nextPage.pageKey;
-          
+          const nextPage = await nextResponse.json();
+          pageKey = nextPage.result.pageKey;
+
           if (pageKey) {
             counter += 1;
             console.log("Request #" + counter + " made!");
             continue;
           } else {
-            const nextPageLength = nextPage.transfers.length;
+            const nextPageLength = nextPage.result.transfers.length;
             const transferCount = counter * 1000 + nextPageLength;
             console.log("Last BAYC token transfer(#" + transferCount + "):");
-            console.log(nextPage.transfers[nextPageLength - 1]);
+            console.log(nextPage.result.transfers[nextPageLength - 1]);
             break;
           }
         }
       } else if (pageKey === undefined) {
-        const firstPageLength = firstPage.transfers.length;
-        console.log(firstPage.transfers[firstPageLength - 1]);
+        const firstPageLength = firstPage.result.transfers.length;
+        console.log("Last transfer from first page:");
+        console.log(firstPage.result.transfers[firstPageLength - 1]);
       }
     } catch (err) {
       console.log("Something went wrong with your request: " + err);

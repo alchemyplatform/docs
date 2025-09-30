@@ -6,7 +6,7 @@ slug: docs/how-to-filter-out-spam-nfts
 ---
 
 <Info>
-  This tutorial uses the **[getSpamContracts](/reference/sdk-getspamcontracts)** endpoint.
+  This tutorial uses Alchemy's NFT API to identify and filter spam NFTs using direct HTTP requests.
 </Info>
 
 If you’re building a wallet or an NFT marketplace like [OpenSea](https://opensea.io), chances are you'll want to display NFTs that belong to a particular collection or are owned by a particular wallet.
@@ -62,28 +62,19 @@ You will need this URL later in this tutorial.
 
 Next, create an empty repository and install all node dependencies.
 
-To make requests to the NFT API, we recommend using the Alchemy SDK.
-
-Alternatively, you can also use either `axios` or `fetch` libraries. From your terminal, run the following commands:
+To make requests to the NFT API, you can use `fetch` or `axios`. From your terminal, run the following commands:
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Fetch
   mkdir nft-spam && cd nft-spam
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 
-  ```shell axios
+  ```shell Axios
   mkdir nft-spam && cd nft-spam
   npm init -y
   npm install --save axios
-  touch main.js
-  ```
-
-  ```shell fetch
-  mkdir nft-spam && cd nft-spam
-  npm init -y
   touch main.js
   ```
 </CodeGroup>
@@ -94,60 +85,62 @@ The above creates a repository named `nft-spam` that holds all the files and dep
 
 Alchemy has identified close to 5000 smart contracts to be spam. If an NFT originates from any of these spam contracts, it is likely to be spam as well.
 
-Now, let’s retrieve a list of all NFTs owned by a particular wallet (if you’re not sure how to do this, check out [this tutorial](/docs/alchemy/enhanced-apis/nft-api/how-to-get-all-nfts-owned-by-an-address)).
+Now, let's retrieve a list of all NFTs owned by a particular wallet (if you're not sure how to do this, check out [this tutorial](/docs/alchemy/enhanced-apis/nft-api/how-to-get-all-nfts-owned-by-an-address)).
 
 Then, we will check if the NFTs belong to a spam contract. To do this, all we have to do is add an `excludeFilters` argument to remove NFTs that have been marked as spam.
 
 Add the following code to the `main.js` file:
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Network, NftFilters } = require("alchemy-sdk");
+  ```javascript Fetch
+  // Wallet address
+  const address = 'elanhalpern.eth';
 
-  const config = {
-      apiKey: "<-- ALCHEMY APP API KEY -->",
-      network: Network.ETH_MAINNET,
-  };
+  // Replace with your Alchemy API Key
+  const apiKey = '<-- ALCHEMY APP API KEY -->';
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
+  const url = `${baseURL}/getNFTs/?owner=${address}&excludeFilters[]=SPAM`;
 
-  const alchemy = new Alchemy(config);
+  const getNonSpamNfts = async () => {
+    try {
+      var requestOptions = {
+          method: 'GET',
+          redirect: 'follow'
+      };
 
-  const main = async () => {
+      // Get all non-spam NFTs
+      const response = await fetch(url, requestOptions);
+      const data = await response.json();
 
-      // Wallet address
-      const address = "elanhalpern.eth";
+      if (data.error) {
+        console.error('Error:', data.error);
+        return;
+      }
 
-      // Get non-spam NFTs
-      let nfts = await alchemy.nft.getNftsForOwner(address, { excludeFilters: [NftFilters.SPAM] });
-      nfts = nfts['ownedNfts'];
+      const nfts = data.ownedNfts;
 
       console.log("Non-Spam NFTs")
       for (let i = 0; i < nfts.length; i++) {
-          console.log("*", nfts[i].title)
+        console.log("*", nfts[i].title)
       }
-  };
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
+  }
 
-  const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      } catch (error) {
-          console.log(error);
-          process.exit(1);
-      }
-  };
-
-  runMain();
+  getNonSpamNfts()
   ```
 
-  ```javascript axios
+  ```javascript Axios
   const axios = require('axios')
 
   // Wallet address
   const address = "elanhalpern.eth";
 
-  // Alchemy URL
-  const baseURL = `<-- ALCHEMY APP HTTP URL -->`;
-  const url = `${baseURL}/getNFTs/?owner=${address}&excludeFilters=SPAM`;
+  // Replace with your Alchemy API Key
+  const apiKey = '<-- ALCHEMY APP API KEY -->';
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
+  const url = `${baseURL}/getNFTs/?owner=${address}&excludeFilters[]=SPAM`;
 
   const config = {
       method: 'get',
@@ -157,7 +150,7 @@ Add the following code to the `main.js` file:
   // Make the request and print the formatted response:
   axios(config)
       .then(response => {
-          let nfts = response['data']['ownedNfts'];
+          let nfts = response.data.ownedNfts;
 
           console.log("Non-Spam NFTs")
           for (let i = 0; i < nfts.length; i++) {
@@ -165,36 +158,6 @@ Add the following code to the `main.js` file:
           }
       })
       .catch(error => console.log('error', error));
-  ```
-
-  ```javascript fetch
-  import fetch from 'node-fetch';
-
-  // Wallet address
-  const address = 'elanhalpern.eth';
-
-  // Alchemy URL
-  const baseURL = `<-- ALCHEMY APP HTTP URL -->`;
-  const url = `${baseURL}/getNFTs/?owner=${address}&excludeFilters=SPAM`;
-
-  var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-  };
-
-  const getNonSpamNfts = async () => {
-
-      // Get all non-spam NFTs
-  		let nfts = await fetch(url, requestOptions);
-      nfts = nfts['data']['ownedNfts']
-
-      console.log("Non-Spam NFTs")
-      for (let i = 0; i < nfts.length; i++) {
-        console.log("*", nfts[i].title)
-      }
-  }
-
-  getNonSpamNfts()
   ```
 </CodeGroup>
 

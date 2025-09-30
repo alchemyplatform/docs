@@ -65,13 +65,12 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-Run the following commands in order to create your node project and install Alchemy SDK.
+Run the following commands in order to create your node project.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Fetch
   mkdir nft-minter-getter && cd nft-minter-getter
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 </CodeGroup>
@@ -93,15 +92,9 @@ Add the following code to the `main.js` file:
 
 <CodeGroup>
   ```javascript main.js
-  // importing the Alchemy SDK
-  const { Alchemy, Network } = require("alchemy-sdk");
-
-  // configuring the Alchemy SDK
-  const config = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with the network your NFT contract is deployed to.
-  };
-  const alchemy = new Alchemy(config);
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   // This is the address of the BAYC NFT Contract
   const nftAddress = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"; // Replace with your NFT contract address.
@@ -119,26 +112,34 @@ Add the following code to the `main.js` file:
 
     // Looping through the API call until the pageKey is not null/undefined.
     while (firstCall || pageKey) {
-      let res;
-      if (pageKey) {
-        // Making a call to the getAssetTransfers method to get all the transfers in which the `fromAddress` is 0x0000000000000000000000000000000000000000
-    		// If the `fromAddress` is 0x0000000000000000000000000000000000000000, it means that the NFT was minted to the `toAddress` in the transfer.
-        res = await alchemy.core.getAssetTransfers({
+      let requestBody = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "alchemy_getAssetTransfers",
+        params: [{
           fromAddress: "0x0000000000000000000000000000000000000000",
           category: ["erc721"], // Replace with the category of your NFT contract. BAYC is an ERC721 token.
           contractAddresses: [nftAddress], // Replace with the address of your NFT contract.
-          pageKey: pageKey, // The pageKey is used to paginate through the API call.
-        });
-      } else {
-        // Making a call to the getAssetTransfers method to get all the transfers in which the `fromAddress` is 0x0000000000000000000000000000000000000000
-   		 // If the `fromAddress` is 0x0000000000000000000000000000000000000000, it means that the NFT was minted to the `toAddress` in the transfer.
-        res = await alchemy.core.getAssetTransfers({
-          fromAddress: "0x0000000000000000000000000000000000000000",
-          category: ["erc721"], // Replace with the category of your NFT contract. BAYC is an ERC721 token.
-          contractAddresses: [nftAddress], // Replace with the address of your NFT contract.
-        });
+          ...(pageKey && { pageKey: pageKey }) // Add pageKey if it exists
+        }]
+      };
+
+      const response = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Error:', data.error);
+        break;
       }
 
+      const res = data.result;
       firstCall = false; // Setting the `firstCall` variable to false, because it is not the first call anymore.
 
       // The API call returns an object with a `transfers` key, which is an array of all the transfers.
@@ -172,8 +173,8 @@ Add the following code to the `main.js` file:
 
 Here's an explanation of what the code is doing:
 
-* We first import the Alchemy SDK to be able to use it.
-* Then we configure the Alchemy SDK with the API key and the correct network.
+* We first import the necessary Web3 libraries to be able to use them.
+* Then we configure the connection with the API key and the correct network.
 * We then define a variable that stores the contract address of the NFT whose minters we want to find.
 * We also set another variable called `minters` as an empty array to store the minters of the NFT Collection
 * Furthermore, we define a function called `getMinters` that contains the logic to get the minters of the NFT collection.
@@ -314,15 +315,10 @@ So, the complete script will look like this:
 
 <CodeGroup>
   ```javascript main.js
-  // importing the Alchemy SDK
-  const { Alchemy, Network } = require("alchemy-sdk");
-
-  // configuring the Alchemy SDK
-  const config = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with the network your NFT contract is deployed to.
-  };
-  const alchemy = new Alchemy(config);
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
+  const nftBaseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
 
   // This is the address of the BAYC NFT Contract
   const nftAddress = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"; // Replace with your NFT contract address.
@@ -340,26 +336,34 @@ So, the complete script will look like this:
 
     // Looping through the API call until the pageKey is undefined.
     while (firstCall || pageKey) {
-      let res;
-      if (pageKey) {
-        // Making a call to the getAssetTransfers method to get all the transfers in which the `fromAddress` is 0x0000000000000000000000000000000000000000
-        // If the `fromAddress` is 0x0000000000000000000000000000000000000000, it means that the NFT was minted to the `toAddress` in the transfer.
-        res = await alchemy.core.getAssetTransfers({
+      let requestBody = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "alchemy_getAssetTransfers",
+        params: [{
           fromAddress: "0x0000000000000000000000000000000000000000",
           category: ["erc721"], // Replace with the category of your NFT contract. BAYC is an ERC721 token.
           contractAddresses: [nftAddress], // Replace with the address of your NFT contract.
-          pageKey: pageKey, // The pageKey is used to paginate through the API call.
-        });
-      } else {
-        // Making a call to the getAssetTransfers method to get all the transfers in which the `fromAddress` is 0x0000000000000000000000000000000000000000
-        // If the `fromAddress` is 0x0000000000000000000000000000000000000000, it means that the NFT was minted to the `toAddress` in the transfer.
-        res = await alchemy.core.getAssetTransfers({
-          fromAddress: "0x0000000000000000000000000000000000000000",
-          category: ["erc721"], // Replace with the category of your NFT contract. BAYC is an ERC721 token.
-          contractAddresses: [nftAddress], // Replace with the address of your NFT contract.
-        });
+          ...(pageKey && { pageKey: pageKey }) // Add pageKey if it exists
+        }]
+      };
+
+      const response = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Error:', data.error);
+        break;
       }
 
+      const res = data.result;
       firstCall = false; // Setting the `firstCall` variable to false, because it is not the first call anymore.
 
       // The API call returns an object with a `transfers` key, which is an array of all the transfers.
@@ -383,10 +387,21 @@ So, the complete script will look like this:
     let holdingDay1Minters = 0;
 
     // Getting the current owners of the NFT Collection.
-    let currentOwnersResponse = await alchemy.nft.getOwnersForContract(
-      nftAddress
-    );
-    let currentOwners = currentOwnersResponse.owners; // Getting the `owners` array from the response.
+    const ownersUrl = `${nftBaseURL}/getOwnersForCollection?contractAddress=${nftAddress}`;
+
+    const ownersResponse = await fetch(ownersUrl, {
+      method: 'GET',
+      redirect: 'follow'
+    });
+
+    const ownersData = await ownersResponse.json();
+
+    if (ownersData.error) {
+      console.error('Error getting owners:', ownersData.error);
+      return;
+    }
+
+    let currentOwners = ownersData.ownerAddresses; // Getting the `ownerAddresses` array from the response.
 
     // Looping through the `minters` array and checking if they still hold an NFT from the Collection
     for (let i = 0; i < minters.length; i++) {

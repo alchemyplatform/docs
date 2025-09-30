@@ -59,13 +59,20 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-Run the following commands in order to create your node project and install Alchemy SDK.
+Run the following commands in order to create your node project.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Viem
   mkdir transaction-status-checker && cd transaction-status-checker
   npm init -y
-  npm install --save alchemy-sdk
+  npm install --save viem
+  touch main.js
+  ```
+
+  ```shell Ethers.js
+  mkdir transaction-status-checker && cd transaction-status-checker
+  npm init -y
+  npm install --save ethers
   touch main.js
   ```
 </CodeGroup>
@@ -87,31 +94,69 @@ To check the status of the transaction using its transaction hash, we will use t
 Add the following code to the `main.js` file:
 
 <CodeGroup>
-  ```javascript main.js
-  // importing the Alchemy SDK
-  const { Network, Alchemy } = require("alchemy-sdk");
+  ```javascript Viem
+  import { createPublicClient, http } from 'viem'
+  import { mainnet } from 'viem/chains'
 
-  // Optional config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: http(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`)
+  })
 
   // Transaction hash for the transaction whose status we want to check
-  const txHash =
-    "0xd488331be3a2f9cdd0f2b351f2b13f5151630aaafd2c2b246f7f3cd7fd0b1dfc";
+  const txHash = "0xd488331be3a2f9cdd0f2b351f2b13f5151630aaafd2c2b246f7f3cd7fd0b1dfc";
 
   // Getting the status of the transaction using getTransactionReceipt and logging accordingly
-  alchemy.core.getTransactionReceipt(txHash).then((tx) => {
-    if (!tx) {
+  const checkTransactionStatus = async () => {
+    try {
+      const receipt = await client.getTransactionReceipt({ hash: txHash });
+
+      if (!receipt) {
+        console.log("Pending or Unknown Transaction");
+      } else if (receipt.status === 'success') {
+        console.log("Transaction was successful!");
+      } else {
+        console.log("Transaction failed!");
+      }
+    } catch (error) {
       console.log("Pending or Unknown Transaction");
-    } else if (tx.status === 1) {
-      console.log("Transaction was successful!");
-    } else {
-      console.log("Transaction failed!");
     }
-  });
+  };
+
+  checkTransactionStatus();
+  ```
+
+  ```javascript Ethers.js
+  import { ethers } from 'ethers'
+
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`);
+
+  // Transaction hash for the transaction whose status we want to check
+  const txHash = "0xd488331be3a2f9cdd0f2b351f2b13f5151630aaafd2c2b246f7f3cd7fd0b1dfc";
+
+  // Getting the status of the transaction using getTransactionReceipt and logging accordingly
+  const checkTransactionStatus = async () => {
+    try {
+      const receipt = await provider.getTransactionReceipt(txHash);
+
+      if (!receipt) {
+        console.log("Pending or Unknown Transaction");
+      } else if (receipt.status === 1) {
+        console.log("Transaction was successful!");
+      } else {
+        console.log("Transaction failed!");
+      }
+    } catch (error) {
+      console.log("Pending or Unknown Transaction");
+    }
+  };
+
+  checkTransactionStatus();
 
   // Status is 1 for success, 0 for failure.
   ```
@@ -119,12 +164,12 @@ Add the following code to the `main.js` file:
 
 Here's an explanation of what the code is doing:
 
-* Imports the Alchemy SDK package because we want to use Alchemy's `getTransactionReceipt` method.
-* Configures the Alchemy SDK with the `API Key` and sets the network to `ETH_MAINNET`.
+* Imports either Viem or Ethers.js library to interact with Ethereum.
+* Configures the client/provider with the Alchemy API key and Ethereum mainnet.
 * Defines the transaction hash for the transaction whose status we want to check.
-* Calls the `getTransactionReceipt` method of the Alchemy SDK, passing in the transaction hash as an argument.
+* Calls the `getTransactionReceipt` method, passing in the transaction hash as an argument.
 * This returns the transaction receipt for the transaction, which contains the status of the transaction.
-* It then, logs the status of the transaction to the console according to the value of the `status` property. If the `tx` object returned by getTransactionReceipt is `null`, it means that the transaction is either pending or unknown. If the value of the `status` property is `1`, it means that the transaction was successful. Otherwise, the transaction failed.
+* It then logs the status of the transaction to the console according to the value of the `status` property. If the receipt is `null`, it means that the transaction is either pending or unknown. For Viem, the status is 'success' or 'reverted', while for Ethers.js the status is `1` for success and `0` for failure.
 
 Run the script using:
 

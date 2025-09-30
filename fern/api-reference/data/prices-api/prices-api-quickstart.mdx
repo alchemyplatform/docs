@@ -27,57 +27,63 @@ The Prices API includes the following REST endpoints:
 
 # Getting Started
 
-## Via Alchemy SDK
+## Via HTTP Requests
 
-The [Alchemy SDK](https://github.com/alchemyplatform/alchemy-sdk-js) provides a convenient and fully featured way to interact with Alchemy’s APIs, including the Prices API.
+Modern web development uses fetch for HTTP requests. The Prices API can be easily accessed using native fetch or any HTTP client library.
 
-### Installation
+### No Additional Installation Required
 
-Install the `alchemy-sdk` package using `npm` or `yarn`:
+The fetch API is available in all modern browsers and Node.js (18+). For older Node.js versions, you can install `node-fetch`:
 
 <CodeGroup>
-  ```shell npm
-  npm install alchemy-sdk
+  ```shell Node.js 18+ (Built-in)
+  # No installation needed - fetch is built-in
   ```
 
-  ```shell yarn
-  yarn add alchemy-sdk
+  ```shell Node.js < 18
+  npm install node-fetch
   ```
 </CodeGroup>
 
 ### Usage
 
-Create a new JavaScript file (e.g., `prices-alchemy-sdk-script.js`) and add one of the following snippets depending on which endpoint you want to call.
+Create a new JavaScript file (e.g., `prices-fetch-script.js`) and add one of the following snippets depending on which endpoint you want to call.
 
 <CodeGroup>
   ```js By Symbol
-  // prices-alchemy-sdk-script.js
-  import { Alchemy } from "alchemy-sdk";
+  // prices-fetch-script.js
 
   // Replace with your Alchemy API key:
   const apiKey = "demo";
-
-  const alchemy = new Alchemy({ apiKey });
 
   // Define the symbols you want to fetch prices for.
   const symbols = ["ETH", "BTC", "USDT"];
 
-  alchemy.prices.getTokenPriceBySymbol(symbols)
-    .then(data => {
+  async function getTokenPricesBySymbol() {
+    try {
+      const symbolsParam = symbols.join(',');
+      const response = await fetch(`https://api.g.alchemy.com/prices/v1/tokens/by-symbol?symbols=${symbolsParam}`, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      });
+
+      const data = await response.json();
       console.log("Token Prices By Symbol:");
       console.log(JSON.stringify(data, null, 2));
-    })
-    .catch(error => console.error("Error:", error));
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  getTokenPricesBySymbol();
   ```
 
   ```js By Address
-  // prices-alchemy-sdk-script.js
-  import { Alchemy } from "alchemy-sdk";
+  // prices-fetch-script.js
 
   // Replace with your Alchemy API key:
   const apiKey = "demo";
-
-  const alchemy = new Alchemy({ apiKey });
 
   // Define the network and contract addresses you want to fetch prices for.
   const addresses = [
@@ -91,12 +97,26 @@ Create a new JavaScript file (e.g., `prices-alchemy-sdk-script.js`) and add one 
     }
   ];
 
-  alchemy.prices.getTokenPriceByAddress(addresses)
-    .then(data => {
+  async function getTokenPricesByAddress() {
+    try {
+      const response = await fetch('https://api.g.alchemy.com/prices/v1/tokens/by-address', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({ addresses })
+      });
+
+      const data = await response.json();
       console.log("Token Prices By Address:");
       console.log(JSON.stringify(data, null, 2));
-    })
-    .catch(error => console.error("Error:", error));
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  getTokenPricesByAddress();
   ```
 </CodeGroup>
 
@@ -106,7 +126,7 @@ Execute the script from your command line:
 
 <CodeGroup>
   ```bash bash
-  node prices-alchemy-sdk-script.js
+  node prices-fetch-script.js
   ```
 </CodeGroup>
 
@@ -179,7 +199,7 @@ Create a new JavaScript file (e.g., `prices-fetch-script.js`) and add the follow
 <CodeGroup>
   ```js By Symbol
   // prices-fetch-script.js
-  import fetch from 'node-fetch';
+  
 
   // Replace with your Alchemy API key:
   const apiKey = "YOUR_ALCHEMY_API_KEY";
@@ -211,7 +231,7 @@ Create a new JavaScript file (e.g., `prices-fetch-script.js`) and add the follow
 
   ```js By Address
   // prices-fetch-script.js
-  import fetch from 'node-fetch';
+  
 
   // Replace with your Alchemy API key:
   const apiKey = "YOUR_ALCHEMY_API_KEY";

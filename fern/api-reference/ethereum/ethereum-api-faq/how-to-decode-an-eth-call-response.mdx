@@ -19,7 +19,7 @@ To continue with this guide you need to about the [eth\_call](/reference/eth-cal
 
 # Making an `eth_call` request
 
-For the sake of this tutorial, we will be using the `eth_call` method on an ERC20 token contract (USDT) to get the balance of a particular address and also get the symbol of the token. We will be calling the [eth\_call](/reference/eth-call) method through [Alchemy SDK](/reference/alchemy-sdk-quickstart).
+For the sake of this tutorial, we will be using the `eth_call` method on an ERC20 token contract (USDT) to get the balance of a particular address and also get the symbol of the token. We will be calling the [eth\_call](/reference/eth-call) method using Ethers.js, which provides excellent built-in support for ABI encoding/decoding.
 
 <Info>
   It would be way easier to get the the token balance of an address and the symbol of the token using Alchemy's [`getTokenBalances`](/reference/alchemy-gettokenbalances) and [`getTokenMetadata`](/reference/alchemy-gettokenmetadata) APIs as you won't have to deal with decoding the response in that case.
@@ -63,7 +63,7 @@ Let's now create an empty repository and install all node dependencies.
   ```shell shell
   mkdir eth-call-decoder && cd eth-call-decoder
   npm init -y
-  npm install alchemy-sdk ethers
+  npm install ethers
   touch main.js
   ```
 </CodeGroup>
@@ -74,31 +74,26 @@ In order to get the balance of a token for a wallet address and its symbol, we n
 
 Add the following code to the `main.js` file. Here's an overview of what the code is doing (also explained in comments):
 
-* Imports the required objects from Alchemy SDK.
-* Sets the config object (setting API key and the network).
-* Makes an `alchemy` variable using the config object for making the calls.
+* Imports the required objects from Ethers.js.
+* Creates a provider connected to Alchemy's endpoint.
 * Defines a main function that gets executed when the script runs.
 * In the main function it defines the wallet address whose balance we want to query.
 * Defines the contract address for the ERC20 token.
 * Defines the number of decimals of the ERC20 token.
-* Defines the abi for the ERC20 token that will be used for making an `eth_call` request.
-* Creates function call data for getting the symbol and balance using the abi and Utils object of Alchemy SDK.
-* Makes an `eth_call` request using Alchemy SDK for getting the symbol value in the hex format.
-* Makes an `eth_call` request using Alchemy SDK for getting the balance value in the hex format.
+* Defines the ABI for the ERC20 token that will be used for making an `eth_call` request.
+* Creates function call data for getting the symbol and balance using Ethers.js Interface.
+* Makes an `eth_call` request using Ethers.js for getting the symbol value in the hex format.
+* Makes an `eth_call` request using Ethers.js for getting the balance value in the hex format.
 * Logs the hex values of both symbol and balance.
 
 <CodeGroup>
   ```javascript main.js
-  const { Alchemy, Network, Utils } = require("alchemy-sdk");
-
-  const config = {
-    apiKey: "<-- ALCHEMY API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-
-  const alchemy = new Alchemy(config);
+  const { ethers } = require("ethers");
 
   const main = async () => {
+    const apiKey = "<-- ALCHEMY API KEY -->";
+    const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`);
+
     // Wallet address whose balance you want to query
     const walletAddress = "0xef0dcc839c1490cebc7209baa11f46cfe83805ab";
 
@@ -108,21 +103,21 @@ Add the following code to the `main.js` file. Here's an overview of what the cod
     // You can find out how many decimal places any currency has by reading the decimals value from the contract's page on Etherscan.
 
     // ABI -- defining the functions in the ABI that we want to call using the eth_call method.
-    let abi = ["function balanceOf(address account)", "function symbol()"];
+    const abi = ["function balanceOf(address account)", "function symbol()"];
 
     // Create function call data for getting the symbol and balance -- eth_call
-    let iface = new Utils.Interface(abi);
-    let symbolData = iface.encodeFunctionData("symbol");
-    let balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
+    const iface = new ethers.Interface(abi);
+    const symbolData = iface.encodeFunctionData("symbol");
+    const balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
 
     // Get symbol of the token in hex format -- usage of eth_call
-    let symbolInHex = await alchemy.core.call({
+    const symbolInHex = await provider.call({
       to: contractAddress,
       data: symbolData,
     });
 
     // Get balance for the wallet address in hex format -- usage of eth_call
-    let balanceInHex = await alchemy.core.call({
+    const balanceInHex = await provider.call({
       to: contractAddress,
       data: balanceData,
     });
@@ -182,7 +177,7 @@ That is why we need to divide the decimal value by the number of decimal places,
 
 Let's decode the balance hexadecimal string received in our case to demonstrate this. Here's an overview of what the code is doing (also explained in comments):
 
-* Imports the required objects from Alchemy SDK.
+* Imports the required objects from Ethers.js.
 * Sets the config object (setting API key and the network).
 * Makes an `alchemy` variable using the config object for making the calls.
 * Defines a main function that gets executed when the script runs.
@@ -190,22 +185,18 @@ Let's decode the balance hexadecimal string received in our case to demonstrate 
 * Defines the contract address for the ERC20 token.
 * Defines the number of decimals of the ERC20 token.
 * Defines the abi for the ERC20 token that will be used for making an `eth_call` request.
-* Creates function call data for getting the symbol and balance using the abi and Utils object of Alchemy SDK.
-* Makes an `eth_call` request using Alchemy SDK for getting the symbol value in the hex format.
-* Makes an `eth_call` request using Alchemy SDK for getting the balance value in the hex format.
+* Creates function call data for getting the symbol and balance using the ABI and Ethers.js Interface.
+* Makes an `eth_call` request using Ethers.js for getting the symbol value in the hex format.
+* Makes an `eth_call` request using Ethers.js for getting the balance value in the hex format.
 * Converts the balance in the hex format to decimal format and logs it.
 * Logs the symbol in the hex format.
 
 <CodeGroup>
   ```javascript main.js
-  const { Alchemy, Network, Utils } = require("alchemy-sdk");
+  const { ethers } = require("ethers");
 
-  const config = {
-    apiKey: "<-- ALCHEMY API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-
-  const alchemy = new Alchemy(config);
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`);
 
   const main = async () => {
     // Wallet address whose balance you want to query
@@ -217,21 +208,21 @@ Let's decode the balance hexadecimal string received in our case to demonstrate 
     // You can find out how many decimal places any currency has by reading the decimals value from the contract's page on Etherscan.
 
     // ABI -- defining the functions in the ABI that we want to call using the eth_call method.
-    let abi = ["function balanceOf(address account)", "function symbol()"];
+    const abi = ["function balanceOf(address account)", "function symbol()"];
 
     // Create function call data for getting the symbol and balance -- eth_call
-    let iface = new Utils.Interface(abi);
-    let symbolData = iface.encodeFunctionData("symbol");
-    let balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
+    const iface = new ethers.Interface(abi);
+    const symbolData = iface.encodeFunctionData("symbol");
+    const balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
 
     // Get symbol of the token in hex format -- usage of eth_call
-    let symbolInHex = await alchemy.core.call({
+    const symbolInHex = await provider.call({
       to: contractAddress,
       data: symbolData,
     });
 
     // Get balance for the wallet address in hex format -- usage of eth_call
-    let balanceInHex = await alchemy.core.call({
+    const balanceInHex = await provider.call({
       to: contractAddress,
       data: balanceData,
     });
@@ -287,7 +278,7 @@ You can convert a hex value to utf8 value using the `toUtf8String` method of `et
 
 Here's an overview of what the code is doing (also explained in comments):
 
-* Imports the required objects from Alchemy SDK.
+* Imports the required objects from Ethers.js.
 * Sets the config object (setting API key and the network).
 * Makes an `alchemy` variable using the config object for making the calls.
 * Defines a main function that gets executed when the script runs.
@@ -295,23 +286,18 @@ Here's an overview of what the code is doing (also explained in comments):
 * Defines the contract address for the ERC20 token.
 * Defines the number of decimals of the ERC20 token.
 * Defines the abi for the ERC20 token that will be used for making an `eth_call` request.
-* Creates function call data for getting the symbol and balance using the abi and Utils object of Alchemy SDK.
-* Makes an `eth_call` request using Alchemy SDK for getting the symbol value in the hex format.
-* Makes an `eth_call` request using Alchemy SDK for getting the balance value in the hex format.
+* Creates function call data for getting the symbol and balance using the ABI and Ethers.js Interface.
+* Makes an `eth_call` request using Ethers.js for getting the symbol value in the hex format.
+* Makes an `eth_call` request using Ethers.js for getting the balance value in the hex format.
 * Converts the balance in the hex format to decimal format and logs it.
 * Converts the symbol value in the hex format to utf8 format, which is readable by humans, and logs it.
 
 <CodeGroup>
   ```javascript main.js
-  const { Alchemy, Network, Utils } = require("alchemy-sdk");
-  const ethers = require("ethers");
+  const { ethers } = require("ethers");
 
-  const config = {
-    apiKey: "<-- ALCHEMY API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-
-  const alchemy = new Alchemy(config);
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`);
 
   const main = async () => {
     // Wallet address whose balance you want to query
@@ -323,21 +309,21 @@ Here's an overview of what the code is doing (also explained in comments):
     // You can find out how many decimal places any currency has by reading the decimals value from the contract's page on Etherscan.
 
     // ABI -- defining the functions in the ABI that we want to call using the eth_call method.
-    let abi = ["function balanceOf(address account)", "function symbol()"];
+    const abi = ["function balanceOf(address account)", "function symbol()"];
 
     // Create function call data for getting the symbol and balance -- eth_call
-    let iface = new Utils.Interface(abi);
-    let symbolData = iface.encodeFunctionData("symbol");
-    let balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
+    const iface = new ethers.Interface(abi);
+    const symbolData = iface.encodeFunctionData("symbol");
+    const balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
 
     // Get symbol of the token in hex format -- usage of eth_call
-    let symbolInHex = await alchemy.core.call({
+    const symbolInHex = await provider.call({
       to: contractAddress,
       data: symbolData,
     });
 
     // Get balance for the wallet address in hex format -- usage of eth_call
-    let balanceInHex = await alchemy.core.call({
+    const balanceInHex = await provider.call({
       to: contractAddress,
       data: balanceData,
     });
@@ -391,7 +377,7 @@ If for some reason you don't want to use `ethers` for decoding the symbol hex va
 
 Here's an overview of what the code is doing (also explained in comments):
 
-* Imports the required objects from Alchemy SDK.
+* Imports the required objects from Ethers.js.
 * Sets the config object (setting API key and the network).
 * Makes an `alchemy` variable using the config object for making the calls.
 * Defines a main function that gets executed when the script runs.
@@ -399,22 +385,18 @@ Here's an overview of what the code is doing (also explained in comments):
 * Defines the contract address for the ERC20 token.
 * Defines the number of decimals of the ERC20 token.
 * Defines the abi for the ERC20 token that will be used for making an `eth_call` request.
-* Creates function call data for getting the symbol and balance using the abi and Utils object of Alchemy SDK.
-* Makes an `eth_call` request using Alchemy SDK for getting the symbol value in the hex format.
-* Makes an `eth_call` request using Alchemy SDK for getting the balance value in the hex format.
+* Creates function call data for getting the symbol and balance using the ABI and Ethers.js Interface.
+* Makes an `eth_call` request using Ethers.js for getting the symbol value in the hex format.
+* Makes an `eth_call` request using Ethers.js for getting the balance value in the hex format.
 * Converts the balance in the hex format to decimal format and logs it.
 * Converts the symbol value in the hex format to utf8 format, which is readable by humans, and logs it.
 
 <CodeGroup>
   ```javascript main.js
-  const { Alchemy, Network, Utils } = require("alchemy-sdk");
+  const { ethers } = require("ethers");
 
-  const config = {
-    apiKey: "<-- ALCHEMY API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-
-  const alchemy = new Alchemy(config);
+  const apiKey = "<-- ALCHEMY API KEY -->";
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`);
 
   const main = async () => {
     // Wallet address whose balance you want to query
@@ -426,21 +408,21 @@ Here's an overview of what the code is doing (also explained in comments):
     // You can find out how many decimal places any currency has by reading the decimals value from the contract's page on Etherscan.
 
     // ABI -- defining the functions in the ABI that we want to call using the eth_call method.
-    let abi = ["function balanceOf(address account)", "function symbol()"];
+    const abi = ["function balanceOf(address account)", "function symbol()"];
 
     // Create function call data for getting the symbol and balance -- eth_call
-    let iface = new Utils.Interface(abi);
-    let symbolData = iface.encodeFunctionData("symbol");
-    let balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
+    const iface = new ethers.Interface(abi);
+    const symbolData = iface.encodeFunctionData("symbol");
+    const balanceData = iface.encodeFunctionData("balanceOf", [walletAddress]);
 
     // Get symbol of the token in hex format -- usage of eth_call
-    let symbolInHex = await alchemy.core.call({
+    const symbolInHex = await provider.call({
       to: contractAddress,
       data: symbolData,
     });
 
     // Get balance for the wallet address in hex format -- usage of eth_call
-    let balanceInHex = await alchemy.core.call({
+    const balanceInHex = await provider.call({
       to: contractAddress,
       data: balanceData,
     });

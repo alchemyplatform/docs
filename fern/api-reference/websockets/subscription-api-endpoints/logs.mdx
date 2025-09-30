@@ -47,39 +47,77 @@ An object with the following fields:
   {"jsonrpc":"2.0","id": 1, "method": "eth_subscribe", "params": ["logs", {"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "topics": ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"]}]}
   ```
 
-  ```javascript alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-  import { ethers } from "ethers";
+  ```javascript Viem
+  import { createPublicClient, webSocket, encodeEventTopics, parseAbiItem } from 'viem'
+  import { mainnet } from 'viem/chains'
 
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: webSocket('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+  })
 
-  // This filter could also be generated with the Contract or
-  // Interface API. If address is not specified, any address
-  // matches and if topics is not specified, any log matches
+  // Watch for Transfer events on a specific contract
+  const unsubscribe = client.watchEvent({
+    address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC contract
+    event: parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)'),
+    onLogs: (logs) => {
+      logs.forEach((log) => {
+        console.log('Transfer event detected:', {
+          from: log.args.from,
+          to: log.args.to,
+          value: log.args.value,
+          transactionHash: log.transactionHash
+        })
+      })
+    }
+  })
+
+  // Watch for logs with specific topics (more flexible filtering)
+  const unsubscribeTopics = client.watchEvent({
+    address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    events: [
+      parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)'),
+      parseAbiItem('event Approval(address indexed owner, address indexed spender, uint256 value)')
+    ],
+    onLogs: (logs) => {
+      console.log('Token events detected:', logs)
+    }
+  })
+  ```
+
+  ```javascript Ethers.js
+  import { WebSocketProvider, Contract, Interface, id } from 'ethers'
+
+  const provider = new WebSocketProvider('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
+
+  // Create a contract instance for easier event filtering
+  const contractAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC
+  const abi = [
+    'event Transfer(address indexed from, address indexed to, uint256 value)',
+    'event Approval(address indexed owner, address indexed spender, uint256 value)'
+  ]
+  const contract = new Contract(contractAddress, abi, provider)
+
+  // Listen for Transfer events
+  contract.on('Transfer', (from, to, value, event) => {
+    console.log('Transfer event detected:', {
+      from: from,
+      to: to,
+      value: value.toString(),
+      transactionHash: event.transactionHash
+    })
+  })
+
+  // Listen for raw logs with topic filtering
+  const transferTopic = id("Transfer(address,address,uint256)")
   const filter = {
-    address: "dai.tokens.ethers.eth",
-    topics: [ethers.utils.id("Transfer(address,address,uint256)")],
-  };
+    address: contractAddress,
+    topics: [transferTopic]
+  }
 
-  alchemy.ws.on(filter, (log, event) => {
-    // Emitted whenever a DAI token transfer occurs
-  });
-
-  // Notice this is an array of topic-sets and is identical to
-  // using a filter with no address (i.e. match any address)
-  const topicSets = [
-    ethers.utils.id("Transfer(address,address,uint256)"),
-    null,
-    [address1, address2],
-  ];
-
-  alchemy.ws.on(topicSets, (log, event) => {
-    // Emitted any token is sent TO either address
-  });
+  provider.on(filter, (log) => {
+    console.log('Raw log detected:', log)
+  })
   ```
 </CodeGroup>
 

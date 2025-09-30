@@ -103,7 +103,7 @@ Batch requests are formatted the same as individual API requests however, the bo
 
 ## How do you make batch requests over REST?
 
-Batch Requests are usually for JSON-RPC endpoints, but Alchemy SDK is providing support for batch requests over REST as well. It currently only supports one type of REST API for batch requests: [getNFTMetadataBatch](/reference/getnftmetadatabatch). Check example code below.
+Batch Requests are usually for JSON-RPC endpoints, but Alchemy provides support for batch requests over REST as well. It currently only supports one type of REST API for batch requests: [getNFTMetadataBatch](/reference/getnftmetadatabatch). Check example code below.
 
 <CodeGroup>
   ```curl curl
@@ -116,37 +116,31 @@ Batch Requests are usually for JSON-RPC endpoints, but Alchemy SDK is providing 
   ```
 
   ```javascript javascript
-  // Github: https://github.com/alchemyplatform/alchemy-sdk-js
-  // Setup: npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
+  // Simple fetch request for batch NFT metadata
+  const apiKey = "demo"; // Replace with your Alchemy API Key
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v3/${apiKey}/getNFTMetadataBatch`;
 
-  // Optional Config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-
-  const alchemy = new Alchemy(settings);
-
-  // Print NFT metadata returned in the response:
-  alchemy.nft.getNftMetadata(
-    [
-      {
-        contractAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-        tokenId: "3",
-        tokenType: "ERC721"
-      },
-      {
-        contractAddress: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-        tokenId: "4",
-        tokenType: "ERC721"
-      }
-    ],
+  const requestBody = [
     {
-      tokenUriTimeoutInMs: 5000,
-      refreshCache: true
+      contractAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+      tokenId: "3"
+    },
+    {
+      contractAddress: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
+      tokenId: "4"
     }
-  ).then(console.log);
+  ];
+
+  fetch(baseURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
   ```
 </CodeGroup>
 

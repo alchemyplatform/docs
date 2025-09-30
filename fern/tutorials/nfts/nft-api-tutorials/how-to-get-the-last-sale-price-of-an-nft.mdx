@@ -1,7 +1,7 @@
 ---
 title: How to Get the Last Sale Price of an NFT
-description: Learn how to get the last sale price of an NFT using Alchemy SDK
-subtitle: Learn how to get the last sale price of an NFT using Alchemy SDK
+description: Learn how to get the last sale price of an NFT using modern Web3 libraries
+subtitle: Learn how to get the last sale price of an NFT using modern Web3 libraries
 slug: docs/how-to-get-the-last-sale-price-of-an-nft
 ---
 
@@ -19,7 +19,7 @@ In the world of blockchain and decentralized finance, non-fungible tokens (NFTs)
 
 As a developer, you may want to retrieve the last sale price of an NFT to build various blockchain applications, such as NFT marketplaces, price trackers, or analytics tools. However, retrieving this information can be challenging, especially since NFT transactions occur on decentralized marketplaces where data is not always easily accessible.
 
-In this tutorial, we will show you how to use Alchemy SDK to get the last sale price of an NFT. With our step-by-step guide, you'll be able to retrieve this data quickly and efficiently, giving you the information you need to build powerful NFT dapps. Whether you're an experienced blockchain developer or just getting started, this tutorial will provide you with the knowledge and skills you need to work with NFTs using Alchemy SDK.
+In this tutorial, we will show you how to use modern Web3 libraries to get the last sale price of an NFT. With our step-by-step guide, you'll be able to retrieve this data quickly and efficiently, giving you the information you need to build powerful NFT dapps. Whether you're an experienced blockchain developer or just getting started, this tutorial will provide you with the knowledge and skills you need to work with NFTs using Alchemy's APIs.
 
 ![2190](0c1a314-opensea-azuki-sales.png "opensea-azuki-sales.png")
 
@@ -29,7 +29,7 @@ Opensea's interface showing the last sale prices for Azuki NFTs
 
 # Understanding the Last Sale Price of an NFT
 
-As a developer, it's essential to understand the calculation behind the last sale price of an NFT. Even though you will be making an API request using Alchemy SDK to get this information, understanding the underlying calculation is crucial for building more complex applications and making informed decisions.
+As a developer, it's essential to understand the calculation behind the last sale price of an NFT. Even though you will be making an API request using modern Web3 libraries to get this information, understanding the underlying calculation is crucial for building more complex applications and making informed decisions.
 
 When an NFT is sold on a marketplace, the total sale price consists of three different fees:
 
@@ -101,13 +101,12 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-Run the following commands in order to create your node project and install Alchemy SDK.
+Run the following commands in order to create your node project.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Fetch
   mkdir get-nft-last-sale-price && cd get-nft-last-sale-price
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 </CodeGroup>
@@ -126,7 +125,7 @@ Now our project is set up and we are ready to write code. We will write all our 
 
 For the sake of this tutorial, we will get the last sale price for the [#44 NFT](https://opensea.io/assets/ethereum/0xe785e82358879f061bc3dcac6f0444462d4b5330/44) of the [World of Women Collection](https://opensea.io/collection/world-of-women-nft).
 
-The gameplan is simple, we will use the [`getNFTSales`](/reference/sdk-getnftsales) endpoint of Alchemy SDK to get the sales information about the NFT, in addition to this we will sort the response in descending order (most recent sales first), this implies that the first sales object will be the information about the most recent sales.
+The gameplan is simple, we will use the [`getNFTSales`](/reference/sdk-getnftsales) endpoint to get the sales information about the NFT, in addition to this we will sort the response in descending order (most recent sales first), this implies that the first sales object will be the information about the most recent sales.
 
 This sales object will give us the `sellerFee`, the `protocolFee` and the `royaltyFee` in a string wei format which we can add and convert to Ether to get the last sale price in Ether.
 
@@ -134,17 +133,9 @@ Here's the code that demonstrates this (code also explained in comments):
 
 <CodeGroup>
   ```javascript main.js
-  // importing the required modules
-  const { Network, Alchemy } = require("alchemy-sdk");
-
-  // configuring the Alchemy SDK
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-
-  // creating an instance of the Alchemy SDK to make requests
-  const alchemy = new Alchemy(settings);
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
 
   // creating the main function to run the code
   async function main() {
@@ -155,27 +146,42 @@ Here's the code that demonstrates this (code also explained in comments):
     const tokenId = "44";
 
     // making the request to get the information about the last sales of the NFT
-    const sales = await alchemy.nft.getNftSales({
-      // get all the sales of the NFT from the beginning of the blockchain to the latest block
-      fromBlock: "0",
-      toBlock: "latest",
-      order: "desc", // this will return the sales from the most recent to the oldest, so we can get the most recent sale price by accessing the first element of the array
-      contractAddress: contractAddress, // the contract address of the NFT collection
-      tokenId: tokenId, // the token id of the NFT
-    });
+    const url = `${baseURL}/getNFTSales?contractAddress=${contractAddress}&tokenId=${tokenId}&fromBlock=0&toBlock=latest&order=desc`;
 
-    // logging the response object to the console - uncomment the following line to see the response object
-    // console.log(sales);
+    const requestOptions = {
+      method: 'get',
+      redirect: 'follow'
+    };
 
-    // extracting the seller fee, protocol fee, and royalty fee from the response object
-    const sellerFee = sales.nftSales[0].sellerFee.amount;
-    const protocolFee = sales.nftSales[0].protocolFee.amount;
-    const royaltyFee = sales.nftSales[0].royaltyFee.amount;
+    try {
+      const response = await fetch(url, requestOptions);
+      const sales = await response.json();
 
-    // getting the last sale price of the NFT by adding the seller fee, protocol fee, and royalty fee using the getLastSalePrice function that adds the fees and converts the last sale price from wei to ether
-    const lastSalePrice = getLastSalePrice(sellerFee, protocolFee, royaltyFee);
+      if (sales.error) {
+        console.error('Error:', sales.error);
+        return;
+      }
 
-    console.log(`Last Sale Price of the NFT: ${lastSalePrice} ETH`);
+      // logging the response object to the console - uncomment the following line to see the response object
+      // console.log(sales);
+
+      if (!sales.nftSales || sales.nftSales.length === 0) {
+        console.log('No sales found for this NFT');
+        return;
+      }
+
+      // extracting the seller fee, protocol fee, and royalty fee from the response object
+      const sellerFee = sales.nftSales[0].sellerFee.amount;
+      const protocolFee = sales.nftSales[0].protocolFee.amount;
+      const royaltyFee = sales.nftSales[0].royaltyFee.amount;
+
+      // getting the last sale price of the NFT by adding the seller fee, protocol fee, and royalty fee using the getLastSalePrice function that adds the fees and converts the last sale price from wei to ether
+      const lastSalePrice = getLastSalePrice(sellerFee, protocolFee, royaltyFee);
+
+      console.log(`Last Sale Price of the NFT: ${lastSalePrice} ETH`);
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
   }
 
   // calling the main function to run the code
@@ -198,7 +204,7 @@ Here's the code that demonstrates this (code also explained in comments):
 Here's an explanation of the code:
 
 * Imports the required modules to run the script.
-* Configures the Alchemy SDK by setting a network and API key.
+* Configures the connection by setting a network and API key.
 * Defines an `async` function called `main()` which is the main entry point for the script.
 * Assigns the `contractAddress` and `tokenId` of the NFT whose last sale price the user wants to get - in this case #44 of World of Women NFT.
 * Calls the `getNftSales` method to get information about the last sale of the NFT. The method takes several parameters, including `fromBlock`, `toBlock`, `order`, `contractAddress`, and `tokenId`, which are used to filter and sort the sales data. Here we use the descending order to get the most recent sale information first.
@@ -234,7 +240,7 @@ You can also verify the last sale price for this particular [NFT on Opensea](htt
 
 Congratulations 🎉
 
-Now you know how to programmatically get the last sale price of an NFT using the Alchemy SDK!
+Now you know how to programmatically get the last sale price of an NFT using modern Web3 libraries!
 
 If you enjoyed this tutorial, give us a tweet [@Alchemy](https://twitter.com/Alchemy).
 

@@ -43,55 +43,58 @@ For this particular example we're going to fetch the USDT balance for address [`
 
 [token\_api\_javascript\_scripts/token-balances-from-alchemyWeb3.js at master · OMGWINNING/token\_api\_javascript\_scripts](https://github.com/OMGWINNING/token_api_javascript_scripts/blob/master/token-balances-from-alchemyWeb3.js)
 
-## Alchemy SDK (Recommended)
+## Fetch
 
-### Step 1: Install Alchemy-SDK and create a file
+### Step 1: Create a simple fetch file
 
-Run the below commands in the command line
+Run the below command in the command line
 
 <CodeGroup>
   ```shell shell
-  npm install alchemy-sdk
-  touch token-balances-from-alchemy-sdk.js
+  touch token-balances-simple.js
   ```
 </CodeGroup>
 
 ### Step 2: Write the token balance querying script
 
-Inside the `token-balances-from-alchemy-sdk.js` file, paste the below code
+Inside the `token-balances-simple.js` file, paste the below code
 
 <CodeGroup>
-  ```javascript token-balances-from-alchemy-sdk
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript token-balances-simple.js
+  // Replace with your Alchemy API key:
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
-
-  //Feel free to switch this wallet address with another address
+  // Replace with the wallet address you want to query:
   const ownerAddress = "0x00000000219ab540356cbb839cbe05303d7705fa";
 
-  //The below token contract address corresponds to USDT
-  const tokenContractAddresses = ["0xdAC17F958D2ee523a2206206994597C13D831ec7"];
+  // Replace with the token contract address you want to query:
+  const tokenContractAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
 
-  const data = await alchemy.core.getTokenBalances(
-    ownerAddress,
-    tokenContractAddresses
-  );
+  const response = await fetch(baseURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method: "alchemy_getTokenBalances",
+      params: [ownerAddress, [tokenContractAddress]],
+      id: 1
+    })
+  });
 
+  const data = await response.json();
   console.log("Token balance for Address");
-  console.log(data);
+  console.log(data.result);
   ```
 </CodeGroup>
 
-### Step 3: Run the code to get the token balance with alchemy-web3.js
+### Step 3: Run the code to get the token balance
 
 <CodeGroup>
   ```shell shell
-  node token-balances-from-alchemy-sdk.js
+  node token-balances-simple.js
   ```
 </CodeGroup>
 
@@ -137,7 +140,7 @@ Inside the `token-balances-from-fetch.js` file, paste the below code
 
 <CodeGroup>
   ```javascript token-balances-from-fetch.js
-  import fetch from 'node-fetch';
+  
 
   // Replace with your Alchemy API key:
   const apiKey = "demo";
@@ -313,9 +316,9 @@ Now that we have made the query and can see the response, let's learn how to han
 
 If you feel like jumping ahead and grabbing some pre-built code, choose and pick a code from the below options that matches your preferred library.
 
-### Alchemy Web3 (Recommended)
+### Fetch
 
-The below linked Github script is for the Alchemy-Web3.js library and takes the output of the [alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances) endpoint, joins it with the output of the [alchemy\_getTokenMetadata](/reference/alchemy-gettokenmetadata) endpoint and returns a clean output "The balance of Token X is Y"
+The below linked Github script takes the output of the [alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances) endpoint, joins it with the output of the [alchemy\_getTokenMetadata](/reference/alchemy-gettokenmetadata) endpoint and returns a clean output "The balance of Token X is Y"
 
 [![token\_api\_javascript\_scripts/token-balances-parsed-from-alchemyWeb3.js at master · OMGWINNING/token\_api\_javascript\_scripts](token_api_javascript_scripts.png)](https://github.com/OMGWINNING/token_api_javascript_scripts/blob/master/token-balances-parsed-from-alchemyWeb3.js)
 
@@ -380,24 +383,34 @@ The `tokenBalance` in its raw form as returned by [alchemy\_getTokenBalances](/r
 
 Two of the many different response objects you may be interested in parsing are: `tokenName` and `tokenBalance (in USD)`
 
-Whether we're querying via `alchemy-web3`, `axios`, or `node-fetch`, we'll have to follow the below steps 1. Save the response of [alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances) into a constant/variable 2. Get the Token name for the concerned Token Contract address [alchemy\_getTokenMetadata](/reference/alchemy-gettokenmetadata) 3. Convert the tokenBalance into the correct units (using [alchemy\_getTokenMetadata](/reference/alchemy-gettokenmetadata)
+Whether we're querying via `fetch`, `axios`, or `node-fetch`, we'll have to follow the below steps 1. Save the response of [alchemy\_getTokenBalances](/reference/alchemy-gettokenbalances) into a constant/variable 2. Get the Token name for the concerned Token Contract address [alchemy\_getTokenMetadata](/reference/alchemy-gettokenmetadata) 3. Convert the tokenBalance into the correct units (using [alchemy\_getTokenMetadata](/reference/alchemy-gettokenmetadata)
 
 Let's walk through the below sample code that parses the returned JSON object.
 
 <CodeGroup>
-  ```javascript Alchemy Web3 (Recommended)
-  /*
-  ** Fetching the metadata for the token with Alchemy's getTokenMetadata API
-  */
-  const metadata = await web3.alchemy.getTokenMetadata( 
-                       tokenContractAddresses[0]
-                   );
+  ```javascript Fetch
+  // First, get the token metadata
+  const metadataResponse = await fetch(baseURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method: "alchemy_getTokenMetadata",
+      params: [tokenContractAddress],
+      id: 1
+    })
+  });
+
+  const metadataData = await metadataResponse.json();
+  const metadata = metadataData.result;
 
   //Forming the name of the token that comprises of the Name and the Symbol of the token
   const tokenName = metadata.name + "(" + metadata.symbol + ")";
 
-  /* Calculating the tokenBalance in decimal. The "decimals" field in the token metadata on line 21 tells us 
-  how many digits at the end of the tokenBalance in Line 17 are to the right of the decimal. 
+  /* Calculating the tokenBalance in decimal. The "decimals" field in the token metadata tells us
+  how many digits at the end of the tokenBalance are to the right of the decimal.
   so we divide the Full tokenBalance with 10 to the power of the decimal value of the token
   */
   const tokenBalance = data["tokenBalances"][0]["tokenBalance"]/Math.pow(10, metadata.decimals)
