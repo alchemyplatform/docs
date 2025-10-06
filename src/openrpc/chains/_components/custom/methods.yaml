@@ -821,6 +821,47 @@ components:
             name: RootHash
             value: "0xabc123...def456"
 
+    eth_getTdByNumber:
+      name: eth_getTdByNumber
+      description: Returns the total difficulty for a given block number. This method is primarily used by Heimdall to query the total difficulty of a produced block when building a milestone.
+      params:
+        - name: Block number
+          required: true
+          description: The block number for which to retrieve the total difficulty.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Total difficulty result
+        description: An object containing the block number and its total difficulty, or null if the block is not found.
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - title: Total difficulty result
+              type: object
+              additionalProperties: false
+              required:
+                - blockNumber
+                - totalDifficulty
+              properties:
+                blockNumber:
+                  title: Block number
+                  description: The block number as a hexadecimal string.
+                  $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                totalDifficulty:
+                  title: Total difficulty
+                  description: The total difficulty of the block as a hexadecimal string.
+                  $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: eth_getTdByNumber example
+          params:
+            - name: Block number
+              value: "0x1b4"
+          result:
+            name: Total difficulty result
+            value:
+              blockNumber: "0x1b4"
+              totalDifficulty: "0x27f07"
+
     # eth_sendPrivateTransaction:
     #   name: eth_sendPrivateTransaction
     #   description: Send a single private transaction through Flashbots. Private transactions are sent directly to validators and not included in the public mempool.
