@@ -821,6 +821,47 @@ components:
             name: RootHash
             value: "0xabc123...def456"
 
+    eth_getTdByNumber:
+      name: eth_getTdByNumber
+      description: Returns the total difficulty for a given block number. This method is primarily used by Heimdall to query the total difficulty of a produced block when building a milestone.
+      params:
+        - name: Block number
+          required: true
+          description: The block number for which to retrieve the total difficulty.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Total difficulty result
+        description: An object containing the block number and its total difficulty, or null if the block is not found.
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - title: Total difficulty result
+              type: object
+              additionalProperties: false
+              required:
+                - blockNumber
+                - totalDifficulty
+              properties:
+                blockNumber:
+                  title: Block number
+                  description: The block number as a hexadecimal string.
+                  $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                totalDifficulty:
+                  title: Total difficulty
+                  description: The total difficulty of the block as a hexadecimal string.
+                  $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: eth_getTdByNumber example
+          params:
+            - name: Block number
+              value: "0x1b4"
+          result:
+            name: Total difficulty result
+            value:
+              blockNumber: "0x1b4"
+              totalDifficulty: "0x27f07"
+
     # eth_sendPrivateTransaction:
     #   name: eth_sendPrivateTransaction
     #   description: Send a single private transaction through Flashbots. Private transactions are sent directly to validators and not included in the public mempool.
@@ -1002,3 +1043,171 @@ components:
                           disable:
                             type: boolean
                             description: Whether to disable the upgrade
+
+    eth_callBundle:
+      name: eth_callBundle
+      description: >
+        Simulates a bundle of signed transactions against a specific block number,
+        including simulating a bundle at the top of the next block. This method allows
+        you to test transaction bundles before submitting them to the network.
+      params:
+        - name: Bundle parameters
+          required: true
+          description: >
+            The bundle simulation parameters containing the transactions to simulate
+            and the block context for the simulation.
+          schema:
+            type: object
+            required: ["txs", "blockNumber", "stateBlockNumber"]
+            additionalProperties: false
+            properties:
+              txs:
+                description: Array of signed transactions to execute in an atomic bundle.
+                type: array
+                minItems: 1
+                items:
+                  $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+              blockNumber:
+                description: A hex encoded block number for which this bundle is valid on.
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              stateBlockNumber:
+                description: >
+                  Either a hex encoded number or a block tag for which state to base
+                  this simulation on. Can use "latest".
+                $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+              timestamp:
+                description: >
+                  Optional timestamp to use for this bundle simulation, in seconds
+                  since the unix epoch.
+                type: integer
+                minimum: 0
+      result:
+        name: Bundle simulation result
+        description: >
+          The result of the bundle simulation containing gas usage, fees, and individual
+          transaction results.
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            [
+              "bundleGasPrice",
+              "bundleHash",
+              "coinbaseDiff",
+              "ethSentToCoinbase",
+              "gasFees",
+              "results",
+              "stateBlockNumber",
+              "totalGasUsed",
+            ]
+          properties:
+            bundleGasPrice:
+              description: The gas price used for the bundle simulation.
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            bundleHash:
+              description: The hash of the bundle.
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+            coinbaseDiff:
+              description: The total difference in coinbase payments.
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            ethSentToCoinbase:
+              description: The total ETH sent to the coinbase.
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            gasFees:
+              description: The total gas fees for the bundle.
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            results:
+              description: Array of individual transaction results within the bundle.
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  [
+                    "coinbaseDiff",
+                    "ethSentToCoinbase",
+                    "fromAddress",
+                    "gasFees",
+                    "gasPrice",
+                    "gasUsed",
+                    "toAddress",
+                    "txHash",
+                    "value",
+                  ]
+                properties:
+                  coinbaseDiff:
+                    description: The coinbase difference for this transaction.
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  ethSentToCoinbase:
+                    description: The ETH sent to coinbase for this transaction.
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  fromAddress:
+                    description: The address that sent the transaction.
+                    $ref: "../evm/base-types.yaml#/components/schemas/address"
+                  gasFees:
+                    description: The gas fees for this transaction.
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  gasPrice:
+                    description: The gas price used for this transaction.
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  gasUsed:
+                    description: The amount of gas used by this transaction.
+                    type: integer
+                    minimum: 0
+                  toAddress:
+                    description: The address the transaction was sent to.
+                    $ref: "../evm/base-types.yaml#/components/schemas/address"
+                  txHash:
+                    description: The hash of the transaction.
+                    $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                  value:
+                    description: The value transferred in the transaction.
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            stateBlockNumber:
+              description: The block number used for state simulation.
+              type: integer
+              minimum: 0
+            totalGasUsed:
+              description: The total gas used by all transactions in the bundle.
+              type: integer
+              minimum: 0
+      examples:
+        - name: eth_callBundle example
+          params:
+            - name: Bundle parameters
+              value:
+                txs:
+                  - "0x123abc..."
+                  - "0x456def..."
+                blockNumber: "0xb63dcd"
+                stateBlockNumber: "latest"
+                timestamp: 1615920932
+          result:
+            name: Bundle simulation result
+            value:
+              bundleGasPrice: "476190476193"
+              bundleHash: "0x73b1e258c7a42fd0230b2fd05529c5d4b6fcb66c227783f8bece8aeacdd1db2e"
+              coinbaseDiff: "20000000000126000"
+              ethSentToCoinbase: "20000000000000000"
+              gasFees: "126000"
+              results:
+                - coinbaseDiff: "10000000000063000"
+                  ethSentToCoinbase: "10000000000000000"
+                  fromAddress: "0x02A727155aeF8609c9f7F2179b2a1f560B39F5A0"
+                  gasFees: "63000"
+                  gasPrice: "476190476193"
+                  gasUsed: 21000
+                  toAddress: "0x73625f59CAdc5009Cb458B751b3E7b6b48C06f2C"
+                  txHash: "0x669b4704a7d993a946cdd6e2f95233f308ce0c4649d2e04944e8299efcaa098a"
+                  value: "0x"
+                - coinbaseDiff: "10000000000063000"
+                  ethSentToCoinbase: "10000000000000000"
+                  fromAddress: "0x02A727155aeF8609c9f7F2179b2a1f560B39F5A0"
+                  gasFees: "63000"
+                  gasPrice: "476190476193"
+                  gasUsed: 21000
+                  toAddress: "0x73625f59CAdc5009Cb458B751b3E7b6b48C06f2C"
+                  txHash: "0xa839ee83465657cac01adc1d50d96c1b586ed498120a84a64749c0034b4f19fa"
+                  value: "0x"
+              stateBlockNumber: 5221585
+              totalGasUsed: 42000
