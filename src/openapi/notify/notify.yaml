@@ -210,8 +210,8 @@ paths:
       operationId: replace-webhook-addresses
   /update-webhook:
     put:
-      summary: Update webhook status
-      description: "Allows you to set status of webhooks to active or inactive."
+      summary: Update webhook
+      description: "Update webhook properties such as name or status."
       tags: ["Notify API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/X-Alchemy-Token"
@@ -222,7 +222,7 @@ paths:
               $ref: "#/components/schemas/update_webhook"
       responses:
         "200":
-          description: "Returns updated webhook status."
+          description: "Returns updated webhook data."
           content:
             application/json:
               schema:
@@ -358,6 +358,7 @@ components:
         - webhook_type
         - webhook_url
         - addresses
+        - graphql_query
       properties:
         network:
           $ref: "#/components/schemas/network"
@@ -366,6 +367,9 @@ components:
         webhook_url:
           type: string
           description: "URL where requests are sent"
+        name:
+          type: string
+          description: "Name of the webhook"
         graphql_query:
           oneOf:
             - type: string
@@ -480,16 +484,17 @@ components:
       type: object
       required:
         - webhook_id
-        - is_active
       properties:
         webhook_id:
           type: string
-          description: "ID of the address activity webhook"
+          description: "ID of the webhook"
         is_active:
           type: boolean
           description: |
-            True - set webhook to active state
-            False - set webhook to inactive state
+            Set webhook status (true for active, false for inactive)
+        name:
+          type: string
+          description: "Update the webhook name"
     webhook_object_response:
       type: object
       properties:
