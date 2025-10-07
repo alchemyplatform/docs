@@ -47,14 +47,34 @@ const main = async () => {
   });
 
   // Wait for all promises to complete
-  await Promise.allSettled([...chainPromises, ...alchemyPromises]);
+  const results = await Promise.allSettled([
+    ...chainPromises,
+    ...alchemyPromises,
+  ]);
+
+  // Check for unexpected rejections (errors that weren't handled by handleDerefErrors)
+  const unexpectedRejections = results.filter(
+    (result) => result.status === "rejected",
+  );
+  if (unexpectedRejections.length > 0) {
+    console.error(
+      `${unexpectedRejections.length} promise(s) rejected unexpectedly:`,
+    );
+    unexpectedRejections.forEach((rejection, idx) => {
+      if (rejection.status === "rejected") {
+        console.error(`  [${idx + 1}]`, rejection.reason);
+      }
+    });
+  }
 
   // Report all errors at once
   const errorMessages: string[] = [];
 
   if (genErrors.length > 0) {
     errorMessages.push(`Found ${genErrors.length} generation error(s):`);
-    errorMessages.push(...genErrors.map((error) => `  ${error}`));
+    errorMessages.push(
+      ...genErrors.map((error) => `  ${JSON.stringify(error, null, 2)}`),
+    );
   }
 
   if (missingTokens.length > 0) {
