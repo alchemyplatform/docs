@@ -52,21 +52,19 @@ const main = async () => {
     ...alchemyPromises,
   ]);
 
+  // Report all errors at once
+  const errorMessages: string[] = [];
+
   const unexpectedRejections = results.filter(
     (result) => result.status === "rejected",
   );
   if (unexpectedRejections.length > 0) {
-    const errorMessages: string[] = [];
     unexpectedRejections.forEach((rejection) => {
       if (rejection.status === "rejected") {
         errorMessages.push(rejection.reason.stack);
       }
     });
-    throw new Error(errorMessages.join("\n"));
   }
-
-  // Report all errors at once
-  const errorMessages: string[] = [];
 
   if (genErrors.length > 0) {
     errorMessages.push(`Found ${genErrors.length} generation error(s):`);
