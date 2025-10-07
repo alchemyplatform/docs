@@ -52,19 +52,17 @@ const main = async () => {
     ...alchemyPromises,
   ]);
 
-  // Check for unexpected rejections (errors that weren't handled by handleDerefErrors)
   const unexpectedRejections = results.filter(
     (result) => result.status === "rejected",
   );
   if (unexpectedRejections.length > 0) {
-    console.error(
-      `${unexpectedRejections.length} promise(s) rejected unexpectedly:`,
-    );
-    unexpectedRejections.forEach((rejection, idx) => {
+    const errorMessages: string[] = [];
+    unexpectedRejections.forEach((rejection) => {
       if (rejection.status === "rejected") {
-        console.error(`  [${idx + 1}]`, rejection.reason);
+        errorMessages.push(rejection.reason.stack);
       }
     });
+    throw new Error(errorMessages.join("\n"));
   }
 
   // Report all errors at once

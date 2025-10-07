@@ -84,7 +84,6 @@ export const handleDerefErrors = (
 ) => {
   const errorGroup = err as DerefErrorGroup;
 
-  // Check if this is a DerefErrorGroup with an errors array
   if (errorGroup.errors && Array.isArray(errorGroup.errors)) {
     errorGroup.errors.forEach((error) => {
       if (error.code === "EMISSINGPOINTER") {
@@ -96,7 +95,6 @@ export const handleDerefErrors = (
       }
     });
   } else {
-    // Handle other error types (e.g., validation errors)
     genErrors.push({
       name: (err as Error).name || "Unknown Error",
       message: (err as Error).message || String(err),
