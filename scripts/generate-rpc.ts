@@ -55,16 +55,10 @@ const main = async () => {
   // Report all errors at once
   const errorMessages: string[] = [];
 
-  const unexpectedRejections = results.filter(
-    (result) => result.status === "rejected",
-  );
-  if (unexpectedRejections.length > 0) {
-    unexpectedRejections.forEach((rejection) => {
-      if (rejection.status === "rejected") {
-        errorMessages.push(rejection.reason.stack);
-      }
-    });
-  }
+  const unexpectedRejections = results
+    .filter((result) => result.status === "rejected")
+    .map((rejection) => rejection.reason);
+  errorMessages.push(...unexpectedRejections);
 
   if (genErrors.length > 0) {
     errorMessages.push(`Found ${genErrors.length} generation error(s):`);
