@@ -110,10 +110,11 @@ async fn main() -> Result<()> {
             .connect()
             .await?;
 
-        // If we were already connected, request starting from the last seen slot - 1
-        // We might get duplicate slot updates, but we ensure no data is lost
+        // This ensures that even if we disconnect and miss updates, we can
+        // recover the missed data when we reconnect (assuming the server has
+        // retention for those slots).
         if tracked_slot > 0 {
-            subscribe_request.from_slot = Some(tracked_slot.saturating_sub(1));
+            subscribe_request.from_slot = Some(tracked_slot);
         } else {
             subscribe_request.from_slot = None;
         }
