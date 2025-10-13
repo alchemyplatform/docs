@@ -1,0 +1,159 @@
+---
+title: Subscribe to Blocks
+description: Stream complete Solana block data in real-time
+slug: reference/yellowstone-grpc-subscribe-blocks
+---
+
+# Subscribe to Blocks
+
+Block subscriptions provide real-time access to complete Solana blocks, including all transactions, account updates, and metadata. This is ideal for indexers, analytics platforms, and applications that need comprehensive blockchain data.
+
+## Overview
+
+A block contains:
+
+* All transactions included in a slot
+* Block metadata (hash, parent, height, etc.)
+* Transaction ordering and execution results
+* Block rewards
+* Commitment status
+
+Block subscriptions give you the complete picture of what happened in each slot.
+
+## Filter Structure
+
+```rust
+message SubscribeRequestFilterBlocks {
+    repeated string account_include = 1;
+    bool include_transactions = 2;
+    bool include_accounts = 3;
+    bool include_entries = 4;
+}
+```
+
+## Filter Options
+
+### Account Include
+
+Filter blocks to only those containing transactions that involve specific accounts.
+
+**Field**: `account_include`\
+**Type**: `repeated string`
+
+**Behavior**:
+
+* If empty/unset: Receive all blocks
+* If specified: Only receive blocks containing transactions involving at least one of these accounts
+
+**Use Cases**:
+
+* Index only blocks relevant to specific programs
+* Track blocks containing activity for watched accounts
+* Reduce data volume by filtering at the source
+
+### Include Transactions
+
+Control whether full transaction data is included.
+
+**Field**: `include_transactions`\
+**Type**: `bool`\
+**Default**: `true`
+
+**When `true`**:
+
+* Full transaction details included in each block
+* Larger payload size
+* Complete transaction information available
+
+**When `false`**:
+
+* Only transaction signatures included
+* Smaller payload size
+* Useful when you only need block structure
+
+### Include Accounts
+
+Control whether account update information is included.
+
+**Field**: `include_accounts`\
+**Type**: `bool`\
+**Default**: `false`
+
+**When `true`**:
+
+* Account state changes included
+* Shows which accounts were modified in each transaction
+* Larger payload size
+
+**When `false`**:
+
+* No account update information
+* Smaller payload size
+
+### Include Entries
+
+Control whether entry data is included.
+
+**Field**: `include_entries`\
+**Type**: `bool`\
+**Default**: `false`
+
+**When `true`**:
+
+* Raw entry data included
+* Detailed block construction information
+* Largest payload size
+
+**When `false`**:
+
+* No entry data
+* Smaller payload size
+
+## Response Structure
+
+Block updates arrive as `SubscribeUpdateBlock` messages:
+
+```rust
+message SubscribeUpdateBlock {
+    uint64 slot = 1;
+    string blockhash = 2;
+    solana.storage.ConfirmedBlock.Rewards rewards = 3;
+    solana.storage.ConfirmedBlock.UnixTimestamp block_time = 4;
+    solana.storage.ConfirmedBlock.BlockHeight block_height = 5;
+    uint64 parent_slot = 7;
+    string parent_blockhash = 8;
+    uint64 executed_transaction_count = 9;
+    repeated SubscribeUpdateTransactionInfo transactions = 6;
+    uint64 updated_account_count = 10;
+    repeated SubscribeUpdateAccountInfo accounts = 11;
+    uint64 entries_count = 12;
+    repeated SubscribeUpdateEntry entries = 13;
+}
+```
+
+### Key Fields
+
+**`slot`**: The slot number for this block\
+**`blockhash`**: Unique hash identifying this block\
+**`rewards`**: Validator rewards for this block\
+**`block_time`**: Unix timestamp when block was produced\
+**`block_height`**: Block height in the ledger\
+**`parent_slot`**: Previous slot number\
+**`parent_blockhash`**: Hash of parent block\
+**`executed_transaction_count`**: Number of transactions in this block\
+**`transactions`**: Full transaction details (if `include_transactions=true`)\
+**`updated_account_count`**: Number of accounts updated in this block\
+**`accounts`**: Account update information (if `include_accounts=true`)\
+**`entries_count`**: Number of entries in this block\
+**`entries`**: Entry data (if `include_entries=true`)
+
+## Block vs Block Meta
+
+Choose between full blocks and block metadata:
+
+| Feature | Full Blocks | Block Meta |
+|---------|-------------|------------|
+| **Size** | Large | Small |
+| **Transactions** | Full details | Count only |
+| **Use case** | Indexing, analytics | Monitoring, lightweight tracking |
+| **Bandwidth** | High | Low |

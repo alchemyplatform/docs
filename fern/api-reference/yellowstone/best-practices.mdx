@@ -1,0 +1,202 @@
+---
+title: Best Practices
+description: Essential tips and patterns for production Yellowstone gRPC applications
+slug: reference/yellowstone-grpc-best-practices
+---
+
+# Best Practices
+
+This guide covers essential patterns and best practices for building robust, production-ready applications with Yellowstone gRPC.
+
+## Getting Started
+
+### Start Simple
+
+Begin with slot subscriptions before moving to more complex filters. Slots are lightweight and help you understand the streaming model.
+
+### Use Filters Wisely
+
+Only subscribe to the data you need to reduce bandwidth and processing overhead.
+
+**Pro tip:** Vote transactions make up about 70% of all Solana transactions. Filter them out with `vote: Some(false)` to significantly reduce bandwidth if you don't need them.
+
+```rust
+SubscribeRequestFilterTransactions {
+    vote: Some(false),   // Exclude ~70% of transactions
+    failed: Some(false), // Exclude failed transactions
+    ..Default::default()
+}
+```
+
+## Connection Management
+
+### Implement Automatic Reconnection
+
+Network issues happen - implement automatic reconnection logic to ensure your application stays resilient. Use exponential backoff to avoid hammering the server.
+
+### Handle Ping/Pong Messages
+
+Yellowstone gRPC servers send ping messages to check if clients are alive. Always respond with pong, otherwise the server may close your connection.
+
+```rust
+if matches!(update.update_oneof, Some(UpdateOneof::Ping(_))) {
+    subscribe_tx.send(SubscribeRequest {
+        ping: Some(SubscribeRequestPing { id: 1 }),
+        ..Default::default()
+    }).await?;
+}
+```
+
+### Implement Gap Recovery
+
+Use `from_slot` to recover from disconnections without missing data. This may result in duplicate updates, but ensures no data loss.
+
+```rust
+subscribe_request.from_slot = if tracked_slot > 0 {
+    Some(tracked_slot) // can subtract 32 slots to avoid blockchain reorgs
+} else {
+    None
+};
+```
+
+## Architecture Patterns
+
+### Separate Ingress and Processing
+
+Use channels to decouple data ingestion from processing:
+
+```rust
+let (tx, rx) = mpsc::channel::<SubscribeUpdate>(10000);
+
+// Ingress task: receives data from gRPC
+tokio::spawn(async move {
+    while let Some(Ok(update)) = stream.next().await {
+        tx.send(update).await.ok();
+    }
+});
+
+// Processing task: handles business logic
+tokio::spawn(async move {
+    while let Some(update) = rx.recv().await {
+        process_update(update).await;
+    }
+});
+```
+
+**Benefits:**
+
+* Prevents slow processing from blocking ingestion
+* Enables parallel processing of updates
+* Provides natural backpressure mechanism
+
+### Use Bounded Channels with Backpressure
+
+Choose channel capacity based on your processing speed and tolerance for data loss:
+
+* **Smaller capacity** (1K-10K): Lower memory usage, faster recovery from slow processing -- higher chance of dropping updates
+* **Larger capacity** (50K-100K): Better handling of processing spikes, more memory usage
+
+## Performance Optimization
+
+### Monitor Processing Latency
+
+Track the time between receiving updates and processing them. Log warnings if latency exceeds your thresholds.
+
+### Batch Database Writes
+
+Instead of writing every update individually, batch them for better throughput. Flush when batch size reaches a threshold (e.g., 1000 updates) or after a time interval (e.g., 1 second).
+
+### Use Async Processing for I/O
+
+Leverage async/await for concurrent processing of updates when doing I/O operations.
+
+### Optimize Memory Usage
+
+For high-throughput scenarios, reuse subscription requests instead of creating new hashmaps on every send.
+
+### Offload Compute Intensive Work
+
+If processing task is too compute intensive, consider leveraging the async processing capabilities of the tokio runtime to offload the work to a separate / multiple threads.
+
+## Error Handling
+
+### Distinguish Error Types
+
+Handle different error types appropriately:
+
+* **Stream errors**: Network or protocol errors - reconnect immediately
+* **Processing errors**: Log and continue or implement dead letter queue
+* **Channel errors**: Handle full channels (drop or block) and closed channels (exit gracefully)
+
+### Implement Exponential Backoff
+
+Start with short delays (100ms) and double on each failure up to a maximum (e.g., 60 seconds). Reset backoff on successful connection.
+
+### Log Dropped Updates
+
+Monitor when updates are dropped due to slow processing. Track metrics to understand system health.
+
+## Data Management
+
+### Handle Duplicate Updates
+
+When using `from_slot` for gap recovery, you may receive duplicate updates. Use a time-bounded cache or database unique constraints to handle duplicates efficiently.
+
+### Choose Appropriate Commitment Levels
+
+* **Processed**: Real-time dashboards, exploratory data analysis (fastest, may see rolled back data)
+* **Confirmed**: Most production applications, indexers (good balance of speed and finality)
+* **Finalized**: Financial applications requiring absolute certainty (slower, guaranteed finality)
+
+## Testing and Debugging
+
+### Test Reconnection Logic
+
+Simulate connection failures to verify your reconnection logic works as expected. Test with different failure scenarios.
+
+### Add Structured Logging
+
+Use structured logging (e.g., `tracing` crate) to debug subscription issues. Log key events like reconnections, slot tracking, and subscription updates.
+
+### Monitor Stream Health
+
+Track metrics like:
+
+* Updates received per second
+* Time since last update
+* Reconnection count
+* Processing latency
+* Dropped updates
+
+Alert if the stream appears stalled (e.g., no updates for 30+ seconds).
+
+## Dynamic Subscription Management
+
+You can update subscriptions at runtime using the bidirectional stream without reconnecting. This is useful for:
+
+* Hot-swapping filters based on user actions
+* Progressive subscription expansion
+
+## Production Checklist
+
+Before deploying to production, ensure you have:
+
+* ✅ Automatic reconnection with exponential backoff
+* ✅ Gap recovery using `from_slot`
+* ✅ Ping/pong handling
+* ✅ Separate ingress and processing tasks
+* ✅ Bounded channels with backpressure handling
+* ✅ Error logging and monitoring
+* ✅ Processing latency tracking
+* ✅ Graceful shutdown handling
+* ✅ Duplicate update handling
+* ✅ Filter optimization to reduce bandwidth
+* ✅ Database write batching (if applicable)
+* ✅ Health check endpoints
+* ✅ Metrics and alerting
+
+## Additional Resources
+
+* [Quickstart Guide](/reference/yellowstone-grpc-quickstart) - Get started quickly
+* [Code Examples](/reference/yellowstone-grpc-examples) - See complete working examples including a full production-grade client
+* [API Reference](/reference/yellowstone-grpc-api-reference) - Detailed API documentation
