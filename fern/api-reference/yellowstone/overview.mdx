@@ -1,0 +1,65 @@
+---
+title: Yellowstone gRPC Overview
+description: Overview of Yellowstone gRPC - High-performance real-time Solana data streaming
+slug: reference/yellowstone-grpc-overview
+---
+
+# What is Yellowstone gRPC?
+
+Yellowstone gRPC is a high-performance streaming interface for Solana blockchain data, built on the Geyser plugin architecture. It provides real-time access to accounts, transactions, blocks, and slots through efficient gRPC streaming connections.
+
+## Why Yellowstone gRPC?
+
+Yellowstone gRPC offers significant advantages over traditional REST and WebSocket APIs:
+
+* **Real-time streaming**: Receive blockchain data as it happens with minimal latency
+* **Efficient filtering**: Subscribe only to the specific data you need with powerful filter options
+* **High throughput**: Handle large volumes of blockchain data efficiently
+* **Persistent connections**: Maintain long-lived streaming connections for continuous data flow
+* **Type safety**: Leverage Protocol Buffers for strongly-typed data structures
+
+## Alchemy's Yellowstone gRPC Enhancements
+
+Alchemy's implementation of Yellowstone gRPC provides enterprise-grade reliability and features beyond standard implementations:
+
+### High Availability Architecture
+
+Our **multi-producer and multi-consumer architecture** ensures minimal downtime for your applications:
+
+* Multiple Solana nodes feed data to the gRPC service simultaneously
+* If one producer node goes down, others seamlessly continue providing data
+* Client connections are automatically load-balanced across multiple consumer endpoints
+* No single point of failure in the data pipeline
+
+### Historical Data Replay (6000 Slots)
+
+Access historical blockchain data with our **6000-slot replayability capacity**:
+
+* Use the `from_slot` field in `SubscribeRequest` to replay data from any slot within the last 6000 slots
+* Perfect for recovering from application restarts or processing historical events
+* Test and validate your application logic against real historical data
+* Fill data gaps if your application experienced temporary downtime
+
+### Block Lag Mitigation
+
+Our multi-producer architecture **eliminates single-node block lag issues**:
+
+* Data is sourced from multiple Solana nodes simultaneously
+* If one node falls behind, data continues flowing from healthy nodes
+* Consensus mechanism ensures data consistency across producers
+* Provides the freshest possible blockchain data to your applications
+
+## Common Use Cases
+
+Yellowstone gRPC is ideal for:
+
+* **DeFi applications**: Monitor liquidity pools, token accounts, and price feeds in real-time
+* **NFT platforms**: Track mints, transfers, and marketplace activities
+* **Wallets**: Monitor account balances and transaction confirmations
+* **Analytics platforms**: Collect comprehensive blockchain data for analysis
+* **Trading bots**: React to market conditions with minimal latency
+* **Indexers**: Build custom blockchain indexing solutions
+
+## Getting Started
+
+Ready to start streaming Solana data? Check out our [Quickstart Guide](/reference/yellowstone-grpc-quickstart) to make your first connection.

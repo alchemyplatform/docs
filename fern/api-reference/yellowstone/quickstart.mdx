@@ -1,0 +1,120 @@
+---
+title: Yellowstone gRPC Quickstart
+description: Get started with Yellowstone gRPC streaming in minutes
+slug: reference/yellowstone-grpc-quickstart
+---
+
+# Quickstart Guide
+
+This guide will walk you through making your first Yellowstone gRPC connection and streaming real-time Solana data.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+* **Alchemy Team with PAYG or Enterprise Plan**: Yellowstone gRPC is only available to PAYG (Pay-As-You-Go) and Enterprise teams
+* **Create an Alchemy App**: You'll need to create an app in your Alchemy dashboard to get your endpoint URL and API key
+* **Get your API Key**: Your Alchemy API key will be used as the `X-Token` header for authentication
+* Basic understanding of gRPC concepts
+* Understanding of Solana's slot and commitment level concepts
+
+## Authentication
+
+Get your endpoint URL and API key from your Alchemy dashboard.
+![](yellowstone-get_api_key.png "Yellowstone Get API Key")
+
+**Important**: Your Alchemy API Key must be passed as the `X-Token` header in your gRPC requests (not in the URL).
+
+```rust
+let endpoint = "https://solana-mainnet.g.alchemy.com";
+let x_token = "ALCHEMY_API_KEY";
+
+let client = GeyserGrpcClient::build_from_shared(endpoint)?
+        .tls_config(ClientTlsConfig::new().with_native_roots())?
+        .x_token(Some(x_token))?
+        .connect()
+        .await?;
+```
+
+## Your First Connection
+
+### Rust Example
+
+Below is a basic example of connecting to Yellowstone gRPC with Rust and streaming all transactions.
+
+```rust
+use anyhow::Result;
+use futures::{sink::SinkExt, stream::StreamExt};
+use solana_signature::Signature;
+use std::collections::HashMap;
+use yellowstone_grpc_client::{ClientTlsConfig, GeyserGrpcClient};
+use yellowstone_grpc_proto::geyser::{
+    CommitmentLevel, SubscribeRequest, SubscribeRequestFilterTransactions,
+    subscribe_update::UpdateOneof,
+};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Set up connection parameters
+    let endpoint = "https://solana-mainnet.g.alchemy.com";
+    let x_token = "ALCHEMY_API_KEY"; // Replace with your Alchemy API key
+    
+    // Build and connect the gRPC client with TLS and authentication
+    let mut client = GeyserGrpcClient::build_from_shared(endpoint)?
+        .tls_config(ClientTlsConfig::new().with_native_roots())?
+        .x_token(Some(x_token))? // API key passed as X-Token header
+        .connect()
+        .await?;
+
+    // Create a bidirectional stream for subscribing to updates
+    let (mut tx, mut stream) = client.subscribe().await?;
+
+    // Send subscription request to filter for non-vote, non-failed transactions
+    tx.send(SubscribeRequest {
+        transactions: HashMap::from([(
+            "all_transactions".to_string(),
+            SubscribeRequestFilterTransactions {
+                vote: Some(false),   // Exclude vote transactions
+                failed: Some(false), // Exclude failed transactions
+                ..Default::default()
+            },
+        )]),
+        commitment: Some(CommitmentLevel::Confirmed as i32), // Use confirmed commitment level
+        ..Default::default()
+    })
+    .await?;
+
+    // Process incoming transaction updates
+    while let Some(Ok(msg)) = stream.next().await {
+        if let Some(UpdateOneof::Transaction(tx)) = msg.update_oneof {
+            // Extract and display transaction signature
+            let sig = tx
+                .transaction
+                .and_then(|t| Some(Signature::try_from(t.signature.as_slice()).unwrap()))
+                .unwrap_or_default();
+            println!("Slot: {} | Signature: {}", tx.slot, sig);
+        }
+    }
+
+    Ok(())
+}
+```
+
+### Other Languages
+
+Yellowstone gRPC supports multiple programming languages. Choose the client that fits your stack:
+
+**Official Examples Available:**
+
+* **Rust** - [Official Rust Example](https://github.com/rpcpool/yellowstone-grpc/tree/master/examples/rust)
+* **Python** - [Official Python Example](https://github.com/rpcpool/yellowstone-grpc/tree/master/examples/python)
+* **TypeScript/JavaScript** - [Official TypeScript Example](https://github.com/rpcpool/yellowstone-grpc/tree/master/examples/typescript)
+* **Go** - [Official Go Example](https://github.com/rpcpool/yellowstone-grpc/tree/master/examples/golang)
+
+## Next Steps
+
+Now that you've established your first connection, explore:
+
+* [API Reference](/reference/yellowstone-grpc-api-reference) - Detailed documentation of all filters and options
+* [Code Examples](/reference/yellowstone-grpc-examples) - See complete working examples
+* [Best Practices](/reference/yellowstone-grpc-best-practices) - Learn production patterns and optimization tips

@@ -1,0 +1,173 @@
+---
+title: Subscribe to Accounts
+description: Monitor Solana account changes in real-time with account subscriptions
+slug: reference/yellowstone-grpc-subscribe-accounts
+---
+
+# Subscribe to Accounts
+
+Account subscriptions allow you to monitor changes to Solana accounts in real-time. This is essential for tracking token balances, program state changes, and any other on-chain data stored in accounts.
+
+## Overview
+
+Account subscriptions provide real-time updates whenever an account's data, lamports, or owner changes. You can filter accounts by:
+
+* Specific account addresses
+* Account owner (program)
+* Data size
+* Memory comparisons (byte patterns at specific offsets)
+
+## Filter Structure
+
+```rust
+message SubscribeRequestFilterAccounts {
+    repeated string account = 2;
+    repeated string owner = 3;
+    repeated SubscribeRequestFilterAccountsFilter filters = 4;
+    optional bool nonempty_txn_signature = 5;
+}
+
+message SubscribeRequestFilterAccountsFilter {
+    oneof filter {
+        SubscribeRequestFilterAccountsFilterMemcmp memcmp = 1;
+        uint64 datasize = 2;
+        bool token_account_state = 3;
+        SubscribeRequestFilterAccountsFilterLamports lamports = 4;
+    }
+}
+
+message SubscribeRequestFilterAccountsFilterMemcmp {
+    uint64 offset = 1;
+    oneof data {
+        bytes bytes = 2;
+        string base58 = 3;
+        string base64 = 4;
+    }
+}
+
+message SubscribeRequestFilterAccountsFilterLamports {
+    oneof cmp {
+        uint64 eq = 1;
+        uint64 ne = 2;
+        uint64 lt = 3;
+        uint64 gt = 4;
+    }
+}
+```
+
+## Filter Options
+
+### Account Address Filter
+
+Monitor specific accounts by their public key addresses.
+
+**Field**: `account`\
+**Type**: `repeated string`
+
+**Use Cases**:
+
+* Track a specific token account balance
+* Monitor a user's wallet
+* Watch a liquidity pool account
+* Track NFT metadata accounts
+
+### Owner Filter
+
+Subscribe to all accounts owned by a specific program.
+
+**Field**: `owner`\
+**Type**: `repeated string`
+
+**Use Cases**:
+
+* Monitor all accounts for a specific program
+* Track all token accounts (Token Program owned)
+* Watch all accounts for a custom program
+* Monitor DEX program accounts
+
+### Memcmp Filter
+
+Filter accounts by matching byte patterns at specific offsets in the account data.
+
+**Field**: `memcmp` (within `filters`)\
+**Type**: `SubscribeRequestFilterAccountsFilterMemcmp`
+
+**Use Cases**:
+
+* Filter token accounts for a specific mint
+* Match accounts with specific discriminators
+* Find accounts containing specific pubkeys
+
+### Data Size Filter
+
+Filter accounts by their data size.
+
+**Field**: `datasize` (within `filters`)\
+**Type**: `uint64`
+
+**Use Cases**:
+
+* Filter by account type based on size
+* Optimize bandwidth by excluding large accounts
+* Target specific program account types
+
+### Token Account State Filter
+
+Filter only for token accounts.
+
+**Field**: `token_account_state` (within `filters`)\
+**Type**: `bool`
+
+### Lamports Filter
+
+Filter accounts by their lamport balance.
+
+**Field**: `lamports` (within `filters`)\
+**Type**: `SubscribeRequestFilterAccountsFilterLamports`
+
+**Comparison operators**:
+
+* `eq` - Equal to
+* `ne` - Not equal to
+* `lt` - Less than
+* `gt` - Greater than
+
+**Use Cases**:
+
+* Find accounts with specific balance
+* Monitor accounts above/below threshold
+* Filter out empty accounts
+
+### Nonempty Transaction Signature
+
+Only receive account updates that are associated with a transaction.
+
+**Field**: `nonempty_txn_signature`\
+**Type**: `optional bool`
+
+## Combining Filters
+
+You can combine multiple filters to narrow your subscription to match specific patterns.
+
+## Response Structure
+
+When an account changes, you receive a `SubscribeUpdateAccount` message:
+
+```rust
+message SubscribeUpdateAccount {
+    SubscribeUpdateAccountInfo account = 1;
+    uint64 slot = 2;
+    bool is_startup = 3;
+}
+
+message SubscribeUpdateAccountInfo {
+    bytes pubkey = 1;
+    uint64 lamports = 2;
+    bytes owner = 3;
+    bool executable = 4;
+    uint64 rent_epoch = 5;
+    bytes data = 6;
+    uint64 write_version = 7;
+    optional bytes txn_signature = 8;
+}
+```

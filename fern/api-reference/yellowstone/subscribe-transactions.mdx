@@ -1,0 +1,180 @@
+---
+title: Subscribe to Transactions
+description: Stream Solana transactions in real-time with powerful filtering options
+slug: reference/yellowstone-grpc-subscribe-transactions
+---
+
+# Subscribe to Transactions
+
+Transaction subscriptions allow you to monitor Solana transactions in real-time. This is crucial for DEX integrations, wallet monitoring, program event tracking, and transaction-based analytics.
+
+## Overview
+
+Transaction subscriptions provide real-time updates for transactions matching your filter criteria. You can filter by:
+
+* Transactions involving specific accounts
+* Transactions calling specific programs
+* Vote vs non-vote transactions
+* Failed vs successful transactions
+* Complex account inclusion/exclusion rules
+
+## Filter Structure
+
+```rust
+message SubscribeRequestFilterTransactions {
+    optional bool vote = 1;
+    optional bool failed = 2;
+    optional string signature = 3;
+    repeated string account_include = 4;
+    repeated string account_exclude = 5;
+    repeated string account_required = 6;
+}
+```
+
+## Filter Options
+
+### Vote Transactions
+
+Control whether to include vote transactions (validator voting).
+
+**Field**: `vote`\
+**Type**: `optional bool`
+
+**Values**:
+
+* `true` - Only vote transactions
+* `false` - Only non-vote transactions
+* `null` (unset) - Both vote and non-vote transactions
+
+**Use Cases**:
+
+* Set to `false` for most application use cases (excludes validator voting spam)
+* Set to `true` only for validator monitoring or consensus analytics
+
+### Failed Transactions
+
+Control whether to include failed transactions.
+
+**Field**: `failed`\
+**Type**: `optional bool`
+
+**Values**:
+
+* `true` - Only failed transactions
+* `false` - Only successful transactions
+* `null` (unset) - Both successful and failed transactions
+
+**Use Cases**:
+
+* Set to `false` to monitor only successful transactions
+* Set to `true` to analyze failure patterns
+* Leave unset to see all transaction attempts
+
+### Signature Filter
+
+Filter for a specific transaction signature.
+
+**Field**: `signature`\
+**Type**: `optional string`
+
+**Use Cases**:
+
+* Track a specific transaction through confirmation stages
+* Monitor a transaction you just submitted
+* Verify transaction inclusion
+
+**Note**: This is rarely used in streaming contexts since you need to know the signature in advance. It is recommended to subscribe to the signature before sending the transaction.
+
+### Account Include
+
+Receive transactions involving any of these accounts.
+
+**Field**: `account_include`\
+**Type**: `repeated string`
+
+**Behavior**: Transaction matches if it involves **any** of the specified accounts.
+
+**Use Cases**:
+
+* Monitor a user's wallet for any activity
+* Track transactions for a set of token accounts
+* Watch multiple DEX programs
+
+### Account Exclude
+
+Exclude transactions involving these accounts.
+
+**Field**: `account_exclude`\
+**Type**: `repeated string`
+
+**Behavior**: Transaction is excluded if it involves **any** of these accounts.
+
+**Use Cases**:
+
+* Exclude noise from specific accounts
+* Filter out unwanted program interactions
+* Remove specific token account activity
+
+### Account Required
+
+Require all of these accounts to be present.
+
+**Field**: `account_required`\
+**Type**: `repeated string`
+
+**Behavior**: Transaction matches only if it involves **all** specified accounts.
+
+**Use Cases**:
+
+* Match specific program interactions (program + user account)
+* Find transactions involving multiple specific accounts
+* Narrow down to very specific transaction patterns
+
+## Combining Account Filters
+
+Account filters work together:
+
+1. Transaction must include at least one `account_include` (if specified)
+2. Transaction must **not** include any `account_exclude` (if specified)
+3. Transaction must include **all** `account_required` (if specified)
+
+**Example Logic**:
+
+```
+if account_include is set:
+    must match at least one
+    
+if account_exclude is set:
+    must match none
+    
+if account_required is set:
+    must match all
+```
+
+## Response Structure
+
+Transaction updates arrive as `SubscribeUpdateTransaction` messages:
+
+```rust
+message SubscribeUpdateTransaction {
+    SubscribeUpdateTransactionInfo transaction = 1;
+    uint64 slot = 2;
+}
+
+message SubscribeUpdateTransactionInfo {
+    bytes signature = 1;
+    bool is_vote = 2;
+    solana.storage.ConfirmedBlock.Transaction transaction = 3;
+    solana.storage.ConfirmedBlock.TransactionStatusMeta meta = 4;
+    uint64 index = 5;
+}
+```
+
+### Key Fields
+
+**`signature`**: Transaction signature (unique identifier)\
+**`is_vote`**: Whether this is a vote transaction\
+**`meta`**: Transaction metadata including status, fees, logs, and account changes\
+**`transaction`**: The full transaction data including instructions\
+**`slot`**: Slot number where transaction was included\
+**`index`**: Transaction index within the block

@@ -1,0 +1,107 @@
+---
+title: Subscribe to Slots
+description: Track Solana slot progression and chain state in real-time
+slug: reference/yellowstone-grpc-subscribe-slots
+---
+
+# Subscribe to Slots
+
+Slot subscriptions provide real-time updates about Solana's slot progression. This is essential for understanding chain state, tracking confirmations, and synchronizing your application with the blockchain.
+
+## Overview
+
+A slot represents a period of time (400ms) during which a leader can produce a block. Slot subscriptions notify you as slots progress through different states:
+
+* When a slot is first created
+* When a slot becomes frozen (no more transactions can be added)
+* When a slot reaches different commitment levels
+* Parent-child relationships between slots
+
+## Filter Structure
+
+```rust
+message SubscribeRequestFilterSlots {
+    optional bool filter_by_commitment = 1;
+    optional bool interslot_updates = 2;
+}
+```
+
+## Filter Options
+
+### Filter by Commitment
+
+Control whether to receive updates only for specific commitment levels.
+
+**Field**: `filter_by_commitment`\
+**Type**: `bool`\
+**Default**: `false`
+
+**When `false`**:
+
+* Receive updates for all slot state changes
+* Most comprehensive view of chain progression
+
+**When `true`**:
+
+* Only receive updates matching the commitment level specified in the main `SubscribeRequest`
+* Reduces update volume
+* Useful when you only care about confirmed or finalized slots
+
+### Interslot Updates
+
+Control whether to receive updates during slot progression (before slot completion).
+
+**Field**: `interslot_updates`\
+**Type**: `optional bool`\
+**Default**: `false`
+
+**When `true`**:
+
+* Receive multiple updates as slot progresses through different states
+* More granular view of slot lifecycle
+* Higher update volume
+
+**When `false`**:
+
+* Receive updates only at major slot state transitions
+* Lower update volume
+
+## Response Structure
+
+Slot updates arrive as `SubscribeUpdateSlot` messages:
+
+```rust
+message SubscribeUpdateSlot {
+    uint64 slot = 1;
+    optional uint64 parent = 2;
+    SlotStatus status = 3;
+    optional string dead_error = 4;
+}
+
+enum SlotStatus {
+    SLOT_PROCESSED = 0;
+    SLOT_CONFIRMED = 1;
+    SLOT_FINALIZED = 2;
+    SLOT_FIRST_SHRED_RECEIVED = 3;
+    SLOT_COMPLETED = 4;
+    SLOT_CREATED_BANK = 5;
+    SLOT_DEAD = 6;
+}
+```
+
+### Fields
+
+**`slot`**: The slot number\
+**`parent`**: Parent slot number (optional)\
+**`status`**: Current status of the slot (see SlotStatus enum)\
+**`dead_error`**: If present, error message indicating why the slot is dead/skipped
+
+### Slot Status Values
+
+**`SLOT_PROCESSED`** (0): Slot has been processed by the validator\
+**`SLOT_CONFIRMED`** (1): Slot has received supermajority confirmation\
+**`SLOT_FINALIZED`** (2): Slot is finalized and cannot be rolled back\
+**`SLOT_FIRST_SHRED_RECEIVED`** (3): First shred (data fragment) of the slot received\
+**`SLOT_COMPLETED`** (4): Slot has been completed\
+**`SLOT_CREATED_BANK`** (5): Bank (account state) created for this slot\
+**`SLOT_DEAD`** (6): Slot has been marked as dead/skipped
