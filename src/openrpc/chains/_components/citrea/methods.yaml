@@ -1,0 +1,966 @@
+components:
+  methods:
+    citrea_syncStatus:
+      name: citrea_syncStatus
+      description: |
+        Returns the current synchronization status of the local Citrea node for both L1 (Bitcoin) and L2 (Citrea).
+        The response reports either `{ Synced: <blockHeight> }` or `{ Syncing: { headBlockNumber, syncedBlockNumber } }`
+        for each layer.
+      params: []
+      result:
+        name: Synchronization status
+        description: L1 and L2 synchronization status of the node.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["l1Status", "l2Status"]
+          properties:
+            l1Status:
+              description: L1 (Bitcoin) synchronization status.
+              oneOf:
+                - type: object
+                  additionalProperties: false
+                  required: ["Synced"]
+                  properties:
+                    Synced:
+                      type: integer
+                      description: Block height when fully synced.
+                - type: object
+                  additionalProperties: false
+                  required: ["Syncing"]
+                  properties:
+                    Syncing:
+                      type: object
+                      additionalProperties: false
+                      required: ["headBlockNumber", "syncedBlockNumber"]
+                      properties:
+                        headBlockNumber:
+                          type: integer
+                          description: Latest known block number.
+                        syncedBlockNumber:
+                          type: integer
+                          description: Current synced block number.
+            l2Status:
+              description: L2 (Citrea) synchronization status.
+              oneOf:
+                - type: object
+                  additionalProperties: false
+                  required: ["Synced"]
+                  properties:
+                    Synced:
+                      type: integer
+                      description: Block height when fully synced.
+                - type: object
+                  additionalProperties: false
+                  required: ["Syncing"]
+                  properties:
+                    Syncing:
+                      type: object
+                      additionalProperties: false
+                      required: ["headBlockNumber", "syncedBlockNumber"]
+                      properties:
+                        headBlockNumber:
+                          type: integer
+                          description: Latest known block number.
+                        syncedBlockNumber:
+                          type: integer
+                          description: Current synced block number.
+      examples:
+        - name: citrea_syncStatus — fully synced
+          params: []
+          result:
+            name: Synchronization status
+            value:
+              l1Status: { Synced: 19224 }
+              l2Status: { Synced: 2326433 }
+        - name: citrea_syncStatus — still syncing
+          params: []
+          result:
+            name: Synchronization status
+            value:
+              l1Status: { Synced: 19224 }
+              l2Status:
+                Syncing:
+                  headBlockNumber: 264052
+                  syncedBlockNumber: 27050
+
+    ledger_getL2BlockByNumber:
+      name: ledger_getL2BlockByNumber
+      description: Returns a complete L2 block by its block number.
+      params:
+        - name: number
+          required: true
+          description: L2 block height to fetch.
+          schema:
+            title: L2BlockNumber
+            type: integer
+      result:
+        name: L2 block
+        description: Full L2 block object (header and transactions).
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["header", "txs"]
+          properties:
+            header:
+              type: object
+              additionalProperties: false
+              required:
+                - height
+                - hash
+                - prev_hash
+                - state_root
+                - signature
+                - l1_fee_rate
+                - timestamp
+                - tx_merkle_root
+              properties:
+                height:
+                  type: string
+                  description: Block height in hex format.
+                hash:
+                  type: string
+                  description: 32-byte block hash (hex, without 0x).
+                prev_hash:
+                  type: string
+                  description: Previous block hash (hex, without 0x).
+                state_root:
+                  type: string
+                  description: State root after this block (hex, without 0x).
+                signature:
+                  type: string
+                  description: Sequencer signature (hex, without 0x).
+                l1_fee_rate:
+                  type: string
+                  description: L1 fee rate in hex (0x-prefixed).
+                timestamp:
+                  type: string
+                  description: Block timestamp in hex (0x-prefixed).
+                tx_merkle_root:
+                  type: string
+                  description: Merkle root of transactions (hex, without 0x).
+            txs:
+              type: array
+              description: Array of transaction data (hex-encoded).
+              items:
+                type: string
+      examples:
+        - name: ledger_getL2BlockByNumber example
+          params:
+            - name: number
+              value: 1000333
+          result:
+            name: L2 block
+            value:
+              header:
+                height: "0xf438d"
+                hash: "999528b4d08dc8d0b05cbace0f5e661f36d824cedde1ffa75dc0c197b355c111"
+                prev_hash: "3dd4a535bc994f8f8d7d1f814be99f73dc522aa314905ca9985e479b350f17e7"
+                state_root: "c55d26ed7c1733d6be6283f68ab87db37271bf476008eba5231f5d321e0efe2c"
+                signature: "69f712ea23731ce8432867526084e260d1aeef9290f4c26889361e3bb5e168724bfe328986a56752778a2a93c360b9c291614ce4e15d4b1c2fac7bf31c7068e9"
+                l1_fee_rate: "0x9502f900"
+                timestamp: "0x67089f9c"
+                tx_merkle_root: "13148bcd464a1ef2824f13372513eda01d2f83d498790bf558060dc0bf4cbcbb"
+              txs:
+                - "00400000004f3fe920c0195eab45c67026fde19b23853c34e709c18e625e43702ca325f13f7a924be8beed58eb6afdaa596392fa7b40ccff1ead3a33e4db7617034366c2600201edff3b3ee593dbef54e2fbdd421070db55e2de2aebe75f398bd85ac97ed364ba0000000101000000b100000002f8ae8213fb6e018401312d0183021953945da3155a299558bcaa8da073ad74ed0827fb64a380b844a9059cbb000000000000000000000000ae45cbe2d1e90358cbd216bc16f2c9267a4ea80a00000000000000000000000000000000000000000000003b16c9e8eeb7c80000c080a04d09d171896b18b3651da059780fd92748b9813f1a6a11f26550cd759862fb99a03cb268a677ffdb6eb2e563e5ffda0fb32df547828ecf67affb03c087772daadc00000000000000009994040000000000"
+
+    ledger_getL2BlockByHash:
+      name: ledger_getL2BlockByHash
+      description: Returns a complete L2 block by its block hash.
+      params:
+        - name: hash
+          required: true
+          description: 32-byte L2 block hash (hex, without 0x).
+          schema:
+            title: L2BlockHash
+            type: string
+            pattern: "^[0-9a-fA-F]{64}$"
+      result:
+        name: L2 block
+        description: Full L2 block object (header and transactions).
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["header", "txs"]
+          properties:
+            header:
+              type: object
+              additionalProperties: false
+              required:
+                - height
+                - hash
+                - prev_hash
+                - state_root
+                - signature
+                - l1_fee_rate
+                - timestamp
+                - tx_merkle_root
+              properties:
+                height:
+                  type: string
+                  description: Block height in hex format.
+                hash:
+                  type: string
+                  description: 32-byte block hash (hex, without 0x).
+                prev_hash:
+                  type: string
+                  description: Previous block hash (hex, without 0x).
+                state_root:
+                  type: string
+                  description: State root after this block (hex, without 0x).
+                signature:
+                  type: string
+                  description: Sequencer signature (hex, without 0x).
+                l1_fee_rate:
+                  type: string
+                  description: L1 fee rate in hex (0x-prefixed).
+                timestamp:
+                  type: string
+                  description: Block timestamp in hex (0x-prefixed).
+                tx_merkle_root:
+                  type: string
+                  description: Merkle root of transactions (hex, without 0x).
+            txs:
+              type: array
+              description: Array of transaction data (hex-encoded).
+              items:
+                type: string
+      examples:
+        - name: ledger_getL2BlockByHash example
+          params:
+            - name: hash
+              value: "999528b4d08dc8d0b05cbace0f5e661f36d824cedde1ffa75dc0c197b355c111"
+          result:
+            name: L2 block
+            value:
+              header:
+                height: "0xf438d"
+                hash: "999528b4d08dc8d0b05cbace0f5e661f36d824cedde1ffa75dc0c197b355c111"
+                prev_hash: "3dd4a535bc994f8f8d7d1f814be99f73dc522aa314905ca9985e479b350f17e7"
+                state_root: "c55d26ed7c1733d6be6283f68ab87db37271bf476008eba5231f5d321e0efe2c"
+                signature: "69f712ea23731ce8432867526084e260d1aeef9290f4c26889361e3bb5e168724bfe328986a56752778a2a93c360b9c291614ce4e15d4b1c2fac7bf31c7068e9"
+                l1_fee_rate: "0x9502f900"
+                timestamp: "0x67089f9c"
+                tx_merkle_root: "13148bcd464a1ef2824f13372513eda01d2f83d498790bf558060dc0bf4cbcbb"
+              txs:
+                - "00400000004f3fe920c0195eab45c67026fde19b23853c34e709c18e625e43702ca325f13f7a924be8beed58eb6afdaa596392fa7b40ccff1ead3a33e4db7617034366c2600201edff3b3ee593dbef54e2fbdd421070db55e2de2aebe75f398bd85ac97ed364ba0000000101000000b100000002f8ae8213fb6e018401312d0183021953945da3155a299558bcaa8da073ad74ed0827fb64a380b844a9059cbb000000000000000000000000ae45cbe2d1e90358cbd216bc16f2c9267a4ea80a00000000000000000000000000000000000000000000003b16c9e8eeb7c80000c080a04d09d171896b18b3651da059780fd92748b9813f1a6a11f26550cd759862fb99a03cb268a677ffdb6eb2e563e5ffda0fb32df547828ecf67affb03c087772daadc00000000000000009994040000000000"
+
+    ledger_getL2BlockRange:
+      name: ledger_getL2BlockRange
+      description: Returns all L2 blocks in the inclusive range [start, end].
+      params:
+        - name: start
+          required: true
+          description: First block number in range.
+          schema:
+            title: L2BlockNumberStart
+            type: integer
+        - name: end
+          required: true
+          description: Last block number in range.
+          schema:
+            title: L2BlockNumberEnd
+            type: integer
+      result:
+        name: L2 blocks
+        description: Array of full L2 blocks (same structure as ledger_getL2BlockByNumber).
+        schema:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: ["header", "txs"]
+            properties:
+              header:
+                type: object
+                additionalProperties: false
+                required:
+                  - height
+                  - hash
+                  - prev_hash
+                  - state_root
+                  - signature
+                  - l1_fee_rate
+                  - timestamp
+                  - tx_merkle_root
+                properties:
+                  height:
+                    type: string
+                    description: Block height in hex format.
+                  hash:
+                    type: string
+                    description: 32-byte block hash (hex, without 0x).
+                  prev_hash:
+                    type: string
+                    description: Previous block hash (hex, without 0x).
+                  state_root:
+                    type: string
+                    description: State root after this block (hex, without 0x).
+                  signature:
+                    type: string
+                    description: Sequencer signature (hex, without 0x).
+                  l1_fee_rate:
+                    type: string
+                    description: L1 fee rate in hex (0x-prefixed).
+                  timestamp:
+                    type: string
+                    description: Block timestamp in hex (0x-prefixed).
+                  tx_merkle_root:
+                    type: string
+                    description: Merkle root of transactions (hex, without 0x).
+              txs:
+                type: array
+                description: Array of transaction data (hex-encoded).
+                items:
+                  type: string
+      examples:
+        - name: ledger_getL2BlockRange example
+          params:
+            - name: start
+              value: 1000333
+            - name: end
+              value: 1000335
+          result:
+            name: L2 blocks
+            value:
+              - header:
+                  height: "0xf438d"
+                  hash: "999528b4d08dc8d0b05cbace0f5e661f36d824cedde1ffa75dc0c197b355c111"
+                  prev_hash: "3dd4a535bc994f8f8d7d1f814be99f73dc522aa314905ca9985e479b350f17e7"
+                  state_root: "c55d26ed7c1733d6be6283f68ab87db37271bf476008eba5231f5d321e0efe2c"
+                  signature: "69f712ea23731ce8432867526084e260d1aeef9290f4c26889361e3bb5e168724bfe328986a56752778a2a93c360b9c291614ce4e15d4b1c2fac7bf31c7068e9"
+                  l1_fee_rate: "0x9502f900"
+                  timestamp: "0x67089f9c"
+                  tx_merkle_root: "13148bcd464a1ef2824f13372513eda01d2f83d498790bf558060dc0bf4cbcbb"
+                txs:
+                  - "00400000004f3f...0000"
+              - header:
+                  height: "0xf438e"
+                  hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  prev_hash: "999528b4d08dc8d0b05cbace0f5e661f36d824cedde1ffa75dc0c197b355c111"
+                  state_root: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                  signature: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                  l1_fee_rate: "0x9502f900"
+                  timestamp: "0x67089f9d"
+                  tx_merkle_root: "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+                txs: []
+              - header:
+                  height: "0xf438f"
+                  hash: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                  prev_hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  state_root: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                  signature: "1111111111111111111111111111111111111111111111111111111111111111"
+                  l1_fee_rate: "0x9502f900"
+                  timestamp: "0x67089f9e"
+                  tx_merkle_root: "2222222222222222222222222222222222222222222222222222222222222222"
+                txs: []
+
+    ledger_getHeadL2Block:
+      name: ledger_getHeadL2Block
+      description: Returns the latest (head) L2 block.
+      params: []
+      result:
+        name: L2 block
+        description: Latest L2 block (same structure as ledger_getL2BlockByNumber).
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["header", "txs"]
+          properties:
+            header:
+              type: object
+              additionalProperties: false
+              required:
+                - height
+                - hash
+                - prev_hash
+                - state_root
+                - signature
+                - l1_fee_rate
+                - timestamp
+                - tx_merkle_root
+              properties:
+                height:
+                  type: string
+                  description: Block height in hex format.
+                hash:
+                  type: string
+                  description: 32-byte block hash (hex, without 0x).
+                prev_hash:
+                  type: string
+                  description: Previous block hash (hex, without 0x).
+                state_root:
+                  type: string
+                  description: State root after this block (hex, without 0x).
+                signature:
+                  type: string
+                  description: Sequencer signature (hex, without 0x).
+                l1_fee_rate:
+                  type: string
+                  description: L1 fee rate in hex (0x-prefixed).
+                timestamp:
+                  type: string
+                  description: Block timestamp in hex (0x-prefixed).
+                tx_merkle_root:
+                  type: string
+                  description: Merkle root of transactions (hex, without 0x).
+            txs:
+              type: array
+              description: Array of transaction data (hex-encoded).
+              items:
+                type: string
+      examples:
+        - name: ledger_getHeadL2Block example
+          params: []
+          result:
+            name: L2 block
+            value:
+              header:
+                height: "0xf438d"
+                hash: "999528b4d08dc8d0b05cbace0f5e661f36d824cedde1ffa75dc0c197b355c111"
+                prev_hash: "3dd4a535bc994f8f8d7d1f814be99f73dc522aa314905ca9985e479b350f17e7"
+                state_root: "c55d26ed7c1733d6be6283f68ab87db37271bf476008eba5231f5d321e0efe2c"
+                signature: "69f712ea23731ce8432867526084e260d1aeef9290f4c26889361e3bb5e168724bfe328986a56752778a2a93c360b9c291614ce4e15d4b1c2fac7bf31c7068e9"
+                l1_fee_rate: "0x9502f900"
+                timestamp: "0x67089f9c"
+                tx_merkle_root: "13148bcd464a1ef2824f13372513eda01d2f83d498790bf558060dc0bf4cbcbb"
+              txs:
+                - "00400000004f3f...0000"
+
+    ledger_getHeadL2BlockHeight:
+      name: ledger_getHeadL2BlockHeight
+      description: Returns the block number of the latest L2 block.
+      params: []
+      result:
+        name: Latest L2 block height
+        description: Latest L2 block height in hex format.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: ledger_getHeadL2BlockHeight example
+          params: []
+          result:
+            name: Latest L2 block height
+            value: "0xbed0d6"
+
+    ledger_getL2GenesisStateRoot:
+      name: ledger_getL2GenesisStateRoot
+      description: Returns the 32-byte genesis state root for L2.
+      params: []
+      result:
+        name: L2 genesis state root
+        description: 32-byte genesis state root (hex).
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      examples:
+        - name: ledger_getL2GenesisStateRoot example
+          params: []
+          result:
+            name: L2 genesis state root
+            value: "0x785c6d461111b5e9fdc515e0955d55baddfd8eb2dd2769342cc58060d6f5e0c5"
+
+    ledger_getSequencerCommitmentsOnSlotByNumber:
+      name: ledger_getSequencerCommitmentsOnSlotByNumber
+      description: Returns sequencer commitment(s) found in the specified DA slot height.
+      params:
+        - name: height
+          required: true
+          description: L1 DA slot height.
+          schema:
+            title: DASlotHeight
+            type: integer
+      result:
+        name: Sequencer commitments
+        description: Array of commitments found at the DA slot height (or null if none).
+        schema:
+          oneOf:
+            - type: "null"
+            - type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: ["merkleRoot", "index", "l2EndBlockNumber"]
+                properties:
+                  merkleRoot:
+                    description: Merkle root of sequencer commitment.
+                    $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                  index:
+                    description: Global commitment index (hex quantity).
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  l2EndBlockNumber:
+                    description: Last L2 block included in this commitment (hex quantity).
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: ledger_getSequencerCommitmentsOnSlotByNumber — commitments exist
+          params:
+            - name: height
+              value: 88001
+          result:
+            name: Sequencer commitments
+            value:
+              - merkleRoot: "0xd6dc3eb1a59be7bc1ece68318f82a60919f0f98d8c648337d588ce243a17f473"
+                index: "0xba5"
+                l2EndBlockNumber: "0xb7a20b"
+              - merkleRoot: "0xf85a8f3f872fe8079fe778a2f6a8ebd92cf3d1a7c6324af025c8bffbb46d1811"
+                index: "0xba6"
+                l2EndBlockNumber: "0xb7a5f3"
+        - name: ledger_getSequencerCommitmentsOnSlotByNumber — no commitments
+          params:
+            - name: height
+              value: 88001
+          result:
+            name: Sequencer commitments
+            value: null
+
+    ledger_getSequencerCommitmentsOnSlotByHash:
+      name: ledger_getSequencerCommitmentsOnSlotByHash
+      description: Returns sequencer commitment(s) found in the DA slot identified by its L1 block hash.
+      params:
+        - name: hash
+          required: true
+          description: 32-byte DA slot hash (hex, without 0x).
+          schema:
+            title: DASlotHash
+            type: string
+            pattern: "^[0-9a-fA-F]{64}$"
+      result:
+        name: Sequencer commitments
+        description: Array of commitments found at the DA slot hash.
+        schema:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: ["merkleRoot", "index", "l2EndBlockNumber"]
+            properties:
+              merkleRoot:
+                description: Merkle root of sequencer commitment.
+                $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              index:
+                description: Global commitment index (hex quantity).
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              l2EndBlockNumber:
+                description: Last L2 block included in this commitment (hex quantity).
+                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: ledger_getSequencerCommitmentsOnSlotByHash example
+          params:
+            - name: hash
+              value: "788636f732f490c5072582c7dcde85e34d737c8a4d98e792a59c9d0100000000"
+          result:
+            name: Sequencer commitments
+            value:
+              - merkleRoot: "0xd6dc3eb1a59be7bc1ece68318f82a60919f0f98d8c648337d588ce243a17f473"
+                index: "0xba5"
+                l2EndBlockNumber: "0xb7a20b"
+
+    ledger_getSequencerCommitmentByIndex:
+      name: ledger_getSequencerCommitmentByIndex
+      description: Returns a sequencer commitment by its global index.
+      params:
+        - name: index
+          required: true
+          description: Commitment index (hex quantity).
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Sequencer commitment
+        description: Commitment identified by the supplied index.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["merkleRoot", "index", "l2EndBlockNumber"]
+          properties:
+            merkleRoot:
+              description: Merkle root of sequencer commitment.
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+            index:
+              description: Global commitment index (hex quantity).
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            l2EndBlockNumber:
+              description: Last L2 block included in this commitment (hex quantity).
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: ledger_getSequencerCommitmentByIndex example
+          params:
+            - name: index
+              value: "0xba5"
+          result:
+            name: Sequencer commitment
+            value:
+              merkleRoot: "0xd6dc3eb1a59be7bc1ece68318f82a60919f0f98d8c648337d588ce243a17f473"
+              index: "0xba5"
+              l2EndBlockNumber: "0xb7a20b"
+
+    ledger_getVerifiedBatchProofsBySlotHeight:
+      name: ledger_getVerifiedBatchProofsBySlotHeight
+      description: Returns verified ZK batch proof(s) for the specified DA slot height.
+      params:
+        - name: height
+          required: true
+          description: DA slot height (L1).
+          schema:
+            title: DASlotHeight
+            type: integer
+      result:
+        name: Verified batch proofs
+        description: Array of verified batch proofs for the given slot height.
+        schema:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: ["proof", "proofOutput"]
+            properties:
+              proof:
+                description: ZK proof data (~2MB, hex-encoded).
+                $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+              proofOutput:
+                type: object
+                additionalProperties: false
+                required:
+                  - stateRoots
+                  - finalL2BlockHash
+                  - stateDiff
+                  - lastL2Height
+                  - sequencerCommitmentIndexRange
+                  - sequencerCommitmentHashes
+                  - lastL1HashOnBitcoinLightClientContract
+                  - previousCommitmentIndex
+                  - previousCommitmentHash
+                properties:
+                  stateRoots:
+                    description: Array of intermediate/final state roots proven by this batch.
+                    type: array
+                    minItems: 1
+                    items:
+                      $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                  finalL2BlockHash:
+                    description: Final L2 block hash covered by the batch.
+                    $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                  stateDiff:
+                    description: State changes as key-value pairs (hex → hex).
+                    type: object
+                    additionalProperties:
+                      $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+                  lastL2Height:
+                    description: Last L2 height included in the proof (hex quantity).
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  sequencerCommitmentIndexRange:
+                    description: Inclusive range of sequencer commitment indices [start, end] covered by this batch.
+                    type: array
+                    minItems: 2
+                    maxItems: 2
+                    items:
+                      $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  sequencerCommitmentHashes:
+                    description: Commitment hashes corresponding to the covered range.
+                    type: array
+                    minItems: 1
+                    items:
+                      $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                  lastL1HashOnBitcoinLightClientContract:
+                    description: Last L1 hash recorded on the Bitcoin light client contract.
+                    $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                  previousCommitmentIndex:
+                    description: Previous sequencer commitment index (hex quantity).
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  previousCommitmentHash:
+                    description: Previous sequencer commitment hash.
+                    $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      examples:
+        - name: ledger_getVerifiedBatchProofsBySlotHeight example
+          params:
+            - name: height
+              value: 85890
+          result:
+            name: Verified batch proofs
+            value:
+              - proof: "0x0300000000000000000000000000000081670c116a84c0351f18c3..." # truncated for docs
+                proofOutput:
+                  stateRoots:
+                    - "0x5e2a5b8da99b65c5eba4b36f2368321dad95c08c641d698b09ca6756caac589e"
+                    - "0x182a9543bf64a90e78f7d810dedebdf4da3322752db5ee5533fae564e31033f7"
+                  finalL2BlockHash: "0x8fe769cdb2d34f60b5a625caa8697ae1d1f213b558c9dc9e681059f18732e608"
+                  stateDiff:
+                    "0x412f612f0201edff3b3ee593dbef54e2fbdd421070db55e2de2aebe75f398bd85ac97ed364": "0xf4fd64e249e658fdb748f83190e47f0b1cd5e87fe30d005c257d7a94cca458e7167e690000000000"
+                  lastL2Height: "0xae0e97"
+                  sequencerCommitmentIndexRange: ["0x92c", "0x92e"]
+                  sequencerCommitmentHashes:
+                    - "0x8a9cd0b9fda255370073abff4176416665d14552d5f0d671998ca89523041b36"
+                  lastL1HashOnBitcoinLightClientContract: "0xa1717b35aa14be01ce037d1a346c4c1714afcfa5e8a66a35af5ead0000000000"
+                  previousCommitmentIndex: "0x92b"
+                  previousCommitmentHash: "0xa37a45539d40448d22f6da7978ca58f5845b72a5043129941817099471198749"
+
+    ledger_getLastVerifiedBatchProof:
+      name: ledger_getLastVerifiedBatchProof
+      description: Returns the most recent verified batch proof.
+      params: []
+      result:
+        name: Verified batch proof
+        description: Latest verified batch proof (same structure as an item from ledger_getVerifiedBatchProofsBySlotHeight).
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["proof", "proofOutput"]
+          properties:
+            proof:
+              description: ZK proof data (~2MB, hex-encoded).
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+            proofOutput:
+              type: object
+              additionalProperties: false
+              required:
+                - stateRoots
+                - finalL2BlockHash
+                - stateDiff
+                - lastL2Height
+                - sequencerCommitmentIndexRange
+                - sequencerCommitmentHashes
+                - lastL1HashOnBitcoinLightClientContract
+                - previousCommitmentIndex
+                - previousCommitmentHash
+              properties:
+                stateRoots:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                finalL2BlockHash:
+                  $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                stateDiff:
+                  type: object
+                  additionalProperties:
+                    $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+                lastL2Height:
+                  $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                sequencerCommitmentIndexRange:
+                  type: array
+                  minItems: 2
+                  maxItems: 2
+                  items:
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                sequencerCommitmentHashes:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                lastL1HashOnBitcoinLightClientContract:
+                  $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                previousCommitmentIndex:
+                  $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                previousCommitmentHash:
+                  $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      examples:
+        - name: ledger_getLastVerifiedBatchProof example
+          params: []
+          result:
+            name: Verified batch proof
+            value:
+              proof: "0x0300000000000000000000000000000081670c116a84c0351f18c3..." # truncated for docs
+              proofOutput:
+                stateRoots:
+                  - "0x5e2a5b8da99b65c5eba4b36f2368321dad95c08c641d698b09ca6756caac589e"
+                  - "0x182a9543bf64a90e78f7d810dedebdf4da3322752db5ee5533fae564e31033f7"
+                finalL2BlockHash: "0x8fe769cdb2d34f60b5a625caa8697ae1d1f213b558c9dc9e681059f18732e608"
+                stateDiff:
+                  "0x412f612f0201edff3b3ee593dbef54e2fbdd421070db55e2de2aebe75f398bd85ac97ed364": "0xf4fd64e249e658fdb748f83190e47f0b1cd5e87fe30d005c257d7a94cca458e7167e690000000000"
+                lastL2Height: "0xae0e97"
+                sequencerCommitmentIndexRange: ["0x92c", "0x92e"]
+                sequencerCommitmentHashes:
+                  - "0x8a9cd0b9fda255370073abff4176416665d14552d5f0d671998ca89523041b36"
+                lastL1HashOnBitcoinLightClientContract: "0xa1717b35aa14be01ce037d1a346c4c1714afcfa5e8a66a35af5ead0000000000"
+                previousCommitmentIndex: "0x92b"
+                previousCommitmentHash: "0xa37a45539d40448d22f6da7978ca58f5845b72a5043129941817099471198749"
+
+    ledger_getLastScannedL1Height:
+      name: ledger_getLastScannedL1Height
+      description: Returns the highest L1 block number the node has scanned so far.
+      params: []
+      result:
+        name: Last scanned L1 block height
+        description: Last scanned L1 block height (hex quantity).
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: ledger_getLastScannedL1Height example
+          params: []
+          result:
+            name: Last scanned L1 block height
+            value: "0x15e53"
+
+    citrea_getLastCommittedL2Height:
+      name: citrea_getLastCommittedL2Height
+      description: Returns the latest L2 block height that has been committed to Bitcoin via sequencer commitment.
+      params: []
+      result:
+        name: Last committed L2 height
+        description: Latest committed L2 height and its sequencer commitment index.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["height", "commitment_index"]
+          properties:
+            height:
+              type: integer
+              description: Latest committed L2 block height (decimal).
+            commitment_index:
+              type: integer
+              description: Sequencer commitment index (decimal).
+      examples:
+        - name: citrea_getLastCommittedL2Height example
+          params: []
+          result:
+            name: Last committed L2 height
+            value:
+              height: 12489007
+              commitment_index: 3444
+
+    citrea_getLastProvenL2Height:
+      name: citrea_getLastProvenL2Height
+      description: Returns the latest L2 block height that has been proven on Bitcoin with a validity proof.
+      params: []
+      result:
+        name: Last proven L2 height
+        description: Latest proven L2 height and its sequencer commitment index.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["height", "commitment_index"]
+          properties:
+            height:
+              type: integer
+              description: Latest proven L2 block height (decimal).
+            commitment_index:
+              type: integer
+              description: Sequencer commitment index (decimal).
+      examples:
+        - name: citrea_getLastProvenL2Height example
+          params: []
+          result:
+            name: Last proven L2 height
+            value:
+              height: 11457999
+              commitment_index: 2401
+
+    citrea_getL2StatusHeightsByL1Height:
+      name: citrea_getL2StatusHeightsByL1Height
+      description: Returns committed and proven L2 heights as of a given Bitcoin block.
+      params:
+        - name: l1_height
+          required: true
+          description: Bitcoin block height to query.
+          schema:
+            title: L1BlockHeight
+            type: integer
+      result:
+        name: L2 status heights
+        description: Committed and proven L2 heights as of the specified L1 block.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["committed", "proven"]
+          properties:
+            committed:
+              type: object
+              additionalProperties: false
+              required: ["height", "commitment_index"]
+              properties:
+                height:
+                  type: integer
+                  description: Latest committed L2 block height (decimal).
+                commitment_index:
+                  type: integer
+                  description: Sequencer commitment index (decimal).
+            proven:
+              type: object
+              additionalProperties: false
+              required: ["height", "commitment_index"]
+              properties:
+                height:
+                  type: integer
+                  description: Latest proven L2 block height (decimal).
+                commitment_index:
+                  type: integer
+                  description: Sequencer commitment index (decimal).
+      examples:
+        - name: citrea_getL2StatusHeightsByL1Height example
+          params:
+            - name: l1_height
+              value: 800000
+          result:
+            name: L2 status heights
+            value:
+              committed:
+                height: 12489007
+                commitment_index: 3444
+              proven:
+                height: 11457999
+                commitment_index: 2401
+
+    citrea_sendRawDepositTransaction:
+      name: citrea_sendRawDepositTransaction
+      description: |
+        Submits a raw deposit transaction to the Citrea sequencer. The node first simulates the
+        deposit; if valid, it is queued for inclusion.
+      params:
+        - name: deposit
+          required: true
+          description: Raw serialized deposit tx data (hex).
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+      result:
+        name: Submission result
+        description: Success returns null.
+        schema:
+          type: "null"
+      examples:
+        - name: citrea_sendRawDepositTransaction example
+          params:
+            - name: deposit
+              value: "0x01020304..."
+          result:
+            name: Submission result
+            value: null
+
+    eth_estimateDiffSize:
+      name: eth_estimateDiffSize
+      description: Returns estimated diff size and gas consumption for a potential transaction.
+      params:
+        - name: Transaction
+          required: true
+          description: Transaction object to simulate (same shape as `eth_estimateGas`).
+          schema:
+            $ref: "../evm/transaction.yaml#/components/schemas/GenericTransaction"
+        - name: Block
+          required: false
+          description: Block number or tag at which to estimate (defaults to 'latest' if omitted).
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Estimation
+        description: Estimated gas usage and L1 diff size.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["gas", "l1DiffSize"]
+          properties:
+            gas:
+              description: Estimated gas consumption (hex quantity).
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            l1DiffSize:
+              description: Estimated L1 diff size (hex quantity).
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: eth_estimateDiffSize example
+          params:
+            - name: Transaction
+              value:
+                from: "0x0452663bfc46B86aC93d8220D9847cF5220D7642"
+                to: "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+                value: "10000"
+          result:
+            name: Estimation
+            value:
+              gas: "0x5208"
+              l1DiffSize: "0x11"
