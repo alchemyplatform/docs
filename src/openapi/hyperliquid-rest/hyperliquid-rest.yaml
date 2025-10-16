@@ -1,0 +1,798 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
+openapi: 3.1.0
+
+info:
+  title: "Hyperliquid Info API"
+  version: "1.0.1"
+  description: |
+    Single-endpoint API for querying public and account-scoped information.
+
+    ## Pagination
+    - For time-ranged queries, responses return up to **500 elements/blocks**.
+      Paginate by using the **last returned timestamp** as the next `startTime`.
+
+    ## Perpetuals vs Spot
+    - For Perps, `coin` is from `meta`.
+    - For Spot, `PURR` uses `PURR/USDC`; other spot tokens use `@{index}` from `spotMeta.universe`.
+
+servers:
+  - url: https://api.hyperliquid.xyz
+
+tags:
+  - name: Hyperliquid Info API
+
+paths:
+  /info:
+    post:
+      tags: [Hyperliquid Info API]
+      summary: "Hyperliquid Info multiplexer"
+      description: Submit a JSON body with a `type` discriminator.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AllMidsRequest"
+                - $ref: "#/components/schemas/OpenOrdersRequest"
+                - $ref: "#/components/schemas/FrontendOpenOrdersRequest"
+                - $ref: "#/components/schemas/UserFillsRequest"
+                - $ref: "#/components/schemas/UserFillsByTimeRequest"
+                - $ref: "#/components/schemas/UserRateLimitRequest"
+                - $ref: "#/components/schemas/OrderStatusRequest"
+                - $ref: "#/components/schemas/L2BookRequest" # ← present
+                - $ref: "#/components/schemas/CandleSnapshotRequest" # ← present
+                - $ref: "#/components/schemas/MaxBuilderFeeRequest"
+                - $ref: "#/components/schemas/HistoricalOrdersRequest"
+                - $ref: "#/components/schemas/UserTwapSliceFillsRequest"
+                - $ref: "#/components/schemas/SubAccountsRequest"
+                - $ref: "#/components/schemas/VaultDetailsRequest"
+                - $ref: "#/components/schemas/UserVaultEquitiesRequest"
+                - $ref: "#/components/schemas/UserRoleRequest"
+                - $ref: "#/components/schemas/PortfolioRequest"
+                - $ref: "#/components/schemas/ReferralRequest"
+                - $ref: "#/components/schemas/UserFeesRequest"
+                - $ref: "#/components/schemas/DelegationsRequest"
+                - $ref: "#/components/schemas/DelegatorSummaryRequest"
+                - $ref: "#/components/schemas/DelegatorHistoryRequest"
+                - $ref: "#/components/schemas/DelegatorRewardsRequest"
+                - $ref: "#/components/schemas/UserDexAbstractionRequest"
+              discriminator:
+                propertyName: type
+                mapping:
+                  allMids: "#/components/schemas/AllMidsRequest"
+                  openOrders: "#/components/schemas/OpenOrdersRequest"
+                  frontendOpenOrders: "#/components/schemas/FrontendOpenOrdersRequest"
+                  userFills: "#/components/schemas/UserFillsRequest"
+                  userFillsByTime: "#/components/schemas/UserFillsByTimeRequest"
+                  userRateLimit: "#/components/schemas/UserRateLimitRequest"
+                  orderStatus: "#/components/schemas/OrderStatusRequest"
+                  l2Book: "#/components/schemas/L2BookRequest"
+                  candleSnapshot: "#/components/schemas/CandleSnapshotRequest"
+                  maxBuilderFee: "#/components/schemas/MaxBuilderFeeRequest"
+                  historicalOrders: "#/components/schemas/HistoricalOrdersRequest"
+                  userTwapSliceFills: "#/components/schemas/UserTwapSliceFillsRequest"
+                  subAccounts: "#/components/schemas/SubAccountsRequest"
+                  vaultDetails: "#/components/schemas/VaultDetailsRequest"
+                  userVaultEquities: "#/components/schemas/UserVaultEquitiesRequest"
+                  userRole: "#/components/schemas/UserRoleRequest"
+                  portfolio: "#/components/schemas/PortfolioRequest"
+                  referral: "#/components/schemas/ReferralRequest"
+                  userFees: "#/components/schemas/UserFeesRequest"
+                  delegations: "#/components/schemas/DelegationsRequest"
+                  delegatorSummary: "#/components/schemas/DelegatorSummaryRequest"
+                  delegatorHistory: "#/components/schemas/DelegatorHistoryRequest"
+                  delegatorRewards: "#/components/schemas/DelegatorRewardsRequest"
+                  userDexAbstraction: "#/components/schemas/UserDexAbstractionRequest"
+            examples:
+              l2Book:
+                summary: L2 book snapshot
+                value:
+                  {
+                    "type": "l2Book",
+                    "coin": "BTC",
+                    "nSigFigs": 5,
+                    "mantissa": 2,
+                  }
+              candleSnapshot:
+                summary: Candle snapshot
+                value:
+                  type: candleSnapshot
+                  req:
+                    {
+                      coin: "BTC",
+                      interval: "15m",
+                      startTime: 1681923600000,
+                      endTime: 1681924499999,
+                    }
+              allMids:
+                summary: Retrieve mids for all coins
+                value: { "type": "allMids", "dex": "" }
+      responses:
+        "200":
+          description: Successful response (varies by `type`)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/AllMidsResponse"
+                  - $ref: "#/components/schemas/OpenOrdersResponse"
+                  - $ref: "#/components/schemas/FrontendOpenOrdersResponse"
+                  - $ref: "#/components/schemas/UserFillsResponse"
+                  - $ref: "#/components/schemas/UserFillsByTimeResponse"
+                  - $ref: "#/components/schemas/UserRateLimitResponse"
+                  - $ref: "#/components/schemas/OrderStatusResponse"
+                  - $ref: "#/components/schemas/L2BookResponse"
+                  - $ref: "#/components/schemas/CandleSnapshotResponse"
+                  - $ref: "#/components/schemas/MaxBuilderFeeResponse"
+                  - $ref: "#/components/schemas/HistoricalOrdersResponse"
+                  - $ref: "#/components/schemas/UserTwapSliceFillsResponse"
+                  - $ref: "#/components/schemas/SubAccountsResponse"
+                  - $ref: "#/components/schemas/VaultDetailsResponse"
+                  - $ref: "#/components/schemas/UserVaultEquitiesResponse"
+                  - $ref: "#/components/schemas/UserRoleResponse"
+                  - $ref: "#/components/schemas/PortfolioResponse"
+                  - $ref: "#/components/schemas/ReferralResponse"
+                  - $ref: "#/components/schemas/UserFeesResponse"
+                  - $ref: "#/components/schemas/DelegationsResponse"
+                  - $ref: "#/components/schemas/DelegatorSummaryResponse"
+                  - $ref: "#/components/schemas/DelegatorHistoryResponse"
+                  - $ref: "#/components/schemas/DelegatorRewardsResponse"
+                  - $ref: "#/components/schemas/UserDexAbstractionResponse"
+        "400": { description: Invalid request }
+        "401": { description: Unauthorized }
+        "429": { description: Rate limited }
+        "500": { description: Server error }
+
+components:
+  schemas:
+    # ---------- Base helpers ----------
+    Address:
+      type: string
+      pattern: "^0x[0-9a-fA-F]{40}$"
+      description: "42-character hexadecimal address (0x-prefixed)."
+      example: "0x0000000000000000000000000000000000000000"
+
+    OrderCommon:
+      type: object
+      properties:
+        coin: { type: string }
+        side: { type: string, description: '"A"=Ask/Sell, "B"=Bid/Buy' }
+        limitPx: { type: string }
+        sz: { type: string }
+        oid: { type: integer, format: int64 }
+        timestamp: { type: integer, format: int64 }
+        triggerCondition: { type: string }
+        isTrigger: { type: boolean }
+        triggerPx: { type: string }
+        isPositionTpsl: { type: boolean }
+        reduceOnly: { type: boolean }
+        orderType: { type: string }
+        origSz: { type: string }
+        tif: { type: string }
+        cloid:
+          oneOf:
+            - type: string
+            - type: "null"
+
+    FillCommon:
+      type: object
+      properties:
+        closedPnl: { type: string }
+        coin:
+          {
+            type: string,
+            description: 'Perp example "AVAX"; Spot example "@107".',
+          }
+        crossed: { type: boolean }
+        dir: { type: string }
+        hash: { type: string }
+        oid: { type: integer, format: int64 }
+        px: { type: string }
+        side: { type: string }
+        startPosition: { type: string }
+        sz: { type: string }
+        time: { type: integer, format: int64 }
+        fee: { type: string, description: "Total fee, inclusive of builderFee" }
+        feeToken: { type: string }
+        builderFee:
+          oneOf:
+            - type: string
+            - type: "null"
+        tid: { type: integer, format: int64 }
+
+    # ---------- Requests (the 3 called out are here and referenced) ----------
+    AllMidsRequest:
+      type: object
+      properties:
+        type: { const: allMids }
+        dex:
+          type: string
+          description: "Perp DEX name. Empty string = first perp DEX. Spot mids only included with first perp DEX."
+          default: ""
+      required: [type]
+
+    L2BookRequest:
+      type: object
+      properties:
+        type: { const: l2Book }
+        coin: { type: string }
+        nSigFigs:
+          type: integer
+          enum: [2, 3, 4, 5]
+          description: "Optional. If omitted, full precision is used."
+        mantissa:
+          type: integer
+          enum: [1, 2, 5]
+          description: "Optional. Only valid when nSigFigs=5."
+      required: [type, coin]
+
+    CandleSnapshotRequest:
+      type: object
+      properties:
+        type: { const: candleSnapshot }
+        req:
+          type: object
+          properties:
+            coin: { type: string }
+            interval:
+              type: string
+              enum:
+                [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M",
+                ]
+            startTime: { type: integer, format: int64 }
+            endTime: { type: integer, format: int64 }
+          required: [coin, interval, startTime, endTime]
+      required: [type, req]
+
+    OpenOrdersRequest:
+      type: object
+      properties:
+        type: { const: openOrders }
+        user: { $ref: "#/components/schemas/Address" }
+        dex:
+          type: string
+          default: ""
+      required: [type, user]
+
+    FrontendOpenOrdersRequest:
+      type: object
+      properties:
+        type: { const: frontendOpenOrders }
+        user: { $ref: "#/components/schemas/Address" }
+        dex:
+          type: string
+          default: ""
+      required: [type, user]
+
+    UserFillsRequest:
+      type: object
+      properties:
+        type: { const: userFills }
+        user: { $ref: "#/components/schemas/Address" }
+        aggregateByTime:
+          type: boolean
+          default: false
+      required: [type, user]
+
+    UserFillsByTimeRequest:
+      type: object
+      properties:
+        type: { const: userFillsByTime }
+        user: { $ref: "#/components/schemas/Address" }
+        startTime: { type: integer, format: int64 }
+        endTime:
+          {
+            type: integer,
+            format: int64,
+            description: "If omitted, uses current time.",
+          }
+        aggregateByTime: { type: boolean, default: false }
+      required: [type, user, startTime]
+
+    UserRateLimitRequest:
+      type: object
+      properties:
+        type: { const: userRateLimit }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    OrderStatusRequest:
+      type: object
+      properties:
+        type: { const: orderStatus }
+        user: { $ref: "#/components/schemas/Address" }
+        oid:
+          description: "Order id (u64) or client order id (16-byte hex string)."
+          oneOf:
+            - type: integer
+              format: int64
+            - type: string
+      required: [type, user, oid]
+
+    MaxBuilderFeeRequest:
+      type: object
+      properties:
+        type: { const: maxBuilderFee }
+        user: { $ref: "#/components/schemas/Address" }
+        builder: { $ref: "#/components/schemas/Address" }
+      required: [type, user, builder]
+
+    HistoricalOrdersRequest:
+      type: object
+      properties:
+        type: { const: historicalOrders }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    UserTwapSliceFillsRequest:
+      type: object
+      properties:
+        type: { const: userTwapSliceFills }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    SubAccountsRequest:
+      type: object
+      properties:
+        type: { const: subAccounts }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    VaultDetailsRequest:
+      type: object
+      properties:
+        type: { const: vaultDetails }
+        vaultAddress: { $ref: "#/components/schemas/Address" }
+        user:
+          description: "Optional"
+          oneOf:
+            - $ref: "#/components/schemas/Address"
+            - type: "null"
+      required: [type, vaultAddress]
+
+    UserVaultEquitiesRequest:
+      type: object
+      properties:
+        type: { const: userVaultEquities }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    UserRoleRequest:
+      type: object
+      properties:
+        type: { const: userRole }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    PortfolioRequest:
+      type: object
+      properties:
+        type: { const: portfolio }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    ReferralRequest:
+      type: object
+      properties:
+        type: { const: referral }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    UserFeesRequest:
+      type: object
+      properties:
+        type: { const: userFees }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    DelegationsRequest:
+      type: object
+      properties:
+        type: { const: delegations }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    DelegatorSummaryRequest:
+      type: object
+      properties:
+        type: { const: delegatorSummary }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    DelegatorHistoryRequest:
+      type: object
+      properties:
+        type: { const: delegatorHistory }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    DelegatorRewardsRequest:
+      type: object
+      properties:
+        type: { const: delegatorRewards }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    UserDexAbstractionRequest:
+      type: object
+      properties:
+        type: { const: userDexAbstraction }
+        user: { $ref: "#/components/schemas/Address" }
+      required: [type, user]
+
+    # ---------- Responses ----------
+    AllMidsResponse:
+      type: object
+      additionalProperties: { type: string }
+
+    OpenOrdersResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          coin: { type: string }
+          limitPx: { type: string }
+          oid: { type: integer, format: int64 }
+          side: { type: string }
+          sz: { type: string }
+          timestamp: { type: integer, format: int64 }
+
+    FrontendOpenOrdersResponse:
+      type: array
+      items:
+        allOf:
+          - $ref: "#/components/schemas/OrderCommon"
+
+    UserFillsResponse:
+      type: array
+      items: { $ref: "#/components/schemas/FillCommon" }
+
+    UserFillsByTimeResponse:
+      type: array
+      items: { $ref: "#/components/schemas/FillCommon" }
+
+    UserRateLimitResponse:
+      type: object
+      properties:
+        cumVlm: { type: string }
+        nRequestsUsed: { type: integer }
+        nRequestsCap: { type: integer }
+
+    OrderStatusResponse:
+      type: object
+      oneOf:
+        - type: object
+          properties:
+            status: { const: unknownOid }
+        - type: object
+          properties:
+            status: { const: order }
+            order:
+              type: object
+              properties:
+                order: { $ref: "#/components/schemas/OrderCommon" }
+                status: { type: string }
+                statusTimestamp: { type: integer, format: int64 }
+
+    L2BookResponse:
+      type: object
+      properties:
+        coin: { type: string }
+        time: { type: integer, format: int64 }
+        levels:
+          type: array
+          description: "[ bids[], asks[] ]"
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                px: { type: string }
+                sz: { type: string }
+                n: { type: integer, description: "number of underlying levels" }
+
+    CandleSnapshotResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          T: { type: integer, format: int64 }
+          c: { type: string }
+          h: { type: string }
+          i: { type: string }
+          l: { type: string }
+          n: { type: integer }
+          o: { type: string }
+          s: { type: string }
+          t: { type: integer, format: int64 }
+          v: { type: string }
+
+    MaxBuilderFeeResponse:
+      oneOf:
+        - type: integer
+        - type: number
+      description: "Maximum fee approved in tenths of a basis point (1 = 0.001%)."
+
+    HistoricalOrdersResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          order: { $ref: "#/components/schemas/OrderCommon" }
+          status: { type: string }
+          statusTimestamp: { type: integer, format: int64 }
+
+    UserTwapSliceFillsResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          fill: { $ref: "#/components/schemas/FillCommon" }
+          twapId: { type: integer }
+
+    SubAccountsResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          name: { type: string }
+          subAccountUser: { $ref: "#/components/schemas/Address" }
+          master: { $ref: "#/components/schemas/Address" }
+          clearinghouseState:
+            type: object
+            properties:
+              marginSummary:
+                type: object
+                properties:
+                  accountValue: { type: string }
+                  totalNtlPos: { type: string }
+                  totalRawUsd: { type: string }
+                  totalMarginUsed: { type: string }
+              crossMarginSummary:
+                type: object
+                properties:
+                  accountValue: { type: string }
+                  totalNtlPos: { type: string }
+                  totalRawUsd: { type: string }
+                  totalMarginUsed: { type: string }
+              crossMaintenanceMarginUsed: { type: string }
+              withdrawable: { type: string }
+              assetPositions: { type: array, items: { type: object } }
+              time: { type: integer, format: int64 }
+          spotState:
+            type: object
+            properties:
+              balances:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    coin: { type: string }
+                    token: { type: integer }
+                    total: { type: string }
+                    hold: { type: string }
+                    entryNtl: { type: string }
+
+    VaultDetailsResponse:
+      type: object
+      properties:
+        name: { type: string }
+        vaultAddress: { $ref: "#/components/schemas/Address" }
+        leader: { $ref: "#/components/schemas/Address" }
+        description: { type: string }
+        portfolio:
+          type: array
+          items:
+            type: array
+            prefixItems:
+              - type: string
+              - type: object
+        apr: { type: number }
+        followerState:
+          oneOf:
+            - type: object
+            - type: "null"
+        leaderFraction: { type: number }
+        leaderCommission: { type: number }
+        followers:
+          type: array
+          items:
+            type: object
+            properties:
+              user: { $ref: "#/components/schemas/Address" }
+              vaultEquity: { type: string }
+              pnl: { type: string }
+              allTimePnl: { type: string }
+              daysFollowing: { type: integer }
+              vaultEntryTime: { type: integer, format: int64 }
+              lockupUntil: { type: integer, format: int64 }
+        maxDistributable: { type: number }
+        maxWithdrawable: { type: number }
+        isClosed: { type: boolean }
+        relationship:
+          type: object
+          properties:
+            type: { type: string }
+            data: { type: object }
+        allowDeposits: { type: boolean }
+        alwaysCloseOnWithdraw: { type: boolean }
+
+    UserVaultEquitiesResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          vaultAddress: { $ref: "#/components/schemas/Address" }
+          equity: { type: string }
+
+    UserRoleResponse:
+      oneOf:
+        - type: object
+          properties: { role: { const: missing } }
+        - type: object
+          properties: { role: { const: user } }
+        - type: object
+          properties:
+            role: { const: agent }
+            data:
+              type: object
+              properties:
+                user: { $ref: "#/components/schemas/Address" }
+        - type: object
+          properties: { role: { const: vault } }
+        - type: object
+          properties:
+            role: { const: subAccount }
+            data:
+              type: object
+              properties:
+                master: { $ref: "#/components/schemas/Address" }
+
+    PortfolioResponse:
+      type: array
+      description: "Array of tuples: [windowName, windowData]"
+      items:
+        type: array
+        prefixItems:
+          - type: string
+          - type: object
+
+    ReferralResponse:
+      type: object
+      properties:
+        referredBy:
+          type: object
+          properties:
+            referrer: { $ref: "#/components/schemas/Address" }
+            code: { type: string }
+        cumVlm: { type: string }
+        unclaimedRewards: { type: string }
+        claimedRewards: { type: string }
+        builderRewards: { type: string }
+        tokenToState:
+          type: array
+          items: {}
+        referrerState:
+          type: object
+          properties:
+            stage: { type: string }
+            data:
+              type: object
+              properties:
+                code: { type: string }
+                referralStates:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      cumVlm: { type: string }
+                      cumRewardedFeesSinceReferred: { type: string }
+                      cumFeesRewardedToReferrer: { type: string }
+                      timeJoined: { type: integer, format: int64 }
+                      user: { $ref: "#/components/schemas/Address" }
+        rewardHistory:
+          type: array
+          items: {}
+
+    UserFeesResponse:
+      type: object
+      properties:
+        dailyUserVlm:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string }
+              userCross: { type: string }
+              userAdd: { type: string }
+              exchange: { type: string }
+        feeSchedule:
+          type: object
+          properties:
+            cross: { type: string }
+            add: { type: string }
+            spotCross: { type: string }
+            spotAdd: { type: string }
+            tiers: { type: object }
+            referralDiscount: { type: string }
+            stakingDiscountTiers:
+              type: array
+              items: { type: object }
+        userCrossRate: { type: string }
+        userAddRate: { type: string }
+        userSpotCrossRate: { type: string }
+        userSpotAddRate: { type: string }
+        activeReferralDiscount: { type: string }
+        trial:
+          oneOf:
+            - type: object
+            - type: "null"
+        feeTrialReward: { type: string }
+        nextTrialAvailableTimestamp:
+          oneOf:
+            - type: integer
+            - type: "null"
+        stakingLink: { type: object }
+        activeStakingDiscount: { type: object }
+
+    DelegationsResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          validator: { $ref: "#/components/schemas/Address" }
+          amount: { type: string }
+          lockedUntilTimestamp: { type: integer, format: int64 }
+
+    DelegatorSummaryResponse:
+      type: object
+      properties:
+        delegated: { type: string }
+        undelegated: { type: string }
+        totalPendingWithdrawal: { type: string }
+        nPendingWithdrawals: { type: integer }
+
+    DelegatorHistoryResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          time: { type: integer, format: int64 }
+          hash: { type: string }
+          delta:
+            type: object
+            properties:
+              delegate:
+                type: object
+                properties:
+                  validator: { $ref: "#/components/schemas/Address" }
+                  amount: { type: string }
+                  isUndelegate: { type: boolean }
+
+    DelegatorRewardsResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          time: { type: integer, format: int64 }
+          source: { type: string, enum: [delegation, commission] }
+          totalAmount: { type: string }
+
+    UserDexAbstractionResponse:
+      type: boolean
+      example: true

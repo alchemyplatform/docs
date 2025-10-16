@@ -52,7 +52,7 @@ for dir in ${input_dir}/*/; do
           fi
         else
           # Run both bundle and lint when validate-only is false
-          if ! pnpm exec redocly bundle "$file" --dereferenced --output "$filename" --ext json --remove-unused-components; then
+          if ! pnpm exec redocly bundle "$file" --output "$filename" --ext json; then
             exit 1
           fi
           # Add warning message to the JSON file
