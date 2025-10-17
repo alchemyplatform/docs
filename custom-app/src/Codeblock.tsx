@@ -66,17 +66,36 @@ const ShikiCodeBlock = styled.div`
 
 const RunButton = styled.button`
   background-color: ${({ theme }) =>
-    theme.mode === 'dark' ? '#1C1C1C' : '#383838'};
-  color: ${({ theme }) => (theme.mode === 'dark' ? '#EDEDED' : '#EDEDED')};
+    theme.mode === 'dark' ? '#4C6FFF' : '#383838'};
+  color: #ededed;
   padding: 6px 12px;
   border-radius: 100px;
-  border: none;
+  border: ${({ theme }) =>
+    theme.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.16)' : 'none'};
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   font-family: monospace;
   display: flex;
   align-items: center;
   align-self: flex-start;
   gap: 8px;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${({ theme }) =>
+      theme.mode === 'dark' ? '#6C84FF' : '#4b5563'};
+  }
+
+  &:focus-visible {
+    outline: 2px solid
+      ${({ theme }) => (theme.mode === 'dark' ? '#A5B4FF' : '#E5E7EB')};
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+  }
 `
 
 const LoaderContainer = styled.div`
@@ -341,21 +360,8 @@ export const Codeblock: React.FC = () => {
                 }}
               />
             </div>
-            <RunButton
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = isDark
-                  ? '#4b5563'
-                  : '#4b5563'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = isDark
-                  ? '#1C1C1C'
-                  : '#383838'
-              }}
-              onClick={handleRun}
-              disabled={runButtonDisabled}
-            >
-              RUN{' '}
+            <RunButton onClick={handleRun} disabled={runButtonDisabled}>
+              Try it{' '}
               <svg
                 width="12"
                 height="12"
