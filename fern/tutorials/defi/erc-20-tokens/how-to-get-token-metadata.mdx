@@ -2,7 +2,6 @@
 title: How to Get Token Metadata
 description: Use Alchemy's token API to get all the metadata for your ERC-20 token including name, symbol, and other important details
 subtitle: Use Alchemy's token API to get all the metadata for your ERC-20 token including name, symbol, and other important details
-url: https://docs.alchemy.com/docs/how-to-get-token-metadata
 slug: docs/how-to-get-token-metadata
 ---
 
@@ -32,129 +31,75 @@ For this particular example, we're going to fetch the metadata for USDT token wh
   For a no-code view of the API request, check out the [composer tool](https://composer.alchemyapi.io/?share=eJwdxksKwjAUBdC9vHEH_RjTZA86Eici8kiuRtokUiMq4t5bCmdwfhQS3wt50VFBe9dpWJ.RUo17ziBPPIaE.L3c0A51QNmhceTG1NGDJ85HHl94kj_R_EQO0l6d6aMCjNKslNgunNsYZ4PUsdcSwdL5PwMcBCdb)
 </Check>
 
-### Alchemy SDK (Recommended)
+### Fetch
 
-#### Step 1: Install the [Alchemy SDK Quickstart](/reference/alchemy-sdk-quickstart) and create a file
+#### Step 1: Create a file
 
 Run the below commands in the command line:
 
 <CodeGroup>
   ```shell shell
-  npm install alchemy-sdk
-  touch token-metadata-from-sdk.js
+  touch token-metadata.js
   ```
 </CodeGroup>
 
 #### Step 2: Write the token metadata querying script
 
-Inside the `token-metadata-from-sdk.js` file, paste the below code
+Inside the `token-metadata.js` file, paste the below code
 
 <CodeGroup>
-  ```javascript token-metadata-from-sdk
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript token-metadata.js
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  async function getTokenMetadata() {
+    try {
+      // The token address we want to query for metadata
+      const tokenAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
 
-  // The token address we want to query for metadata
-  const metadata = await alchemy.core.getTokenMetadata(
-    "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-  );
+      const requestBody = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "alchemy_getTokenMetadata",
+        params: [tokenAddress]
+      };
 
-  console.log("TOKEN METADATA");
-  console.log(metadata);
+      const response = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Error:', data.error);
+        return;
+      }
+
+      console.log("TOKEN METADATA");
+      console.log(data.result);
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
+  }
+
+  getTokenMetadata();
   ```
 </CodeGroup>
 
-#### Step 3: Run the code to get the token metadata with the Alchemy SDK
+#### Step 3: Run the code to get the token metadata
 
 <CodeGroup>
   ```shell shell
-  node token-metadata-from-sdk.js
+  node token-metadata.js
   ```
 </CodeGroup>
 
 You should see the below output:
-
-<CodeGroup>
-  ```json json
-  TOKEN METADATA->
-  {
-    decimals: 6,
-    logo: 'https://static.alchemyapi.io/images/assets/825.png',
-    name: 'Tether',
-    symbol: 'USDT'
-   }
-  ```
-</CodeGroup>
-
-### Node-Fetch
-
-#### Step 1: Create a node-fetch file
-
-Run the below commands in the command line:
-
-<CodeGroup>
-  ```shell shell
-  touch token-metadata-from-fetch.js
-  ```
-</CodeGroup>
-
-#### Step 2: Write the token metadata querying script
-
-Inside the `token-metadata-from-fetch.js` file, paste the below code
-
-<CodeGroup>
-  ```javascript token-metadata-from-fetch.js
-  import fetch from 'node-fetch';
-
-  // Replace with your Alchemy API key:
-  const apiKey = "demo";
-  const fetchURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
-
-  // Replace with the token address you want to query:
-  const tokenAddr = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-
-  var raw = JSON.stringify({
-    "jsonrpc": "2.0",
-    "method": "alchemy_getTokenMetadata",
-    "headers": {
-      "Content-Type": "application/json"
-    },
-    "params": [
-      `${tokenAddr}`
-    ],
-    "id": 42
-  });
-
-  var requestOptions = {
-    method: 'POST',
-    body: raw,
-    redirect: 'follow'
-  };
-
-  // Make the request and print the formatted response:
-  fetch(fetchURL, requestOptions)
-    .then(response => response.json())
-    .then(response => JSON.stringify(response["result"], null, 2))
-    .then(result => console.log(result))
-    .catch(error => console.log('error', error));
-  ```
-</CodeGroup>
-
-#### Step 3: Run the code to get the token metadata with Node-fetch
-
-<CodeGroup>
-  ```shell shell
-  node token-metadata-from-fetch.js
-  ```
-</CodeGroup>
-
-You should see the below output
 
 <CodeGroup>
   ```json json

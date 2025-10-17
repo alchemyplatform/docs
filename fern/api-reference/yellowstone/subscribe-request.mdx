@@ -1,0 +1,223 @@
+---
+title: Subscribe Request
+description: Comprehensive guide to the SubscribeRequest structure and configuration
+slug: reference/yellowstone-grpc-subscribe-request
+---
+
+# Subscribe Request
+
+The `SubscribeRequest` message is the foundation of all Yellowstone gRPC subscriptions. It defines what data you want to receive and how you want to filter it.
+
+## Request Structure
+
+A `SubscribeRequest` contains multiple subscription types that can be combined in a single request:
+
+```rust
+message SubscribeRequest {
+    map<string, SubscribeRequestFilterAccounts> accounts = 1;
+    map<string, SubscribeRequestFilterSlots> slots = 2;
+    map<string, SubscribeRequestFilterTransactions> transactions = 3;
+    map<string, SubscribeRequestFilterTransactions> transactions_status = 10;
+    map<string, SubscribeRequestFilterBlocks> blocks = 4;
+    map<string, SubscribeRequestFilterBlocksMeta> blocks_meta = 5;
+    map<string, SubscribeRequestFilterEntry> entry = 8;
+    optional CommitmentLevel commitment = 6;
+    repeated SubscribeRequestAccountsDataSlice accounts_data_slice = 7;
+    optional SubscribeRequestPing ping = 9;
+    optional uint64 from_slot = 11;
+}
+```
+
+## Key Parameters
+
+### `accounts`
+
+Map of account subscription filters. The key is a user-defined identifier for the subscription.
+
+**Type**: `map<string, SubscribeRequestFilterAccounts>`
+
+See [Subscribe to Accounts](/reference/yellowstone-grpc-subscribe-accounts) for details.
+
+### `slots`
+
+Map of slot subscription filters. The key is a user-defined identifier for the subscription.
+
+**Type**: `map<string, SubscribeRequestFilterSlots>`
+
+See [Subscribe to Slots](/reference/yellowstone-grpc-subscribe-slots) for details.
+
+### `transactions`
+
+Map of transaction subscription filters. The key is a user-defined identifier for the subscription.
+
+**Type**: `map<string, SubscribeRequestFilterTransactions>`
+
+See [Subscribe to Transactions](/reference/yellowstone-grpc-subscribe-transactions) for details.
+
+### `blocks`
+
+Map of full block subscription filters. The key is a user-defined identifier for the subscription.
+
+**Type**: `map<string, SubscribeRequestFilterBlocks>`
+
+See [Subscribe to Blocks](/reference/yellowstone-grpc-subscribe-blocks) for details.
+
+### `blocks_meta`
+
+Map of block metadata subscription filters. The key is a user-defined identifier for the subscription.
+
+**Type**: `map<string, SubscribeRequestFilterBlocksMeta>`
+
+### `entry`
+
+Map of entry subscription filters. The key is a user-defined identifier for the subscription.
+
+**Type**: `map<string, SubscribeRequestFilterEntry>`
+
+Entries represent the unit of blockchain data between transactions and blocks. Entry subscriptions are advanced use cases for low-level block construction monitoring.
+
+### `transactions_status`
+
+Map of transaction status subscription filters. Similar to transaction subscriptions but for transaction status updates.
+
+**Type**: `map<string, SubscribeRequestFilterTransactions>`
+
+Transaction status updates provide information about transaction execution status separately from full transaction data.
+
+### `commitment`
+
+The commitment level for the subscription. Controls when updates are sent based on Solana's confirmation status.
+
+**Type**: `optional CommitmentLevel`
+
+**Values**:
+
+* `PROCESSED` - Fastest updates, can be rolled back
+* `CONFIRMED` - Supermajority vote received (recommended for most use cases)
+* `FINALIZED` - Fully finalized, cannot be rolled back
+
+**Default**: `CONFIRMED`
+
+### `accounts_data_slice`
+
+Specify which portions of account data to include in responses. Reduces bandwidth when you only need specific data ranges.
+
+**Type**: `repeated SubscribeRequestAccountsDataSlice`
+
+**Structure**:
+
+```rust
+message SubscribeRequestAccountsDataSlice {
+    uint64 offset = 1;
+    uint64 length = 2;
+}
+```
+
+Each slice specifies an offset and length to extract from account data.
+
+### `from_slot`
+
+**Start streaming from a historical slot.** This allows you to replay up to 6000 slots of historical data.
+
+**Type**: `optional uint64`
+
+**Behavior**:
+
+* If specified, streaming begins from this slot number
+* All matching data from `from_slot` onwards will be sent
+* Historical data up to **6000 slots** back is available (~40 minutes)
+* If not specified, streaming begins from the current slot
+
+**Use Cases**:
+
+* Recover from application downtime
+* Backfill historical data
+* Test application logic against real historical events
+* Debug specific slot ranges
+
+### `ping`
+
+Can be used to send a ping to the server to maintain connection health.
+
+**Type**: `optional SubscribeRequestPing`
+
+## Filter Identifiers
+
+Each filter map uses string keys that you define. These identifiers are included in `SubscribeUpdate` messages, allowing you to determine which filter matched the data.
+
+**Best Practices**:
+
+* Use descriptive identifiers (e.g., "usdc\_accounts", "swap\_transactions")
+* Keep identifiers consistent across your application
+* Use identifiers to route data to different handlers
+
+## Combining Multiple Subscriptions
+
+You can combine multiple subscription types in a single request:
+
+```rust
+// Create a subscription request that combines multiple subscription types
+SubscribeRequest {
+    // Subscribe to all slot updates
+    // The key "all_slots" is a user-defined identifier that will be included in responses
+    slots: HashMap::from([(
+        "all_slots".to_string(),
+        SubscribeRequestFilterSlots {
+            // Use default filter settings to receive all slot updates
+            ..Default::default()
+        },
+    )]),
+    
+    // Subscribe to transactions with specific filters
+    // The key "all_transactions" identifies this subscription in responses
+    transactions: HashMap::from([(
+        "all_transactions".to_string(),
+        SubscribeRequestFilterTransactions {
+            vote: Some(false),   // Exclude vote transactions to reduce data volume
+            failed: Some(false), // Exclude failed transactions (only successful ones)
+            // Use default values for other filter fields (no account/signature filters)
+            ..Default::default()
+        },
+    )]),
+    
+    // Set commitment level to CONFIRMED for balance between speed and reliability
+    // CONFIRMED means supermajority vote has been received
+    commitment: Some(CommitmentLevel::Confirmed as i32),
+    
+    // Use default values for other subscription types (accounts, blocks, etc.)
+    ..Default::default()
+}
+```
+
+## Response: SubscribeUpdate
+
+The server responds with a stream of `SubscribeUpdate` messages containing:
+
+```rust
+message SubscribeUpdate {
+    repeated string filters = 1;
+    oneof update_oneof {
+        SubscribeUpdateAccount account = 2;
+        SubscribeUpdateSlot slot = 3;
+        SubscribeUpdateTransaction transaction = 4;
+        SubscribeUpdateTransactionStatus transaction_status = 10;
+        SubscribeUpdateBlock block = 5;
+        SubscribeUpdatePing ping = 6;
+        SubscribeUpdatePong pong = 9;
+        SubscribeUpdateBlockMeta block_meta = 7;
+        SubscribeUpdateEntry entry = 8;
+    }
+    google.protobuf.Timestamp created_at = 11;
+}
+```
+
+The `filters` field contains the identifiers of the filters that matched this update.
+
+## Next Steps
+
+Explore specific subscription types:
+
+* [Subscribe to Accounts](/reference/yellowstone-grpc-subscribe-accounts) - Real-time account updates
+* [Subscribe to Transactions](/reference/yellowstone-grpc-subscribe-transactions) - Transaction streaming
+* [Subscribe to Slots](/reference/yellowstone-grpc-subscribe-slots) - Slot progression tracking
+* [Subscribe to Blocks](/reference/yellowstone-grpc-subscribe-blocks) - Full block data

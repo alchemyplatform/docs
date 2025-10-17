@@ -2,37 +2,16 @@
 title: Add Alchemy RPC To Any Project using Cursor
 description: Learn how to add a server-safe Alchemy JSON RPC endpoint to any project using Cursor
 subtitle: Learn how to add a server-safe Alchemy JSON RPC endpoint to any project using Cursor
-url: https://docs.alchemy.com/docs/add-alchemy-rpc-to-any-project
 slug: docs/add-alchemy-rpc-to-any-project
 ---
 
-This guide helps you add a server safe Alchemy JSON RPC endpoint into almost any repo using a single Cursor prompt. Your Alchemy URL stays in `.env.local` on the server. The client never sees it.
-
-***
-
-## What the one shot prompt sets up
-
-* A JSON RPC proxy that forwards requests to Alchemy
-* Multi network selection via a small `x-chain` header
-* A generic `ALCHEMY_API_URL` plus optional per chain overrides
-* Smart scaffolding based on your project type:
-  * Next.js App Router → `app/api/rpc/route.ts` (Edge)
-  * Next.js Pages Router → `pages/api/rpc.ts`
-  * Non Next.js → a small Node server at `server/rpc-proxy.mjs` with an npm script
-* Environment files:
-  * Writes `.env.example`
-  * Creates `.env.local` from `.env.example` with a terminal command if it does not already exist
-  * Ensures `.env.local` is in `.gitignore`
-* Optional helper and self test:
-  * Next.js helper `lib/rpc.ts`
-  * Dev self test page for App Router projects at `/rpc-selftest`
+This guide helps you add a server-safe Alchemy JSON RPC endpoint into almost any repo using a **single** Cursor prompt, or what we are calling: the "one shot prompt". Your Alchemy URL stays in `.env.local` on the server. The client never sees it; this makes sure your Alchemy API key is protected from client-side attacks.
 
 ***
 
 ## Prerequisites
 
 * [Cursor](https://cursor.sh/) is open at your project root
-* You can run a local dev server for your framework
 * You have an [Alchemy API Key](https://dashboard.alchemy.com/?a=index) ready to paste into `.env.local`
 * Optional for smoother automation in Cursor:
   * Enable Auto run for the terminal
@@ -40,100 +19,9 @@ This guide helps you add a server safe Alchemy JSON RPC endpoint into almost any
 
 ***
 
-## What is the `x-chain` header
-
-The `x-chain` header tells your proxy which network to use for a given request. Your app adds this header when it calls `/api/rpc`. The proxy reads it and selects the matching Alchemy URL from your server env. The header is not sent to Alchemy.
-
-**Supported values out of the box**
-
-| `x-chain`          | First env it tries                      | Fallback if not set |
-|--------------------|-----------------------------------------|---------------------|
-| `eth-mainnet`      | `ALCHEMY_API_URL_ETH_MAINNET`           | `ALCHEMY_API_URL`   |
-| `base-mainnet`     | `ALCHEMY_API_URL_BASE_MAINNET`          | `ALCHEMY_API_URL`   |
-| `optimism-mainnet` | `ALCHEMY_API_URL_OPTIMISM_MAINNET`      | `ALCHEMY_API_URL`   |
-| `arbitrum-mainnet` | `ALCHEMY_API_URL_ARBITRUM_MAINNET`      | `ALCHEMY_API_URL`   |
-| `polygon-mainnet`  | `ALCHEMY_API_URL_POLYGON_MAINNET`       | `ALCHEMY_API_URL`   |
-
-If you omit the header, the proxy assumes `eth-mainnet`.
-
-**Resolution flow**
-
-1. Read `x-chain` from the request. Default to `eth-mainnet` if missing.
-2. Try the chain specific env var.
-3. If not set, fall back to `ALCHEMY_API_URL`.
-4. If neither exists, return a clear 500 with guidance.
-
-***
-
-## Env file keys you will set
-
-After the prompt runs it will create `.env.example` and `.env.local` (if missing). Replace `<KEY>` with your real key:
-
-```env
-# Generic default used when no chain specific URL is set
-ALCHEMY_API_URL=https://eth-mainnet.g.alchemy.com/v2/<KEY>
-
-# Optional per chain overrides
-ALCHEMY_API_URL_ETH_MAINNET=https://eth-mainnet.g.alchemy.com/v2/<KEY>
-ALCHEMY_API_URL_BASE_MAINNET=https://base-mainnet.g.alchemy.com/v2/<KEY>
-ALCHEMY_API_URL_OPTIMISM_MAINNET=https://opt-mainnet.g.alchemy.com/v2/<KEY>
-ALCHEMY_API_URL_ARBITRUM_MAINNET=https://arb-mainnet.g.alchemy.com/v2/<KEY>
-ALCHEMY_API_URL_POLYGON_MAINNET=https://polygon-mainnet.g.alchemy.com/v2/<KEY>
-```
-
-Use only `ALCHEMY_API_URL` if you want a single default network. Add per chain URLs when you want to route by `x-chain`.
-
-***
-
-## How to run
-
-1. Open Cursor at your project root
-2. Paste the one shot prompt from the next section into Cursor chat
-3. Let Cursor write files and run the terminal command that creates `.env.local`
-4. Open `.env.local` and replace `<KEY>` with your real Alchemy key(s)
-5. Start your dev server and verify:
-   * Next.js App Router: open `http://localhost:3000/rpc-selftest`
-   * Next.js Pages Router: use the curl commands the prompt writes to `docs/RPC-TEST.md`
-   * Non Next.js: run `npm run rpc-proxy` and POST to `http://localhost:8787/rpc`
-
-***
-
-## How to call the proxy
-
-Send JSON RPC 2.0 to `/api/rpc` in Next.js, or to `http://localhost:8787/rpc` in the fallback Node server. Choose the network with `x-chain`. If you omit it, the proxy uses the generic `ALCHEMY_API_URL`.
-
-**curl example**
-
-```bash
-curl -s -X POST http://localhost:3000/api/rpc \
-  -H 'content-type: application/json' \
-  -H 'x-chain: base-mainnet' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
-```
-
-**fetch example**
-
-```ts
-await fetch("/api/rpc", {
-  method: "POST",
-  headers: {
-    "content-type": "application/json",
-    "x-chain": "eth-mainnet",
-  },
-  body: JSON.stringify({
-    jsonrpc: "2.0",
-    id: Date.now(),
-    method: "eth_getBalance",
-    params: ["0xYourAddress", "latest"],
-  }),
-});
-```
-
-***
-
 ## One shot Cursor prompt
 
-Paste everything below into Cursor chat from your project root.
+Paste everything below into Cursor chat from your project root:
 
 ```text
 You are scaffolding a flexible Alchemy JSON-RPC proxy. Apply changes directly in the repo. Do not echo full files unless I ask later.
@@ -484,21 +372,36 @@ Tell me:
   - If Fallback Node: run npm run rpc-proxy and POST JSON-RPC to http://localhost:8787/rpc with optional header x-chain.
 ```
 
-***
+## How to call the proxy
 
-## Troubleshooting
+Send JSON RPC 2.0 to `/api/rpc` in Next.js, or to `http://localhost:8787/rpc` in the fallback Node server. Choose the network with `x-chain`. If you omit it, the proxy uses the generic `ALCHEMY_API_URL`.
 
-* **500 Missing upstream**\
-  Add `ALCHEMY_API_URL` or a chain specific URL to `.env.local`. Restart your server.
+**curl example**
 
-* **400 Invalid JSON body**\
-  Ensure your request body is valid JSON and follows JSON RPC 2.0:
-  `{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}`
+```bash
+curl -s -X POST http://localhost:3000/api/rpc \
+  -H 'content-type: application/json' \
+  -H 'x-chain: base-mainnet' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
+```
 
-* **502 Upstream returned non JSON**\
-  Check your Alchemy URL and key. Verify with `eth_chainId`.
+**fetch example**
 
-***
+```ts
+await fetch("/api/rpc", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "x-chain": "eth-mainnet",
+  },
+  body: JSON.stringify({
+    jsonrpc: "2.0",
+    id: Date.now(),
+    method: "eth_getBalance",
+    params: ["0xYourAddress", "latest"],
+  }),
+});
+```
 
 ## Quick verification checklist
 

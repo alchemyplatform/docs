@@ -2,7 +2,6 @@
 title: How to Airdrop NFTs
 description: Learn how to airdrop NFTs using both on-chain and off-chain implementations
 subtitle: Learn how to airdrop NFTs using both on-chain and off-chain implementations
-url: https://docs.alchemy.com/docs/how-to-airdrop-nfts
 slug: docs/how-to-airdrop-nfts
 ---
 
@@ -403,15 +402,12 @@ Getting a list of all wallets that hold an NFT of a particular collection is ext
 
 <CodeGroup>
   ```javascript javascript
-  const { Alchemy, Network } = require("alchemy-sdk");
-
-  const config = {
-      apiKey: "<-- ALCHEMY API KEY -->",
-      network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  
 
   const main = async () => {
+      // Replace with your Alchemy API Key
+      const apiKey = "demo";
+      const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
 
       // BAYC contract address
       const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
@@ -419,9 +415,16 @@ Getting a list of all wallets that hold an NFT of a particular collection is ext
       // Block number or height
       const block = "15753215";
 
-      // Get owners 
-      const owners = await alchemy.nft.getOwnersForContract(address, false, block);
-      console.log(owners);
+      // Get owners using Alchemy NFT API
+      const url = `${baseURL}/getOwnersForContract?contractAddress=${address}&block=${block}`;
+
+      try {
+          const response = await fetch(url);
+          const owners = await response.json();
+          console.log(owners);
+      } catch (error) {
+          console.error('Error fetching owners:', error);
+      }
   };
 
   const runMain = async () => {
@@ -438,7 +441,7 @@ Getting a list of all wallets that hold an NFT of a particular collection is ext
   ```
 </CodeGroup>
 
-To learn more about creating an Alchemy App, and accessing the NFT API using the Alchemy SDK, check out our article on [How to get NFT Owners at a Specific Block Height](/docs/how-to-get-nft-owners-at-a-specific-block-height).
+To learn more about creating an Alchemy App, and accessing the NFT API using modern Web3 libraries, check out our article on [How to get NFT Owners at a Specific Block Height](/docs/how-to-get-nft-owners-at-a-specific-block-height).
 
 ## Conclusion
 

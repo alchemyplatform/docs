@@ -2,7 +2,6 @@
 title: eth_subscribe
 description: Subscribe to different Optimism event types like newHeads, logs, and syncing using WebSockets.
 subtitle: Subscribe to different Optimism event types like newHeads, logs, and syncing using WebSockets.
-url: https://docs.alchemy.com/reference/eth-subscribe-optimism
 slug: reference/eth-subscribe-optimism
 ---
 
@@ -53,25 +52,75 @@ The following event types are accepted in all `eth_subscribe` WebSocket requests
   {"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_minedTransactions"]}
   ```
 
-  ```javascript alchemy-sdk
-  // Installation: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript Viem
+  import { createPublicClient, webSocket } from 'viem'
+  import { optimism } from 'viem/chains'
 
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.OPT_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: optimism,
+    transport: webSocket('wss://opt-mainnet.g.alchemy.com/v2/demo') // Replace with your API key
+  })
 
-  // Subscription for Alchemy's minedTransactions API
-  alchemy.ws.on(
+  // Subscribe to new blocks on Optimism
+  const unsubscribe = client.watchBlocks({
+    onBlock: (block) => {
+      console.log('New block:', block.number)
+    }
+  })
+
+  // For Alchemy's pendingTransactions with address filtering, use raw WebSocket
+  const ws = new WebSocket('wss://opt-mainnet.g.alchemy.com/v2/demo')
+
+  ws.onopen = () => {
+    // Subscribe to alchemy_pendingTransactions with filtering
+    ws.send(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'eth_subscribe',
+      params: [
+        'alchemy_pendingTransactions',
+        {
+          toAddress: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'],
+          fromAddress: ['0xdAC17F958D2ee523a2206206994597C13D831ec7'],
+          hashesOnly: false
+        }
+      ]
+    }))
+  }
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+    if (data.method === 'eth_subscription') {
+      console.log('Filtered pending transaction:', data.params.result)
+    }
+  }
+  ```
+
+  ```javascript Ethers.js
+  import { ethers } from 'ethers'
+
+  const provider = new ethers.WebSocketProvider('wss://opt-mainnet.g.alchemy.com/v2/demo')
+
+  // Subscribe to new blocks
+  provider.on('block', (blockNumber) => {
+    console.log('New block:', blockNumber)
+  })
+
+  // For Alchemy's pendingTransactions with address filtering
+  provider.send('eth_subscribe', [
+    'alchemy_pendingTransactions',
     {
-      method: "alchemy_pendingTransactions",
-      toAddress: "vitalik.eth",
-      fromAddress: "0xshah.eth",
-    },
-    (tx) => console.log(tx)
-  );
+      toAddress: ['0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'],
+      fromAddress: ['0xdAC17F958D2ee523a2206206994597C13D831ec7'],
+      hashesOnly: false
+    }
+  ]).then(subscriptionId => {
+    console.log('Subscription ID:', subscriptionId)
+
+    provider.on(subscriptionId, (transaction) => {
+      console.log('Filtered pending transaction:', transaction)
+    })
+  })
   ```
 </CodeGroup>
 

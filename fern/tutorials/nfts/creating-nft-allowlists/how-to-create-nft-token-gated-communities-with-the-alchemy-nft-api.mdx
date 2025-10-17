@@ -2,7 +2,6 @@
 title: How to Create NFT Token-Gated Communities
 description: Learn how to use the Alchemy NFT API to verify ownership of an NFT, or grab a complete ownership snapshot for a collection!
 subtitle: Learn how to use the Alchemy NFT API to verify ownership of an NFT, or grab a complete ownership snapshot for a collection!
-url: https://docs.alchemy.com/docs/how-to-create-nft-token-gated-communities-with-the-alchemy-nft-api
 slug: docs/how-to-create-nft-token-gated-communities-with-the-alchemy-nft-api
 ---
 
@@ -19,24 +18,28 @@ For NFT projects seeking to create communities around their NFTs, one important 
 The key to creating a token-gated experience is to *verify that a particular user holds a particular NFT*. Imagine a simple case: we want to create a website accessible only to holders of Bored Apes. We don't care which Ape, as long as it's part of the collection. For this case, Alchemy provides the `isHolderOfCollection` endpoint (called `checkNftOwnership` in the SDK):
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  ```javascript Fetch
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
 
   const main = async () => {
-    // Check if vitalik.eth owns a Bored Ape.
-    const nfts = await alchemy.nft.checkNftOwnership(
-      "vitalik.eth",
-      ["0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"]
-    );
-    // Print NFTs
-    console.log(nfts);
+    try {
+      // Check if vitalik.eth owns a Bored Ape
+      const url = `${baseURL}/isHolderOfCollection?wallet=vitalik.eth&contractAddress=0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d`;
+
+      const response = await fetch(url, { method: 'GET' });
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Error:', data.error);
+        return;
+      }
+
+      console.log('Is holder:', data.isHolderOfCollection);
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
   };
 
   // Execute the code

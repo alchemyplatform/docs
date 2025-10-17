@@ -2,7 +2,6 @@
 title: How to Resolve a Wallet Address Given an ENS Domain
 description: In this tutorial, we’ll be using Alchemy’s core API to resolve a user's address from an ENS Domain Name owned by the user.
 subtitle: In this tutorial, we’ll be using Alchemy’s core API to resolve a user's address from an ENS Domain Name owned by the user.
-url: https://docs.alchemy.com/docs/how-to-resolve-ewallet-given-ens
 slug: docs/how-to-resolve-ewallet-given-ens
 ---
 
@@ -10,7 +9,7 @@ slug: docs/how-to-resolve-ewallet-given-ens
   Read the guide on [How to Resolve a Wallet Address Domains Given an ENS](/docs/how-to-resolve-ens-domains-given-a-wallet-address).
 </Info>
 
-The Alchemy SDK makes it possible to parse ENS names from an address and perform the reverse to resolve the address of an ENS name. This latter case is useful when there's a need to get more data from an (Address), such as contracts which have been deployed by the EOA.
+Alchemy's Core API makes it possible to parse ENS names from an address and perform the reverse to resolve the address of an ENS name. This latter case is useful when there's a need to get more data from an (Address), such as contracts which have been deployed by the EOA.
 
 In this guide, we walk you through how to resolve a Wallet Address from an ENS.
 
@@ -18,7 +17,7 @@ In this guide, we walk you through how to resolve a Wallet Address from an ENS.
 
 1. Create a [free Alchemy account](https://dashboard.alchemy.com/signup) to get an API Key
 2. Select an ENS to resolve to a Wallet Address (i.e. “vitalik.eth”)
-3. [Alchemy SDK](/reference/alchemy-sdk-quickstart) (recommended)
+3. Direct HTTP requests using fetch or similar
 
 ***
 
@@ -38,17 +37,7 @@ Open up a terminal, and from the command line, create a new repository to hold y
   ```
 </CodeGroup>
 
-### 2. Install the Alchemy SDK
-
-Navigate into your project directory and run:
-
-<CodeGroup>
-  ```shell shell
-  npm install alchemy-sdk
-  ```
-</CodeGroup>
-
-### 3. \[optional] Load ES6 modules
+### 2. \[optional] Load ES6 modules
 
 If you run into module errors, you may need to add `'type':'module'` to your `package.json` because we'll be utilizing import syntax to load ES6 modules in our script.
 
@@ -61,7 +50,7 @@ If you run into module errors, you may need to add `'type':'module'` to your `pa
   ```
 </CodeGroup>
 
-### 4. Write script using [resolveName](https://github.com/alchemyplatform/alchemy-sdk-js/blob/main/docs-md/classes/CoreNamespace.md#resolvename) to resolve a Wallet address from an ENS domain.
+### 3. Write script using ENS resolution to resolve a Wallet address from an ENS domain.
 
 In this example we'll resolve the address for the ENS name: vitalik.eth
 
@@ -69,20 +58,45 @@ Create a file in your repository called `resolve-ens.js` and paste in the follow
 
 <CodeGroup>
   ```javascript resolve-ens.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  async function resolveENS() {
+    try {
+      const requestBody = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "eth_resolveName",
+        params: ["vitalik.eth"]
+      };
 
-  alchemy.core.resolveName("vitalik.eth").then(console.log);
+      const response = await fetch(baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Error:', data.error);
+        return;
+      }
+
+      console.log(data.result);
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
+  }
+
+  resolveENS();
   ```
 </CodeGroup>
 
-### 5. Print ENS objects
+### 4. Print ENS objects
 
 From the command line, run `node resolve-ens.js`
 

@@ -2,7 +2,6 @@
 title: How to Get Floor Price and Sales History of an NFT Collection
 description: Learn how to get the floor price and sales history of an NFT collection on major marketplaces like OpenSea, Rarible, and LooksRare.
 subtitle: Learn how to get the floor price and sales history of an NFT collection on major marketplaces like OpenSea, Rarible, and LooksRare.
-url: https://docs.alchemy.com/docs/how-to-get-floor-price-and-sales-history-of-an-nft-collection
 slug: docs/how-to-get-floor-price-and-sales-history-of-an-nft-collection
 ---
 
@@ -64,15 +63,12 @@ Alchemy's account dashboard where developers can create a new app on the Ethereu
 
 Let's now create an empty repository and install all node dependencies.
 
-To make requests to the NFT API, use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
-
-You can also use `axios` or `fetch` alternatively.
+To make requests to the NFT API, you can use `fetch` or `axios`.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Fetch
   mkdir nft-analytics && cd nft-analytics
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 
@@ -80,12 +76,6 @@ You can also use `axios` or `fetch` alternatively.
   mkdir nft-analytics && cd nft-analytics
   npm init -y
   npm install --save axios
-  touch main.js
-  ```
-
-  ```shell Fetch
-  mkdir nft-analytics && cd nft-analytics
-  npm init -y
   touch main.js
   ```
 </CodeGroup>
@@ -98,45 +88,33 @@ Next, open this repo in your favorite code editor. We will be writing all our co
 
 As mentioned earlier, the floor price of a collection is the lowest price at which any NFT in the collection is listed for sale on a particular marketplace. It is possible for floor prices to differ slightly across marketplaces.
 
-To get the floor price across all supported marketplaces, we will use the [getNftSales](/reference/sdk-getnftsales) method. Check out the getNFTSales [documentation page](https://www.notion.so/alchemotion/To-get-the-floor-price-across-all-supported-marketplaces-we-will-use-the-getNftSales-method-getNFT-90f8615964e44085b2793471052bfd83?pvs=4) to see a complete list of Alchemy supported marketplaces.
+To get the floor price across all supported marketplaces, we will use the `getFloorPrice` endpoint. Check out the getNFTSales [documentation page](https://www.notion.so/alchemotion/To-get-the-floor-price-across-all-supported-marketplaces-we-will-use-the-getNftSales-method-getNFT-90f8615964e44085b2793471052bfd83?pvs=4) to see a complete list of Alchemy supported marketplaces.
 
 This method takes in a single `contractAddress` argument that points to the ERC-721 or ERC-1155 contract representing the collection.
 
 Add the following code to the `main.js` file.
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Network, NftFilters } = require("alchemy-sdk");
+  ```javascript Fetch
+  // BAYC contract address
+  const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
 
-  const config = {
-      apiKey: "<-- ALCHEMY APP API KEY -->",
-      network: Network.ETH_MAINNET,
+  // Alchemy API Key
+  const apiKey = "<-- ALCHEMY APP API KEY -->"
+
+  // Alchemy URL
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
+  const url = `${baseURL}/getFloorPrice/?contractAddress=${address}`;
+
+  var requestOptions = {
+    method: 'get',
+    redirect: 'follow'
   };
 
-  const alchemy = new Alchemy(config);
-
-  const main = async () => {
-
-      // BAYC contract address
-      const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
-
-      // Get floor price
-      const price = await alchemy.nft.getFloorPrice(address);
-      console.log(price);
-
-  };
-
-  const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      } catch (error) {
-          console.log(error);
-          process.exit(1);
-      }
-  };
-
-  runMain();
+  fetch(url, requestOptions)
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.log('error', error))
   ```
 
   ```javascript Axios
@@ -160,32 +138,9 @@ Add the following code to the `main.js` file.
   // Make the request and print the formatted response:
   axios(config)
       .then(response => {
-          console.log(response['data'])
+          console.log(response.data)
       })
       .catch(error => console.log('error', error));
-  ```
-
-  ```javascript Fetch
-  import fetch from 'node-fetch';
-
-  // BAYC contract address
-  const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
-
-  // Alchemy API Key
-  const apiKey = "<-- ALCHEMY APP API KEY -->"
-
-  // Alchemy URL
-  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
-  const url = `${baseURL}/getFloorPrice/?contractAddress=${address}`;
-
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => console.log(response['data']))
-    .catch(error => console.log('error', error))
   ```
 </CodeGroup>
 
@@ -222,7 +177,7 @@ As you can see, at the time of this writing, the floor price of BAYC is 76.48 ET
 
 ### Step 5: Extracting the sales history of a token
 
-Let's now write a script that extracts the sale history of an NFT. Again, this is made extremely simple using the [NFT API](/reference/nft-api-quickstart) and the [getNftSales](/reference/sdk-getnftsales) method.
+Let's now write a script that extracts the sale history of an NFT. This is made extremely simple using the [NFT API](/reference/nft-api-quickstart) and the `getNFTSales` endpoint.
 
 The aforementioned method takes in the following arguments:
 
@@ -238,73 +193,7 @@ There are a few other arguments that you can set beyond this. For our scenario o
 Create a new file called `sales_history.js` and add the following code:
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Network, NftSaleMarketplace } = require("alchemy-sdk");
-
-  const config = {
-      apiKey: "<-- ALCHEMY APP API KEY -->",
-      network: Network.ETH_MAINNET,
-  };
-
-  const alchemy = new Alchemy(config);
-
-  const main = async () => {
-
-      // BAYC contract address
-      const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
-
-      // Get sales history of BAYC #1000
-      const history = await alchemy.nft.getNftSales({
-          fromBlock: 0,
-          toBlock: 'latest',
-          marketplace: NftSaleMarketplace.SEAPORT,
-          contractAddress: address,
-          tokenId: 4871,
-      })
-
-      console.log(history);
-
-  };
-
-  const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      } catch (error) {
-          console.log(error);
-          process.exit(1);
-      }
-  };
-
-  runMain();
-  ```
-
-  ```javascript Axios
-  const axios = require('axios')
-
-  // BAYC contract address
-  const address = "<-- ALCHEMY APP API KEY -->";
-
-  // Alchemy URL
-  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/NQSuAhlOs706-XBHAkbF6rbLJ50InHTj`;
-  const url = `${baseURL}/getNFTSales/?contractAddress=${address}&tokenId=4871&marketplace=seaport`;
-
-  const config = {
-      method: 'get',
-      url: url,
-  };
-
-  // Make the request and print the formatted response:
-  axios(config)
-      .then(response => {
-          console.log(response['data'])
-      })
-      .catch(error => console.log('error', error));
-  ```
-
   ```javascript Fetch
-  import fetch from 'node-fetch';
-
   // BAYC contract address
   const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
 
@@ -321,8 +210,35 @@ Create a new file called `sales_history.js` and add the following code:
   };
 
   fetch(url, requestOptions)
-    .then(response => console.log(response['data']))
+    .then(response => response.json())
+    .then(data => console.log(data))
     .catch(error => console.log('error', error))
+  ```
+
+  ```javascript Axios
+  const axios = require('axios')
+
+  // BAYC contract address
+  const address = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
+
+  // Alchemy API Key
+  const apiKey = "<-- ALCHEMY APP API KEY -->"
+
+  // Alchemy URL
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
+  const url = `${baseURL}/getNFTSales/?contractAddress=${address}&tokenId=4871&marketplace=seaport`;
+
+  const config = {
+      method: 'get',
+      url: url,
+  };
+
+  // Make the request and print the formatted response:
+  axios(config)
+      .then(response => {
+          console.log(response.data)
+      })
+      .catch(error => console.log('error', error));
   ```
 </CodeGroup>
 

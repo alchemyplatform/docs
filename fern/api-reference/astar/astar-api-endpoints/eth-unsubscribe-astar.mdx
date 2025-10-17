@@ -2,7 +2,6 @@
 title: eth_unsubscribe
 description: Unsubscribe from different Astar event types with a regular RPC call with eth_unsubscribe as the method and the subscriptionId as the first parameter. It returns a bool indicating if the subscription was canceled successfully.
 subtitle: Unsubscribe from different Astar event types with a regular RPC call with eth_unsubscribe as the method and the subscriptionId as the first parameter. It returns a bool indicating if the subscription was canceled successfully.
-url: https://docs.alchemy.com/reference/eth-unsubscribe-astar
 slug: reference/eth-unsubscribe-astar
 ---
 
@@ -29,17 +28,19 @@ Unsubscribe from different Astar event types with a regular RPC call with eth\_u
   {"jsonrpc":"2.0", "id": 1, "method": "eth_unsubscribe", "params": ["0x9cef478923ff08bf67fde6c64013158d"]}
   ```
 
-  ```javascript alchemy-sdk
-  // npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript Viem
+  // npm install viem
+  import { createPublicClient, webSocket } from 'viem'
+  import { astar } from 'viem/chains'
 
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.OPT_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: astar,
+    transport: webSocket('wss://astar-mainnet.g.alchemy.com/v2/demo')
+  })
 
-  alchemy.ws.removeAllListeners();
+  // Unsubscribe from all watchers
+  // Call the unwatch function returned by watch methods
+  // Example: unwatch() - where unwatch was returned by watchPendingTransactions
   ```
 </CodeGroup>
 

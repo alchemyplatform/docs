@@ -47,14 +47,24 @@ const main = async () => {
   });
 
   // Wait for all promises to complete
-  await Promise.allSettled([...chainPromises, ...alchemyPromises]);
+  const results = await Promise.allSettled([
+    ...chainPromises,
+    ...alchemyPromises,
+  ]);
 
   // Report all errors at once
   const errorMessages: string[] = [];
 
+  const unexpectedRejections = results
+    .filter((result) => result.status === "rejected")
+    .map((rejection) => rejection.reason);
+  errorMessages.push(...unexpectedRejections);
+
   if (genErrors.length > 0) {
     errorMessages.push(`Found ${genErrors.length} generation error(s):`);
-    errorMessages.push(...genErrors.map((error) => `  ${error}`));
+    errorMessages.push(
+      ...genErrors.map((error) => `  ${JSON.stringify(error, null, 2)}`),
+    );
   }
 
   if (missingTokens.length > 0) {

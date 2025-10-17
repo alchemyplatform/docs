@@ -2,7 +2,6 @@
 title: How to Get ETH Balance at a Point in Time
 description: Learn how to get the ETH balance of a wallet at a specific block number or UTC timestamp
 subtitle: Learn how to get the ETH balance of a wallet at a specific block number or UTC timestamp
-url: https://docs.alchemy.com/docs/how-to-get-eth-balance-at-a-point-in-time
 slug: docs/how-to-get-eth-balance-at-a-point-in-time
 ---
 
@@ -64,15 +63,22 @@ You will need this later.
 
 Let's now create an empty repository and install all node dependencies.
 
-To make requests to the SDK, use the [Alchemy SDK](/reference/alchemy-sdk-quickstart).
+To make requests, you can use Viem, Ethers.js, or direct HTTP requests.
 
 You can also use `axios` or `fetch` alternatively.
 
 <CodeGroup>
-  ```shell Alchemy SDK
+  ```shell Viem
   mkdir eth-balance && cd eth-balance
   npm init -y
-  npm install --save alchemy-sdk
+  npm install --save viem
+  touch main.js
+  ```
+
+  ```shell Ethers.js
+  mkdir eth-balance && cd eth-balance
+  npm init -y
+  npm install --save ethers
   touch main.js
   ```
 
@@ -111,39 +117,71 @@ We are going to set the `block` parameter to `latest` to get the most recently o
 Add the following code to the `main.js` file.
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Utils } = require('alchemy-sdk');
+  ```javascript Viem
+  import { createPublicClient, http, formatEther } from 'viem'
+  import { mainnet } from 'viem/chains'
 
-  const apiKey = "<-- ALCHEMY API KEY -->";
-  const settings = {
-      apiKey: apiKey
-  };
+  const apiKey = "<-- ALCHEMY API KEY -->"
 
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: http(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`)
+  })
 
   const main = async () => {
+    // Set wallet address
+    const address = 'vitalik.eth'
 
-      // Set wallet address
-      const address = 'vitalik.eth';
+    // Get balance and format in terms of ETH
+    const balance = await client.getBalance({
+      address: address,
+      blockTag: 'latest'
+    })
 
-      // Get balance and format in terms of ETH
-      let balance = await alchemy.core.getBalance(address, 'latest');
-      balance = Utils.formatEther(balance);
-      console.log(`Balance of ${address}: ${balance} ETH`);
+    const formattedBalance = formatEther(balance)
+    console.log(`Balance of ${address}: ${formattedBalance} ETH`)
   }
 
   const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      }
-      catch (error) {
-          console.log(error);
-          process.exit(1);
-      }
-  };
+    try {
+      await main()
+      process.exit(0)
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+  }
 
-  runMain();
+  runMain()
+  ```
+
+  ```javascript Ethers.js
+  import { ethers } from 'ethers'
+
+  const apiKey = "<-- ALCHEMY API KEY -->"
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`)
+
+  const main = async () => {
+    // Set wallet address
+    const address = 'vitalik.eth'
+
+    // Get balance and format in terms of ETH
+    const balance = await provider.getBalance(address, 'latest')
+    const formattedBalance = ethers.formatEther(balance)
+    console.log(`Balance of ${address}: ${formattedBalance} ETH`)
+  }
+
+  const runMain = async () => {
+    try {
+      await main()
+      process.exit(0)
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+  }
+
+  runMain()
   ```
 
   ```javascript Axios
@@ -187,7 +225,7 @@ Add the following code to the `main.js` file.
   ```
 
   ```javascript Fetch
-  import fetch from 'node-fetch';
+  
   import ethers from 'ethers';
 
   // Set wallet address corresponding to vitalik.eth
@@ -225,7 +263,7 @@ Add the following code to the `main.js` file.
   ```
 </CodeGroup>
 
-Note that ENS names can only be used with the Alchemy SDK. If you're using Axios or Fetch, you will have to use a hexadecimal address.
+Note that ENS names can be resolved by Viem and Ethers.js. If you're using direct HTTP requests (Axios/Fetch), you will need to resolve the ENS name to a hexadecimal address first.
 
 Run the script using the following command:
 
@@ -258,51 +296,96 @@ Install this package by running the following command in your terminal:
 Replace the contents of `main.js` with the following:
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  const { Alchemy, Utils } = require('alchemy-sdk');
-  const EthDater = require('ethereum-block-by-date');
+  ```javascript Viem
+  import { createPublicClient, http, formatEther } from 'viem'
+  import { mainnet } from 'viem/chains'
+  const EthDater = require('ethereum-block-by-date')
 
-  const apiKey = "<-- ALCHEMY API KEY -->";
-  const settings = {
-      apiKey: apiKey
-  };
+  const apiKey = "<-- ALCHEMY API KEY -->"
 
-  const alchemy = new Alchemy(settings);
+  const client = createPublicClient({
+    chain: mainnet,
+    transport: http(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`)
+  })
 
-  const dater = new EthDater(
-      alchemy.core // Ethers provider, required.
-  );
+  // Create EthDater instance with a custom provider function
+  const customProvider = {
+    getBlock: (blockTag) => client.getBlock({ blockTag }),
+    getBlockNumber: () => client.getBlockNumber()
+  }
+  const dater = new EthDater(customProvider)
 
   const main = async () => {
+    // Set wallet address
+    const address = 'vitalik.eth'
 
-      // Set wallet address
-      const address = 'vitalik.eth';
+    // Set timestamp
+    const timestamp = '2016-07-20T13:20:40Z'
 
-      // Set timestamp
-      const timestamp = '2016-07-20T13:20:40Z';
+    // Get blocknumber
+    let block = await dater.getDate(timestamp)
+    block = BigInt(block['block'])
 
-      // Get blocknumber 
-      let block = await dater.getDate(timestamp);
-      block = block['block']
+    // Get balance and format in terms of ETH
+    const balance = await client.getBalance({
+      address: address,
+      blockNumber: block
+    })
 
-      // Get balance and format in terms of ETH
-      let balance = await alchemy.core.getBalance(address, block);
-      balance = Utils.formatEther(balance);
-      console.log(`Balance of ${address}: ${balance} ETH`);
+    const formattedBalance = formatEther(balance)
+    console.log(`Balance of ${address}: ${formattedBalance} ETH`)
   }
 
   const runMain = async () => {
-      try {
-          await main();
-          process.exit(0);
-      }
-      catch (error) {
-          console.log(error);
-          process.exit(1);
-      }
-  };
+    try {
+      await main()
+      process.exit(0)
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+  }
 
-  runMain();
+  runMain()
+  ```
+
+  ```javascript Ethers.js
+  import { ethers } from 'ethers'
+  const EthDater = require('ethereum-block-by-date')
+
+  const apiKey = "<-- ALCHEMY API KEY -->"
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`)
+
+  const dater = new EthDater(provider)
+
+  const main = async () => {
+    // Set wallet address
+    const address = 'vitalik.eth'
+
+    // Set timestamp
+    const timestamp = '2016-07-20T13:20:40Z'
+
+    // Get blocknumber
+    let block = await dater.getDate(timestamp)
+    block = block['block']
+
+    // Get balance and format in terms of ETH
+    const balance = await provider.getBalance(address, block)
+    const formattedBalance = ethers.formatEther(balance)
+    console.log(`Balance of ${address}: ${formattedBalance} ETH`)
+  }
+
+  const runMain = async () => {
+    try {
+      await main()
+      process.exit(0)
+    } catch (error) {
+      console.log(error)
+      process.exit(1)
+    }
+  }
+
+  runMain()
   ```
 
   ```javascript Axios
@@ -369,7 +452,7 @@ Replace the contents of `main.js` with the following:
   ```
 
   ```javascript Fetch
-  import fetch from 'node-fetch';
+  
   import ethers from 'ethers';
 
   // Set wallet address corresponding to vitalik.eth

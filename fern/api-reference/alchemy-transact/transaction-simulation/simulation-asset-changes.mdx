@@ -2,7 +2,6 @@
 title: Asset Changes
 description: Simulates a transaction and returns a list of asset changes.
 subtitle: Simulates a transaction and returns a list of asset changes.
-url: https://docs.alchemy.com/reference/simulation-asset-changes
 slug: reference/simulation-asset-changes
 ---
 
@@ -95,13 +94,8 @@ To send a normal transfer, remove the `data` field from the transaction object i
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
 
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key
 
   (async () => {
     const transaction = {
@@ -109,7 +103,19 @@ To send a normal transfer, remove the `data` field from the transaction object i
     	to: "0xc02aaa39b223fe8d050e5c4f27ead9083c756cc2",
     	value: "0xDE0B6B3A7640000"
   	};
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();
@@ -176,13 +182,8 @@ vitalik.eth (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) sending 1 USDC to dem
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
 
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key
 
   (async () => {
     const transaction = {
@@ -191,7 +192,19 @@ vitalik.eth (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) sending 1 USDC to dem
      	value: "0x0",
      	data: "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
   	};
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();
@@ -272,13 +285,8 @@ vitalik.eth (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) sending 1 USDC to dem
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
 
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key
 
   (async () => {
     const transaction = {
@@ -287,7 +295,19 @@ vitalik.eth (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) sending 1 USDC to dem
       data: "0xd0e30db0",
       value: "0xDE0B6B3A7640000"
     };
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();
@@ -368,13 +388,8 @@ vitalik.eth (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) sending 1 USDC to dem
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
 
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key
 
   (async () => {
     const transaction = {
@@ -383,7 +398,19 @@ vitalik.eth (`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`) sending 1 USDC to dem
     	value: "0x0",
     	data: "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
   	};
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();
@@ -452,13 +479,7 @@ To send a normal transfer, remove the `data` field from the transaction object i
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
-
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.MATIC_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key.
 
   (async () => {
     const transaction = {
@@ -466,7 +487,19 @@ To send a normal transfer, remove the `data` field from the transaction object i
       to: "0x0d500b1d8e8ef31e21c99e1db9a6444d3adf1270",
       value: "0x4563918244F40000"
     };
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();
@@ -533,13 +566,7 @@ To send a normal transfer, remove the `data` field from the transaction object i
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
-
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.MATIC_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key.
 
   (async () => {
     const transaction = {
@@ -548,7 +575,19 @@ To send a normal transfer, remove the `data` field from the transaction object i
       value: "0x0",
       data: "0xa9059cbb000000000000000000000000fc43f5f9dd45258b3aff31bdbe6561d97e8b71de00000000000000000000000000000000000000000000000000000000000f4240"
     };
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();
@@ -629,13 +668,7 @@ To send a normal transfer, remove the `data` field from the transaction object i
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
-
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.MATIC_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key.
 
   (async () => {
     const transaction = {
@@ -644,7 +677,19 @@ To send a normal transfer, remove the `data` field from the transaction object i
     	data: "0xd0e30db0",
     	value: "0x4563918244F40000"
   	};
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();
@@ -725,13 +770,7 @@ To send a normal transfer, remove the `data` field from the transaction object i
   ```
 
   ```typescript sdk.ts
-  // npm install alchemy-sdk
-  import { Network, Alchemy } from "alchemy-sdk";
-
-  const alchemy = new Alchemy({
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.MATIC_MAINNET,
-  });
+  const apiKey = "demo"; // Replace with your Alchemy API Key.
 
   (async () => {
     const transaction = {
@@ -740,7 +779,19 @@ To send a normal transfer, remove the `data` field from the transaction object i
       value: "0x0",
       data: "0x2e1a7d4d0000000000000000000000000000000000000000000000000de0b6b3a7640000"
     };
-    const { changes, error } = await alchemy.transact.simulateAssetChanges(transaction);
+    const response = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'alchemy_simulateAssetChanges',
+        params: [transaction]
+      })
+    });
+
+    const data = await response.json();
+    const { result: changes, error } = data;
     console.log('Changes', changes);
     console.log('Error', error);
   })();

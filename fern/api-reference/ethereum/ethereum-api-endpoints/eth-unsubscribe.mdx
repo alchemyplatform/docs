@@ -2,7 +2,6 @@
 title: eth_unsubscribe
 description: Unsubscribe from different Ethereum event types with a regular RPC call with eth_unsubscribe as the method and the subscriptionId as the first parameter.
 subtitle: Unsubscribe from different Ethereum event types with a regular RPC call with eth_unsubscribe as the method and the subscriptionId as the first parameter.
-url: https://docs.alchemy.com/reference/eth-unsubscribe
 slug: reference/eth-unsubscribe
 ---
 
@@ -33,17 +32,18 @@ Unsubscribe from different Ethereum event types with a regular RPC call with eth
   {"jsonrpc":"2.0", "id": 1, "method": "eth_unsubscribe", "params": ["0x9cef478923ff08bf67fde6c64013158d"]}
   ```
 
-  ```javascript alchemy-sdk
-  // npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
+  ```javascript Viem
+  // To unsubscribe from a Viem WebSocket subscription, call the unsubscribe function
+  // Example: unsubscribe() // where unsubscribe was returned from client.watchBlocks() or similar
 
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
-  const alchemy = new Alchemy(settings);
-
-  alchemy.ws.removeAllListeners();
+  // For raw WebSocket subscriptions:
+  const ws = new WebSocket('wss://eth-mainnet.g.alchemy.com/v2/demo')
+  ws.send(JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_unsubscribe',
+    params: ['0x9cef478923ff08bf67fde6c64013158d']
+  }))
   ```
 </CodeGroup>
 

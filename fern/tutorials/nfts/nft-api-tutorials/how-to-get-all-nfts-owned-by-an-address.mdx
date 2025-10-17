@@ -2,7 +2,6 @@
 title: How to Get All NFTs Owned by an Address
 description: Learn how to get all NFTs (and their metadata) owned by an address using the Alchemy NFT API.
 subtitle: Learn how to get all NFTs (and their metadata) owned by an address using the Alchemy NFT API.
-url: https://docs.alchemy.com/docs/how-to-get-all-nfts-owned-by-an-address
 slug: docs/how-to-get-all-nfts-owned-by-an-address
 ---
 
@@ -76,10 +75,9 @@ To make requests to the NFT API, we recommend using the [Alchemy API Overview](/
 Alternatively, you can use `axios` or `fetch`.
 
 <CodeGroup>
-  ```shell Alchemy SDK (Recommended)
+  ```shell Fetch
   mkdir nft-ownership && cd nft-ownership
   npm init -y
-  npm install --save alchemy-sdk
   touch main.js
   ```
 
@@ -87,12 +85,6 @@ Alternatively, you can use `axios` or `fetch`.
   mkdir nft-ownership && cd nft-ownership
   npm init -y
   npm install --save axios
-  touch main.js
-  ```
-
-  ```shell Fetch
-  mkdir nft-ownership && cd nft-ownership
-  npm init -y
   touch main.js
   ```
 </CodeGroup>
@@ -120,21 +112,29 @@ You can also restrict the NFT collections by passing in an array of `contractAdd
 For more information on this, check out the [NFT API FAQ](/reference/nft-api). Add the following code to the `main.js` file:
 
 <CodeGroup>
-  ```javascript Alchemy SDK (Recommended)
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  ```javascript Fetch
+  // Replace with your Alchemy API key:
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   const main = async () => {
+    // Wallet address or ENS name
+    const owner = "elanhapern.eth";
+
     // Get all NFTs
-    const nfts = await alchemy.nft.getNftsForOwner("elanhapern.eth");
+    const response = await fetch(`${baseURL}/getNFTs/?owner=${owner}`, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('API Error:', data.error);
+      return;
+    }
+
     // Print NFTs
-    console.log(nfts);
+    console.log(data);
   };
 
   const runMain = async () => {
@@ -169,24 +169,6 @@ For more information on this, check out the [NFT API FAQ](/reference/nft-api). A
   axios(config)
       .then(response => console.log(response['data']))
       .catch(error => console.log('error', error));
-  ```
-
-  ```javascript Fetch
-  import fetch from 'node-fetch';
-
-  const baseURL = "<-- ALCHEMY APP HTTP URL -->";
-  const address = "elanhalpern.eth";
-  const url = `${baseURL}/getNFTs/?owner=${address}`;
-
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => response.json())
-  	.then((data) => console.log(data))
-    .catch(error => console.log('error', error))
   ```
 </CodeGroup>
 
@@ -280,26 +262,30 @@ The response you received in the previous step is not human-readable. Let's pars
 Replace the contents of `main.js` with the following:
 
 <CodeGroup>
-  ```javascript Alchemy SDK
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  ```javascript Fetch
+  // Replace with your Alchemy API key:
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   const main = async () => {
     // Wallet address
     const address = "elanhalpern.eth";
 
     // Get all NFTs
-    const nfts = await alchemy.nft.getNftsForOwner(address);
+    const response = await fetch(`${baseURL}/getNFTs/?owner=${address}`, {
+      method: 'GET',
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('API Error:', data.error);
+      return;
+    }
 
     // Parse output
-    const numNfts = nfts["totalCount"];
-    const nftList = nfts["ownedNfts"];
+    const numNfts = data["totalCount"];
+    const nftList = data["ownedNfts"];
 
     console.log(`Total NFTs owned by ${address}: ${numNfts} \n`);
 
@@ -310,6 +296,18 @@ Replace the contents of `main.js` with the following:
       i++;
     }
   };
+
+  const runMain = async () => {
+    try {
+      await main();
+      process.exit(0);
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+  };
+
+  runMain();
   ```
 
   ```javascript Axios
@@ -346,38 +344,6 @@ Replace the contents of `main.js` with the following:
           }
       })
       .catch(error => console.log('error', error));
-  ```
-
-  ```javascript Fetch
-  import fetch from 'node-fetch';
-
-  const baseURL = "<-- ALCHEMY APP HTTP URL -->";
-  const address = "elanhalpern.eth";
-  const url = `${baseURL}/getNFTs/?owner=${address}`;
-
-  var requestOptions = {
-    method: 'get',
-    redirect: 'follow'
-  };
-
-  fetch(url, requestOptions)
-    .then(response => {
-          const nfts = response['data'];
-
-          // Parse output
-          const numNfts = nfts['totalCount'];
-          const nftList = nfts['ownedNfts'];
-
-          console.log(`Total NFTs owned by ${address}: ${numNfts} \n`);
-
-          let i = 1;
-
-          for (nft of nftList) {
-              console.log(`${i}. ${nft['metadata']['name']}`)
-              i++;
-          }
-    })
-    .catch(error => console.log('error', error))
   ```
 </CodeGroup>
 

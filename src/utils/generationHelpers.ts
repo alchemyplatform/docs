@@ -83,13 +83,22 @@ export const handleDerefErrors = (
   genErrors: unknown[],
 ) => {
   const errorGroup = err as DerefErrorGroup;
-  errorGroup.errors.forEach((error) => {
-    if (error.code === "EMISSINGPOINTER") {
-      missingTokens.push(
-        `token: ${error.targetToken}\n    api: ${api}\n    source: ${error.source}`,
-      );
-    } else {
-      genErrors.push(error);
-    }
-  });
+
+  if (errorGroup.errors && Array.isArray(errorGroup.errors)) {
+    errorGroup.errors.forEach((error) => {
+      if (error.code === "EMISSINGPOINTER") {
+        missingTokens.push(
+          `token: ${error.targetToken}\n    api: ${api}\n    source: ${error.source}`,
+        );
+      } else {
+        genErrors.push(error);
+      }
+    });
+  } else {
+    genErrors.push({
+      name: (err as Error).name || "Unknown Error",
+      message: (err as Error).message || String(err),
+      api,
+    });
+  }
 };

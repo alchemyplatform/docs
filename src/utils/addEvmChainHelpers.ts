@@ -53,7 +53,6 @@ export function generateQuickstartMarkdown(
 title: ${displayName} API Quickstart
 description: How to get started building on ${displayName} and using the JSON-RPC API
 subtitle: How to get started building on ${displayName} and using the JSON-RPC API
-url: https://docs.alchemy.com/reference/${chainName}-api-quickstart
 slug: reference/${chainName}-api-quickstart
 ---
 
@@ -179,7 +178,6 @@ export function generateFaqMarkdown(
 title: ${displayName} API FAQ
 description: Frequently asked questions about the ${displayName} API
 subtitle: Frequently asked questions about the ${displayName} API
-url: https://docs.alchemy.com/reference/${chainName}-api-faq
 slug: reference/${chainName}-api-faq
 ---
 

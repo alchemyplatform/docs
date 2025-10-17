@@ -2,7 +2,6 @@
 title: NFT API Quickstart
 description: Go from zero to hero with the Alchemy NFT API. Learn how to query NFT data, then dive into some fun tutorials!
 subtitle: Go from zero to hero with the Alchemy NFT API. Learn how to query NFT data, then dive into some fun tutorials!
-url: https://docs.alchemy.com/reference/nft-api-quickstart
 slug: reference/nft-api-quickstart
 ---
 
@@ -20,13 +19,12 @@ Follow along with the steps below to get started with the NFT API:
 
 3. [Choose a library](#choose-a-library)
 
-   1. [Alchemy SDK](#a-alchemy-sdk-recommended) (recommended)
-   2. [Node-Fetch](#b-node-fetch)
-   3. [Axios](#c-axios)
+   1. [Fetch](#a-fetch)
+   2. [Axios](#b-axios)
 
 ## 1. Choose a package manager
 
-For this guide, we will be using `npm` or `yarn` as our package manager to install either `alchemy-sdk`, `fetch`, or `axios`.
+For this guide, we will be using `npm` or `yarn` as our package manager if you choose to use `axios`.
 
 ### npm
 
@@ -70,92 +68,76 @@ Open up a terminal, and from the command line, create a new repository to hold y
 
 ## 3. Choose a Library
 
-### a) Alchemy SDK (*Recommended*)
+### a) Fetch
 
-You can install the `alchemy-sdk-js` module to easily interact with Alchemy APIs. We highly recommend using the Alchemy SDK because you also get WebSocket support, retries, and other benefits without the complexity!
-
-For full documentation on `alchemy-sdk-js`, check the GitHub repo:
-
-[View the Alchemy SDK on GitHub](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-#### Installation
-
-Run the following command to install `alchemy-web3` with `npm` and `yarn`
-
-<CodeGroup>
-  ```shell npm
-  npm install alchemy-sdk
-  ```
-
-  ```shell yarn
-  yarn add alchemy-sdk
-  ```
-</CodeGroup>
+You can easily interact with Alchemy's NFT API using simple fetch requests. No additional dependencies required with Node.js 18+.
 
 #### Demo Script
 
-[View the demo script on GitHub](https://github.com/alchemyplatform/nft-api-javascript-scripts/blob/main/alchemy-sdk-script.js)
+[View the demo script on GitHub](https://github.com/alchemyplatform/nft-api-javascript-scripts)
 
-The demo script for the Alchemy SDK
-
-In your `alchemy-nft-api` directory, you can create a new file called `alchemy-sdk-script.js` using your favorite file browser, code editor, or just directly in the terminal using the `touch` command like this:
+In your `alchemy-nft-api` directory, you can create a new file called `nft-api-script.js` using your favorite file browser, code editor, or just directly in the terminal using the `touch` command like this:
 
 <CodeGroup>
   ```shell shell
-  touch alchemy-sdk-script.js
+  touch nft-api-script.js
   ```
 </CodeGroup>
 
 and then paste the following code snippet into the file:
 
 <CodeGroup>
-  ```javascript alchemy-sdk-script.js
-  // This script demonstrates access to the NFT API via the Alchemy SDK.
-  import { Network, Alchemy } from "alchemy-sdk";
+  ```javascript nft-api-script.js
+  // Replace with your Alchemy API Key
+  const apiKey = "demo";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v3/${apiKey}`;
 
-  // Optional Config object, but defaults to demo api-key and eth-mainnet.
-  const settings = {
-    apiKey: "demo", // Replace with your Alchemy API Key.
-    network: Network.ETH_MAINNET, // Replace with your network.
-  };
+  async function getNFTData() {
+    try {
+      // The wallet address we want to query for NFTs:
+      const ownerAddr = "vitalik.eth";
+      console.log("fetching NFTs for address:", ownerAddr);
+      console.log("...");
 
-  const alchemy = new Alchemy(settings);
+      // Get NFTs for owner
+      const nftsResponse = await fetch(`${baseURL}/getNFTsForOwner?owner=${ownerAddr}&pageSize=5`);
+      const nftsData = await nftsResponse.json();
 
-  // Print owner's wallet address:
-  const ownerAddr = "vitalik.eth";
-  console.log("fetching NFTs for address:", ownerAddr);
-  console.log("...");
+      console.log("number of NFTs found:", nftsData.totalCount);
+      console.log("...");
 
-  // Print total NFT count returned in the response:
-  const nftsForOwner = await alchemy.nft.getNftsForOwner("vitalik.eth");
-  console.log("number of NFTs found:", nftsForOwner.totalCount);
-  console.log("...");
+      // Print contract address and tokenId for each NFT:
+      for (const nft of nftsData.ownedNfts) {
+        console.log("===");
+        console.log("contract address:", nft.contract.address);
+        console.log("token ID:", nft.tokenId);
+      }
+      console.log("===");
 
-  // Print contract address and tokenId for each NFT:
-  for (const nft of nftsForOwner.ownedNfts) {
-    console.log("===");
-    console.log("contract address:", nft.contract.address);
-    console.log("token ID:", nft.tokenId);
+      // Fetch metadata for a particular NFT:
+      console.log("fetching metadata for a Crypto Coven NFT...");
+      const contractAddress = "0x5180db8F5c931aaE63c74266b211F580155ecac8";
+      const tokenId = "1590";
+
+      const metadataResponse = await fetch(
+        `${baseURL}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}`
+      );
+      const response = await metadataResponse.json();
+
+      // Print some commonly used fields:
+      console.log("NFT name: ", response.name || response.title);
+      console.log("token type: ", response.tokenType);
+      console.log("tokenUri: ", response.tokenUri);
+      console.log("image url: ", response.image?.originalUrl || response.rawMetadata?.image);
+      console.log("time last updated: ", response.timeLastUpdated);
+      console.log("===");
+
+    } catch (error) {
+      console.error('Request failed:', error.message);
+    }
   }
-  console.log("===");
 
-  // Fetch metadata for a particular NFT:
-  console.log("fetching metadata for a Crypto Coven NFT...");
-  const response = await alchemy.nft.getNftMetadata(
-    "0x5180db8F5c931aaE63c74266b211F580155ecac8",
-    "1590"
-  );
-
-  // Uncomment this line to see the full api response:
-  // console.log(response);
-
-  // Print some commonly used fields:
-  console.log("NFT name: ", response.title);
-  console.log("token type: ", response.tokenType);
-  console.log("tokenUri: ", response.tokenUri.gateway);
-  console.log("image url: ", response.rawMetadata.image);
-  console.log("time last updated: ", response.timeLastUpdated);
-  console.log("===");
+  getNFTData();
   ```
 </CodeGroup>
 
@@ -163,7 +145,7 @@ From your command line, you can execute the script with:
 
 <CodeGroup>
   ```shell shell
-  node alchemy-sdk-script.js
+  node nft-api-script.js
   ```
 </CodeGroup>
 
@@ -171,7 +153,7 @@ You should see output like this:
 
 <CodeGroup>
   ```shell shell
-  node alchemy-sdk-script.js   ✔  4s
+
   fetching NFTs for address: vitalik.eth
   ...
   number of NFTs found: 516
@@ -195,369 +177,7 @@ You should see output like this:
   ```
 </CodeGroup>
 
-For full documentation on the available endpoints for `alchemy-sdk`, check the github repo:
-
-[View the Alchemy SDK on GitHub](https://github.com/alchemyplatform/alchemy-sdk-js)
-
-### b) Node-Fetch
-
-`node-fetch` is a lightweight, common module that brings the Fetch API to Node.js and allows us to make our HTTP requests.
-
-See the documentation for more info: [https://www.npmjs.com/package/node-fetch](https://www.npmjs.com/package/node-fetch)
-
-#### Installation
-
-Run the following command to install `node-fetch` with `npm` and `yarn`
-
-<CodeGroup>
-  ```shell npm
-  npm install node-fetch
-  ```
-
-  ```shell yarn
-  yarn add node-fetch
-  ```
-</CodeGroup>
-
-#### Demo Script
-
-[View the demo script on GitHub](https://github.com/alchemyplatform/nft-api-javascript-scripts/blob/main/fetch-script.js)
-
-In your `alchemy-nft-api` directory, you can create a new file called `fetch-script.js` using your favorite file browser, code editor, or just directly in the terminal using the `touch` command like this:
-
-<CodeGroup>
-  ```shell fetch-script.js
-  touch fetch-script.js
-  ```
-</CodeGroup>
-
-and then paste the following code snippet in to explore the [getNFTs](/reference/getnfts) or [getNFTMetadata](/reference/getnftmetadata) methods:
-
-<CodeGroup>
-  ```javascript fetch-script.js (getNFTsForOwner)
-  // alchemy-nft-api/fetch-script.js
-  import fetch from 'node-fetch';
-
-  // Setup request options:
-  var requestOptions = {
-    method: 'GET',
-    redirect: 'follow'
-  };
-
-  // Replace with your Alchemy API key:
-  const apiKey = "demo";
-  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v3/${apiKey}/getNFTsForOwner/`;
-  // Replace with the wallet address you want to query:
-  const ownerAddr = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
-  const pageSize = 2;
-  const fetchURL = `${baseURL}?owner=${ownerAddr}&pageSize=${pageSize}`;
-
-  // Make the request and print the formatted response:
-  fetch(fetchURL, requestOptions)
-    .then(response => response.json())
-    .then(response => JSON.stringify(response, null, 2))
-    .then(result => console.log(result))
-    .catch(error => console.log('error', error));
-  ```
-
-  ```javascript fetch-script.js (getNFTMetadata)
-  import fetch from 'node-fetch';
-
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    const apiKey = "demo"
-    const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v3/${demo}/getNFTMetadata`;
-    const contractAddr = "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d";
-    const tokenId = "2";
-    const tokenType = "erc721";
-    const fetchURL = `${baseURL}?contractAddress=${contractAddr}&tokenId=${tokenId}&tokenType=${tokenType}`;
-
-    fetch(fetchURL, requestOptions)
-      .then(response => response.json())
-      .then(response => JSON.stringify(response, null, 2))
-      .then(result => console.log(result))
-      .catch(error => console.log('error', error));
-  ```
-</CodeGroup>
-
-From your command line, you can execute the script with:
-
-<CodeGroup>
-  ```shell shell
-  node fetch-script.js
-  ```
-</CodeGroup>
-
-Your output should look like the following:
-
-<CodeGroup>
-  ```json getNFTsForOwner
-  {
-  	"ownedNfts": [
-  		{
-  			"contract": {
-  				"address": "0x000386E3F7559d9B6a2F5c46B4aD1A9587D59Dc3",
-  				"name": "Bored Ape Nike Club",
-  				"symbol": "BANC",
-  				"totalSupply": null,
-  				"tokenType": "ERC721",
-  				"contractDeployer": "0x51D7D428041E23ef51422e110dfEfF906e821CFe",
-  				"deployedBlockNumber": 14276343,
-  				"openSeaMetadata": {
-  					"floorPrice": null,
-  					"collectionName": "BoredApeNikeClub",
-  					"collectionSlug": "bored-ape-nike-club-v2",
-  					"safelistRequestStatus": "not_requested",
-  					"imageUrl": "https://i.seadn.io/gae/yJ9DgXqjRwgdCkrQmHj7krCbixM8fPVAyYJWJ5NHXap1L0c3QL5MPvrNT0QDINIStGOK857lOvab8MpNQS9X4pkHPktmhVmN82qoVw?w=500&auto=format",
-  					"description": "COUNTDOWN OVER. MINTING LIVE.\n\n[Mint on the website.](https://nikemetaverse.xyz)\n",
-  					"externalUrl": "https://nikemetaverse.xyz",
-  					"twitterUsername": null,
-  					"discordUrl": null,
-  					"bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format",
-  					"lastIngestedAt": "2023-10-30T07:13:52.000Z"
-  				},
-  				"isSpam": true,
-  				"spamClassifications": [
-  					"OwnedByMostHoneyPots",
-  					"Erc721TooManyOwners",
-  					"Erc721TooManyTokens",
-  					"NoSalesActivity",
-  					"HighAirdropPercent",
-  					"HighHoneyPotPercent",
-  					"HoneyPotsOwnMultipleTokens"
-  				]
-  			},
-  			"tokenId": "1",
-  			"tokenType": "ERC721",
-  			"name": null,
-  			"description": null,
-  			"tokenUri": "http://api.nikeapenft.xyz/ipfs/1",
-  			"image": {
-  				"cachedUrl": null,
-  				"thumbnailUrl": null,
-  				"pngUrl": null,
-  				"contentType": null,
-  				"size": null,
-  				"originalUrl": null
-  			},
-  			"raw": {
-  				"tokenUri": "http://api.nikeapenft.xyz/ipfs/1",
-  				"metadata": {},
-  				"error": null
-  			},
-  			"collection": {
-  				"name": "BoredApeNikeClub",
-  				"slug": "bored-ape-nike-club-v2",
-  				"externalUrl": "https://nikemetaverse.xyz",
-  				"bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format"
-  			},
-  			"mint": {
-  				"mintAddress": null,
-  				"blockNumber": null,
-  				"timestamp": null,
-  				"transactionHash": null
-  			},
-  			"owners": null,
-  			"timeLastUpdated": "2023-11-06T04:34:38.880Z",
-  			"balance": "26",
-  			"acquiredAt": {
-  				"blockTimestamp": null,
-  				"blockNumber": null
-  			}
-  		},
-  		{
-  			"contract": {
-  				"address": "0x000386E3F7559d9B6a2F5c46B4aD1A9587D59Dc3",
-  				"name": "Bored Ape Nike Club",
-  				"symbol": "BANC",
-  				"totalSupply": null,
-  				"tokenType": "ERC721",
-  				"contractDeployer": "0x51D7D428041E23ef51422e110dfEfF906e821CFe",
-  				"deployedBlockNumber": 14276343,
-  				"openSeaMetadata": {
-  					"floorPrice": null,
-  					"collectionName": "BoredApeNikeClub",
-  					"collectionSlug": "bored-ape-nike-club-v2",
-  					"safelistRequestStatus": "not_requested",
-  					"imageUrl": "https://i.seadn.io/gae/yJ9DgXqjRwgdCkrQmHj7krCbixM8fPVAyYJWJ5NHXap1L0c3QL5MPvrNT0QDINIStGOK857lOvab8MpNQS9X4pkHPktmhVmN82qoVw?w=500&auto=format",
-  					"description": "COUNTDOWN OVER. MINTING LIVE.\n\n[Mint on the website.](https://nikemetaverse.xyz)\n",
-  					"externalUrl": "https://nikemetaverse.xyz",
-  					"twitterUsername": null,
-  					"discordUrl": null,
-  					"bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format",
-  					"lastIngestedAt": "2023-10-30T07:13:52.000Z"
-  				},
-  				"isSpam": true,
-  				"spamClassifications": [
-  					"OwnedByMostHoneyPots",
-  					"Erc721TooManyOwners",
-  					"Erc721TooManyTokens",
-  					"NoSalesActivity",
-  					"HighAirdropPercent",
-  					"HighHoneyPotPercent",
-  					"HoneyPotsOwnMultipleTokens"
-  				]
-  			},
-  			"tokenId": "2",
-  			"tokenType": "ERC721",
-  			"name": null,
-  			"description": null,
-  			"tokenUri": "http://api.nikeapenft.xyz/ipfs/2",
-  			"image": {
-  				"cachedUrl": null,
-  				"thumbnailUrl": null,
-  				"pngUrl": null,
-  				"contentType": null,
-  				"size": null,
-  				"originalUrl": null
-  			},
-  			"raw": {
-  				"tokenUri": "http://api.nikeapenft.xyz/ipfs/2",
-  				"metadata": {},
-  				"error": null
-  			},
-  			"collection": {
-  				"name": "BoredApeNikeClub",
-  				"slug": "bored-ape-nike-club-v2",
-  				"externalUrl": "https://nikemetaverse.xyz",
-  				"bannerImageUrl": "https://i.seadn.io/gae/i84LsC2dtbF5I3YiuaXzzfvSijlBI-ZJ8UEta04Ukl4V57Uoj0ZGw8tNyuPdwrF7N5pclyzdqSJjxHZ65z4G5jQrVRK_DHUMVrzTYQ?w=500&auto=format"
-  			},
-  			"mint": {
-  				"mintAddress": null,
-  				"blockNumber": null,
-  				"timestamp": null,
-  				"transactionHash": null
-  			},
-  			"owners": null,
-  			"timeLastUpdated": "2023-11-06T11:46:38.867Z",
-  			"balance": "31",
-  			"acquiredAt": {
-  				"blockTimestamp": null,
-  				"blockNumber": null
-  			}
-  		}
-  	],
-  	"totalCount": 26620,
-  	"validAt": {
-  		"blockNumber": 18513471,
-  		"blockHash": "0x49376e3ea0d07b4b557521832ac2f52213b12bf912087ac1fe9f04c9899d221b",
-  		"blockTimestamp": "2023-11-06T14:15:23Z"
-  	},
-  	"pageKey": "MHgwMDAzODZlM2Y3NTU5ZDliNmEyZjVjNDZiNGFkMWE5NTg3ZDU5ZGMzOjB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMjpmYWxzZQ=="
-  }
-  ```
-
-  ```json getNFTMetadata
-  {
-  	"contract": {
-  		"address": "0xe785E82358879F061BC3dcAC6f0444462D4b5330",
-  		"name": "World Of Women",
-  		"symbol": "WOW",
-  		"totalSupply": "10000",
-  		"tokenType": "ERC721",
-  		"contractDeployer": "0xc9b6321dc216D91E626E9BAA61b06B0E4d55bdb1",
-  		"deployedBlockNumber": 12907782,
-  		"openSeaMetadata": {
-  			"floorPrice": 0.7899,
-  			"collectionName": "World of Women",
-  			"collectionSlug": "world-of-women-nft",
-  			"safelistRequestStatus": "verified",
-  			"imageUrl": "https://i.seadn.io/gcs/files/8604de2d9aaec98dd389e3af1b1a14b6.gif?w=500&auto=format",
-  			"description": "World of Women is a collection of 10,000 NFTs that gives you full access to our network of artists, creators, entrepreneurs, and executives who are championing diversity and equal opportunity on the blockchain.\n\nCreated and illustrated by Yam Karkai (@ykarkai), World of Women has made prominent appearances at Christie's, The New Yorker and Billboard.\n\nJoin us to receive exclusive access to NFT drops, experiences, and much more.\n\nThe Time is WoW.",
-  			"externalUrl": "http://worldofwomen.art",
-  			"twitterUsername": "worldofwomennft",
-  			"discordUrl": "https://discord.gg/worldofwomen",
-  			"bannerImageUrl": "https://i.seadn.io/gae/GHhptRLebBOWOy8kfXpYCVqsqdes-1-6I_jbuRnGTHHW6TD63CtciH75Dotfu2u8v6EmkWt-tjhkFRVLxRUwgMfKqqy5W24AolJayeo?w=500&auto=format",
-  			"lastIngestedAt": "2023-11-06T05:54:50.000Z"
-  		},
-  		"isSpam": null,
-  		"spamClassifications": []
-  	},
-  	"tokenId": "2",
-  	"tokenType": "ERC721",
-  	"name": "WoW #2",
-  	"description": null,
-  	"tokenUri": "https://alchemy.mypinata.cloud/ipfs/QmTNBQDbggLZdKF1fRgWnXsnRikd52zL5ciNu769g9JoUP/2",
-  	"image": {
-  		"cachedUrl": "https://nft-cdn.alchemy.com/eth-mainnet/4d6f68252d08e3383e627f8ddd80a1ea",
-  		"thumbnailUrl": "https://res.cloudinary.com/alchemyapi/image/upload/thumbnailv2/eth-mainnet/4d6f68252d08e3383e627f8ddd80a1ea",
-  		"pngUrl": "https://res.cloudinary.com/alchemyapi/image/upload/convert-png/eth-mainnet/4d6f68252d08e3383e627f8ddd80a1ea",
-  		"contentType": "image/png",
-  		"size": 192785,
-  		"originalUrl": "https://ipfs.io/ipfs/QmSTBRrNGPvQssSWenMiBQj7ZYue7DEwajAF4z5HDrLFV6"
-  	},
-  	"raw": {
-  		"tokenUri": "ipfs://QmTNBQDbggLZdKF1fRgWnXsnRikd52zL5ciNu769g9JoUP/2",
-  		"metadata": {
-  			"name": "WoW #2",
-  			"image": "ipfs://QmSTBRrNGPvQssSWenMiBQj7ZYue7DEwajAF4z5HDrLFV6",
-  			"attributes": [
-  				{
-  					"value": "Purple Pink",
-  					"trait_type": "Background"
-  				},
-  				{
-  					"value": "Deep Bronze",
-  					"trait_type": "Skin Tone"
-  				},
-  				{
-  					"value": "Green Straight",
-  					"trait_type": "Eyes"
-  				},
-  				{
-  					"value": "Cyber Warrior",
-  					"trait_type": "Facial Features"
-  				},
-  				{
-  					"value": "Curly Ponytail",
-  					"trait_type": "Hairstyle"
-  				},
-  				{
-  					"value": "Psychedelic Sunglasses",
-  					"trait_type": "Face Accessories"
-  				},
-  				{
-  					"value": "Sun Keeper",
-  					"trait_type": "Necklace"
-  				},
-  				{
-  					"value": "Striped Tee",
-  					"trait_type": "Clothes"
-  				},
-  				{
-  					"value": "Stern",
-  					"trait_type": "Mouth"
-  				},
-  				{
-  					"value": "Burgundy",
-  					"trait_type": "Lips Color"
-  				}
-  			]
-  		},
-  		"error": null
-  	},
-  	"collection": {
-  		"name": "World of Women",
-  		"slug": "world-of-women-nft",
-  		"externalUrl": "http://worldofwomen.art",
-  		"bannerImageUrl": "https://i.seadn.io/gae/GHhptRLebBOWOy8kfXpYCVqsqdes-1-6I_jbuRnGTHHW6TD63CtciH75Dotfu2u8v6EmkWt-tjhkFRVLxRUwgMfKqqy5W24AolJayeo?w=500&auto=format"
-  	},
-  	"mint": {
-  		"mintAddress": null,
-  		"blockNumber": null,
-  		"timestamp": null,
-  		"transactionHash": null
-  	},
-  	"owners": null,
-  	"timeLastUpdated": "2023-10-30T14:36:39.767Z"
-  }
-  ```
-</CodeGroup>
-
-### c) Axios
+### b) Axios
 
 `axios` is a promise-based HTTP client for the browser and Node.js, which allows us to make a raw request to the Alchemy API.
 

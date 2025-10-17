@@ -2,7 +2,6 @@
 title: How to Resolve ENS Domains Given a Wallet Address
 description: In this tutorial, we’ll be using Alchemy’s NFT API to fetch all ENS Domain Names owned by a user.
 subtitle: In this tutorial, we’ll be using Alchemy’s NFT API to fetch all ENS Domain Names owned by a user.
-url: https://docs.alchemy.com/docs/how-to-resolve-ens-domains-given-a-wallet-address
 slug: docs/how-to-resolve-ens-domains-given-a-wallet-address
 ---
 
@@ -10,7 +9,7 @@ slug: docs/how-to-resolve-ens-domains-given-a-wallet-address
   This tutorial uses the **[getNFTs](/reference/getnfts)** endpoint.
 </Info>
 
-The Alchemy SDK makes it possible to parse ENS names from an address and perform the reverse to get the address of an ENS name. This latter case is useful when there's a need to get more data from an (Address), such as contracts which have been deployed by the Wallet Address.
+Alchemy's NFT API makes it possible to parse ENS names from an address and perform the reverse to get the address of an ENS name. This latter case is useful when there's a need to get more data from an (Address), such as contracts which have been deployed by the Wallet Address.
 
 The (ENS)’s job is to map human-readable names like ‘alice.eth’ to machine-readable identifiers such as Ethereum addresses, other cryptocurrency addresses, content hashes, and metadata.
 
@@ -24,7 +23,7 @@ In this guide, we walk you through How to get an ENS name from an EOA.
 
 1. Create a [free Alchemy account](https://dashboard.alchemy.com/signup) to access the [NFT API Endpoints](/reference/nft-api-endpoints)
 2. Select a wallet address to request ENS domains from (i.e. “0x…XXX”)
-3. [Alchemy SDK](/reference/alchemy-sdk-quickstart) (recommended)
+3. Direct HTTP requests using fetch or similar
 
 ***
 
@@ -44,15 +43,9 @@ Open up a terminal, and from the command line, create a new repository to hold y
   ```
 </CodeGroup>
 
-### 2. Install the Alchemy SDK
+### 2. Set up the project
 
-Navigate into your project directory and run:
-
-<CodeGroup>
-  ```shell shell
-  npm install alchemy-sdk
-  ```
-</CodeGroup>
+Navigate into your project directory. We'll use fetch to make the API requests:
 
 ### 3. \[optional] Load ES6 modules
 
@@ -77,22 +70,37 @@ Create a file in your repository called `resolve-ens.js` and paste in the follow
 
 <CodeGroup>
   ```javascript resolve-ens.js
-  // Setup: npm install alchemy-sdk
-  import { Alchemy, Network } from "alchemy-sdk";
-
-  const config = {
-    apiKey: "<-- ALCHEMY APP API KEY -->",
-    network: Network.ETH_MAINNET,
-  };
-  const alchemy = new Alchemy(config);
+  // Replace with your Alchemy API Key
+  const apiKey = "<-- ALCHEMY APP API KEY -->";
+  const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}`;
 
   const walletAddress = "0x458d1E307CcA61C0Bea82f7663F66831175EcDe8"; // replace with wallet address
   const ensContractAddress = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
-  const nfts = await alchemy.nft.getNftsForOwner(walletAddress, {
-    contractAddresses: [ensContractAddress],
-  });
 
-  console.log(nfts);
+  async function getENSDomains() {
+    try {
+      const url = `${baseURL}/getNFTs/?owner=${walletAddress}&contractAddresses%5B%5D=${ensContractAddress}&withMetadata=true`;
+
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+
+      const response = await fetch(url, requestOptions);
+      const nfts = await response.json();
+
+      if (nfts.error) {
+        console.error('Error:', nfts.error);
+        return;
+      }
+
+      console.log(nfts);
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
+  }
+
+  getENSDomains();
   ```
 </CodeGroup>
 
