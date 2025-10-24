@@ -326,6 +326,123 @@ components:
               window_final_block_height: 894470
               window_block_count: 0
 
+    getblocktemplate:
+      name: getblocktemplate
+      summary: Request a block template for mining
+      description: >
+        Returns data needed to construct a block to mine. This method is used by miners to request a block template 
+        for mining new blocks. It can be customized with various parameters to specify the desired mining capabilities and rules.
+      params:
+        - name: template_request
+          required: false
+          description: A JSON object containing the template request parameters.
+          schema:
+            type: object
+            properties:
+              mode:
+                type: string
+                description: >
+                  Specifies the mode of operation. Can be 'template' for a block template or 'proposal' for submitting a block proposal.
+                enum: ["template", "proposal"]
+              capabilities:
+                type: array
+                description: >
+                  A list of strings specifying the capabilities the miner supports. 
+                  This can include 'coinbasetxn', 'workid', 'coinbase/append', etc.
+                items:
+                  type: string
+              rules:
+                type: array
+                description: >
+                  A list of strings specifying the rules the miner will support. 
+                  For example, 'segwit' indicates support for Segregated Witness.
+                items:
+                  type: string
+      result:
+        name: result
+        description: A block template object containing all necessary data for mining.
+        schema:
+          type: object
+          properties:
+            version:
+              type: integer
+              description: The block version.
+            previousblockhash:
+              $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
+            transactions:
+              type: array
+              description: Contents of non-coinbase transactions that should be included in the next block.
+              items:
+                type: object
+            coinbaseaux:
+              type: object
+              description: Data that should be included in the coinbase's scriptSig content.
+            coinbasevalue:
+              type: integer
+              description: Maximum allowable input to coinbase transaction, including the mining reward and transaction fees (in satoshis).
+            target:
+              type: string
+              description: The hash target for the block.
+            mintime:
+              type: integer
+              description: The minimum timestamp appropriate for the next block time in seconds since epoch.
+            mutable:
+              type: array
+              description: List of ways the block template may be changed.
+              items:
+                type: string
+            noncerange:
+              type: string
+              description: Range of valid nonces.
+            sigoplimit:
+              type: integer
+              description: Limit of signature operations in blocks.
+            sizelimit:
+              type: integer
+              description: Limit of block size.
+            curtime:
+              type: integer
+              description: Current timestamp in seconds since epoch.
+            bits:
+              type: string
+              description: Compressed target of the next block.
+            height:
+              type: integer
+              description: The height of the next block.
+      examples:
+        - name: getblocktemplate example
+          params:
+            - name: template_request
+              value:
+                mode: "template"
+                capabilities:
+                  - "coinbasetxn"
+                  - "workid"
+                  - "coinbase/append"
+                rules:
+                  - "segwit"
+          result:
+            name: result
+            value:
+              version: 536870912
+              previousblockhash: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+              transactions: []
+              coinbaseaux:
+                flags: ""
+              coinbasevalue: 625000000
+              target: "0000000000000000000248b60000000000000000000000000000000000000000"
+              mintime: 1745928076
+              mutable:
+                - "time"
+                - "transactions"
+                - "prevblock"
+              noncerange: "00000000ffffffff"
+              sigoplimit: 80000
+              sizelimit: 4000000
+              curtime: 1745931642
+              bits: "170248b6"
+              height: 894471
+
     # Client methods
     getblockchaininfo:
       name: getblockchaininfo
@@ -622,6 +739,41 @@ components:
                   txid: "c67ecf450828d639a8cf3d74f168fe6bd9a1121a1167a1d46908d703f871c3a6"
                   error: "bad-txns-inputs-missingorspent"
               replaced-transactions: []
+
+    submitblock:
+      name: submitblock
+      summary: Submit a new block to the network
+      description: >
+        Attempts to submit a new block to the network. The block data must be hex-encoded.
+      params:
+        - name: hexdata
+          required: true
+          description: The hex-encoded block data to submit.
+          schema:
+            type: string
+        - name: dummy
+          required: false
+          description: >
+            Dummy value for compatibility with BIP22. This value is ignored.
+          schema:
+            type: string
+      result:
+        name: result
+        description: Returns null when valid, or a string error message according to BIP22 otherwise.
+        schema:
+          oneOf:
+            - type: "null"
+              description: Block was accepted
+            - type: string
+              description: Error message if block was rejected
+      examples:
+        - name: submitblock example
+          params:
+            - name: hexdata
+              value: "0000002073bd2184edd74c5c5b4c0c5be04d0e8f5d6b7d5b3b1b1d8e8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c"
+          result:
+            name: result
+            value: null
 
     # Fee_market methods
     estimatesmartfee:
