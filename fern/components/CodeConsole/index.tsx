@@ -1,7 +1,36 @@
-// import useTheme from "./useTheme";
+import { CodeblockSelect } from "./CodeblockSelect";
+import {
+  CHAIN_OPTIONS,
+  CODE_SAMPLES,
+  METHOD_OPTIONS,
+  type Chain,
+  type Method,
+} from "./codeData";
+import useTheme from "./useTheme";
 
 const CodeConsole = () => {
-  //   const { isDark } = useTheme();
+  const { isDark } = useTheme();
+
+  const [chain, setChain] = React.useState<Chain>("ethereum");
+  const [method, setMethod] = React.useState<Method>("eth_getBlockByNumber");
+  const [showResponse, setShowResponse] = React.useState(false);
+
+  const codeSample = CODE_SAMPLES[method][chain];
+  const currentCode = showResponse ? codeSample.response : codeSample.request;
+
+  const handleRun = () => {
+    setShowResponse(true);
+  };
+
+  const handleChainChange = (value: string) => {
+    setChain(value as Chain);
+    setShowResponse(false); // Reset to request view
+  };
+
+  const handleMethodChange = (value: string) => {
+    setMethod(value as Method);
+    setShowResponse(false); // Reset to request view
+  };
 
   return (
     <div id="CodeConsole">
@@ -10,12 +39,31 @@ const CodeConsole = () => {
         <div className="CodeBlockInner">
           <div className="TopBar">
             <div className="SelectGroup">
-              <span className="RequestLabel">Request</span>
-              {/* Language Select - TODO */}
-              {/* Chain Select - TODO */}
-              {/* Method Select - TODO */}
+              <span className="RequestLabel">
+                {showResponse ? "Response" : "Request"}
+              </span>
+
+              {/* Chain Selector */}
+              <CodeblockSelect
+                isDark={isDark}
+                options={CHAIN_OPTIONS}
+                selectedOption={chain}
+                onChange={handleChainChange}
+              />
+
+              {/* Method Selector */}
+              <CodeblockSelect
+                isDark={isDark}
+                options={METHOD_OPTIONS}
+                selectedOption={method}
+                onChange={handleMethodChange}
+              />
             </div>
-            <button className="RunButton">
+            <button
+              className="RunButton"
+              onClick={handleRun}
+              disabled={showResponse}
+            >
               RUN{" "}
               <svg
                 width="12"
@@ -32,12 +80,8 @@ const CodeConsole = () => {
             </button>
           </div>
           <div className="ShikiCodeBlock">
-            {/* Code content will go here */}
             <pre>
-              <code>
-                <div className="line">const greeting = "Hello World";</div>
-                <div className="line">console.log(greeting);</div>
-              </code>
+              <code style={{ whiteSpace: "pre-wrap" }}>{currentCode}</code>
             </pre>
           </div>
         </div>
