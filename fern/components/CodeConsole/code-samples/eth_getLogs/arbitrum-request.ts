@@ -2,10 +2,14 @@ export default `curl -X POST https://arb-mainnet.g.alchemy.com/v2/{apiKey} \
      -H "Content-Type: application/json" \
      -d '{
   "jsonrpc": "2.0",
-  "method": "eth_getBalance",
+  "method": "eth_getLogs",
   "params": [
-    "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73",
-    "latest"
+    {
+      "fromBlock": "0x137d3c2",
+      "toBlock": "0x137d3c3",
+      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "topics": []
+    }
   ],
   "id": 1
 }'`;

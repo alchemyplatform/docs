@@ -2,10 +2,13 @@ export default `curl -X POST https://eth-mainnet.g.alchemy.com/v2/{apiKey} \
      -H "Content-Type: application/json" \
      -d '{
   "jsonrpc": "2.0",
-  "method": "eth_getBlockByNumber",
+  "method": "alchemy_getTokenBalances",
   "params": [
-    "0x68b3",
-    false
+    "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "erc20",
+    {
+      "maxCount": 10
+    }
   ],
   "id": 1
 }'`;

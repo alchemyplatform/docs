@@ -2,7 +2,7 @@ export default `{
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "hash": "0xf7756d836b6716aaeffc2139c032752ba5acf65743f0d177554b2e2",
+    "hash": "0xf7756d836b6716aaeffc2139c032752ba5acf02fe94acb65743f0d177554b2e2",
     "parentHash": "0xbc33aa8829350cc2e3ba7cf64d4beb2f1b554d570efc8bccb7b05ef50d76a47a",
     "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
     "miner": "0x33bc13fdf135073277971b4d9f4f72082e907996",
