@@ -1,0 +1,65 @@
+---
+title: Avalanche
+slug: docs/snapshots/avalanche
+---
+
+* [Official Docs](https://build.avax.network/docs)
+* [Github Repository](https://github.com/ava-labs)
+
+The snapshot service for Avalanche is available [here](https://alchemy.com/snapshots/avalanche).
+
+Whether you need to bootstrap your full node or you are in need of a snapshot to ease the migration or kick-start of your validator, you can use our daily snapshot service to speed up the process.
+
+Note: the nodes used for snapshotting are using the default pruning values of Avalanche and are hosted as Docker containers on machines using Ubuntu 22.04.
+
+### How to use
+
+You simply go to our [avalanche snapshot service](https://alchemy.com/snapshots/avalanche) and you can download the latest available snapshot! In order to use it, simply decompress the archive as per the following instructions and start your node.
+
+**1. Download the snapshot**
+
+```bash
+wget <AVALANCHE_SNAPSHOT_URL>
+```
+
+**2. Stop your Avalanche service**
+
+If Avalanche was already running on your machine, stop your services:
+
+```bash
+sudo systemctl stop avalanche.service
+```
+
+OR if you are using a container:
+
+```bash
+docker stop <AVALANCHE_CONTAINER_NAME>
+```
+
+Make sure there is no process running that might try to write to the database.
+
+**3. Clean the data directory**
+
+Make sure your Avalanche data directory is clean (let us assume `<AVALANCHE_HOME>` is your root Avalanche directory):
+
+```bash
+rm -rf <AVALANCHE_HOME>/db/mainnet/*
+```
+
+**4. Install lz4 and decompress the archive**
+
+```bash
+sudo apt-get install lz4
+```
+
+```bash
+lz4 -c -d <AVALANCHE_SNAPSHOT_NAME>.tar.lz4  | tar -x -C <AVALANCHE_HOME>/db/mainnet/
+```
+
+**5. Start the Avalanche service or container**
+
+You should be in-sync with the network in minutes after starting the node.
+
+<Info>
+  Please make sure to also check the Official Documentation and the Github Repository posted above in order to correctly deploy the node of your choice.
+</Info>
