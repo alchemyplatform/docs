@@ -7,7 +7,10 @@ info:
   version: "1.0"
 
 servers:
-  - url: https://aptos-mainnet.alchemy-blast.com/v2/:apiKey
+  - url: https://aptos-mainnet.g.alchemy.com/v2/{apiKey}
+    variables:
+      apiKey:
+        default: docs-demo
 
 security:
   - apiKey: []
@@ -113,9 +116,84 @@ paths:
                     </body>
                     </html>
 
-  /v1/healthy:
+  /v1/view:
+    post:
+      summary: "/v1/view"
+      description: >
+        Executes a Move view function with the provided arguments and returns the result.
+
+        The function must be marked as a view function in the Move module.
+        If a `ledger_version` is specified and has been pruned, the server will respond with a 410 error.
+      tags:
+        - Aptos API Endpoints
+      security:
+        - apiKey: []
+      parameters:
+        - in: query
+          name: ledger_version
+          required: false
+          description: >
+            The ledger version to use when executing the view. If not provided, the latest version is used.
+
+            This is a string representing a `uint64` to ensure compatibility with JavaScript.
+          schema:
+            type: string
+            format: uint64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - function
+                - type_arguments
+                - arguments
+              properties:
+                function:
+                  type: string
+                  description: >
+                    Fully qualified Move function to execute, in the format `{address}::{module name}::{function name}`.
+                    Both module name and function name are case-sensitive.
+                  example: "0x1::coin::balance"
+                type_arguments:
+                  type: array
+                  description: Type arguments passed to the function.
+                  items:
+                    type: string
+                  example:
+                    - "0x1::aptos_coin::AptosCoin"
+                arguments:
+                  type: array
+                  description: Arguments passed to the function.
+                  items:
+                    type: string
+                  example:
+                    - "0x1d8727df513fa2a8785d0834e40b34223daff1affc079574082baadb74b66ee4"
+      responses:
+        "200":
+          description: Successful execution of view function
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The result of executing the view function.
+                items:
+                  anyOf:
+                    - type: string
+                    - type: integer
+                    - type: boolean
+                    - type: array
+                    - type: object
+              examples:
+                balance example:
+                  summary: Response for coin::balance call
+                  value:
+                    - "4168302193780"
+
+  /v1/-/healthy:
     get:
-      summary: "/v1/healthy"
+      summary: "/v1/-/healthy"
       description: >
         Checks whether the node is healthy.
 
@@ -164,7 +242,7 @@ paths:
 
   /v1/accounts/{address}:
     get:
-      summary: /v1/accounts
+      summary: "/v1/accounts/{address}"
       description: >
         Retrieves high-level information about an account such as its sequence number and authentication key.
       tags:
@@ -1126,6 +1204,81 @@ paths:
                 response:
                   summary: Example string response
                   value: "0x81e2e2499407693c81fe65c86405ca70df529438339d9da7a6fc2520142b591e"
+
+  /v1/tables/{table_handle}/raw_item:
+    post:
+      summary: "/v1/tables/{table_handle}/raw_item"
+      description: >
+        Get a raw table item at a specific ledger version from the table identified by `{table_handle}` and the key provided in the request body.
+
+        The `get_raw_table_item` endpoint only requires a serialized key (hex string) and returns the value in binary canonical serialization (BCS) format.
+
+        The Aptos nodes prune account state history via a configurable time window. If the requested ledger version has been pruned, the server responds with a 410.
+      tags:
+        - Aptos API Endpoints
+      security:
+        - apiKey: []
+      parameters:
+        - name: table_handle
+          in: path
+          required: true
+          description: >
+            Table handle — a hex encoded 32-byte Aptos address (with or without 0x prefix).
+          schema:
+            type: string
+            format: hex
+          example: "0x1b854694ae746cdbd8d44186ca4929b2b337df21d1c74633be19b2710552fdca"
+        - name: ledger_version
+          in: query
+          required: false
+          description: >
+            Ledger version to query state from. If omitted, the latest version will be used.
+          schema:
+            type: string
+            format: uint64
+          example: "1830800010"
+        - name: Accept
+          in: header
+          required: true
+          description: >
+            Must be set to `application/x-bcs` to receive the response in raw BCS format.
+          schema:
+            type: string
+            enum: ["application/x-bcs"]
+          example: "application/x-bcs"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - key
+              properties:
+                key:
+                  type: string
+                  format: hex
+                  description: >
+                    Serialized BCS key for the item, as a hex-encoded string prefixed with `0x`. 
+
+                    The hex string must have an even number of characters (after 0x). 
+                    If the BCS-encoded key results in an odd-length hex string, it must be left-padded with 0 to ensure valid decoding.
+            example:
+              key: "0x0619dc29a0aac8fa146714058e8dd6d2d0f3bdf5f6331907bf91f3acd81e6935"
+      responses:
+        "200":
+          description: Raw BCS response.
+          content:
+            application/x-bcs:
+              schema:
+                oneOf:
+                  - type: integer
+                  - type: boolean
+                  - type: string
+                  - type: array
+                    items: {}
+                  - type: object
+              example: "4168302193780"
 
   /v1/accounts/{address}/transactions:
     get:
