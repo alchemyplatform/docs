@@ -357,8 +357,6 @@ components:
         - network
         - webhook_type
         - webhook_url
-        - addresses
-        - graphql_query
       properties:
         network:
           $ref: "#/components/schemas/network"
@@ -373,7 +371,7 @@ components:
         graphql_query:
           oneOf:
             - type: string
-              description: "A valid, stringified GraphQL query to host on Alchemy"
+              description: "Required for GRAPHQL webhook type. A valid, stringified GraphQL query to host on Alchemy."
             - type: object
               required:
                 - query
@@ -390,12 +388,12 @@ components:
             Required for mined and dropped webhooks, optional for address activity or custom webhooks.
         addresses:
           type: array
-          description: "List of addresses to track (required for address activity webhooks)."
+          description: "Required for ADDRESS_ACTIVITY webhook type. List of addresses to track for ETH, ERC20, ERC721, and ERC1155 transfers."
           items:
             type: string
         nft_filters:
           type: array
-          description: "List of NFT filter objects to track transfer activity for."
+          description: "Required for NFT_ACTIVITY webhook type. List of NFT filter objects to track transfer activity for."
           items:
             $ref: "#/components/schemas/nft_filter_object"
     create_custom_webhook:
