@@ -15,6 +15,7 @@ const CodeConsole = () => {
   const [chain, setChain] = React.useState<Chain>("ethereum");
   const [method, setMethod] = React.useState<Method>("eth_getBlockByNumber");
   const [showResponse, setShowResponse] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const chainSamples = CODE_SAMPLES[chain] as Record<
     string,
@@ -24,8 +25,21 @@ const CodeConsole = () => {
 
   const currentCode = showResponse ? codeSample?.response : codeSample?.request;
 
+  const showLoader = () => {
+    setIsLoading(true);
+    setTimeout(
+      () => {
+        setIsLoading(false);
+        setShowResponse(true);
+      },
+      Math.floor(Math.random() * 300) + 100,
+    );
+  };
+
   const handleRun = () => {
-    setShowResponse(true);
+    if (!showResponse) {
+      showLoader();
+    }
   };
 
   const handleChainChange = (value: string) => {
@@ -74,7 +88,7 @@ const CodeConsole = () => {
             <button
               className="RunButton"
               onClick={handleRun}
-              disabled={showResponse}
+              disabled={showResponse || isLoading}
             >
               RUN{" "}
               <svg
@@ -91,24 +105,30 @@ const CodeConsole = () => {
               </svg>
             </button>
           </div>
-          <div className="ShikiCodeBlock">
-            <pre>
-              {codeSample ? (
-                <code>
-                  {currentCode
-                    .split("\n")
-                    .map((line: string, index: number) => (
-                      <span key={index} className="line">
-                        {line}
-                        {"\n"}
-                      </span>
-                    ))}
-                </code>
-              ) : (
-                <code>Code sample not available for this combination</code>
-              )}
-            </pre>
-          </div>
+          {isLoading ? (
+            <div className="LoaderContainer">
+              <div className="LoaderSpinner" />
+            </div>
+          ) : (
+            <div className="ShikiCodeBlock">
+              <pre>
+                {codeSample ? (
+                  <code>
+                    {currentCode
+                      .split("\n")
+                      .map((line: string, index: number) => (
+                        <span key={index} className="line">
+                          {line}
+                          {"\n"}
+                        </span>
+                      ))}
+                  </code>
+                ) : (
+                  <code>Code sample not available for this combination</code>
+                )}
+              </pre>
+            </div>
+          )}
         </div>
         <div className="QuickstartContainer">
           <div>
