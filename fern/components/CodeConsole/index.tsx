@@ -1,26 +1,19 @@
 import { CodeblockSelect } from "./CodeblockSelect";
-import { CHAIN_OPTIONS, CODE_SAMPLES, type Chain } from "./codeData";
+import {
+  CHAIN_OPTIONS,
+  CODE_SAMPLES,
+  type Chain,
+  type Method,
+  getDefaultMethodForChain,
+  getMethodOptionsForChain,
+} from "./codeData";
 import useTheme from "./useTheme";
-
-// Get method options for a chain by reading from CODE_SAMPLES
-const getMethodOptionsForChain = (chain: Chain) => {
-  return Object.keys(CODE_SAMPLES[chain] || {}).map((method) => ({
-    value: method,
-    label: method,
-  }));
-};
-
-// Get default method for a chain (first method alphabetically)
-const getDefaultMethodForChain = (chain: Chain): string => {
-  const methods = Object.keys(CODE_SAMPLES[chain] || {});
-  return methods[0] || "";
-};
 
 const CodeConsole = () => {
   const { isDark } = useTheme();
 
   const [chain, setChain] = React.useState<Chain>("ethereum");
-  const [method, setMethod] = React.useState<string>("eth_getBlockByNumber");
+  const [method, setMethod] = React.useState<Method>("eth_getBlockByNumber");
   const [showResponse, setShowResponse] = React.useState(false);
 
   const chainSamples = CODE_SAMPLES[chain] as Record<
@@ -29,15 +22,6 @@ const CodeConsole = () => {
   >;
   const codeSample = chainSamples?.[method];
 
-  let currentCode: string;
-  if (!codeSample) {
-    currentCode = "Code sample not available for this combination";
-  } else if (showResponse) {
-    currentCode = codeSample.response;
-  } else {
-    currentCode = codeSample.request;
-  }
-
   const handleRun = () => {
     setShowResponse(true);
   };
@@ -45,19 +29,17 @@ const CodeConsole = () => {
   const handleChainChange = (value: string) => {
     const newChain = value as Chain;
     setChain(newChain);
-    setShowResponse(false); // Reset to request view
+    setShowResponse(false);
 
-    // Reset method to default for new chain
     const defaultMethod = getDefaultMethodForChain(newChain);
     setMethod(defaultMethod);
   };
 
   const handleMethodChange = (value: string) => {
-    setMethod(value);
-    setShowResponse(false); // Reset to request view
+    setMethod(value as Method);
+    setShowResponse(false);
   };
 
-  // Get filtered method options for current chain
   const availableMethodOptions = getMethodOptionsForChain(chain);
 
   return (
@@ -109,7 +91,13 @@ const CodeConsole = () => {
           </div>
           <div className="ShikiCodeBlock">
             <pre>
-              <code style={{ whiteSpace: "pre-wrap" }}>{currentCode}</code>
+              {codeSample ? (
+                <code style={{ whiteSpace: "pre-wrap" }}>
+                  {showResponse ? codeSample.response : codeSample.request}
+                </code>
+              ) : (
+                <code>Code sample not available for this combination</code>
+              )}
             </pre>
           </div>
         </div>

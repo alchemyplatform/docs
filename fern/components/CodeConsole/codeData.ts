@@ -1,4 +1,3 @@
-// Auto-generated file - run: node scripts/generate-codedata.js
 import alchemyGetAssetTransfersEthereumRequest from "./code-samples/alchemy_getAssetTransfers/ethereum-request";
 import alchemyGetAssetTransfersEthereumResponse from "./code-samples/alchemy_getAssetTransfers/ethereum-response";
 import alchemyGetTokenBalancesEthereumRequest from "./code-samples/alchemy_getTokenBalances/ethereum-request";
@@ -127,6 +126,7 @@ import getTokenAccountsByOwnerSolanaRequest from "./code-samples/getTokenAccount
 import getTokenAccountsByOwnerSolanaResponse from "./code-samples/getTokenAccountsByOwner/solana-response";
 import getTransactionSolanaRequest from "./code-samples/getTransaction/solana-request";
 import getTransactionSolanaResponse from "./code-samples/getTransaction/solana-response";
+import type { Option } from "./CodeblockSelect";
 
 export const CODE_SAMPLES = {
   arbitrum: {
@@ -397,7 +397,7 @@ export const CODE_SAMPLES = {
       response: getTransactionSolanaResponse,
     },
   },
-};
+} as const;
 
 export const CHAIN_OPTIONS = [
   { value: "ethereum", label: "Ethereum" },
@@ -408,10 +408,18 @@ export const CHAIN_OPTIONS = [
   { value: "solana", label: "Solana" },
 ];
 
-export type Chain =
-  | "ethereum"
-  | "arbitrum"
-  | "base"
-  | "optimism"
-  | "polygon"
-  | "solana";
+export type Chain = keyof typeof CODE_SAMPLES;
+export type Method = {
+  [K in Chain]: keyof (typeof CODE_SAMPLES)[K];
+}[Chain];
+
+export const getMethodOptionsForChain = (chain: Chain): Option[] => {
+  return Object.keys(CODE_SAMPLES[chain] || {}).map((method) => ({
+    value: method,
+    label: method,
+  }));
+};
+
+export const getDefaultMethodForChain = (chain: Chain): Method => {
+  return Object.keys(CODE_SAMPLES[chain] || {})[0] as Method;
+};
