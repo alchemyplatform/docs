@@ -22,6 +22,8 @@ const CodeConsole = () => {
   >;
   const codeSample = chainSamples?.[method];
 
+  const currentCode = showResponse ? codeSample?.response : codeSample?.request;
+
   const handleRun = () => {
     setShowResponse(true);
   };
@@ -92,8 +94,15 @@ const CodeConsole = () => {
           <div className="ShikiCodeBlock">
             <pre>
               {codeSample ? (
-                <code style={{ whiteSpace: "pre-wrap" }}>
-                  {showResponse ? codeSample.response : codeSample.request}
+                <code>
+                  {currentCode
+                    .split("\n")
+                    .map((line: string, index: number) => (
+                      <span key={index} className="line">
+                        {line}
+                        {"\n"}
+                      </span>
+                    ))}
                 </code>
               ) : (
                 <code>Code sample not available for this combination</code>
