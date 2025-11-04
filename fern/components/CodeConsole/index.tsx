@@ -1,36 +1,64 @@
 import { CodeblockSelect } from "./CodeblockSelect";
-import {
-  CHAIN_OPTIONS,
-  CODE_SAMPLES,
-  METHOD_OPTIONS,
-  type Chain,
-  type Method,
-} from "./codeData";
+import { CHAIN_OPTIONS, CODE_SAMPLES, type Chain } from "./codeData";
 import useTheme from "./useTheme";
+
+// Get method options for a chain by reading from CODE_SAMPLES
+const getMethodOptionsForChain = (chain: Chain) => {
+  return Object.keys(CODE_SAMPLES[chain] || {}).map((method) => ({
+    value: method,
+    label: method,
+  }));
+};
+
+// Get default method for a chain (first method alphabetically)
+const getDefaultMethodForChain = (chain: Chain): string => {
+  const methods = Object.keys(CODE_SAMPLES[chain] || {});
+  return methods[0] || "";
+};
 
 const CodeConsole = () => {
   const { isDark } = useTheme();
 
   const [chain, setChain] = React.useState<Chain>("ethereum");
-  const [method, setMethod] = React.useState<Method>("eth_getBlockByNumber");
+  const [method, setMethod] = React.useState<string>("eth_getBlockByNumber");
   const [showResponse, setShowResponse] = React.useState(false);
 
-  const codeSample = CODE_SAMPLES[method][chain];
-  const currentCode = showResponse ? codeSample.response : codeSample.request;
+  const chainSamples = CODE_SAMPLES[chain] as Record<
+    string,
+    { request: string; response: string }
+  >;
+  const codeSample = chainSamples?.[method];
+
+  let currentCode: string;
+  if (!codeSample) {
+    currentCode = "Code sample not available for this combination";
+  } else if (showResponse) {
+    currentCode = codeSample.response;
+  } else {
+    currentCode = codeSample.request;
+  }
 
   const handleRun = () => {
     setShowResponse(true);
   };
 
   const handleChainChange = (value: string) => {
-    setChain(value as Chain);
+    const newChain = value as Chain;
+    setChain(newChain);
     setShowResponse(false); // Reset to request view
+
+    // Reset method to default for new chain
+    const defaultMethod = getDefaultMethodForChain(newChain);
+    setMethod(defaultMethod);
   };
 
   const handleMethodChange = (value: string) => {
-    setMethod(value as Method);
+    setMethod(value);
     setShowResponse(false); // Reset to request view
   };
+
+  // Get filtered method options for current chain
+  const availableMethodOptions = getMethodOptionsForChain(chain);
 
   return (
     <div id="CodeConsole">
@@ -54,7 +82,7 @@ const CodeConsole = () => {
               {/* Method Selector */}
               <CodeblockSelect
                 isDark={isDark}
-                options={METHOD_OPTIONS}
+                options={availableMethodOptions}
                 selectedOption={method}
                 onChange={handleMethodChange}
               />
