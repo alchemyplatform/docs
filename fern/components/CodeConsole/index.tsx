@@ -110,7 +110,7 @@ const CodeConsole = () => {
               <div className="LoaderSpinner" />
             </div>
           ) : (
-            <div className="ShikiCodeBlock">
+            <div className="CodeSample">
               <pre>
                 {codeSample ? (
                   <code>
