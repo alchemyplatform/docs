@@ -7,6 +7,7 @@ import {
   getDefaultMethodForChain,
   getMethodOptionsForChain,
 } from "./codeData";
+import { highlightCode } from "./highlightCode";
 import useTheme from "./useTheme";
 
 const CodeConsole = () => {
@@ -24,6 +25,7 @@ const CodeConsole = () => {
   const codeSample = chainSamples?.[method];
 
   const currentCode = showResponse ? codeSample?.response : codeSample?.request;
+  const currentLanguage = showResponse ? "json" : "bash";
 
   const showLoader = () => {
     setIsLoading(true);
@@ -113,16 +115,14 @@ const CodeConsole = () => {
             <div className="CodeSample">
               <pre>
                 {codeSample ? (
-                  <code>
-                    {currentCode
-                      .split("\n")
-                      .map((line: string, index: number) => (
-                        <span key={index} className="line">
-                          {line}
-                          {"\n"}
-                        </span>
-                      ))}
-                  </code>
+                  <code
+                    dangerouslySetInnerHTML={{
+                      __html: highlightCode(currentCode || "", currentLanguage)
+                        .split("\n")
+                        .map((line) => `<span class="line">${line}\n</span>`)
+                        .join(""),
+                    }}
+                  />
                 ) : (
                   <code>Code sample not available for this combination</code>
                 )}
