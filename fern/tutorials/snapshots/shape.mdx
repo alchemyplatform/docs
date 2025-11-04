@@ -1,0 +1,67 @@
+---
+title: Shape
+slug: docs/snapshots/shape
+---
+
+* [Official Docs](https://docs.shape.network/)
+* [Github Repository](https://github.com/shape-network/)
+
+The snapshot service for Shape is available [here](https://alchemy.com/snapshots/shape).
+
+Whether you need to bootstrap your full node, you can use our daily snapshot service to speed up the process.
+
+Note: the nodes used for snapshotting are using the archive pruning values of Shape and are hosted as Systemd services on machines using Ubuntu 22.04.
+
+### How to use
+
+You simply go to our [shape snapshot service](https://alchemy.com/snapshots/shape) and you can download the latest available snapshot! In order to use it, simply decompress the archive as per the following instructions and start your node.
+
+**1. Download the snapshot**
+
+```bash
+wget <SHAPE_SNAPSHOT_URL>
+```
+
+**2. Stop your Shape service**
+
+If Shape was already running on your machine, stop your services:
+
+```bash
+sudo systemctl stop <SHAPE_GETH_SERVICE>
+sudo systemctl stop <SHAPE_OP_NODE_SERVICE>
+```
+
+OR if you are using the recommended docker compose setup:
+
+```bash
+docker compose down
+```
+
+Make sure there is no process running that might try to write to the database.
+
+**3. Clean the data directory**
+
+Make sure your Shape data directory is clean (let us assume `<SHAPE_HOME>` is your root Shape directory):
+
+```bash
+rm -rf <SHAPE_HOME>/geth/chaindata
+rm -rf <SHAPE_HOME>/geth/lightchaindata
+```
+
+**4. Install lz4 and decompress the archive**
+
+```bash
+sudo apt-get install lz4
+```
+
+```bash
+lz4 -c -d <SHAPE_SNAPSHOT_NAME>.tar.lz4  | tar -x -C <SHAPE_HOME>/geth/
+```
+
+**5. Start the Shape service or container**
+
+You should be in-sync with the network in minutes after starting the node.
+
+<Info>
+  Please make sure to also check the Official Documentation and the Github Repository posted above in order to correctly deploy the node of your choice.
+</Info>
