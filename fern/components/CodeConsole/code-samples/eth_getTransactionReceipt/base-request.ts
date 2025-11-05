@@ -1,0 +1,10 @@
+export default `curl -X POST https://base-mainnet.g.alchemy.com/v2/{apiKey} \\
+     -H "Content-Type: application/json" \\
+     -d '{
+  "jsonrpc": "2.0",
+  "method": "eth_getTransactionReceipt",
+  "params": [
+    "0xca5320b77a4321c83865bbd5b59bae521ad26fa42c079c317bec60a6e639b045"
+  ],
+  "id": 1
+}'`;

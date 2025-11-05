@@ -42,11 +42,7 @@ const tslintConfigs = tseslint.config({
   languageOptions: {
     parser,
     parserOptions: {
-      project: [
-        "./tsconfig.json",
-        "./custom-app/tsconfig.json",
-        "./custom-app/tsconfig.node.json",
-      ],
+      project: ["./tsconfig.json"],
       ecmaVersion: "latest",
       sourceType: "module",
     },
