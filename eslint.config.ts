@@ -19,7 +19,7 @@ const globalRules: ConfigWithExtends["rules"] = {
 const jsConfig: ConfigWithExtends = {
   name: "JS Eslint Config",
   files: ["**/*.{js,mjs,cjs,jsx,mjsx}"],
-  ignores: ["**/*.{md,mdx}/**/*.{js,jsx}"], // js blocks in md/mdx files handled by jsSnippetConfig
+  ignores: ["**/dist/**", "**/*.{md,mdx}/**/*.{js,jsx}"], // js blocks in md/mdx files handled by jsSnippetConfig
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: "module",
