@@ -1,0 +1,10 @@
+export default `curl -X POST https://polygon-mainnet.g.alchemy.com/v2/{apiKey} \\
+     -H "Content-Type: application/json" \\
+     -d '{
+  "jsonrpc": "2.0",
+  "method": "eth_getTransactionCount",
+  "params": [
+    "0xE4f575e07D7c9E31BB2900e1B23C3584b4a6fa2d"
+  ],
+  "id": 1
+}'`;
