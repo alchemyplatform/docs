@@ -28,6 +28,7 @@ For more details, please check out the [Compute Units](/reference/compute-units#
 | eth\_unsubscribe                         | 10                          |               |
 | eth\_feeHistory                          | 10                          |               |
 | eth\_maxPriorityFeePerGas                | 10                          |               |
+| eth\_blobBaseFee                         | 10                          |               |
 | eth\_createAccessList                    | 10                          |               |
 | eth\_getTransactionReceipt               | 20                          |               |
 | eth\_getUncleByBlockHashAndIndex         | 20                          |               |
@@ -53,6 +54,7 @@ For more details, please check out the [Compute Units](/reference/compute-units#
 | eth\_getBlockTransactionCountByNumber    | 20                          |               |
 | eth\_getProof                            | 20                          |               |
 | eth\_getBlockByHash                      | 20                          |               |
+| eth\_getAccount                          | 20                          |               |
 | erigon\_forks                            | 20                          |               |
 | erigon\_getHeaderByHash                  | 20                          |               |
 | erigon\_getHeaderByNumber                | 20                          |               |
@@ -60,11 +62,14 @@ For more details, please check out the [Compute Units](/reference/compute-units#
 | erigon\_issuance                         | 20                          |               |
 | eth\_getTransactionCount                 | 20                          |               |
 | eth\_call                                | 26                          |               |
+| eth\_callMany                            | 20                          |               |
 | eth\_getFilterLogs                       | 60                          |               |
 | eth\_getLogs                             | 60                          |               |
 | eth\_estimateGas                         | 20                          |               |
 | eth\_sendRawTransaction                  | 40                          | 250           |
+| eth\_sendRawTransactionSync              | 40                          | 250           |
 | eth\_getBlockReceipts                    | 20                          | 500           |
+| eth\_submitWork                          | 20                          |               |
 | batch                                    | CU of method # times called |               |
 
 * To view the batch request breakdown in the dashboard, click on "raw request"
@@ -166,8 +171,12 @@ For more details, please check out the [Compute Units](/reference/compute-units#
 | ------------------------- | -- | ------------- |
 | debug\_traceTransaction   | 40 | 1000          |
 | debug\_traceCall          | 40 | 1000          |
+| debug\_traceCallMany      | 40 | 1000          |
 | debug\_traceBlockByHash   | 40 | 1000          |
 | debug\_traceBlockByNumber | 40 | 1000          |
+| debug\_getBadBlocks       | 40 | 1000          |
+| debug\_getRawHeader       | 40 | 1000          |
+| debug\_storageRangeAt     | 40 | 1000          |
 
 # Embedded Account APIs
 
@@ -262,10 +271,25 @@ We want builders to be able to use as much of the NFT API as they need without w
 | trace\_block                   | 20 | 20            |
 | trace\_transaction             | 40 | 40            |
 | trace\_call                    | 40 | 40            |
+| trace\_callMany                | 80 | 3000          |
 | trace\_rawTransaction          | 40 | 40            |
 | trace\_filter                  | 40 | 40            |
 | trace\_replayTransaction       | 80 | 3000          |
 | trace\_replayBlockTransactions | 80 | 3000          |
+
+# Arbitrum Trace API
+
+| Method                            | CU | Throughput CU |
+| --------------------------------- | -- | ------------- |
+| arbtrace\_get                     | 20 | 20            |
+| arbtrace\_block                   | 20 | 20            |
+| arbtrace\_transaction             | 40 | 40            |
+| arbtrace\_call                    | 40 | 40            |
+| arbtrace\_callMany                | 40 | 40            |
+| arbtrace\_rawTransaction          | 40 | 40            |
+| arbtrace\_filter                  | 40 | 40            |
+| arbtrace\_replayTransaction       | 80 | 3000          |
+| arbtrace\_replayBlockTransactions | 80 | 3000          |
 
 # Transact
 
@@ -396,6 +420,198 @@ All zkSync Era specific methods cost 10 CUs, this includes the methods listed be
 * [zks-gettransactiondetails-zksync](/reference/zks-gettransactiondetails-zksync)
 * [zks-l1batchnumber-zksync](/reference/zks-l1batchnumber-zksync)
 * [zks-l1chainid-zksync](/reference/zks-l1chainid-zksync)
+
+# Ethereum Beacon: Standard HTTP API Methods
+
+| Method                                                         | CU  |
+| -------------------------------------------------------------- | --- |
+| /eth/v2/beacon/blocks/\{block\_id}/attestations                | 20  |
+| /eth/v1/beacon/blocks/\{block\_id}/root                        | 20  |
+| /eth/v1/beacon/blinded\_blocks/\{slot}                         | 20  |
+| /eth/v1/beacon/blob\_sidecars/\{block\_id}                     | 20  |
+| /eth/v1/beacon/genesis                                         | 20  |
+| /eth/v1/beacon/headers                                         | 20  |
+| /eth/v1/beacon/headers/\{block\_id}                            | 20  |
+| /eth/v1/beacon/pool/voluntary\_exits                           | 20  |
+| /eth/v1/beacon/states/\{state\_id}/committees                  | 20  |
+| /eth/v1/beacon/states/\{state\_id}/finality\_checkpoints       | 20  |
+| /eth/v1/beacon/states/\{state\_id}/fork                        | 20  |
+| /eth/v1/beacon/states/\{state\_id}/pending\_consolidations     | 20  |
+| /eth/v1/beacon/states/\{state\_id}/root                        | 20  |
+| /eth/v1/beacon/states/\{state\_id}/sync\_committees            | 20  |
+| /eth/v1/beacon/states/\{state\_id}/validator\_balances         | 20  |
+| /eth/v1/beacon/states/\{state\_id}/validators                  | 20  |
+| /eth/v1/beacon/states/\{state\_id}/validators/\{validator\_id} | 20  |
+| /eth/v1/beacon/rewards/sync\_committee/\{block\_id}            | 20  |
+| /eth/v1/beacon/rewards/blocks/\{block\_id}                     | 20  |
+| /eth/v1/beacon/rewards/attestations/\{epoch}                   | 20  |
+| /eth/v1/config/deposit\_contract                               | 20  |
+| /eth/v1/config/fork\_schedule                                  | 20  |
+| /eth/v1/config/spec                                            | 20  |
+| /eth/v1/node/peer\_count                                       | 20  |
+| /eth/v1/node/peers                                             | 20  |
+| /eth/v1/node/syncing                                           | 20  |
+| /eth/v1/node/version                                           | 20  |
+| /eth/v2/validator/aggregate\_attestation                       | 20  |
+| /eth/v1/validator/duties/attester/\{epoch}                     | 20  |
+| /eth/v1/validator/duties/proposer/\{epoch}                     | 20  |
+| /eth/v1/validator/duties/sync/\{epoch}                         | 20  |
+| /eth/v1/validator/sync\_committee\_contribution                | 20  |
+| /eth/v2/beacon/blocks/\{block\_id}                             | 20  |
+
+# Aptos: Standard REST API Methods
+
+| Method                                                         | CU  |
+| -------------------------------------------------------------- | --- |
+| /v1/                                                           | 20  |
+| /v1/accounts/\{address}                                        | 20  |
+| /v1/accounts/\{address}/events/\{creation\_number}             | 20  |
+| /v1/accounts/\{address}/events/\{event\_handle}/\{field\_name} | 20  |
+| /v1/accounts/\{address}/module/\{module\_name}                 | 20  |
+| /v1/accounts/\{address}/modules                                | 20  |
+| /v1/accounts/\{address}/resource/\{resource\_type}             | 20  |
+| /v1/accounts/\{address}/resources                              | 20  |
+| /v1/accounts/\{address}/transactions                           | 20  |
+| /v1/blocks/by\_height/\{block\_height}                         | 20  |
+| /v1/blocks/by\_version/\{version}                              | 20  |
+| /v1/estimate\_gas\_price                                       | 20  |
+| /v1/-/healthy                                                  | 20  |
+| /v1/spec                                                       | 20  |
+| /v1/tables/\{table\_handle}/item                               | 20  |
+| /v1/tables/\{table\_handle}/raw\_item                          | 20  |
+| /v1/transactions                                               | 20  |
+| /v1/transactions/batch                                         | 20  |
+| /v1/transactions/by\_hash/\{txn\_hash}                         | 20  |
+| /v1/transactions/by\_version/\{txn\_version}                   | 20  |
+| /v1/transactions/encode\_submission                            | 20  |
+| /v1/transactions/simulate                                      | 20  |
+| /v1/view                                                       | 20  |
+
+# Bitcoin: Standard JSON-RPC Methods
+
+| Method                                                    | CU  |
+| --------------------------------------------------------- | --- |
+| getbestblockhash                                          | 10  |
+| getblock                                                  | 10  |
+| getblockchaininfo                                         | 10  |
+| getblockcount                                             | 10  |
+| getblockhash                                              | 10  |
+| getblockheader                                            | 10  |
+| getblockstats                                             | 10  |
+| getdifficulty                                             | 10  |
+| getmempoolancestors                                       | 10  |
+| getmempooldescendants                                     | 10  |
+| getmempoolinfo                                            | 10  |
+| getrawmempool                                             | 10  |
+| gettxout                                                  | 10  |
+| gettxoutproof                                             | 10  |
+| getchaintips                                              | 10  |
+| getchaintxstats                                           | 10  |
+| getblocktemplate                                          | 10  |
+| submitblock                                               | 10  |
+| decoderawtransaction                                      | 10  |
+| decodescript                                              | 10  |
+| estimatesmartfee                                          | 10  |
+| getconnectioncount                                        | 10  |
+| getindexinfo                                              | 10  |
+| getmemoryinfo                                             | 10  |
+| validateaddress                                           | 10  |
+| verifymessage                                             | 10  |
+| gettxoutsetinfo                                           | 10  |
+| testmempoolaccept                                         | 10  |
+| sendrawtransaction                                        | 10  |
+| submitpackage                                             | 10  |
+
+# Celestia Bridge: Standard RPC Methods
+
+| Method                                                    | CU  |
+| --------------------------------------------------------- | --  |
+| blob.Get                                                  | 20  |
+| blob.GetAll                                               | 20  |
+| blob.Submit                                               | 20  |
+| blob.GetCommitmentProof                                   | 20  |
+| blob.GetProof                                             | 20  |
+| blob.Included                                             | 20  |
+| state.AccountAddress                                      | 20  |
+| state.Balance                                             | 20  |
+| state.BalanceForAddress                                   | 20  |
+| state.SubmitPayForBlob                                    | 20  |
+| state.Transfer                                            | 20  |
+| header.GetByHash                                          | 20  |
+| header.GetByHeight                                        | 20  |
+| header.GetRangeByHeight                                   | 20  |
+| header.LocalHead                                          | 20  |
+| header.NetworkHead                                        | 20  |
+| header.SyncState                                          | 20  |
+| header.SyncWait                                           | 20  |
+| header.WaitForHeight                                      | 20  |
+| share.GetEDS                                              | 20  |
+| share.GetNamespaceData                                    | 20  |
+| share.GetRange                                            | 20  |
+| share.GetRow                                              | 20  |
+| share.GetSamples                                          | 20  |
+| share.SharesAvailable                                     | 20  |
+| blobstream.GetDataRootTupleInclusionProof                 | 20  |
+| da.Submit                                                 | 20  |
+| da.Get                                                    | 20  |
+| fraud.Get                                                 | 20  |
+
+# Tron: Standard HTTP Methods
+
+| Method                                                    | CU  |
+| --------------------------------------------------------- | --- |
+| /wallet/accountpermissionupdate                           | 20  |
+| /wallet/broadcasthex                                      | 20  |
+| /wallet/broadcasttransaction                              | 20  |
+| /wallet/clearabi                                          | 20  |
+| /wallet/createaccount                                     | 20  |
+| /wallet/createassetissue                                  | 20  |
+| /wallet/createtransaction                                 | 20  |
+| /wallet/deploycontract                                    | 20  |
+| /wallet/estimateenergy                                    | 20  |
+| /wallet/freezebalance                                     | 20  |
+| /wallet/freezebalancev2                                   | 20  |
+| /wallet/getaccount                                        | 20  |
+| /wallet/getaccountbalance                                 | 20  |
+| /wallet/getaccountnet                                     | 20  |
+| /wallet/getaccountresource                                | 20  |
+| /wallet/getassetissuebyid                                 | 20  |
+| /wallet/getassetissuebyname                               | 20  |
+| /wallet/getblock                                          | 20  |
+| /wallet/getblockbynum                                     | 20  |
+| /wallet/getblockbyid                                      | 20  |
+| /wallet/getblockbylatestnum                               | 20  |
+| /wallet/getblockbylimitnext                               | 20  |
+| /wallet/getburntrx                                        | 20  |
+| /wallet/getchainparameters                                | 20  |
+| /wallet/getcontract                                       | 20  |
+| /wallet/getcontractinfo                                   | 20  |
+| /wallet/getdelegatedresource                              | 20  |
+| /wallet/getdelegatedresourceaccountindex                  | 20  |
+| /wallet/getdiversifier                                    | 20  |
+| /wallet/getenergyprices                                   | 20  |
+| /wallet/getexchangebyid                                   | 20  |
+| /wallet/getincomingviewingkey                             | 20  |
+| /wallet/getnewshieldedaddress                             | 20  |
+| /wallet/getnodeinfo                                       | 20  |
+| /wallet/getnowblock                                       | 20  |
+| /wallet/getpaginatedassetissuelist                        | 20  |
+| /wallet/getproposalbyid                                   | 20  |
+| /wallet/gettransactionbyid                                | 20  |
+| /wallet/gettransactioninfobyid                            | 20  |
+| /wallet/gettransactionlistfrompending                     | 20  |
+| /wallet/triggersmartcontract                              | 20  |
+| /wallet/triggerconstantcontract                           | 20  |
+| /wallet/transferasset                                     | 20  |
+| /wallet/unfreezebalance                                   | 20  |
+| /wallet/unfreezebalancev2                                 | 20  |
+| /wallet/unfreezeasset                                     | 20  |
+| /wallet/updateaccount                                     | 20  |
+| /wallet/validateaddress                                   | 20  |
+| /walletsolidity/getaccount                                | 20  |
+| /walletsolidity/gettransactionbyid                        | 20  |
+| /walletsolidity/gettransactioninfobyblocknum              | 20  |
+| /walletsolidity/getpaginatedassetissuelist                | 20  |
 
 # Compute unit cost for error codes
 
