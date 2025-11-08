@@ -1,0 +1,350 @@
+---
+title: Solana Websockets
+description: How to use Websockets with the Solana API
+subtitle: Stream real-time Solana data using standard WebSockets.
+url: https://docs.alchemy.com/reference/solana-websockets
+slug: reference/solana-websockets
+---
+
+## Introduction
+
+Alchemy provides a standard Solana WebSocket interface that allows you to receive real-time updates about accounts, programs, transactions, and blockchain state. Our WebSocket implementation follows the standard Solana WebSocket API, making it compatible with existing Solana clients and libraries, while benefiting from Alchemy’s infrastructure for improved reliability.
+
+## Connection Setup
+
+To connect to the Alchemy WebSocket endpoint, use the following URL format:
+
+```
+wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>
+```
+
+Replace `YOUR_API_KEY` with your Alchemy API key. You can also use our other network endpoints:
+
+- Mainnet: `wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>`
+- Devnet: `wss://solana-devnet.g.alchemy.com/v2/<YOUR_API_KEY>`
+
+## Subscription Methods
+
+Alchemy supports all standard Solana WebSocket subscription methods:
+
+### Account Subscriptions
+
+Subscribe to changes for a specific account:
+
+```jsx
+// Request
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "accountSubscribe",
+  "params": [
+    "9PejEmViKHgUkVFWN57cNEZnFS4Qo6SzsLj5UPAXfDTF",
+    {
+      "encoding": "jsonParsed",
+      "commitment": "confirmed"
+    }
+  ]
+}
+
+// Response
+{
+  "jsonrpc": "2.0",
+  "result": 23784,
+  "id": 1
+}
+
+// Notification
+{
+  "jsonrpc": "2.0",
+  "method": "accountNotification",
+  "params": {
+    "result": {
+      "context": {
+        "slot": 5199307
+      },
+      "value": {
+        "data": ["base64-encoded-data", "base64"],
+        "executable": false,
+        "lamports": 1000000000,
+        "owner": "11111111111111111111111111111111",
+        "rentEpoch": 18
+      }
+    },
+    "subscription": 23784
+  }
+}
+```
+
+### Program Subscriptions
+
+Subscribe to changes for all accounts owned by a program:
+
+```jsx
+// Request
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "programSubscribe",
+  "params": [
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    {
+      "encoding": "jsonParsed",
+      "commitment": "confirmed"
+    }
+  ]
+}
+
+// Response
+{
+  "jsonrpc": "2.0",
+  "result": 24040,
+  "id": 1
+}
+```
+
+### Logs Subscriptions
+
+Subscribe to transaction log messages:
+
+```jsx
+// Request - subscribe to all logs
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "logsSubscribe",
+  "params": [
+    "all",
+    {
+      "commitment": "confirmed"
+    }
+  ]
+}
+
+// Request - subscribe to specific program logs
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "logsSubscribe",
+  "params": [
+    {
+      "mentions": ["11111111111111111111111111111111"]
+    },
+    {
+      "commitment": "confirmed"
+    }
+  ]
+}
+```
+
+### Signature Subscriptions
+
+Subscribe to transaction status updates:
+
+```jsx
+// Request
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "signatureSubscribe",
+  "params": [
+    "5UfDuA1mQcZeb7BZyWU5T6CvZsYqsRwBUHFyMeTzwcnn8S6W9vzVDjp3NgjV7qHJQvw5qQbbGvGxoULZKHGUdSmo",
+    {
+      "commitment": "confirmed"
+    }
+  ]
+}
+```
+
+### Slot Subscriptions
+
+Subscribe to new slots:
+
+```jsx
+// Request
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "slotSubscribe"
+}
+```
+
+
+### Root Subscriptions
+
+Subscribe to new roots (finalized blocks):
+
+```jsx
+// Request
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "rootSubscribe"
+}
+```
+
+## Unsubscribing
+
+To stop receiving updates for any subscription:
+
+```jsx
+// Request
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "unsubscribe",
+  "params": [23784]
+}
+
+// Response
+{
+  "jsonrpc": "2.0",
+  "result": true,
+  "id": 1
+}
+```
+
+Replace the number in the params array with your actual subscription ID.
+
+## JavaScript Examples
+
+Here are complete Node.js examples showing how to use the WebSocket API with JavaScript.
+
+### Program Subscribe Example
+
+This example shows how to subscribe to all account changes for a specific program:
+
+```jsx
+const WebSocket = require('ws');
+
+// Create a WebSocket connection
+const ws = new WebSocket('wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>');
+
+// Function to send a request to the WebSocket server
+function sendRequest(ws) {
+    const request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "programSubscribe",
+        "params": [
+          "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+          {
+            "encoding": "jsonParsed"
+          }
+        ]
+      };
+    ws.send(JSON.stringify(request));
+}
+
+// Function to send a ping to the WebSocket server
+function startPing(ws) {
+    setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.ping();
+            console.log('Ping sent');
+        }
+    }, 30000); // Ping every 30 seconds
+}
+
+// Define WebSocket event handlers
+ws.on('open', function open() {
+    console.log('WebSocket is open');
+    sendRequest(ws); // Send a request once the WebSocket is open
+    startPing(ws); // Start sending pings
+});
+
+ws.on('message', function incoming(data) {
+    const messageStr = data.toString('utf8');
+    try {
+        const messageObj = JSON.parse(messageStr);
+        console.log('Received:', messageObj);
+    } catch (e) {
+        console.error('Failed to parse JSON:', e);
+    }
+});
+
+ws.on('error', function error(err) {
+    console.error('WebSocket error:', err);
+});
+
+ws.on('close', function close() {
+    console.log('WebSocket is closed');
+});
+```
+
+### Signature Subscribe Example
+
+This example shows how to subscribe to a transaction signature to get notified when its status changes. This subscription is for a single notification - the server automatically cancels it after sending the `signatureNotification`:
+
+```jsx
+const WebSocket = require('ws');
+
+// Create a WebSocket connection
+const ws = new WebSocket('wss://solana-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>');
+
+// Function to send a request to the WebSocket server
+function sendRequest(ws) {
+    const request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "signatureSubscribe",
+        "params": [
+          "2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b",
+          {
+            "commitment": "finalized",
+            "enableReceivedNotification": false
+          }
+        ]
+      };
+    ws.send(JSON.stringify(request));
+}
+
+// Function to send a ping to the WebSocket server
+function startPing(ws) {
+    setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.ping();
+            console.log('Ping sent');
+        }
+    }, 30000); // Ping every 30 seconds
+}
+
+// Define WebSocket event handlers
+ws.on('open', function open() {
+    console.log('WebSocket is open');
+    sendRequest(ws); // Send a request once the WebSocket is open
+    startPing(ws); // Start sending pings
+});
+
+ws.on('message', function incoming(data) {
+    const messageStr = data.toString('utf8');
+    try {
+        const messageObj = JSON.parse(messageStr);
+        console.log('Received:', messageObj);
+    } catch (e) {
+        console.error('Failed to parse JSON:', e);
+    }
+});
+
+ws.on('error', function error(err) {
+    console.error('WebSocket error:', err);
+});
+
+ws.on('close', function close() {
+    console.log('WebSocket is closed');
+});
+```
+
+## Error Handling
+
+WebSocket errors follow the JSON-RPC 2.0 specification:
+
+```jsx
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32602,
+    "message": "Invalid params"
+  },
+  "id": 1
+}
+```
