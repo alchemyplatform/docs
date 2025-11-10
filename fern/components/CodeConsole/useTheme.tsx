@@ -1,9 +1,12 @@
 const useTheme = () => {
-  const [isDark, setIsDark] = React.useState(
-    document.documentElement.classList.contains("dark"),
-  );
+  const [isDark, setIsDark] = React.useState(false);
 
   React.useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    // Set initial theme state
+    setIsDark(document.documentElement.classList.contains("dark"));
+
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
