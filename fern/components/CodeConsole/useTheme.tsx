@@ -1,4 +1,8 @@
 const useTheme = () => {
+  if (typeof window === "undefined") {
+    return { isDark: false, setIsDark: () => {} };
+  }
+  
   const [isDark, setIsDark] = React.useState(
     document.documentElement.classList.contains("dark"),
   );
