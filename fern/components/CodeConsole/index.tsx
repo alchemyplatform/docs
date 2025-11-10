@@ -10,7 +10,7 @@ import {
 import { highlightCode } from "./highlightCode";
 import useTheme from "./useTheme";
 
-const CodeConsole = () => {
+export const CodeConsole = () => {
   const { isDark } = useTheme();
 
   const [chain, setChain] = React.useState<Chain>("ethereum");
@@ -167,5 +167,3 @@ const CodeConsole = () => {
     </div>
   );
 };
-
-export default CodeConsole;
