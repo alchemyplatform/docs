@@ -3,7 +3,7 @@ export type Option = {
   label: string;
 };
 
-export const CodeblockSelect = ({
+const CodeblockSelect = ({
   isDark,
   options,
   selectedOption,
