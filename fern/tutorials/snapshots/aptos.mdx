@@ -1,0 +1,69 @@
+---
+title: Aptos
+slug: docs/snapshots/aptos
+---
+
+* [Official Docs](https://aptos.dev/)
+* [Github Repository](https://github.com/aptos-labs/aptos-core)
+
+The snapshot service for Aptos is available [here](https://alchemy.com/snapshots/aptos).
+
+Whether you need to bootstrap your full node or you are in need of a snapshot to ease the migration or kick-start of your validator, you can use our daily snapshot service to speed up the process.
+
+Note: the nodes used for snapshotting are using the default pruning values of Aptos and are hosted as Docker containers on machines using Ubuntu 22.04.
+
+### How to use
+
+You simply go to our [aptos snapshot service](https://alchemy.com/snapshots/aptos) and you can download the latest available snapshot! In order to use it, simply decompress the archive as per the following instructions and start your node.
+
+**1. Download the snapshot**
+
+```bash
+wget <APTOS_SNAPSHOT_URL>
+```
+
+**2. Stop your Aptos service**
+
+If Aptos was already running on your machine, stop your services:
+
+```bash
+sudo systemctl stop aptos.service
+```
+
+OR if you are using a container:
+
+```bash
+docker stop <APTOS_CONTAINER_NAME>
+```
+
+Make sure there is no process running that might try to write to the database:
+
+```bash
+ps -ef | grep aptos-node
+```
+
+**3. Clean the data directory**
+
+Make sure your Aptos data directory is clean (let us assume `<APTOS_HOME>` is your root Aptos directory):
+
+```bash
+rm -rf <APTOS_HOME>/data/*
+```
+
+**4. Install lz4 and decompress the archive**
+
+```bash
+sudo apt-get install lz4
+```
+
+```bash
+lz4 -c -d <APTOS_SNAPSHOT_NAME>.tar.lz4  | tar -x -C <APTOS_HOME>/data
+```
+
+**5. Start the Aptos service or container**
+
+You should be in-sync with the network in minutes after starting the node.
+
+<Info>
+  Please make sure to also check the Official Documentation and the Github Repository posted above in order to correctly deploy the node of your choice.
+</Info>

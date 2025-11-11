@@ -357,8 +357,6 @@ components:
         - network
         - webhook_type
         - webhook_url
-        - addresses
-        - graphql_query
       properties:
         network:
           $ref: "#/components/schemas/network"
@@ -373,8 +371,9 @@ components:
         graphql_query:
           oneOf:
             - type: string
-              description: "A valid, stringified GraphQL query to host on Alchemy"
+              description: "A valid, stringified GraphQL query to host on Alchemy. Required for GRAPHQL webhook type."
             - type: object
+              description: "Required for GRAPHQL webhook type."
               required:
                 - query
               properties:
@@ -384,18 +383,14 @@ components:
                 skip_empty_messages:
                   type: boolean
                   description: "If true, skip sending webhooks for empty messages."
-        app_id:
-          type: string
-          description: |
-            Required for mined and dropped webhooks, optional for address activity or custom webhooks.
         addresses:
           type: array
-          description: "List of addresses to track (required for address activity webhooks)."
+          description: "List of addresses to track. Required for ADDRESS_ACTIVITY webhook type."
           items:
             type: string
         nft_filters:
           type: array
-          description: "List of NFT filter objects to track transfer activity for."
+          description: "List of NFT filter objects to track. Required for NFT_ACTIVITY webhook type."
           items:
             $ref: "#/components/schemas/nft_filter_object"
     create_custom_webhook:
@@ -522,11 +517,6 @@ components:
         time_created:
           type: integer
           description: "Timestamp when the webhook was created."
-        addresses:
-          type: array
-          description: "List of addresses being tracked (null if not an address activity webhook)."
-          items:
-            type: string
         version:
           type: string
           description: "Webhook version (v1 or v2)"
