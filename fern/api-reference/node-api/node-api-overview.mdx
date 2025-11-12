@@ -1,7 +1,7 @@
 ---
 
 title: Node API Overview
-description: Low-level, chain-agnostic access to blockchains (RPC, websockets, tracing, debugging)
+description: Low-level, chain-agnostic access to blockchains (RPC, WebSockets, tracing, debugging)
 subtitle: Low-level, chain-agnostic access to blockchains
 slug: docs/reference/node-api-overview
 
@@ -11,117 +11,57 @@ slug: docs/reference/node-api-overview
 
 The **Node API** is our implementation of the standard JSON-RPC interface (as defined by Ethereum) and compatible equivalents for non-EVM chains (e.g., Solana, Bitcoin). Use it when you want direct, low-level reads and writes against a blockchain.
 
-Looking for higher-level building blocks?
+> Looking for higher-level building blocks?
+> For indexed, enriched queries use the **[Data API](/docs/reference/data-overview)**.
+> For account-abstraction and smart-wallet flows use the **[Wallet API](/docs/wallets)**.
 
-* For indexed, enriched data (NFTs, tokens, transfers, historical queries), use the **[Data API](/docs/reference/data-overview)**.
-* For account-abstraction and smart wallet flows, use the **[Wallet API](/docs/wallets)**.
+## TL;DR
 
-> **Note:** Chain-specific RPC references (e.g., `eth_call`, `eth_blockNumber`, Solana JSON-RPC) now live under the **[Chains](/docs/reference/chain-apis-overview)** tab.
+* We support multiple chains. Most use the **same EVM JSON-RPC methods**; a few have **chain-specific methods**.
+* You can browse each chain's RPC, quirks, and connection details in **[Chains](/docs/reference/chain-apis-overview)**.
+* We also offer **additional APIs** that sit alongside core RPC: **WebSockets**, **Yellowstone gRPC**, and **Trace/Debug** with **varying chain support**.
 
-# What's included in Node API
+***
+
+# Chain APIs
+
+Chain APIs are the per-chain RPC surfaces exposed through the Node API.
+
+* **EVM chains:** Share the standard `eth_*` interface (e.g., `eth_call`, `eth_getLogs`, `eth_sendRawTransaction`).
+* **Non-EVM chains:** Provide compatible JSON-RPC or equivalent endpoints, plus **special methods** where the protocol differs.
+
+👉 Head to **[Chains](/docs/reference/chain-apis-overview)** for:
+
+* Full method lists and examples per chain
+* Endpoint URLs and connection details
+* Notes on chain-specific behavior and limits
+
+***
+
+# Additional Products
+
+Use these alongside the Node API for streaming, performance, and deeper inspection. Chain coverage varies: check each page for supported networks.
 
 <CardGroup cols={3}>
+  <Card title="WebSockets" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="WebSockets" />} href="/docs/reference/subscription-api">Subscribe to pending transactions, log events, and new blocks via the Subscription API.</Card>
 
-<Card title="WebSockets" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="WebSockets" />} href="/docs/reference/subscription-api">
+  <Card title="Yellowstone gRPC" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Yellowstone gRPC" />} href="/docs/reference/yellowstone-grpc-getting-started">High-performance streaming and request/response access to blockchain data over gRPC.</Card>
 
-Subscribe to pending transactions, log events, new blocks, and more via the Subscription API.
+  <Card title="Trace API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Trace API" />} href="/docs/reference/trace-api-quickstart">Inspect transaction execution and onchain activity with rich tracing primitives.</Card>
 
-</Card>
-
-<Card title="Yellowstone gRPC" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Yellowstone gRPC" />} href="/docs/reference/yellowstone-grpc-getting-started">
-
-High-performance streaming and request/response access to blockchain data over gRPC.
-
-</Card>
-
-<Card title="Trace API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Trace API" />} href="/docs/reference/trace-api-quickstart">
-
-Inspect transaction execution and onchain activity with rich tracing primitives.
-
-</Card>
-
-<Card title="Debug API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Debug API" />} href="/docs/reference/debug-api-quickstart">
-
-Non-standard methods for inspecting and debugging transactions and state.
-
-</Card>
-
-<Card title="Chain APIs" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Chain APIs" />} href="/docs/reference/chain-apis-overview">
-  Read & write interface for all blockchains supported by Alchemy.
-</Card>
-
+  <Card title="Debug API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Debug API" />} href="/docs/reference/debug-api-quickstart">Non-standard methods for inspecting and debugging transactions and state.</Card>
 </CardGroup>
 
-# When should I use the Node API?
+***
 
-Use the Node API when your app needs direct RPC access—without relying on smart-wallet abstractions or indexed data services.
+# When to use the Node API
 
-## Write scenarios
-
-Choose the Node API if:
-
-* Your users send transactions and you’re **not** using Alchemy Smart Wallets.
-
-  * If you **are** using Smart Wallets, see the Wallet API for `sendUserOp`, `estimateUserOpGas`, and other AA flows.
-
-**Common write operations**
-
-* Send native tokens and ERC-20s
-* List/buy/sell NFTs
-* Submit contract interactions
-* Simulate or inspect transactions
-
-**Key RPCs (examples)**
-
-* `eth_sendRawTransaction` — broadcast a serialized, signed TX
-
-> Find chain-specific details in **[Chains](/docs/reference/chain-apis-overview)**.
-
-## Read scenarios
-
-Use the Node API when you need raw blockchain state rather than indexed/enriched results.
-
-**Common read operations**
-
-* Fetch balances and storage
-* Call view/pure contract methods
-* Filter/poll logs and events
-* Estimate gas for a prospective TX
-
-**Key RPCs (examples)**
-
-* `eth_getBalance` — account balance for an address
-* `eth_getLogs` — logs matching a filter
-* `eth_estimateGas` — gas estimate for a TX
-* `eth_call` — execute a read-only call without sending a TX
-
-> Full method lists and chain nuances are in **[Chains](/docs/reference/chain-apis-overview)**.
-
-# What moved?
-
-We’ve removed chain-specific pages from **Node RPC**. You’ll now find:
-
-* EVM RPC methods (e.g., `eth_*`)
-* Non-EVM RPC methods (e.g., Solana, Bitcoin)
-* Per-chain connection details and limits
-
-all under the dedicated **[Chains](/docs/reference/chain-apis-overview)** section.
-
-# Summary
-
-Use the **Node API** when you want a low-level, chain-agnostic interface to:
+Use the Node API when you need the **raw, low-level interface** to:
 
 * Send and simulate transactions
-* Read raw blockchain state
+* Read onchain state (balances, storage, view calls)
+* Filter/poll logs and events
 * Build tools close to node-level logic
 
-Prefer these for higher-level workflows:
-
-* **[Data API](/docs/reference/data-overview)** — fast, enriched, indexed queries
-* **[Wallet API](/docs/wallets)** — smart account & account-abstraction flows
-
-# Next steps
-
-* Pick your chain in **[Chains](/docs/chains)** to grab endpoints and method references.
-* For event streams, see **[Subscription API](/docs/reference/subscription-api)** (WebSockets) or **[Yellowstone gRPC](/docs/reference/yellowstone-grpc-getting-started)**.
-* For deep execution insights, try **[Trace API](/docs/reference/trace-api-quickstart)** and **[Debug API](/docs/reference/debug-api-quickstart)**.
+> For enriched, historical, or cross-entity queries, prefer **[Data API](/docs/reference/data-overview)**.
+> For smart account flows, prefer **[Wallet API](/docs/wallets)**.
