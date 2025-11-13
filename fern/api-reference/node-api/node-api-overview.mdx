@@ -1,89 +1,67 @@
 ---
+
 title: Node API Overview
-description: Use the Node API for low-level access to Alchemy-supported blockchains
-subtitle: Use the Node API for low-level access to Alchemy-supported blockchains
+description: Low-level, chain-agnostic access to blockchains (RPC, WebSockets, tracing, debugging)
+subtitle: Low-level, chain-agnostic access to blockchains
 slug: docs/reference/node-api-overview
+
 ---
 
-# Intro
+# Overview
 
-The Node API is our implementation of the standard [JSON-RPC API defined by Ethereum](https://ethereum.org/en/developers/docs/apis/json-rpc/). It also supports reading and writing data for non-EVM chains like Solana and Bitcoin.
+The **Node API** is our implementation of the standard JSON-RPC interface (as defined by Ethereum) and compatible equivalents for non-EVM chains (e.g., Solana, Bitcoin). Use it when you want direct, low-level reads and writes against a blockchain.
 
-Use the Node API if you want to access the standard low-level interface for reading and writing to the blockchain of your choosing. For specific use cases and higher levels of abstraction, Alchemy also offers:
+> Looking for higher-level building blocks?
+> For indexed, enriched queries use the **[Data API](/docs/reference/data-overview)**.
+> For account-abstraction and smart-wallet flows use the **[Wallet API](/docs/wallets)**.
 
-* indexed speciality endpoints (ie. NFTs, Tokens, Transfers), use our [Data API](https://www.alchemy.com/docs/reference/data-api-overview).
-* account abstraction and smart wallet flows, use our [Wallet API](https://www.alchemy.com/docs/wallets).
+## TL;DR
 
-# Components of Node API
+* We support multiple chains. Most use the **same EVM JSON-RPC methods**; a few have **chain-specific methods**.
+* You can browse each chain's RPC, quirks, and connection details in **[Chains](/docs/reference/chain-apis-overview)**.
+* We also offer **additional products** that sit alongside core RPC: **WebSockets**, **Yellowstone gRPC**, and **Trace/Debug** with **varying chain support**.
 
-<CardGroup cols={3}>
-  <Card title="Chain APIs" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Chain APIs"/>} href="chain-apis-overview">
-    Read & write interface for all blockchains supported by Alchemy.
-  </Card>
+***
 
-  <Card title="WebSockets" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="WebSockets"/>} href="subscription-api">
-    Uses our Subscription API, for subscribing to pending transactions, log events, new blocks and more.
-  </Card>
+# Chain APIs
 
-  <Card title="Trace API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Trace API"/>} href="/reference/trace-api-quickstart">
-    For insights into transactions processing and onchain activity.
-  </Card>
+Chain APIs are the per-chain RPC surfaces exposed through the Node API.
 
-  <Card title="Debug API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Debug API"/>} href="debug-api-quickstart">
-    Access to non-standard RPC methods for inspecting and debugging transactions.
-  </Card>
+* **EVM chains:** Share the standard `eth_*` interface (e.g., `eth_call`, `eth_getLogs`, `eth_sendRawTransaction`).
+* **Non-EVM chains:** Provide compatible JSON-RPC or equivalent endpoints, plus **special methods** where the protocol differs.
+
+👉 Head to **[Chains](/docs/reference/chain-apis-overview)** for:
+
+* Full method lists and examples per chain
+* Endpoint URLs and connection details
+* Notes on chain-specific behavior and limits
+
+***
+
+# Additional Products
+
+Use these alongside the Node API for streaming, performance, and deeper inspection. Chain coverage varies: check each page for supported networks.
+
+<CardGroup>
+  <Card title="WebSockets" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="WebSockets" />} href="/docs/reference/subscription-api">Subscribe to pending transactions, log events, and new blocks via the Subscription API.</Card>
+
+  <Card title="Yellowstone gRPC" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Yellowstone gRPC" />} href="/docs/reference/yellowstone-grpc-getting-started">High-performance streaming and request/response access to blockchain data over gRPC.</Card>
+
+  <Card title="Trace API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Trace API" />} href="/docs/reference/trace-api-quickstart">Inspect transaction execution and onchain activity with rich tracing primitives.</Card>
+
+  <Card title="Debug API" icon={<img src="https://static.alchemyapi.io/images/docs/right_arow.svg" alt="Debug API" />} href="/docs/reference/debug-api-quickstart">Non-standard methods for inspecting and debugging transactions and state.</Card>
 </CardGroup>
 
-# When Should I Use the Node API?
+***
 
-Use the Node API when your app needs direct, low-level access to blockchain data and functionality *without* relying on Alchemy's smart wallet abstractions or indexed data services.
+# When to use the Node API
 
-## Writing to a Blockchain
+Use the Node API when you need the **raw, low-level interface** to:
 
-Use the Node API if:
+* Send and simulate transactions
+* Read onchain state (balances, storage, view calls)
+* Filter/poll logs and events
+* Build tools close to node-level logic
 
-* Your users are sending transactions, and you're not using Alchemy Smart Wallets.
-  * If You are using our wallets, check out the Wallet API, which supports:
-    * `sendUserOp`
-    * `estimateUserOpGas`
-    * and more account abstraction features
-
-### Examples of Node API *write* use cases
-
-* Sending ETH and ERC-20 tokens to/from users
-* Buying/selling NFTs in a marketplace
-* Simulating and inspecting transactions
-* Writing custom smart contract interactions
-
-### Key Node API endpoints
-
-* `eth_sendRawTransaction` - Submits a raw transaction (serialized and signed) for broadcasting to the network.
-
-## Reading from a Blockchain
-
-If your use case requires raw blockchain data, not indexed data like in our Data API, then the Node API is what you want:
-
-### Examples of Node API *read* use cases
-
-* Reading token balances
-* Polling logs and events
-
-### Key endpoints
-
-* `eth_getBalance` - Returns the balance of the account of a given address.
-* `eth_getLogs` - Returns an array of all logs matching the specified filter.
-* `eth_estimateGas` - Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
-* `eth_call` - Executes a new message call immediately without creating a transaction on the blockchain.
-
-# Summary
-
-The Node API is right for you if you are looking for a low-level way to:
-
-* Send and/or simulate transactions
-* Read raw blockchain state
-* Build tools or apps close to node-level logic
-
-Otherwise, consider the following APIs more optimized for higher-level abstractions:
-
-* [Data API](https://www.alchemy.com/docs/reference/data-overview): for fast, enriched, indexed queries (ie. historical token balances)
-* [Wallet API](https://www.alchemy.com/docs/wallets): for smart account flows (ie. account abstraction)
+> For enriched, historical, or cross-entity queries, prefer **[Data API](/docs/reference/data-overview)**.
+> For smart account flows, prefer **[Wallet API](/docs/wallets)**.
