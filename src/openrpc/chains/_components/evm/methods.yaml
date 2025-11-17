@@ -990,7 +990,15 @@ components:
     # Subscription methods
     eth_subscribe:
       name: eth_subscribe
-      description: Subscribes to specific event types and returns a subscription ID to receive asynchronous notifications via the `eth_subscription` method.
+      summary: Subscribe to Ethereum events via WebSocket (WSS required)
+      description: |
+        Subscribes to specific event types and returns a subscription ID to receive asynchronous notifications via the `eth_subscription` method.
+
+        ⚠️ **WARNING: WebSocket-Only Method** ⚠️
+
+        > This method REQUIRES a WebSocket connection using `wss://` protocol. It will NOT work with standard HTTP/HTTPS requests or `curl`.
+        > See the [WebSocket documentation](https://docs.alchemy.com/reference/subscription-api) for examples.
+      x-fern-explorer: false
       params:
         - name: Subscription Type
           description: The type of event to subscribe to (e.g., "newHeads", "logs", "newPendingTransactions", "syncing").
@@ -1017,7 +1025,15 @@ components:
 
     eth_unsubscribe:
       name: eth_unsubscribe
-      description: Cancels an active subscription given its subscription ID.
+      summary: Cancel a WebSocket subscription (WSS required)
+      description: |
+        Cancels an active subscription given its subscription ID.
+
+        ⚠️ **WARNING: WebSocket-Only Method** ⚠️
+
+        > This method REQUIRES a WebSocket connection using `wss://` protocol. It will NOT work with standard HTTP/HTTPS requests or `curl`.
+        > See the [WebSocket documentation](https://docs.alchemy.com/reference/subscription-api) for examples.
+      x-fern-explorer: false
       params:
         - name: Subscription ID
           description: The identifier of the subscription to cancel.
