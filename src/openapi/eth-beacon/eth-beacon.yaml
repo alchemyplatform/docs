@@ -2231,6 +2231,54 @@ paths:
                       DEPOSIT_CHAIN_ID: "1"
                       DEPOSIT_CONTRACT_ADDRESS: "0x00000000219ab540356cbb839cbe05303d7705fa"
 
+  /eth/v1/events:
+    get:
+      summary: "/v1/events"
+      description: |
+        Stream real-time beacon chain events from the beacon node. Subscribe by specifying one or more event topics using the
+        `topics` query parameter.
+
+        <Info>
+        **Note:** This is an EventSource (Server-Sent Events) style endpoint.
+        The HTTP connection remains open and continuously pushes events as they
+        occur.
+        </Info>
+      tags:
+        - Ethereum Beacon API Endpoints
+      security:
+        - apiKey: []
+      parameters:
+        - name: topics
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Topics to subscribe to for event streaming.
+            example: "head"
+          description: >
+            Comma-separated list of event topics to subscribe to.
+            Valid topics include: `head`, `block`, `finalized_checkpoint`,
+            `chain_reorg`, `voluntary_exit`, and others depending on the
+            beacon node implementation.
+      responses:
+        "200":
+          description: Stream of Server-Sent Events (SSE)
+          content:
+            text/event-stream:
+              schema:
+                type: object
+              examples:
+                head_event:
+                  summary: Example head event stream message (real response)
+                  value:
+                    slot: "13052702"
+                    block: "0x3cf2223424524bf1094e2b010ea50b75e7914919c677d2702287bd423fd0f9b0"
+                    state: "0x9f27eb9578662934019ffc91d611a521e40e5b4d37c683f8cd6819ec0540c28d"
+                    current_duty_dependent_root: "0x0e45201599b353ea9f315dc466591929db1b555f2a3d5ed109bd46ff89b47ad0"
+                    previous_duty_dependent_root: "0xe6c5de54a9febcfd1c9f7edd95ba52e2353b19f970f82efe385947fdee0752f7"
+                    epoch_transition: false
+                    execution_optimistic: false
+
   /eth/v1/node/peer_count:
     get:
       summary: "/v1/node/peer_count"
