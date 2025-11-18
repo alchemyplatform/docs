@@ -2,154 +2,326 @@
 title: Solana API Quickstart
 description: Quickstart guide for building on Solana
 subtitle: Quickstart guide for building on Solana
-slug: reference/solana-api-quickstart
+slug: docs/solana
+layout: overview
 ---
 
-<Tip title="Don’t have an API key?" icon="star">
-  Sign up to start building on Solana. [Get started for free](https://alchemy.com/solana/?a=fb3149785d)
-</Tip>
+## Supported Networks
 
-# Getting Started Instructions
+| Network  | Type        | HTTP  | Archive         |
+|----------|-------------|-------|-----------------|
+| Mainnet  | Production  | Yes   | Yes             |
+| Devnet   | Testnet     | Yes   | 6,578,505 slots |
 
-## 1. Choose a package manager (npm or yarn)
+*To use the Solana API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
 
-For this guide, we will be using npm or yarn as our package manager to install any required packages.
+## Find Solana Methods by Category
 
-### npm
+<CardGroup>
+  <Card title="Current State Methods" icon="fa-solid fa-clock" href="#current-state-methods">
+    Query live blockchain data and network status
+  </Card>
 
-To get started with `npm`, follow the documentation to install Node.js and `npm` for your operating system: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+  <Card title="Historical Data (Archival)" icon="fa-solid fa-box-archive" href="#historical-data-archival">
+    Access complete transaction and block history
+  </Card>
 
-### yarn
+  <Card title="Transaction Submission" icon="fa-solid fa-paper-plane" href="#transaction-submission">
+    Send and simulate transactions with fee estimation
+  </Card>
 
-To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lang/en/docs/install](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+  <Card title="Network & Cluster Info" icon="fa-solid fa-network-wired" href="#network-cluster-methods">
+    Monitor validators, epochs and network performance
+  </Card>
+</CardGroup>
 
-## 2. Set up your project (npm or yarn)
+## Current State Methods
 
-<CodeGroup>
-  ```text Shell (npm)
-  mkdir alchemy-solana-api
-  cd alchemy-solana-api
-  npm init --yes
-  ```
+Query live blockchain data including accounts, balances, current slots, and real-time network status.
 
-  ```text Shell (yarn)
-  mkdir alchemy-solana-api
-  cd alchemy-solana-api
-  yarn init --yes
-  ```
-</CodeGroup>
+### Account & Balance Queries
 
-## 3. Install Solana Web3.js Library
+<CardGroup>
+  <Card title="getAccountInfo" icon="fa-solid fa-info" href="/docs/chains/solana/solana-api-endpoints/get-account-info">
+    Returns all information associated with the account of provided Pubkey.
+  </Card>
 
-Run the following command to install the Solana Web3.js library with npm or yarn.
+  <Card title="getBalance" icon="fa-solid fa-money-bill" href="/docs/chains/solana/solana-api-endpoints/get-balance">
+    Returns the lamport balance of the account of the provided Pubkey.
+  </Card>
 
-<CodeGroup>
-  ```text npm
-  npm install --save @solana/web3.js
-  ```
+  <Card title="getMultipleAccounts" icon="fa-solid fa-group-arrows-rotate" href="/docs/chains/solana/solana-api-endpoints/get-multiple-accounts">
+    Returns the account information for a list of Pubkeys.
+  </Card>
 
-  ```text yarn
-  yarn add @solana/web3.js
-  ```
-</CodeGroup>
+  <Card title="getProgramAccounts" icon="fa-solid fa-network-wired" href="/docs/chains/solana/solana-api-endpoints/get-program-accounts">
+    Returns all accounts owned by the provided program Pubkey.
+  </Card>
 
-## 4. Make your first request
+  <Card title="getLargestAccounts" icon="fa-solid fa-list-ol" href="/docs/chains/solana/solana-api-endpoints/get-largest-accounts">
+    Returns the addresses of the largest accounts, by lamport balance.
+  </Card>
 
-You are all set now to use Solana API and make your first request. For instance, lets make a request to `get latest slot`. Create an `index.js` file and paste the following code snippet into the file.
-
-<CodeGroup>
-  ```javascript index.js
-  const solanaWeb3 = require("@solana/web3.js");
-
-  const main = async () => {
-    rpc = "https://solana-mainnet.g.alchemy.com/v2/<Your-Alchemy-API-Key>"; // RPC URL for connecting with a Solana node
-    connection = new solanaWeb3.Connection(rpc, "confirmed"); // confirming the connection
-
-    let slot = await connection.getSlot(); // getting the most recent slot number
-    console.log("The latest slot number is", slot); // logging the most recent slot number
-  };
-
-  main();
-  ```
-</CodeGroup>
-
-## 5. Run script
-
-To run the above node script, use cmd `node index.js`, and you should see the output.
-
-<CodeGroup>
-  ```text shell
-  The latest slot number is 164150510
-  ```
-</CodeGroup>
+  <Card title="getSupply" icon="fa-solid fa-coins" href="/docs/chains/solana/solana-api-endpoints/get-supply">
+    Returns information about the current supply of SOL.
+  </Card>
+</CardGroup>
 
 ***
 
-# Leverage Alchemy's AccountsDB Infrastructure for Solana RPC Requests!
+### Token Account Methods
 
-The most expensive Solana RPC requests involve account scans, such as `getProgramAccounts` and `getLargestTokenAccounts`. These methods are incredibly useful but non-performant methods since they induce a heavy RPC load on Solana validator nodes, often resulting in a 5XX response due to timeout or a response with high latency.
+<CardGroup>
+  <Card title="getTokenAccountsByOwner" icon="fa-solid fa-wallet" href="/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-owner">
+    Get all token accounts for a wallet.
+  </Card>
 
-Alchemy has built out core infrastructure that sits atop our Solana validator nodes to support these methods at scale, through what we call the AccountsDB Infrastructure. This infrastructure allows for **faster**, **scalable**, and more **reliable** responses to these methods by paginating the response with a `pageKey`. You could then loop through your that same request with at scan and aggregate the full response from our validator nodes.
+  <Card title="getTokenAccountsByDelegate" icon="fa-solid fa-user-shield" href="/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-delegate">
+    Query token accounts by delegate.
+  </Card>
 
-You can see `pageKey` is now an optional parameter in each account-scanning method in our Solana [docs](/reference/getprogramaccounts), and you may also include an `order` optional parameter that would sort the accounts in the response by their `pubkey` field.
+  <Card title="getTokenAccountBalance" icon="fa-solid fa-scale-balanced" href="/docs/chains/solana/solana-api-endpoints/get-token-account-balance">
+    Get balance of a specific token account.
+  </Card>
 
-Here's an example with `getProgramAccounts`:
+  <Card title="getTokenSupply" icon="fa-solid fa-coins" href="/docs/chains/solana/solana-api-endpoints/get-token-supply">
+    Query total supply of an SPL token.
+  </Card>
 
-<CodeGroup>
-  ```typescript typescript
-  const axios = require("axios");
-
-  async function getProgramAccountsExample() {
-    let gPAExampleRequest = {
-      method: "getProgramAccounts",
-      params: [
-        "ZETAxsqBRek56DhiGXrn75yj2NHU3aYUnxvHXpkf3aD",
-        {
-          encoding: "base64",
-          withContext: true,
-          order: "desc",
-          dataSlice: {
-            offset: 0,
-            length: 10,
-          },
-        },
-      ],
-      id: 0,
-      jsonrpc: "2.0",
-    };
-    let programAccounts = [];
-
-    const alchemyRPCUrl =
-      "https://solana-mainnet.g.alchemy.com/v2/<YOUR-API-KEY>";
-    try {
-      let response = await axios.post(alchemyRPCUrl, gPAExampleRequest);
-      let responseData = response.data["result"];
-
-      // continue aggregating if there's a new pageKey present in the latest response
-      while (responseData["pageKey"]) {
-        programAccounts = programAccounts.concat(responseData["value"]);
-
-        // place the pagekey within the optional config object
-        // (you may need to create that config object if you didn't have it originally)
-        gPAExampleRequest["params"][1]["pageKey"] = responseData["pageKey"];
-
-        // make another call to getProgramAccounts with the pageKey
-        response = await axios.post(alchemyRPCUrl, gPAExampleRequest);
-        responseData = response.data["result"];
-      }
-
-      programAccounts = programAccounts.concat(responseData["value"]);
-      console.log(programAccounts);
-      return programAccounts;
-    } catch (err) {
-      console.log(err.message);
-      return [];
-    }
-  }
-  ```
-</CodeGroup>
+  <Card title="getTokenLargestAccounts" icon="fa-solid fa-list-ol" href="/docs/chains/solana/solana-api-endpoints/get-token-largest-accounts">
+    Find accounts with largest token holdings.
+  </Card>
+</CardGroup>
 
 ***
+
+### Current Slot & Blockhash
+
+<CardGroup>
+  <Card title="getSlot" icon="fa-solid fa-clone" href="/docs/chains/solana/solana-api-endpoints/get-slot">
+    Get current slot number.
+  </Card>
+
+  <Card title="getBlockHeight" icon="fa-solid fa-layer-group" href="/docs/chains/solana/solana-api-endpoints/get-block-height">
+    Get current block height of the network.
+  </Card>
+
+  <Card title="getLatestBlockhash" icon="fa-solid fa-hashtag" href="/docs/chains/solana/solana-api-endpoints/get-latest-blockhash">
+    Get most recent blockhash for transactions.
+  </Card>
+
+  <Card title="isBlockhashValid" icon="fa-solid fa-circle-check" href="/docs/chains/solana/solana-api-endpoints/is-blockhash-valid">
+    Validate if a blockhash is still valid.
+  </Card>
+
+  <Card title="getSlotLeader" icon="fa-solid fa-chess-king" href="/docs/chains/solana/solana-api-endpoints/get-slot-leader">
+    Get current slot leader.
+  </Card>
+
+  <Card title="getSlotLeaders" icon="fa-solid fa-chess-board" href="/docs/chains/solana/solana-api-endpoints/get-slot-leaders">
+    Get slot leaders for a range of slots.
+  </Card>
+</CardGroup>
+
+***
+
+### Transaction Status & Confirmation
+
+<CardGroup>
+  <Card title="getSignatureStatuses" icon="fa-solid fa-question-circle" href="/docs/chains/solana/solana-api-endpoints/get-signature-statuses">
+    Check confirmation status of transactions.
+  </Card>
+
+  <Card title="getTransactionCount" icon="fa-solid fa-list-numeric" href="/docs/chains/solana/solana-api-endpoints/get-transaction-count">
+    Get total number of transactions processed.
+  </Card>
+</CardGroup>
+
+***
+
+## Historical Data (Archival)
+
+Access complete transaction and block history from Solana genesis.
+
+### Transaction History
+
+<CardGroup>
+  <Card title="getTransaction" icon="fa-solid fa-file-alt" href="/docs/chains/solana/solana-api-endpoints/get-transaction">
+    Get detailed information about a specific transaction.
+  </Card>
+
+  <Card title="getSignaturesForAddress" icon="fa-solid fa-signature" href="/docs/chains/solana/solana-api-endpoints/get-signatures-for-address">
+    Get transaction signatures for an account.
+  </Card>
+
+  <Card title="getInflationReward" icon="fa-solid fa-medal" href="/docs/chains/solana/solana-api-endpoints/get-inflation-reward">
+    Calculate inflation rewards for accounts.
+  </Card>
+</CardGroup>
+
+***
+
+### Block History
+
+Access blockchain structure, timing, and historical data.
+
+<CardGroup>
+  <Card title="getBlock" icon="fa-solid fa-cube" href="/docs/chains/solana/solana-api-endpoints/get-block">
+    Get complete block information including all transactions.
+  </Card>
+
+  <Card title="getBlocks" icon="fa-solid fa-cubes" href="/docs/chains/solana/solana-api-endpoints/get-blocks">
+    Get list of confirmed blocks in a range.
+  </Card>
+
+  <Card title="getBlocksWithLimit" icon="fa-solid fa-arrow-down-1-9" href="/docs/chains/solana/solana-api-endpoints/get-blocks-with-limit">
+    Get limited number of confirmed blocks.
+  </Card>
+
+  <Card title="getBlockTime" icon="fa-solid fa-stopwatch" href="/docs/chains/solana/solana-api-endpoints/get-block-time">
+    Get estimated production time of a block.
+  </Card>
+
+  <Card title="getBlockCommitment" icon="fa-solid fa-check-double" href="/docs/chains/solana/solana-api-endpoints/get-block-commitment">
+    Get commitment for a particular block.
+  </Card>
+</CardGroup>
+
+***
+
+## Transaction Submission
+
+Send and simulate transactions with fee estimation and optimization.
+
+### Transaction Methods
+
+<CardGroup>
+  <Card title="sendTransaction" icon="fa-solid fa-paper-plane" href="/docs/chains/solana/solana-api-endpoints/send-transaction">
+    Send a transaction to the network.
+  </Card>
+
+  <Card title="simulateTransaction" icon="fa-solid fa-flask" href="/docs/chains/solana/solana-api-endpoints/simulate-transaction">
+    Simulate a transaction to preview effects.
+  </Card>
+
+  <Card title="requestAirdrop" icon="fa-solid fa-faucet-drip" href="/docs/chains/solana/solana-api-endpoints/request-airdrop">
+    Request SOL airdrop on Devnet.
+  </Card>
+
+  <Card title="getRecentPrioritizationFees" icon="fa-solid fa-arrow-trend-up" href="/docs/chains/solana/solana-api-endpoints/get-recent-prioritization-fees">
+    Get recent priority fees for optimal pricing.
+  </Card>
+
+  <Card title="getFeeForMessage" icon="fa-solid fa-coins" href="/docs/chains/solana/solana-api-endpoints/get-fee-for-message">
+    Calculate transaction fees before sending.
+  </Card>
+</CardGroup>
+
+***
+
+## Network & Cluster Methods
+
+Monitor validators, epochs, network performance, and cluster health.
+
+### Cluster Information
+
+<CardGroup>
+  <Card title="getHealth" icon="fa-solid fa-heart-pulse" href="/docs/chains/solana/solana-api-endpoints/get-health">
+    Check RPC node health status.
+  </Card>
+
+  <Card title="getVersion" icon="fa-solid fa-code-branch" href="/docs/chains/solana/solana-api-endpoints/get-version">
+    Get Solana software version information.
+  </Card>
+
+  <Card title="getClusterNodes" icon="fa-solid fa-network-wired" href="/docs/chains/solana/solana-api-endpoints/get-cluster-nodes">
+    Get information about cluster validators.
+  </Card>
+
+  <Card title="getVoteAccounts" icon="fa-solid fa-certificate" href="/docs/chains/solana/solana-api-endpoints/get-vote-accounts">
+    Get current and delinquent vote accounts.
+  </Card>
+
+  <Card title="getEpochInfo" icon="fa-solid fa-clock-rotate-left" href="/docs/chains/solana/solana-api-endpoints/get-epoch-info">
+    Get information about the current epoch.
+  </Card>
+
+  <Card title="getEpochSchedule" icon="fa-solid fa-calendar-days" href="/docs/chains/solana/solana-api-endpoints/get-epoch-schedule">
+    Get epoch schedule information.
+  </Card>
+
+  <Card title="getLeaderSchedule" icon="fa-solid fa-crown" href="/docs/chains/solana/solana-api-endpoints/get-leader-schedule">
+    Get leader schedule for an epoch.
+  </Card>
+</CardGroup>
+
+***
+
+### Network Performance & Economics
+
+<CardGroup>
+  <Card title="getRecentPerformanceSamples" icon="fa-solid fa-chart-line" href="/docs/chains/solana/solana-api-endpoints/get-recent-performance-samples">
+    Get recent network performance metrics.
+  </Card>
+
+  <Card title="getInflationGovernor" icon="fa-solid fa-gavel" href="/docs/chains/solana/solana-api-endpoints/get-inflation-governor">
+    Get current inflation parameters.
+  </Card>
+
+  <Card title="getInflationRate" icon="fa-solid fa-percent" href="/docs/chains/solana/solana-api-endpoints/get-inflation-rate">
+    Get current inflation rate.
+  </Card>
+
+  <Card title="getStakeMinimumDelegation" icon="fa-solid fa-handshake-simple" href="/docs/chains/solana/solana-api-endpoints/get-stake-minimum-delegation">
+    Get minimum stake delegation amount.
+  </Card>
+
+  <Card title="getBlockProduction" icon="fa-solid fa-cube-check" href="/docs/chains/solana/solana-api-endpoints/get-block-production">
+    Get block production information for current/previous epochs.
+  </Card>
+</CardGroup>
+
+***
+
+## Utility & System Methods
+
+Helper methods for system information, validation, and advanced queries.
+
+### Basic Utility Methods
+
+<CardGroup>
+  <Card title="getMinimumBalanceForRentExemption" icon="fa-solid fa-circle-dollar-to-slot" href="/docs/chains/solana/solana-api-endpoints/get-minimum-balance-for-rent-exemption">
+    Calculate minimum balance for rent exemption.
+  </Card>
+
+  <Card title="getGenesisHash" icon="fa-solid fa-dna" href="/docs/chains/solana/solana-api-endpoints/get-genesis-hash">
+    Get genesis hash of the cluster.
+  </Card>
+
+  <Card title="getIdentity" icon="fa-solid fa-id-card" href="/docs/chains/solana/solana-api-endpoints/get-identity">
+    Get identity public key of the RPC node.
+  </Card>
+
+  <Card title="getFirstAvailableBlock" icon="fa-solid fa-door-open" href="/docs/chains/solana/solana-api-endpoints/get-first-available-block">
+    Get slot of first available block.
+  </Card>
+
+  <Card title="getHighestSnapshotSlot" icon="fa-solid fa-angle-double-up" href="/docs/chains/solana/solana-api-endpoints/get-highest-snapshot-slot">
+    Get highest slot with a snapshot.
+  </Card>
+
+  <Card title="minimumLedgerSlot" icon="fa-solid fa-layer-group" href="/docs/chains/solana/solana-api-endpoints/minimum-ledger-slot">
+    Get minimum slot that node has ledger information.
+  </Card>
+
+  <Card title="getMaxRetransmitSlot" icon="fa-solid fa-arrow-rotate-right" href="/docs/chains/solana/solana-api-endpoints/get-max-retransmit-slot">
+    Get max slot seen from retransmit stage.
+  </Card>
+
+  <Card title="getMaxShredInsertSlot" icon="fa-solid fa-arrow-up-right-dots" href="/docs/chains/solana/solana-api-endpoints/get-max-shred-insert-slot">
+    Get max slot seen from after shred insert.
+  </Card>
+</CardGroup>
 
 # Solana Tutorials
 

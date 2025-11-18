@@ -1,0 +1,60 @@
+## Send Your First Request on Alchemy
+
+*To use the Solana API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
+
+Let's use [`@solana/web3.js`](https://www.npmjs.com/package/@solana/web3.js) package to set up a `Connection` with Alchemy and get the latest slot on Solana!
+
+<CodeGroup>
+  ```text npm
+  npm install --save @solana/web3.js
+  ```
+
+  ```text yarn
+  yarn add @solana/web3.js
+  ```
+</CodeGroup>
+
+<CodeGroup>
+  ```js
+  import { Connection } from "@solana/web3.js";
+
+  const connection = new Connection(
+    "https://solana-devnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY",
+    "confirmed"
+  );
+
+  const slot = await connection.getSlot();
+  console.log("Current slot:", slot);
+  ```
+</CodeGroup>
+
+Now that you've set up a connection to Alchemy, you can continue with some basics:
+
+## Create a Wallet
+
+<CodeGroup>
+  ```js
+  import { Keypair } from "@solana/web3.js";
+
+  const wallet = Keypair.generate();
+  console.log("Public Key:", wallet.publicKey.toBase58());
+  ```
+</CodeGroup>
+
+## Check Wallet Balance
+
+<CodeGroup>
+  ```js
+  const balance = await connection.getBalance(wallet.publicKey);
+  console.log("Balance:", balance / 1e9, "SOL");
+  ```
+</CodeGroup>
+
+## Fetch Account Info
+
+<CodeGroup>
+  ```js
+  const info = await connection.getAccountInfo(wallet.publicKey);
+  console.log(info);
+  ```
+</CodeGroup>
