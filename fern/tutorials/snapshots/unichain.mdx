@@ -1,0 +1,66 @@
+---
+title: Unichain
+slug: docs/snapshots/unichain
+---
+
+* [Official Docs](https://docs.unichain.org/)
+* [Github Repository](https://github.com/Uniswap/unichain-node)
+
+The snapshot service for Unichain is available [here](https://alchemy.com/snapshots/unichain).
+
+Whether you need to bootstrap your full node, you can use our snapshot service to speed up the process.
+
+Note: the nodes used for snapshotting are using the archive pruning values of Unichain and are hosted as Systemd services on machines using Ubuntu 22.04.
+
+### How to use
+
+You simply go to our [unichain snapshot service](https://alchemy.com/snapshots/unichain) and you can download the latest available snapshot! In order to use it, simply decompress the archive as per the following instructions and start your node.
+
+**1. Download the snapshot**
+
+```bash
+wget <UNICHAIN_SNAPSHOT_URL>
+```
+
+**2. Stop your Unichain service**
+
+If Unichain was already running on your machine, stop your services:
+
+```bash
+sudo systemctl stop <UNICHAIN_GETH_SERVICE>
+sudo systemctl stop <UNICHAIN_OP_NODE_SERVICE>
+```
+
+OR if you are using the recommended docker compose setup:
+
+```bash
+docker compose down
+```
+
+Make sure there is no process running that might try to write to the database.
+
+**3. Clean the data directory**
+
+Make sure your Unichain data directory is clean (let us assume `<UNICHAIN_HOME>` is your root Unichain directory):
+
+```bash
+rm -rf <UNICHAIN_HOME>/geth/chaindata
+```
+
+**4. Install lz4 and decompress the archive**
+
+```bash
+sudo apt-get install lz4
+```
+
+```bash
+lz4 -c -d <UNICHAIN_SNAPSHOT_NAME>.tar.lz4  | tar -x -C <UNICHAIN_HOME>/geth/
+```
+
+**5. Start the Unichain service or container**
+
+You should be in-sync with the network in minutes after starting the node.
+
+<Info>
+  Please make sure to also check the Official Documentation and the Github Repository posted above in order to correctly deploy the node of your choice.
+</Info>
