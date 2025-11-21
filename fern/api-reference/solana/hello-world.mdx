@@ -1,0 +1,204 @@
+---
+title: Build & Deploy a "Hello World" Solana Program
+description: Step-by-step guide to building, deploying, and calling a minimal Solana on-chain program using Rust and Alchemy's Solana RPC.
+subtitle: Create, deploy, and call your first on-chain Solana program using Rust and Alchemy RPC
+slug: docs/hello-world-solana-program
+---
+
+This guide walks you through building, deploying, and calling a minimal
+Solana on-chain program using **Rust** and **Alchemy's Solana RPC**.\
+If you're new to Solana development, this is the perfect first step to
+validate your toolchain and RPC setup.
+
+***
+
+# 🧩 Overview
+
+In this tutorial, you will:
+
+1. Install Solana + Rust tooling
+2. Scaffold a new Rust program
+3. Write a modern, minimal Solana program
+4. Build it to BPF
+5. Deploy to devnet
+6. Invoke it with a TypeScript client using Alchemy RPC
+7. View logs proving the program ran correctly
+
+***
+
+# 🛠 Prerequisites
+
+### ✔ Rust & Cargo
+
+```bash
+curl https://sh.rustup.rs -sSf | sh
+```
+
+### ✔ Solana CLI (v1.18+)
+
+```bash
+sh -c "$(curl -sSfL https://release.solana.com/v1.18.2/install)"
+```
+
+### ✔ Node.js + Yarn or PNPM
+
+```bash
+npm install -g pnpm
+```
+
+### ✔ Alchemy Solana RPC URL
+
+From Alchemy dashboard → **Create App** → **Solana** → **devnet**.
+
+***
+
+# 🧱 Step 1 --- Create a new Solana program
+
+```bash
+mkdir solana-hello-world
+cd solana-hello-world
+cargo new --lib hello_world
+```
+
+***
+
+# ✍️ Step 2 --- Add Solana dependencies
+
+```toml
+[package]
+name = "hello_world"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+solana-program = "1.18.0"
+```
+
+***
+
+# 👋 Step 3 --- Write the Hello World program
+
+```rust
+use solana_program::{
+    account_info::{next_account_info, AccountInfo},
+    entrypoint,
+    entrypoint::ProgramResult,
+    msg,
+    pubkey::Pubkey,
+};
+
+entrypoint!(process_instruction);
+
+fn process_instruction(
+    _program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    _instruction_data: &[u8],
+) -> ProgramResult {
+    let accounts_iter = &mut accounts.iter();
+    let signer = next_account_info(accounts_iter)?;
+
+    msg!("👋 Hello, Solana from Alchemy!");
+    msg!("Invoked by signer: {}", signer.key);
+
+    Ok(())
+}
+```
+
+***
+
+# 🏗 Step 4 --- Build the program to BPF
+
+```bash
+cargo build-bpf
+```
+
+***
+
+# 🔑 Step 5 --- Create a Solana keypair
+
+```bash
+solana-keygen new
+```
+
+***
+
+# 🌐 Step 6 --- Set your network to devnet
+
+```bash
+solana config set --url https://api.devnet.solana.com
+```
+
+(Optional) Use Alchemy:
+
+```bash
+solana config set --url https://solana-devnet.g.alchemy.com/v2/YOUR_KEY
+```
+
+***
+
+# 💸 Step 7 --- Airdrop SOL
+
+```bash
+solana airdrop 2
+```
+
+***
+
+# 📦 Step 8 --- Deploy your program
+
+```bash
+solana program deploy target/deploy/hello_world.so
+```
+
+***
+
+# 🧪 Step 9 --- Invoke program via Alchemy RPC
+
+```ts
+import {
+  Connection,
+  PublicKey,
+  Keypair,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
+
+const ALCHEMY_RPC = "https://solana-devnet.g.alchemy.com/v2/YOUR_KEY";
+const PROGRAM_ID = new PublicKey("YOUR_PROGRAM_ID");
+
+async function main() {
+  const connection = new Connection(ALCHEMY_RPC);
+
+  const payer = Keypair.generate();
+  await connection.requestAirdrop(payer.publicKey, 1e9);
+
+  const ix = new TransactionInstruction({
+    programId: PROGRAM_ID,
+    keys: [{ pubkey: payer.publicKey, isSigner: true, isWritable: false }],
+    data: Buffer.alloc(0),
+  });
+
+  const tx = new Transaction().add(ix);
+  const sig = await connection.sendTransaction(tx, [payer]);
+
+  console.log("Transaction signature:", sig);
+
+  const logs = await connection.getTransaction(sig, {
+    commitment: "finalized",
+  });
+
+  console.log("Program logs:", logs?.meta?.logMessages);
+}
+
+main();
+```
+
+***
+
+# 🎉 Success
+
+You now have a working Solana program deployed and callable using
+Alchemy RPC!
