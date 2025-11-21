@@ -12,7 +12,7 @@ validate your toolchain and RPC setup.
 
 ***
 
-# 🧩 Overview
+## Overview
 
 In this tutorial, you will:
 
@@ -26,7 +26,7 @@ In this tutorial, you will:
 
 ***
 
-# 🛠 Prerequisites
+## Prerequisites
 
 ### ✔ Rust & Cargo
 
@@ -34,10 +34,10 @@ In this tutorial, you will:
 curl https://sh.rustup.rs -sSf | sh
 ```
 
-### ✔ Solana CLI (v1.18+)
+### ✔ Solana CLI
 
 ```bash
-sh -c "$(curl -sSfL https://release.solana.com/v1.18.2/install)"
+cargo install solana-cli
 ```
 
 ### ✔ Node.js + Yarn or PNPM
@@ -52,7 +52,7 @@ From Alchemy dashboard → **Create App** → **Solana** → **devnet**.
 
 ***
 
-# 🧱 Step 1 --- Create a new Solana program
+## Step 1: Create a new Solana program
 
 ```bash
 mkdir solana-hello-world
@@ -62,7 +62,9 @@ cargo new --lib hello_world
 
 ***
 
-# ✍️ Step 2 --- Add Solana dependencies
+## Step 2: Add Solana dependencies
+
+Open `Cargo.toml` and replace the contents with:
 
 ```toml
 [package]
@@ -79,7 +81,9 @@ solana-program = "1.18.0"
 
 ***
 
-# 👋 Step 3 --- Write the Hello World program
+# Step 3: Write the Hello World program
+
+Put this into `src/lib.rs`:
 
 ```rust
 use solana_program::{
@@ -109,53 +113,79 @@ fn process_instruction(
 
 ***
 
-# 🏗 Step 4 --- Build the program to BPF
+# Step 4: Build the program
 
 ```bash
-cargo build-bpf
+cargo build-sbf
+```
+
+To test this command was successful, run `ls target/deploy` - this should output something similar to:
+
+```bash
+hello_world.so
+hello_world-keypair.json
 ```
 
 ***
 
-# 🔑 Step 5 --- Create a Solana keypair
+# Step 5: Create a Solana keypair
 
 ```bash
 solana-keygen new
 ```
 
-***
-
-# 🌐 Step 6 --- Set your network to devnet
+You'll get:
 
 ```bash
-solana config set --url https://api.devnet.solana.com
+Wrote new keypair to /Users/al/.config/solana/id.json
+========================================================================
+pubkey: 7QGE8McfeCHgm12Q8VN6jgBKqbbVdKpq5YiQrTyiMiNJ
+========================================================================
 ```
 
-(Optional) Use Alchemy:
-
-```bash
-solana config set --url https://solana-devnet.g.alchemy.com/v2/YOUR_KEY
-```
+This wallet will pay for your deployments!
 
 ***
 
-# 💸 Step 7 --- Airdrop SOL
+# Step 6: Set your network to devnet
+
+Use Alchemy:
 
 ```bash
-solana airdrop 2
+solana config set --url https://solana-devnet.g.alchemy.com/v2/Pq8ZtHk2Gf3J4BH30ru_k
 ```
+
+Your terminal will output a confirmation message. ✅
 
 ***
 
-# 📦 Step 8 --- Deploy your program
+# Step 7: Airdrop SOL
+
+```bash
+solana airdrop 0.2
+```
+
+> Note: You may get a rate-limit error. If you do and need more devnet funds, try [the official Solana faucet](https://faucet.solana.com/).
+
+***
+
+# Step 8: Deploy your program
 
 ```bash
 solana program deploy target/deploy/hello_world.so
 ```
 
+Your terminal will output something like:
+
+```bash
+Program Id: Eq5z52U3gGZNHVhgR1bgba8deMgtuFkpUNzd8iBsKvwJ
+
+Signature: yhJxt2ovd3SzGRZbhTkWajkA3uvhX8iqLzuWSrPYyW6AAqZjD2Vq1ApxSAUS5ywQyUnwDwPG8vqKpJv1wgAUFwo
+```
+
 ***
 
-# 🧪 Step 9 --- Invoke program via Alchemy RPC
+# Step 9: Invoke program via Alchemy RPC
 
 ```ts
 import {
@@ -200,5 +230,8 @@ main();
 
 # 🎉 Success
 
-You now have a working Solana program deployed and callable using
-Alchemy RPC!
+You now have a working Solana program deployed on Solana devnet!
+
+Check out the next guide on how to:
+1. set up a frontend for this program
+2. invoke it using Alchemy 🚀
