@@ -1,0 +1,272 @@
+---
+title: Set up Frontend for Solana Application
+description: Step-by-step guide to integrating, calling, and interacting with a Solana on-chain program using Rust and Alchemy's Solana RPC from your own application.
+subtitle: Integrate, call, and interact with your Solana on-chain program using Rust and Alchemy RPC
+slug: docs/hello-world-solana-application
+---
+
+You can check out the project in two ways:
+
+* **GitHub Repository:** [alchemyplatform/solana-hello-world-2025](https://github.com/alchemyplatform/solana-hello-world-2025) — Clone this repo to explore or use the code yourself.
+* **Live Demo:** [Deployed Application](https://solana-hello-world-2025.vercel.app/) — Interact with the app directly in your browser.
+
+## Step 1: Get your Solana program ID
+
+[The previous guide](/docs/hello-world-solana-program) shows you how to deploy a program to Solana devnet. Using that guide, we got the following program id:
+
+```bash
+Eq5z52U3gGZNHVhgR1bgba8deMgtuFkpUNzd8iBsKvwJ
+```
+
+You can use this in the examples below, or replace it with your own.
+
+## Step 2: Create a Next.js app
+
+From your terminal, run:
+
+```bash
+npx create-next-app@latest solana-hello-frontend \
+  --typescript \
+  --eslint \
+  --app \
+  --src-dir \
+  --tailwind \
+  --import-alias "@/*"
+
+cd solana-hello-frontend
+```
+
+This sets up:
+
+* Next.js with the App Router
+* TypeScript
+* Tailwind (optional, but nice for styling)
+
+***
+
+## Step 3: Install Solana web3.js and set environment variables
+
+Install the Solana SDK:
+
+```bash
+npm install @solana/web3.js
+```
+
+Create a file called `.env` in the root of `solana-hello-frontend` folder:
+
+```bash
+touch .env
+```
+
+Add your Alchemy RPC URL and program ID:
+
+```bash
+NEXT_PUBLIC_ALCHEMY_RPC_URL="https://solana-devnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"
+NEXT_PUBLIC_PROGRAM_ID="Eq5z52U3gGZNHVhgR1bgba8deMgtuFkpUNzd8iBsKvwJ"
+```
+
+> In a real app, replace the example program ID with the one from your own deployment.
+
+## Step 4: Build a minimal client UI that pings your program
+
+We’ll make the homepage (app/page.tsx) a client component that:
+
+* connects a Solana wallet (e.g. Phantom)
+
+* builds a transaction with an instruction calling your program
+
+* sends it via Alchemy RPC
+
+* shows the signature + status
+
+Open `src/app/page.tsx` and replace its contents with:
+
+```typescript
+"use client";
+
+import { useState } from "react";
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
+
+const RPC_URL = process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL as string;
+const PROGRAM_ID = process.env.NEXT_PUBLIC_PROGRAM_ID as string;
+
+declare global {
+  interface Window {
+    solana?: any; // Phantom or compatible wallet
+  }
+}
+
+export default function Home() {
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [txSignature, setTxSignature] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const connectWallet = async () => {
+    try {
+      if (!window.solana) {
+        alert("No Solana wallet found. Please install Phantom or a compatible wallet.");
+        return;
+      }
+
+      const resp = await window.solana.connect();
+      setWalletAddress(resp.publicKey.toString());
+      setStatus("Wallet connected.");
+    } catch (err) {
+      console.error(err);
+      setStatus("Failed to connect wallet.");
+    }
+  };
+
+  const pingProgram = async () => {
+    if (!walletAddress) {
+      setStatus("Connect your wallet first.");
+      return;
+    }
+
+    if (!RPC_URL || !PROGRAM_ID) {
+      setStatus("Missing RPC URL or PROGRAM_ID env vars.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setStatus("Sending transaction...");
+      setTxSignature(null);
+
+      const connection = new Connection(RPC_URL, "confirmed");
+      const provider = window.solana;
+
+      const programId = new PublicKey(PROGRAM_ID);
+      const userPublicKey = new PublicKey(walletAddress);
+
+      // Build an instruction that calls your Hello World program
+      const instruction = new TransactionInstruction({
+        programId,
+        keys: [
+          {
+            pubkey: userPublicKey,
+            isSigner: true,
+            isWritable: false,
+          },
+        ],
+        // Your Hello World program ignores instruction data, so this can be empty
+        data: Buffer.from([]),
+      });
+
+      const transaction = new Transaction().add(instruction);
+
+      // Set fee payer and recent blockhash
+      transaction.feePayer = userPublicKey;
+      const latestBlockhash = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = latestBlockhash.blockhash;
+
+      // Ask the wallet to sign the transaction
+      const signedTx = await provider.signTransaction(transaction);
+
+      // Send to the network through Alchemy RPC
+      const signature = await connection.sendRawTransaction(signedTx.serialize());
+      setTxSignature(signature);
+      setStatus("Transaction sent. Waiting for confirmation...");
+
+      // Wait for confirmation
+      await connection.confirmTransaction(
+        {
+          signature,
+          blockhash: latestBlockhash.blockhash,
+          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        },
+        "confirmed"
+      );
+
+      setStatus("✅ Success! Your program was invoked.");
+    } catch (err) {
+      console.error(err);
+      setStatus("❌ Error sending transaction. Check the browser console for details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
+      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
+        <h1 className="mb-2 text-xl font-semibold">
+          Solana Hello World 👋
+        </h1>
+        <p className="mb-4 text-sm text-slate-400">
+          Connect your wallet and ping your on-chain Hello World program on{" "}
+          <span className="font-semibold text-slate-100">devnet</span> using Alchemy RPC.
+        </p>
+
+        {!walletAddress ? (
+          <button
+            onClick={connectWallet}
+            className="mb-3 w-full rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-600 transition"
+          >
+            Connect Wallet
+          </button>
+        ) : (
+          <>
+            <div className="mb-3 text-xs text-slate-400 break-all">
+              Connected:{" "}
+              <span className="text-slate-100">{walletAddress}</span>
+            </div>
+            <button
+              onClick={pingProgram}
+              disabled={loading}
+              className={`mb-3 w-full rounded-xl px-4 py-2 text-sm font-semibold text-white transition ${
+                loading
+                  ? "bg-slate-600 cursor-default"
+                  : "bg-emerald-500 hover:bg-emerald-600"
+              }`}
+            >
+              {loading ? "Sending..." : "Ping Program"}
+            </button>
+          </>
+        )}
+
+        {status && (
+          <p className="mb-2 text-sm text-slate-200">
+            {status}
+          </p>
+        )}
+
+        {txSignature && (
+          <p className="text-xs text-slate-400 break-all">
+            Tx Signature:{" "}
+            <a
+              href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sky-400 underline underline-offset-2"
+            >
+              View on Solana Explorer
+            </a>
+          </p>
+        )}
+      </div>
+    </main>
+  );
+}
+```
+
+## Step 5: Run the Next.js app
+
+```bash
+npm run dev
+```
+
+# 🎉 Success
+
+You now have a working Solana program deployed on Solana devnet!
+
+Check out the next guide on how to:
+
+1. set up a frontend for this program
+2. invoke it using Alchemy 🚀
