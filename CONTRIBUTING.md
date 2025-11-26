@@ -79,12 +79,43 @@ git merge upstream/main
 git push origin main
 ```
 
-## Adding Images
+## Adding Images and Videos
 
-* Location: `fern/images`
-* Steps:
-  * Place image files in the `fern/images/` directory
-* Reference images from the markdown using its path within the images dir (don't include `/fern/images` in the path). See [Fern's docs](https://buildwithfern.com/learn/docs/content/write-markdown#images) on how to add to do so.
+**All documentation assets are hosted on Cloudinary** - do NOT commit images/videos to Git.
+
+### How to Add Assets
+
+1. **Upload to Cloudinary**
+   * Sign-in to Cloudinary through Okta.
+   * Upload to the `docs/` folder
+   * Organize by section: `docs/api-reference/`, `docs/tutorials/`, `docs/guides/`, etc.
+
+2. **Copy the Cloudinary URL**
+   * Click on your uploaded asset
+   * Copy the "Secure URL" (starts with `https://alchemyapi-res.cloudinary.com/`)
+
+3. **Add to Your MDX File**
+   ```markdown
+   ![Descriptive alt text](https://alchemyapi-res.cloudinary.com/image/upload/v1234567890/docs/section/image.png)
+   ```
+
+### Best Practices
+
+* ✅ Use descriptive filenames: `nft-api-dashboard.png`
+* ✅ Optimize images before uploading (keep under 1 MB)
+* ❌ Don't commit images to Git
+* ❌ Don't use generic names like `image.png`
+* ❌ Don't link to external CDNs (GitHub, Imgur, etc.)
+
+### Video Embeds
+
+```markdown
+<embed 
+  src="https://alchemyapi-res.cloudinary.com/raw/upload/v1234567890/docs/section/video.webm" 
+  type="video/webm" 
+  style={{ width: '100%' }} 
+/>
+```
 
 ## Pull Request Guidelines
 

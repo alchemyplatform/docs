@@ -106,6 +106,18 @@ You can find the appropriate commands for running each in `package.json`
 
 The project uses [Husky](https://typicode.github.io/husky) and [lint-staged](https://github.com/lint-staged/lint-staged) to run linting checks before commits.
 
+## Assets (Images & Videos)
+
+**All documentation assets are hosted on Cloudinary** - do NOT commit images/videos to the Git repository.
+
+### Adding Images
+
+1. Sign-in to Cloudinary through Okta and upload in the `docs/` folder
+2. Copy the Cloudinary URL
+3. Use in MDX: `![Alt text](https://alchemyapi-res.cloudinary.com/image/upload/v1234567890/docs/section/image.png)`
+
+See [CONTRIBUTING.md](CONTRIBUTING.md#adding-images-and-videos) for detailed guidelines.
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to submit pull requests, report issues, and contribute to the documentation.
