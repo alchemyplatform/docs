@@ -85,7 +85,9 @@ git push origin main
 
 ### How to Add Assets
 
-1. **Upload to Cloudinary**
+> **Note for External Contributors**: Cloudinary access is only available to internal Alchemy team members. If you need to add images or videos to your contribution, please upload them to a temporary location (like GitHub Issues or PR comments) and ask the Alchemy team to upload them to Cloudinary for you.
+
+1. **Upload to Cloudinary** *(Internal contributors only)*
    * Sign-in to Cloudinary through Okta.
    * Upload to the `docs/` folder
    * Organize by section: `docs/api-reference/`, `docs/tutorials/`, `docs/guides/`, etc.

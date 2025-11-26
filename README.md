@@ -112,6 +112,10 @@ The project uses [Husky](https://typicode.github.io/husky) and [lint-staged](htt
 
 ### Adding Images
 
+> **Note**: Cloudinary access is only available to internal Alchemy team members. External contributors should upload assets to a temporary location and request the Alchemy team to upload them to Cloudinary.
+
+**For internal contributors:**
+
 1. Sign-in to Cloudinary through Okta and upload in the `docs/` folder
 2. Copy the Cloudinary URL
 3. Use in MDX: `![Alt text](https://alchemyapi-res.cloudinary.com/image/upload/v1234567890/docs/section/image.png)`
