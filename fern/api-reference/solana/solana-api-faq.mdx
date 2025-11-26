@@ -2,26 +2,331 @@
 title: Solana API FAQ
 description: Frequently asked questions about the Solana API
 subtitle: Frequently asked questions about the Solana API
-slug: reference/solana-api-faq
+slug: docs/solana-api-faq
 ---
 
-## What is Solana
+## What is Solana?
 
 Solana is a high-performance blockchain platform designed to support the scale, open participation, and performance required to power the next generation of decentralized applications. It is built on a new consensus algorithm called Proof of History (PoH) which allows it to process up to 50,000 transactions per second. Solana also features a unique architecture that allows for low-latency transactions, low transaction fees, and a high degree of decentralization.
 
-## What is the Solana API
+## What is the Solana API?
 
 The Solana API allows decentralized applications to connect to a Solana node that is part of the Solana blockchain. Developers can interact with on-chain data, send transactions, and deploy contracts by leveraging Alchemy's API endpoints. The API follows a JSON-RPC standard, a lightweight, remote procedure call (RPC) protocol that is commonly used when interacting with blockchain data.
 
 ## How can I get started using the Solana API?
 
-Explained in the [Solana API Quickstart Guide](/reference/solana-api-quickstart#getting-started-instructions).
+Explained in the [Solana API Quickstart Guide](/docs/solana).
 
 ## What methods does Alchemy support for the Solana API?
 
 You can find the list of all the methods Alchemy support for the Solana API on the [Solana API Endpoints](/reference/solana-api-endpoints) page.
 
-### Methods
+## Can I see the Solana methods by category?
 
-* getTokenLargestAccounts
-* getTokenAccountsByDelegate
+Yes! Check out the section below:
+
+<CardGroup>
+  <Card title="Current State Methods" icon="fa-solid fa-clock" href="#current-state-methods">
+    Query live blockchain data and network status
+  </Card>
+
+  <Card title="Historical Data (Archival)" icon="fa-solid fa-box-archive" href="#historical-data-archival">
+    Access complete transaction and block history
+  </Card>
+
+  <Card title="Transaction Submission" icon="fa-solid fa-paper-plane" href="#transaction-submission">
+    Send and simulate transactions with fee estimation
+  </Card>
+
+  <Card title="Network & Cluster Info" icon="fa-solid fa-network-wired" href="#network-performance-economics">
+    Monitor validators, epochs and network performance
+  </Card>
+</CardGroup>
+
+## Current State Methods
+
+Query live blockchain data including accounts, balances, current slots, and real-time network status.
+
+### Account & Balance Queries
+
+<CardGroup>
+  <Card title="getAccountInfo" icon="fa-solid fa-info" href="/docs/chains/solana/solana-api-endpoints/get-account-info">
+    Returns all information associated with the account of provided Pubkey.
+  </Card>
+
+  <Card title="getBalance" icon="fa-solid fa-money-bill" href="/docs/chains/solana/solana-api-endpoints/get-balance">
+    Returns the lamport balance of the account of the provided Pubkey.
+  </Card>
+
+  <Card title="getMultipleAccounts" icon="fa-solid fa-group-arrows-rotate" href="/docs/chains/solana/solana-api-endpoints/get-multiple-accounts">
+    Returns the account information for a list of Pubkeys.
+  </Card>
+
+  <Card title="getProgramAccounts" icon="fa-solid fa-network-wired" href="/docs/chains/solana/solana-api-endpoints/get-program-accounts">
+    Returns all accounts owned by the provided program Pubkey.
+  </Card>
+
+  <Card title="getLargestAccounts" icon="fa-solid fa-list-ol" href="/docs/chains/solana/solana-api-endpoints/get-largest-accounts">
+    Returns the addresses of the largest accounts, by lamport balance.
+  </Card>
+
+  <Card title="getSupply" icon="fa-solid fa-coins" href="/docs/chains/solana/solana-api-endpoints/get-supply">
+    Returns information about the current supply of SOL.
+  </Card>
+</CardGroup>
+
+***
+
+### Token Account Methods
+
+<CardGroup>
+  <Card title="getTokenAccountsByOwner" icon="fa-solid fa-wallet" href="/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-owner">
+    Get all token accounts for a wallet.
+  </Card>
+
+  <Card title="getTokenAccountsByDelegate" icon="fa-solid fa-user-shield" href="/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-delegate">
+    Query token accounts by delegate.
+  </Card>
+
+  <Card title="getTokenAccountBalance" icon="fa-solid fa-scale-balanced" href="/docs/chains/solana/solana-api-endpoints/get-token-account-balance">
+    Get balance of a specific token account.
+  </Card>
+
+  <Card title="getTokenSupply" icon="fa-solid fa-coins" href="/docs/chains/solana/solana-api-endpoints/get-token-supply">
+    Query total supply of an SPL token.
+  </Card>
+
+  <Card title="getTokenLargestAccounts" icon="fa-solid fa-list-ol" href="/docs/chains/solana/solana-api-endpoints/get-token-largest-accounts">
+    Find accounts with largest token holdings.
+  </Card>
+</CardGroup>
+
+***
+
+### Current Slot & Blockhash
+
+<CardGroup>
+  <Card title="getSlot" icon="fa-solid fa-clone" href="/docs/chains/solana/solana-api-endpoints/get-slot">
+    Get current slot number.
+  </Card>
+
+  <Card title="getBlockHeight" icon="fa-solid fa-layer-group" href="/docs/chains/solana/solana-api-endpoints/get-block-height">
+    Get current block height of the network.
+  </Card>
+
+  <Card title="getLatestBlockhash" icon="fa-solid fa-hashtag" href="/docs/chains/solana/solana-api-endpoints/get-latest-blockhash">
+    Get most recent blockhash for transactions.
+  </Card>
+
+  <Card title="isBlockhashValid" icon="fa-solid fa-circle-check" href="/docs/chains/solana/solana-api-endpoints/is-blockhash-valid">
+    Validate if a blockhash is still valid.
+  </Card>
+
+  <Card title="getSlotLeader" icon="fa-solid fa-chess-king" href="/docs/chains/solana/solana-api-endpoints/get-slot-leader">
+    Get current slot leader.
+  </Card>
+
+  <Card title="getSlotLeaders" icon="fa-solid fa-chess-board" href="/docs/chains/solana/solana-api-endpoints/get-slot-leaders">
+    Get slot leaders for a range of slots.
+  </Card>
+</CardGroup>
+
+***
+
+### Transaction Status & Confirmation
+
+<CardGroup>
+  <Card title="getSignatureStatuses" icon="fa-solid fa-question-circle" href="/docs/chains/solana/solana-api-endpoints/get-signature-statuses">
+    Check confirmation status of transactions.
+  </Card>
+
+  <Card title="getTransactionCount" icon="fa-solid fa-list-numeric" href="/docs/chains/solana/solana-api-endpoints/get-transaction-count">
+    Get total number of transactions processed.
+  </Card>
+</CardGroup>
+
+***
+
+## Historical Data (Archival)
+
+Access complete transaction and block history from Solana genesis.
+
+### Transaction History
+
+<CardGroup>
+  <Card title="getTransaction" icon="fa-solid fa-file-alt" href="/docs/chains/solana/solana-api-endpoints/get-transaction">
+    Get detailed information about a specific transaction.
+  </Card>
+
+  <Card title="getSignaturesForAddress" icon="fa-solid fa-signature" href="/docs/chains/solana/solana-api-endpoints/get-signatures-for-address">
+    Get transaction signatures for an account.
+  </Card>
+
+  <Card title="getInflationReward" icon="fa-solid fa-medal" href="/docs/chains/solana/solana-api-endpoints/get-inflation-reward">
+    Calculate inflation rewards for accounts.
+  </Card>
+</CardGroup>
+
+***
+
+### Block History
+
+Access blockchain structure, timing, and historical data.
+
+<CardGroup>
+  <Card title="getBlock" icon="fa-solid fa-cube" href="/docs/chains/solana/solana-api-endpoints/get-block">
+    Get complete block information including all transactions.
+  </Card>
+
+  <Card title="getBlocks" icon="fa-solid fa-cubes" href="/docs/chains/solana/solana-api-endpoints/get-blocks">
+    Get list of confirmed blocks in a range.
+  </Card>
+
+  <Card title="getBlocksWithLimit" icon="fa-solid fa-arrow-down-1-9" href="/docs/chains/solana/solana-api-endpoints/get-blocks-with-limit">
+    Get limited number of confirmed blocks.
+  </Card>
+
+  <Card title="getBlockTime" icon="fa-solid fa-stopwatch" href="/docs/chains/solana/solana-api-endpoints/get-block-time">
+    Get estimated production time of a block.
+  </Card>
+
+  <Card title="getBlockCommitment" icon="fa-solid fa-check-double" href="/docs/chains/solana/solana-api-endpoints/get-block-commitment">
+    Get commitment for a particular block.
+  </Card>
+</CardGroup>
+
+***
+
+## Transaction Submission
+
+Send and simulate transactions with fee estimation and optimization.
+
+### Transaction Methods
+
+<CardGroup>
+  <Card title="sendTransaction" icon="fa-solid fa-paper-plane" href="/docs/chains/solana/solana-api-endpoints/send-transaction">
+    Send a transaction to the network.
+  </Card>
+
+  <Card title="simulateTransaction" icon="fa-solid fa-flask" href="/docs/chains/solana/solana-api-endpoints/simulate-transaction">
+    Simulate a transaction to preview effects.
+  </Card>
+
+  <Card title="requestAirdrop" icon="fa-solid fa-faucet-drip" href="/docs/chains/solana/solana-api-endpoints/request-airdrop">
+    Request SOL airdrop on Devnet.
+  </Card>
+
+  <Card title="getRecentPrioritizationFees" icon="fa-solid fa-arrow-trend-up" href="/docs/chains/solana/solana-api-endpoints/get-recent-prioritization-fees">
+    Get recent priority fees for optimal pricing.
+  </Card>
+
+  <Card title="getFeeForMessage" icon="fa-solid fa-coins" href="/docs/chains/solana/solana-api-endpoints/get-fee-for-message">
+    Calculate transaction fees before sending.
+  </Card>
+</CardGroup>
+
+***
+
+## Network & Cluster Methods
+
+Monitor validators, epochs, network performance, and cluster health.
+
+### Cluster Information
+
+<CardGroup>
+  <Card title="getHealth" icon="fa-solid fa-heart-pulse" href="/docs/chains/solana/solana-api-endpoints/get-health">
+    Check RPC node health status.
+  </Card>
+
+  <Card title="getVersion" icon="fa-solid fa-code-branch" href="/docs/chains/solana/solana-api-endpoints/get-version">
+    Get Solana software version information.
+  </Card>
+
+  <Card title="getClusterNodes" icon="fa-solid fa-network-wired" href="/docs/chains/solana/solana-api-endpoints/get-cluster-nodes">
+    Get information about cluster validators.
+  </Card>
+
+  <Card title="getVoteAccounts" icon="fa-solid fa-certificate" href="/docs/chains/solana/solana-api-endpoints/get-vote-accounts">
+    Get current and delinquent vote accounts.
+  </Card>
+
+  <Card title="getEpochInfo" icon="fa-solid fa-clock-rotate-left" href="/docs/chains/solana/solana-api-endpoints/get-epoch-info">
+    Get information about the current epoch.
+  </Card>
+
+  <Card title="getEpochSchedule" icon="fa-solid fa-calendar-days" href="/docs/chains/solana/solana-api-endpoints/get-epoch-schedule">
+    Get epoch schedule information.
+  </Card>
+
+  <Card title="getLeaderSchedule" icon="fa-solid fa-crown" href="/docs/chains/solana/solana-api-endpoints/get-leader-schedule">
+    Get leader schedule for an epoch.
+  </Card>
+</CardGroup>
+
+***
+
+### Network Performance & Economics
+
+<CardGroup>
+  <Card title="getRecentPerformanceSamples" icon="fa-solid fa-chart-line" href="/docs/chains/solana/solana-api-endpoints/get-recent-performance-samples">
+    Get recent network performance metrics.
+  </Card>
+
+  <Card title="getInflationGovernor" icon="fa-solid fa-gavel" href="/docs/chains/solana/solana-api-endpoints/get-inflation-governor">
+    Get current inflation parameters.
+  </Card>
+
+  <Card title="getInflationRate" icon="fa-solid fa-percent" href="/docs/chains/solana/solana-api-endpoints/get-inflation-rate">
+    Get current inflation rate.
+  </Card>
+
+  <Card title="getStakeActivation" icon="fa-solid fa-handshake-simple" href="/docs/chains/solana/solana-api-endpoints/get-stake-activation">
+    Get epoch activation information for a stake account.
+  </Card>
+
+  <Card title="getBlockProduction" icon="fa-solid fa-cubes" href="/docs/chains/solana/solana-api-endpoints/get-block-production">
+    Get block production information for current/previous epochs.
+  </Card>
+</CardGroup>
+
+***
+
+## Utility & System Methods
+
+Helper methods for system information, validation, and advanced queries.
+
+### Basic Utility Methods
+
+<CardGroup>
+  <Card title="getMinimumBalanceForRentExemption" icon="fa-solid fa-circle-dollar-to-slot" href="/docs/chains/solana/solana-api-endpoints/get-minimum-balance-for-rent-exemption">
+    Calculate minimum balance for rent exemption.
+  </Card>
+
+  <Card title="getGenesisHash" icon="fa-solid fa-dna" href="/docs/chains/solana/solana-api-endpoints/get-genesis-hash">
+    Get genesis hash of the cluster.
+  </Card>
+
+  <Card title="getIdentity" icon="fa-solid fa-id-card" href="/docs/chains/solana/solana-api-endpoints/get-identity">
+    Get identity public key of the RPC node.
+  </Card>
+
+  <Card title="getFirstAvailableBlock" icon="fa-solid fa-door-open" href="/docs/chains/solana/solana-api-endpoints/get-first-available-block">
+    Get slot of first available block.
+  </Card>
+
+  <Card title="getHighestSnapshotSlot" icon="fa-solid fa-angle-double-up" href="/docs/chains/solana/solana-api-endpoints/get-highest-snapshot-slot">
+    Get highest slot with a snapshot.
+  </Card>
+
+  <Card title="minimumLedgerSlot" icon="fa-solid fa-layer-group" href="/docs/chains/solana/solana-api-endpoints/minimum-ledger-slot">
+    Get minimum slot that node has ledger information.
+  </Card>
+
+  <Card title="getMaxRetransmitSlot" icon="fa-solid fa-arrow-rotate-right" href="/docs/chains/solana/solana-api-endpoints/get-max-retransmit-slot">
+    Get max slot seen from retransmit stage.
+  </Card>
+
+  <Card title="getMaxShredInsertSlot" icon="fa-solid fa-arrow-up-right-dots" href="/docs/chains/solana/solana-api-endpoints/get-max-shred-insert-slot">
+    Get max slot seen from after shred insert.
+  </Card>
+</CardGroup>

@@ -1,47 +1,18 @@
 ---
-title: Solana API Quickstart
-description: Quickstart guide for building on Solana
-subtitle: Quickstart guide for building on Solana
-slug: reference/solana-api-quickstart
+title: Solana API Overview
+description: Overview of Alchemy methods for building on Solana
+subtitle: Overview of Alchemy methods for building on Solana
+slug: docs/solana
 ---
 
-<Tip title="Don’t have an API key?" icon="star">
-  Sign up to start building on Solana. [Get started for free](https://alchemy.com/solana/?a=fb3149785d)
+<Tip title="Don't have an API key?" icon="star">
+  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
+  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
 </Tip>
 
-# Getting Started Instructions
+## Send Your First Request on Alchemy
 
-## 1. Choose a package manager (npm or yarn)
-
-For this guide, we will be using npm or yarn as our package manager to install any required packages.
-
-### npm
-
-To get started with `npm`, follow the documentation to install Node.js and `npm` for your operating system: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-
-### yarn
-
-To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lang/en/docs/install](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
-
-## 2. Set up your project (npm or yarn)
-
-<CodeGroup>
-  ```text Shell (npm)
-  mkdir alchemy-solana-api
-  cd alchemy-solana-api
-  npm init --yes
-  ```
-
-  ```text Shell (yarn)
-  mkdir alchemy-solana-api
-  cd alchemy-solana-api
-  yarn init --yes
-  ```
-</CodeGroup>
-
-## 3. Install Solana Web3.js Library
-
-Run the following command to install the Solana Web3.js library with npm or yarn.
+Let's use [`@solana/web3.js`](https://www.npmjs.com/package/@solana/web3.js) package to set up a `Connection` with Alchemy and get the latest slot on Solana!
 
 <CodeGroup>
   ```text npm
@@ -53,108 +24,81 @@ Run the following command to install the Solana Web3.js library with npm or yarn
   ```
 </CodeGroup>
 
-## 4. Make your first request
-
-You are all set now to use Solana API and make your first request. For instance, lets make a request to `get latest slot`. Create an `index.js` file and paste the following code snippet into the file.
+## Create Connection to Alchemy
 
 <CodeGroup>
-  ```javascript index.js
-  const solanaWeb3 = require("@solana/web3.js");
+  ```js
+  import { Connection } from "@solana/web3.js";
 
-  const main = async () => {
-    rpc = "https://solana-mainnet.g.alchemy.com/v2/<Your-Alchemy-API-Key>"; // RPC URL for connecting with a Solana node
-    connection = new solanaWeb3.Connection(rpc, "confirmed"); // confirming the connection
+  const connection = new Connection(
+    "https://solana-devnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY",
+    "confirmed"
+  );
 
-    let slot = await connection.getSlot(); // getting the most recent slot number
-    console.log("The latest slot number is", slot); // logging the most recent slot number
-  };
-
-  main();
+  const slot = await connection.getSlot();
+  console.log("Current slot:", slot);
   ```
 </CodeGroup>
 
-## 5. Run script
+Now that you've set up a connection to Alchemy, you can continue with some basics:
 
-To run the above node script, use cmd `node index.js`, and you should see the output.
+## Create a Wallet
 
 <CodeGroup>
-  ```text shell
-  The latest slot number is 164150510
+  ```js
+  import { Keypair } from "@solana/web3.js";
+
+  const wallet = Keypair.generate();
+  console.log("Public Key:", wallet.publicKey.toBase58());
   ```
 </CodeGroup>
 
-***
-
-# Leverage Alchemy's AccountsDB Infrastructure for Solana RPC Requests!
-
-The most expensive Solana RPC requests involve account scans, such as `getProgramAccounts` and `getLargestTokenAccounts`. These methods are incredibly useful but non-performant methods since they induce a heavy RPC load on Solana validator nodes, often resulting in a 5XX response due to timeout or a response with high latency.
-
-Alchemy has built out core infrastructure that sits atop our Solana validator nodes to support these methods at scale, through what we call the AccountsDB Infrastructure. This infrastructure allows for **faster**, **scalable**, and more **reliable** responses to these methods by paginating the response with a `pageKey`. You could then loop through your that same request with at scan and aggregate the full response from our validator nodes.
-
-You can see `pageKey` is now an optional parameter in each account-scanning method in our Solana [docs](/reference/getprogramaccounts), and you may also include an `order` optional parameter that would sort the accounts in the response by their `pubkey` field.
-
-Here's an example with `getProgramAccounts`:
+## Check Wallet Balance
 
 <CodeGroup>
-  ```typescript typescript
-  const axios = require("axios");
-
-  async function getProgramAccountsExample() {
-    let gPAExampleRequest = {
-      method: "getProgramAccounts",
-      params: [
-        "ZETAxsqBRek56DhiGXrn75yj2NHU3aYUnxvHXpkf3aD",
-        {
-          encoding: "base64",
-          withContext: true,
-          order: "desc",
-          dataSlice: {
-            offset: 0,
-            length: 10,
-          },
-        },
-      ],
-      id: 0,
-      jsonrpc: "2.0",
-    };
-    let programAccounts = [];
-
-    const alchemyRPCUrl =
-      "https://solana-mainnet.g.alchemy.com/v2/<YOUR-API-KEY>";
-    try {
-      let response = await axios.post(alchemyRPCUrl, gPAExampleRequest);
-      let responseData = response.data["result"];
-
-      // continue aggregating if there's a new pageKey present in the latest response
-      while (responseData["pageKey"]) {
-        programAccounts = programAccounts.concat(responseData["value"]);
-
-        // place the pagekey within the optional config object
-        // (you may need to create that config object if you didn't have it originally)
-        gPAExampleRequest["params"][1]["pageKey"] = responseData["pageKey"];
-
-        // make another call to getProgramAccounts with the pageKey
-        response = await axios.post(alchemyRPCUrl, gPAExampleRequest);
-        responseData = response.data["result"];
-      }
-
-      programAccounts = programAccounts.concat(responseData["value"]);
-      console.log(programAccounts);
-      return programAccounts;
-    } catch (err) {
-      console.log(err.message);
-      return [];
-    }
-  }
+  ```js
+  const balance = await connection.getBalance(wallet.publicKey);
+  console.log("Balance:", balance / 1e9, "SOL");
   ```
 </CodeGroup>
 
-***
+## Fetch Account Info
+
+<CodeGroup>
+  ```js
+  const info = await connection.getAccountInfo(wallet.publicKey);
+  console.log(info);
+  ```
+</CodeGroup>
+
+## Find Solana Methods by Category
+
+<CardGroup>
+  <Card title="Current State Methods" icon="fa-solid fa-clock" href="/docs/solana-api-faq#current-state-methods">
+    Query live blockchain data and network status
+  </Card>
+
+  <Card title="Historical Data (Archival)" icon="fa-solid fa-box-archive" href="/docs/solana-api-faq#historical-data-archival">
+    Access complete transaction and block history
+  </Card>
+
+  <Card title="Transaction Submission" icon="fa-solid fa-paper-plane" href="/docs/solana-api-faq#transaction-submission">
+    Send and simulate transactions with fee estimation
+  </Card>
+
+  <Card title="Network & Cluster Info" icon="fa-solid fa-network-wired" href="/docs/solana-api-faq#network-performance-economics">
+    Monitor validators, epochs and network performance
+  </Card>
+</CardGroup>
+
+# CU Calculator
+
+Want to estimate your Solana Compute Units (CUs) before running transactions?\
+**Try the CU Calculator now:** [Open CU Calculator →](https://solana-demo-sigma.vercel.app/)
 
 # Solana Tutorials
 
 You must not stop here! Check out the following tutorials to learn how to build with Solana:
 
 * [Hello World Solana Program](/docs/hello-world-solana-program)
-* [How to Integrate a Solana Program with a Web3 Application](/docs/integrating-your-solana-program-with-a-web3-application)
-* [How to Build a Solana NFT Collection](/docs/how-to-build-a-solana-nft-collection)
+* [How to Integrate a Solana Program with a Web3 Application](/docs/hello-world-solana-application)
