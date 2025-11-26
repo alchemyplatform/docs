@@ -260,6 +260,43 @@ components:
             name: result
             value: 123234387977050.9
 
+    getnetworkhashps:
+      name: getnetworkhashps
+      summary: Get the estimated network hashes per second
+      description: >
+        Returns the estimated network hashes per second based on the last n blocks.
+        Pass in nblocks to override the default number of blocks, or -1 to get the value since the last difficulty change.
+      params:
+        - name: nblocks
+          required: false
+          description: The number of blocks to use for the calculation. Default is 120. Use -1 to calculate since last difficulty change.
+          schema:
+            type: integer
+            default: 120
+        - name: height
+          required: false
+          description: To estimate at the time of the given height. Default is -1 (current tip).
+          schema:
+            type: integer
+            default: -1
+      result:
+        name: result
+        description: Hashes per second estimated.
+        schema:
+          type: number
+          format: double
+          description: Network hashes per second.
+      examples:
+        - name: getnetworkhashps example
+          params:
+            - name: nblocks
+              value: 120
+            - name: height
+              value: -1
+          result:
+            name: result
+            value: 4.123456789e+20
+
     getchaintips:
       name: getchaintips
       summary: Get information about all known tips in the block tree
@@ -775,6 +812,39 @@ components:
             name: result
             value: null
 
+    submitheader:
+      name: submitheader
+      summary: Decode and submit a block header
+      description: >
+        Decodes the given hex-encoded block header and submits it as a candidate chain tip if valid.
+        Throws an error if the header is invalid. This can be used to mine on top of a particular block without 
+        having the full block data.
+      params:
+        - name: hexdata
+          required: true
+          description: The hex-encoded block header to submit.
+          schema:
+            type: string
+            pattern: ^[a-fA-F0-9]{160}$
+            description: 80-byte hex-encoded block header
+      result:
+        name: result
+        description: Returns null if the header was accepted, or a string describing the rejection reason.
+        schema:
+          oneOf:
+            - type: "null"
+              description: Header was accepted
+            - type: string
+              description: Error message if header was rejected
+      examples:
+        - name: submitheader example
+          params:
+            - name: hexdata
+              value: "0000002073bd2184edd74c5c5b4c0c5be04d0e8f5d6b7d5b3b1b1d8e8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c8b8c"
+          result:
+            name: result
+            value: null
+
     # Fee_market methods
     estimatesmartfee:
       name: estimatesmartfee
@@ -824,6 +894,49 @@ components:
               blocks: 2
 
     # Filter methods
+    getblockfilter:
+      name: getblockfilter
+      summary: Retrieve a BIP 157 content filter for a particular block
+      description: >
+        Returns the BIP 157 content filter for a specified block. Requires the blockfilterindex to be enabled.
+      params:
+        - name: blockhash
+          required: true
+          description: The hash of the block.
+          schema:
+            $ref: "./block.yaml#/components/schemas/BTC_BLOCK_HASH"
+        - name: filtertype
+          required: false
+          description: The type name of the filter. Currently only 'basic' is supported.
+          schema:
+            type: string
+            default: "basic"
+            enum: ["basic"]
+      result:
+        name: result
+        description: The block filter details.
+        schema:
+          type: object
+          properties:
+            filter:
+              type: string
+              description: The hex-encoded filter data.
+            header:
+              type: string
+              description: The hex-encoded filter header.
+      examples:
+        - name: getblockfilter example
+          params:
+            - name: blockhash
+              value: "00000000000000000000669ed57030eb18020ee7029c064f10505156be203d80"
+            - name: filtertype
+              value: "basic"
+          result:
+            name: result
+            value:
+              filter: "0180c3b80144ec1762e9eb8e5b2e072f7d8c8c8c0c2c2a2a2a2a2a2a2a2a2a"
+              header: "1e1e1f1f2020202021212121222222222323232324242424252525252626262"
+
     getindexinfo:
       name: getindexinfo
       summary: Get information about one or all available indices
@@ -1714,3 +1827,79 @@ components:
               address: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
               type: "witness_v0_keyhash"
               p2sh: "3JvL6Ymt8MVWiCNHC7oWU6nLeHNJKLZGLN"
+
+    createrawtransaction:
+      name: createrawtransaction
+      summary: Create a raw transaction from inputs and outputs
+      description: >
+        Creates a transaction spending the given inputs and creating new outputs.
+        Outputs can be addresses or data. Returns hex-encoded raw transaction.
+        Note that the transaction's inputs are not signed, and it is not stored in the wallet or transmitted to the network.
+      params:
+        - name: inputs
+          required: true
+          description: An array of transaction inputs.
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                txid:
+                  $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
+                vout:
+                  type: integer
+                  description: The output number.
+                sequence:
+                  type: integer
+                  description: The sequence number.
+        - name: outputs
+          required: true
+          description: An array or object with outputs (key-value pairs, where keys are addresses or 'data', and values are BTC amounts or hex).
+          schema:
+            oneOf:
+              - type: array
+                items:
+                  type: object
+                  additionalProperties:
+                    oneOf:
+                      - type: number
+                      - type: string
+              - type: object
+                additionalProperties:
+                  oneOf:
+                    - type: number
+                    - type: string
+        - name: locktime
+          required: false
+          description: Raw locktime. Non-0 value also activates inputs.
+          schema:
+            type: integer
+            default: 0
+        - name: replaceable
+          required: false
+          description: Whether to mark transaction as BIP125 replaceable. Allows this transaction to be replaced by a transaction with higher fees.
+          schema:
+            type: boolean
+            default: false
+      result:
+        name: result
+        description: Hex-encoded raw transaction.
+        schema:
+          $ref: "./transaction.yaml#/components/schemas/BTC_TX_HEX"
+      examples:
+        - name: createrawtransaction example
+          params:
+            - name: inputs
+              value:
+                - txid: "546263a196ce5cf674d5002afc0231ab417c2e971fd4ed1735c7a4c63f44720b"
+                  vout: 0
+            - name: outputs
+              value:
+                - "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": 0.01
+            - name: locktime
+              value: 0
+            - name: replaceable
+              value: false
+          result:
+            name: result
+            value: "0200000001546263a196ce5cf674d5002afc0231ab417c2e971fd4ed1735c7a4c63f44720b0000000000fdffffff01c0c62d000000000017a914751e76e8199196d454941c45d1b3a323f1433bd68700000000"

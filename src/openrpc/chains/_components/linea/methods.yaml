@@ -136,3 +136,133 @@ components:
           result:
             name: Gas used
             value: "0x5208"
+
+    linea_getProof:
+      name: linea_getProof
+      summary: Get Merkle proof for an account and optionally storage keys
+      description: >
+        Returns the account and optionally storage values of the specified account, including the Merkle proof.
+        This method is similar to eth_getProof and follows the same format.
+      params:
+        - name: address
+          required: true
+          description: The address of the account.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+        - name: storageKeys
+          required: true
+          description: An array of storage keys to generate proofs for.
+          schema:
+            type: array
+            items:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes32"
+        - name: blockNumber
+          required: true
+          description: The block number or tag at which to get the proof.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Account proof
+        description: The account and storage proof data.
+        schema:
+          type: object
+          properties:
+            address:
+              $ref: "../evm/base-types.yaml#/components/schemas/address"
+            accountProof:
+              type: array
+              description: Array of RLP-encoded Merkle tree nodes for the account trie.
+              items:
+                type: string
+            balance:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint256"
+            codeHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+            nonce:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            storageHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+            storageProof:
+              type: array
+              description: Array of storage entry proofs.
+              items:
+                type: object
+                properties:
+                  key:
+                    $ref: "../evm/base-types.yaml#/components/schemas/bytes32"
+                  value:
+                    $ref: "../evm/base-types.yaml#/components/schemas/uint256"
+                  proof:
+                    type: array
+                    items:
+                      type: string
+      examples:
+        - name: linea_getProof example
+          params:
+            - name: address
+              value: "0x7F0d15C7FAae65896648C8273B6d7E43f58Fa842"
+            - name: storageKeys
+              value:
+                - "0x0000000000000000000000000000000000000000000000000000000000000000"
+            - name: blockNumber
+              value: "latest"
+          result:
+            name: Account proof
+            value:
+              address: "0x7F0d15C7FAae65896648C8273B6d7E43f58Fa842"
+              accountProof:
+                - "0xf90211a...0029"
+              balance: "0x0"
+              codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+              nonce: "0x0"
+              storageHash: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+              storageProof:
+                - key: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                  value: "0x0"
+                  proof:
+                    - "0xf90211a...0029"
+
+    linea_getTransactionExclusionStatusV1:
+      name: linea_getTransactionExclusionStatusV1
+      summary: Get transaction exclusion status
+      description: >
+        Returns the status of a transaction's exclusion from blocks. This helps identify if a transaction
+        was excluded due to rate limiting, sequencer rules, or other reasons specific to Linea.
+      params:
+        - name: transactionHash
+          required: true
+          description: The hash of the transaction to check.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Exclusion status
+        description: The exclusion status of the transaction.
+        schema:
+          type: object
+          properties:
+            txHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+            from:
+              $ref: "../evm/base-types.yaml#/components/schemas/address"
+            status:
+              type: string
+              description: The status of the transaction (e.g., "EXCLUDED", "INCLUDED", "PENDING").
+            reasonMessage:
+              type: string
+              description: Human-readable message explaining the exclusion reason if excluded.
+            blockNumber:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: The block number where the transaction was included (if applicable).
+      examples:
+        - name: linea_getTransactionExclusionStatusV1 example
+          params:
+            - name: transactionHash
+              value: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+          result:
+            name: Exclusion status
+            value:
+              txHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+              from: "0x1234567890123456789012345678901234567890"
+              status: "EXCLUDED"
+              reasonMessage: "Transaction exceeds line gas limit"
+              blockNumber: "0x0"
