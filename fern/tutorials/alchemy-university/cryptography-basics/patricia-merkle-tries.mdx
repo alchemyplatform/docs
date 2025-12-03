@@ -32,7 +32,7 @@ In the previous section, we covered how Merkle trees are used to efficiently rec
 
 Bitcoin's architecture is simple: it's a ledger that [keeps track of transactions using a UTXO model](/docs/utxo-vs-account-model). Since Ethereum keeps track of a larger amount of state data, the block architecture is completely different:
 
-![eth-block](eOwjD.png)
+![eth-block](https://alchemyapi-res.cloudinary.com/image/upload/v1764180127/docs/tutorials/alchemy-university/cryptography-basics/eOwjD.png)
 
 #### Why are you showing me block architectures, aren't we covering trees?
 
@@ -61,7 +61,7 @@ Ethereum makes use of a data structure called a [radix trie, also referred to as
 
 **A radix trie is a tree-like data structure that is used to retrieve a string value by traversing down a branch of nodes that store associated references (keys) that together lead to the end value that can be returned**:
 
-![pmt](1920px-Patricia_trie.svg-1-.png)
+![pmt](https://alchemyapi-res.cloudinary.com/image/upload/v1764180127/docs/tutorials/alchemy-university/cryptography-basics/1920px-Patricia_trie.svg-1-.png)
 
 <Info>
   In grouping associated keys together, our search for the end value is
@@ -92,7 +92,7 @@ Patricia Merkle Trees are basically Merkle trees on steroids! Efficient for data
 * I = In
 * A = Alphanumeric
 
-![pmt2](Screen_Shot_2022-11-30_at_7.25.15_PM.png)
+![pmt2](https://alchemyapi-res.cloudinary.com/image/upload/v1764180128/docs/tutorials/alchemy-university/cryptography-basics/Screen_Shot_2022-11-30_at_7.25.15_PM.png)
 
 The root node of this PMT is empty so we can store other words not starting with ‘n’, like "apple" or "hello".
 
@@ -126,7 +126,7 @@ If you look at the Ethereum architecture diagram at the beginning of this lesson
 
 ## Ethereum: State Trie
 
-![state-trie](Screen_Shot_2022-11-30_at_8.26.05_PM.png)
+![state-trie](https://alchemyapi-res.cloudinary.com/image/upload/v1764180129/docs/tutorials/alchemy-university/cryptography-basics/Screen_Shot_2022-11-30_at_8.26.05_PM.png)
 
 As shown in the above diagram, **the state trie acts as a mapping between addresses and account states.**
 
@@ -136,7 +136,7 @@ It can be seen as a global state that is constantly updated by transaction execu
 
 As mentioned above, the state trie is just a mapping that uses an address as the key and the account state (nonce, balance, etc) as the value returned.
 
-![state-example](Screen_Shot_2022-11-30_at_8.28.42_PM.png)
+![state-example](https://alchemyapi-res.cloudinary.com/image/upload/v1764180130/docs/tutorials/alchemy-university/cryptography-basics/Screen_Shot_2022-11-30_at_8.28.42_PM.png)
 
 This is what you would get back from a JavaScript request to the [Ethereum world state](/docs/what-is-ethereum). Just an object containing some data! That is all the account state is... but this is too much data to store in each block, so a root hash of it commits the data per block.
 
@@ -144,7 +144,7 @@ This is what you would get back from a JavaScript request to the [Ethereum world
 
 **The transaction trie records transactions in Ethereum**. Once the block is mined, the transaction trie is *never* updated.
 
-![transaction-trie](Screen_Shot_2022-11-30_at_8.33.27_PM.png)
+![transaction-trie](https://alchemyapi-res.cloudinary.com/image/upload/v1764180131/docs/tutorials/alchemy-university/cryptography-basics/Screen_Shot_2022-11-30_at_8.33.27_PM.png)
 
 Each transaction in Ethereum records multiple pieces specific to each transaction such as `gasPrice` and `value`.
 
@@ -152,7 +152,7 @@ Each transaction in Ethereum records multiple pieces specific to each transactio
 
 You've probably seen this via services like Etherscan! All these services do is query the Ethereum blockchain for transaction data and then index it into an organized transaction viewer.
 
-![tx](Screen_Shot_2022-11-30_at_8.35.23_PM.png)
+![tx](https://alchemyapi-res.cloudinary.com/image/upload/v1764180132/docs/tutorials/alchemy-university/cryptography-basics/Screen_Shot_2022-11-30_at_8.35.23_PM.png)
 
 You can even try [querying the transactions](/docs/how-to-read-data-with-json-rpc) trie directly using [Alchemy Composer](https://composer.alchemy.com/). Just take a random tx hash and use the `eth_getTransactionByHash` method - you'll get a response looking much like the object in the picture above.
 
@@ -164,13 +164,13 @@ Once the block is mined, the transaction receipt trie is never updated.
 
 #### Transaction Receipt Example
 
-![tx-receipt-ex](Screen_Shot_2022-11-30_at_8.42.36_PM.png)
+![tx-receipt-ex](https://alchemyapi-res.cloudinary.com/image/upload/v1764180133/docs/tutorials/alchemy-university/cryptography-basics/Screen_Shot_2022-11-30_at_8.42.36_PM.png)
 
 Try it out on the [Alchemy Composer](https://composer.alchemy.com/) - just make sure to change the method to `eth_getTransactionReceipt`.
 
 ## Conclusion
 
-![eth](Screen_Shot_2022-11-30_at_8.45.47_PM.png)
+![eth](https://alchemyapi-res.cloudinary.com/image/upload/v1764180134/docs/tutorials/alchemy-university/cryptography-basics/Screen_Shot_2022-11-30_at_8.45.47_PM.png)
 
 The above diagram is an excellent visualization of how the tries all end up being committed in every block via their root hash. The raw data is stored elsewhere in Ethereum, particularly [archive nodes](https://www.alchemy.com/overviews/archive-nodes).
 
