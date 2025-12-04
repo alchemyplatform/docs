@@ -1,124 +1,103 @@
 ---
-title: Ethereum API Quickstart
-description: How to get started building on Ethereum and using the JSON-RPC API
-subtitle: How to get started building on Ethereum and using the JSON-RPC API
-slug: reference/ethereum-api-quickstart
+title: Ethereum API Overview
+description: How to get started building on Ethereum using Alchemy
+subtitle: How to get started building on Ethereum using Alchemy
+slug: docs/ethereum
 ---
 
-*To use the Ethereum API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
+<Tip title="Don't have an API key?" icon="star">
+  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
+  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
+</Tip>
 
-# What is the Ethereum API?
+The Ethereum API allows applications to connect to an Ethereum node that is part of the Ethereum blockchain. Developers can interact with on-chain data and send different types of transactions to the network by utilizing the endpoints provided by the API.
 
-The Ethereum API allows applications to connect to an Ethereum node that is part of the Ethereum blockchain. Developers can interact with on-chain data and send different types of transactions to the network by utilizing the endpoints provided by the API. The API follows a JSON-RPC standard. JSON-RPC is a stateless, lightweight, remote procedure call (RPC) protocol that is commonly used when interacting with Ethereum.
+## Send Your First Request on Alchemy
 
-# Getting Started Instructions
-
-## 1. Choose a Package Manager (npm or yarn)
-
-For this guide, we will be using npm or yarn as our package manager to install necessary packages.
-
-### npm
-
-To get started with `npm`, follow the documentation to install Node.js and `npm` for your operating system: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-
-### yarn
-
-To get started with `yarn`, follow these steps: [https://classic.yarnpkg.com/lang/en/docs/install](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
-
-## 2. Set Up Your Project
-
-To kickstart your project, open your terminal and execute the following commands:
+Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create an Ethereum client connected to Alchemy and fetch the latest block number!
 
 <CodeGroup>
-  ```shell npm
-  mkdir ethereum-api-quickstart
-  cd ethereum-api-quickstart
-  npm init --yes
+  ```text npm
+  npm install --save viem
   ```
 
-  ```shell yarn
-  mkdir ethereum-api-quickstart
-  cd ethereum-api-quickstart
-  yarn init --yes
+  ```text yarn
+  yarn add viem
   ```
 </CodeGroup>
 
-## 3. Install Axios
-
-For making API requests, we'll use Axios, a widely-used HTTP client. Install Axios with the following command:
+## Create Client Connected to Alchemy
 
 <CodeGroup>
-  ```shell npm
-  npm install axios
-  ```
+```js 
+import { createPublicClient, http } from "viem"; 
+import { mainnet } from "viem/chains";
 
-  ```shell yarn
-  yarn add axios
-  ```
+const client = createPublicClient({
+  chain: mainnet,
+  transport: http("https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
+});
+```
 </CodeGroup>
 
-## 4. Make Your First Request
+Now that you've created a client connected to Alchemy, you can continue with some basics:
 
-You are all set now to use Ethereum API and make your first request. For instance, let's make a request to `get the latest block`. Create an `index.js` file in your project directory and paste the following code snippet into the file.
+## Get Latest Block Number
 
 <CodeGroup>
-  ```javascript index.js
-  import axios from "axios";
-
-  const url = `https://eth-mainnet.g.alchemy.com/v2/${yourAlchemyAPIKey}`;
-
-  const payload = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'eth_blockNumber',
-    params: []
-  };
-
-  axios.post(url, payload)
-    .then(response => {
-      console.log('The latest block number is', parseInt(response.data.result, 16));
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  ```
+```js
+const blockNumber = await client.getBlockNumber();
+console.log("Current block number:", blockNumber);
+```
 </CodeGroup>
 
-Remember to replace `yourAlchemyAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
-
-You can also make these requests on testnets like `eth-sepolia` or `eth-holesky` by just replacing the request URL:
+## Get an Address Balance
 
 <CodeGroup>
-  ```text text
-  # Mainnet
-  https://eth-mainnet.g.alchemy.com/v2/
-  # Sepolia Testnet
-  https://eth-sepolia.g.alchemy.com/v2/
-  # Holesky Testnet
-  https://eth-holesky.g.alchemy.com/v2/
-  ```
+```js 
+const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
+console.log("Balance (ETH):", Number(balance) / 1e18);
+```
 </CodeGroup>
 
-## 5. Run Your Script
-
-To execute your script and make a request to the Ethereum network, run:
+## Read Block Data
 
 <CodeGroup>
-  ```shell shell
-  node index.js
-  ```
+```js
+const block = await client.getBlock({
+  blockNumber: blockNumber, // from previous example
+});
+
+console.log(block);
+```
 </CodeGroup>
 
-You should see the latest block number outputted to your console.
+## Fetch a Transaction by Hash
+
+<CodeGroup> 
+```js 
+const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
+
+console.log(tx);
+```
+</CodeGroup>
+
+## Fetch Transaction Receipt
 
 <CodeGroup>
-  ```shell shell
-  The latest block number is 11043912
-  ```
+```js
+const receipt = await client.getTransactionReceipt({
+  hash: "0xYOUR_TX_HASH"
+});
+
+console.log(receipt);
+```
 </CodeGroup>
 
-***
+# Ethereum Tutorials
 
-You must not stop here! Want to build your first Dapp and use Ethereum APIs? Head towards Alchemy Tutorials.
+You must not stop here! Check out the following tutorials to learn how to build with Ethereum:
 
-[**View**: /docs](/docs)
+* [Build a Web3 Dashboard](/docs/web3-dashboard-prompt)
+* [Ethereum Developer Guide to the Merge](/reference/ethereum-developer-guide-to-the-merge)
+* [How do I distinguish between a contract address and wallet address?](/reference/contract-address-vs-wallet-address)
