@@ -1516,6 +1516,299 @@ paths:
                       changes: []
                       timestamp: "1666861318607443"
                       type: "state_checkpoint_transaction"
+    post:
+      summary: "/v1/transactions (Submit)"
+      description: >
+        Submits a transaction to the Aptos network.
+
+        This endpoint accepts transaction submissions in two formats:
+
+        **JSON Format:**
+        To submit a transaction as JSON, you must submit a SubmitTransactionRequest. To build this request:
+        1. Encode the transaction as BCS. If you are using a language that has native BCS support, use that library. If not, you may use `/transactions/encode_submission`. When using this endpoint, make sure you trust the node you're talking to, as it is possible they could manipulate your request.
+        2. Sign the encoded transaction and use it to create a TransactionSignature.
+        3. Submit the request with the `application/json` Content-Type.
+
+        **BCS Format:**
+        To submit a transaction as BCS, you must submit a SignedTransaction encoded as BCS. See SignedTransaction in `types/src/transaction/mod.rs`. Use the `application/x.aptos.signed_transaction+bcs` Content-Type.
+      tags:
+        - Aptos API Endpoints
+      security:
+        - apiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sender
+                - sequence_number
+                - max_gas_amount
+                - gas_unit_price
+                - expiration_timestamp_secs
+                - payload
+                - signature
+              properties:
+                sender:
+                  type: string
+                  format: hex
+                  description: A hex encoded 32 byte Aptos account address.
+                  example: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                sequence_number:
+                  type: string
+                  format: uint64
+                  description: A string containing a 64-bit unsigned integer.
+                  example: "32425224034"
+                max_gas_amount:
+                  type: string
+                  format: uint64
+                  description: A string containing a 64-bit unsigned integer.
+                  example: "32425224034"
+                gas_unit_price:
+                  type: string
+                  format: uint64
+                  description: A string containing a 64-bit unsigned integer.
+                  example: "32425224034"
+                expiration_timestamp_secs:
+                  type: string
+                  format: uint64
+                  description: A string containing a 64-bit unsigned integer.
+                  example: "32425224034"
+                payload:
+                  type: object
+                  description: An enum of the possible transaction payloads.
+                  required:
+                    - type
+                    - function
+                    - type_arguments
+                    - arguments
+                  properties:
+                    type:
+                      type: string
+                      description: The type of payload.
+                      example: "entry_function_payload"
+                    function:
+                      type: string
+                      description: Entry function id is string representation of an entry function defined on-chain.
+                      example: "0x1::aptos_coin::transfer"
+                    type_arguments:
+                      type: array
+                      description: Type arguments of the function.
+                      items:
+                        type: string
+                      example: ["0x1::aptos_coin::AptosCoin"]
+                    arguments:
+                      type: array
+                      description: Arguments of the function.
+                      items:
+                        oneOf:
+                          - type: string
+                          - type: integer
+                          - type: boolean
+                          - type: "null"
+                      example: ["0x1a2b3c4d5e6f70819283746556473829", "1000000"]
+                replay_protection_nonce:
+                  type: string
+                  format: uint64
+                  description: A string containing a 64-bit unsigned integer for replay protection.
+                  example: "32425224034"
+                signature:
+                  type: object
+                  description: An enum representing the different transaction signatures available.
+                  required:
+                    - type
+                    - public_key
+                    - signature
+                  properties:
+                    type:
+                      type: string
+                      description: The type of signature.
+                      example: "ed25519_signature"
+                    public_key:
+                      type: string
+                      format: hex
+                      description: All bytes data is represented as hex-encoded string prefixed with 0x.
+                      example: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                    signature:
+                      type: string
+                      format: hex
+                      description: All bytes data is represented as hex-encoded string prefixed with 0x.
+                      example: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+            examples:
+              submitRequest:
+                summary: Example submit transaction request
+                value:
+                  sender: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                  sequence_number: "0"
+                  max_gas_amount: "1000"
+                  gas_unit_price: "1"
+                  expiration_timestamp_secs: "1713380000"
+                  payload:
+                    type: "entry_function_payload"
+                    function: "0x1::aptos_coin::transfer"
+                    type_arguments: ["0x1::aptos_coin::AptosCoin"]
+                    arguments: ["0x1a2b3c4d5e6f70819283746556473829", "1000000"]
+                  signature:
+                    type: "ed25519_signature"
+                    public_key: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                    signature: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+          application/x.aptos.signed_transaction+bcs:
+            schema:
+              type: string
+              format: binary
+              description: BCS-encoded SignedTransaction.
+      responses:
+        "202":
+          description: Transaction accepted and waiting in mempool.
+          headers:
+            X-APTOS-BLOCK-HEIGHT:
+              schema:
+                type: integer
+              description: Current block height of the chain.
+            X-APTOS-CHAIN-ID:
+              schema:
+                type: integer
+              description: Chain ID of the current chain.
+            X-APTOS-EPOCH:
+              schema:
+                type: integer
+              description: Current epoch of the chain.
+            X-APTOS-LEDGER-OLDEST-VERSION:
+              schema:
+                type: integer
+              description: Oldest non-pruned ledger version of the chain.
+            X-APTOS-LEDGER-TIMESTAMPUSEC:
+              schema:
+                type: integer
+              description: Current timestamp of the chain.
+            X-APTOS-LEDGER-VERSION:
+              schema:
+                type: integer
+              description: Current ledger version of the chain.
+            X-APTOS-OLDEST-BLOCK-HEIGHT:
+              schema:
+                type: integer
+              description: Oldest non-pruned block height of the chain.
+            X-APTOS-GAS-USED:
+              schema:
+                type: integer
+              description: The cost of the call in terms of gas.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - hash
+                  - sender
+                  - sequence_number
+                  - max_gas_amount
+                  - gas_unit_price
+                  - expiration_timestamp_secs
+                  - payload
+                properties:
+                  hash:
+                    type: string
+                    description: Transaction hash.
+                  sender:
+                    type: string
+                    format: hex
+                    description: A hex encoded 32 byte Aptos account address.
+                    example: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                  sequence_number:
+                    type: string
+                    format: uint64
+                    description: A string containing a 64-bit unsigned integer.
+                    example: "32425224034"
+                  max_gas_amount:
+                    type: string
+                    format: uint64
+                    description: A string containing a 64-bit unsigned integer.
+                    example: "32425224034"
+                  gas_unit_price:
+                    type: string
+                    format: uint64
+                    description: A string containing a 64-bit unsigned integer.
+                    example: "32425224034"
+                  expiration_timestamp_secs:
+                    type: string
+                    format: uint64
+                    description: A string containing a 64-bit unsigned integer.
+                    example: "32425224034"
+                  payload:
+                    type: object
+                    description: An enum of the possible transaction payloads.
+                    properties:
+                      type:
+                        type: string
+                        example: "entry_function_payload"
+                      function:
+                        type: string
+                        example: "0x1::aptos_coin::transfer"
+                      type_arguments:
+                        type: array
+                        items:
+                          type: string
+                      arguments:
+                        type: array
+                        items:
+                          oneOf:
+                            - type: string
+                            - type: "null"
+                  signature:
+                    type: object
+                    description: An enum representing the different transaction signatures available.
+                    properties:
+                      type:
+                        type: string
+                        example: "ed25519_signature"
+                      public_key:
+                        type: string
+                        format: hex
+                        example: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                      signature:
+                        type: string
+                        format: hex
+                        example: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                  replay_protection_nonce:
+                    type: string
+                    format: uint64
+                    description: A string containing a 64-bit unsigned integer.
+                    example: "32425224034"
+              examples:
+                pendingTransaction:
+                  summary: A transaction waiting in mempool
+                  value:
+                    hash: "0x3847245c01829b043431067fb2bfa95f7b5bdc7e4246c843e7a573ab6f26f5ff"
+                    sender: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                    sequence_number: "0"
+                    max_gas_amount: "1000"
+                    gas_unit_price: "1"
+                    expiration_timestamp_secs: "1713380000"
+                    payload:
+                      type: "entry_function_payload"
+                      function: "0x1::aptos_coin::transfer"
+                      type_arguments: ["0x1::aptos_coin::AptosCoin"]
+                      arguments:
+                        ["0x1a2b3c4d5e6f70819283746556473829", "1000000"]
+                    signature:
+                      type: "ed25519_signature"
+                      public_key: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+                      signature: "0x88fbd33f54e1126269769780feb24480428179f552e2313fbe571b72e62a1ca1"
+        "400":
+          description: Bad request - invalid transaction format.
+        "403":
+          description: Forbidden - transaction rejected.
+        "404":
+          description: Not found - resource not available.
+        "413":
+          description: Payload too large.
+        "500":
+          description: Internal server error.
+        "503":
+          description: Service unavailable.
+        "507":
+          description: Insufficient storage.
 
   /v1/transactions/batch:
     post:
