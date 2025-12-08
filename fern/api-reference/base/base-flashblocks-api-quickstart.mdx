@@ -22,14 +22,197 @@ Flashblocks is currently supported on both Base testnet and mainnet and can be 
 
 ## Flashblocks-enabled API Endpoints
 
-* [eth\_getBlockByNumber](https://www.alchemy.com/docs/node/base/base-api-endpoints/eth-get-block-by-number)
-* [eth\_getTransactionReceipt](https://www.alchemy.com/docs/node/base/base-api-endpoints/eth-get-transaction-receipt)
-* [eth\_getBalance](https://www.alchemy.com/docs/node/base/base-api-endpoints/eth-get-balance)
-* [eth\_getTransactionCount](https://www.alchemy.com/docs/node/base/base-api-endpoints/eth-get-transaction-count)
-* [eth\_getTransactionByHash](https://www.alchemy.com/docs/node/base/base-api-endpoints/eth-get-transaction-by-hash)
-* [eth\_call](https://www.alchemy.com/docs/chains/base/base-api-endpoints/eth-call)
-* [eth\_simulateV1](https://www.alchemy.com/docs/chains/base/base-api-endpoints/eth-simulate-v-1)
-* [eth\_estimateGas](https://www.alchemy.com/docs/chains/base/base-api-endpoints/eth-estimate-gas)
-* [eth\_getLogs](https://www.alchemy.com/docs/chains/base/base-api-endpoints/eth-get-logs)
+### [eth\_getBlockByNumber](https://www.alchemy.com/docs/node/op-mainnet/op-mainnet-api-endpoints/eth-get-block-by-number)
+
+Use the `pending` tag to retrieve the latest Flashblock:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["pending",true],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "number": "0x1234",
+    "hash": "0x...",
+    "transactions": [...]
+  }
+}
+```
+
+### [eth\_getTransactionReceipt](https://www.alchemy.com/docs/node/op-mainnet/op-mainnet-api-endpoints/eth-get-transaction-receipt)
+
+Use the existing receipt RPC to get preconfirmed receipts:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["0x..."],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "transactionHash": "0x...",
+    "blockNumber": "0x1234",
+    "status": "0x1"
+  }
+}
+```
+
+### [eth\_getBalance](https://www.alchemy.com/docs/node/op-mainnet/op-mainnet-api-endpoints/eth-get-balance)
+
+Use the `pending` tag to get the address balance in the latest Flashblock:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_getBalance","params":["0x...","pending"],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x0234"
+}
+```
+
+### [eth\_getTransactionCount](https://www.alchemy.com/docs/node/op-mainnet/op-mainnet-api-endpoints/eth-get-transaction-count)
+
+Use the `pending` tag to get the address nonce in the latest Flashblock:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_getTransactionCount","params":["0x...","pending"],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x1b" // 27 transactions
+}
+```
+
+### [eth\_getTransactionByHash](https://www.alchemy.com/docs/node/op-mainnet/op-mainnet-api-endpoints/eth-get-transaction-by-hash)
+
+Use the existing get transaction by hash RPC to get preconfirmed transactions:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params":["0x..."],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "type": "0x2",
+  "chainId": "...",
+  "nonce": "...",
+  ...
+}
+```
+
+### [eth\_call](https://www.alchemy.com/docs/chains/op-mainnet/op-mainnet-api-endpoints/eth-call)
+
+Use the `pending` tag to execute a smart contract call against the latest Flashblock:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x...","data":"0x..."},"pending"],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+}
+```
+
+### [eth\_simulateV1](https://www.alchemy.com/docs/chains/op-mainnet/op-mainnet-api-endpoints/eth-simulate-v-1)
+
+Use the `pending` tag to simulate transactions against the latest Flashblock:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_simulateV1","params":[{"blockStateCalls":[{"calls":[{"to":"0x...","data":"0x..."}],"stateOverrides":{}}],"traceTransfers":true,"validation":true},"pending"],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "calls": [
+        {
+          "status": "0x1",
+          "gasUsed": "0x5208",
+          "returnData": "0x"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### [eth\_estimateGas](https://www.alchemy.com/docs/chains/op-mainnet/op-mainnet-api-endpoints/eth-estimate-gas)
+
+Use the `pending` tag to estimate gas against the latest Flashblock:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_estimateGas","params":[{"to":"0x...","data":"0x..."},"pending"],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x5208"
+}
+```
+
+### [eth\_getLogs](https://www.alchemy.com/docs/chains/op-mainnet/op-mainnet-api-endpoints/eth-get-logs)
+
+Use the `pending` tag for toBlock to retrieve logs from the latest Flashblock:
+
+```bash
+curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_getLogs","params":[{"fromBlock":"latest","toBlock":"pending","address":"0x...","topics":["0x..."]}],"id":1}'
+```
+
+#### Example Response
+
+```bash
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "address": "0x...",
+      "topics": ["0x..."],
+      "data": "0x...",
+      "blockNumber": "0x1234",
+      "transactionHash": "0x...",
+      "transactionIndex": "0x0",
+      "blockHash": "0x...",
+      "logIndex": "0x0",
+      "removed": false
+    }
+  ]
+}
+```
 
 Also check out the [Official Base Flashblocks Docs](https://docs.base.org/base-chain/flashblocks/apps)!
