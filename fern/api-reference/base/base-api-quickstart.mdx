@@ -1,112 +1,98 @@
 ---
 title: Base API Quickstart
-description: Get started building on Base and using the JSON-RPC API
-subtitle: Get started building on Base and using the JSON-RPC API
+description: How to get started building on Base using Alchemy
+subtitle: How to get started building on Base using Alchemy
 slug: reference/base-api-quickstart
 ---
 
-*To use the Base API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
+<Tip title="Don't have an API key?" icon="star">
+  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
+  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
+</Tip>
 
-## Introduction
-
-Base offers a secure, affordable, and developer-centric Ethereum L2 solution. Designed with the vision of making blockchain more accessible, Base emerges from Coinbase's incubation, with clear intentions to move towards increased decentralization in the future. Its goal is to establish an inclusive, global cryptoeconomy. Notably, Base is developed with Optimism, leveraging the MIT-licensed OP Stack. This collaboration higlights Base's commitment to open-source principles and being in sync with the developer community's needs and aspirations.
-
-***
-
-## What is Base API?
+Base offers a secure, affordable, and developer-centric Ethereum L2 solution. Designed with the vision of making blockchain more accessible, Base emerges from Coinbase's incubation, with clear intentions to move towards increased decentralization in the future. Its goal is to establish an inclusive, global cryptoeconomy. Notably, Base is developed with Optimism, leveraging the MIT-licensed OP Stack. This collaboration highlights Base's commitment to open-source principles and being in sync with the developer community's needs and aspirations.
 
 The Base API is a collection of JSON-RPC methods that enable developers to interact with the Base network. Notably, it shares the same set of JSON-RPC methods as Optimism. For those already acquainted with [Optimism's API](/reference/optimism-api-endpoints), diving into Base will feel both familiar and effortless.
 
-## Getting Started Instructions
+## Send Your First Request on Alchemy
 
-### 1. Choose a Package Manager (npm or yarn)
-
-Before you begin, you'll need to choose a package manager to manage dependencies in your project. The two most popular package managers for Node.js are `npm` and `yarn`. You can choose the one you're most comfortable with.
-
-| npm                                                                                                                                                                              | yarn                                                                                                |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| To get started with `npm`, follow the [documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) to install Node.js and `npm` for your operating system. | To get started with `yarn`, follow [these steps](https://classic.yarnpkg.com/lang/en/docs/install). |
-
-### 2. Set up your project
-
-Let's start by setting up a simple Node.js project. Open your terminal and run the following commands:
+Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a Base client connected to Alchemy and fetch the latest block number!
 
 <CodeGroup>
   ```text npm
-  mkdir alchemy-base-api
-  cd alchemy-base-api
-  npm init --yes
+  npm install --save viem
   ```
 
   ```text yarn
-  mkdir alchemy-base-api
-  cd alchemy-base-api
-  yarn init --yes
+  yarn add viem
   ```
 </CodeGroup>
 
-This will create a new directory called `alchemy-base-api` and initialize a new Node.js project in it.
-
-## 3. Make Your First Request
-
-To make requests to the Base API, you'll need to use an HTTP client. In this guide, we'll use Axios, a popular HTTP client for Node.js. Install Axios as a dependency in your project with the command below:
+## Create Client Connected to Alchemy
 
 <CodeGroup>
-  ```shell npm
-  npm install axios
-  ```
+```js
+import { createPublicClient, http } from "viem"; 
+import { base } from "viem/chains";
 
-  ```shell yarn
-  yarn add axios
-  ```
+const client = createPublicClient({
+  chain: base,
+  transport: http("https://base-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
+});
+```
 </CodeGroup>
 
-Next, let's create a script that will make a request to the `eth_blockNumber` JSON-RPC method on Base. Create a new file called `index.js` in your project directory and add the following code:
+Now that you've created a client connected to Alchemy, you can continue with some basics:
+
+## Get Latest Block Number
 
 <CodeGroup>
-  ```javascript index.js
-  const axios = require('axios');
-
-  const apiKey = 'YOUR_API_KEY'; // Replace with your Alchemy API key
-  const url = `https://base-mainnet.g.alchemy.com/v2/${apiKey}`;
-
-  const payload = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'eth_blockNumber',
-    params: []
-  };
-
-  axios.post(url, payload)
-    .then(response => {
-      console.log('Block Number:', response.data.result);
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  ```
+```js
+const blockNumber = await client.getBlockNumber();
+console.log("Current block number:", blockNumber);
+```
 </CodeGroup>
 
-Remember to replace `YOUR_API_KEY` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
-
-## 4. Run Script
-
-To run the script and make request to the Base API, execute the following command in your terminal:
+## Get an Address Balance
 
 <CodeGroup>
-  ```shell shell
-  node index.js
-  ```
+```js 
+const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
+console.log("Balance (ETH):", Number(balance) / 1e18);
+```
 </CodeGroup>
 
-As a result, should see the current block number on Base (in hex format) printed to the console:
+## Read Block Data
 
 <CodeGroup>
-  ```shell shell
-  Block Number: 0x6d68e
-  ```
+```js
+const block = await client.getBlock({
+  blockNumber: blockNumber, // from previous example
+});
+console.log(block);
+```
 </CodeGroup>
 
-## Next Steps
+## Fetch a Transaction by Hash
 
-Congratulations! You've successfully made your first request to the Base API using Alchemy. From here, you can explore the various [JSON-RPC methods available on Base](/reference/base-api-endpoints) and start building your decentralized applications on it!
+<CodeGroup> 
+```js 
+const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
+console.log(tx);
+```
+</CodeGroup>
+
+## Fetch Transaction Receipt
+
+<CodeGroup>
+```js
+const receipt = await client.getTransactionReceipt({
+  hash: "0xYOUR_TX_HASH"
+});
+console.log(receipt);
+```
+</CodeGroup>
+
+# Base APIs
+
+For the full list of Base APIs, see the [Base API Endpoints](/docs/chains#base-apis).
