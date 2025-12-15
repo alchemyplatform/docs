@@ -1,101 +1,101 @@
 ---
 title: Ink API Quickstart
-description: How to get started building on Ink using Alchemy
-subtitle: How to get started building on Ink using Alchemy
-slug: docs/ink
+description: Get started building on Ink and using the JSON-RPC API
+subtitle: Get started building on Ink and using the JSON-RPC API
+slug: reference/ink-api-quickstart
 ---
 
-<Tip title="Don't have an API key?" icon="star">
-  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
-  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
-</Tip>
+## Introduction
 
-## Send Your First Request on Alchemy
+Ink is a cutting-edge Layer 2 blockchain solution developed by Kraken, designed to bridge centralized and decentralized finance. Built on the OP Stack within the Optimism Superchain ecosystem, Ink offers sub-second block times, optimized gas fees, and high performance. It aims to simplify DeFi access, leveraging Kraken's established infrastructure while inheriting Ethereum's robust security.
 
-Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create an Ink client connected to Alchemy and fetch the latest block number!
+## What is the Ink API?
+
+The Ink API allows interaction with the Ink network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
+
+```shell
+mkdir ink-api-quickstart
+cd ink-api-quickstart
+npm init --yes
+```
+
+```shell
+mkdir ink-api-quickstart
+cd ink-api-quickstart
+yarn init --yes
+```
+
+This creates a new directory named `ink-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
 
 <CodeGroup>
-  ```text npm
-  npm install --save viem
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
   ```
+</CodeGroup>
 
-  ```text yarn
-  yarn add viem
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = 'https://ink-mainnet.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
   ```
 </CodeGroup>
 
-## Create Client Connected to Alchemy
+Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Ink mainnet:
 
 <CodeGroup>
-```js
-import { createPublicClient, http } from "viem"; 
-import { ink } from "viem/chains";
-
-const client = createPublicClient({
-  chain: ink,
-  transport: http("https://ink-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
-});
-```
+  ```bash bash
+  node index.js
+  ```
 </CodeGroup>
 
-Now that you've created a client connected to Alchemy, you can continue with some basics:
+You should see the latest block information from Ink's mainnet outputted to your console:
 
-## Get Latest Block Number
-
-<CodeGroup>
-```js
-const blockNumber = await client.getBlockNumber();
-console.log("Current block number:", blockNumber);
+```shell
+Latest Block: 0x...
 ```
-</CodeGroup>
 
-## Get an Address Balance
+## Next Steps
 
-<CodeGroup>
-```js 
-const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
-console.log("Balance (ETH):", Number(balance) / 1e18);
-```
-</CodeGroup>
-
-## Read Block Data
-
-<CodeGroup>
-```js
-const block = await client.getBlock({
-  blockNumber: blockNumber, // from previous example
-});
-console.log(block);
-```
-</CodeGroup>
-
-## Fetch a Transaction by Hash
-
-<CodeGroup> 
-```js 
-const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
-console.log(tx);
-```
-</CodeGroup>
-
-## Fetch Transaction Receipt
-
-<CodeGroup>
-```js
-const receipt = await client.getTransactionReceipt({
-  hash: "0xYOUR_TX_HASH"
-});
-console.log(receipt);
-```
-</CodeGroup>
-
-# Ink Tutorials
-
-Check out the following tutorials to learn how to build on Ink:
-
-* [Ink API Endpoints](/reference/ink-api-endpoints)
-
-For full documentation on Web3 libraries, check out the official documentation:
-
-* [Viem Documentation](https://viem.sh) - Modern TypeScript interface for Ethereum
-* [Ethers.js Documentation](https://docs.ethers.org) - Complete Ethereum wallet implementation
+Congratulations! You've made your first request to the Ink network. You can now explore the various [JSON-RPC methods available on Ink](/reference/ink-api-endpoints) and start building your dApps on this innovative platform.

@@ -1,101 +1,114 @@
 ---
-title: Superseed API Quickstart
-description: How to get started building on Superseed using Alchemy
-subtitle: How to get started building on Superseed using Alchemy
-slug: docs/superseed
+title: "Superseed API Quickstart"
+description: "Get started building on Superseed and using the JSON-RPC API"
+slug: "reference/superseed-api-quickstart"
 ---
 
-<Tip title="Don't have an API key?" icon="star">
-  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
-  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
-</Tip>
+# Introduction
 
-## Send Your First Request on Alchemy
+The Superseed API allows developers to interact with the Superseed blockchain using standard JSON-RPC methods.
 
-Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a Superseed client connected to Alchemy and fetch the latest block number!
+With this API, you can retrieve block and transaction data, send transactions, and build applications powered by Superseed’s high-throughput, EVM-compatible environment.
+
+***
+
+## What is the Superseed Chain API?
+
+The Superseed Chain API enables developers to communicate with the network through JSON-RPC — a widely adopted standard for blockchain interactions. If you’re familiar with Ethereum’s API structure, Superseed’s methods will feel intuitive.
+
+Using the API, developers can:
+
+* Fetch the latest blocks and transactions
+* Send signed transactions to the network
+* Query contract data
+* Estimate gas fees and more
+
+***
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Your first step involves selecting a package manager, which will be crucial for managing your project's dependencies. The choice between `npm` and `yarn` depends on your personal preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+To kickstart your project, open your terminal and execute the following commands:
 
 <CodeGroup>
   ```text npm
-  npm install --save viem
+  mkdir superseed-api-quickstart
+  cd superseed-api-quickstart
+  npm init --yes
   ```
 
   ```text yarn
-  yarn add viem
+  mkdir superseed-api-quickstart
+  cd superseed-api-quickstart
+  yarn init --yes
   ```
 </CodeGroup>
 
-## Create Client Connected to Alchemy
+This creates a new directory named `superseed-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
 
 <CodeGroup>
-```js
-import { createPublicClient, http } from "viem"; 
-import { superseed } from "viem/chains";
-
-const client = createPublicClient({
-  chain: superseed,
-  transport: http("https://superseed-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
-});
-```
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
 </CodeGroup>
 
-Now that you've created a client connected to Alchemy, you can continue with some basics:
-
-## Get Latest Block Number
+Create an `index.js` file in your project directory and paste the following code:
 
 <CodeGroup>
-```js
-const blockNumber = await client.getBlockNumber();
-console.log("Current block number:", blockNumber);
-```
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = `https://superseed-mainnet.alchemy-blast.com/v2/${yourAPIKey}`;
+
+  const payload = {
+  jsonrpc: '2.0',
+  id: 1,
+  method: 'eth_blockNumber',
+  params: []
+  };
+  axios.post(url, payload)
+  .then(response => {
+    console.log('Block Number:', response.data.result);
+  })
+  .catch(error => {
+    console.error(error);
+  });
+  ```
 </CodeGroup>
 
-## Get an Address Balance
+Remember to replace `yourAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
+
+### 4. Run Your Script
+
+To execute your script and make a request to the Superseed App, run:
 
 <CodeGroup>
-```js 
-const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
-console.log("Balance (ETH):", Number(balance) / 1e18);
-```
+  ```bash bash
+  node index.js
+  ```
 </CodeGroup>
 
-## Read Block Data
+You should see the current block number on Superseed App (in hexadecimal format) outputted to your console:
 
-<CodeGroup>
-```js
-const block = await client.getBlock({
-  blockNumber: blockNumber, // from previous example
-});
-console.log(block);
+```shell
+Block Number: 0x6d68e
 ```
-</CodeGroup>
 
-## Fetch a Transaction by Hash
+## Next Steps
 
-<CodeGroup> 
-```js 
-const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
-console.log(tx);
-```
-</CodeGroup>
-
-## Fetch Transaction Receipt
-
-<CodeGroup>
-```js
-const receipt = await client.getTransactionReceipt({
-  hash: "0xYOUR_TX_HASH"
-});
-console.log(receipt);
-```
-</CodeGroup>
-
-# Superseed Tutorials
-
-Check out the following tutorials to learn how to build on Superseed:
-
-* [Superseed API Endpoints](/reference/superseed-api-endpoints)
-
-For full documentation on Web3 libraries, check out the official documentation:
-
-* [Viem Documentation](https://viem.sh) - Modern TypeScript interface for Ethereum
-* [Ethers.js Documentation](https://docs.ethers.org) - Complete Ethereum wallet implementation
+Well done! You've just made your first request to the Superseed App API. With this foundation, you can dive deeper into the array of [JSON-RPC methods available on Superseed App](/node/superseed/superseed-api-endpoints) and start building your dApps on it!

@@ -1,109 +1,107 @@
 ---
 title: Sei API Quickstart
-description: How to get started building on Sei using Alchemy
-subtitle: How to get started building on Sei using Alchemy
-slug: docs/sei
+description: Get started building on Sei and using the JSON-RPC API
+subtitle: Get started building on Sei and using the JSON-RPC API
+slug: reference/sei-api-quickstart
 ---
 
-<Tip title="Don't have an API key?" icon="star">
-  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
-  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
-</Tip>
+*To use the Sei API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
 
 ## Introduction
 
 Sei is a high-performance blockchain designed for decentralized finance (DeFi) applications. It offers fast transaction speeds, scalability, and a developer-friendly environment, making it an ideal platform for deploying DeFi applications and services.
 
+***
+
 ## What is the Sei API?
 
 The Sei API allows developers to interact with the Sei network through a collection of JSON-RPC methods. Given its compatibility with standard blockchain APIs, developers familiar with other blockchain JSON-RPC APIs will find working with Sei intuitive and straightforward.
 
-## Send Your First Request on Alchemy
+## Getting Started Instructions
 
-Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a Sei client connected to Alchemy and fetch the latest block number!
+### 1. Choose a Package Manager (npm or yarn)
+
+Your first step involves selecting a package manager, which will be crucial for managing your project's dependencies. The choice between `npm` and `yarn` depends on your personal preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+To kickstart your project, open your terminal and execute the following commands:
 
 <CodeGroup>
   ```text npm
-  npm install --save viem
+  mkdir sei-api-quickstart
+  cd sei-api-quickstart
+  npm init --yes
   ```
 
   ```text yarn
-  yarn add viem
+  mkdir sei-api-quickstart
+  cd sei-api-quickstart
+  yarn init --yes
   ```
 </CodeGroup>
 
-## Create Client Connected to Alchemy
+This creates a new directory named `sei-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+For making API requests, we'll use Axios, a widely-used HTTP client. Install Axios with the following command:
 
 <CodeGroup>
-```js
-import { createPublicClient, http } from "viem"; 
-import { sei } from "viem/chains";
-
-const client = createPublicClient({
-  chain: sei,
-  transport: http("https://sei-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
-});
-```
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
 </CodeGroup>
 
-Now that you've created a client connected to Alchemy, you can continue with some basics:
-
-## Get Latest Block Number
+Next, create an `index.js` file in your project directory. Paste the following code to send a request to the Sei network:
 
 <CodeGroup>
-```js
-const blockNumber = await client.getBlockNumber();
-console.log("Current block number:", blockNumber);
-```
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = `https://sei-mainnet.g.alchemy.com/v2/${yourAPIKey}`;
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'sei_getBlockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Block Number:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
 </CodeGroup>
 
-## Get an Address Balance
+Remember to replace `yourAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
+
+### 4. Run Your Script
+
+To execute your script and make a request to the Sei network, run:
 
 <CodeGroup>
-```js 
-const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
-console.log("Balance (SEI):", Number(balance) / 1e18);
-```
+  ```bash bash
+  node index.js
+  ```
 </CodeGroup>
 
-## Read Block Data
+You should see the current block number on Sei (in hexadecimal format) outputted to your console:
 
-<CodeGroup>
-```js
-const block = await client.getBlock({
-  blockNumber: blockNumber, // from previous example
-});
-console.log(block);
+```shell
+Block Number: 0x6d68e
 ```
-</CodeGroup>
 
-## Fetch a Transaction by Hash
+## Next Steps
 
-<CodeGroup> 
-```js 
-const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
-console.log(tx);
-```
-</CodeGroup>
-
-## Fetch Transaction Receipt
-
-<CodeGroup>
-```js
-const receipt = await client.getTransactionReceipt({
-  hash: "0xYOUR_TX_HASH"
-});
-console.log(receipt);
-```
-</CodeGroup>
-
-# Sei Tutorials
-
-Check out the following tutorials to learn how to build on Sei:
-
-* [Sei API Endpoints](/reference/sei-api-endpoints)
-
-For full documentation on Web3 libraries, check out the official documentation:
-
-* [Viem Documentation](https://viem.sh) - Modern TypeScript interface for Ethereum
-* [Ethers.js Documentation](https://docs.ethers.org) - Complete Ethereum wallet implementation
+Well done! You've just made your first request to the Sei API. With this foundation, you can dive deeper into the array of [JSON-RPC methods available on Sei](/reference/sei-api-endpoints) and start building your dApps on it!

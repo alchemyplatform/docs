@@ -1,109 +1,105 @@
 ---
 title: Monad API Quickstart
-description: How to get started building on Monad using Alchemy
-subtitle: How to get started building on Monad using Alchemy
-slug: docs/monad
+description: Get started building on Monad and using the JSON-RPC API
+subtitle: Get started building on Monad and using the JSON-RPC API
+slug: reference/monad-api-quickstart
 ---
 
-<Tip title="Don't have an API key?" icon="star">
-  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
-  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
-</Tip>
+## Introduction
 
-## Send Your First Request on Alchemy
+Monad is a high-performance Ethereum-compatible L1. Monad materially advances the efficient frontier in the balance between decentralization and scalability.
 
-Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a Monad client connected to Alchemy and fetch the latest block number!
+<Info>
+  Please note that we currently only support the Monad testnet
+</Info>
+
+## What is the Monad API?
+
+The Monad API allows interaction with the Monad network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
+
+```shell
+mkdir monad-api-quickstart
+cd monad-api-quickstart
+npm init --yes
+```
+
+```shell
+mkdir monad-api-quickstart
+cd monad-api-quickstart
+yarn init --yes
+```
+
+This creates a new directory named `monad-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
 
 <CodeGroup>
-  ```text npm
-  npm install --save viem
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
   ```
+</CodeGroup>
 
-  ```text yarn
-  yarn add viem
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = 'https://monad-testnet.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
   ```
 </CodeGroup>
 
-## Create Client Connected to Alchemy
+Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Monad mainnet:
 
 <CodeGroup>
-```js
-import { createPublicClient, http, defineChain } from "viem";
-
-const monadTestnet = defineChain({
-  id: 10143,
-  name: "Monad Testnet",
-  nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://monad-testnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"] },
-  },
-});
-
-const client = createPublicClient({
-  chain: monadTestnet,
-  transport: http("https://monad-testnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
-});
-```
+  ```bash bash
+  node index.js
+  ```
 </CodeGroup>
 
-Now that you've created a client connected to Alchemy, you can continue with some basics:
+You should see the latest block information from Monad's mainnet outputted to your console:
 
-## Get Latest Block Number
-
-<CodeGroup>
-```js
-const blockNumber = await client.getBlockNumber();
-console.log("Current block number:", blockNumber);
+```shell
+Latest Block: 0x...
 ```
-</CodeGroup>
 
-## Get an Address Balance
+## Next Steps
 
-<CodeGroup>
-```js 
-const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
-console.log("Balance (MON):", Number(balance) / 1e18);
-```
-</CodeGroup>
-
-## Read Block Data
-
-<CodeGroup>
-```js
-const block = await client.getBlock({
-  blockNumber: blockNumber, // from previous example
-});
-console.log(block);
-```
-</CodeGroup>
-
-## Fetch a Transaction by Hash
-
-<CodeGroup> 
-```js 
-const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
-console.log(tx);
-```
-</CodeGroup>
-
-## Fetch Transaction Receipt
-
-<CodeGroup>
-```js
-const receipt = await client.getTransactionReceipt({
-  hash: "0xYOUR_TX_HASH"
-});
-console.log(receipt);
-```
-</CodeGroup>
-
-# Monad Tutorials
-
-Check out the following tutorials to learn how to build on Monad:
-
-* [Monad API Endpoints](/reference/monad-api-endpoints)
-
-For full documentation on Web3 libraries, check out the official documentation:
-
-* [Viem Documentation](https://viem.sh) - Modern TypeScript interface for Ethereum
-* [Ethers.js Documentation](https://docs.ethers.org) - Complete Ethereum wallet implementation
+Congratulations! You've made your first request to the Monad network. You can now explore the various [JSON-RPC methods available on Monad](/reference/monad-api-endpoints) and start building your dApps on this innovative platform.

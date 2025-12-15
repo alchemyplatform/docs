@@ -1,109 +1,117 @@
 ---
 title: Botanix API Quickstart
-description: How to get started building on Botanix using Alchemy
-subtitle: How to get started building on Botanix using Alchemy
-slug: docs/botanix
+description: How to get started building on Botanix and using the JSON-RPC API
+subtitle: How to get started building on Botanix and using the JSON-RPC API
+slug: reference/botanix-api-quickstart
 ---
 
-<Tip title="Don't have an API key?" icon="star">
-  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
-  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
-</Tip>
+*To use the Botanix API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
 
-## Send Your First Request on Alchemy
+## Introduction
 
-Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a Botanix client connected to Alchemy and fetch the latest block number!
+Botanix is a Bitcoin-native, EVM-compatible Layer 2 that makes it easy to build and run smart contracts using Bitcoin as the native asset.
+
+## What is the Botanix API?
+
+The Botanix API allows interaction with the Botanix network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
 
 <CodeGroup>
-  ```text npm
-  npm install --save viem
+  ```shell npm
+  # Begin with npm by following the npm documentation
+  # https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
   ```
 
-  ```text yarn
-  yarn add viem
+  ```shell yarn
+  # For yarn, refer to yarn's installation guide
+  # https://classic.yarnpkg.com/lang/en/docs/install
   ```
 </CodeGroup>
 
-## Create Client Connected to Alchemy
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
 
 <CodeGroup>
-```js
-import { createPublicClient, http, defineChain } from "viem";
+  ```shell npm
+  mkdir botanix-api-quickstart
+  cd botanix-api-quickstart
+  npm init --yes
+  ```
 
-const botanix = defineChain({
-  id: 3636,
-  name: "Botanix",
-  nativeCurrency: { name: "BTC", symbol: "BTC", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://botanix-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"] },
-  },
-});
-
-const client = createPublicClient({
-  chain: botanix,
-  transport: http("https://botanix-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
-});
-```
+  ```shell yarn
+  mkdir botanix-api-quickstart
+  cd botanix-api-quickstart
+  yarn init --yes
+  ```
 </CodeGroup>
 
-Now that you've created a client connected to Alchemy, you can continue with some basics:
+This creates a new directory named `botanix-api-quickstart` and initializes a Node.js project within it.
 
-## Get Latest Block Number
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
 
 <CodeGroup>
-```js
-const blockNumber = await client.getBlockNumber();
-console.log("Current block number:", blockNumber);
-```
+  ```shell npm
+  npm install axios
+  ```
+
+  ```shell yarn
+  yarn add axios
+  ```
 </CodeGroup>
 
-## Get an Address Balance
+Create an `index.js` file in your project directory and paste the following code:
 
 <CodeGroup>
-```js 
-const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
-console.log("Balance (BTC):", Number(balance) / 1e18);
-```
+  ```javascript index.js
+  const axios = require('axios');
+
+  const url = 'https://botanix-mainnet.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
 </CodeGroup>
 
-## Read Block Data
+Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
+
+### 4. Run Your Script
+
+Execute your script to make a request to the Botanix network:
 
 <CodeGroup>
-```js
-const block = await client.getBlock({
-  blockNumber: blockNumber, // from previous example
-});
-console.log(block);
-```
+  ```shell shell
+  node index.js
+  ```
 </CodeGroup>
 
-## Fetch a Transaction by Hash
-
-<CodeGroup> 
-```js 
-const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
-console.log(tx);
-```
-</CodeGroup>
-
-## Fetch Transaction Receipt
+You should see the latest block information from Botanix's network outputted to your console:
 
 <CodeGroup>
-```js
-const receipt = await client.getTransactionReceipt({
-  hash: "0xYOUR_TX_HASH"
-});
-console.log(receipt);
-```
+  ```shell shell
+  Latest Block: 0x...
+  ```
 </CodeGroup>
 
-# Botanix Tutorials
+## Next Steps
 
-Check out the following tutorials to learn how to build on Botanix:
-
-* [Botanix API Endpoints](/reference/botanix-api-endpoints)
-
-For full documentation on Web3 libraries, check out the official documentation:
-
-* [Viem Documentation](https://viem.sh) - Modern TypeScript interface for Ethereum
-* [Ethers.js Documentation](https://docs.ethers.org) - Complete Ethereum wallet implementation
+Congratulations! You've made your first request to the Botanix network. You can now explore the various JSON-RPC methods available on Botanix and start building your dApps on this innovative platform.

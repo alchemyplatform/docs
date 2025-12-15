@@ -1,101 +1,103 @@
 ---
 title: Unichain API Quickstart
-description: How to get started building on Unichain using Alchemy
-subtitle: How to get started building on Unichain using Alchemy
-slug: docs/unichain
+description: Get started building on Unichain and using the JSON-RPC API
+subtitle: Get started building on Unichain and using the JSON-RPC API
+slug: reference/unichain-api-quickstart
 ---
 
-<Tip title="Don't have an API key?" icon="star">
-  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
-  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
-</Tip>
+## Introduction
 
-## Send Your First Request on Alchemy
+Unichain is a DeFi-native Ethereum Layer 2 blockchain, designed to be the home for liquidity across chains. It offers faster and cheaper transactions while supporting cross-chain liquidity.
 
-Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a Unichain client connected to Alchemy and fetch the latest block number!
+***
+
+## What is the Unichain API?
+
+The Unichain API allows interaction with the Unichain network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+
+## Getting Started Instructions
+
+### 1. Choose a Package Manager (npm or yarn)
+
+Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+
+| npm                                                                                                                       | yarn                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
+
+### 2. Set Up Your Project
+
+Open your terminal and execute the following commands to create and initialize your project:
 
 <CodeGroup>
   ```text npm
-  npm install --save viem
+  mkdir unichain-api-quickstart
+  cd unichain-api-quickstart
+  npm init --yes
   ```
 
   ```text yarn
-  yarn add viem
+  mkdir unichain-api-quickstart
+  cd unichain-api-quickstart
+  yarn init --yes
   ```
 </CodeGroup>
 
-## Create Client Connected to Alchemy
+This creates a new directory named `unichain-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make Your First Request
+
+Install Axios, a popular HTTP client, to make API requests:
 
 <CodeGroup>
-```js
-import { createPublicClient, http } from "viem"; 
-import { unichainSepolia } from "viem/chains";
-
-const client = createPublicClient({
-  chain: unichainSepolia,
-  transport: http("https://unichain-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
-});
-```
+  ```bash bash
+  npm install axios
+  # Or with yarn
+  # yarn add axios
+  ```
 </CodeGroup>
 
-Now that you've created a client connected to Alchemy, you can continue with some basics:
-
-## Get Latest Block Number
+Create an `index.js` file in your project directory and paste the following code:
 
 <CodeGroup>
-```js
-const blockNumber = await client.getBlockNumber();
-console.log("Current block number:", blockNumber);
-```
+  ```javascript javascript
+  const axios = require('axios');
+
+  const url = 'https://unichain-sepolia.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
 </CodeGroup>
 
-## Get an Address Balance
+### 4. Run Your Script
+
+Execute your script to make a request to the Unichain Sepolia testnet:
 
 <CodeGroup>
-```js 
-const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
-console.log("Balance (ETH):", Number(balance) / 1e18);
-```
+  ```bash bash
+  node index.js
+  ```
 </CodeGroup>
 
-## Read Block Data
+You should see the latest block information from Unichain's Sepolia testnet outputted to your console:
 
-<CodeGroup>
-```js
-const block = await client.getBlock({
-  blockNumber: blockNumber, // from previous example
-});
-console.log(block);
+```shell
+Latest Block: 0x...
 ```
-</CodeGroup>
 
-## Fetch a Transaction by Hash
+## Next Steps
 
-<CodeGroup> 
-```js 
-const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
-console.log(tx);
-```
-</CodeGroup>
-
-## Fetch Transaction Receipt
-
-<CodeGroup>
-```js
-const receipt = await client.getTransactionReceipt({
-  hash: "0xYOUR_TX_HASH"
-});
-console.log(receipt);
-```
-</CodeGroup>
-
-# Unichain Tutorials
-
-Check out the following tutorials to learn how to build on Unichain:
-
-* [Unichain API Endpoints](/reference/unichain-api-endpoints)
-
-For full documentation on Web3 libraries, check out the official documentation:
-
-* [Viem Documentation](https://viem.sh) - Modern TypeScript interface for Ethereum
-* [Ethers.js Documentation](https://docs.ethers.org) - Complete Ethereum wallet implementation
+Congratulations! You've made your first request to the Unichain API on the Sepolia testnet. You can now explore the various [JSON-RPC methods available on Unichain](/reference/unichain-api-endpoints) and start building your dApps on this innovative platform.
