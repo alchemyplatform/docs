@@ -1,109 +1,98 @@
 ---
 title: BNB Smart Chain Quickstart
-description: Get started building on BNB Smart Chain and using the JSON-RPC API
-subtitle: Get started building on BNB Smart Chain and using the JSON-RPC API
+description: How to get started building on BNB Smart Chain using Alchemy
+subtitle: How to get started building on BNB Smart Chain using Alchemy
 slug: reference/bnb-smart-chain-api-quickstart
 ---
 
-*To use the BNB Smart Chain API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
-
-## Introduction
+<Tip title="Don't have an API key?" icon="star">
+  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
+  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
+</Tip>
 
 The BNB Smart Chain (BSC) is a high-performance blockchain developed by Binance, designed to offer developers low transaction costs and fast execution times. It is Ethereum Virtual Machine (EVM) compatible which enables developers to deploy Ethereum-based applications seamlessly on it!
 
-***
-
-## What is the BNB Smart Chain API?
-
 The BNB Smart Chain API facilitates interaction with the BSC network through a collection of JSON-RPC methods. Given its compatibility with the Ethereum ecosystem, developers familiar with Ethereum's JSON-RPC APIs will find working with BSC both intuitive and straightforward.
 
-## Getting Started Instructions
+## Send Your First Request on Alchemy
 
-### 1. Choose a Package Manager (npm or yarn)
-
-Your first step involves selecting a package manager, which will be crucial for managing your project's dependencies. The choice between `npm` and `yarn` depends on your personal preference or project requirements.
-
-| npm                                                                                                                       | yarn                                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Begin with `npm` by following the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). | For `yarn`, refer to [yarn's installation guide](https://classic.yarnpkg.com/lang/en/docs/install). |
-
-### 2. Set Up Your Project
-
-To kickstart your project, open your terminal and execute the following commands:
+Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a BNB Smart Chain client connected to Alchemy and fetch the latest block number!
 
 <CodeGroup>
   ```text npm
-  mkdir bsc-api-quickstart
-  cd bsc-api-quickstart
-  npm init --yes
+  npm install --save viem
   ```
 
   ```text yarn
-  mkdir bsc-api-quickstart
-  cd bsc-api-quickstart
-  yarn init --yes
+  yarn add viem
   ```
 </CodeGroup>
 
-This creates a new directory named `bsc-api-quickstart` and initializes a Node.js project within it.
-
-### 3. Make Your First Request
-
-For making API requests, we'll use Axios, a widely-used HTTP client. Install Axios with the following command:
+## Create Client Connected to Alchemy
 
 <CodeGroup>
-  ```bash bash
-  npm install axios
-  # Or with yarn
-  # yarn add axios
-  ```
+```js
+import { createPublicClient, http } from "viem"; 
+import { bsc } from "viem/chains";
+
+const client = createPublicClient({
+  chain: bsc,
+  transport: http("https://bnb-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
+});
+```
 </CodeGroup>
 
-Next, create an `index.js` file in your project directory. Paste the following code to send a request to the BSC network:
+Now that you've created a client connected to Alchemy, you can continue with some basics:
+
+## Get Latest Block Number
 
 <CodeGroup>
-  ```javascript javascript
-  const axios = require('axios');
-
-  const url = `https://bnb-mainnet.g.alchemy.com/v2/${yourAPIKey}`;
-
-  const payload = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'eth_blockNumber',
-    params: []
-  };
-
-  axios.post(url, payload)
-    .then(response => {
-      console.log('Block Number:', response.data.result);
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  ```
+```js
+const blockNumber = await client.getBlockNumber();
+console.log("Current block number:", blockNumber);
+```
 </CodeGroup>
 
-Remember to replace `yourAPIKey` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
-
-### 4. Run Your Script
-
-To execute your script and make a request to the BNB Smart Chain, run:
+## Get an Address Balance
 
 <CodeGroup>
-  ```bash bash
-  node index.js
-  ```
+```js 
+const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
+console.log("Balance (BNB):", Number(balance) / 1e18);
+```
 </CodeGroup>
 
-You should see the current block number on BSC (in hexadecimal format) outputted to your console:
+## Read Block Data
 
 <CodeGroup>
-  ```shell shell
-  Block Number: 0x6d68e
-  ```
+```js
+const block = await client.getBlock({
+  blockNumber: blockNumber, // from previous example
+});
+console.log(block);
+```
 </CodeGroup>
 
-## Next Steps
+## Fetch a Transaction by Hash
 
-Well done! You've just made your first request to the BNB Smart Chain API. With this foundation, you can dive deeper into the array of [JSON-RPC methods available on BSC](/reference/bnb-smart-chain-endpoints) and start building your dApps on it!
+<CodeGroup> 
+```js 
+const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
+console.log(tx);
+```
+</CodeGroup>
+
+## Fetch Transaction Receipt
+
+<CodeGroup>
+```js
+const receipt = await client.getTransactionReceipt({
+  hash: "0xYOUR_TX_HASH"
+});
+console.log(receipt);
+```
+</CodeGroup>
+
+# BNB Smart Chain APIs
+
+For the full list of BNB Smart Chain APIs, see the [BNB Smart Chain API Endpoints](/docs/chains#bnb-smart-chain-apis).

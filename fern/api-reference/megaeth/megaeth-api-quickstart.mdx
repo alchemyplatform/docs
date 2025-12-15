@@ -1,117 +1,106 @@
 ---
 title: MegaETH API Quickstart
-description: How to get started building on MegaETH and using the JSON-RPC API
-subtitle: How to get started building on MegaETH and using the JSON-RPC API
+description: How to get started building on MegaETH using Alchemy
+subtitle: How to get started building on MegaETH using Alchemy
 slug: reference/megaeth-api-quickstart
 ---
 
-*To use the MegaETH API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
-
-## Introduction
+<Tip title="Don't have an API key?" icon="star">
+  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
+  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
+</Tip>
 
 MegaETH is a high-performance Ethereum Layer 2 blockchain designed to achieve real-time transaction processing with sub-millisecond latency and extremely high throughput.
 
-## What is the MegaETH API?
-
 The MegaETH API allows interaction with the MegaETH network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
 
-## Getting Started Instructions
+## Send Your First Request on Alchemy
 
-### 1. Choose a Package Manager (npm or yarn)
-
-Select a package manager to manage your project's dependencies. Choose between `npm` and `yarn` based on your preference or project requirements.
+Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a MegaETH client connected to Alchemy and fetch the latest block number!
 
 <CodeGroup>
-  ```shell npm
-  # Begin with npm by following the npm documentation
-  # https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
+  ```text npm
+  npm install --save viem
   ```
 
-  ```shell yarn
-  # For yarn, refer to yarn's installation guide
-  # https://classic.yarnpkg.com/lang/en/docs/install
+  ```text yarn
+  yarn add viem
   ```
 </CodeGroup>
 
-### 2. Set Up Your Project
-
-Open your terminal and execute the following commands to create and initialize your project:
+## Create Client Connected to Alchemy
 
 <CodeGroup>
-  ```shell npm
-  mkdir megaeth-api-quickstart
-  cd megaeth-api-quickstart
-  npm init --yes
-  ```
+```js
+import { createPublicClient, http, defineChain } from "viem";
 
-  ```shell yarn
-  mkdir megaeth-api-quickstart
-  cd megaeth-api-quickstart
-  yarn init --yes
-  ```
+const megaeth = defineChain({
+  id: 6342,
+  name: "MegaETH",
+  nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://megaeth-testnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"] },
+  },
+});
+
+const client = createPublicClient({
+  chain: megaeth,
+  transport: http("https://megaeth-testnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
+});
+```
 </CodeGroup>
 
-This creates a new directory named `megaeth-api-quickstart` and initializes a Node.js project within it.
+Now that you've created a client connected to Alchemy, you can continue with some basics:
 
-### 3. Make Your First Request
-
-Install Axios, a popular HTTP client, to make API requests:
+## Get Latest Block Number
 
 <CodeGroup>
-  ```shell npm
-  npm install axios
-  ```
-
-  ```shell yarn
-  yarn add axios
-  ```
+```js
+const blockNumber = await client.getBlockNumber();
+console.log("Current block number:", blockNumber);
+```
 </CodeGroup>
 
-Create an `index.js` file in your project directory and paste the following code:
+## Get an Address Balance
 
 <CodeGroup>
-  ```javascript index.js
-  const axios = require('axios');
-
-  const url = 'https://megaeth-mainnet.g.alchemy.com/v2/${your-api-key}';
-
-  const payload = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'eth_blockNumber',
-    params: []
-  };
-
-  axios.post(url, payload)
-    .then(response => {
-      console.log('Latest Block:', response.data.result);
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  ```
+```js 
+const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
+console.log("Balance (ETH):", Number(balance) / 1e18);
+```
 </CodeGroup>
 
-Remember to replace `your-api-key` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
-
-### 4. Run Your Script
-
-Execute your script to make a request to the MegaETH network:
+## Read Block Data
 
 <CodeGroup>
-  ```shell shell
-  node index.js
-  ```
+```js
+const block = await client.getBlock({
+  blockNumber: blockNumber, // from previous example
+});
+console.log(block);
+```
 </CodeGroup>
 
-You should see the latest block information from MegaETH's network outputted to your console:
+## Fetch a Transaction by Hash
+
+<CodeGroup> 
+```js 
+const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
+console.log(tx);
+```
+</CodeGroup>
+
+## Fetch Transaction Receipt
 
 <CodeGroup>
-  ```shell shell
-  Latest Block: 0x...
-  ```
+```js
+const receipt = await client.getTransactionReceipt({
+  hash: "0xYOUR_TX_HASH"
+});
+console.log(receipt);
+```
 </CodeGroup>
 
-## Next Steps
+# MegaETH APIs
 
-Congratulations! You've made your first request to the MegaETH network. You can now explore the various JSON-RPC methods available on MegaETH and start building your dApps on this innovative platform.
+For the full list of MegaETH APIs, see the [MegaETH API Endpoints](/docs/chains#megaeth-apis).

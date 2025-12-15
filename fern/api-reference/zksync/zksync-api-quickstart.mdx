@@ -1,120 +1,98 @@
 ---
 title: zkSync Era API Quickstart
-description: How to get started building on zkSync Era and using the JSON-RPC API
-subtitle: How to get started building on zkSync Era and using the JSON-RPC API
+description: How to get started building on zkSync Era using Alchemy
+subtitle: How to get started building on zkSync Era using Alchemy
 slug: reference/zksync-api-quickstart
 ---
 
-*To use the zkSync Era API, you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
-
-# Introduction
+<Tip title="Don't have an API key?" icon="star">
+  Build faster with production-ready APIs, smart wallets and rollup infrastructure across 70+ chains. Create your free Alchemy API key and{" "}
+  <a href="https://dashboard.alchemy.com/signup">get started today</a>.
+</Tip>
 
 zkSync is a Layer 2 scaling solution for Ethereum, leveraging zkRollup technology. It provides low gas fees, high throughput, and enhanced user privacy while maintaining a secure and decentralized architecture.
 
-# What is zkSync Era API?
-
 The zkSync Era API enables developers to interact seamlessly with the zkSync Era network. Through the API, developers can submit transactions, query state changes, and more, all while benefiting from the scalability and security zkSync Era offers.
 
-# Getting Started Instructions
+## Send Your First Request on Alchemy
 
-## 1. Choose a Package Manager (npm or yarn)
-
-Start by selecting a package manager for managing your project's dependencies. The most commonly used package managers in the Node.js ecosystem are `npm` and `yarn`. Select according to your preference.
-
-### npm
-
-If you're using `npm`, begin by installing Node.js and `npm` by following the guide here: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-
-### yarn
-
-If you prefer `yarn`, follow these installation instructions: [https://classic.yarnpkg.com/lang/en/docs/install](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
-
-## 2. Set up your project (npm or yarn)
-
-To set up a Node.js project, open your terminal and execute the following:
+Let's use the [`viem`](https://www.npmjs.com/package/viem) package to create a zkSync Era client connected to Alchemy and fetch the latest block number!
 
 <CodeGroup>
-  ```shell npm
-  mkdir alchemy-zksync-api
-  cd alchemy-zksync-api
-  npm init --yes
+  ```text npm
+  npm install --save viem
   ```
 
-  ```shell yarn
-  mkdir alchemy-zksync-api
-  cd alchemy-zksync-api
-  yarn init --yes
+  ```text yarn
+  yarn add viem
   ```
 </CodeGroup>
 
-This creates a new directory named `alchemy-zksync-api` and initializes a Node.js project within it.
-
-## 3. Make Your First Request
-
-For interacting with the zkSync Era API, you will use an HTTP client. This guide uses Axios, a well-regarded HTTP client for Node.js. Install Axios in your project as follows:
+## Create Client Connected to Alchemy
 
 <CodeGroup>
-  ```shell npm
-  npm install axios
-  ```
+```js
+import { createPublicClient, http } from "viem"; 
+import { zkSync } from "viem/chains";
 
-  ```Text yarn
-  yarn add axios
-  ```
+const client = createPublicClient({
+  chain: zkSync,
+  transport: http("https://zksync-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY"),
+});
+```
 </CodeGroup>
 
-Next, create a script for sending a request to the `zks_getAllAccountBalances` JSON-RPC method on zkSync Era. This method retrieves the balances of all tokens for a specified account address. Create a file named `index.js` in your project directory and input this code:
+Now that you've created a client connected to Alchemy, you can continue with some basics:
+
+## Get Latest Block Number
 
 <CodeGroup>
-  ```javascript index.js
-  const axios = require('axios');
-
-  const apiKey = 'YOUR_API_KEY'; // Replace this with your Alchemy API key
-  const url = `https://zksync-mainnet.g.alchemy.com/v2/${apiKey}`;
-
-  const payload = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'zks_getAllAccountBalances',
-    params: ['YOUR_ACCOUNT_ADDRESS'] // Replace with your account address
-  };
-
-  axios.post(url, payload)
-    .then(response => {
-      console.log('Account Balances:', response.data.result);
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  ```
+```js
+const blockNumber = await client.getBlockNumber();
+console.log("Current block number:", blockNumber);
+```
 </CodeGroup>
 
-Be sure to replace `YOUR_API_KEY` with your actual Alchemy API key, obtainable from your [Alchemy dashboard](https://dashboard.alchemy.com/signup), and `YOUR_ACCOUNT_ADDRESS` with the zkSync Era account address you want to query.
-
-## 4. Run Script
-
-To execute the script and send the request to the zkSync Era API, use this command:
+## Get an Address Balance
 
 <CodeGroup>
-  ```shell shell
-  node index.js
-  ```
+```js 
+const balance = await client.getBalance({ address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b" });
+console.log("Balance (ETH):", Number(balance) / 1e18);
+```
 </CodeGroup>
 
-You should see the balances of all tokens owned by the specified zkSync Era account displayed in your console:
+## Read Block Data
 
 <CodeGroup>
-  ```json Shell
-  {
-    "jsonrpc": "2.0",
-    "result": {
-      "0x0000000000000000000000000000000000000000": "0x2fbd72a1121b3100"
-    },
-    "id": 2
-  }
-  ```
+```js
+const block = await client.getBlock({
+  blockNumber: blockNumber, // from previous example
+});
+console.log(block);
+```
 </CodeGroup>
 
-# Next Steps
+## Fetch a Transaction by Hash
 
-Well done! You've now made your initial request to the zkSync Era API through Alchemy. Proceed to explore the various [JSON-RPC methods available on zkSync Era](/reference/zksync-api-endpoints) to develop your decentralized applications on this powerful Layer 2 platform!
+<CodeGroup> 
+```js 
+const tx = await client.getTransaction({ hash: "0xYOUR_TX_HASH" });
+console.log(tx);
+```
+</CodeGroup>
+
+## Fetch Transaction Receipt
+
+<CodeGroup>
+```js
+const receipt = await client.getTransactionReceipt({
+  hash: "0xYOUR_TX_HASH"
+});
+console.log(receipt);
+```
+</CodeGroup>
+
+# zkSync Era APIs
+
+For the full list of zkSync Era APIs, see the [zkSync Era API Endpoints](/docs/chains#zksync-apis).
