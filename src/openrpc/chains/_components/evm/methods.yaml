@@ -1122,6 +1122,32 @@ components:
               r: "0x84caf09aefbd5e539295acc67217563438a4efb224879b6855f56857fa2037d3"
               s: "0x5e863be3829812c81439f0ae9d8ecb832b531d651fb234c848d1bf45e62be8b9"
 
+    eth_getRawTransactionByHash:
+      name: eth_getRawTransactionByHash
+      description: Returns the raw transaction data (RLP-encoded) for a transaction by its hash.
+      params:
+        - name: Transaction hash
+          required: true
+          description: The hash of the transaction to retrieve.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Raw transaction data
+        description: The raw RLP-encoded transaction data as a hexadecimal string, or null if the transaction is not found.
+        schema:
+          oneOf:
+            - $ref: "./base-types.yaml#/components/schemas/notFound"
+            - title: Raw transaction data
+              $ref: "./base-types.yaml#/components/schemas/bytes"
+      examples:
+        - name: eth_getRawTransactionByHash example
+          params:
+            - name: Transaction hash
+              value: "0xa52be92809541220ee0aaaede6047d9a6c5d0cd96a517c854d944ee70a0ebb44"
+          result:
+            name: Raw transaction data
+            value: "0xf86c0185012a05f200825208940599d52c37544c07605f470e5e20c1b266de858889021dfc23e5c290008025a084ce48a415a40d664f87a6a05e8ec8e2fd2f07a68b06d3f20d999d7e8c7b12dfa0464c6e93bfa8e779ecd48284cf47d2d797dc611bbc6dbd7ab8f57ccba039acec"
+
     eth_getTransactionByBlockHashAndIndex:
       name: eth_getTransactionByBlockHashAndIndex
       description: Returns information about a transaction by block hash and transaction index position.
