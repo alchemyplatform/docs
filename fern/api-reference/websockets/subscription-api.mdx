@@ -85,9 +85,10 @@ Next, install a command line tool for making WebSocket requests such as [wscat](
 
 The following limits apply for WebSocket connections:
 
-* There is a limit of **100 WebSocket connections** for the FREE tier and **2,000 WebSocket connections** for all other tiers, with a maximum of 50,000 connections per instance.
+* There is a limit of **100 WebSocket connections** for the FREE tier and **2,000 WebSocket connections** for all other tiers.
 * There is a limit of **1,000 unique subscriptions** per WebSocket connection.
 * The maximum size of a JSON-RPC `batch` request that can be sent over a WebSocket connection is 1000
+* The maximum number of concurrent JSON-RPC requests (i.e. requests awaiting responses) on a single WebSocket connection is 200
 
 ***
 
@@ -97,5 +98,6 @@ The following limits apply for WebSocket connections:
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `32600`    | `"Sorry, the maximum batch request size is 1000. Please reduce the size of your request and try again."`                                              | Occurs when user attempts to send high-volume JSON-RPC traffic over Websockets. We recommend this traffic be sent over HTTP instead to optimize server backends. |
 | `1008`     | `"WebSocket connection limit reached for this app. Please close existing connections and try again."`                                                 | Triggered when the number of open WebSocket connections for the app reaches the allowed limit. Close unused connections to restore access.                       |
-| `1008`     | `" This app has exceeded its limit of open WebSockets. Please close some other connections first."`                                                   | Triggered when the team previously exceeded the limit and tries to reconnect again before the backoff interval expires. Close existing connections and wait.     |
-| `1008`     | `" You have exceeded the maximum number of concurrent requests on a single WebSocket. At most 200 concurrent requests are allowed per WebSocket."`  | Triggered when a client has too many pending JSON-RPC requests on a single WebSocket. Ensure each request completes before sending more.                         |
+| `1008`     | `"This app has exceeded its limit of open WebSockets. Please close some other connections first."`                                                    | Triggered when the team previously exceeded the limit and tries to reconnect again before the backoff interval expires. Close existing connections and wait.     |
+| `1008`     | `"You have exceeded the maximum number of concurrent requests on a single WebSocket. At most 200 concurrent requests are allowed per WebSocket."`     | Triggered when a client has too many pending JSON-RPC requests on a single WebSocket. Ensure each request completes before sending more.                         |
+| `32603`    | `"You have exceeded the maximum number of subscriptions on a single WebSocket."                                                                       | Triggered when a client has too many subscriptions on a single WebSocket. Unsubscribe before creating new subscriptions.                                         |
