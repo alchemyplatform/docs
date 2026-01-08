@@ -80,10 +80,6 @@ SDK References are automatically generated from relevant projects within the mon
 yarn docs:sdk
 ```
 
-### Injected Code Snippets
-
-You can reference production code directly in code snippets using `[!include]` statements. The syntax is the same as Physical File Snippets from Vocs, so you can reference [their documentation](https://vocs.dev/docs/guides/code-snippets#physical-file-snippets).
-
 ## Local Development
 
 To run docs locally, you must have `pnpm` installed as a global dependency. `corepack` can install it for you. Run:
