@@ -17,49 +17,85 @@ const countItems = (items: NavigationTree): number => {
 };
 
 /**
- * Stores the path index and navigation trees to Redis.
- * Returns promises for all storage operations.
+ * Stores path index and navigation trees to Redis with branch scoping.
+ *
+ * @param pathIndex - The path index to store
+ * @param navigationTrees - Navigation trees (optional for SDK/changelog indexers)
+ * @param options - Configuration options
+ * @param options.branchId - Branch identifier for Redis keys (e.g., "main", "branch-abc123")
+ * @param options.pathIndexSuffix - Suffix for path index key (e.g., "main", "sdk-refs", "changelog")
+ * @param options.mergeSDKIntoWallets - If true, merge nav trees into existing wallets tree (for SDK indexer)
  */
 export const storeToRedis = async (
   pathIndex: PathIndex,
-  navigationTrees: NavigationTreesByTab,
+  navigationTrees: NavigationTreesByTab | undefined,
   options: {
-    isWalletMode: boolean;
+    branchId: string;
+    pathIndexSuffix: "main" | "sdk-refs" | "changelog";
+    mergeSDKIntoWallets?: boolean;
   },
 ): Promise<void> => {
   const redis = getRedis();
 
-  // Determine Redis keys based on mode
-  const pathIndexKey = options.isWalletMode
-    ? "main/wallet-path-index.json"
-    : "main/path-index.json";
-
-  // Store path index
+  // Store path index with branch scope
+  const pathIndexKey = `${options.branchId}/path-index:${options.pathIndexSuffix}`;
   const pathIndexPromise = redis
     .set(pathIndexKey, JSON.stringify(pathIndex, null, 2))
     .then(() => {
-      console.info(`✅ Path index saved to Redis (${pathIndexKey})`);
-    });
-
-  // Filter navigation trees based on mode:
-  // - Wallet mode: only write nav-wallets
-  // - Default mode: skip nav-wallets (to avoid overwriting wallet repo data)
-  const navigationTreesPromises = Object.entries(navigationTrees)
-    .filter(([tab]) => {
-      if (options.isWalletMode) {
-        return tab === "wallets";
-      }
-      // Default mode: skip wallets tab to avoid overwriting wallets index
-      return tab !== "wallets";
-    })
-    .map(async ([tab, navTree]) => {
-      const redisKey = `main/nav-${tab}.json`;
-      const itemCount = countItems(navTree);
-      await redis.set(redisKey, JSON.stringify(navTree, null, 2));
       console.info(
-        `✅ Navigation for '${tab}' saved to Redis (${itemCount} items)`,
+        `✅ Path index saved to Redis (${Object.keys(pathIndex).length} routes) -> ${pathIndexKey}`,
       );
     });
 
-  await Promise.all([pathIndexPromise, ...navigationTreesPromises]);
+  // Handle navigation trees
+  let navTreePromises: Promise<void>[] = [];
+
+  if (options.mergeSDKIntoWallets && navigationTrees?.wallets) {
+    // SDK indexer: merge SDK section into existing wallets nav tree
+    const navTreeKey = `${options.branchId}/nav-tree:wallets`;
+    const existingTreeJson = await redis.get(navTreeKey);
+    let existingTree: NavigationTree = [];
+
+    if (existingTreeJson) {
+      existingTree = JSON.parse(existingTreeJson as string) as NavigationTree;
+      console.info(`📖 Read existing wallets nav tree from Redis`);
+    } else {
+      console.warn(
+        `⚠️  No existing wallets nav tree found at ${navTreeKey}, creating new one`,
+      );
+    }
+
+    // Filter out existing SDK Reference section
+    const manualSections = existingTree.filter((item) => {
+      if (item.type === "section" || item.type === "api-section") {
+        return !item.title.toLowerCase().includes("sdk reference");
+      }
+      return true;
+    });
+
+    // Merge manual + SDK sections
+    const mergedTree = [...manualSections, ...navigationTrees.wallets];
+
+    navTreePromises = [
+      redis.set(navTreeKey, JSON.stringify(mergedTree, null, 2)).then(() => {
+        console.info(
+          `✅ Updated wallets nav tree with SDK refs (${countItems(mergedTree)} total items) -> ${navTreeKey}`,
+        );
+      }),
+    ];
+  } else if (navigationTrees) {
+    // Main indexer: store all navigation trees normally
+    navTreePromises = Object.entries(navigationTrees).map(
+      async ([tab, navTree]) => {
+        const redisKey = `${options.branchId}/nav-tree:${tab}`;
+        const itemCount = countItems(navTree);
+        await redis.set(redisKey, JSON.stringify(navTree, null, 2));
+        console.info(
+          `✅ Navigation tree for '${tab}' saved to Redis (${itemCount} items) -> ${redisKey}`,
+        );
+      },
+    );
+  }
+
+  await Promise.all([pathIndexPromise, ...navTreePromises]);
 };

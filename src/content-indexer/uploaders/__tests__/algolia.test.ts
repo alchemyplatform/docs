@@ -15,7 +15,7 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { isWalletMode: false });
+    await uploadToAlgolia(records, { indexerType: "main" });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Algolia credentials not found"),
@@ -36,7 +36,7 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { isWalletMode: false });
+    await uploadToAlgolia(records, { indexerType: "main" });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Algolia credentials not found"),
@@ -59,11 +59,9 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { isWalletMode: false });
+    await uploadToAlgolia(records, { indexerType: "main" });
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("index name not configured"),
-    );
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("not set"));
 
     consoleSpy.mockRestore();
     process.env.ALGOLIA_APP_ID = originalAppId;
@@ -83,11 +81,9 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { isWalletMode: true });
+    await uploadToAlgolia(records, { indexerType: "sdk" });
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("index name not configured"),
-    );
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("not set"));
 
     consoleSpy.mockRestore();
     process.env.ALGOLIA_APP_ID = originalAppId;

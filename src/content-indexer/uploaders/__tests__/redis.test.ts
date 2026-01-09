@@ -31,10 +31,13 @@ describe("storeToRedis", () => {
       },
     };
 
-    await storeToRedis(pathIndex, {}, { isWalletMode: false });
+    await storeToRedis(pathIndex, undefined, {
+      branchId: "main",
+      pathIndexSuffix: "main",
+    });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/path-index.json",
+      "main/path-index:main",
       JSON.stringify(pathIndex, null, 2),
     );
   });
@@ -50,10 +53,13 @@ describe("storeToRedis", () => {
       ],
     };
 
-    await storeToRedis({}, navigationTrees, { isWalletMode: false });
+    await storeToRedis({}, navigationTrees, {
+      branchId: "main",
+      pathIndexSuffix: "main",
+    });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/nav-guides.json",
+      "main/nav-tree:guides",
       JSON.stringify(navigationTrees.guides, null, 2),
     );
   });
@@ -76,19 +82,22 @@ describe("storeToRedis", () => {
       ],
     };
 
-    await storeToRedis({}, navigationTrees, { isWalletMode: false });
+    await storeToRedis({}, navigationTrees, {
+      branchId: "main",
+      pathIndexSuffix: "main",
+    });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/nav-guides.json",
+      "main/nav-tree:guides",
       JSON.stringify(navigationTrees.guides, null, 2),
     );
     expect(mockSet).toHaveBeenCalledWith(
-      "main/nav-reference.json",
+      "main/nav-tree:reference",
       JSON.stringify(navigationTrees.reference, null, 2),
     );
   });
 
-  test("should use wallet prefix if isWalletMode is true", async () => {
+  test("should use sdk-refs suffix for SDK indexer", async () => {
     const pathIndex: PathIndex = {
       "wallets/metamask": {
         type: "mdx",
@@ -98,10 +107,13 @@ describe("storeToRedis", () => {
       },
     };
 
-    await storeToRedis(pathIndex, {}, { isWalletMode: true });
+    await storeToRedis(pathIndex, undefined, {
+      branchId: "main",
+      pathIndexSuffix: "sdk-refs",
+    });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/wallet-path-index.json",
+      "main/path-index:sdk-refs",
       JSON.stringify(pathIndex, null, 2),
     );
   });
@@ -121,7 +133,10 @@ describe("storeToRedis", () => {
       reference: [{ title: "Ref", path: "/reference", type: "page" }],
     };
 
-    await storeToRedis(pathIndex, navigationTrees, { isWalletMode: false });
+    await storeToRedis(pathIndex, navigationTrees, {
+      branchId: "main",
+      pathIndexSuffix: "main",
+    });
 
     // Should have called set 3 times (1 pathIndex + 2 nav trees)
     expect(mockSet).toHaveBeenCalledTimes(3);

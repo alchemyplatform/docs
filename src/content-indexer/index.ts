@@ -1,103 +1,170 @@
-import yaml from "js-yaml";
+#!/usr/bin/env tsx
+import path from "path";
 
-import type { BuildAllOutputsResult } from "@/content-indexer/collectors/processing-context";
-import {
-  batchFetchContent,
-  type ContentSource,
-} from "@/content-indexer/core/batch-fetcher";
-import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs";
-import { scanDocsYml } from "@/content-indexer/core/scanner";
-import type { DocsYml } from "@/content-indexer/types/docsYaml";
-import { readLocalDocsYml } from "@/content-indexer/utils/filesystem";
-import {
-  fetchFileFromGitHub,
-  type RepoConfig,
-} from "@/content-indexer/utils/github";
+import { buildChangelogIndex } from "@/content-indexer/indexers/changelog";
+import { buildMainContentIndex } from "@/content-indexer/indexers/main";
+import { buildSDKContentIndex } from "@/content-indexer/indexers/sdk";
+import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia";
+import { storeToRedis } from "@/content-indexer/uploaders/redis";
+import { DOCS_REPO, WALLET_REPO } from "@/content-indexer/utils/github";
 
-/**
- * Main content indexer function using 3-phase architecture.
- * Phase 1: Scan docs.yml for all file paths and spec names
- * Phase 2: Batch fetch/read all content in parallel
- * Phase 3: Process with cached content to build index, nav trees, and Algolia records
- *
- * @param source - Content source (filesystem or GitHub)
- * @param repoConfig - Repository configuration (needed for path-building even in filesystem mode)
- */
-export const buildContentIndex = async (
-  source: ContentSource,
-  repoConfig: RepoConfig,
-): Promise<BuildAllOutputsResult> => {
-  const sourceName =
-    source.type === "filesystem" ? "local filesystem" : repoConfig.repo;
-  console.info(
-    `🔍 Building content index from ${sourceName}. This may take a few minutes...`,
-  );
+// ============================================================================
+// CLI Argument Parsing
+// ============================================================================
 
-  // Read/fetch and parse docs.yml
-  let docsYml: DocsYml;
+const parseArgs = () => {
+  const args = process.argv.slice(2);
 
-  if (source.type === "filesystem") {
-    const result = await readLocalDocsYml(source.basePath);
-    if (!result) {
-      throw new Error(`Failed to read docs.yml from ${source.basePath}`);
-    }
-    docsYml = result;
-  } else {
-    const docsYmlPath = `${source.repoConfig.docsPrefix}/docs.yml`;
-    const docsYmlContent = await fetchFileFromGitHub(
-      docsYmlPath,
-      source.repoConfig,
+  const indexer =
+    args.find((arg) => arg.startsWith("--indexer="))?.split("=")[1] || "main";
+  const mode =
+    args.find((arg) => arg.startsWith("--mode="))?.split("=")[1] ||
+    "production";
+  const branch =
+    args.find((arg) => arg.startsWith("--branch="))?.split("=")[1] || "main";
+
+  // Validate arguments
+  if (!["main", "sdk", "changelog"].includes(indexer)) {
+    throw new Error(
+      `Invalid indexer: ${indexer}. Must be 'main', 'sdk', or 'changelog'`,
     );
-    if (!docsYmlContent) {
-      throw new Error(
-        `Failed to fetch ${docsYmlPath} from ${source.repoConfig.repo}`,
-      );
-    }
-    docsYml = yaml.load(docsYmlContent) as DocsYml;
   }
 
-  // PHASE 1: SCAN
-  console.info("📋 Phase 1: Scanning docs.yml for all paths and specs...");
-  const scanResult = scanDocsYml(docsYml);
-  console.info(
-    `   Found ${scanResult.mdxPaths.size} MDX files, ${scanResult.specNames.size} specs`,
-  );
+  if (!["preview", "production"].includes(mode)) {
+    throw new Error(`Invalid mode: ${mode}. Must be 'preview' or 'production'`);
+  }
 
-  // PHASE 2: BATCH FETCH/READ
-  console.info(
-    `📥 Phase 2: ${source.type === "filesystem" ? "Reading" : "Fetching"} all content in parallel...`,
-  );
-  const contentCache = await batchFetchContent(scanResult, source);
-
-  // PHASE 3: PROCESS
-  console.info("⚙️  Phase 3: Processing with cached content...");
-  const { pathIndex, navigationTrees, algoliaRecords } = buildAllOutputs(
-    docsYml,
-    contentCache,
-    repoConfig,
-  );
-
-  console.info(
-    `📊 Generated ${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} Algolia records`,
-  );
-
-  // Count sources and types for debugging
-  const sources = Object.values(pathIndex).reduce(
-    (acc, entry) => {
-      acc[entry.source] = (acc[entry.source] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
-  const types = Object.values(pathIndex).reduce(
-    (acc, entry) => {
-      acc[entry.type] = (acc[entry.type] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
-  console.info(`   Sources: ${JSON.stringify(sources)}`);
-  console.info(`   Types: ${JSON.stringify(types)}`);
-
-  return { pathIndex, navigationTrees, algoliaRecords };
+  return {
+    indexer: indexer as "main" | "sdk" | "changelog",
+    mode: mode as "preview" | "production",
+    branchId: branch,
+  };
 };
+
+// ============================================================================
+// Main Indexer
+// ============================================================================
+
+const runMainIndexer = async (
+  mode: "preview" | "production",
+  branchId: string,
+) => {
+  console.info(
+    `\n🔍 Running MAIN indexer (${mode} mode, branch: ${branchId})\n`,
+  );
+
+  const { pathIndex, navigationTrees, algoliaRecords } =
+    await buildMainContentIndex({
+      mode,
+      localBasePath: path.join(process.cwd(), "fern"),
+      branchId,
+      repoConfig: DOCS_REPO,
+    });
+
+  console.info("\n📤 Uploading to Redis and Algolia...");
+
+  await Promise.all([
+    storeToRedis(pathIndex, navigationTrees, {
+      branchId,
+      pathIndexSuffix: "main",
+    }),
+    uploadToAlgolia(algoliaRecords, { indexerType: "main" }),
+  ]);
+
+  console.info(
+    `\n✅ Main indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
+  );
+};
+
+// ============================================================================
+// SDK Indexer
+// ============================================================================
+
+const runSDKIndexer = async (branchId: string) => {
+  console.info(`\n🔍 Running SDK indexer (branch: ${branchId})\n`);
+
+  const { pathIndex, walletsNavTree, algoliaRecords } =
+    await buildSDKContentIndex({
+      sdkRepoConfig: WALLET_REPO,
+      branchId,
+    });
+
+  console.info("\n📤 Uploading to Redis and Algolia...");
+
+  await Promise.all([
+    storeToRedis(
+      pathIndex,
+      { wallets: walletsNavTree },
+      {
+        branchId,
+        pathIndexSuffix: "sdk-refs",
+        mergeSDKIntoWallets: true,
+      },
+    ),
+    uploadToAlgolia(algoliaRecords, { indexerType: "sdk" }),
+  ]);
+
+  console.info(
+    `\n✅ SDK indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
+  );
+};
+
+// ============================================================================
+// Changelog Indexer
+// ============================================================================
+
+const runChangelogIndexer = async (branchId: string) => {
+  console.info(`\n🔍 Running CHANGELOG indexer (branch: ${branchId})\n`);
+
+  const { pathIndex, algoliaRecords } = await buildChangelogIndex({
+    localBasePath: path.join(process.cwd(), "fern/changelog"),
+    branchId,
+  });
+
+  console.info("\n📤 Uploading to Redis and Algolia...");
+
+  await Promise.all([
+    storeToRedis(pathIndex, undefined, {
+      branchId,
+      pathIndexSuffix: "changelog",
+    }),
+    uploadToAlgolia(algoliaRecords, { indexerType: "changelog" }),
+  ]);
+
+  console.info(
+    `\n✅ Changelog indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
+  );
+};
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+const main = async () => {
+  try {
+    const { indexer, mode, branchId } = parseArgs();
+
+    console.info("🚀 Content Indexer");
+    console.info("==================");
+    console.info(`   Indexer: ${indexer}`);
+    console.info(`   Mode: ${mode}`);
+    console.info(`   Branch: ${branchId}`);
+
+    switch (indexer) {
+      case "main":
+        await runMainIndexer(mode, branchId);
+        break;
+      case "sdk":
+        await runSDKIndexer(branchId);
+        break;
+      case "changelog":
+        await runChangelogIndexer(branchId);
+        break;
+    }
+  } catch (error) {
+    console.error("\n❌ Error:", error);
+    process.exit(1);
+  }
+};
+
+void main();

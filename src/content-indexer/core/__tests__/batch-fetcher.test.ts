@@ -52,7 +52,10 @@ title: Test Page
 
     vi.mocked(fetchFileFromGitHub).mockResolvedValue(mdxContent);
 
-    const cache = await batchFetchContent(scanResult, repoConfig);
+    const cache = await batchFetchContent(scanResult, {
+      type: "github",
+      repoConfig,
+    });
 
     // Verify fetches were made
     expect(fetchFileFromGitHub).toHaveBeenCalledTimes(2);
@@ -95,7 +98,10 @@ title: Test Page
 
     vi.mocked(fetchApiSpec).mockResolvedValue(mockSpec);
 
-    const cache = await batchFetchContent(scanResult, repoConfig);
+    const cache = await batchFetchContent(scanResult, {
+      type: "github",
+      repoConfig,
+    });
 
     // Verify fetches were made
     expect(fetchApiSpec).toHaveBeenCalledTimes(2);
@@ -120,7 +126,10 @@ title: Test Page
 
     vi.mocked(fetchFileFromGitHub).mockResolvedValue("---\n---\nContent");
 
-    await batchFetchContent(scanResult, repoConfig);
+    await batchFetchContent(scanResult, {
+      type: "github",
+      repoConfig,
+    });
 
     // Verify path was transformed (strip "fern/" prefix)
     expect(fetchFileFromGitHub).toHaveBeenCalledWith(
@@ -141,7 +150,10 @@ title: Test Page
     );
     vi.mocked(fetchApiSpec).mockRejectedValue(new Error("Spec not found"));
 
-    const cache = await batchFetchContent(scanResult, repoConfig);
+    const cache = await batchFetchContent(scanResult, {
+      type: "github",
+      repoConfig,
+    });
 
     // Verify warnings were logged
     expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -169,7 +181,10 @@ title: Test Page
     vi.mocked(fetchFileFromGitHub).mockResolvedValue(null);
     vi.mocked(fetchApiSpec).mockResolvedValue(undefined);
 
-    const cache = await batchFetchContent(scanResult, repoConfig);
+    const cache = await batchFetchContent(scanResult, {
+      type: "github",
+      repoConfig,
+    });
 
     // Cache should be empty
     const stats = cache.getStats();
@@ -191,7 +206,10 @@ title: Test Page
       specUrl: "url",
     });
 
-    await batchFetchContent(scanResult, repoConfig);
+    await batchFetchContent(scanResult, {
+      type: "github",
+      repoConfig,
+    });
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(
       expect.stringContaining("Fetching 1 MDX files and 1 specs"),

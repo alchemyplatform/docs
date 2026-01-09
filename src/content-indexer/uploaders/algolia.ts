@@ -4,7 +4,7 @@ import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
 import { truncateRecord } from "@/content-indexer/utils/truncate-record";
 
 /**
- * Uploads Algolia records using atomic index swap for zero-downtime updates.
+ * Uploads records to Algolia using atomic index swap for zero-downtime updates.
  *
  * Process:
  * 1. Upload all records to a temporary index
@@ -12,10 +12,16 @@ import { truncateRecord } from "@/content-indexer/utils/truncate-record";
  * 3. Atomically swap temp index to production
  *
  * This ensures users never see empty search results during updates.
+ *
+ * @param records - Algolia records to upload
+ * @param options - Configuration options
+ * @param options.indexerType - Type of indexer ("main", "sdk", or "changelog")
  */
 export const uploadToAlgolia = async (
   records: AlgoliaRecord[],
-  options: { isWalletMode: boolean },
+  options: {
+    indexerType: "main" | "sdk" | "changelog";
+  },
 ): Promise<void> => {
   const appId = process.env.ALGOLIA_APP_ID;
   const adminKey = process.env.ALGOLIA_ADMIN_API_KEY;
@@ -28,36 +34,41 @@ export const uploadToAlgolia = async (
     return;
   }
 
-  const targetIndexName = options.isWalletMode
-    ? process.env.ALGOLIA_WALLET_INDEX_NAME
-    : process.env.ALGOLIA_INDEX_NAME;
+  // Determine target index name based on indexer type
+  const indexEnvMap = {
+    main: process.env.ALGOLIA_INDEX_NAME,
+    sdk: process.env.ALGOLIA_WALLET_INDEX_NAME,
+    changelog: process.env.ALGOLIA_CHANGELOG_INDEX_NAME,
+  };
+
+  const targetIndexName = indexEnvMap[options.indexerType];
 
   if (!targetIndexName) {
+    const envVarMap = {
+      main: "ALGOLIA_INDEX_NAME",
+      sdk: "ALGOLIA_WALLET_INDEX_NAME",
+      changelog: "ALGOLIA_CHANGELOG_INDEX_NAME",
+    };
     console.warn(
-      "⚠️  Algolia index name not configured. Skipping Algolia upload.",
-    );
-    console.warn(
-      `   Set ${options.isWalletMode ? "ALGOLIA_WALLET_INDEX_NAME" : "ALGOLIA_INDEX_NAME"} environment variable.`,
+      `⚠️  ${envVarMap[options.indexerType]} not set. Skipping Algolia upload.`,
     );
     return;
   }
 
   const client = algoliasearch(appId, adminKey);
-
   const tempIndexName = `${targetIndexName}_temp`;
 
   console.info(
     `📤 Uploading ${records.length} records to Algolia (${targetIndexName})...`,
   );
 
-  // Truncate records to fit Algolia's 100KB limit (measures entire JSON payload)
+  // Truncate records to fit Algolia's 100KB limit
   const truncatedRecords = records.map(truncateRecord);
 
   try {
     // 1. Upload all records to temporary index
     await client.saveObjects({
       indexName: tempIndexName,
-      // Algolia SDK expects index signature, but we want to be more precise about the type
       objects: truncatedRecords as unknown as Array<Record<string, unknown>>,
     });
 
@@ -75,7 +86,6 @@ export const uploadToAlgolia = async (
       });
       console.info("   ✓ Copied settings from production index");
     } catch (_error) {
-      // Production index might not exist on first run - this is fine
       console.info(
         "   ℹ️  No existing production index found (might be first run)",
       );

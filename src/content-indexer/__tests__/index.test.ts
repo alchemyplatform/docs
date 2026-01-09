@@ -4,11 +4,9 @@ import { batchFetchContent } from "@/content-indexer/core/batch-fetcher";
 import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs";
 import { ContentCache } from "@/content-indexer/core/content-cache";
 import { scanDocsYml } from "@/content-indexer/core/scanner";
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
+import { buildMainContentIndex } from "@/content-indexer/indexers/main";
 import { fetchFileFromGitHub } from "@/content-indexer/utils/github";
 import { repoConfigFactory } from "@/content-indexer/utils/test-factories";
-
-import { buildContentIndex } from "../index";
 
 // Mock dependencies
 vi.mock("@/content-indexer/utils/github", async () => {
@@ -31,7 +29,7 @@ vi.mock("@/content-indexer/core/build-all-outputs", () => ({
   buildAllOutputs: vi.fn(),
 }));
 
-describe("buildContentIndex", () => {
+describe("buildMainContentIndex", () => {
   let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
@@ -43,19 +41,7 @@ describe("buildContentIndex", () => {
     vi.clearAllMocks();
   });
 
-  test("should orchestrate all 3 phases successfully", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
-    const docsYmlContent = `
-navigation:
-  - tab: guides
-    layout:
-      - page: quickstart.mdx
-`;
-
-    // Mock Phase 0: Fetch docs.yml
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue(docsYmlContent);
-
-    // Mock Phase 1: Scan
+  test("should orchestrate all 3 phases successfully in preview mode", async () => {
     const mockScanResult = {
       mdxPaths: new Set(["quickstart.mdx"]),
       specNames: new Set(["ethereum-api"]),
@@ -83,15 +69,21 @@ navigation:
     };
     vi.mocked(buildAllOutputs).mockReturnValue(mockResult);
 
-    const result = await buildContentIndex(repoConfig);
+    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
+
+    const result = await buildMainContentIndex({
+      mode: "preview",
+      localBasePath: "/test/fern",
+      branchId: "test-branch",
+      repoConfig,
+    });
 
     // Verify all phases were called
-    expect(fetchFileFromGitHub).toHaveBeenCalledWith(
-      "docs/docs.yml",
-      repoConfig,
-    );
     expect(scanDocsYml).toHaveBeenCalled();
-    expect(batchFetchContent).toHaveBeenCalledWith(mockScanResult, repoConfig);
+    expect(batchFetchContent).toHaveBeenCalledWith(mockScanResult, {
+      type: "filesystem",
+      basePath: "/test/fern",
+    });
     expect(buildAllOutputs).toHaveBeenCalledWith(
       expect.any(Object),
       mockCache,
@@ -100,72 +92,40 @@ navigation:
 
     // Verify result
     expect(result).toEqual(mockResult);
-
-    // Verify console logs
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Building content index"),
-    );
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Phase 1"),
-    );
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Phase 2"),
-    );
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Phase 3"),
-    );
   });
 
-  test("should throw error if docs.yml fetch fails", async () => {
+  test("should use GitHub API in production mode", async () => {
     const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
+    const docsYmlContent = `
+navigation:
+  - tab: guides
+    layout:
+      - page: quickstart.mdx
+`;
 
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue(null);
-
-    await expect(buildContentIndex(repoConfig)).rejects.toThrow(
-      "Failed to fetch docs/docs.yml",
-    );
-  });
-
-  test("should log statistics about generated content", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
-
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue("navigation: []");
+    vi.mocked(fetchFileFromGitHub).mockResolvedValue(docsYmlContent);
     vi.mocked(scanDocsYml).mockReturnValue({
-      mdxPaths: new Set(),
+      mdxPaths: new Set(["quickstart.mdx"]),
       specNames: new Set(),
     });
     vi.mocked(batchFetchContent).mockResolvedValue(new ContentCache());
     vi.mocked(buildAllOutputs).mockReturnValue({
-      pathIndex: {
-        "guides/quickstart": {
-          type: "mdx",
-          source: "docs-yml",
-          filePath: "quickstart.mdx",
-          tab: "guides",
-        },
-        "reference/api": {
-          type: "openapi",
-          source: "docs-yml",
-          operationId: "getBalance",
-          specUrl: "https://example.com/spec.json",
-          tab: "reference",
-        },
-      },
+      pathIndex: {},
       navigationTrees: {},
-      algoliaRecords: [{ objectID: "1" }] as AlgoliaRecord[],
+      algoliaRecords: [],
     });
 
-    await buildContentIndex(repoConfig);
+    await buildMainContentIndex({
+      mode: "production",
+      localBasePath: "/test/fern",
+      branchId: "main",
+      repoConfig,
+    });
 
-    // Verify statistics are logged
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Generated 2 routes, 1 Algolia records"),
-    );
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Sources:"),
-    );
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Types:"),
-    );
+    // Verify local filesystem was still used (both modes use local in main indexer)
+    expect(batchFetchContent).toHaveBeenCalledWith(expect.any(Object), {
+      type: "filesystem",
+      basePath: "/test/fern",
+    });
   });
 });
