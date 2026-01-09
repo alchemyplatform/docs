@@ -1,26 +1,69 @@
 # Content Indexer
 
-Content Indexer is a single entry-point content indexing system that builds path
-indexes, navigation trees, and Algolia search records from remote docs files. It
-represents the core system that powers the Alchemy docs site's static generation
-system. It processes `docs.yml` configuration files from multiple Github repos
-to generate three key outputs:
+Content Indexer is the indexing system that builds path indexes, navigation trees, and Algolia search records for the Alchemy docs site. It lives in the `docs` repository and processes documentation from three sources:
+
+1. **Main Docs** - Manual content from `docs/fern/docs.yml` (local filesystem)
+2. **SDK References** - Generated content from `aa-sdk/docs/docs.yml` (GitHub API)
+3. **Changelog** - Entries from `docs/fern/changelog/*.md` (local filesystem)
+
+## Three Indexers
+
+The system provides three independent indexers, each triggered by different content changes:
+
+### 1. Main Indexer (`pnpm index:main`)
+
+Indexes manual documentation content from the local `docs` repository.
+
+* **Trigger**: Changes to `docs/fern/docs.yml` or manual content files
+* **Source**: Local filesystem (`docs/fern/`)
+* **Modes**: `preview` (branch-scoped) and `production` (main branch)
+* **Updates**:
+  * `{branch}/path-index:main` (Redis)
+  * `{branch}/nav-tree:{tab}` for all tabs (Redis)
+  * `{branch}_alchemy_docs` (Algolia)
+
+### 2. SDK Indexer (`pnpm index:sdk`)
+
+Indexes SDK reference documentation from the `aa-sdk` repository.
+
+* **Trigger**: Changes to `aa-sdk/docs/docs.yml`
+* **Source**: GitHub API (aa-sdk repo)
+* **Updates**:
+  * `{branch}/path-index:sdk` (Redis)
+  * `{branch}/nav-tree:wallets` (Redis, merged with existing manual content)
+  * `{branch}_alchemy_docs_sdk` (Algolia)
+
+### 3. Changelog Indexer (`pnpm index:changelog`)
+
+Indexes changelog entries from date-based markdown files.
+
+* **Trigger**: Changes to `docs/fern/changelog/*.md`
+* **Source**: Local filesystem (`docs/fern/changelog/`)
+* **Updates**:
+  * `{branch}/path-index:changelog` (Redis)
+  * No navigation tree (changelogs don't have a sidebar)
+  * `{branch}_alchemy_docs_changelog` (Algolia)
+
+## Key Outputs
+
+Each indexer generates up to three outputs:
 
 1. **Path Index**: Maps URL paths to content sources (MDX files, API specs)
 2. **Navigation Trees**: Hierarchical sidebar navigation for each documentation tab
 3. **Algolia Index**: Searchable content records with metadata
 
-The system is optimized for processing **4000+ pages** using a 3-phase parallel
-fetching architecture that minimizes API calls.
+All data is **branch-scoped** to support preview environments.
 
 ## Architecture
 
-### 3-Phase Processing
+### Main & SDK Indexers: 3-Phase Processing
+
+Both the main and SDK indexers use a unified `buildDocsContentIndex` function that processes `docs.yml` files through three phases:
 
 ```mermaid
 flowchart TD
-    Start[buildContentIndex] --> FetchYml[Fetch docs.yml]
-    FetchYml --> Phase1[Phase 1: SCAN]
+    Start[buildDocsContentIndex] --> ReadYml[Read docs.yml]
+    ReadYml --> Phase1[Phase 1: SCAN]
 
     Phase1 --> ScanDocs[scanDocsYml]
     ScanDocs --> CollectPaths[Collect all MDX paths]
@@ -29,55 +72,108 @@ flowchart TD
     CollectPaths --> Phase2[Phase 2: BATCH FETCH]
     CollectSpecs --> Phase2
 
-    Phase2 --> FetchMDX[Fetch all MDX files in parallel]
-    Phase2 --> FetchSpecs[Fetch all specs in parallel]
-
-    FetchMDX --> Cache[ContentCache]
-    FetchSpecs --> Cache
+    Phase2 --> FetchContent[Fetch all content in parallel]
+    FetchContent --> Cache[ContentCache]
 
     Cache --> Phase3[Phase 3: PROCESS]
 
     Phase3 --> ProcessNav[visitNavigationItem with cache]
-    ProcessNav --> BuildIndex[Build PathIndex]
-    ProcessNav --> BuildNavTrees[Build Navigation Trees]
-    ProcessNav --> BuildAlgolia[Build Algolia Records with breadcrumbs]
+    ProcessNav --> BuildOutputs[Build all outputs]
 
-    BuildIndex --> WritePhase[WRITE PHASE]
-    BuildNavTrees --> WritePhase
-    BuildAlgolia --> WritePhase
+    BuildOutputs --> PathIdx[PathIndex]
+    BuildOutputs --> NavTrees[Navigation Trees]
+    BuildOutputs --> Algolia[Algolia Records]
 
-    WritePhase --> Parallel[Upload in parallel]
-    Parallel --> Redis[storeToRedis]
-    Parallel --> Algolia[uploadToAlgolia]
+    PathIdx --> Upload[Upload in parallel]
+    NavTrees --> Upload
+    Algolia --> Upload
+
+    Upload --> Redis[storeToRedis]
+    Upload --> AlgoliaUpload[uploadToAlgolia]
 ```
+
+**Key difference between main and SDK:**
+
+* **Main**: Reads from local filesystem (`docs/fern/`)
+* **SDK**: Fetches from GitHub API (`aa-sdk/docs/`)
+
+### Changelog Indexer: Simpler Flow
+
+The changelog indexer reads date-based markdown files directly:
+
+```mermaid
+flowchart TD
+    Start[buildChangelogIndex] --> ReadDir[Read fern/changelog/]
+    ReadDir --> ParseFiles[Parse date from filenames]
+    ParseFiles --> Parallel[Fetch all files in parallel]
+    Parallel --> BuildOutputs[Build PathIndex + Algolia records]
+    BuildOutputs --> Upload[Upload in parallel]
+    Upload --> Redis[storeToRedis]
+    Upload --> AlgoliaUpload[uploadToAlgolia]
+```
+
+**Simpler because:**
+
+* No `docs.yml` to parse
+* No navigation trees needed
+* Direct file-to-route mapping
 
 ### Why This Architecture?
 
-With **4000+ pages**, GitHub API calls are the primary bottleneck. This 3-phase approach:
+With **4000+ pages**, this 3-phase approach:
 
-1. **Maximizes parallelization**: All fetches happen simultaneously
-2. **Eliminates wait time**: No sequential blocking between fetches
-3. **Single-pass processing**: Build all outputs together with all data
-   available
+1. **Maximizes parallelization**: All content fetched simultaneously
+2. **Eliminates duplicate fetches**: Single fetch per file, cached for all uses
+3. **Single-pass processing**: Build all outputs in one traversal
 
 ## Key Concepts
 
-### Constructed Data
+### Branch-Scoped Keys
 
-* **Path Index**: Used by Next.js routing to determine which content to render
-  for a given URL
-  * Maps paths like `reference/ethereum-api-quickstart` to MDX files or API
-    operations
-  * Stored in Redis for fast lookup at runtime
+All Redis keys and Algolia indices are scoped by branch to support preview environments:
+
+```text
+Redis:
+- main/path-index:main
+- main/nav-tree:wallets
+- feature-abc/path-index:main
+
+Algolia:
+- main_alchemy_docs
+- main_alchemy_docs_sdk
+- feature-abc_alchemy_docs
+```
+
+### Wallets Navigation Tree Merging
+
+The wallets tab navigation tree requires special handling because it contains both:
+
+* **Manual content** (from main indexer)
+* **SDK references** (from SDK indexer)
+
+**Bidirectional merging** ensures neither indexer overwrites the other:
+
+* **Main indexer**: Reads existing wallets tree → preserves SDK sections → merges with new manual sections
+* **SDK indexer**: Reads existing wallets tree → preserves manual sections → merges with new SDK sections
+
+SDK Reference sections are always positioned **second-to-last** (before Resources section).
+
+### Output Data Structures
+
+* **Path Index**: Used by Next.js routing to determine which content to render for a given URL
+  * Maps paths like `wallets/getting-started` to MDX files or API operations
+  * Contains metadata: type (mdx/openapi/openrpc), file path, source, tab
+  * Stored in Redis for fast lookup at runtime: `{branch}/path-index:{type}`
 
 * **Navigation Trees**: Used to render sidebar navigation
   * Hierarchical structure with sections, pages, and API endpoints
-  * One tree per tab (e.g., "reference", "guides")
-  * Stored in Redis
+  * One tree per top-level tab (guides, wallets, reference, etc.)
+  * Stored in Redis: `{branch}/nav-tree:{tab}`
 
 * **Algolia Index**: Used for site-wide search
   * Flat list of searchable pages with content, title, breadcrumbs
-  * Uploaded to Algolia for full-text search
+  * Markdown automatically stripped to plain text for better search results
+  * Uploaded to Algolia for full-text search: `{branch}_alchemy_docs[_{type}]`
   * Updated atomically to avoid search downtime
 
 ### ContentCache
@@ -87,8 +183,11 @@ The `ContentCache` class provides O(1) lookup for all fetched content:
 * **MDX files**: Stores frontmatter and raw MDX body
 * **API specs**: Stores parsed OpenAPI/OpenRPC specifications
 
-By fetching everything upfront in Phase 2, we eliminate duplicate GitHub API
-calls during processing.
+By fetching everything upfront in Phase 2, we eliminate duplicate API calls during processing.
+
+### Markdown Stripping
+
+All Algolia records automatically have markdown syntax stripped using the `remove-markdown` package in `truncateRecord()`. This ensures search results contain clean, readable text without formatting artifacts.
 
 ### Relatively Stable ObjectIDs for Algolia
 
@@ -111,80 +210,76 @@ structure while maintaining uniqueness.
 
 ## Design Decisions
 
-### 1. Three-Phase Architecture
+### 1. Three Independent Indexers
 
-**Why?** With 4000+ pages, GitHub API calls dominate execution time. By fetching
-everything upfront in parallel, we significantly reduce total runtime.
+**Why?** Content updates happen independently:
 
-**Alternative considered:** Fetch-as-you-go
+* Main docs change frequently (manual edits)
+* SDK refs change when aa-sdk releases
+* Changelog entries added weekly
 
-* **Pros:** Simpler code, streaming approach
-* **Cons:** Sequential fetches, slower for large repos
+Running separate indexers allows efficient, targeted updates without re-processing unrelated content.
 
-### 2. ContentCache for O(1) Lookups
+### 2. Wallets Navigation Tree Merging
 
-**Why?** Processing requires multiple lookups (ex. frontmatter for slugs, content
-for Algolia). A Map-based cache makes these instant.
+The wallets tab requires special handling because it contains both manual and SDK content. We use **bidirectional merging**:
 
-### 3. Single-Pass Processing
+* **Main indexer**: Preserves existing SDK sections when updating manual content
+* **SDK indexer**: Preserves existing manual sections when updating SDK refs
 
-**Why?** Build all outputs (index, nav, Algolia) in one traversal to avoid
-processing each item multiple times.
+This prevents either indexer from accidentally overwriting the other's content. The merge logic lives in `utils/nav-tree-merge.ts`.
 
-**Alternative considered:** Separate passes for each output
+### 3. Branch-Scoped Storage
 
-* **Pros:** Simpler logic per pass
-* **Cons:** Slower, harder to maintain breadcrumbs
+All Redis keys and Algolia indices include the branch name to support preview environments:
 
-### 4. Atomic Index Swap for Algolia
+```text
+main/path-index:main       → Production
+feature-xyz/path-index:main → Preview branch
+```
 
-Ordinarily we could upload records individually to prod index and use `objectIDs`
-to update records in place. The problem is our IDs are based on file paths, which
-can change (files renamed, URLs restructured). When a path changes, we generate a
-new objectID, leaving the old record orphaned in the index. Instead of managing
-deletes and updates, we maintain separate indices for each content source (docs
-vs wallets) and fully rebuild/replace the entire index on each run. This is done
-via an atomic index swap.
+This allows preview deployments to have independent data without interfering with production.
 
-**How it works:**
+### 4. Separate Algolia Indices
+
+Main, SDK, and changelog content use separate Algolia indices:
+
+```text
+- main_alchemy_docs
+- main_alchemy_docs_sdk
+- main_alchemy_docs_changelog
+```
+
+**Why?** Each indexer runs independently, so separate indices allow atomic updates without affecting other content. The frontend searches all indices simultaneously using Algolia's multi-index feature.
+
+### 5. Atomic Index Swap for Algolia
+
+Each indexer fully replaces its Algolia index on every run using atomic swap:
 
 1. Upload to temporary index
 2. Copy settings from production
-3. Atomic move (replace production with temp index)
+3. Atomic move (replace production with temp)
 
-**Why?** Ensure all records are up-to-date. Zero down-time: prevent users from ever seeing empty
-search results during index updates.
+**Why?** Our objectIDs are content-based. When files move or are renamed, we generate new IDs, leaving old records orphaned. Full replacement ensures the index is always clean and up-to-date with zero search downtime.
 
-**Alternative considered:** Update records in-place
+### 6. Markdown Stripping for Search
 
-* **Pros:** Simpler
-* **Cons:** High risk of orphaned records
-
-### 5. Separate Indices for Docs and Wallets
-
-Docs and Wallets content is indexed separately because their docs.yml is
-maintained separately. That means we need to update one without the other. Since
-we cannot update records in place, an atomic index swap of both docs and wallets
-content would mean we need to generate both content simultaneously which is
-inefficient. Instead, maintain separate indices and have the frontend search
-both indices simultaneously. The same also applies to changelog which has a
-separate indexer.
-
-**Why?** Independent update schedules
-
-**How to search both:** Frontend uses `multipleQueries` API or InstantSearch's
-multi-index feature.
+All Algolia records have markdown syntax automatically stripped using `remove-markdown`. This happens in `truncateRecord()` before size checking, ensuring search results contain clean, readable text.
 
 ## Directory Structure
 
 ```text
 content-indexer/
+├── index.ts                 # CLI entry point with unified runner
+├── indexers/                # Indexer implementations
+│   ├── main.ts                 # buildDocsContentIndex (main & SDK)
+│   └── changelog.ts            # buildChangelogIndex
 ├── collectors/              # Output collectors (Phase 3)
 │   ├── algolia.ts              # Collects Algolia search records
 │   ├── navigation-trees.ts     # Collects navigation trees by tab
 │   ├── path-index.ts           # Collects path index entries
 │   └── processing-context.ts   # Unified context encapsulating all collectors
-├── core/                    # Core processing logic
+├── core/                    # Core processing logic (3-phase pipeline)
 │   ├── scanner.ts              # Phase 1: Scan docs.yml for paths/specs
 │   ├── batch-fetcher.ts        # Phase 2: Parallel fetch all content
 │   ├── content-cache.ts        # Phase 2: In-memory cache for fetched content
@@ -201,21 +296,26 @@ content-indexer/
 │       └── process-openrpc.ts  # Processes OpenRPC specifications
 ├── uploaders/               # Upload to external services
 │   ├── algolia.ts              # Uploads to Algolia with atomic swap
-│   └── redis.ts                # Stores to Redis (path index & nav trees)
+│   └── redis.ts                # Stores to Redis with branch scoping
 ├── utils/                   # Utility functions
+│   ├── filesystem.ts           # Local file reading utilities
+│   ├── github.ts               # GitHub API utilities
+│   ├── nav-tree-merge.ts       # Wallets nav tree merging logic
 │   ├── openapi.ts              # OpenAPI-specific utilities
 │   ├── openrpc.ts              # OpenRPC-specific utilities
 │   ├── navigation-helpers.ts   # Navigation construction helpers
 │   ├── truncate-record.ts      # Truncates Algolia records to size limit
 │   └── normalization.ts        # Path normalization utilities
-└── index.ts                 # Main entry point (buildContentIndex)
+└── types/                   # TypeScript type definitions
+    ├── indexer.ts              # IndexerResult interface
+    └── ...                     # Other type definitions
 ```
 
-## Data Flow
+## Data Flow (Main & SDK Indexers)
 
 ### Phase 1: Scan
 
-First, fetch the `docs.yml` file from GitHub. Then scan it:
+Read `docs.yml` (from filesystem or GitHub), then scan it:
 
 ```typescript
 scanDocsYml(docsYml) → { mdxPaths: Set<string>, specNames: Set<string> }
@@ -230,12 +330,13 @@ scanDocsYml(docsYml) → { mdxPaths: Set<string>, specNames: Set<string> }
 ### Phase 2: Batch Fetch
 
 ```typescript
-batchFetchContent(scanResult, repoConfig) → ContentCache
+batchFetchContent(scanResult, source) → ContentCache
 ```
 
 * Converts Sets to arrays and maps over them
-* Fetches all MDX files in parallel with `Promise.all`
-* Fetches all API specs in parallel with `Promise.all`
+* Fetches all content in parallel with `Promise.all`
+  * **Filesystem source**: Reads local files with `fs.readFile`
+  * **GitHub source**: Fetches via GitHub API with `octokit`
 * Parses frontmatter from MDX files using `gray-matter`
 * Stores everything in `ContentCache` for O(1) lookup
 * **Maximum parallelization** - all I/O happens simultaneously
@@ -243,7 +344,7 @@ batchFetchContent(scanResult, repoConfig) → ContentCache
 ### Phase 3: Process
 
 ```typescript
-buildAllOutputs(docsYml, repo, cache)
+buildAllOutputs(docsYml, contentCache, repoConfig)
   → { pathIndex, navigationTrees, algoliaRecords }
 ```
 
@@ -261,33 +362,51 @@ buildAllOutputs(docsYml, repo, cache)
 * Passes `navigationAncestors` through recursion for breadcrumbs
 * Returns all three outputs simultaneously
 
-### Write Phase
+### Upload Phase
 
 ```typescript
 Promise.all([
-  storeToRedis(index, navigationTrees),
-  uploadToAlgolia(algoliaRecords),
+  storeToRedis(pathIndex, navigationTrees, { branchId, indexerType }),
+  uploadToAlgolia(algoliaRecords, { indexerType, branchId }),
 ]);
 ```
 
 * Writes to Redis and Algolia in parallel
+* Branch-scoped keys for preview support
+* Special handling for wallets nav tree (bidirectional merge)
 * Algolia uses atomic swap (temp index → production)
+
+## Changelog Indexer Flow
+
+The changelog indexer uses a simpler flow:
+
+1. **Read directory**: List all files in `fern/changelog/`
+2. **Parse filenames**: Extract dates from `YYYY-MM-DD.md` pattern
+3. **Fetch in parallel**: Read all files with `Promise.all`
+4. **Build outputs**: Create path index + Algolia records (no nav trees)
+5. **Upload**: Write to Redis and Algolia in parallel
 
 ## Usage
 
-### Running the Indexer
+### Running the Indexers
 
 ```bash
-# Index main docs
-pnpm generate:content-index
+# Main indexer (production mode - default)
+pnpm index:main
 
-# Index wallet docs
-pnpm generate:wallet-content-index
+# Main indexer (preview mode - branch-scoped)
+pnpm index:main:preview
+
+# SDK indexer (fetches from aa-sdk repo)
+pnpm index:sdk
+
+# Changelog indexer
+pnpm index:changelog
 ```
 
 ### Environment Variables
 
-Required for Redis and Algolia upload:
+Create a `.env` file (see `.env.example`):
 
 ```bash
 # Redis (required for path index and navigation trees)
@@ -299,15 +418,56 @@ KV_URL=your_url
 # Algolia (required for search index)
 ALGOLIA_APP_ID=your_app_id
 ALGOLIA_ADMIN_API_KEY=your_admin_key
-# Base name for indices (branch/type will be auto-appended)
-# Examples: main_alchemy_docs, main_alchemy_docs_sdk, abc_alchemy_docs
+# Base name for indices (branch and type will be auto-appended)
+# Examples: main_alchemy_docs, main_alchemy_docs_sdk, feature-abc_alchemy_docs
 ALGOLIA_INDEX_NAME_BASE=alchemy_docs
 
-# GitHub (optional - increases API rate limits)
-GITHUB_TOKEN=your_personal_access_token
+# GitHub (required for SDK indexer, optional for main - increases API rate limits)
+GH_TOKEN=your_personal_access_token
 ```
 
-The indexer will skip uploads for any service with missing credentials.
+### Testing
+
+```bash
+# Run all tests
+pnpm test:run
+
+# Run with coverage report
+pnpm test:coverage
+
+# Watch mode
+pnpm test
+```
+
+## Development
+
+### Running Locally
+
+1. Set up environment variables in `.env`
+2. Run an indexer:
+   ```bash
+   pnpm index:main:preview
+   ```
+3. Check Redis/Algolia to verify data was written
+
+### Adding New Content Types
+
+To add a new content type that requires indexing:
+
+1. Create a new indexer in `indexers/` (or extend existing)
+2. Add npm script to `package.json`
+3. Update `index.ts` entry point to include new indexer type
+4. Update `storeToRedis` and `uploadToAlgolia` if new storage patterns needed
+
+### Testing
+
+The test suite covers:
+
+* **Core logic**: 95-100% coverage for collectors, visitors, processors
+* **Integration**: Full pipeline tests for each indexer
+* **Edge cases**: Truncation, merging, error handling
+
+Low coverage in I/O utilities (`filesystem.ts`, `github.ts`) is expected and acceptable.
 
 ## Troubleshooting
 
@@ -315,29 +475,33 @@ The indexer will skip uploads for any service with missing credentials.
 
 **Cause:** Spec name in docs.yml doesn't match filename in metadata.json
 
-**Fix:** Check `API_NAME_TO_FILENAME` mapping in `lib/utils/apiSpecs.ts`
+**Fix:** Check `API_NAME_TO_FILENAME` mapping in `utils/apiSpecs.ts`
 
-### "Failed to fetch MDX file"
+### "Failed to read docs.yml"
 
-**Cause:** File path in docs.yml doesn't exist in GitHub repo
+**Cause:**
+
+* (Main indexer) File doesn't exist locally at `fern/docs.yml`
+* (SDK indexer) GitHub API authentication failed or file path incorrect
 
 **Fix:**
 
-1. Verify file exists in GitHub
-2. Check `repoConfig.stripPathPrefix` and `repoConfig.docsPrefix` are correct
-3. Ensure path in docs.yml matches actual file path
+1. Verify file exists at expected location
+2. Check `GH_TOKEN` environment variable is set (for SDK indexer)
+3. Verify `repoConfig.docsPrefix` is correct
 
-### Slow indexing performance
+### "Failed to read changelog file"
 
-**Possible causes:**
+**Cause:** Changelog file doesn't follow expected `YYYY-MM-DD.md` naming pattern
 
-1. Check network connection to GitHub API
-2. Verify GitHub API rate limits aren't being hit
-3. Check if any individual file/spec is timing out
+**Fix:** Ensure all changelog files in `fern/changelog/` are named like `2025-11-20.md`
 
-### Algolia records missing breadcrumbs
+### SDK References not appearing in wallets sidebar
 
-**Cause:** Navigation ancestors not being passed through correctly
+**Cause:** Main indexer ran after SDK indexer and didn't preserve SDK sections
 
-**Fix:** Verify `visitNavigationItem` and visitor functions are receiving and
-forwarding `navigationAncestors` array correctly through the visitor chain
+**Fix:**
+
+1. Verify `mergeWalletsNavTree` is being called in `storeToRedis`
+2. Check Redis to see if SDK sections exist: `GET main/nav-tree:wallets`
+3. Re-run SDK indexer after main indexer to restore SDK sections
