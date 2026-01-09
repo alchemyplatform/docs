@@ -66,7 +66,7 @@ const runMainIndexer = async (
   await Promise.all([
     storeToRedis(pathIndex, navigationTrees, {
       branchId,
-      pathIndexSuffix: "main",
+      indexerType: "main",
     }),
     uploadToAlgolia(algoliaRecords, {
       indexerType: "main",
@@ -100,8 +100,7 @@ const runSDKIndexer = async (branchId: string) => {
       { wallets: walletsNavTree },
       {
         branchId,
-        pathIndexSuffix: "sdk-refs",
-        mergeSDKIntoWallets: true,
+        indexerType: "sdk",
       },
     ),
     uploadToAlgolia(algoliaRecords, {
@@ -132,7 +131,7 @@ const runChangelogIndexer = async (branchId: string) => {
   await Promise.all([
     storeToRedis(pathIndex, undefined, {
       branchId,
-      pathIndexSuffix: "changelog",
+      indexerType: "changelog",
     }),
     uploadToAlgolia(algoliaRecords, {
       indexerType: "changelog",

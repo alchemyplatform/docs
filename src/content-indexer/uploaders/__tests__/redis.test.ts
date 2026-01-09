@@ -33,7 +33,7 @@ describe("storeToRedis", () => {
 
     await storeToRedis(pathIndex, undefined, {
       branchId: "main",
-      pathIndexSuffix: "main",
+      indexerType: "main",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
@@ -55,7 +55,7 @@ describe("storeToRedis", () => {
 
     await storeToRedis({}, navigationTrees, {
       branchId: "main",
-      pathIndexSuffix: "main",
+      indexerType: "main",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
@@ -84,7 +84,7 @@ describe("storeToRedis", () => {
 
     await storeToRedis({}, navigationTrees, {
       branchId: "main",
-      pathIndexSuffix: "main",
+      indexerType: "main",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
@@ -97,7 +97,7 @@ describe("storeToRedis", () => {
     );
   });
 
-  test("should use sdk-refs suffix for SDK indexer", async () => {
+  test("should use sdk suffix for SDK indexer", async () => {
     const pathIndex: PathIndex = {
       "wallets/metamask": {
         type: "mdx",
@@ -109,11 +109,11 @@ describe("storeToRedis", () => {
 
     await storeToRedis(pathIndex, undefined, {
       branchId: "main",
-      pathIndexSuffix: "sdk-refs",
+      indexerType: "sdk",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/path-index:sdk-refs",
+      "main/path-index:sdk",
       JSON.stringify(pathIndex, null, 2),
     );
   });
@@ -135,7 +135,7 @@ describe("storeToRedis", () => {
 
     await storeToRedis(pathIndex, navigationTrees, {
       branchId: "main",
-      pathIndexSuffix: "main",
+      indexerType: "main",
     });
 
     // Should have called set 3 times (1 pathIndex + 2 nav trees)
