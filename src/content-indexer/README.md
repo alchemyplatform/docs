@@ -431,10 +431,8 @@ Create a `.env` file (see `.env.example`):
 
 ```bash
 # Redis (required for path index and navigation trees)
-KV_REST_API_READ_ONLY_TOKEN=your_token
 KV_REST_API_TOKEN=your_token
 KV_REST_API_URL=your_url
-KV_URL=your_url
 
 # Algolia (required for search index)
 ALGOLIA_APP_ID=your_app_id
