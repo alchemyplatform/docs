@@ -53,11 +53,9 @@ export const storeToRedis = async (
   if (options.mergeSDKIntoWallets && navigationTrees?.wallets) {
     // SDK indexer: merge SDK section into existing wallets nav tree
     const navTreeKey = `${options.branchId}/nav-tree:wallets`;
-    const existingTreeJson = await redis.get(navTreeKey);
-    let existingTree: NavigationTree = [];
+    const existingTree = await redis.get<NavigationTree>(navTreeKey);
 
-    if (existingTreeJson) {
-      existingTree = JSON.parse(existingTreeJson as string) as NavigationTree;
+    if (existingTree) {
       console.info(`📖 Read existing wallets nav tree from Redis`);
     } else {
       console.warn(
@@ -66,7 +64,7 @@ export const storeToRedis = async (
     }
 
     // Filter out existing SDK Reference section
-    const manualSections = existingTree.filter((item) => {
+    const manualSections = (existingTree || []).filter((item) => {
       if (item.type === "section" || item.type === "api-section") {
         return !item.title.toLowerCase().includes("sdk reference");
       }
