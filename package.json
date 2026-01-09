@@ -16,15 +16,15 @@
     "fern:preview": "fern generate --docs --preview",
     "fern:publish": "fern generate --docs",
     "generate:rest": "./scripts/generate-open-api.sh",
-    "generate:rpc": "ts-node ./scripts/generate-rpc.ts",
+    "generate:rpc": "tsx ./scripts/generate-rpc.ts",
     "generate:rpc:watch": "onchange \"src/openrpc/**/*.{yaml,yml}\" -- pnpm run generate:rpc",
     "generate:rest:watch": "onchange \"src/openapi/**/*.{yaml,yml}\" -- pnpm run generate:rest",
     "generate:watch": "pnpm run generate:rpc:watch & pnpm run generate:rest:watch",
-    "generate:metadata": "ts-node ./scripts/generate-metadata.ts",
+    "generate:metadata": "tsx ./scripts/generate-metadata.ts",
     "generate": "pnpm run generate:rest & pnpm run generate:rpc",
     "clean": "rm -rf fern/api-specs",
     "validate:rest": "./scripts/generate-open-api.sh --validate-only",
-    "validate:rpc": "ts-node ./scripts/validate-rpc.ts",
+    "validate:rpc": "tsx ./scripts/validate-rpc.ts",
     "validate": "pnpm run validate:rest & pnpm run validate:rpc",
     "typecheck": "tsc --noEmit",
     "lint": "pnpm run lint:eslint & pnpm run lint:prettier & pnpm run typecheck",
@@ -34,7 +34,7 @@
     "lint:prettier": "prettier --cache --check \"{src,scripts}/**/*.{js,jsx,ts,tsx,md,mjs,mts,json,yml,yaml}\"",
     "lint:prettier:fix": "pnpm run lint:prettier --write",
     "lint:broken-links": "lychee .",
-    "add-evm-chain": "ts-node ./scripts/add-evm-chain.ts",
+    "add-evm-chain": "tsx ./scripts/add-evm-chain.ts",
     "prepare": "husky",
     "index:main": "tsx src/content-indexer/index.ts --indexer main --branch main",
     "index:main:preview": "tsx src/content-indexer/index.ts --indexer main --mode preview --branch $(git rev-parse --abbrev-ref HEAD)",
@@ -52,8 +52,7 @@
     "js-yaml": "^4.1.1",
     "json-schema-merge-allof": "^0.8.1",
     "lodash-es": "^4.17.21",
-    "octokit": "^5.0.5",
-    "ts-node": "^10.9.2"
+    "octokit": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
@@ -77,7 +76,6 @@
     "onchange": "^7.1.0",
     "openapi-types": "^12.1.3",
     "prettier": "3.4.2",
-    "vitest": "^4.0.14",
     "remark-frontmatter": "^5.0.0",
     "remark-mdx": "^3.1.0",
     "remark-preset-lint-consistent": "^6.0.1",
@@ -85,6 +83,7 @@
     "remark-preset-lint-recommended": "^7.0.1",
     "tsx": "^4.20.6",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.0"
+    "typescript-eslint": "^8.31.0",
+    "vitest": "^4.0.14"
   }
 }
