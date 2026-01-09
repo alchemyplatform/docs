@@ -3,6 +3,8 @@ import { algoliasearch } from "algoliasearch";
 import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
 import { truncateRecord } from "@/content-indexer/utils/truncate-record.js";
 
+const ALGOLIA_INDEX_NAME_BASE = "alchemy_docs";
+
 /**
  * Builds an Algolia index name with branch and type scoping.
  * Pattern: {branchId}_{baseName}[_{indexerType}]
@@ -52,7 +54,6 @@ export const uploadToAlgolia = async (
 ): Promise<void> => {
   const appId = process.env.ALGOLIA_APP_ID;
   const adminKey = process.env.ALGOLIA_ADMIN_API_KEY;
-  const baseName = process.env.ALGOLIA_INDEX_NAME_BASE;
 
   if (!appId || !adminKey) {
     console.warn("⚠️  Algolia credentials not found. Skipping Algolia upload.");
@@ -62,15 +63,8 @@ export const uploadToAlgolia = async (
     return;
   }
 
-  if (!baseName) {
-    console.warn(
-      "⚠️  ALGOLIA_INDEX_NAME_BASE not set. Skipping Algolia upload.",
-    );
-    return;
-  }
-
   const targetIndexName = buildIndexName(
-    baseName,
+    ALGOLIA_INDEX_NAME_BASE,
     options.indexerType,
     options.branchId,
   );
