@@ -55,7 +55,7 @@ describe("buildDocsContentIndex", () => {
       navigation: [
         {
           tab: "guides",
-          layout: [{ page: "quickstart.mdx" }],
+          layout: [{ page: "quickstart.mdx", path: "quickstart.mdx" }],
         },
       ],
     };
