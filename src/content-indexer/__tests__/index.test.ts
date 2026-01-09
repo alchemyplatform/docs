@@ -5,6 +5,7 @@ import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.js";
 import { ContentCache } from "@/content-indexer/core/content-cache.js";
 import { scanDocsYml } from "@/content-indexer/core/scanner.js";
 import { buildDocsContentIndex } from "@/content-indexer/indexers/main.js";
+import { readLocalDocsYml } from "@/content-indexer/utils/filesystem.js";
 import { fetchFileFromGitHub } from "@/content-indexer/utils/github.js";
 import { repoConfigFactory } from "@/content-indexer/utils/test-factories.js";
 
@@ -14,6 +15,14 @@ vi.mock("@/content-indexer/utils/github", async () => {
   return {
     ...actual,
     fetchFileFromGitHub: vi.fn(),
+  };
+});
+
+vi.mock("@/content-indexer/utils/filesystem", async () => {
+  const actual = await vi.importActual("@/content-indexer/utils/filesystem");
+  return {
+    ...actual,
+    readLocalDocsYml: vi.fn(),
   };
 });
 
@@ -42,6 +51,16 @@ describe("buildDocsContentIndex", () => {
   });
 
   test("should orchestrate all 3 phases successfully in preview mode", async () => {
+    const mockDocsYml = {
+      navigation: [
+        {
+          tab: "guides",
+          layout: [{ page: "quickstart.mdx" }],
+        },
+      ],
+    };
+    vi.mocked(readLocalDocsYml).mockResolvedValue(mockDocsYml);
+
     const mockScanResult = {
       mdxPaths: new Set(["quickstart.mdx"]),
       specNames: new Set(["ethereum-api"]),
@@ -94,7 +113,7 @@ describe("buildDocsContentIndex", () => {
     expect(result).toEqual(mockResult);
   });
 
-  test("should use GitHub API in production mode", async () => {
+  test("should read from GitHub for GitHub source type", async () => {
     const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
     const docsYmlContent = `
 navigation:
@@ -116,16 +135,21 @@ navigation:
     });
 
     await buildDocsContentIndex({
-      source: { type: "filesystem", basePath: "/test/fern" },
+      source: { type: "github", repoConfig },
       branchId: "main",
       repoConfig,
       mode: "production",
     });
 
-    // Verify local filesystem was still used (both modes use local in main indexer)
+    // Verify GitHub API was used for docs.yml
+    expect(fetchFileFromGitHub).toHaveBeenCalledWith(
+      "docs/docs.yml",
+      repoConfig,
+    );
+    // Verify GitHub source was used for batch fetch
     expect(batchFetchContent).toHaveBeenCalledWith(expect.any(Object), {
-      type: "filesystem",
-      basePath: "/test/fern",
+      type: "github",
+      repoConfig,
     });
   });
 });
