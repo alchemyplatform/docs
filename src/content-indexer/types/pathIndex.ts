@@ -1,7 +1,7 @@
 export interface MdxPathIndexEntry {
   type: "mdx";
   filePath: string;
-  source: "frontmatter" | "docs-yml" | "runtime-discovery";
+  source: "frontmatter" | "docs-yml" | "runtime-discovery" | "changelog";
   tab: string;
 }
 
