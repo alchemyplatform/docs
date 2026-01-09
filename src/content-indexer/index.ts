@@ -2,8 +2,8 @@
 import path from "path";
 
 import { buildChangelogIndex } from "@/content-indexer/indexers/changelog.js";
-import { buildMainContentIndex } from "@/content-indexer/indexers/main.js";
-import { buildSDKContentIndex } from "@/content-indexer/indexers/sdk.js";
+import { buildDocsContentIndex } from "@/content-indexer/indexers/main.js";
+import type { IndexerResult } from "@/content-indexer/types/indexer.js";
 import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.js";
 import { storeToRedis } from "@/content-indexer/uploaders/redis.js";
 import { DOCS_REPO, WALLET_REPO } from "@/content-indexer/utils/github.js";
@@ -42,105 +42,67 @@ const parseArgs = () => {
 };
 
 // ============================================================================
-// Main Indexer
+// Indexer Runner
 // ============================================================================
 
-const runMainIndexer = async (
-  mode: "preview" | "production",
+const buildIndexResults = async (
+  indexerType: "main" | "sdk" | "changelog",
   branchId: string,
+  mode: "preview" | "production" = "production",
+): Promise<IndexerResult> => {
+  switch (indexerType) {
+    case "changelog":
+      return buildChangelogIndex({
+        localBasePath: path.join(process.cwd(), "fern/changelog"),
+        branchId,
+      });
+    case "main":
+      return buildDocsContentIndex({
+        source: {
+          type: "filesystem",
+          basePath: path.join(process.cwd(), "fern"),
+        },
+        repoConfig: DOCS_REPO,
+        branchId,
+        mode,
+      });
+    case "sdk": {
+      const result = await buildDocsContentIndex({
+        source: { type: "github", repoConfig: WALLET_REPO },
+        repoConfig: WALLET_REPO,
+        branchId,
+      });
+      return {
+        ...result,
+        navigationTrees: {
+          wallets: result.navigationTrees?.wallets || [],
+        },
+      };
+    }
+  }
+};
+
+const runIndexer = async (
+  indexerType: "main" | "sdk" | "changelog",
+  branchId: string,
+  mode?: "preview" | "production",
 ) => {
   console.info(
-    `\n🔍 Running MAIN indexer (${mode} mode, branch: ${branchId})\n`,
+    `\n🔍 Running ${indexerType.toUpperCase()} indexer${indexerType === "main" && mode ? ` (${mode} mode)` : ""} (branch: ${branchId})\n`,
   );
 
-  const { pathIndex, navigationTrees, algoliaRecords } =
-    await buildMainContentIndex({
-      mode,
-      localBasePath: path.join(process.cwd(), "fern"),
-      branchId,
-      repoConfig: DOCS_REPO,
-    });
+  const { pathIndex, algoliaRecords, navigationTrees } =
+    await buildIndexResults(indexerType, branchId, mode);
 
   console.info("\n📤 Uploading to Redis and Algolia...");
 
   await Promise.all([
-    storeToRedis(pathIndex, navigationTrees, {
-      branchId,
-      indexerType: "main",
-    }),
-    uploadToAlgolia(algoliaRecords, {
-      indexerType: "main",
-      branchId,
-    }),
+    storeToRedis(pathIndex, navigationTrees, { branchId, indexerType }),
+    uploadToAlgolia(algoliaRecords, { indexerType, branchId }),
   ]);
 
   console.info(
-    `\n✅ Main indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
-  );
-};
-
-// ============================================================================
-// SDK Indexer
-// ============================================================================
-
-const runSDKIndexer = async (branchId: string) => {
-  console.info(`\n🔍 Running SDK indexer (branch: ${branchId})\n`);
-
-  const { pathIndex, walletsNavTree, algoliaRecords } =
-    await buildSDKContentIndex({
-      sdkRepoConfig: WALLET_REPO,
-      branchId,
-    });
-
-  console.info("\n📤 Uploading to Redis and Algolia...");
-
-  await Promise.all([
-    storeToRedis(
-      pathIndex,
-      { wallets: walletsNavTree },
-      {
-        branchId,
-        indexerType: "sdk",
-      },
-    ),
-    uploadToAlgolia(algoliaRecords, {
-      indexerType: "sdk",
-      branchId,
-    }),
-  ]);
-
-  console.info(
-    `\n✅ SDK indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
-  );
-};
-
-// ============================================================================
-// Changelog Indexer
-// ============================================================================
-
-const runChangelogIndexer = async (branchId: string) => {
-  console.info(`\n🔍 Running CHANGELOG indexer (branch: ${branchId})\n`);
-
-  const { pathIndex, algoliaRecords } = await buildChangelogIndex({
-    localBasePath: path.join(process.cwd(), "fern/changelog"),
-    branchId,
-  });
-
-  console.info("\n📤 Uploading to Redis and Algolia...");
-
-  await Promise.all([
-    storeToRedis(pathIndex, undefined, {
-      branchId,
-      indexerType: "changelog",
-    }),
-    uploadToAlgolia(algoliaRecords, {
-      indexerType: "changelog",
-      branchId,
-    }),
-  ]);
-
-  console.info(
-    `\n✅ Changelog indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
+    `\n✅ ${indexerType.charAt(0).toUpperCase() + indexerType.slice(1)} indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
   );
 };
 
@@ -158,17 +120,7 @@ const main = async () => {
     console.info(`   Mode: ${mode}`);
     console.info(`   Branch: ${branchId}`);
 
-    switch (indexer) {
-      case "main":
-        await runMainIndexer(mode, branchId);
-        break;
-      case "sdk":
-        await runSDKIndexer(branchId);
-        break;
-      case "changelog":
-        await runChangelogIndexer(branchId);
-        break;
-    }
+    await runIndexer(indexer, branchId, mode);
   } catch (error) {
     console.error("\n❌ Error:", error);
     process.exit(1);

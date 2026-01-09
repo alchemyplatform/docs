@@ -4,7 +4,7 @@ import { batchFetchContent } from "@/content-indexer/core/batch-fetcher.js";
 import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.js";
 import { ContentCache } from "@/content-indexer/core/content-cache.js";
 import { scanDocsYml } from "@/content-indexer/core/scanner.js";
-import { buildMainContentIndex } from "@/content-indexer/indexers/main.js";
+import { buildDocsContentIndex } from "@/content-indexer/indexers/main.js";
 import { fetchFileFromGitHub } from "@/content-indexer/utils/github.js";
 import { repoConfigFactory } from "@/content-indexer/utils/test-factories.js";
 
@@ -29,7 +29,7 @@ vi.mock("@/content-indexer/core/build-all-outputs", () => ({
   buildAllOutputs: vi.fn(),
 }));
 
-describe("buildMainContentIndex", () => {
+describe("buildDocsContentIndex", () => {
   let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
@@ -71,11 +71,11 @@ describe("buildMainContentIndex", () => {
 
     const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
 
-    const result = await buildMainContentIndex({
-      mode: "preview",
-      localBasePath: "/test/fern",
+    const result = await buildDocsContentIndex({
+      source: { type: "filesystem", basePath: "/test/fern" },
       branchId: "test-branch",
       repoConfig,
+      mode: "preview",
     });
 
     // Verify all phases were called
@@ -115,11 +115,11 @@ navigation:
       algoliaRecords: [],
     });
 
-    await buildMainContentIndex({
-      mode: "production",
-      localBasePath: "/test/fern",
+    await buildDocsContentIndex({
+      source: { type: "filesystem", basePath: "/test/fern" },
       branchId: "main",
       repoConfig,
+      mode: "production",
     });
 
     // Verify local filesystem was still used (both modes use local in main indexer)

@@ -7,7 +7,7 @@ import {
   normalizeSlug,
 } from "@/content-indexer/utils/normalization.js";
 
-import type { VisitorConfigBase, VisitorResult } from ".";
+import type { VisitorConfigBase, VisitorResult } from "./index.js";
 
 export interface PageVisitorConfig extends VisitorConfigBase {
   item: PageConfig;

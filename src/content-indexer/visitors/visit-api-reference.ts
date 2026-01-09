@@ -6,7 +6,7 @@ import type {
   OpenRpcSpec,
 } from "@/content-indexer/types/specs.js";
 
-import type { VisitorConfigBase, VisitorResult } from ".";
+import type { VisitorConfigBase, VisitorResult } from "./index.js";
 import { processOpenApiSpec } from "./processors/process-openapi.js";
 import { processOpenRpcSpec } from "./processors/process-openrpc.js";
 

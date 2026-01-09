@@ -8,7 +8,11 @@ import {
   normalizeSlug,
 } from "@/content-indexer/utils/normalization.js";
 
-import type { VisitorConfig, VisitorConfigBase, VisitorResult } from ".";
+import type {
+  VisitorConfig,
+  VisitorConfigBase,
+  VisitorResult,
+} from "./index.js";
 
 export interface SectionVisitorConfig extends VisitorConfigBase {
   item: SectionConfig;
