@@ -21,7 +21,7 @@ describe("storeToRedis", () => {
     mockSet.mockClear();
   });
 
-  test("should store path index to Redis", async () => {
+  test("should store path index to Redis without TTL for main branch", async () => {
     const pathIndex: PathIndex = {
       "guides/quickstart": {
         type: "mdx",
@@ -39,10 +39,33 @@ describe("storeToRedis", () => {
     expect(mockSet).toHaveBeenCalledWith(
       "main/path-index:main",
       JSON.stringify(pathIndex, null, 2),
+      {}, // No TTL for main branch
     );
   });
 
-  test("should store navigation trees to Redis", async () => {
+  test("should store path index to Redis with 30-day TTL for preview branches", async () => {
+    const pathIndex: PathIndex = {
+      "guides/quickstart": {
+        type: "mdx",
+        filePath: "fern/guides/quickstart.mdx",
+        source: "docs-yml",
+        tab: "guides",
+      },
+    };
+
+    await storeToRedis(pathIndex, undefined, {
+      branchId: "feature-abc",
+      indexerType: "main",
+    });
+
+    expect(mockSet).toHaveBeenCalledWith(
+      "feature-abc/path-index:main",
+      JSON.stringify(pathIndex, null, 2),
+      { ex: 2592000 }, // 30 days in seconds
+    );
+  });
+
+  test("should store navigation trees to Redis without TTL for main branch", async () => {
     const navigationTrees: NavigationTreesByTab = {
       guides: [
         {
@@ -61,10 +84,11 @@ describe("storeToRedis", () => {
     expect(mockSet).toHaveBeenCalledWith(
       "main/nav-tree:guides",
       JSON.stringify(navigationTrees.guides, null, 2),
+      {}, // No TTL for main branch
     );
   });
 
-  test("should store multiple navigation trees", async () => {
+  test("should store multiple navigation trees with correct TTL", async () => {
     const navigationTrees: NavigationTreesByTab = {
       guides: [
         {
@@ -90,10 +114,12 @@ describe("storeToRedis", () => {
     expect(mockSet).toHaveBeenCalledWith(
       "main/nav-tree:guides",
       JSON.stringify(navigationTrees.guides, null, 2),
+      {}, // No TTL for main branch
     );
     expect(mockSet).toHaveBeenCalledWith(
       "main/nav-tree:reference",
       JSON.stringify(navigationTrees.reference, null, 2),
+      {}, // No TTL for main branch
     );
   });
 
@@ -115,6 +141,7 @@ describe("storeToRedis", () => {
     expect(mockSet).toHaveBeenCalledWith(
       "main/path-index:sdk",
       JSON.stringify(pathIndex, null, 2),
+      {}, // No TTL for main branch
     );
   });
 

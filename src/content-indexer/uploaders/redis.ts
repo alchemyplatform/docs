@@ -1,3 +1,5 @@
+import type { SetCommandOptions } from "@upstash/redis";
+
 import type {
   NavigationTree,
   NavigationTreesByTab,
@@ -5,6 +7,8 @@ import type {
 import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
 import { mergeWalletsNavTree } from "@/content-indexer/utils/nav-tree-merge.js";
 import { getRedis } from "@/content-indexer/utils/redis.js";
+
+const stringify = (data: unknown) => JSON.stringify(data, null, 2);
 
 // Helper to count nav items recursively
 const countItems = (items: NavigationTree): number => {
@@ -16,6 +20,8 @@ const countItems = (items: NavigationTree): number => {
     return sum + 1 + childCount;
   }, 0);
 };
+
+const PREVIEW_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 /**
  * Stores path index and navigation trees to Redis with branch scoping.
@@ -36,13 +42,20 @@ export const storeToRedis = async (
 ): Promise<void> => {
   const redis = getRedis();
 
+  // Determine TTL: no expiration for main branch, 30 days for preview branches
+  const isMainBranch = options.branchId === "main";
+  const setOptions: SetCommandOptions = isMainBranch
+    ? {}
+    : { ex: PREVIEW_TTL_SECONDS };
+  const ttlInfo = isMainBranch ? "" : " (30-day TTL)";
+
   // Store path index with branch scope
   const pathIndexKey = `${options.branchId}/path-index:${options.indexerType}`;
   const pathIndexPromise = redis
-    .set(pathIndexKey, JSON.stringify(pathIndex, null, 2))
+    .set(pathIndexKey, stringify(pathIndex), setOptions)
     .then(() => {
       console.info(
-        `✅ Path index saved to Redis (${Object.keys(pathIndex).length} routes) -> ${pathIndexKey}`,
+        `✅ Path index saved to Redis (${Object.keys(pathIndex).length} routes) -> ${pathIndexKey}${ttlInfo}`,
       );
     });
 
@@ -61,9 +74,9 @@ export const storeToRedis = async (
     );
 
     navTreePromises = [
-      redis.set(navTreeKey, JSON.stringify(mergedTree, null, 2)).then(() => {
+      redis.set(navTreeKey, stringify(mergedTree), setOptions).then(() => {
         console.info(
-          `✅ Updated wallets nav tree with SDK refs (${countItems(mergedTree)} total items) -> ${navTreeKey}`,
+          `✅ Updated wallets nav tree with SDK refs (${countItems(mergedTree)} total items) -> ${navTreeKey}${ttlInfo}`,
         );
       }),
     ];
@@ -81,9 +94,9 @@ export const storeToRedis = async (
         }
 
         const itemCount = countItems(finalTree);
-        await redis.set(redisKey, JSON.stringify(finalTree, null, 2));
+        await redis.set(redisKey, stringify(finalTree), setOptions);
         console.info(
-          `✅ Navigation tree for '${tab}' saved to Redis (${itemCount} items) -> ${redisKey}`,
+          `✅ Navigation tree for '${tab}' saved to Redis (${itemCount} items) -> ${redisKey}${ttlInfo}`,
         );
       },
     );

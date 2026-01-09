@@ -94,15 +94,29 @@ const runIndexer = async (
   const { pathIndex, algoliaRecords, navigationTrees } =
     await buildIndexResults(indexerType, branchId, mode);
 
-  console.info("\n📤 Uploading to Redis and Algolia...");
+  const shouldUploadToAlgolia = mode !== "preview";
 
-  await Promise.all([
+  // Build upload promises array
+  const uploadPromises = [
     storeToRedis(pathIndex, navigationTrees, { branchId, indexerType }),
-    uploadToAlgolia(algoliaRecords, { indexerType, branchId }),
-  ]);
+  ];
+
+  if (shouldUploadToAlgolia) {
+    uploadPromises.push(
+      uploadToAlgolia(algoliaRecords, { indexerType, branchId }),
+    );
+    console.info("\n📤 Uploading to Redis and Algolia...");
+  } else {
+    console.info("\n📤 Uploading to Redis...");
+    console.info(
+      "   ℹ️  Skipping Algolia upload (preview mode uses prod search)",
+    );
+  }
+
+  await Promise.all(uploadPromises);
 
   console.info(
-    `\n✅ ${indexerType.charAt(0).toUpperCase() + indexerType.slice(1)} indexer completed! (${Object.keys(pathIndex).length} routes, ${algoliaRecords.length} records)`,
+    `\n✅ ${indexerType.charAt(0).toUpperCase() + indexerType.slice(1)} indexer completed! (${Object.keys(pathIndex).length} routes${shouldUploadToAlgolia ? `, ${algoliaRecords.length} records` : ""})`,
   );
 };
 

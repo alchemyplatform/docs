@@ -16,11 +16,13 @@ Indexes manual documentation content from the local `docs` repository.
 
 * **Trigger**: Changes to `docs/fern/docs.yml` or manual content files
 * **Source**: Local filesystem (`docs/fern/`)
-* **Modes**: `preview` (branch-scoped) and `production` (main branch)
+* **Modes**:
+  * `production` - Full indexing with Algolia upload (default)
+  * `preview` - Branch-scoped indexing without Algolia upload
 * **Updates**:
-  * `{branch}/path-index:main` (Redis)
-  * `{branch}/nav-tree:{tab}` for all tabs (Redis)
-  * `{branch}_alchemy_docs` (Algolia)
+  * `{branch}/path-index:main` (Redis, 30-day TTL for preview branches)
+  * `{branch}/nav-tree:{tab}` for all tabs (Redis, 30-day TTL for preview branches)
+  * `{branch}_alchemy_docs` (Algolia, production mode only)
 
 ### 2. SDK Indexer (`pnpm index:sdk`)
 
@@ -53,6 +55,21 @@ Each indexer generates up to three outputs:
 3. **Algolia Index**: Searchable content records with metadata
 
 All data is **branch-scoped** to support preview environments.
+
+### Preview Mode vs Production Mode
+
+**Production Mode** (default):
+
+* Uploads to both Redis and Algolia
+* Redis keys have no expiration (permanent)
+* Creates branch-scoped Algolia indices
+
+**Preview Mode** (`--mode=preview`):
+
+* Uploads to Redis only (skips Algolia)
+* Redis keys expire after 30 days (automatic cleanup)
+* Uses production Algolia indices for search
+* Only available for main and changelog indexers (SDK indexer is production-only)
 
 ## Architecture
 
@@ -133,15 +150,19 @@ With **4000+ pages**, this 3-phase approach:
 All Redis keys and Algolia indices are scoped by branch to support preview environments:
 
 ```text
-Redis:
-- main/path-index:main
-- main/nav-tree:wallets
-- feature-abc/path-index:main
+Redis (with TTL for preview branches):
+- main/path-index:main (no expiration)
+- main/nav-tree:wallets (no expiration)
+- feature-abc/path-index:main (30-day TTL)
+- feature-abc/nav-tree:wallets (30-day TTL)
 
-Algolia:
+Algolia (production mode only):
 - main_alchemy_docs
 - main_alchemy_docs_sdk
-- feature-abc_alchemy_docs
+- main_alchemy_docs_changelog
+
+Note: Preview branches do NOT create Algolia indices.
+Preview environments use production search indices.
 ```
 
 ### Wallets Navigation Tree Merging
@@ -397,7 +418,7 @@ pnpm index:main
 # Main indexer (preview mode - branch-scoped)
 pnpm index:main:preview
 
-# SDK indexer (fetches from aa-sdk repo)
+# SDK indexer (fetches from aa-sdk repo, production only)
 pnpm index:sdk
 
 # Changelog indexer
