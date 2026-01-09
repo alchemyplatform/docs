@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { batchFetchContent } from "@/content-indexer/core/batch-fetcher";
-import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs";
-import { ContentCache } from "@/content-indexer/core/content-cache";
-import { scanDocsYml } from "@/content-indexer/core/scanner";
-import { buildMainContentIndex } from "@/content-indexer/indexers/main";
-import { fetchFileFromGitHub } from "@/content-indexer/utils/github";
-import { repoConfigFactory } from "@/content-indexer/utils/test-factories";
+import { batchFetchContent } from "@/content-indexer/core/batch-fetcher.js";
+import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.js";
+import { ContentCache } from "@/content-indexer/core/content-cache.js";
+import { scanDocsYml } from "@/content-indexer/core/scanner.js";
+import { buildMainContentIndex } from "@/content-indexer/indexers/main.js";
+import { fetchFileFromGitHub } from "@/content-indexer/utils/github.js";
+import { repoConfigFactory } from "@/content-indexer/utils/test-factories.js";
 
 // Mock dependencies
 vi.mock("@/content-indexer/utils/github", async () => {

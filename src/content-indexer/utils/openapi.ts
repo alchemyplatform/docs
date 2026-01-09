@@ -1,8 +1,8 @@
 import { kebabCase } from "lodash-es";
 import type { OpenAPIV3 } from "openapi-types";
 
-import { HTTP_METHODS } from "@/content-indexer/constants/http";
-import type { PathBuilder } from "@/content-indexer/core/path-builder";
+import { HTTP_METHODS } from "@/content-indexer/constants/http.js";
+import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
 
 export interface ExtractedOperation {
   operationId: string;

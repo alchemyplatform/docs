@@ -1,13 +1,13 @@
 import { describe, expect, test } from "vitest";
 
-import { PathBuilder } from "@/content-indexer/core/path-builder";
+import { PathBuilder } from "@/content-indexer/core/path-builder.js";
 
 import {
   buildOperationPath,
   extractOpenApiOperations,
   getOperationDescription,
   getOperationTitle,
-} from "../openapi";
+} from "../openapi.js";
 
 describe("openapi utils", () => {
   describe("extractOpenApiOperations", () => {

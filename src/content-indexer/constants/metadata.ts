@@ -1,4 +1,4 @@
-import { DOCS_BASE_URL } from "./links";
+import { DOCS_BASE_URL } from "./links.js";
 
 // TODO: This file is copied from docs-site but not used in the content indexer
 // It's kept for potential future use but Next.js types are stubbed

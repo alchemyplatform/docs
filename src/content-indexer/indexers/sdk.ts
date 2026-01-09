@@ -3,17 +3,17 @@ import yaml from "js-yaml";
 import {
   batchFetchContent,
   type ContentSource,
-} from "@/content-indexer/core/batch-fetcher";
-import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs";
-import { scanDocsYml } from "@/content-indexer/core/scanner";
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
-import type { DocsYml } from "@/content-indexer/types/docsYaml";
-import type { NavItem } from "@/content-indexer/types/navigation";
-import type { PathIndex } from "@/content-indexer/types/pathIndex";
+} from "@/content-indexer/core/batch-fetcher.js";
+import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.js";
+import { scanDocsYml } from "@/content-indexer/core/scanner.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
+import type { DocsYml } from "@/content-indexer/types/docsYaml.js";
+import type { NavItem } from "@/content-indexer/types/navigation.js";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
 import {
   fetchFileFromGitHub,
   type RepoConfig,
-} from "@/content-indexer/utils/github";
+} from "@/content-indexer/utils/github.js";
 
 export interface SDKIndexerConfig {
   sdkRepoConfig: RepoConfig; // aa-sdk repo config

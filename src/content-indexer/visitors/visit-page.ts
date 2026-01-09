@@ -1,11 +1,11 @@
 import { kebabCase } from "lodash-es";
 
-import type { PageConfig } from "@/content-indexer/types/docsYaml";
-import type { NavItem } from "@/content-indexer/types/navigation";
+import type { PageConfig } from "@/content-indexer/types/docsYaml.js";
+import type { NavItem } from "@/content-indexer/types/navigation.js";
 import {
   normalizeFilePath,
   normalizeSlug,
-} from "@/content-indexer/utils/normalization";
+} from "@/content-indexer/utils/normalization.js";
 
 import type { VisitorConfigBase, VisitorResult } from ".";
 

@@ -1,13 +1,13 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { ProcessingContext } from "@/content-indexer/collectors/processing-context";
-import { ContentCache } from "@/content-indexer/core/content-cache";
-import { PathBuilder } from "@/content-indexer/core/path-builder";
-import type { OpenRpcSpec } from "@/content-indexer/types/specs";
-import { DOCS_REPO } from "@/content-indexer/utils/github";
-import { openRpcSpecFactory } from "@/content-indexer/utils/test-factories";
+import { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
+import { ContentCache } from "@/content-indexer/core/content-cache.js";
+import { PathBuilder } from "@/content-indexer/core/path-builder.js";
+import type { OpenRpcSpec } from "@/content-indexer/types/specs.js";
+import { DOCS_REPO } from "@/content-indexer/utils/github.js";
+import { openRpcSpecFactory } from "@/content-indexer/utils/test-factories.js";
 
-import { processOpenRpcSpec } from "../process-openrpc";
+import { processOpenRpcSpec } from "../process-openrpc.js";
 
 describe("processOpenRpcSpec", () => {
   test("should return empty result for invalid spec", () => {

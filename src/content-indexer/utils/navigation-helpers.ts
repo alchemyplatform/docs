@@ -1,4 +1,4 @@
-import type { NavItem } from "@/content-indexer/types/navigation";
+import type { NavItem } from "@/content-indexer/types/navigation.js";
 
 /**
  * Creates breadcrumb-safe navigation item (without populated children).

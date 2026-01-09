@@ -1,7 +1,32 @@
 import { algoliasearch } from "algoliasearch";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
-import { truncateRecord } from "@/content-indexer/utils/truncate-record";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
+import { truncateRecord } from "@/content-indexer/utils/truncate-record.js";
+
+/**
+ * Builds an Algolia index name with branch and type scoping.
+ * Pattern: {branchId}_{baseName}[_{indexerType}]
+ *
+ * Examples:
+ * - main_alchemy_docs (main branch, main content)
+ * - main_alchemy_docs_sdk (main branch, SDK content)
+ * - abc_alchemy_docs (branch-abc, main content)
+ * - abc_alchemy_docs_sdk (branch-abc, SDK content)
+ */
+const buildIndexName = (
+  base: string,
+  indexerType: "main" | "sdk" | "changelog",
+  branchId: string,
+): string => {
+  const parts = [branchId, base];
+
+  // Add type suffix (except for main content)
+  if (indexerType !== "main") {
+    parts.push(indexerType);
+  }
+
+  return parts.join("_");
+};
 
 /**
  * Uploads records to Algolia using atomic index swap for zero-downtime updates.
@@ -16,15 +41,18 @@ import { truncateRecord } from "@/content-indexer/utils/truncate-record";
  * @param records - Algolia records to upload
  * @param options - Configuration options
  * @param options.indexerType - Type of indexer ("main", "sdk", or "changelog")
+ * @param options.branchId - Branch identifier for index naming (e.g., "main", "branch-abc")
  */
 export const uploadToAlgolia = async (
   records: AlgoliaRecord[],
   options: {
     indexerType: "main" | "sdk" | "changelog";
+    branchId: string;
   },
 ): Promise<void> => {
   const appId = process.env.ALGOLIA_APP_ID;
   const adminKey = process.env.ALGOLIA_ADMIN_API_KEY;
+  const baseName = process.env.ALGOLIA_INDEX_NAME_BASE;
 
   if (!appId || !adminKey) {
     console.warn("⚠️  Algolia credentials not found. Skipping Algolia upload.");
@@ -34,26 +62,18 @@ export const uploadToAlgolia = async (
     return;
   }
 
-  // Determine target index name based on indexer type
-  const indexEnvMap = {
-    main: process.env.ALGOLIA_INDEX_NAME,
-    sdk: process.env.ALGOLIA_WALLET_INDEX_NAME,
-    changelog: process.env.ALGOLIA_CHANGELOG_INDEX_NAME,
-  };
-
-  const targetIndexName = indexEnvMap[options.indexerType];
-
-  if (!targetIndexName) {
-    const envVarMap = {
-      main: "ALGOLIA_INDEX_NAME",
-      sdk: "ALGOLIA_WALLET_INDEX_NAME",
-      changelog: "ALGOLIA_CHANGELOG_INDEX_NAME",
-    };
+  if (!baseName) {
     console.warn(
-      `⚠️  ${envVarMap[options.indexerType]} not set. Skipping Algolia upload.`,
+      "⚠️  ALGOLIA_INDEX_NAME_BASE not set. Skipping Algolia upload.",
     );
     return;
   }
+
+  const targetIndexName = buildIndexName(
+    baseName,
+    options.indexerType,
+    options.branchId,
+  );
 
   const client = algoliasearch(appId, adminKey);
   const tempIndexName = `${targetIndexName}_temp`;

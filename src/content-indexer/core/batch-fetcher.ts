@@ -1,15 +1,15 @@
 import matter from "gray-matter";
 import path from "path";
 
-import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs";
-import { readLocalMdxFile } from "@/content-indexer/utils/filesystem";
+import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs.js";
+import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.js";
 import {
   fetchFileFromGitHub,
   type RepoConfig,
-} from "@/content-indexer/utils/github";
+} from "@/content-indexer/utils/github.js";
 
-import { ContentCache } from "./content-cache";
-import type { ScanResult } from "./scanner";
+import { ContentCache } from "./content-cache.js";
+import type { ScanResult } from "./scanner.js";
 
 /**
  * Content source configuration - either filesystem or GitHub API

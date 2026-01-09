@@ -1,16 +1,16 @@
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
 import type {
   NavItem,
   NavigationTreesByTab,
-} from "@/content-indexer/types/navigation";
+} from "@/content-indexer/types/navigation.js";
 import type {
   PathIndex,
   PathIndexEntry,
-} from "@/content-indexer/types/pathIndex";
+} from "@/content-indexer/types/pathIndex.js";
 
-import { AlgoliaCollector, type AddRecordParams } from "./algolia";
-import { NavigationTreesCollector } from "./navigation-trees";
-import { PathIndexCollector } from "./path-index";
+import { AlgoliaCollector, type AddRecordParams } from "./algolia.js";
+import { NavigationTreesCollector } from "./navigation-trees.js";
+import { PathIndexCollector } from "./path-index.js";
 
 /**
  * Result of building all outputs from content processing.

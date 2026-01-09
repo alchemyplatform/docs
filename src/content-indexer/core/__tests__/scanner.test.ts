@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import type { DocsYml } from "@/content-indexer/types/docsYaml";
+import type { DocsYml } from "@/content-indexer/types/docsYaml.js";
 
-import { scanDocsYml } from "../scanner";
+import { scanDocsYml } from "../scanner.js";
 
 describe("scanner", () => {
   test("should throw error if navigation is missing", () => {

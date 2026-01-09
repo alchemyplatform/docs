@@ -3,8 +3,8 @@ import { describe, expect, test } from "vitest";
 import {
   normalizeFilePath,
   normalizeSlug,
-} from "@/content-indexer/utils/normalization";
-import { repoConfigFactory } from "@/content-indexer/utils/test-factories";
+} from "@/content-indexer/utils/normalization.js";
+import { repoConfigFactory } from "@/content-indexer/utils/test-factories.js";
 
 describe("normalization utils", () => {
   describe("normalizeSlug", () => {

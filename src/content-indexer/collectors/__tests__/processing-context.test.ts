@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import type { NavItem } from "@/content-indexer/types/navigation";
+import type { NavItem } from "@/content-indexer/types/navigation.js";
 
-import { ProcessingContext } from "../processing-context";
+import { ProcessingContext } from "../processing-context.js";
 
 describe("ProcessingContext", () => {
   test("should initialize with empty state", () => {

@@ -1,4 +1,4 @@
-import type { LinkConfig } from "@/content-indexer/types/docsYaml";
+import type { LinkConfig } from "@/content-indexer/types/docsYaml.js";
 
 import type { VisitorConfigBase, VisitorResult } from ".";
 

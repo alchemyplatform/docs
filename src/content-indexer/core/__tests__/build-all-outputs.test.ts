@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { DocsYml } from "@/content-indexer/types/docsYaml";
-import { repoConfigFactory } from "@/content-indexer/utils/test-factories";
-import { visitNavigationItem } from "@/content-indexer/visitors";
+import type { DocsYml } from "@/content-indexer/types/docsYaml.js";
+import { repoConfigFactory } from "@/content-indexer/utils/test-factories.js";
+import { visitNavigationItem } from "@/content-indexer/visitors/index.js";
 
-import { buildAllOutputs } from "../build-all-outputs";
-import { ContentCache } from "../content-cache";
+import { buildAllOutputs } from "../build-all-outputs.js";
+import { ContentCache } from "../content-cache.js";
 
 // Mock the visitor
 vi.mock("@/content-indexer/visitors", () => ({

@@ -1,4 +1,4 @@
-import type { RepoConfig } from "@/content-indexer/utils/github";
+import type { RepoConfig } from "@/content-indexer/utils/github.js";
 
 /**
  * Normalizes a frontmatter slug by removing the "docs/" prefix.

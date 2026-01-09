@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { NavigationTreesCollector } from "../navigation-trees";
+import { NavigationTreesCollector } from "../navigation-trees.js";
 
 describe("NavigationTreesCollector", () => {
   test("should initialize with empty trees", () => {

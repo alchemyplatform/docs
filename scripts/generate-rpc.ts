@@ -1,10 +1,10 @@
 import { mkdirSync, readdirSync } from "fs";
 
-import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs";
+import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs.js";
 import {
   type DerefErrorGroup,
   handleDerefErrors,
-} from "../src/utils/generationHelpers";
+} from "../src/utils/generationHelpers.js";
 
 const isHiddenDir = (file: string) =>
   !file.startsWith("_") && !file.startsWith(".");

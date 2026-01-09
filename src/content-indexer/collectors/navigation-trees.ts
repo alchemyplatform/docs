@@ -1,7 +1,7 @@
 import type {
   NavItem,
   NavigationTreesByTab,
-} from "@/content-indexer/types/navigation";
+} from "@/content-indexer/types/navigation.js";
 
 /**
  * Collector for accumulating navigation trees during content processing.

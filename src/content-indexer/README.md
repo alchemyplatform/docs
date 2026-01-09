@@ -299,8 +299,9 @@ KV_URL=your_url
 # Algolia (required for search index)
 ALGOLIA_APP_ID=your_app_id
 ALGOLIA_ADMIN_API_KEY=your_admin_key
-ALGOLIA_INDEX_NAME=alchemy_docs
-ALGOLIA_WALLET_INDEX_NAME=alchemy_docs_wallets
+# Base name for indices (branch/type will be auto-appended)
+# Examples: main_alchemy_docs, main_alchemy_docs_sdk, abc_alchemy_docs
+ALGOLIA_INDEX_NAME_BASE=alchemy_docs
 
 # GitHub (optional - increases API rate limits)
 GITHUB_TOKEN=your_personal_access_token

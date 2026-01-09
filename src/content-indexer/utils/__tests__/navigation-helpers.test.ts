@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { createBreadcrumbNavItem } from "../navigation-helpers";
+import { createBreadcrumbNavItem } from "../navigation-helpers.js";
 
 describe("navigation-helpers", () => {
   describe("createBreadcrumbNavItem", () => {

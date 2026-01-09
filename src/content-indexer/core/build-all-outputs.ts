@@ -3,13 +3,13 @@ import { kebabCase } from "lodash-es";
 import {
   ProcessingContext,
   type BuildAllOutputsResult,
-} from "@/content-indexer/collectors/processing-context";
-import type { ContentCache } from "@/content-indexer/core/content-cache";
-import type { DocsYml } from "@/content-indexer/types/docsYaml";
-import { DOCS_REPO, type RepoConfig } from "@/content-indexer/utils/github";
-import { visitNavigationItem } from "@/content-indexer/visitors";
+} from "@/content-indexer/collectors/processing-context.js";
+import type { ContentCache } from "@/content-indexer/core/content-cache.js";
+import type { DocsYml } from "@/content-indexer/types/docsYaml.js";
+import { DOCS_REPO, type RepoConfig } from "@/content-indexer/utils/github.js";
+import { visitNavigationItem } from "@/content-indexer/visitors/index.js";
 
-import { PathBuilder } from "./path-builder";
+import { PathBuilder } from "./path-builder.js";
 
 /**
  * Phase 3 of the content indexing pipeline.

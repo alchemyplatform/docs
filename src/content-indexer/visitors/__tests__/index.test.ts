@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 
-import { ProcessingContext } from "@/content-indexer/collectors/processing-context";
-import { ContentCache } from "@/content-indexer/core/content-cache";
-import { PathBuilder } from "@/content-indexer/core/path-builder";
-import { DOCS_REPO } from "@/content-indexer/utils/github";
-import { openApiSpecFactory } from "@/content-indexer/utils/test-factories";
+import { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
+import { ContentCache } from "@/content-indexer/core/content-cache.js";
+import { PathBuilder } from "@/content-indexer/core/path-builder.js";
+import { DOCS_REPO } from "@/content-indexer/utils/github.js";
+import { openApiSpecFactory } from "@/content-indexer/utils/test-factories.js";
 
-import { visitNavigationItem } from "../index";
+import { visitNavigationItem } from "../index.js";
 
 describe("visitNavigationItem dispatcher", () => {
   test("should route page config to visitPage", () => {

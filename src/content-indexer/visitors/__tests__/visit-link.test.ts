@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
 
-import { ProcessingContext } from "@/content-indexer/collectors/processing-context";
-import { ContentCache } from "@/content-indexer/core/content-cache";
-import { PathBuilder } from "@/content-indexer/core/path-builder";
-import { DOCS_REPO } from "@/content-indexer/utils/github";
+import { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
+import { ContentCache } from "@/content-indexer/core/content-cache.js";
+import { PathBuilder } from "@/content-indexer/core/path-builder.js";
+import { DOCS_REPO } from "@/content-indexer/utils/github.js";
 
-import { visitLink } from "../visit-link";
+import { visitLink } from "../visit-link.js";
 
 describe("visitLink", () => {
   test("should create link nav item", () => {

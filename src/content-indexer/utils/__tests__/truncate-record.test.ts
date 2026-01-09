@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
 
-import { truncateRecord } from "../truncate-record";
+import { truncateRecord } from "../truncate-record.js";
 
 describe("truncateRecord", () => {
   test("should return record unchanged if under size limit", () => {

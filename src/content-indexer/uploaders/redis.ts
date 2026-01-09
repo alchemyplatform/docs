@@ -1,9 +1,9 @@
 import type {
   NavigationTree,
   NavigationTreesByTab,
-} from "@/content-indexer/types/navigation";
-import type { PathIndex } from "@/content-indexer/types/pathIndex";
-import { getRedis } from "@/content-indexer/utils/redis";
+} from "@/content-indexer/types/navigation.js";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
+import { getRedis } from "@/content-indexer/utils/redis.js";
 
 // Helper to count nav items recursively
 const countItems = (items: NavigationTree): number => {

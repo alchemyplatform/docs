@@ -6,7 +6,7 @@ import {
   isSectionConfig,
   type DocsYml,
   type NavigationItem,
-} from "@/content-indexer/types/docsYaml";
+} from "@/content-indexer/types/docsYaml.js";
 
 /**
  * Result of scanning docs.yml for all file paths and API specs.

@@ -1,8 +1,8 @@
 import { dereference } from "@apidevtools/json-schema-ref-parser";
 
-import type { DerefedOpenRpcDoc } from "../types/openRpc";
-import { formatOpenRpcDoc, writeOpenRpcDoc } from "./generationHelpers";
-import { validateRpcSpec } from "./validateRpcSpec";
+import type { DerefedOpenRpcDoc } from "../types/openRpc.js";
+import { formatOpenRpcDoc, writeOpenRpcDoc } from "./generationHelpers.js";
+import { validateRpcSpec } from "./validateRpcSpec.js";
 
 /**
  * Generates an OpenRPC specification for the Alchemy JSON-RPC API.

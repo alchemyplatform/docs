@@ -1,11 +1,14 @@
 import { kebabCase } from "lodash-es";
 
-import type { ApiConfig } from "@/content-indexer/types/docsYaml";
-import type { OpenApiSpec, OpenRpcSpec } from "@/content-indexer/types/specs";
+import type { ApiConfig } from "@/content-indexer/types/docsYaml.js";
+import type {
+  OpenApiSpec,
+  OpenRpcSpec,
+} from "@/content-indexer/types/specs.js";
 
 import type { VisitorConfigBase, VisitorResult } from ".";
-import { processOpenApiSpec } from "./processors/process-openapi";
-import { processOpenRpcSpec } from "./processors/process-openrpc";
+import { processOpenApiSpec } from "./processors/process-openapi.js";
+import { processOpenRpcSpec } from "./processors/process-openrpc.js";
 
 export interface ApiVisitorConfig extends VisitorConfigBase {
   item: ApiConfig;

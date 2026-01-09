@@ -1,12 +1,15 @@
 import { kebabCase } from "lodash-es";
 
-import type { PathBuilder } from "@/content-indexer/core/path-builder";
-import type { NavItem } from "@/content-indexer/types/navigation";
-import type { PathIndex } from "@/content-indexer/types/pathIndex";
-import type { OpenRpcSpec } from "@/content-indexer/types/specs";
-import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers";
-import { isValidOpenRpcSpec } from "@/content-indexer/utils/openrpc";
-import type { VisitorConfig, VisitorResult } from "@/content-indexer/visitors";
+import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
+import type { NavItem } from "@/content-indexer/types/navigation.js";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
+import type { OpenRpcSpec } from "@/content-indexer/types/specs.js";
+import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.js";
+import { isValidOpenRpcSpec } from "@/content-indexer/utils/openrpc.js";
+import type {
+  VisitorConfig,
+  VisitorResult,
+} from "@/content-indexer/visitors/index.js";
 
 /**
  * Configuration for processing an OpenRPC specification

@@ -1,17 +1,20 @@
-import type { ProcessingContext } from "@/content-indexer/collectors/processing-context";
-import type { PathBuilder } from "@/content-indexer/core/path-builder";
-import type { NavItem } from "@/content-indexer/types/navigation";
-import type { PathIndex } from "@/content-indexer/types/pathIndex";
-import type { OpenApiSpec } from "@/content-indexer/types/specs";
-import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers";
+import type { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
+import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
+import type { NavItem } from "@/content-indexer/types/navigation.js";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
+import type { OpenApiSpec } from "@/content-indexer/types/specs.js";
+import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.js";
 import {
   buildOperationPath,
   extractOpenApiOperations,
   getOperationDescription,
   getOperationTitle,
   type ExtractedOperation,
-} from "@/content-indexer/utils/openapi";
-import type { VisitorConfig, VisitorResult } from "@/content-indexer/visitors";
+} from "@/content-indexer/utils/openapi.js";
+import type {
+  VisitorConfig,
+  VisitorResult,
+} from "@/content-indexer/visitors/index.js";
 
 /**
  * Configuration for processing an OpenAPI specification

@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
 
-import { uploadToAlgolia } from "../algolia";
+import { uploadToAlgolia } from "../algolia.js";
 
 describe("uploadToAlgolia", () => {
   test("should skip if no ALGOLIA_APP_ID", async () => {
@@ -15,7 +15,7 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { indexerType: "main" });
+    await uploadToAlgolia(records, { indexerType: "main", branchId: "main" });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Algolia credentials not found"),
@@ -36,7 +36,7 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { indexerType: "main" });
+    await uploadToAlgolia(records, { indexerType: "main", branchId: "main" });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Algolia credentials not found"),
@@ -47,47 +47,51 @@ describe("uploadToAlgolia", () => {
     process.env.ALGOLIA_ADMIN_API_KEY = originalKey;
   });
 
-  test("should skip if index name not configured for docs mode", async () => {
+  test("should skip if base index name not configured", async () => {
     const originalAppId = process.env.ALGOLIA_APP_ID;
     const originalKey = process.env.ALGOLIA_ADMIN_API_KEY;
-    const originalIndexName = process.env.ALGOLIA_INDEX_NAME;
+    const originalBaseName = process.env.ALGOLIA_INDEX_NAME_BASE;
 
     process.env.ALGOLIA_APP_ID = "test-app-id";
     process.env.ALGOLIA_ADMIN_API_KEY = "test-key";
-    delete process.env.ALGOLIA_INDEX_NAME;
+    delete process.env.ALGOLIA_INDEX_NAME_BASE;
 
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { indexerType: "main" });
+    await uploadToAlgolia(records, { indexerType: "main", branchId: "main" });
 
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("not set"));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("ALGOLIA_INDEX_NAME_BASE not set"),
+    );
 
     consoleSpy.mockRestore();
     process.env.ALGOLIA_APP_ID = originalAppId;
     process.env.ALGOLIA_ADMIN_API_KEY = originalKey;
-    process.env.ALGOLIA_INDEX_NAME = originalIndexName;
+    process.env.ALGOLIA_INDEX_NAME_BASE = originalBaseName;
   });
 
-  test("should skip if wallet index name not configured", async () => {
+  test("should skip if base index name not configured", async () => {
     const originalAppId = process.env.ALGOLIA_APP_ID;
     const originalKey = process.env.ALGOLIA_ADMIN_API_KEY;
-    const originalWalletIndexName = process.env.ALGOLIA_WALLET_INDEX_NAME;
+    const originalBaseName = process.env.ALGOLIA_INDEX_NAME_BASE;
 
     process.env.ALGOLIA_APP_ID = "test-app-id";
     process.env.ALGOLIA_ADMIN_API_KEY = "test-key";
-    delete process.env.ALGOLIA_WALLET_INDEX_NAME;
+    delete process.env.ALGOLIA_INDEX_NAME_BASE;
 
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { indexerType: "sdk" });
+    await uploadToAlgolia(records, { indexerType: "main", branchId: "main" });
 
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("not set"));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("ALGOLIA_INDEX_NAME_BASE not set"),
+    );
 
     consoleSpy.mockRestore();
     process.env.ALGOLIA_APP_ID = originalAppId;
     process.env.ALGOLIA_ADMIN_API_KEY = originalKey;
-    process.env.ALGOLIA_WALLET_INDEX_NAME = originalWalletIndexName;
+    process.env.ALGOLIA_INDEX_NAME_BASE = originalBaseName;
   });
 });

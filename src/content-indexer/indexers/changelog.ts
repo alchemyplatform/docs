@@ -1,5 +1,5 @@
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia";
-import type { PathIndex } from "@/content-indexer/types/pathIndex";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
 
 export interface ChangelogIndexerConfig {
   localBasePath: string; // Path to fern/changelog/ directory

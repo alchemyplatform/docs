@@ -1,7 +1,7 @@
 import type {
   PathIndex,
   PathIndexEntry,
-} from "@/content-indexer/types/pathIndex";
+} from "@/content-indexer/types/pathIndex.js";
 
 /**
  * Collector for accumulating path index entries during content processing.

@@ -1,12 +1,12 @@
-import type { BuildAllOutputsResult } from "@/content-indexer/collectors/processing-context";
+import type { BuildAllOutputsResult } from "@/content-indexer/collectors/processing-context.js";
 import {
   batchFetchContent,
   type ContentSource,
-} from "@/content-indexer/core/batch-fetcher";
-import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs";
-import { scanDocsYml } from "@/content-indexer/core/scanner";
-import { readLocalDocsYml } from "@/content-indexer/utils/filesystem";
-import type { RepoConfig } from "@/content-indexer/utils/github";
+} from "@/content-indexer/core/batch-fetcher.js";
+import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.js";
+import { scanDocsYml } from "@/content-indexer/core/scanner.js";
+import { readLocalDocsYml } from "@/content-indexer/utils/filesystem.js";
+import type { RepoConfig } from "@/content-indexer/utils/github.js";
 
 export interface MainIndexerConfig {
   mode: "preview" | "production";

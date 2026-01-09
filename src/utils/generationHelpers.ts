@@ -2,7 +2,7 @@ import type { JSONSchema, OpenrpcDocument } from "@open-rpc/meta-schema";
 import { writeFileSync } from "fs";
 import mergeAllOf from "json-schema-merge-allof";
 
-import type { DerefedOpenRpcDoc } from "../types/openRpc";
+import type { DerefedOpenRpcDoc } from "../types/openRpc.js";
 
 /**
  * Formats an OpenRPC document by removing components, merging allOf schemas, and sorting methods

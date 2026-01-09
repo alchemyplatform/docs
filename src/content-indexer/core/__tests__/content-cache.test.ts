@@ -3,9 +3,9 @@ import { describe, expect, test } from "vitest";
 import {
   openApiSpecFactory,
   openRpcSpecFactory,
-} from "@/content-indexer/utils/test-factories";
+} from "@/content-indexer/utils/test-factories.js";
 
-import { ContentCache } from "../content-cache";
+import { ContentCache } from "../content-cache.js";
 
 describe("ContentCache", () => {
   test("should initialize with empty caches", () => {

@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import type { OpenRpcSpec } from "@/content-indexer/types/specs";
+import type { OpenRpcSpec } from "@/content-indexer/types/specs.js";
 
-import { isValidOpenRpcSpec } from "../openrpc";
+import { isValidOpenRpcSpec } from "../openrpc.js";
 
 describe("openrpc utils", () => {
   describe("isValidOpenRpcSpec", () => {

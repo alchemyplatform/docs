@@ -1,4 +1,7 @@
-import type { OpenApiSpec, OpenRpcSpec } from "@/content-indexer/types/specs";
+import type {
+  OpenApiSpec,
+  OpenRpcSpec,
+} from "@/content-indexer/types/specs.js";
 
 /**
  * Cached MDX content with parsed frontmatter and body.

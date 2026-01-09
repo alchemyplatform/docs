@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { OpenApiSpec } from "@/content-indexer/types/specs";
-import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs";
-import { fetchFileFromGitHub } from "@/content-indexer/utils/github";
+import type { OpenApiSpec } from "@/content-indexer/types/specs.js";
+import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs.js";
+import { fetchFileFromGitHub } from "@/content-indexer/utils/github.js";
 import {
   openApiSpecFactory,
   repoConfigFactory,
-} from "@/content-indexer/utils/test-factories";
+} from "@/content-indexer/utils/test-factories.js";
 
-import { batchFetchContent } from "../batch-fetcher";
+import { batchFetchContent } from "../batch-fetcher.js";
 
 // Mock dependencies
 vi.mock("@/content-indexer/utils/github", async () => {

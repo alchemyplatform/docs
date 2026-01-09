@@ -3,7 +3,7 @@ import matter from "gray-matter";
 import yaml from "js-yaml";
 import path from "path";
 
-import type { DocsYml } from "@/content-indexer/types/docsYaml";
+import type { DocsYml } from "@/content-indexer/types/docsYaml.js";
 
 /**
  * Reads a file from the local filesystem

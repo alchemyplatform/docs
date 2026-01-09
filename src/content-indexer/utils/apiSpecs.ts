@@ -3,9 +3,9 @@ import type {
   OpenApiSpec,
   OpenRpcSpec,
   SpecType,
-} from "@/content-indexer/types/specs";
+} from "@/content-indexer/types/specs.js";
 
-import { fetchWithRetries } from "./fetchWithRetries";
+import { fetchWithRetries } from "./fetchWithRetries.js";
 
 interface MetadataJson {
   files: string[];

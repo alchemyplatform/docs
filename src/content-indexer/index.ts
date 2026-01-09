@@ -1,12 +1,12 @@
 #!/usr/bin/env tsx
 import path from "path";
 
-import { buildChangelogIndex } from "@/content-indexer/indexers/changelog";
-import { buildMainContentIndex } from "@/content-indexer/indexers/main";
-import { buildSDKContentIndex } from "@/content-indexer/indexers/sdk";
-import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia";
-import { storeToRedis } from "@/content-indexer/uploaders/redis";
-import { DOCS_REPO, WALLET_REPO } from "@/content-indexer/utils/github";
+import { buildChangelogIndex } from "@/content-indexer/indexers/changelog.js";
+import { buildMainContentIndex } from "@/content-indexer/indexers/main.js";
+import { buildSDKContentIndex } from "@/content-indexer/indexers/sdk.js";
+import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.js";
+import { storeToRedis } from "@/content-indexer/uploaders/redis.js";
+import { DOCS_REPO, WALLET_REPO } from "@/content-indexer/utils/github.js";
 
 // ============================================================================
 // CLI Argument Parsing
@@ -68,7 +68,10 @@ const runMainIndexer = async (
       branchId,
       pathIndexSuffix: "main",
     }),
-    uploadToAlgolia(algoliaRecords, { indexerType: "main" }),
+    uploadToAlgolia(algoliaRecords, {
+      indexerType: "main",
+      branchId,
+    }),
   ]);
 
   console.info(
@@ -101,7 +104,10 @@ const runSDKIndexer = async (branchId: string) => {
         mergeSDKIntoWallets: true,
       },
     ),
-    uploadToAlgolia(algoliaRecords, { indexerType: "sdk" }),
+    uploadToAlgolia(algoliaRecords, {
+      indexerType: "sdk",
+      branchId,
+    }),
   ]);
 
   console.info(
@@ -128,7 +134,10 @@ const runChangelogIndexer = async (branchId: string) => {
       branchId,
       pathIndexSuffix: "changelog",
     }),
-    uploadToAlgolia(algoliaRecords, { indexerType: "changelog" }),
+    uploadToAlgolia(algoliaRecords, {
+      indexerType: "changelog",
+      branchId,
+    }),
   ]);
 
   console.info(
