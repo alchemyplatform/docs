@@ -35,27 +35,6 @@ const parseChangelogFilename = (
 };
 
 /**
- * Extract text content from markdown for Algolia indexing.
- * Strips markdown syntax to get plain text.
- */
-const extractTextFromMarkdown = (markdown: string): string => {
-  return (
-    markdown
-      // Remove headings markdown
-      .replace(/^#{1,6}\s+/gm, "")
-      // Remove links but keep text
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      // Remove bold/italic
-      .replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, "$1")
-      // Remove inline code
-      .replace(/`([^`]+)`/g, "$1")
-      // Collapse multiple spaces/newlines
-      .replace(/\s+/g, " ")
-      .trim()
-  );
-};
-
-/**
  * Changelog indexer for changelog entries.
  * Simpler than main indexer - no nav trees, just path index and Algolia.
  *
@@ -94,9 +73,8 @@ export const buildChangelogIndex = async (
 
   console.info(`   📄 Found ${changelogFiles.length} changelog entries`);
 
-  // Process each changelog file in parallel
-  const results = await Promise.all(
-    changelogFiles.map(async ({ filename, date, year, month, day }) => {
+  const resultPromises = changelogFiles.map(
+    async ({ filename, date, year, month, day }) => {
       const filePath = path.join(config.localBasePath, filename);
       const content = await readLocalFile(filePath);
 
@@ -117,21 +95,22 @@ export const buildChangelogIndex = async (
       };
 
       // Create Algolia record
-      const plainText = extractTextFromMarkdown(content);
       const algoliaRecord = truncateRecord({
         objectID: `changelog-${date}`,
         title: `Changelog - ${date}`,
-        content: plainText,
+        content, // Raw markdown - truncateRecord will clean it
         path: `changelog/${route}`,
         pageType: "Changelog" as const,
         breadcrumbs: ["Changelog", date],
       });
 
       return { route, pathIndexEntry, algoliaRecord };
-    }),
+    },
   );
 
-  // Build final outputs from results in a single pass
+  const results = await Promise.all(resultPromises);
+
+  // Build final outputs from results
   const { pathIndex, algoliaRecords } = results.reduce<{
     pathIndex: PathIndex;
     algoliaRecords: AlgoliaRecord[];

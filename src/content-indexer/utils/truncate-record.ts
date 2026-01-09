@@ -1,3 +1,5 @@
+import removeMd from "remove-markdown";
+
 import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
 
 const MAX_RECORD_BYTES = 100_000; // Algolia imposes a 100KB limit on each record
@@ -6,8 +8,13 @@ const MAX_ITERATIONS = 5;
 
 /**
  * Truncate record content to ensure entire JSON payload fits within Algolia limit.
+ * Also strips markdown formatting from content for better search experience.
  */
-export const truncateRecord = (record: AlgoliaRecord): AlgoliaRecord => {
+export const truncateRecord = (rawRecord: AlgoliaRecord): AlgoliaRecord => {
+  // Strip markdown formatting to get clean, searchable text
+  const cleanedContent = removeMd(rawRecord.content);
+  const record = { ...rawRecord, content: cleanedContent };
+
   const fullRecordJson = JSON.stringify(record);
   const recordBytes = Buffer.byteLength(fullRecordJson, "utf8");
 
@@ -37,7 +44,7 @@ export const truncateRecord = (record: AlgoliaRecord): AlgoliaRecord => {
 
   // Iteratively truncate content while measuring full JSON record size
   // This accounts for JSON escaping overhead (quotes, backslashes, etc.)
-  let truncatedContent = record.content;
+  let truncatedContent = cleanedContent;
   let truncatedRecord: AlgoliaRecord = { ...record, content: truncatedContent };
   let currentBytes = recordBytes;
   let iterations = 0;
