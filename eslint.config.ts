@@ -71,6 +71,7 @@ const tslintConfigs = tseslint.config({
       },
     ],
     "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
   },
 }) as ConfigWithExtends[];
 

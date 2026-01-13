@@ -1,6 +1,6 @@
 import { validateOpenRPCDocument } from "@open-rpc/schema-utils-js";
 
-import type { DerefedOpenRpcDoc } from "../types/openRpc";
+import type { DerefedOpenRpcDoc } from "../types/openRpc.ts";
 
 interface ValidationError {
   keyword: string;

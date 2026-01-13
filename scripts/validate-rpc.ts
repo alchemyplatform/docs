@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "fs";
 
-import { findFilesOfType } from "../src/utils/findFilesOfType";
-import { validateRpcSpec } from "../src/utils/validateRpcSpec";
+import { findFilesOfType } from "../src/utils/findFilesOfType.ts";
+import { validateRpcSpec } from "../src/utils/validateRpcSpec.ts";
 
 const validateOpenRpcSpecs = async (directory: string) => {
   if (!directory) {

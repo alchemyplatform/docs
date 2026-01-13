@@ -11,7 +11,7 @@ import {
   validateChainName,
   validateUrl,
   writeChainFiles,
-} from "../src/utils/addEvmChainHelpers";
+} from "../src/utils/addEvmChainHelpers.js";
 
 const rl = readline.createInterface({
   input: process.stdin,
