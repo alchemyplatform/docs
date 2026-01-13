@@ -73,12 +73,17 @@ export const visitSection = (
     // Build Algolia record for section overview page (if content available)
     if (cached) {
       const title = (cached.frontmatter.title as string) || sectionItem.section;
+      const descriptionRaw =
+        cached.frontmatter.description || cached.frontmatter.subtitle;
+      const description =
+        typeof descriptionRaw === "string" ? descriptionRaw : undefined;
       context.addAlgoliaRecord({
         pageType: "Guide",
         path: finalPath,
         title,
         content: cached.content,
         breadcrumbs: navigationAncestors, // Excludes current section
+        description,
       });
     }
   }
