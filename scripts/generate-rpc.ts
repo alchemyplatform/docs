@@ -1,6 +1,6 @@
 import { mkdirSync, readdirSync } from "fs";
 
-import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs.js";
+import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs.ts";
 import {
   type DerefErrorGroup,
   handleDerefErrors,

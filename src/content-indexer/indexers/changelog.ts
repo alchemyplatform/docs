@@ -1,11 +1,11 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
-import type { IndexerResult } from "@/content-indexer/types/indexer.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
-import { readLocalFile } from "@/content-indexer/utils/filesystem.js";
-import { truncateRecord } from "@/content-indexer/utils/truncate-record.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
+import type { IndexerResult } from "@/content-indexer/types/indexer.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
+import { readLocalFile } from "@/content-indexer/utils/filesystem.ts";
+import { truncateRecord } from "@/content-indexer/utils/truncate-record.ts";
 
 export interface ChangelogIndexerConfig {
   localBasePath: string; // Path to fern/changelog/ directory

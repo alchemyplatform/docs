@@ -1,12 +1,12 @@
 #!/usr/bin/env tsx
 import path from "path";
 
-import { buildChangelogIndex } from "@/content-indexer/indexers/changelog.js";
-import { buildDocsContentIndex } from "@/content-indexer/indexers/main.js";
-import type { IndexerResult } from "@/content-indexer/types/indexer.js";
-import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.js";
-import { storeToRedis } from "@/content-indexer/uploaders/redis.js";
-import { DOCS_REPO, WALLET_REPO } from "@/content-indexer/utils/github.js";
+import { buildChangelogIndex } from "@/content-indexer/indexers/changelog.ts";
+import { buildDocsContentIndex } from "@/content-indexer/indexers/main.ts";
+import type { IndexerResult } from "@/content-indexer/types/indexer.ts";
+import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.ts";
+import { storeToRedis } from "@/content-indexer/uploaders/redis.ts";
+import { DOCS_REPO, WALLET_REPO } from "@/content-indexer/utils/github.ts";
 
 // ============================================================================
 // CLI Argument Parsing

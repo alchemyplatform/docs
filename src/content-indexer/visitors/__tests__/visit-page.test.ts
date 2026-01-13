@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
 
-import { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
-import { ContentCache } from "@/content-indexer/core/content-cache.js";
-import { PathBuilder } from "@/content-indexer/core/path-builder.js";
-import { DOCS_REPO } from "@/content-indexer/utils/github.js";
+import { ProcessingContext } from "@/content-indexer/collectors/processing-context.ts";
+import { ContentCache } from "@/content-indexer/core/content-cache.ts";
+import { PathBuilder } from "@/content-indexer/core/path-builder.ts";
+import { DOCS_REPO } from "@/content-indexer/utils/github.ts";
 
-import { visitPage } from "../visit-page.js";
+import { visitPage } from "../visit-page.ts";
 
 describe("visitPage", () => {
   test("should create path index entry for page", () => {

@@ -4,11 +4,11 @@ import {
   batchFetchContent,
   type ContentSource,
 } from "@/content-indexer/core/batch-fetcher.js";
-import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.js";
-import { scanDocsYml } from "@/content-indexer/core/scanner.js";
-import type { DocsYml } from "@/content-indexer/types/docsYaml.js";
-import type { IndexerResult } from "@/content-indexer/types/indexer.js";
-import { readLocalDocsYml } from "@/content-indexer/utils/filesystem.js";
+import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.ts";
+import { scanDocsYml } from "@/content-indexer/core/scanner.ts";
+import type { DocsYml } from "@/content-indexer/types/docsYaml.ts";
+import type { IndexerResult } from "@/content-indexer/types/indexer.ts";
+import { readLocalDocsYml } from "@/content-indexer/utils/filesystem.ts";
 import {
   fetchFileFromGitHub,
   type RepoConfig,

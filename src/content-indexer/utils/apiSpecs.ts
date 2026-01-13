@@ -5,7 +5,7 @@ import type {
   SpecType,
 } from "@/content-indexer/types/specs.js";
 
-import { fetchWithRetries } from "./fetchWithRetries.js";
+import { fetchWithRetries } from "./fetchWithRetries.ts";
 
 interface MetadataJson {
   files: string[];

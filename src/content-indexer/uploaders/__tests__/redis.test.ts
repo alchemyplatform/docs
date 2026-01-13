@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { NavigationTreesByTab } from "@/content-indexer/types/navigation.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
+import type { NavigationTreesByTab } from "@/content-indexer/types/navigation.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
 
-import { storeToRedis } from "../redis.js";
+import { storeToRedis } from "../redis.ts";
 
 // Mock Redis
 const mockSet = vi.fn().mockResolvedValue("OK");

@@ -126,7 +126,7 @@ import getTokenAccountsByOwnerSolanaRequest from "./code-samples/getTokenAccount
 import getTokenAccountsByOwnerSolanaResponse from "./code-samples/getTokenAccountsByOwner/solana-response.ts";
 import getTransactionSolanaRequest from "./code-samples/getTransaction/solana-request.ts";
 import getTransactionSolanaResponse from "./code-samples/getTransaction/solana-response.ts";
-import type { Option } from "./CodeblockSelect.ts";
+import type { Option } from "./CodeblockSelect.tsx";
 
 export const CODE_SAMPLES = {
   arbitrum: {

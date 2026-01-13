@@ -1,12 +1,12 @@
 import { kebabCase } from "lodash-es";
 import removeMd from "remove-markdown";
 
-import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
-import type { NavItem } from "@/content-indexer/types/navigation.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
-import type { OpenRpcSpec } from "@/content-indexer/types/specs.js";
-import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.js";
-import { isValidOpenRpcSpec } from "@/content-indexer/utils/openrpc.js";
+import type { PathBuilder } from "@/content-indexer/core/path-builder.ts";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
+import type { OpenRpcSpec } from "@/content-indexer/types/specs.ts";
+import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.ts";
+import { isValidOpenRpcSpec } from "@/content-indexer/utils/openrpc.ts";
 import type {
   VisitorConfig,
   VisitorResult,

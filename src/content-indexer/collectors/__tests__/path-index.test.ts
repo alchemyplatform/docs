@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { PathIndexCollector } from "../path-index.js";
+import { PathIndexCollector } from "../path-index.ts";
 
 describe("PathIndexCollector", () => {
   test("should initialize with empty index", () => {

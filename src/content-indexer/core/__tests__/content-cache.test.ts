@@ -5,7 +5,7 @@ import {
   openRpcSpecFactory,
 } from "@/content-indexer/utils/test-factories.js";
 
-import { ContentCache } from "../content-cache.js";
+import { ContentCache } from "../content-cache.ts";
 
 describe("ContentCache", () => {
   test("should initialize with empty caches", () => {

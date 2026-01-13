@@ -4,7 +4,7 @@ import {
   normalizeFilePath,
   normalizeSlug,
 } from "@/content-indexer/utils/normalization.js";
-import { repoConfigFactory } from "@/content-indexer/utils/test-factories.js";
+import { repoConfigFactory } from "@/content-indexer/utils/test-factories.ts";
 
 describe("normalization utils", () => {
   describe("normalizeSlug", () => {

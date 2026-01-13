@@ -1,4 +1,4 @@
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
 import type {
   NavItem,
   NavigationTreesByTab,
@@ -8,9 +8,9 @@ import type {
   PathIndexEntry,
 } from "@/content-indexer/types/pathIndex.js";
 
-import { AlgoliaCollector, type AddRecordParams } from "./algolia.js";
-import { NavigationTreesCollector } from "./navigation-trees.js";
-import { PathIndexCollector } from "./path-index.js";
+import { AlgoliaCollector, type AddRecordParams } from "./algolia.ts";
+import { NavigationTreesCollector } from "./navigation-trees.ts";
+import { PathIndexCollector } from "./path-index.ts";
 
 /**
  * Result of building all outputs from content processing.

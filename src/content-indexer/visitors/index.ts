@@ -1,6 +1,6 @@
-import type { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
-import type { ContentCache } from "@/content-indexer/core/content-cache.js";
-import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
+import type { ProcessingContext } from "@/content-indexer/collectors/processing-context.ts";
+import type { ContentCache } from "@/content-indexer/core/content-cache.ts";
+import type { PathBuilder } from "@/content-indexer/core/path-builder.ts";
 import {
   isApiConfig,
   isChangelogConfig,
@@ -9,14 +9,14 @@ import {
   isSectionConfig,
   type NavigationItem,
 } from "@/content-indexer/types/docsYaml.js";
-import type { NavItem } from "@/content-indexer/types/navigation.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
-import type { RepoConfig } from "@/content-indexer/utils/github.js";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
+import type { RepoConfig } from "@/content-indexer/utils/github.ts";
 
-import { visitApiReference } from "./visit-api-reference.js";
-import { visitLink } from "./visit-link.js";
-import { visitPage } from "./visit-page.js";
-import { visitSection } from "./visit-section.js";
+import { visitApiReference } from "./visit-api-reference.ts";
+import { visitLink } from "./visit-link.ts";
+import { visitPage } from "./visit-page.ts";
+import { visitSection } from "./visit-section.ts";
 
 export interface VisitorConfigBase {
   parentPath: PathBuilder;

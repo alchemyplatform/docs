@@ -1,6 +1,6 @@
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
-import type { NavigationTreesByTab } from "@/content-indexer/types/navigation.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
+import type { NavigationTreesByTab } from "@/content-indexer/types/navigation.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
 
 /**
  * Standard result structure returned by all indexers.

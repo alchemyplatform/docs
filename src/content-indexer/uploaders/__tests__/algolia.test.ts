@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
 
-import { uploadToAlgolia } from "../algolia.js";
+import { uploadToAlgolia } from "../algolia.ts";
 
 describe("uploadToAlgolia", () => {
   test("should skip if no ALGOLIA_APP_ID", async () => {

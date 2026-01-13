@@ -1,4 +1,4 @@
-import type { OpenRpcSpec } from "@/content-indexer/types/specs.js";
+import type { OpenRpcSpec } from "@/content-indexer/types/specs.ts";
 
 /**
  * Type guard to check if a spec is a valid OpenRPC spec with methods array.

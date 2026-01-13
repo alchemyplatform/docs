@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { PathBuilder } from "@/content-indexer/core/path-builder.js";
+import { PathBuilder } from "@/content-indexer/core/path-builder.ts";
 
 import {
   buildOperationPath,

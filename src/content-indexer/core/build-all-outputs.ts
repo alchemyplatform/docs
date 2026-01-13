@@ -4,12 +4,12 @@ import {
   ProcessingContext,
   type BuildAllOutputsResult,
 } from "@/content-indexer/collectors/processing-context.js";
-import type { ContentCache } from "@/content-indexer/core/content-cache.js";
-import type { DocsYml } from "@/content-indexer/types/docsYaml.js";
-import { DOCS_REPO, type RepoConfig } from "@/content-indexer/utils/github.js";
-import { visitNavigationItem } from "@/content-indexer/visitors/index.js";
+import type { ContentCache } from "@/content-indexer/core/content-cache.ts";
+import type { DocsYml } from "@/content-indexer/types/docsYaml.ts";
+import { DOCS_REPO, type RepoConfig } from "@/content-indexer/utils/github.ts";
+import { visitNavigationItem } from "@/content-indexer/visitors/index.ts";
 
-import { PathBuilder } from "./path-builder.js";
+import { PathBuilder } from "./path-builder.ts";
 
 /**
  * Phase 3 of the content indexing pipeline.

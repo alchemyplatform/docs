@@ -1,8 +1,8 @@
 import { kebabCase } from "lodash-es";
 
-import type { SectionConfig } from "@/content-indexer/types/docsYaml.js";
-import type { NavItem } from "@/content-indexer/types/navigation.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
+import type { SectionConfig } from "@/content-indexer/types/docsYaml.ts";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
 import {
   normalizeFilePath,
   normalizeSlug,

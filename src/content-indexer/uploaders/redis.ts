@@ -4,9 +4,9 @@ import type {
   NavigationTree,
   NavigationTreesByTab,
 } from "@/content-indexer/types/navigation.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
-import { mergeWalletsNavTree } from "@/content-indexer/utils/nav-tree-merge.js";
-import { getRedis } from "@/content-indexer/utils/redis.js";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
+import { mergeWalletsNavTree } from "@/content-indexer/utils/nav-tree-merge.ts";
+import { getRedis } from "@/content-indexer/utils/redis.ts";
 
 const stringify = (data: unknown) => JSON.stringify(data, null, 2);
 

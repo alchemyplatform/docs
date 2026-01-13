@@ -1,6 +1,6 @@
-import type { LinkConfig } from "@/content-indexer/types/docsYaml.js";
+import type { LinkConfig } from "@/content-indexer/types/docsYaml.ts";
 
-import type { VisitorConfigBase, VisitorResult } from "./index.js";
+import type { VisitorConfigBase, VisitorResult } from "./index.ts";
 
 export interface LinkVisitorConfig extends VisitorConfigBase {
   item: LinkConfig;

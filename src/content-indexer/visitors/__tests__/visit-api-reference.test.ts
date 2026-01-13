@@ -1,15 +1,15 @@
 import { describe, expect, test } from "vitest";
 
-import { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
-import { ContentCache } from "@/content-indexer/core/content-cache.js";
-import { PathBuilder } from "@/content-indexer/core/path-builder.js";
-import { DOCS_REPO } from "@/content-indexer/utils/github.js";
+import { ProcessingContext } from "@/content-indexer/collectors/processing-context.ts";
+import { ContentCache } from "@/content-indexer/core/content-cache.ts";
+import { PathBuilder } from "@/content-indexer/core/path-builder.ts";
+import { DOCS_REPO } from "@/content-indexer/utils/github.ts";
 import {
   openApiSpecFactory,
   openRpcSpecFactory,
 } from "@/content-indexer/utils/test-factories.js";
 
-import { visitApiReference } from "../visit-api-reference.js";
+import { visitApiReference } from "../visit-api-reference.ts";
 
 describe("visitApiReference", () => {
   test("should return empty result if spec not in cache", () => {

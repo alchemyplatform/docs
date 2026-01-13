@@ -1,6 +1,6 @@
 import removeMd from "remove-markdown";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
 
 const MAX_RECORD_BYTES = 100_000; // Algolia imposes a 100KB limit on each record
 const BUFFER_BYTES = 1_000;

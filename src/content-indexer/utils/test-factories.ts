@@ -2,7 +2,7 @@ import type {
   OpenApiSpec,
   OpenRpcSpec,
 } from "@/content-indexer/types/specs.js";
-import type { RepoConfig } from "@/content-indexer/utils/github.js";
+import type { RepoConfig } from "@/content-indexer/utils/github.ts";
 
 /**
  * Factory for creating OpenAPI spec with minimal required fields for testing

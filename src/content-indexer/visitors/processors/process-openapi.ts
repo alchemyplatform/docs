@@ -1,9 +1,9 @@
-import type { ProcessingContext } from "@/content-indexer/collectors/processing-context.js";
-import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
-import type { NavItem } from "@/content-indexer/types/navigation.js";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.js";
-import type { OpenApiSpec } from "@/content-indexer/types/specs.js";
-import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.js";
+import type { ProcessingContext } from "@/content-indexer/collectors/processing-context.ts";
+import type { PathBuilder } from "@/content-indexer/core/path-builder.ts";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
+import type { OpenApiSpec } from "@/content-indexer/types/specs.ts";
+import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.ts";
 import {
   buildOperationPath,
   extractOpenApiOperations,

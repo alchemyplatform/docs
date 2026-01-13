@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { PathBuilder } from "../path-builder.js";
+import { PathBuilder } from "../path-builder.ts";
 
 describe("PathBuilder", () => {
   test("should initialize with empty parts", () => {

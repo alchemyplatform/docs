@@ -1,7 +1,7 @@
 import { algoliasearch } from "algoliasearch";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
-import { truncateRecord } from "@/content-indexer/utils/truncate-record.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
+import { truncateRecord } from "@/content-indexer/utils/truncate-record.ts";
 
 const ALGOLIA_INDEX_NAME_BASE = "alchemy_docs";
 

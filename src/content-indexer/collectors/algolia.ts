@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 
-import type { AlgoliaRecord } from "@/content-indexer/types/algolia.js";
-import type { NavItem } from "@/content-indexer/types/navigation.js";
+import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
 
 /**
  * Extracts breadcrumb titles from NavItems for Algolia.

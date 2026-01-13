@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { AlgoliaCollector } from "../algolia.js";
+import { AlgoliaCollector } from "../algolia.ts";
 
 describe("AlgoliaCollector", () => {
   test("should initialize with empty records", () => {

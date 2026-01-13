@@ -1,13 +1,13 @@
 import { kebabCase } from "lodash-es";
 
-import type { PageConfig } from "@/content-indexer/types/docsYaml.js";
-import type { NavItem } from "@/content-indexer/types/navigation.js";
+import type { PageConfig } from "@/content-indexer/types/docsYaml.ts";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
 import {
   normalizeFilePath,
   normalizeSlug,
 } from "@/content-indexer/utils/normalization.js";
 
-import type { VisitorConfigBase, VisitorResult } from "./index.js";
+import type { VisitorConfigBase, VisitorResult } from "./index.ts";
 
 export interface PageVisitorConfig extends VisitorConfigBase {
   item: PageConfig;
