@@ -1,5 +1,6 @@
 import { kebabCase } from "lodash-es";
 import type { OpenAPIV3 } from "openapi-types";
+import removeMd from "remove-markdown";
 
 import { HTTP_METHODS } from "@/content-indexer/constants/http.js";
 import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
@@ -10,6 +11,28 @@ export interface ExtractedOperation {
   method: string;
   tag?: string;
 }
+
+/**
+ * Retrieves an operation object from a spec given a path and method.
+ * Returns undefined if the path or method doesn't exist.
+ */
+export const getOperation = (
+  spec: { paths: Record<string, unknown> },
+  path: string,
+  method: string,
+): OpenAPIV3.OperationObject | undefined => {
+  const pathItem = spec.paths[path];
+  if (!pathItem || typeof pathItem !== "object") {
+    return undefined;
+  }
+
+  const operation = (pathItem as Record<string, unknown>)[method];
+  if (!operation || typeof operation !== "object") {
+    return undefined;
+  }
+
+  return operation as OpenAPIV3.OperationObject;
+};
 
 /**
  * Extracts operationId from an OpenAPI operation object.
@@ -36,25 +59,14 @@ const getOperationId = (
  * Prefers the summary field, falls back to operationId.
  */
 export const getOperationTitle = (
-  spec: { paths: Record<string, unknown> },
+  operation: OpenAPIV3.OperationObject | undefined,
   operationId: string,
-  operationPath: string,
 ): string => {
-  const pathItem = spec.paths[operationPath];
-  if (!pathItem || typeof pathItem !== "object") {
+  if (!operation) {
     return operationId;
   }
 
-  // Find the operation with matching operationId
-  const operation = Object.values(pathItem).find(
-    (op: unknown) =>
-      typeof op === "object" &&
-      op !== null &&
-      "operationId" in op &&
-      (op as OpenAPIV3.OperationObject).operationId === operationId,
-  ) as OpenAPIV3.OperationObject | undefined;
-
-  return operation?.summary || operationId;
+  return operation.summary || operationId;
 };
 
 /**
@@ -127,23 +139,35 @@ export const buildOperationPath = (
  * Falls back to summary if description is not available.
  */
 export const getOperationDescription = (
-  spec: { paths: Record<string, unknown> },
-  path: string,
-  method: string,
+  operation: OpenAPIV3.OperationObject | undefined,
 ): string => {
-  const pathItem = spec.paths[path];
-  if (!pathItem || typeof pathItem !== "object") {
+  if (!operation) {
     return "";
   }
 
-  const operation = (pathItem as Record<string, unknown>)[method];
-  if (!operation || typeof operation !== "object") {
-    return "";
+  return operation.description
+    ? removeMd(operation.description)
+    : operation.summary || "";
+};
+
+/**
+ * Extracts a brief summary for an OpenAPI operation to use in search tooltip
+ */
+export const getOperationSummary = (
+  operation: OpenAPIV3.OperationObject | undefined,
+): string | undefined => {
+  if (!operation) {
+    return undefined;
   }
 
-  const operationObj = operation as Record<string, unknown>;
-  const description = operationObj.description as string | undefined;
-  const summary = operationObj.summary as string | undefined;
+  if (operation.summary) {
+    return operation.summary;
+  }
 
-  return description || summary || "";
+  // If no summary but description exists, strip markdown and use it
+  if (operation.description) {
+    return removeMd(operation.description);
+  }
+
+  return undefined;
 };

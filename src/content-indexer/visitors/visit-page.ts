@@ -66,12 +66,17 @@ export const visitPage = ({
   // Build Algolia record (if content available and not hidden)
   if (cached && navItem) {
     const title = cached.frontmatter.title || pageItem.page;
+    const descriptionRaw =
+      cached.frontmatter.description || cached.frontmatter.subtitle;
+    const description =
+      typeof descriptionRaw === "string" ? descriptionRaw : undefined;
     context.addAlgoliaRecord({
       pageType: "Guide",
       path: finalPath,
       title,
       content: cached.content,
       breadcrumbs: navigationAncestors, // Excludes current page
+      description,
     });
   }
 

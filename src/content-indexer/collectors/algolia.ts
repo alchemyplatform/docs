@@ -16,6 +16,7 @@ const extractBreadcrumbTitles = (navItems: NavItem[]): string[] => {
 type AddRecordBaseParams = {
   path: string;
   title: string;
+  description?: string;
   content: string;
   breadcrumbs: NavItem[];
 };
@@ -62,6 +63,7 @@ export class AlgoliaCollector {
       content: params.content,
       breadcrumbs: breadcrumbTitles,
       ...(params.httpMethod && { httpMethod: params.httpMethod }),
+      ...(params.description && { description: params.description }),
     });
   }
 

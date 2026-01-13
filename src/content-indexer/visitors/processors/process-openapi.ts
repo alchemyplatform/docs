@@ -7,7 +7,9 @@ import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-help
 import {
   buildOperationPath,
   extractOpenApiOperations,
+  getOperation,
   getOperationDescription,
+  getOperationSummary,
   getOperationTitle,
   type ExtractedOperation,
 } from "@/content-indexer/utils/openapi.js";
@@ -106,19 +108,18 @@ const buildOpenApiNavigation = ({
         operation.tag,
       );
 
-      const title = getOperationTitle(
+      const operationObj = getOperation(
         spec,
-        operation.operationId,
         operation.path,
+        operation.method.toLowerCase(),
       );
+
+      const title = getOperationTitle(operationObj, operation.operationId);
 
       // Build Algolia record if not hidden
       if (!isHidden) {
-        const description = getOperationDescription(
-          spec,
-          operation.path,
-          operation.method.toLowerCase(),
-        );
+        const description = getOperationDescription(operationObj);
+        const summary = getOperationSummary(operationObj);
 
         const breadcrumbs = apiSectionBreadcrumb
           ? [...navigationAncestors, apiSectionBreadcrumb]
@@ -131,6 +132,7 @@ const buildOpenApiNavigation = ({
           content: description,
           httpMethod: operation.method,
           breadcrumbs,
+          description: summary,
         });
       }
 

@@ -5,6 +5,7 @@ import { PathBuilder } from "@/content-indexer/core/path-builder.js";
 import {
   buildOperationPath,
   extractOpenApiOperations,
+  getOperation,
   getOperationDescription,
   getOperationTitle,
 } from "../openapi.js";
@@ -135,7 +136,8 @@ describe("openapi utils", () => {
         },
       };
 
-      const title = getOperationTitle(spec, "getUsers", "/users");
+      const operation = getOperation(spec, "/users", "get");
+      const title = getOperationTitle(operation, "getUsers");
       expect(title).toBe("Get All Users");
     });
 
@@ -150,7 +152,8 @@ describe("openapi utils", () => {
         },
       };
 
-      const title = getOperationTitle(spec, "getUsers", "/users");
+      const operation = getOperation(spec, "/users", "get");
+      const title = getOperationTitle(operation, "getUsers");
       expect(title).toBe("getUsers");
     });
 
@@ -159,7 +162,8 @@ describe("openapi utils", () => {
         paths: {},
       };
 
-      const title = getOperationTitle(spec, "getUsers", "/users");
+      const operation = getOperation(spec, "/users", "get");
+      const title = getOperationTitle(operation, "getUsers");
       expect(title).toBe("getUsers");
     });
 
@@ -175,7 +179,8 @@ describe("openapi utils", () => {
         },
       };
 
-      const title = getOperationTitle(spec, "getUsers", "/users");
+      const operation = getOperation(spec, "/users", "get");
+      const title = getOperationTitle(operation, "getUsers");
       expect(title).toBe("getUsers");
     });
   });
@@ -192,7 +197,8 @@ describe("openapi utils", () => {
         },
       };
 
-      const description = getOperationDescription(spec, "/users", "get");
+      const operation = getOperation(spec, "/users", "get");
+      const description = getOperationDescription(operation);
       expect(description).toBe("Retrieves all users from the system");
     });
 
@@ -201,7 +207,8 @@ describe("openapi utils", () => {
         paths: {},
       };
 
-      const description = getOperationDescription(spec, "/users", "get");
+      const operation = getOperation(spec, "/users", "get");
+      const description = getOperationDescription(operation);
       expect(description).toBe("");
     });
 
@@ -216,7 +223,8 @@ describe("openapi utils", () => {
         },
       };
 
-      const description = getOperationDescription(spec, "/users", "get");
+      const operation = getOperation(spec, "/users", "get");
+      const description = getOperationDescription(operation);
       expect(description).toBe("");
     });
 
@@ -231,7 +239,8 @@ describe("openapi utils", () => {
         },
       };
 
-      const description = getOperationDescription(spec, "/users", "get");
+      const operation = getOperation(spec, "/users", "get");
+      const description = getOperationDescription(operation);
       expect(description).toBe("");
     });
   });

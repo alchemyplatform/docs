@@ -1,4 +1,5 @@
 import { kebabCase } from "lodash-es";
+import removeMd from "remove-markdown";
 
 import type { PathBuilder } from "@/content-indexer/core/path-builder.js";
 import type { NavItem } from "@/content-indexer/types/navigation.js";
@@ -70,7 +71,12 @@ export const processOpenRpcSpec = ({
 
     // Build Algolia record if not hidden
     if (!isHidden) {
-      const description = method.description || method.summary || "";
+      const description = method.description
+        ? removeMd(method.description)
+        : method.summary || "";
+      const summary =
+        method.summary ||
+        (method.description ? removeMd(method.description) : undefined);
       const breadcrumbs = apiSectionBreadcrumb
         ? [...navigationAncestors, apiSectionBreadcrumb]
         : navigationAncestors;
@@ -82,6 +88,7 @@ export const processOpenRpcSpec = ({
         content: description,
         httpMethod: "POST",
         breadcrumbs,
+        description: summary,
       });
     }
 
