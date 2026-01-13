@@ -1,19 +1,16 @@
 name: Index SDK References
 
 on:
-  # repository_dispatch:
-  #   types:
-  #     - index-sdk-references
-  push:
-    branches:
-      - ds/index-script-env # testing
+  repository_dispatch:
+    types:
+      - index-sdk-references
 
 jobs:
   index-sdk:
     name: Index SDK References
     runs-on: ubuntu-latest
     # Only run if the dispatch came from the aa-sdk repository
-    # if: github.event.client_payload.source == 'alchemyplatform/aa-sdk'
+    if: github.event.client_payload.source == 'alchemyplatform/aa-sdk'
     permissions:
       contents: read
     steps:
