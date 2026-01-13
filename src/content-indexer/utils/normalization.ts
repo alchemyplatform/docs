@@ -1,5 +1,3 @@
-import type { RepoConfig } from "@/content-indexer/utils/github.ts";
-
 /**
  * Normalizes a frontmatter slug by removing the "docs/" prefix.
  * This prefix is used in some legacy frontmatter from the main docs repo
@@ -11,12 +9,12 @@ export const normalizeSlug = (slug: string | undefined): string | undefined => {
 };
 
 /**
- * Normalizes a file path by stripping the repo's configured prefix.
- * This ensures the stored filePath can be used directly with the repo's docsPrefix.
+ * Normalizes a file path by stripping a configured prefix.
+ * This ensures the stored filePath matches the actual file location.
  */
 export const normalizeFilePath = (
   filePath: string,
-  repo: RepoConfig,
+  stripPathPrefix?: string,
 ): string => {
-  return filePath.replace(repo.stripPathPrefix || "", "");
+  return filePath.replace(stripPathPrefix || "", "");
 };

@@ -4,7 +4,6 @@ import { ProcessingContext } from "@/content-indexer/collectors/processing-conte
 import { ContentCache } from "@/content-indexer/core/content-cache.ts";
 import { PathBuilder } from "@/content-indexer/core/path-builder.ts";
 import type { OpenRpcSpec } from "@/content-indexer/types/specs.ts";
-import { DOCS_REPO } from "@/content-indexer/utils/github.ts";
 import { openRpcSpecFactory } from "@/content-indexer/utils/test-factories.ts";
 
 import { processOpenRpcSpec } from "../process-openrpc.ts";
@@ -21,7 +20,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -65,7 +64,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -103,7 +102,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -145,7 +144,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -177,7 +176,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -211,7 +210,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [
@@ -254,7 +253,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -289,7 +288,7 @@ describe("processOpenRpcSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],

@@ -3,7 +3,6 @@ import { describe, expect, test } from "vitest";
 import { ProcessingContext } from "@/content-indexer/collectors/processing-context.ts";
 import { ContentCache } from "@/content-indexer/core/content-cache.ts";
 import { PathBuilder } from "@/content-indexer/core/path-builder.ts";
-import { DOCS_REPO } from "@/content-indexer/utils/github.ts";
 import { openApiSpecFactory } from "@/content-indexer/utils/test-factories.ts";
 
 import { processOpenApiSpec } from "../process-openapi.ts";
@@ -37,7 +36,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "Ethereum API", "api-name": "ethereum-api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -80,7 +79,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -126,7 +125,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -160,7 +159,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -195,7 +194,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -229,7 +228,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "Ethereum API", "api-name": "ethereum-api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [
@@ -271,7 +270,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],
@@ -305,7 +304,7 @@ describe("processOpenApiSpec", () => {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: new ContentCache(),
         context,
         navigationAncestors: [],

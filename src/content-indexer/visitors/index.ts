@@ -11,7 +11,6 @@ import {
 } from "@/content-indexer/types/docsYaml.js";
 import type { NavItem } from "@/content-indexer/types/navigation.ts";
 import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
-import type { RepoConfig } from "@/content-indexer/utils/github.ts";
 
 import { visitApiReference } from "./visit-api-reference.ts";
 import { visitLink } from "./visit-link.ts";
@@ -21,7 +20,7 @@ import { visitSection } from "./visit-section.ts";
 export interface VisitorConfigBase {
   parentPath: PathBuilder;
   tab: string;
-  repo: RepoConfig;
+  stripPathPrefix?: string;
   contentCache: ContentCache;
   context: ProcessingContext;
   navigationAncestors: NavItem[];

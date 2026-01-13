@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { DocsYml } from "@/content-indexer/types/docsYaml.ts";
-import { repoConfigFactory } from "@/content-indexer/utils/test-factories.ts";
 import { visitNavigationItem } from "@/content-indexer/visitors/index.ts";
 
 import { buildAllOutputs } from "../build-all-outputs.ts";
@@ -33,7 +32,6 @@ describe("buildAllOutputs", () => {
     };
 
     const cache = new ContentCache();
-    const repoConfig = repoConfigFactory();
 
     vi.mocked(visitNavigationItem).mockReturnValue({
       indexEntries: {
@@ -51,7 +49,7 @@ describe("buildAllOutputs", () => {
       },
     });
 
-    const result = buildAllOutputs(docsYml, cache, repoConfig);
+    const result = buildAllOutputs(docsYml, cache);
 
     // Verify visitor was called
     expect(visitNavigationItem).toHaveBeenCalled();

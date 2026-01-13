@@ -2,22 +2,15 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { OpenApiSpec } from "@/content-indexer/types/specs.ts";
 import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs.ts";
-import { fetchFileFromGitHub } from "@/content-indexer/utils/github.ts";
-import {
-  openApiSpecFactory,
-  repoConfigFactory,
-} from "@/content-indexer/utils/test-factories.js";
+import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.ts";
+import { openApiSpecFactory } from "@/content-indexer/utils/test-factories.js";
 
 import { batchFetchContent } from "../batch-fetcher.ts";
 
 // Mock dependencies
-vi.mock("@/content-indexer/utils/github", async () => {
-  const actual = await vi.importActual("@/content-indexer/utils/github");
-  return {
-    ...actual,
-    fetchFileFromGitHub: vi.fn(),
-  };
-});
+vi.mock("@/content-indexer/utils/filesystem", () => ({
+  readLocalMdxFile: vi.fn(),
+}));
 
 vi.mock("@/content-indexer/utils/apiSpecs", () => ({
   fetchApiSpec: vi.fn(),
@@ -38,35 +31,24 @@ describe("batchFetchContent", () => {
     vi.clearAllMocks();
   });
 
-  test("should fetch MDX files and populate cache", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
+  test("should read MDX files and populate cache", async () => {
     const scanResult = {
       mdxPaths: new Set(["quickstart.mdx", "guides/intro.mdx"]),
       specNames: new Set<string>(),
     };
 
-    const mdxContent = `---
-title: Test Page
----
-# Content`;
-
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue(mdxContent);
-
-    const cache = await batchFetchContent(scanResult, {
-      type: "github",
-      repoConfig,
+    vi.mocked(readLocalMdxFile).mockResolvedValue({
+      frontmatter: { title: "Test Page" },
+      content: "# Content",
     });
 
-    // Verify fetches were made
-    expect(fetchFileFromGitHub).toHaveBeenCalledTimes(2);
-    expect(fetchFileFromGitHub).toHaveBeenCalledWith(
-      "docs/quickstart.mdx",
-      repoConfig,
-    );
-    expect(fetchFileFromGitHub).toHaveBeenCalledWith(
-      "docs/guides/intro.mdx",
-      repoConfig,
-    );
+    const cache = await batchFetchContent(scanResult, {
+      type: "filesystem",
+      basePath: "/test/path",
+    });
+
+    // Verify reads were made
+    expect(readLocalMdxFile).toHaveBeenCalledTimes(2);
 
     // Verify cache was populated
     const stats = cache.getStats();
@@ -81,7 +63,6 @@ title: Test Page
   });
 
   test("should fetch API specs and populate cache", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
     const scanResult = {
       mdxPaths: new Set<string>(),
       specNames: new Set(["ethereum-api", "solana-api"]),
@@ -99,8 +80,8 @@ title: Test Page
     vi.mocked(fetchApiSpec).mockResolvedValue(mockSpec);
 
     const cache = await batchFetchContent(scanResult, {
-      type: "github",
-      repoConfig,
+      type: "filesystem",
+      basePath: "/test/path",
     });
 
     // Verify fetches were made
@@ -115,49 +96,45 @@ title: Test Page
   });
 
   test("should handle stripPathPrefix configuration", async () => {
-    const repoConfig = repoConfigFactory({
-      docsPrefix: "docs",
-      stripPathPrefix: "fern/",
-    });
     const scanResult = {
-      mdxPaths: new Set(["fern/guides/intro.mdx"]),
+      mdxPaths: new Set(["wallets/guides/intro.mdx"]),
       specNames: new Set<string>(),
     };
 
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue("---\n---\nContent");
-
-    await batchFetchContent(scanResult, {
-      type: "github",
-      repoConfig,
+    vi.mocked(readLocalMdxFile).mockResolvedValue({
+      frontmatter: {},
+      content: "Content",
     });
 
-    // Verify path was transformed (strip "fern/" prefix)
-    expect(fetchFileFromGitHub).toHaveBeenCalledWith(
-      "docs/guides/intro.mdx",
-      repoConfig,
+    await batchFetchContent(scanResult, {
+      type: "filesystem",
+      basePath: "/test/path",
+      stripPathPrefix: "wallets/",
+    });
+
+    // Verify path was transformed (strip "wallets/" prefix)
+    expect(readLocalMdxFile).toHaveBeenCalledWith(
+      "/test/path/guides/intro.mdx",
     );
   });
 
-  test("should handle fetch failures gracefully", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
+  test("should handle read failures gracefully", async () => {
     const scanResult = {
       mdxPaths: new Set(["missing.mdx"]),
       specNames: new Set(["missing-api"]),
     };
 
-    vi.mocked(fetchFileFromGitHub).mockRejectedValue(
-      new Error("File not found"),
-    );
+    vi.mocked(readLocalMdxFile).mockRejectedValue(new Error("File not found"));
     vi.mocked(fetchApiSpec).mockRejectedValue(new Error("Spec not found"));
 
     const cache = await batchFetchContent(scanResult, {
-      type: "github",
-      repoConfig,
+      type: "filesystem",
+      basePath: "/test/path",
     });
 
     // Verify warnings were logged
     expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Failed to fetch MDX file"),
+      expect.stringContaining("Failed to read MDX file"),
       expect.any(Error),
     );
     expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -171,19 +148,18 @@ title: Test Page
     expect(stats.specCount).toBe(0);
   });
 
-  test("should handle null responses from fetchers", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
+  test("should handle null responses from readers", async () => {
     const scanResult = {
       mdxPaths: new Set(["missing.mdx"]),
       specNames: new Set(["missing-api"]),
     };
 
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue(null);
+    vi.mocked(readLocalMdxFile).mockResolvedValue(null);
     vi.mocked(fetchApiSpec).mockResolvedValue(undefined);
 
     const cache = await batchFetchContent(scanResult, {
-      type: "github",
-      repoConfig,
+      type: "filesystem",
+      basePath: "/test/path",
     });
 
     // Cache should be empty
@@ -193,13 +169,15 @@ title: Test Page
   });
 
   test("should log progress information", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
     const scanResult = {
       mdxPaths: new Set(["test.mdx"]),
       specNames: new Set(["test-api"]),
     };
 
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue("---\n---\nContent");
+    vi.mocked(readLocalMdxFile).mockResolvedValue({
+      frontmatter: {},
+      content: "Content",
+    });
     vi.mocked(fetchApiSpec).mockResolvedValue({
       specType: "openapi",
       spec: {} as OpenApiSpec,
@@ -207,15 +185,15 @@ title: Test Page
     });
 
     await batchFetchContent(scanResult, {
-      type: "github",
-      repoConfig,
+      type: "filesystem",
+      basePath: "/test/path",
     });
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Fetching 1 MDX files and 1 specs"),
+      expect.stringContaining("Reading 1 MDX files and 1 specs"),
     );
     expect(consoleInfoSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Fetched 1/1 MDX files and 1/1 specs"),
+      expect.stringContaining("Read 1/1 MDX files and 1/1 specs"),
     );
   });
 });
