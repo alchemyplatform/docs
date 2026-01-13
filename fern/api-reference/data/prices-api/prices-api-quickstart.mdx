@@ -25,6 +25,28 @@ The Prices API includes the following REST endpoints:
 
 ***
 
+# Supported Networks
+
+For Token Prices By Address and Historical Prices endpoints, pass the network slug in the `network` field of your request body.
+
+**Mainnets:**
+
+| Network Slug | | |
+|--------------|--------------|--------------|
+| `apechain-mainnet` | `arb-mainnet` | `arbnova-mainnet` |
+| `avax-mainnet` | `base-mainnet` | `blast-mainnet` |
+| `bnb-mainnet` | `eth-mainnet` | `fantom-mainnet` |
+| `gnosis-mainnet` | `linea-mainnet` | `metis-mainnet` |
+| `opbnb-mainnet` | `opt-mainnet` | `polygon-mainnet` |
+| `polygonzkevm-mainnet` | `scroll-mainnet` | `solana-mainnet` |
+| `worldchain-mainnet` | `zetachain-mainnet` | `zksync-mainnet` |
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for the most up-to-date product and chain support!
+</Info>
+
+***
+
 # Getting Started
 
 ## Via HTTP Requests
@@ -174,149 +196,3 @@ Execute the script from your command line:
   ```
 </CodeGroup>
 
-## Via Node Fetch
-
-`node-fetch` is a lightweight option for making HTTP requests with Javascript.
-
-### Installation
-
-Install the `node-fetch` package using `npm` or `yarn`:
-
-<CodeGroup>
-  ```shell npm
-  npm install node-fetch
-  ```
-
-  ```shell yarn
-  yarn add node-fetch
-  ```
-</CodeGroup>
-
-### Usage
-
-Create a new JavaScript file (e.g., `prices-fetch-script.js`) and add the following code.
-
-<CodeGroup>
-  ```js By Symbol
-  // prices-fetch-script.js
-  
-
-  // Replace with your Alchemy API key:
-  const apiKey = "YOUR_ALCHEMY_API_KEY";
-  const fetchURL = `https://api.g.alchemy.com/prices/v1/${apiKey}/tokens/by-symbol`;
-
-  // Define the symbols you want to fetch prices for.
-  const symbols = ["ETH", "BTC", "USDT"];
-
-  const params = new URLSearchParams();
-  symbols.forEach(symbol => params.append('symbols', symbol));
-
-  const urlWithParams = `${fetchURL}?${params.toString()}`;
-
-  const requestOptions = {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-
-  fetch(urlWithParams, requestOptions)
-    .then(response => response.json())
-    .then(data => {
-      console.log("Token Prices By Symbol:");
-      console.log(JSON.stringify(data, null, 2));
-    })
-    .catch(error => console.error('Error:', error));
-  ```
-
-  ```js By Address
-  // prices-fetch-script.js
-  
-
-  // Replace with your Alchemy API key:
-  const apiKey = "YOUR_ALCHEMY_API_KEY";
-  const fetchURL = `https://api.g.alchemy.com/prices/v1/${apiKey}/tokens/by-address`;
-
-  // Define the network and contract addresses you want to fetch prices for.
-  const requestBody = {
-    addresses: [
-      {
-        network: "eth-mainnet",
-        address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" // USDC
-      },
-      {
-        network: "eth-mainnet",
-        address: "0xdac17f958d2ee523a2206206994597c13d831ec7" // USDT
-      }
-    ]
-  };
-
-  const requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(requestBody),
-  };
-
-  fetch(fetchURL, requestOptions)
-    .then(response => response.json())
-    .then(data => {
-      console.log("Token Prices By Address:");
-      console.log(JSON.stringify(data, null, 2));
-    })
-    .catch(error => console.error('Error:', error));
-  ```
-</CodeGroup>
-
-### Running the Script
-
-Execute the script from your command line:
-
-<CodeGroup>
-  ```bash bash
-  node prices-fetch-script.js
-  ```
-</CodeGroup>
-
-**Expected Output:**
-
-<CodeGroup>
-  ```json json
-  {
-    "data": [
-      {
-        "symbol": "ETH",
-        "prices": [
-          {
-            "currency": "USD",
-            "value": "3000.00",
-            "lastUpdatedAt": "2024-04-27T12:34:56Z"
-          }
-        ],
-        "error": null},
-      {
-        "symbol": "BTC",
-        "prices": [
-          {
-            "currency": "USD",
-            "value": "45000.00",
-            "lastUpdatedAt": "2024-04-27T12:34:56Z"
-          }
-        ],
-        "error": null},
-      {
-        "symbol": "USDT",
-        "prices": [
-          {
-            "currency": "USD",
-            "value": "1.00",
-            "lastUpdatedAt": "2024-04-27T12:34:56Z"
-          }
-        ],
-        "error": null}
-    ]
-  }
-  ```
-</CodeGroup>
