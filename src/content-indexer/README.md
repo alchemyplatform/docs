@@ -210,24 +210,24 @@ By fetching everything upfront in Phase 2, we eliminate duplicate API calls duri
 
 All Algolia records automatically have markdown syntax stripped using the `remove-markdown` package in `truncateRecord()`. This ensures search results contain clean, readable text without formatting artifacts.
 
-### Relatively Stable ObjectIDs for Algolia
+### Stable ObjectIDs for Algolia
 
 Algolia requires unique `objectID` for each record. We generate deterministic
-hashes (SHA-256, first 16 chars) from content-based identifiers:
+hashes (SHA-256, first 16 chars) from URL paths:
 
-* **All pages (MDX and API methods)**: Hash of last breadcrumb + title (e.g., hash of
-  `"NFT API Endpoints:getNFTsForCollection"`)
-  * Based on logical position in navigation hierarchy + page title
-  * Stable as long as content structure and title don't change
-  * Changes when page is renamed or moved to different section
+* **All pages (MDX and API methods)**: Hash of the URL path (e.g., hash of
+  `"reference/eth-getbalance"`)
+  * Uniqueness: URLs are guaranteed unique by the routing system
+  * Stability: Paths are designed to be stable. Changes happen but infrequently
+  * Enables incremental index updates in the future
   * Generates clean IDs like `"a3f2c8e1b9d4f6a7"`
 
-**Why this approach?** Since we replace the entire index on each run (atomic swap),
-absolute stability isn't critical. Content-based IDs are simple and work consistently for all content types.
-There is no field that provides absolute stability since everything can change.
+**Why path-based?** Paths are the web's natural unique identifier and are specifically
+designed to be stable. Unlike titles or breadcrumbs, URL changes are typically
+rare and intentional (considered breaking changes for SEO and bookmarks).
 
 **Why hashes?** Provides compact, opaque identifiers that don't expose internal
-structure while maintaining uniqueness.
+structure while maintaining the URL's uniqueness guarantee.
 
 ## Design Decisions
 

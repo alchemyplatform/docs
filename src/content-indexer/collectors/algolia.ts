@@ -43,17 +43,14 @@ export class AlgoliaCollector {
    * Add a search record for either MDX pages or API methods.
    *
    * ObjectID strategy:
-   * Uses hash of last breadcrumb + title for relatively stable, content-based identification.
-   * If we change the title or the last breadcrumb, the objectID will change,
-   * but this shouldn't matter as long as we continue to replace the entire index on each run.
+   * Uses hash of the URL path for stable, unique identification.
+   * - Uniqueness: URLs are guaranteed unique by the routing system
+   * - Stability: Paths are designed to be stable (SEO, bookmarks, external links)
+   * - Enables incremental index updates in the future
    */
   addRecord(params: AddRecordParams): void {
     const breadcrumbTitles = extractBreadcrumbTitles(params.breadcrumbs);
-
-    // Generate stable objectID from last breadcrumb (most specific section) + title
-    const lastBreadcrumb = breadcrumbTitles.at(-1) || "unknown";
-    const stableId = `${lastBreadcrumb}:${params.title}`;
-    const objectID = this.generateHash(stableId);
+    const objectID = this.generateHash(params.path);
 
     this.records.push({
       objectID,

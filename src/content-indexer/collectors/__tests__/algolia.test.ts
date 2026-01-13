@@ -60,7 +60,7 @@ describe("AlgoliaCollector", () => {
     expect(records[0].breadcrumbs).toEqual(["NFT API", "NFT API Endpoints"]);
   });
 
-  test("should generate stable objectID from last breadcrumb + title", () => {
+  test("should generate stable objectID from path", () => {
     const collector = new AlgoliaCollector();
     collector.addRecord({
       pageType: "API Method",
@@ -138,15 +138,15 @@ describe("AlgoliaCollector", () => {
 
     const records = collector.getRecords();
     expect(records[0].breadcrumbs).toEqual([]);
-    // ObjectID should still be generated (using "unknown" + title)
+    // ObjectID should still be generated (using path)
     expect(records[0].objectID).toBeDefined();
   });
 
-  test("should generate consistent objectID for same last breadcrumb + title", () => {
+  test("should generate consistent objectID for same path", () => {
     const collector1 = new AlgoliaCollector();
     collector1.addRecord({
       pageType: "API Method",
-      path: "reference/path1",
+      path: "reference/eth-getbalance",
       title: "eth_getBalance",
       content: "Content 1",
       httpMethod: "POST",
@@ -159,19 +159,48 @@ describe("AlgoliaCollector", () => {
     const collector2 = new AlgoliaCollector();
     collector2.addRecord({
       pageType: "API Method",
-      path: "reference/different-path",
-      title: "eth_getBalance",
-      content: "Content 2",
-      httpMethod: "GET",
+      path: "reference/eth-getbalance", // Same path
+      title: "eth_getBalance_v2", // Different title
+      content: "Content 2", // Different content
+      httpMethod: "GET", // Different method
       breadcrumbs: [
-        { title: "API", type: "section", children: [] },
-        { title: "Ethereum Endpoints", type: "section", children: [] },
+        { title: "Different API", type: "section", children: [] }, // Different breadcrumbs
       ],
     });
 
     const records1 = collector1.getRecords();
     const records2 = collector2.getRecords();
-    // Same last breadcrumb + title should generate same objectID
+    // Same path should generate same objectID, regardless of other metadata
     expect(records1[0].objectID).toBe(records2[0].objectID);
+  });
+
+  test("should generate different objectIDs for different paths", () => {
+    const collector = new AlgoliaCollector();
+    collector.addRecord({
+      pageType: "API Method",
+      path: "reference/eth-getbalance",
+      title: "eth_getBalance",
+      content: "Content",
+      httpMethod: "POST",
+      breadcrumbs: [
+        { title: "API", type: "section", children: [] },
+        { title: "Ethereum Endpoints", type: "section", children: [] },
+      ],
+    });
+    collector.addRecord({
+      pageType: "API Method",
+      path: "reference/eth-blocknumber",
+      title: "eth_getBalance", // Same title
+      content: "Content",
+      httpMethod: "POST",
+      breadcrumbs: [
+        { title: "API", type: "section", children: [] },
+        { title: "Ethereum Endpoints", type: "section", children: [] }, // Same breadcrumbs
+      ],
+    });
+
+    const records = collector.getRecords();
+    // Different paths should generate different objectIDs, even with same title/breadcrumbs
+    expect(records[0].objectID).not.toBe(records[1].objectID);
   });
 });
