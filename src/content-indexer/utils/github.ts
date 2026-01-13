@@ -102,43 +102,6 @@ export async function fetchGitHubDirectory(
 }
 
 /**
- * Fetch multiple files in parallel with rate limiting
- */
-export async function fetchMultipleFiles(
-  filePaths: string[],
-  concurrency: number = 10,
-  repoConfig: RepoConfig = DOCS_REPO,
-): Promise<Map<string, string>> {
-  const results = new Map<string, string>();
-
-  // Process in batches to respect rate limits
-  // Octokit has built-in rate limiting, but we still batch for efficiency
-  for (let i = 0; i < filePaths.length; i += concurrency) {
-    const batch = filePaths.slice(i, i + concurrency);
-
-    const batchResults = await Promise.all(
-      batch.map(async (path) => {
-        const content = await fetchFileFromGitHub(path, repoConfig);
-        return { path, content };
-      }),
-    );
-
-    for (const { path, content } of batchResults) {
-      if (content) {
-        results.set(path, content);
-      }
-    }
-
-    // Small delay between batches to be conservative with rate limits
-    if (i + concurrency < filePaths.length) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-  }
-
-  return results;
-}
-
-/**
  * Check if a file exists on GitHub
  */
 export async function fileExistsOnGitHub(
