@@ -1,13 +1,13 @@
-import BuiltByFern from "./BuiltWithFern.js";
-import AlchemyLogo from "./icons/AlchemyLogo.js";
-import AlchemyUniversityIcon from "./icons/AlchemyUniversityIcon.js";
-import DiscordIcon from "./icons/DiscordIcon.js";
-import EmailIcon from "./icons/EmailIcon.js";
-import NewsletterIcon from "./icons/NewsletterIcon.js";
-import RobotIcon from "./icons/RobotIcon.js";
-import StatusIcon from "./icons/StatusIcon.js";
-import SupportHubIcon from "./icons/SupportHubIcon.js";
-import XIcon from "./icons/XIcon.js";
+import BuiltByFern from "./BuiltWithFern.tsx";
+import AlchemyLogo from "./icons/AlchemyLogo.tsx";
+import AlchemyUniversityIcon from "./icons/AlchemyUniversityIcon.tsx";
+import DiscordIcon from "./icons/DiscordIcon.tsx";
+import EmailIcon from "./icons/EmailIcon.tsx";
+import NewsletterIcon from "./icons/NewsletterIcon.tsx";
+import RobotIcon from "./icons/RobotIcon.tsx";
+import StatusIcon from "./icons/StatusIcon.tsx";
+import SupportHubIcon from "./icons/SupportHubIcon.tsx";
+import XIcon from "./icons/XIcon.tsx";
 
 /**
  * CONFIG
