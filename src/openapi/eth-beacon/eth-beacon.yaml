@@ -759,6 +759,82 @@ paths:
                           validator_index: "1698277"
                         signature: "0xb27e369d96ff799b4a86c9ed961b4c2fbdceef1a2e2f6edad21e6d34b7ec719792f83f48337793061b4810b03047dacf10dbaa4c56939a5b177de63c782be6f06d226ff557d388328d50c99566042d8929585f14119684446a9c618c391502f6"
 
+  /eth/v2/beacon/pool/attestations:
+    get:
+      summary: "/v2/beacon/pool/attestations"
+      description: >
+        Retrieves attestations known by the beacon node but not necessarily
+        incorporated into any block.
+
+        This endpoint returns attestations currently present in the node’s
+        operation pool.
+      tags:
+        - Ethereum Beacon API Endpoints
+      security:
+        - apiKey: []
+      responses:
+        "200":
+          description: Successfully retrieved attestations from the pool.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    description: Protocol version of the response.
+                    example: "electra"
+                  execution_optimistic:
+                    type: boolean
+                    description: Whether the execution payload is optimistic.
+                  finalized:
+                    type: boolean
+                    description: Whether the state is finalized.
+                  data:
+                    type: array
+                    description: List of attestations in the pool.
+                    items:
+                      type: object
+                      properties:
+                        aggregation_bits:
+                          type: string
+                          description: Bitlist indicating which validators participated.
+                          example: "0x01"
+                        data:
+                          type: object
+                          properties:
+                            slot:
+                              type: string
+                              example: "12304636"
+                            index:
+                              type: string
+                              example: "0"
+                            beacon_block_root:
+                              type: string
+                              example: "0xcc83a9c3856bb3ca5d5cd41fdb7079e849ecab0d3477fc19fd584c97a69b090f"
+                            source:
+                              type: object
+                              properties:
+                                epoch:
+                                  type: string
+                                  example: "384518"
+                                root:
+                                  type: string
+                                  example: "0x3697abccaeb877bb4c6ae3a6777bfbca017b816a43b7130235edc4eab5baee1b"
+                            target:
+                              type: object
+                              properties:
+                                epoch:
+                                  type: string
+                                  example: "384519"
+                                root:
+                                  type: string
+                                  example: "0x0c28d4f4f4d7583f5b644c2340a882f8867a35bcf8f96c0a2ac5b647cabcabe0"
+                        signature:
+                          type: string
+                          description: BLS signature of the attestation.
+                          example: "0xb27f1518049ca0eb23cdbf09d1bd98b0a9ca67e4f034952da74fd275c4a740583..."
+
   /eth/v1/beacon/states/{state_id}/committees:
     get:
       summary: "/v1/beacon/states/{state_id}/committees"
@@ -1219,6 +1295,69 @@ paths:
                       validator_aggregates:
                         - ["103943", "986657"]
                         - ["657591", "874958"]
+
+  /eth/v1/beacon/states/{state_id}/randao:
+    get:
+      summary: "/v1/beacon/states/{state_id}/randao"
+      description: >
+        Fetches the RANDAO mix for the requested epoch from the state identified by `state_id`.
+      tags:
+        - Ethereum Beacon API Endpoints
+      security:
+        - apiKey: []
+      parameters:
+        - name: state_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "head"
+          description: >
+            State identifier.
+            Can be one of:
+            `head` (canonical head in node's view),
+            `genesis`,
+            `finalized`,
+            `justified`,
+            `<slot>`,
+            `<hex encoded stateRoot with 0x prefix>`.
+        - name: epoch
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "387896"
+          description: >
+            Epoch for which to retrieve the RANDAO mix.
+      responses:
+        "200":
+          description: RANDAO mix for the requested epoch.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  execution_optimistic:
+                    type: boolean
+                    description: Whether the execution payload is optimistic.
+                  finalized:
+                    type: boolean
+                    description: Whether the state is finalized.
+                  data:
+                    type: object
+                    properties:
+                      randao:
+                        type: string
+                        description: RANDAO mix for the given epoch (bytes32, hex-encoded).
+                        example: "0x8d4f4d6ec7e8f83a8a9b41bafc0b4a4c6e2d1e2b6e7c4c8b2f4a7a1d9e3c6f2"
+              examples:
+                response:
+                  summary: Example response
+                  value:
+                    execution_optimistic: false
+                    finalized: false
+                    data:
+                      randao: "0x8d4f4d6ec7e8f83a8a9b41bafc0b4a4c6e2d1e2b6e7c4c8b2f4a7a1d9e3c6f2"
 
   /eth/v1/beacon/states/{state_id}/validator_balances:
     get:
@@ -2498,6 +2637,77 @@ paths:
                     data:
                       version: "Lighthouse/v7.1.0-cfb1f73/x86_64-linux"
 
+  /eth/v2/debug/beacon/states/{state_id}:
+    get:
+      summary: "/v2/debug/beacon/states/{state_id}"
+      description: >
+        Returns the full BeaconState object for the given state identifier.
+        This is a debug endpoint intended for advanced inspection and troubleshooting.
+      tags:
+        - Ethereum Beacon API Endpoints
+      security:
+        - apiKey: []
+      parameters:
+        - name: state_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "head"
+          description: >
+            State identifier.  
+            Can be one of:  
+            `head` (canonical head in node's view),  
+            `genesis`,  
+            `finalized`,  
+            `justified`,  
+            `<slot>`,  
+            `<hex encoded stateRoot with 0x prefix>`.
+      responses:
+        "200":
+          description: BeaconState retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    description: Protocol version.
+                    example: "electra"
+                  execution_optimistic:
+                    type: boolean
+                  finalized:
+                    type: boolean
+                  data:
+                    type: object
+                    description: Full BeaconState (debug).
+                    additionalProperties: true
+
+  /eth/v1/debug/fork_choice:
+    get:
+      summary: "/v1/debug/fork_choice"
+      description: >
+        Retrieves the current fork choice context of the beacon node.
+        This debug endpoint exposes internal fork choice data and is intended
+        for advanced inspection and troubleshooting.
+      tags:
+        - Ethereum Beacon API Endpoints
+      security:
+        - apiKey: []
+      responses:
+        "200":
+          description: Fork choice data retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Fork choice context (debug).
+                    additionalProperties: true
+
   /eth/v2/validator/aggregate_attestation:
     get:
       summary: "/v2/validator/aggregate_attestation"
@@ -2918,3 +3128,89 @@ paths:
                       subcommittee_index: "1"
                       aggregation_bits: "0xffffffffffffffffffffffffffffffff"
                       signature: "0x1b66ac1f...71505"
+
+  /eth/v1/validator/contribution_and_proofs:
+    post:
+      summary: "/v1/validator/contribution_and_proofs"
+      description: >
+        Publishes multiple signed sync committee contribution and proofs to the beacon node.
+      tags:
+        - Ethereum Beacon API Endpoints
+      security:
+        - apiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: Array of SignedContributionAndProof objects.
+              items:
+                type: object
+                required:
+                  - message
+                  - signature
+                properties:
+                  message:
+                    type: object
+                    required:
+                      - aggregator_index
+                      - contribution
+                      - selection_proof
+                    properties:
+                      aggregator_index:
+                        type: string
+                        description: Validator index of the aggregator.
+                        example: "474200"
+                      contribution:
+                        type: object
+                        required:
+                          - slot
+                          - beacon_block_root
+                          - subcommittee_index
+                          - aggregation_bits
+                          - signature
+                        properties:
+                          slot:
+                            type: string
+                            example: "12412675"
+                          beacon_block_root:
+                            type: string
+                            format: hex
+                            example: "0x3cf2223424524bf1094e2b010ea50b75e7914919c677d2702287bd423fd0f9b0"
+                          subcommittee_index:
+                            type: string
+                            example: "1"
+                          aggregation_bits:
+                            type: string
+                            description: Bitvector indicating participants in the subcommittee.
+                            example: "0xffffffffffffffffffffffffffffffff"
+                          signature:
+                            type: string
+                            description: BLS signature over the SyncCommitteeContribution.
+                            example: "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                      selection_proof:
+                        type: string
+                        description: BLS signature used to prove aggregator selection.
+                        example: "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                  signature:
+                    type: string
+                    description: BLS signature over ContributionAndProof.
+                    example: "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+            examples:
+              request:
+                summary: Example request
+                value:
+                  - message:
+                      aggregator_index: "474200"
+                      contribution:
+                        slot: "12412675"
+                        beacon_block_root: "0x3cf2223424524bf1094e2b010ea50b75e7914919c677d2702287bd423fd0f9b0"
+                        subcommittee_index: "1"
+                        aggregation_bits: "0xffffffffffffffffffffffffffffffff"
+                        signature: "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                      selection_proof: "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                    signature: "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+      responses:
+        "200":
+          description: Successfully published contribution and proofs.
