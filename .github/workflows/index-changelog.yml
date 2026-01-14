@@ -1,0 +1,40 @@
+name: Index Changelog
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "fern/changelog/**"
+
+jobs:
+  index-changelog:
+    name: Index Changelog
+    runs-on: ubuntu-latest
+    # Only run when files are added or removed, not modified
+    if: |
+      github.event.head_commit &&
+      (
+        github.event.head_commit.added[0] != null ||
+        github.event.head_commit.removed[0] != null
+      ) &&
+      (
+        contains(join(github.event.head_commit.added, ','), 'fern/changelog/') ||
+        contains(join(github.event.head_commit.removed, ','), 'fern/changelog/')
+      )
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Run changelog indexer
+        run: pnpm index:changelog
+        env:
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
+          ALGOLIA_ADMIN_API_KEY: ${{ secrets.ALGOLIA_ADMIN_API_KEY }}

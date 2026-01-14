@@ -287,7 +287,7 @@ Ensure you are using aa-sdk version 3.x or later...
 
 **Folder Structure on Cloudinary**:
 
-```
+```json
 docs/aa-sdk/
 ├── images/              # Main documentation images
 │   ├── getting-started/ # Quickstart and setup images

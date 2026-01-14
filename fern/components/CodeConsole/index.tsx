@@ -1,4 +1,4 @@
-import { CodeblockSelect } from "./CodeblockSelect";
+import { CodeblockSelect } from "./CodeblockSelect.tsx";
 import {
   CHAIN_OPTIONS,
   CODE_SAMPLES,
@@ -6,9 +6,9 @@ import {
   type Method,
   getDefaultMethodForChain,
   getMethodOptionsForChain,
-} from "./codeData";
-import { highlightCode } from "./highlightCode";
-import useTheme from "./useTheme";
+} from "./codeData.ts";
+import { highlightCode } from "./highlightCode.ts";
+import useTheme from "./useTheme.tsx";
 
 export const CodeConsole = () => {
   const { isDark } = useTheme();
