@@ -3,7 +3,6 @@ import { describe, expect, test } from "vitest";
 import { ProcessingContext } from "@/content-indexer/collectors/processing-context.ts";
 import { ContentCache } from "@/content-indexer/core/content-cache.ts";
 import { PathBuilder } from "@/content-indexer/core/path-builder.ts";
-import { DOCS_REPO } from "@/content-indexer/utils/github.ts";
 
 import { visitNavigationItem } from "../index.ts";
 import { visitSection } from "../visit-section.ts";
@@ -26,7 +25,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("guides"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -68,7 +67,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("reference"),
         tab: "reference",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -110,7 +109,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("guides"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -141,7 +140,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("guides"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -170,7 +169,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("guides"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -200,7 +199,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("guides"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -235,7 +234,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("guides"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -271,7 +270,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("guides"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],
@@ -314,7 +313,7 @@ describe("visitSection", () => {
         },
         parentPath: PathBuilder.init("docs"),
         tab: "guides",
-        repo: DOCS_REPO,
+        stripPathPrefix: undefined,
         contentCache: cache,
         context,
         navigationAncestors: [],

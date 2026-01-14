@@ -35,7 +35,7 @@ export const visitSection = (
     item: sectionItem,
     parentPath,
     tab,
-    repo,
+    stripPathPrefix,
     contentCache,
     context,
     navigationAncestors,
@@ -65,7 +65,7 @@ export const visitSection = (
     // Add overview page to index
     indexEntries[finalPath] = {
       type: "mdx",
-      filePath: normalizeFilePath(sectionItem.path, repo),
+      filePath: normalizeFilePath(sectionItem.path, stripPathPrefix),
       source: normalizedSlug ? "frontmatter" : "docs-yml",
       tab,
     };

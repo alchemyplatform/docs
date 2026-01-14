@@ -1,33 +1,26 @@
-import matter from "gray-matter";
 import path from "path";
 
 import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs.ts";
 import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.ts";
-import {
-  fetchFileFromGitHub,
-  type RepoConfig,
-} from "@/content-indexer/utils/github.js";
 
 import { ContentCache } from "./content-cache.ts";
 import type { ScanResult } from "./scanner.ts";
 
 /**
- * Content source configuration - either filesystem or GitHub API
+ * Content source configuration for filesystem reads
  */
-export type ContentSource =
-  | { type: "filesystem"; basePath: string }
-  | { type: "github"; repoConfig: RepoConfig };
+export type ContentSource = {
+  type: "filesystem";
+  basePath: string;
+  stripPathPrefix?: string;
+};
 
 /**
  * Fetches all MDX files and API specs in parallel and populates the cache.
- * This is the core optimization: all I/O happens upfront in parallel.
- *
- * Supports two modes:
- * - filesystem: Reads from local filesystem (for preview mode)
- * - github: Fetches from GitHub API (for production/SDK indexer)
+ * Reads from local filesystem with optional path prefix stripping.
  *
  * @param scanResult - Result from scanDocsYml containing all paths and spec names
- * @param source - Content source (filesystem or GitHub)
+ * @param source - Content source (filesystem with optional stripPathPrefix)
  * @returns Populated ContentCache ready for processing
  */
 export const batchFetchContent = async (
@@ -36,47 +29,26 @@ export const batchFetchContent = async (
 ): Promise<ContentCache> => {
   const cache = new ContentCache();
 
-  const sourceType = source.type;
   console.info(
-    `   ${sourceType === "filesystem" ? "Reading" : "Fetching"} ${scanResult.mdxPaths.size} MDX files and ${scanResult.specNames.size} specs...`,
+    `   Reading ${scanResult.mdxPaths.size} MDX files and ${scanResult.specNames.size} specs...`,
   );
 
-  // Fetch/read all MDX files in parallel
+  // Read all MDX files in parallel
   const mdxPromises = Array.from(scanResult.mdxPaths).map(async (mdxPath) => {
     try {
-      if (source.type === "filesystem") {
-        // Read from local filesystem
-        const fullPath = path.join(source.basePath, mdxPath);
-        const result = await readLocalMdxFile(fullPath);
+      // Strip path prefix if configured (e.g., "wallets/" from aa-sdk docs.yml)
+      const actualPath = mdxPath.replace(source.stripPathPrefix || "", "");
+      const fullPath = path.join(source.basePath, actualPath);
+      const result = await readLocalMdxFile(fullPath);
 
-        if (result) {
-          cache.setMdxContent(mdxPath, {
-            frontmatter: result.frontmatter,
-            content: result.content,
-          });
-        }
-      } else {
-        // Fetch from GitHub API
-        const actualPath = mdxPath.replace(
-          source.repoConfig.stripPathPrefix || "",
-          "",
-        );
-        const fullPath = `${source.repoConfig.docsPrefix}/${actualPath}`;
-
-        const content = await fetchFileFromGitHub(fullPath, source.repoConfig);
-        if (content) {
-          const { data, content: body } = matter(content);
-          cache.setMdxContent(mdxPath, {
-            frontmatter: data,
-            content: body,
-          });
-        }
+      if (result) {
+        cache.setMdxContent(mdxPath, {
+          frontmatter: result.frontmatter,
+          content: result.content,
+        });
       }
     } catch (error) {
-      console.warn(
-        `   ⚠️  Failed to ${source.type === "filesystem" ? "read" : "fetch"} MDX file: ${mdxPath}`,
-        error,
-      );
+      console.warn(`   ⚠️  Failed to read MDX file: ${mdxPath}`, error);
     }
   });
 
@@ -97,7 +69,7 @@ export const batchFetchContent = async (
 
   const stats = cache.getStats();
   console.info(
-    `   ✓ ${sourceType === "filesystem" ? "Read" : "Fetched"} ${stats.mdxCount}/${scanResult.mdxPaths.size} MDX files and ${stats.specCount}/${scanResult.specNames.size} specs`,
+    `   ✓ Read ${stats.mdxCount}/${scanResult.mdxPaths.size} MDX files and ${stats.specCount}/${scanResult.specNames.size} specs`,
   );
 
   return cache;
