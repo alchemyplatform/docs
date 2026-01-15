@@ -21,9 +21,15 @@ export interface OpenApiPathIndexEntry {
   tab: string;
 }
 
+export interface ChangelogPathIndexEntry {
+  date: string; // ISO date string like "2025-12-11"
+  filePath: string; // Filename like "2025-12-11.md"
+}
+
 export type PathIndexEntry =
   | MdxPathIndexEntry
   | OpenRpcPathIndexEntry
-  | OpenApiPathIndexEntry;
+  | OpenApiPathIndexEntry
+  | ChangelogPathIndexEntry;
 
 export type PathIndex = Record<string, PathIndexEntry>;
