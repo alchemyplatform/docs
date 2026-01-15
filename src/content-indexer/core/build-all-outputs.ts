@@ -6,7 +6,6 @@ import {
 } from "@/content-indexer/collectors/processing-context.js";
 import type { ContentCache } from "@/content-indexer/core/content-cache.ts";
 import type { DocsYml } from "@/content-indexer/types/docsYaml.ts";
-import { DOCS_REPO, type RepoConfig } from "@/content-indexer/utils/github.ts";
 import { visitNavigationItem } from "@/content-indexer/visitors/index.ts";
 
 import { PathBuilder } from "./path-builder.ts";
@@ -22,7 +21,7 @@ import { PathBuilder } from "./path-builder.ts";
 export const buildAllOutputs = (
   docsYml: DocsYml,
   contentCache: ContentCache,
-  repo: RepoConfig = DOCS_REPO,
+  stripPathPrefix?: string,
 ): BuildAllOutputsResult => {
   const context = new ProcessingContext();
 
@@ -57,7 +56,7 @@ export const buildAllOutputs = (
         item: layoutItem,
         parentPath: basePathBuilder,
         tab,
-        repo,
+        stripPathPrefix,
         contentCache,
         context,
         navigationAncestors: [], // Empty ancestors at top level

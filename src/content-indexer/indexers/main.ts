@@ -1,33 +1,24 @@
-import yaml from "js-yaml";
-
 import {
   batchFetchContent,
   type ContentSource,
 } from "@/content-indexer/core/batch-fetcher.js";
 import { buildAllOutputs } from "@/content-indexer/core/build-all-outputs.ts";
 import { scanDocsYml } from "@/content-indexer/core/scanner.ts";
-import type { DocsYml } from "@/content-indexer/types/docsYaml.ts";
 import type { IndexerResult } from "@/content-indexer/types/indexer.ts";
 import { readLocalDocsYml } from "@/content-indexer/utils/filesystem.ts";
-import {
-  fetchFileFromGitHub,
-  type RepoConfig,
-} from "@/content-indexer/utils/github.js";
 
 export interface DocsIndexerConfig {
-  source: ContentSource; // filesystem or github
-  repoConfig: RepoConfig;
+  source: ContentSource;
+  stripPathPrefix?: string;
   branchId: string;
   mode?: "preview" | "production"; // Only relevant for logging
 }
 
 /**
  * Unified docs content indexer.
- * Handles both main docs (local filesystem) and SDK refs (GitHub API).
- *
- * Processes docs.yml through 3 phases:
+ * Reads from local filesystem and processes docs.yml through 3 phases:
  * 1. SCAN - Parse docs.yml to discover all paths and specs
- * 2. BATCH FETCH - Read all content (filesystem or GitHub)
+ * 2. BATCH FETCH - Read all content from filesystem
  * 3. PROCESS - Build path index, navigation trees, and Algolia records
  */
 export const buildDocsContentIndex = async (
@@ -35,21 +26,10 @@ export const buildDocsContentIndex = async (
 ): Promise<IndexerResult> => {
   console.info(`🔍 Building content index (branch: ${config.branchId})...`);
 
-  // Read docs.yml based on source type
-  let docsYml: DocsYml;
-  if (config.source.type === "filesystem") {
-    const result = await readLocalDocsYml(config.source.basePath);
-    if (!result) {
-      throw new Error(`Failed to read docs.yml from ${config.source.basePath}`);
-    }
-    docsYml = result;
-  } else {
-    const docsYmlPath = `${config.repoConfig.docsPrefix}/docs.yml`;
-    const content = await fetchFileFromGitHub(docsYmlPath, config.repoConfig);
-    if (!content) {
-      throw new Error(`Failed to fetch ${docsYmlPath} from GitHub`);
-    }
-    docsYml = yaml.load(content) as DocsYml;
+  // Read docs.yml from local filesystem
+  const docsYml = await readLocalDocsYml(config.source.basePath);
+  if (!docsYml) {
+    throw new Error(`Failed to read docs.yml from ${config.source.basePath}`);
   }
 
   // PHASE 1: SCAN
@@ -65,7 +45,11 @@ export const buildDocsContentIndex = async (
 
   // PHASE 3: PROCESS
   console.info("⚙️  Phase 3: Processing...");
-  const outputs = buildAllOutputs(docsYml, contentCache, config.repoConfig);
+  const outputs = buildAllOutputs(
+    docsYml,
+    contentCache,
+    config.stripPathPrefix,
+  );
 
   console.info(
     `📊 Generated ${Object.keys(outputs.pathIndex).length} routes, ${outputs.algoliaRecords.length} Algolia records`,

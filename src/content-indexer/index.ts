@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+import { config as dotenvConfig } from "dotenv";
 import path from "path";
 
 import { buildChangelogIndex } from "@/content-indexer/indexers/changelog.ts";
@@ -6,7 +7,8 @@ import { buildDocsContentIndex } from "@/content-indexer/indexers/main.ts";
 import type { IndexerResult } from "@/content-indexer/types/indexer.ts";
 import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.ts";
 import { storeToRedis } from "@/content-indexer/uploaders/redis.ts";
-import { DOCS_REPO, WALLET_REPO } from "@/content-indexer/utils/github.ts";
+
+dotenvConfig({ path: path.resolve(process.cwd(), ".env") });
 
 // ============================================================================
 // CLI Argument Parsing
@@ -62,14 +64,17 @@ const buildIndexResults = async (
           type: "filesystem",
           basePath: path.join(process.cwd(), "fern"),
         },
-        repoConfig: DOCS_REPO,
         branchId,
         mode,
       });
     case "sdk": {
       const result = await buildDocsContentIndex({
-        source: { type: "github", repoConfig: WALLET_REPO },
-        repoConfig: WALLET_REPO,
+        source: {
+          type: "filesystem",
+          basePath: path.join(process.cwd(), "aa-sdk-docs/docs"),
+          stripPathPrefix: "wallets/",
+        },
+        stripPathPrefix: "wallets/",
         branchId,
       });
       return {
