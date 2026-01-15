@@ -1053,6 +1053,55 @@ components:
             name: Unsubscribe Result
             value: true
 
+    # Fill transaction method
+    eth_fillTransaction:
+      name: eth_fillTransaction
+      description: |
+        Fills in default values for a transaction object. This method populates missing fields such as `gas`, `gasPrice`, `nonce`, and `chainId` based on the current network state and transaction parameters. It returns both the filled transaction object and the RLP-encoded raw transaction data.
+
+        This is useful for preparing transactions before signing, as it ensures all required fields are present with appropriate values.
+      params:
+        - name: Transaction
+          required: true
+          description: The transaction object with optional fields to be filled. Fields like `gas`, `gasPrice`, `nonce`, and `chainId` will be populated if not provided.
+          schema:
+            $ref: "./transaction.yaml#/components/schemas/GenericTransaction"
+      result:
+        name: Filled transaction
+        description: An object containing the filled transaction and its RLP-encoded form.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["raw", "tx"]
+          properties:
+            raw:
+              description: The RLP-encoded transaction data as a hexadecimal string.
+              $ref: "./base-types.yaml#/components/schemas/bytes"
+            tx:
+              description: The filled transaction object with all fields populated.
+              $ref: "./transaction.yaml#/components/schemas/GenericTransaction"
+      examples:
+        - name: eth_fillTransaction example
+          params:
+            - name: Transaction
+              value:
+                from: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+                to: "0x627306090abab3a6e1400e9345bc60c78a8bef57"
+                value: "0x1"
+          result:
+            name: Filled transaction
+            value:
+              raw: "0xf86c808504a817c80082520894627306090abab3a6e1400e9345bc60c78a8bef570180808080"
+              tx:
+                from: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+                to: "0x627306090abab3a6e1400e9345bc60c78a8bef57"
+                value: "0x1"
+                gas: "0x5208"
+                gasPrice: "0x4a817c800"
+                nonce: "0x0"
+                chainId: "0x1"
+                input: "0x"
+
     # Submit methods
     eth_sendRawTransaction:
       name: eth_sendRawTransaction
