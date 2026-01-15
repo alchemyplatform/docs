@@ -25,7 +25,7 @@ export const visitPage = ({
   item: pageItem,
   parentPath,
   tab,
-  repo,
+  stripPathPrefix,
   contentCache,
   context,
   navigationAncestors,
@@ -46,7 +46,7 @@ export const visitPage = ({
   const indexEntries = {
     [finalPath]: {
       type: "mdx" as const,
-      filePath: normalizeFilePath(pageItem.path, repo),
+      filePath: normalizeFilePath(pageItem.path, stripPathPrefix),
       source: frontmatterSlug
         ? ("frontmatter" as const)
         : ("docs-yml" as const),

@@ -4,7 +4,6 @@ import {
   normalizeFilePath,
   normalizeSlug,
 } from "@/content-indexer/utils/normalization.js";
-import { repoConfigFactory } from "@/content-indexer/utils/test-factories.ts";
 
 describe("normalization utils", () => {
   describe("normalizeSlug", () => {
@@ -43,77 +42,42 @@ describe("normalization utils", () => {
 
   describe("normalizeFilePath", () => {
     test("should remove stripPathPrefix", () => {
-      const result = normalizeFilePath(
-        "fern/guides/quickstart.mdx",
-        repoConfigFactory({
-          stripPathPrefix: "fern/",
-          docsPrefix: "docs/fern/",
-        }),
-      );
+      const result = normalizeFilePath("fern/guides/quickstart.mdx", "fern/");
       expect(result).toBe("guides/quickstart.mdx");
     });
 
     test("should handle path without matching prefix", () => {
-      const result = normalizeFilePath(
-        "guides/quickstart.mdx",
-        repoConfigFactory({
-          stripPathPrefix: "fern/",
-          docsPrefix: "docs/fern/",
-        }),
-      );
+      const result = normalizeFilePath("guides/quickstart.mdx", "fern/");
       expect(result).toBe("guides/quickstart.mdx");
     });
 
     test("should handle empty stripPathPrefix", () => {
-      const result = normalizeFilePath(
-        "guides/quickstart.mdx",
-        repoConfigFactory({
-          stripPathPrefix: "",
-          docsPrefix: "docs/",
-        }),
-      );
+      const result = normalizeFilePath("guides/quickstart.mdx", "");
       expect(result).toBe("guides/quickstart.mdx");
     });
 
     test("should handle undefined stripPathPrefix", () => {
-      const result = normalizeFilePath(
-        "guides/quickstart.mdx",
-        repoConfigFactory({
-          docsPrefix: "docs/",
-        }),
-      );
+      const result = normalizeFilePath("guides/quickstart.mdx", undefined);
       expect(result).toBe("guides/quickstart.mdx");
     });
 
     test("should handle complex path", () => {
       const result = normalizeFilePath(
         "fern/docs/reference/ethereum/methods/eth_getBalance.mdx",
-        repoConfigFactory({
-          stripPathPrefix: "fern/docs/",
-          docsPrefix: "docs/fern/docs/",
-        }),
+        "fern/docs/",
       );
       expect(result).toBe("reference/ethereum/methods/eth_getBalance.mdx");
     });
 
     test("should handle path with no prefix", () => {
-      const result = normalizeFilePath(
-        "api/spec.json",
-        repoConfigFactory({
-          stripPathPrefix: "",
-          docsPrefix: "",
-        }),
-      );
+      const result = normalizeFilePath("api/spec.json", "");
       expect(result).toBe("api/spec.json");
     });
 
     test("should strip multiple occurrences of prefix", () => {
       const result = normalizeFilePath(
         "fern/fern/guides/quickstart.mdx",
-        repoConfigFactory({
-          stripPathPrefix: "fern/",
-          docsPrefix: "docs/",
-        }),
+        "fern/",
       );
       // replace() only replaces first occurrence by default
       expect(result).toBe("fern/guides/quickstart.mdx");

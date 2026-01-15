@@ -3,7 +3,7 @@
 Content Indexer is the indexing system that builds path indexes, navigation trees, and Algolia search records for the Alchemy docs site. It lives in the `docs` repository and processes documentation from three sources:
 
 1. **Main Docs** - Manual content from `docs/fern/docs.yml` (local filesystem)
-2. **SDK References** - Generated content from `aa-sdk/docs/docs.yml` (GitHub API)
+2. **SDK References** - Generated content from `aa-sdk/docs/docs.yml` (sparse checkout in GHA)
 3. **Changelog** - Entries from `docs/fern/changelog/*.md` (local filesystem)
 
 ## Three Indexers
@@ -28,8 +28,8 @@ Indexes manual documentation content from the local `docs` repository.
 
 Indexes SDK reference documentation from the `aa-sdk` repository.
 
-* **Trigger**: Changes to `aa-sdk/docs/docs.yml`
-* **Source**: GitHub API (aa-sdk repo)
+* **Trigger**: Changes to `aa-sdk/docs/docs.yml` via repository dispatch
+* **Source**: Local filesystem (sparse checkout of aa-sdk/docs in GHA)
 * **Updates**:
   * `{branch}/path-index:sdk` (Redis)
   * `{branch}/nav-tree:wallets` (Redis, merged with existing manual content)
@@ -112,7 +112,7 @@ flowchart TD
 **Key difference between main and SDK:**
 
 * **Main**: Reads from local filesystem (`docs/fern/`)
-* **SDK**: Fetches from GitHub API (`aa-sdk/docs/`)
+* **SDK**: Reads from local filesystem (`aa-sdk-docs/docs/`) after sparse checkout in GHA
 
 ### Changelog Indexer: Simpler Flow
 
@@ -320,7 +320,6 @@ content-indexer/
 │   └── redis.ts                # Stores to Redis with branch scoping
 ├── utils/                   # Utility functions
 │   ├── filesystem.ts           # Local file reading utilities
-│   ├── github.ts               # GitHub API utilities
 │   ├── nav-tree-merge.ts       # Wallets nav tree merging logic
 │   ├── openapi.ts              # OpenAPI-specific utilities
 │   ├── openrpc.ts              # OpenRPC-specific utilities
@@ -356,8 +355,8 @@ batchFetchContent(scanResult, source) → ContentCache
 
 * Converts Sets to arrays and maps over them
 * Fetches all content in parallel with `Promise.all`
-  * **Filesystem source**: Reads local files with `fs.readFile`
-  * **GitHub source**: Fetches via GitHub API with `octokit`
+  * Reads local files with `fs.readFile`
+  * Supports `stripPathPrefix` for handling different repository structures
 * Parses frontmatter from MDX files using `gray-matter`
 * Stores everything in `ContentCache` for O(1) lookup
 * **Maximum parallelization** - all I/O happens simultaneously
@@ -365,7 +364,7 @@ batchFetchContent(scanResult, source) → ContentCache
 ### Phase 3: Process
 
 ```typescript
-buildAllOutputs(docsYml, contentCache, repoConfig)
+buildAllOutputs(docsYml, contentCache, stripPathPrefix?)
   → { pathIndex, navigationTrees, algoliaRecords }
 ```
 
@@ -418,11 +417,24 @@ pnpm index:main
 # Main indexer (preview mode - branch-scoped)
 pnpm index:main:preview
 
-# SDK indexer (fetches from aa-sdk repo, production only)
+# SDK indexer (reads from aa-sdk-docs/, production only)
 pnpm index:sdk
 
 # Changelog indexer
 pnpm index:changelog
+```
+
+**Note for SDK indexer local testing:**
+The SDK indexer expects `aa-sdk-docs/docs/` to exist. In GHA, this is created via sparse checkout. For local testing:
+
+```bash
+# Sparse checkout aa-sdk/docs
+git clone --filter=blob:none --sparse https://github.com/alchemyplatform/aa-sdk.git aa-sdk-docs
+cd aa-sdk-docs
+git sparse-checkout set docs
+cd ..
+
+pnpm index:sdk
 ```
 
 ### Environment Variables
@@ -437,9 +449,6 @@ KV_REST_API_URL=your_url
 # Algolia (required for search index)
 ALGOLIA_APP_ID=your_app_id
 ALGOLIA_ADMIN_API_KEY=your_admin_key
-
-# GitHub (required for SDK indexer, optional for main - increases API rate limits)
-GH_TOKEN=your_personal_access_token
 ```
 
 ### Testing
@@ -498,13 +507,13 @@ Low coverage in I/O utilities (`filesystem.ts`, `github.ts`) is expected and acc
 **Cause:**
 
 * (Main indexer) File doesn't exist locally at `fern/docs.yml`
-* (SDK indexer) GitHub API authentication failed or file path incorrect
+* (SDK indexer) `aa-sdk-docs/docs/` directory not found
 
 **Fix:**
 
 1. Verify file exists at expected location
-2. Check `GH_TOKEN` environment variable is set (for SDK indexer)
-3. Verify `repoConfig.docsPrefix` is correct
+2. (SDK indexer) Run sparse checkout to create `aa-sdk-docs/docs/` (see "Running the Indexers" section above)
+3. Verify the path in `index.ts` matches your local directory structure
 
 ### "Failed to read changelog file"
 

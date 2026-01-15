@@ -6,18 +6,8 @@ import { ContentCache } from "@/content-indexer/core/content-cache.ts";
 import { scanDocsYml } from "@/content-indexer/core/scanner.ts";
 import { buildDocsContentIndex } from "@/content-indexer/indexers/main.ts";
 import { readLocalDocsYml } from "@/content-indexer/utils/filesystem.ts";
-import { fetchFileFromGitHub } from "@/content-indexer/utils/github.ts";
-import { repoConfigFactory } from "@/content-indexer/utils/test-factories.ts";
 
 // Mock dependencies
-vi.mock("@/content-indexer/utils/github", async () => {
-  const actual = await vi.importActual("@/content-indexer/utils/github");
-  return {
-    ...actual,
-    fetchFileFromGitHub: vi.fn(),
-  };
-});
-
 vi.mock("@/content-indexer/utils/filesystem", async () => {
   const actual = await vi.importActual("@/content-indexer/utils/filesystem");
   return {
@@ -88,12 +78,9 @@ describe("buildDocsContentIndex", () => {
     };
     vi.mocked(buildAllOutputs).mockReturnValue(mockResult);
 
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
-
     const result = await buildDocsContentIndex({
       source: { type: "filesystem", basePath: "/test/fern" },
       branchId: "test-branch",
-      repoConfig,
       mode: "preview",
     });
 
@@ -106,27 +93,29 @@ describe("buildDocsContentIndex", () => {
     expect(buildAllOutputs).toHaveBeenCalledWith(
       expect.any(Object),
       mockCache,
-      repoConfig,
+      undefined,
     );
 
     // Verify result
     expect(result).toEqual(mockResult);
   });
 
-  test("should read from GitHub for GitHub source type", async () => {
-    const repoConfig = repoConfigFactory({ docsPrefix: "docs" });
-    const docsYmlContent = `
-navigation:
-  - tab: guides
-    layout:
-      - page: quickstart.mdx
-`;
+  test("should pass stripPathPrefix to buildAllOutputs", async () => {
+    const mockDocsYml = {
+      navigation: [
+        {
+          tab: "wallets",
+          layout: [{ page: "quickstart.mdx", path: "quickstart.mdx" }],
+        },
+      ],
+    };
+    vi.mocked(readLocalDocsYml).mockResolvedValue(mockDocsYml);
 
-    vi.mocked(fetchFileFromGitHub).mockResolvedValue(docsYmlContent);
-    vi.mocked(scanDocsYml).mockReturnValue({
-      mdxPaths: new Set(["quickstart.mdx"]),
-      specNames: new Set(),
-    });
+    const mockScanResult = {
+      mdxPaths: new Set(["wallets/quickstart.mdx"]),
+      specNames: new Set<string>(),
+    };
+    vi.mocked(scanDocsYml).mockReturnValue(mockScanResult);
     vi.mocked(batchFetchContent).mockResolvedValue(new ContentCache());
     vi.mocked(buildAllOutputs).mockReturnValue({
       pathIndex: {},
@@ -135,21 +124,21 @@ navigation:
     });
 
     await buildDocsContentIndex({
-      source: { type: "github", repoConfig },
+      source: {
+        type: "filesystem",
+        basePath: "/test/aa-sdk-docs",
+        stripPathPrefix: "wallets/",
+      },
+      stripPathPrefix: "wallets/",
       branchId: "main",
-      repoConfig,
       mode: "production",
     });
 
-    // Verify GitHub API was used for docs.yml
-    expect(fetchFileFromGitHub).toHaveBeenCalledWith(
-      "docs/docs.yml",
-      repoConfig,
+    // Verify stripPathPrefix was passed to buildAllOutputs
+    expect(buildAllOutputs).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(ContentCache),
+      "wallets/",
     );
-    // Verify GitHub source was used for batch fetch
-    expect(batchFetchContent).toHaveBeenCalledWith(expect.any(Object), {
-      type: "github",
-      repoConfig,
-    });
   });
 });
