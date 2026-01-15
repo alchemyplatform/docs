@@ -11,17 +11,6 @@ jobs:
   index-changelog:
     name: Index Changelog
     runs-on: ubuntu-latest
-    # Only run when files are added or removed, not modified
-    if: |
-      github.event.head_commit &&
-      (
-        github.event.head_commit.added[0] != null ||
-        github.event.head_commit.removed[0] != null
-      ) &&
-      (
-        contains(join(github.event.head_commit.added, ','), 'fern/changelog/') ||
-        contains(join(github.event.head_commit.removed, ','), 'fern/changelog/')
-      )
     permissions:
       contents: read
     steps:
