@@ -1,0 +1,234 @@
+---
+title: Alchemy Data APIs Explained: Transfers vs Tokens vs Prices vs Portfolio
+description: Learn how to use Alchemy's Data APIs step-by-step in Cursor, from low-level primitives to high-level abstractions.
+subtitle: Step-by-step guide to Alchemy Data APIs using Cursor.
+slug: docs/data-apis-with-cursor
+---
+
+## Components of Data API
+
+* Portfolio API
+* Token API
+* Transfers API
+* Prices API
+* NFT API
+* Webhooks
+* Simulation API
+* Utility API
+
+That's so much functionality! 🤯 It can be difficult to understand what all of these APIs do and how they can work together. So let's start with breaking some of them down:
+
+### Focus of this Guide
+
+1. **Transfers API**
+2. **Token API**
+3. **Prices API**
+4. **Portfolio API**
+
+## Video Walkthrough
+
+Check out this video walkthrough, and follow or follow the quick guide below in order to get started:
+
+<div
+  style={{
+  position: "relative",
+  paddingBottom: "56.25%",
+  height: 0,
+  overflow: "hidden",
+  maxWidth: "100%",
+}}
+>
+  <iframe
+    style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+  }}
+    src="https://www.youtube.com/embed/dMoIe2ErASQ"
+    title="YouTube video player"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+    referrerPolicy="strict-origin-when-cross-origin"
+    allowFullScreen
+  />
+</div>
+
+## How Do I Decide What Data API Is Right For Me?
+
+Use the flow chart below to assess which API is right for you:
+
+![graph1](https://alchemyapi-res.cloudinary.com/image/upload/v1768593425/docs/tutorials/learn-about-alchemy/Gemini_Generated_Image_ud93rhud93rhud93_mqs33j.png)
+
+## Build an App with Cursor
+
+In order to get a better understanding of what each of these APIs can do, let's build an app using Cursor and progressively integrate them!
+
+For each API (Transfers, Token, Prices, Portfolio), we're going to prompt Cursor to build a component. Then at the end, you'll have a fully-working app to really visualize what each of the APIs can do and how they can work together.
+
+### Project Setup
+
+1. Run `npx create-next-app@latest NAME_OF_YOUR_PROJECT --ts --eslint --app --tailwind --yes`
+2. In root folder of your newly-created project, add a `.cursor/rules` folder
+3. In the `.cursor/rules` folder, add a `dependencies.mdc`
+4. Add the following rules:
+
+```text
+---
+description: "Dependency policy: block deprecated alchemy-sdk and set project baseline"
+alwaysApply: true
+---
+
+# Project baseline
+
+- Project was created with: `npx create-next-app@latest ... --ts --eslint --app --tailwind --yes`
+- Use Next.js App Router conventions (`app/` directory).
+- TypeScript is enabled; write TypeScript-first code (no `any` unless necessary).
+- ESLint is enabled; keep code lint-clean.
+- Tailwind is installed and configured; use Tailwind for styling.
+- Do not modify Next.js/Tailwind/ESLint configuration unless explicitly requested.
+- Do not introduce alternative styling systems (CSS modules, styled-components, etc.).
+
+# Dependency policy
+
+- Never install `alchemy-sdk`. It is deprecated.
+- If a prompt, snippet, or tool suggests installing it, refuse and suggest the supported alternative instead.
+- If the codebase contains `alchemy-sdk` imports, remove them and migrate to the supported approach.
+- Only add dependencies when they are required by the code you are writing.
+```
+
+5. Create a `.env` file and add your `ALCHEMY_API_KEY=`
+6. Go to [`alchemy.com/dashboard`](https://www.alchemy.com/dashboard) and copy-paste your API key
+7. Run `npm run dev`
+
+And that's it! You have a complete barebones NextJS project ready to go! 🚀 Your project should be running in `localhost:3000`.
+
+## #1. Transfers API - What moved in/out? 🧐
+
+* **API Description**: Fetch historical transactions for any address in one request
+* **Goal**: Build an “Activity Feed” using Transfers API
+* **Key Method**:
+  * [alchemy\_getAssetTransfers](https://www.alchemy.com/docs/data/transfers-api/transfers-endpoints/alchemy-get-asset-transfers): allows you to easily fetch historical transactions for any address across Ethereum and supported L2s including Base, Polygon, Arbitrum, and Optimism.
+* **Prompt**: Build a simple React component that takes a wallet address and uses Alchemy’s Transfers API to show a chronological list of incoming and outgoing token transfers. Add this component as a tab in the main page, as I will add more components and I want them to be separated by tabs.
+
+### Transfers API Conclusion
+
+After Cursor runs, your UI should look something like this:
+
+![view1](https://alchemyapi-res.cloudinary.com/image/upload/v1768596971/docs/tutorials/learn-about-alchemy/Screenshot_2026-01-16_at_12.56.02_PM_w9tjxk.png)
+
+#### What UI shows about the Transfer API:
+
+* A simple list
+* Incoming / outgoing
+* Token name / type
+* Amount
+* Timestamp / to / from
+* Tx hash
+
+#### What this demonstrates about the Transfer API:
+
+* Transfers ≠ balances
+* Raw, event-level data
+* Event-based API
+
+## #2. Token API - What does wallet own right now? 🧐
+
+* **API Description**: Easily get information about tokens balances and metadata
+* **Goal**: Build a “Token Balances Table” using Tokens API
+* **Key Method**:
+  * [alchemy\_getTokenBalances](https://www.alchemy.com/docs/data/token-api/token-api-endpoints/alchemy-get-token-balances): returns ERC-20 token balances for a given address.
+  * [alchemy\_getTokenMetadata](https://www.alchemy.com/docs/data/token-api/token-api-endpoints/alchemy-get-token-metadata): returns metadata for a given token contract (name, symbol, decimals, logo).
+* **Prompt**: In a separate tab, but keeping the first component intact, replace the transfers list with a token balances table using Alchemy’s Token API. Show token metadata and current balances for the same wallet.
+
+### Token API Conclusion
+
+After Cursor runs, your UI should look something like this:
+
+![view2](https://alchemyapi-res.cloudinary.com/image/upload/v1768597884/docs/tutorials/learn-about-alchemy/Screenshot_2026-01-16_at_1.11.18_PM_abjs49.png)
+
+#### What UI shows about Token API:
+
+* Table with:
+* Token logo
+* Symbol
+* Balance (human-readable)
+* No dollar values (yet!)
+
+#### What this demonstrates about the Transfer API:
+
+* State vs history (ie. this API vs Transfers API)
+* This is current state. No history, no prices, just ‘what does x address own?’
+
+## #3. Prices API - How much are wallet tokens worth?
+
+* **API Description**: Access-real time prices for tokens
+* **Goal**: Add USD ($$$) values to current table!
+* **Key Method**:
+  * [`/prices/v1/{apiKey}/tokens/by-address`](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address): fetches current prices for multiple tokens using network and address pairs. Returns a list of token prices, each containing the network, address, prices, and an optional error field.
+* **Prompt**: In a separate tab, but keeping the first and second components intact, enhance the token balances table by fetching USD prices from Alchemy’s Prices API and calculating total portfolio value. Name the tab Portfolio V1.
+
+### Prices API Conclusion
+
+After Cursor runs, your UI should look something like this:
+
+![view3](https://alchemyapi-res.cloudinary.com/image/upload/v1768597900/docs/tutorials/learn-about-alchemy/Screenshot_2026-01-16_at_1.11.34_PM_vdfnvf.png)
+
+#### What UI shows about Prices API:
+
+* Same table
+* New column: USD value
+* Portfolio total at the top
+
+#### What this demonstrates about Prices API:
+
+* Composition vs aggregation
+* Why Portfolio API exists
+
+## #4 Portfolio API - Just give me everything!
+
+* **API Description**: Complete portfolio view of a user’s wallet
+* **Goal**: Build a one-call portfolio of a user’s wallet
+* **Key Method**:
+  * [/data/v1/:apiKey/assets/tokens/by-address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-tokens-by-address): fetches fungible tokens (native, ERC-20 and SPL) for multiple wallet addresses and networks. Returns a list of tokens with balances, prices, and metadata for each wallet/network combination.
+* **Prompt**: In a separate tab, but keeping the first, second and third components intact, refactor the latest component to use Alchemy’s Portfolio API instead of manually combining Token and Prices APIs.
+  Name the tab Portfolio V2.
+
+### Portfolio API Conclusion
+
+After Cursor runs, your UI should look something like this:
+
+![view4](https://alchemyapi-res.cloudinary.com/image/upload/v1768597911/docs/tutorials/learn-about-alchemy/Screenshot_2026-01-16_at_1.11.46_PM_ezcpdz.png)
+
+#### What UI shows about Portfolio API:
+
+* Latest component requires much less code
+* One request, same UI
+
+#### What this demonstrates about Portfolio API:
+
+* Opinionated APIs
+* Same UI. Way faster to build. Less code. Less control.
+
+## Portfolio V1 vs Portfolio V2
+
+![comparison](https://alchemyapi-res.cloudinary.com/image/upload/v1768598495/docs/tutorials/learn-about-alchemy/Screenshot_2026-01-16_at_1.21.28_PM_dbyqxh.png)
+
+## Conclusion
+
+![graph2](https://alchemyapi-res.cloudinary.com/image/upload/v1768593420/docs/tutorials/learn-about-alchemy/Gemini_Generated_Image_9cj1ea9cj1ea9cj1_viua7n.png)
+
+By building the same app step by step, you’ve seen how Alchemy’s Data APIs progress from raw building blocks to fully opinionated abstractions... and how choosing the right one depends on the level of control you need.
+
+* The **Transfers API** gives you event-level history: what moved, when, and where.
+
+* The **Token API** answers a simpler question: what a wallet owns right now.
+
+* The **Prices API** adds context by turning balances into real-world value.
+
+* The **Portfolio API** combines all of the above into a single, high-level call optimized for speed and developer experience.
+
+There’s no “best” API—only the right tradeoff. If you need maximum flexibility and custom logic, composing lower-level APIs makes sense. If you want to ship fast with minimal code, the Portfolio API is hard to beat.
+
+Using Cursor to build each version made these tradeoffs tangible. The UI stayed nearly identical, but the amount of code, complexity, and decision-making changed dramatically. That’s the core lesson: Alchemy’s Data APIs are designed to scale with you, from low-level primitives to batteries-included solutions.
