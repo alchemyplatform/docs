@@ -23,10 +23,20 @@ jobs:
         id: changed-files
         run: |
           # Get all MDX files changed in this push (handles multiple commits)
+          set +e
           CHANGED_FILES=$(git diff --name-only \
             "${{ github.event.before }}" "${{ github.event.after }}" \
-            -- 'fern/**/*.mdx' || true)
+            -- 'fern/**/*.mdx')
+          EXIT_CODE=$?
+          set -e
 
+          # Check for git errors
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "::error::git diff failed with exit code $EXIT_CODE"
+            exit 1
+          fi
+
+          # Handle empty result (no files changed)
           if [ -z "$CHANGED_FILES" ]; then
             echo "No MDX files changed in /fern/ directory"
             echo "filePaths=[]" >> $GITHUB_OUTPUT
