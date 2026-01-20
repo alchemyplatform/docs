@@ -143,11 +143,25 @@ methods:
       - name: sortBy
         required: false
         description: >
-          Sorting configuration. Note: Only `id` is supported for cursor-based pagination
+          The field to sort by. Note: Only `id` is supported for cursor-based pagination
           (using `before`/`after`). Sorting by `created`, `updated`, `recent_action`, or `none`
           requires page-based pagination (using `page`).
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetSorting
+          type: string
+          enum:
+            - id
+            - created
+            - updated
+            - recent_action
+            - none
+      - name: sortDirection
+        required: false
+        description: Sort direction (ascending or descending).
+        schema:
+          type: string
+          enum:
+            - asc
+            - desc
       - name: limit
         required: false
         description: The maximum number of assets to retrieve (max 1000, default 100).
@@ -179,13 +193,13 @@ methods:
           - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
           - name: sortBy
-            value:
-              sortBy: "created"
-              sortDirection: "asc"
-          - name: page
-            value: 1
+            value: "created"
+          - name: sortDirection
+            value: "asc"
           - name: limit
             value: 50
+          - name: page
+            value: 1
     result:
       name: Assets by owner
       description: Returns assets owned by the specified address.
