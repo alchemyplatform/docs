@@ -133,28 +133,73 @@ methods:
 
   - name: getAssetsByOwner
     description: Returns assets owned by the specified address.
+    paramStructure: by-name
     params:
       - name: ownerAddress
         required: true
         description: The owner address to filter assets by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: configuration
+      - name: sortBy
         required: false
-        description: Optional configuration object for sorting and pagination.
+        description: >
+          The field to sort by. Note: Only `id` is supported for cursor-based pagination
+          (using `before`/`after`). Sorting by `created`, `updated`, `recent_action`, or `none`
+          requires page-based pagination (using `page`).
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetsByOwnerConfig
+          type: string
+          enum:
+            - id
+            - created
+            - updated
+            - recent_action
+            - none
+      - name: sortDirection
+        required: false
+        description: Sort direction.
+        schema:
+          type: string
+          enum:
+            - asc
+            - desc
+      - name: limit
+        required: false
+        description: The maximum number of assets to retrieve (max 1000, default 100).
+        schema:
+          type: integer
+      - name: page
+        required: false
+        description: The index of the page to retrieve. Required when using sortBy values other than `id`.
+        schema:
+          type: integer
+      - name: before
+        required: false
+        description: Retrieve assets before this cursor. Only supported when sortBy is `id`.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve assets after this cursor. Only supported when sortBy is `id`.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Display options for the response.
+        schema:
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
       - name: getAssetsByOwner example
         params:
           - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
-          - name: configuration
-            value:
-              page: 1
-              limit: 50
-              sortBy: "created"
-              sortDirection: "asc"
+          - name: page
+            value: 1
+          - name: limit
+            value: 50
+          - name: sortBy
+            value: "created"
+          - name: sortDirection
+            value: "asc"
     result:
       name: Assets by owner
       description: Returns assets owned by the specified address.
