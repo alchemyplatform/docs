@@ -34,8 +34,8 @@ jobs:
             exit 0
           fi
 
-          # Convert to JSON array using jq
-          FILE_PATHS_JSON=$(echo "$CHANGED_FILES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          # Strip 'fern/' prefix and convert to JSON array
+          FILE_PATHS_JSON=$(echo "$CHANGED_FILES" | sed 's|^fern/||' | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
           echo "File paths JSON: $FILE_PATHS_JSON"
           echo "filePaths=$FILE_PATHS_JSON" >> $GITHUB_OUTPUT
