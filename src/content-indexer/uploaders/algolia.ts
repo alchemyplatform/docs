@@ -76,14 +76,14 @@ export const uploadToAlgolia = async (
     const deleteEnd = performance.now();
 
     // 2. Upload new records
-    const uploadStart = performance.now();
     await client.saveObjects({
       indexName,
       objects: truncatedRecords as unknown as Array<Record<string, unknown>>,
     });
+    const uploadEnd = performance.now();
 
-    // 3. Calculate downtime (gap when records were unavailable)
-    const downtime = uploadStart - deleteEnd;
+    // 3. Calculate downtime (time records were unavailable)
+    const downtime = uploadEnd - deleteEnd;
 
     console.info(
       `   ✓ Complete (downtime: ${downtime.toFixed(0)}ms - records unavailable during delete→upload gap)`,
