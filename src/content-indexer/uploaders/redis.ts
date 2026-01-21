@@ -1,5 +1,6 @@
 import type { SetCommandOptions } from "@upstash/redis";
 
+import type { IndexerType } from "@/content-indexer/types/indexer.ts";
 import type {
   NavigationTree,
   NavigationTreesByTab,
@@ -30,14 +31,14 @@ const PREVIEW_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
  * @param navigationTrees - Navigation trees (optional for SDK/changelog indexers)
  * @param options - Configuration options
  * @param options.branchId - Branch identifier for Redis keys (e.g., "main", "branch-abc123")
- * @param options.indexerType - Type of indexer ("main", "sdk", or "changelog")
+ * @param options.indexerType - Type of indexer ("docs", "sdk", or "changelog")
  */
 export const storeToRedis = async (
   pathIndex: PathIndex,
   navigationTrees: NavigationTreesByTab | undefined,
   options: {
     branchId: string;
-    indexerType: "main" | "sdk" | "changelog";
+    indexerType: IndexerType;
   },
 ): Promise<void> => {
   const redis = getRedis();
@@ -50,7 +51,7 @@ export const storeToRedis = async (
   const ttlInfo = isMainBranch ? "" : " (30-day TTL)";
 
   // Store path index with branch scope
-  const pathIndexKey = `${options.branchId}/path-index:${options.indexerType}`;
+  const pathIndexKey = `${options.branchId}:index:${options.indexerType}.json`;
   const pathIndexPromise = redis
     .set(pathIndexKey, stringify(pathIndex), setOptions)
     .then(() => {
@@ -64,7 +65,7 @@ export const storeToRedis = async (
 
   if (options.indexerType === "sdk" && navigationTrees?.wallets) {
     // SDK indexer: merge SDK section into existing wallets nav tree
-    const navTreeKey = `${options.branchId}/nav-tree:wallets`;
+    const navTreeKey = `${options.branchId}:nav:wallets.json`;
     const existingTree = await redis.get<NavigationTree>(navTreeKey);
 
     const mergedTree = mergeWalletsNavTree(
@@ -84,13 +85,13 @@ export const storeToRedis = async (
     // Main indexer: store all navigation trees
     navTreePromises = Object.entries(navigationTrees).map(
       async ([tab, navTree]) => {
-        const redisKey = `${options.branchId}/nav-tree:${tab}`;
+        const redisKey = `${options.branchId}:nav:${tab}.json`;
         let finalTree = navTree;
 
-        // Main indexer: preserve SDK references in wallets tab
-        if (tab === "wallets" && options.indexerType === "main") {
+        // Docs indexer: preserve SDK references in wallets tab
+        if (tab === "wallets" && options.indexerType === "docs") {
           const existingTree = await redis.get<NavigationTree>(redisKey);
-          finalTree = mergeWalletsNavTree(navTree, existingTree, "main");
+          finalTree = mergeWalletsNavTree(navTree, existingTree, "docs");
         }
 
         const itemCount = countItems(finalTree);

@@ -1,6 +1,7 @@
 import { algoliasearch } from "algoliasearch";
 
 import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
+import type { IndexerType } from "@/content-indexer/types/indexer.ts";
 import { truncateRecord } from "@/content-indexer/utils/truncate-record.ts";
 
 const ALGOLIA_INDEX_NAME_BASE = "alchemy_docs";
@@ -10,20 +11,20 @@ const ALGOLIA_INDEX_NAME_BASE = "alchemy_docs";
  * Pattern: {branchId}_{baseName}[_{indexerType}]
  *
  * Examples:
- * - main_alchemy_docs (main branch, main content)
+ * - main_alchemy_docs (main branch, docs content)
  * - main_alchemy_docs_sdk (main branch, SDK content)
- * - abc_alchemy_docs (branch-abc, main content)
+ * - abc_alchemy_docs (branch-abc, docs content)
  * - abc_alchemy_docs_sdk (branch-abc, SDK content)
  */
 const buildIndexName = (
   base: string,
-  indexerType: "main" | "sdk" | "changelog",
+  indexerType: IndexerType,
   branchId: string,
 ): string => {
   const parts = [branchId, base];
 
-  // Add type suffix (except for main content)
-  if (indexerType !== "main") {
+  // Add type suffix (except for docs content)
+  if (indexerType !== "docs") {
     parts.push(indexerType);
   }
 
@@ -42,13 +43,13 @@ const buildIndexName = (
  *
  * @param records - Algolia records to upload
  * @param options - Configuration options
- * @param options.indexerType - Type of indexer ("main", "sdk", or "changelog")
+ * @param options.indexerType - Type of indexer ("docs", "sdk", or "changelog")
  * @param options.branchId - Branch identifier for index naming (e.g., "main", "branch-abc")
  */
 export const uploadToAlgolia = async (
   records: AlgoliaRecord[],
   options: {
-    indexerType: "main" | "sdk" | "changelog";
+    indexerType: IndexerType;
     branchId: string;
   },
 ): Promise<void> => {

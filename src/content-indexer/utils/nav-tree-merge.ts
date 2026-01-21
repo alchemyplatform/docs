@@ -44,13 +44,13 @@ export const separateSDKAndManualSections = (
  *
  * @param newTree - New sections from current indexer run
  * @param existingTree - Existing wallets navigation tree from Redis (or null if none)
- * @param indexerType - Type of indexer: "sdk" means newTree is SDK refs, "main" means newTree is manual content
+ * @param indexerType - Type of indexer: "sdk" means newTree is SDK refs, "docs" means newTree is manual content
  * @returns Merged tree with manual sections + SDK sections at second-to-last position
  */
 export const mergeWalletsNavTree = (
   newTree: NavigationTree,
   existingTree: NavigationTree | null,
-  indexerType: "main" | "sdk",
+  indexerType: "docs" | "sdk",
 ): NavigationTree => {
   if (!existingTree) {
     if (indexerType === "sdk") {
@@ -66,11 +66,11 @@ export const mergeWalletsNavTree = (
     separateSDKAndManualSections(existingTree);
 
   // Determine which sections are new and which to preserve
-  const manualSections = indexerType === "main" ? newTree : existingManual;
+  const manualSections = indexerType === "docs" ? newTree : existingManual;
   const sdkSections = indexerType === "sdk" ? newTree : existingSDK;
 
   // Log preservation info
-  if (indexerType === "main" && sdkSections.length > 0) {
+  if (indexerType === "docs" && sdkSections.length > 0) {
     console.info(
       `📖 Preserved ${sdkSections.length} SDK reference section(s) in wallets nav tree`,
     );
