@@ -15,7 +15,7 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { indexerType: "main", branchId: "main" });
+    await uploadToAlgolia(records, { indexerType: "docs", branchId: "main" });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Algolia credentials not found"),
@@ -36,7 +36,7 @@ describe("uploadToAlgolia", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const records: AlgoliaRecord[] = [];
 
-    await uploadToAlgolia(records, { indexerType: "main", branchId: "main" });
+    await uploadToAlgolia(records, { indexerType: "docs", branchId: "main" });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Algolia credentials not found"),
