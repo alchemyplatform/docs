@@ -78,7 +78,7 @@ describe("AlgoliaCollector", () => {
 
     const records = collector.getRecords();
     expect(records[0].objectID).toBeDefined();
-    expect(records[0].objectID).toMatch(/^[a-f0-9]{16}$/); // Format: hash of 16 chars
+    expect(records[0].objectID).toMatch(/^[a-f0-9]{16}$/); // SHA-256 hash (first 16 chars)
     expect(typeof records[0].objectID).toBe("string");
     expect(records[0].indexerType).toBe("docs");
   });

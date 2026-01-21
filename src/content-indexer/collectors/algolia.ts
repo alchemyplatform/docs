@@ -1,7 +1,6 @@
-import { createHash } from "crypto";
-
 import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
 import type { NavItem } from "@/content-indexer/types/navigation.ts";
+import { generateHash } from "@/content-indexer/utils/generate-hash.ts";
 
 /**
  * Extracts breadcrumb titles from NavItems for Algolia.
@@ -56,7 +55,7 @@ export class AlgoliaCollector {
    */
   addRecord(params: AddRecordParams): void {
     const breadcrumbTitles = extractBreadcrumbTitles(params.breadcrumbs);
-    const objectID = this.generateHash(params.path);
+    const objectID = generateHash(params.path);
 
     this.records.push({
       objectID,
@@ -76,13 +75,5 @@ export class AlgoliaCollector {
    */
   getRecords(): AlgoliaRecord[] {
     return this.records;
-  }
-
-  /**
-   * Generate a stable hash-based objectID from a source string.
-   * Returns first 16 characters of SHA-256 hash for a clean ID format.
-   */
-  private generateHash(source: string): string {
-    return createHash("sha256").update(source).digest("hex").substring(0, 16);
   }
 }
