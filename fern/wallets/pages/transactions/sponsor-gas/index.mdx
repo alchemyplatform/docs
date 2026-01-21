@@ -12,6 +12,59 @@ When a user requests gas sponsorship using a configured policy, the policy engin
 If eligible, when the user sends the transaction the Gas Manager will pay for the gas fee upfront. The Gas Manager will make a note of the sponsored cost
 and bill the sponsoring developer in fiat.
 
+## Sponsorship methods
+
+There are two ways to sponsor gas for your users: **Bundler Sponsored Operations** (recommended) and **Paymaster Sponsorship**.
+
+### Bundler Sponsored Operations (Recommended)
+
+Bundler Sponsored Operations (BSO) allows the bundler to sponsor gas fees directly, eliminating the need for an onchain paymaster contract. This is the recommended approach for most use cases.
+
+**Benefits:**
+* **No fee estimation or retries** - Set your max spend limit high enough and the bundler will land your user operation without you needing to estimate gas fees or implement drop-and-replace logic. No more failed transactions due to underestimated gas prices.
+* **Lower gas costs** - Eliminates the overhead of paymaster contract calls
+* **Reduced latency** - Fewer onchain interactions means faster transaction processing
+* **Simpler architecture** - No need to deploy or manage paymaster contracts
+
+**Limitations:**
+* Currently in beta: While production-ready, features and pricing may evolve based on user feedback
+* Not all networks may support bundler sponsorship yet
+* Requires a specific policy type with mandatory Max Spend Per UO configuration
+
+<Info>
+  For beta access, please reach out to [account-abstraction@alchemy.com](mailto:account-abstraction@alchemy.com).
+</Info>
+
+### Paymaster Sponsorship
+
+Traditional gas sponsorship uses paymaster contracts deployed onchain. The paymaster verifies and pays for user operations on behalf of your application.
+
+**When to use Paymaster Sponsorship:**
+* You're operating on a network that doesn't yet support bundler sponsorship
+* You have existing paymaster infrastructure you want to continue using
+
+### Comparison
+
+| Feature | Bundler Sponsored Operations | Paymaster Sponsorship |
+| ------- | ---------------------------- | --------------------- |
+| Fee estimation | Not required: set max limit and bundler handles it | Required: must estimate and handle retries |
+| Gas overhead | Lower (no paymaster contract calls) | Higher (requires onchain verification) |
+| Latency | Lower | Higher |
+| Multi-chain setup | Simpler | More complex (paymaster contracts must be deployed per chain) |
+
+### Implementation differences
+
+<Tabs>
+  <Tab title="React / JavaScript">
+    For both BSO and Paymaster Sponsorship, the implementation is the same – simply use your policy ID created on the dashboard. No code changes are needed when switching between policy types.
+  </Tab>
+  <Tab title="API" language="bash">
+    The key difference when using the API directly:
+    * **Paymaster Sponsorship**: Include `policyId` in the call to `wallet_prepareCalls`
+    * **Bundler Sponsored Operations**: Include `policyId` in the call to `wallet_sendPreparedCalls` (in addition to or instead of `wallet_prepareCalls`)
+  </Tab>
+</Tabs>
+
 ## Prerequisites
 
 * API key from your [dashboard](https://dashboard.alchemy.com/apps)
@@ -64,6 +117,10 @@ and bill the sponsoring developer in fiat.
   API
   parameters](https://www.alchemy.com/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls)
   for reference to the `paymasterService.policyIds` parameter.
+
+  <Note>
+    Multiple policy IDs are only supported with traditional paymaster sponsorship. Bundler Sponsored Operations and [ERC20 gas sponsorship](/wallets/transactions/pay-gas-with-any-token) do not support multiple policy IDs.
+  </Note>
 </Accordion>
 
 ## Next steps
