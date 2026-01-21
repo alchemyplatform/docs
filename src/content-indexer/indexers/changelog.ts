@@ -89,13 +89,15 @@ export const buildChangelogIndex = async (
 
       // Create path index entry
       const pathIndexEntry: ChangelogPathIndexEntry = {
+        type: "changelog",
         date, // ISO date string like "2025-12-11"
         filePath: filename, // Filename like "2025-12-11.md"
       };
 
       // Create Algolia record
       const algoliaRecord = truncateRecord({
-        objectID: `changelog-${date}`,
+        objectID: date, // Use date as objectID (e.g., "2025-01-20")
+        indexerType: "changelog",
         title: `Changelog - ${date}`,
         content, // Raw markdown - truncateRecord will clean it
         path: `changelog/${route}`,

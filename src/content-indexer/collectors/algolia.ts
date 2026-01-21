@@ -40,13 +40,19 @@ export class AlgoliaCollector {
   private records: AlgoliaRecord[] = [];
 
   /**
+   * @param indexerType - The indexer type to namespace objectIDs (e.g., "docs", "sdk", "changelog")
+   */
+  constructor(private indexerType: string) {}
+
+  /**
    * Add a search record for either MDX pages or API methods.
    *
    * ObjectID strategy:
    * Uses hash of the URL path for stable, unique identification.
    * - Uniqueness: URLs are guaranteed unique by the routing system
    * - Stability: Paths are designed to be stable (SEO, bookmarks, external links)
-   * - Enables incremental index updates in the future
+   * - indexerType field enables targeted deletion by indexer type
+   * - Enables partial index updates without affecting other indexer types
    */
   addRecord(params: AddRecordParams): void {
     const breadcrumbTitles = extractBreadcrumbTitles(params.breadcrumbs);
@@ -54,6 +60,7 @@ export class AlgoliaCollector {
 
     this.records.push({
       objectID,
+      indexerType: this.indexerType,
       path: params.path,
       pageType: params.pageType,
       title: params.title,

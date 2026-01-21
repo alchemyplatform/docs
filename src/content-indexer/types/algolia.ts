@@ -3,7 +3,8 @@
  * Each record represents a searchable page (Guide or API method).
  */
 export interface AlgoliaRecord {
-  objectID: string; // Hash-based unique identifier - REQUIRED by Algolia
+  objectID: string; // Hash-based unique identifier (e.g., "a3f2c8e1b9d4f6a7") - REQUIRED by Algolia
+  indexerType: string; // Indexer type for filtering/targeted deletion (e.g., "docs", "sdk", "changelog")
   path: string; // Full pathname without leading slash (e.g., "reference/ethereum/eth-getbalance").
   pageType: "API Method" | "Guide" | "Changelog";
   title: string;
