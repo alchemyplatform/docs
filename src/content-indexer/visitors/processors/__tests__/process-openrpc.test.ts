@@ -10,7 +10,7 @@ import { processOpenRpcSpec } from "../process-openrpc.ts";
 
 describe("processOpenRpcSpec", () => {
   test("should return empty result for invalid spec", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const result = processOpenRpcSpec({
@@ -40,7 +40,7 @@ describe("processOpenRpcSpec", () => {
   });
 
   test("should process methods and create index entries", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenRpcSpec({
       spec: openRpcSpecFactory({
@@ -85,7 +85,7 @@ describe("processOpenRpcSpec", () => {
   });
 
   test("should create navigation with API section wrapper", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenRpcSpec({
       spec: openRpcSpecFactory({
@@ -127,7 +127,7 @@ describe("processOpenRpcSpec", () => {
   });
 
   test("should flatten navigation if flattened is true", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenRpcSpec({
       spec: openRpcSpecFactory({
@@ -159,7 +159,7 @@ describe("processOpenRpcSpec", () => {
   });
 
   test("should not create nav if hidden", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenRpcSpec({
       spec: openRpcSpecFactory({
@@ -192,7 +192,7 @@ describe("processOpenRpcSpec", () => {
   });
 
   test("should add Algolia records for methods", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     processOpenRpcSpec({
       spec: openRpcSpecFactory({
@@ -236,7 +236,7 @@ describe("processOpenRpcSpec", () => {
   });
 
   test("should use method name as title", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     processOpenRpcSpec({
       spec: openRpcSpecFactory({
@@ -269,7 +269,7 @@ describe("processOpenRpcSpec", () => {
   });
 
   test("should use description over summary for Algolia content", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     processOpenRpcSpec({
       spec: openRpcSpecFactory({

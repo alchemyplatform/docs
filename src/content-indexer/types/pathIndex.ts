@@ -22,6 +22,7 @@ export interface OpenApiPathIndexEntry {
 }
 
 export interface ChangelogPathIndexEntry {
+  type: "changelog";
   date: string; // ISO date string like "2025-12-11"
   filePath: string; // Filename like "2025-12-11.md"
 }

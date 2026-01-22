@@ -9,7 +9,7 @@ import { visitNavigationItem } from "../index.ts";
 
 describe("visitNavigationItem dispatcher", () => {
   test("should route page config to visitPage", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const result = visitNavigationItem({
       item: {
         page: "Quickstart",
@@ -28,7 +28,7 @@ describe("visitNavigationItem dispatcher", () => {
   });
 
   test("should route link config to visitLink", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const result = visitNavigationItem({
       item: {
         link: "External",
@@ -47,7 +47,7 @@ describe("visitNavigationItem dispatcher", () => {
   });
 
   test("should route section config to visitSection", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const result = visitNavigationItem({
       item: {
         section: "Getting Started",
@@ -71,7 +71,7 @@ describe("visitNavigationItem dispatcher", () => {
   });
 
   test("should skip changelog config", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const result = visitNavigationItem({
       item: {
         changelog: "CHANGELOG.md",
@@ -89,7 +89,7 @@ describe("visitNavigationItem dispatcher", () => {
   });
 
   test("should handle API config routing", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     // Add a mock spec to cache

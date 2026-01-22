@@ -9,7 +9,7 @@ import { processOpenApiSpec } from "../process-openapi.ts";
 
 describe("processOpenApiSpec", () => {
   test("should process operations and create index entries", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenApiSpec({
       spec: openApiSpecFactory({
@@ -53,7 +53,7 @@ describe("processOpenApiSpec", () => {
   });
 
   test("should group operations by tag", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenApiSpec({
       spec: openApiSpecFactory({
@@ -106,7 +106,7 @@ describe("processOpenApiSpec", () => {
   });
 
   test("should use summary as operation title", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     processOpenApiSpec({
       spec: openApiSpecFactory({
@@ -141,7 +141,7 @@ describe("processOpenApiSpec", () => {
   });
 
   test("should fallback to operationId for title if no summary", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     processOpenApiSpec({
       spec: openApiSpecFactory({
@@ -175,7 +175,7 @@ describe("processOpenApiSpec", () => {
   });
 
   test("should include tag in path if tag exists", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenApiSpec({
       spec: openApiSpecFactory({
@@ -209,7 +209,7 @@ describe("processOpenApiSpec", () => {
   });
 
   test("should add Algolia records with breadcrumbs", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     processOpenApiSpec({
       spec: openApiSpecFactory({
@@ -252,7 +252,7 @@ describe("processOpenApiSpec", () => {
   });
 
   test("should not add Algolia records if hidden", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     processOpenApiSpec({
       spec: openApiSpecFactory({
@@ -286,7 +286,7 @@ describe("processOpenApiSpec", () => {
   });
 
   test("should handle operations without tags", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     const result = processOpenApiSpec({
       spec: openApiSpecFactory({
