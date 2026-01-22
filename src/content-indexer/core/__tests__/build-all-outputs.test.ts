@@ -49,7 +49,7 @@ describe("buildAllOutputs", () => {
       },
     });
 
-    const result = buildAllOutputs(docsYml, cache);
+    const result = buildAllOutputs(docsYml, cache, "docs");
 
     // Verify visitor was called
     expect(visitNavigationItem).toHaveBeenCalled();
@@ -105,7 +105,7 @@ describe("buildAllOutputs", () => {
         },
       });
 
-    const result = buildAllOutputs(docsYml, cache);
+    const result = buildAllOutputs(docsYml, cache, "docs");
 
     // Verify both tabs were processed
     expect(visitNavigationItem).toHaveBeenCalledTimes(2);
@@ -137,7 +137,7 @@ describe("buildAllOutputs", () => {
       navItem: { type: "page", title: "Test", path: "/test" },
     });
 
-    buildAllOutputs(docsYml, cache);
+    buildAllOutputs(docsYml, cache, "docs");
 
     // Only the valid item should be processed
     expect(visitNavigationItem).toHaveBeenCalledTimes(1);
@@ -166,7 +166,7 @@ describe("buildAllOutputs", () => {
       indexEntries: {},
     });
 
-    buildAllOutputs(docsYml, cache);
+    buildAllOutputs(docsYml, cache, "sdk");
 
     // Verify visitor was called with correct path builder
     expect(visitNavigationItem).toHaveBeenCalledWith(
@@ -199,7 +199,7 @@ describe("buildAllOutputs", () => {
       indexEntries: {},
     });
 
-    buildAllOutputs(docsYml, cache);
+    buildAllOutputs(docsYml, cache, "docs");
 
     expect(visitNavigationItem).toHaveBeenCalled();
   });
@@ -225,7 +225,7 @@ describe("buildAllOutputs", () => {
       ],
     });
 
-    const result = buildAllOutputs(docsYml, cache);
+    const result = buildAllOutputs(docsYml, cache, "docs");
 
     // Both items should be added
     expect(result.navigationTrees.guides).toHaveLength(2);
@@ -263,9 +263,10 @@ describe("buildAllOutputs", () => {
       };
     });
 
-    const result = buildAllOutputs(docsYml, cache);
+    const result = buildAllOutputs(docsYml, cache, "docs");
 
     expect(result.algoliaRecords).toHaveLength(1);
     expect(result.algoliaRecords[0].title).toBe("Test");
+    expect(result.algoliaRecords[0].indexerType).toBe("docs");
   });
 });

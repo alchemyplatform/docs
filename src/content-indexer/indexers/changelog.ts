@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -86,19 +87,28 @@ export const buildChangelogIndex = async (
 
       // Build route: e.g., "2025/11/20"
       const route = `${year}/${Number(month)}/${Number(day)}`;
+      const fullPath = `changelog/${route}`;
 
       // Create path index entry
       const pathIndexEntry: ChangelogPathIndexEntry = {
+        type: "changelog",
         date, // ISO date string like "2025-12-11"
         filePath: filename, // Filename like "2025-12-11.md"
       };
 
+      // Generate hash-based objectID from path (consistent with docs/SDK)
+      const objectID = createHash("sha256")
+        .update(fullPath)
+        .digest("hex")
+        .substring(0, 16);
+
       // Create Algolia record
       const algoliaRecord = truncateRecord({
-        objectID: `changelog-${date}`,
+        objectID,
+        indexerType: "changelog",
         title: `Changelog - ${date}`,
         content, // Raw markdown - truncateRecord will clean it
-        path: `changelog/${route}`,
+        path: fullPath,
         pageType: "Changelog" as const,
         breadcrumbs: ["Changelog", date],
       });

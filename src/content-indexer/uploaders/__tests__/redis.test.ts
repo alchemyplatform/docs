@@ -33,11 +33,11 @@ describe("storeToRedis", () => {
 
     await storeToRedis(pathIndex, undefined, {
       branchId: "main",
-      indexerType: "main",
+      indexerType: "docs",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/path-index:main",
+      "main:index:docs.json",
       JSON.stringify(pathIndex, null, 2),
       {}, // No TTL for main branch
     );
@@ -55,11 +55,11 @@ describe("storeToRedis", () => {
 
     await storeToRedis(pathIndex, undefined, {
       branchId: "feature-abc",
-      indexerType: "main",
+      indexerType: "docs",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "feature-abc/path-index:main",
+      "feature-abc:index:docs.json",
       JSON.stringify(pathIndex, null, 2),
       { ex: 2592000 }, // 30 days in seconds
     );
@@ -78,11 +78,11 @@ describe("storeToRedis", () => {
 
     await storeToRedis({}, navigationTrees, {
       branchId: "main",
-      indexerType: "main",
+      indexerType: "docs",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/nav-tree:guides",
+      "main:nav:guides.json",
       JSON.stringify(navigationTrees.guides, null, 2),
       {}, // No TTL for main branch
     );
@@ -108,16 +108,16 @@ describe("storeToRedis", () => {
 
     await storeToRedis({}, navigationTrees, {
       branchId: "main",
-      indexerType: "main",
+      indexerType: "docs",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/nav-tree:guides",
+      "main:nav:guides.json",
       JSON.stringify(navigationTrees.guides, null, 2),
       {}, // No TTL for main branch
     );
     expect(mockSet).toHaveBeenCalledWith(
-      "main/nav-tree:reference",
+      "main:nav:reference.json",
       JSON.stringify(navigationTrees.reference, null, 2),
       {}, // No TTL for main branch
     );
@@ -139,7 +139,7 @@ describe("storeToRedis", () => {
     });
 
     expect(mockSet).toHaveBeenCalledWith(
-      "main/path-index:sdk",
+      "main:index:sdk.json",
       JSON.stringify(pathIndex, null, 2),
       {}, // No TTL for main branch
     );
@@ -162,7 +162,7 @@ describe("storeToRedis", () => {
 
     await storeToRedis(pathIndex, navigationTrees, {
       branchId: "main",
-      indexerType: "main",
+      indexerType: "docs",
     });
 
     // Should have called set 3 times (1 pathIndex + 2 nav trees)

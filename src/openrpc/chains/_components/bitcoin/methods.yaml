@@ -297,6 +297,140 @@ components:
             name: result
             value: 4.123456789e+20
 
+    getnetworkinfo:
+      name: getnetworkinfo
+      summary: Get various state info regarding P2P networking
+      description: >
+        Returns an object containing various state info regarding P2P networking,
+        including version information, network status, connections, and relay fees.
+      params: []
+      result:
+        name: result
+        description: Object containing P2P networking state information.
+        schema:
+          type: object
+          properties:
+            version:
+              type: integer
+              description: The server version.
+            subversion:
+              type: string
+              description: The server subversion string (e.g., "/Satoshi:x.x.x/").
+            protocolversion:
+              type: integer
+              description: The protocol version.
+            localservices:
+              type: string
+              description: The services we offer to the network (hex string).
+            localservicesnames:
+              type: array
+              items:
+                type: string
+              description: List of network services offered.
+            localrelay:
+              type: boolean
+              description: True if transaction relay is requested from peers.
+            timeoffset:
+              type: integer
+              description: The time offset in seconds.
+            connections:
+              type: integer
+              description: The total number of connections.
+            connections_in:
+              type: integer
+              description: The number of inbound connections.
+            connections_out:
+              type: integer
+              description: The number of outbound connections.
+            networkactive:
+              type: boolean
+              description: Whether P2P networking is enabled.
+            networks:
+              type: array
+              description: Information per network.
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Network name (ipv4, ipv6, onion, i2p, cjdns).
+                  limited:
+                    type: boolean
+                    description: Is the network limited using -onlynet?
+                  reachable:
+                    type: boolean
+                    description: Is the network reachable?
+                  proxy:
+                    type: string
+                    description: The proxy used for this network, or empty if none.
+                  proxy_randomize_credentials:
+                    type: boolean
+                    description: Whether randomized credentials are used.
+            relayfee:
+              type: number
+              description: Minimum relay fee for transactions in BTC/kvB.
+            incrementalfee:
+              type: number
+              description: Minimum fee increment for mempool limiting or BIP 125 replacement in BTC/kvB.
+            localaddresses:
+              type: array
+              description: List of local addresses.
+              items:
+                type: object
+                properties:
+                  address:
+                    type: string
+                    description: Network address.
+                  port:
+                    type: integer
+                    description: Network port.
+                  score:
+                    type: integer
+                    description: Relative score.
+            warnings:
+              type: string
+              description: Any network and blockchain warnings.
+      examples:
+        - name: getnetworkinfo example
+          params: []
+          result:
+            name: result
+            value:
+              version: 270000
+              subversion: "/Satoshi:27.0.0/"
+              protocolversion: 70016
+              localservices: "0000000000000409"
+              localservicesnames:
+                - "NETWORK"
+                - "WITNESS"
+                - "NETWORK_LIMITED"
+              localrelay: true
+              timeoffset: 0
+              connections: 10
+              connections_in: 2
+              connections_out: 8
+              networkactive: true
+              networks:
+                - name: "ipv4"
+                  limited: false
+                  reachable: true
+                  proxy: ""
+                  proxy_randomize_credentials: false
+                - name: "ipv6"
+                  limited: false
+                  reachable: true
+                  proxy: ""
+                  proxy_randomize_credentials: false
+                - name: "onion"
+                  limited: true
+                  reachable: false
+                  proxy: ""
+                  proxy_randomize_credentials: false
+              relayfee: 0.00001
+              incrementalfee: 0.00001
+              localaddresses: []
+              warnings: ""
+
     getchaintips:
       name: getchaintips
       summary: Get information about all known tips in the block tree
