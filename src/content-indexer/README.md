@@ -22,7 +22,7 @@ Indexes manual documentation content from the local `docs` repository.
 * **Updates**:
   * `{branch}/path-index:main` (Redis, 30-day TTL for preview branches)
   * `{branch}/nav-tree:{tab}` for all tabs (Redis, 30-day TTL for preview branches)
-  * `{branch}_alchemy_docs` (Algolia, production mode only)
+  * `{branch}_alchemy_docs` (Algolia, production mode only - updates records where `indexerType:docs`)
 
 ### 2. SDK Indexer (`pnpm index:sdk`)
 
@@ -33,7 +33,7 @@ Indexes SDK reference documentation from the `aa-sdk` repository.
 * **Updates**:
   * `{branch}/path-index:sdk` (Redis)
   * `{branch}/nav-tree:wallets` (Redis, merged with existing manual content)
-  * `{branch}_alchemy_docs_sdk` (Algolia)
+  * `{branch}_alchemy_docs` (Algolia - updates records where `indexerType:sdk`)
 
 ### 3. Changelog Indexer (`pnpm index:changelog`)
 
@@ -44,7 +44,7 @@ Indexes changelog entries from date-based markdown files.
 * **Updates**:
   * `{branch}/path-index:changelog` (Redis)
   * No navigation tree (changelogs don't have a sidebar)
-  * `{branch}_alchemy_docs_changelog` (Algolia)
+  * `{branch}_alchemy_docs` (Algolia - updates records where `indexerType:changelog`)
 
 ## Key Outputs
 
@@ -156,13 +156,11 @@ Redis (with TTL for preview branches):
 - feature-abc/path-index:main (30-day TTL)
 - feature-abc/nav-tree:wallets (30-day TTL)
 
-Algolia (production mode only):
-- main_alchemy_docs
-- main_alchemy_docs_sdk
-- main_alchemy_docs_changelog
+Algolia (production mode only, unified index per branch):
+- main_alchemy_docs (contains all content types with indexerType field)
 
-Note: Preview branches do NOT create Algolia indices.
-Preview environments use production search indices.
+Note: Each indexer updates only its own records (filtered by indexerType) in the unified index.
+Preview branches use production Algolia indices for search.
 ```
 
 ### Wallets Navigation Tree Merging
@@ -213,18 +211,21 @@ All Algolia records automatically have markdown syntax stripped using the `remov
 ### Stable ObjectIDs for Algolia
 
 Algolia requires unique `objectID` for each record. We generate deterministic
-hashes (SHA-256, first 16 chars) from URL paths:
+hashes from URL paths:
 
-* **All pages (MDX and API methods)**: Hash of the URL path (e.g., hash of
-  `"reference/eth-getbalance"`)
+* **All pages (MDX and API methods)**: SHA-256 hash of the URL path (first 16 chars)
+  * Example: `a3f2c8e1b9d4f6a7`
   * Uniqueness: URLs are guaranteed unique by the routing system
-  * Stability: Paths are designed to be stable. Changes happen but infrequently
-  * Enables incremental index updates in the future
-  * Generates clean IDs like `"a3f2c8e1b9d4f6a7"`
+  * Stability: Paths are designed to be stable (SEO, bookmarks, external links)
+  * Enables partial index updates via `indexerType` field filtering
 
-**Why path-based?** Paths are the web's natural unique identifier and are specifically
-designed to be stable. Unlike titles or breadcrumbs, URL changes are typically
-rare and intentional (considered breaking changes for SEO and bookmarks).
+**IndexerType Field:** Each record includes an `indexerType` field (e.g., "docs", "sdk",
+"changelog") to enable targeted deletion and updates. This allows multiple indexers to
+write to a single unified index without conflicts.
+
+**Why path-based hashes?** Paths are the web's natural unique identifier and are
+specifically designed to be stable. Unlike titles or breadcrumbs, URL changes are
+typically rare and intentional (considered breaking changes for SEO and bookmarks).
 
 **Why hashes?** Provides compact, opaque identifiers that don't expose internal
 structure while maintaining the URL's uniqueness guarantee.
@@ -261,27 +262,35 @@ feature-xyz/path-index:main → Preview branch
 
 This allows preview deployments to have independent data without interfering with production.
 
-### 4. Separate Algolia Indices
+### 4. Unified Algolia Index with IndexerType Field
 
-Main, SDK, and changelog content use separate Algolia indices:
+All content types (docs, SDK, changelog) write to a single Algolia index per branch:
 
 ```text
-- main_alchemy_docs
-- main_alchemy_docs_sdk
-- main_alchemy_docs_changelog
+- main_alchemy_docs (contains all content types)
 ```
 
-**Why?** Each indexer runs independently, so separate indices allow atomic updates without affecting other content. The frontend searches all indices simultaneously using Algolia's multi-index feature.
+**IndexerType Field:** Each record has an `indexerType` field for targeted updates:
 
-### 5. Atomic Index Swap for Algolia
+* `indexerType: "docs"` for main documentation
+* `indexerType: "sdk"` for SDK references
+* `indexerType: "changelog"` for changelog entries
 
-Each indexer fully replaces its Algolia index on every run using atomic swap:
+**ObjectID Format:** Simple hash of URL path (e.g., `a3f2c8e1b9d4f6a7`)
 
-1. Upload to temporary index
-2. Copy settings from production
-3. Atomic move (replace production with temp)
+**Why?** Allows multiple independent indexers to write to the same index without conflicts. Each indexer can update only its own records by filtering on `indexerType:docs`, etc.
 
-**Why?** Our objectIDs are content-based. When files move or are renamed, we generate new IDs, leaving old records orphaned. Full replacement ensures the index is always clean and up-to-date with zero search downtime.
+### 5. Delete-Then-Upload Strategy for Algolia
+
+Each indexer updates only its own records in the unified index:
+
+1. Delete all records matching the indexer type (e.g., `indexerType:docs`)
+2. Upload new records with the same indexerType
+3. Measure and log downtime (gap when records are unavailable)
+
+**Why?** Enables partial index updates without affecting other content types. Simpler than atomic swap and uses similar API operations. Brief downtime is measured and logged to monitor performance.
+
+**Downtime Monitoring:** Each upload logs the gap between delete completion and upload start (when records are unavailable to users). Warning shown if downtime exceeds 5 seconds.
 
 ### 6. Markdown Stripping for Search
 

@@ -1,7 +1,6 @@
-import { createHash } from "crypto";
-
 import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
 import type { NavItem } from "@/content-indexer/types/navigation.ts";
+import { generateHash } from "@/content-indexer/utils/generate-hash.ts";
 
 /**
  * Extracts breadcrumb titles from NavItems for Algolia.
@@ -40,20 +39,27 @@ export class AlgoliaCollector {
   private records: AlgoliaRecord[] = [];
 
   /**
+   * @param indexerType - The indexer type to namespace objectIDs (e.g., "docs", "sdk", "changelog")
+   */
+  constructor(private indexerType: string) {}
+
+  /**
    * Add a search record for either MDX pages or API methods.
    *
    * ObjectID strategy:
    * Uses hash of the URL path for stable, unique identification.
    * - Uniqueness: URLs are guaranteed unique by the routing system
    * - Stability: Paths are designed to be stable (SEO, bookmarks, external links)
-   * - Enables incremental index updates in the future
+   * - indexerType field enables targeted deletion by indexer type
+   * - Enables partial index updates without affecting other indexer types
    */
   addRecord(params: AddRecordParams): void {
     const breadcrumbTitles = extractBreadcrumbTitles(params.breadcrumbs);
-    const objectID = this.generateHash(params.path);
+    const objectID = generateHash(params.path);
 
     this.records.push({
       objectID,
+      indexerType: this.indexerType,
       path: params.path,
       pageType: params.pageType,
       title: params.title,
@@ -69,13 +75,5 @@ export class AlgoliaCollector {
    */
   getRecords(): AlgoliaRecord[] {
     return this.records;
-  }
-
-  /**
-   * Generate a stable hash-based objectID from a source string.
-   * Returns first 16 characters of SHA-256 hash for a clean ID format.
-   */
-  private generateHash(source: string): string {
-    return createHash("sha256").update(source).digest("hex").substring(0, 16);
   }
 }
