@@ -7,41 +7,32 @@ import { truncateRecord } from "@/content-indexer/utils/truncate-record.ts";
 const ALGOLIA_INDEX_NAME_BASE = "alchemy_docs";
 
 /**
- * Builds an Algolia index name with branch and type scoping.
- * Pattern: {branchId}_{baseName}[_{indexerType}]
+ * Builds a unified Algolia index name with branch scoping.
+ * Pattern: {branchId}_{baseName}
+ *
+ * All indexer types (docs, sdk, changelog) write to the same index,
+ * differentiated by namespace-prefixed objectIDs (e.g., "docs:abc123").
  *
  * Examples:
- * - main_alchemy_docs (main branch, docs content)
- * - main_alchemy_docs_sdk (main branch, SDK content)
- * - abc_alchemy_docs (branch-abc, docs content)
- * - abc_alchemy_docs_sdk (branch-abc, SDK content)
+ * - main_alchemy_docs (main branch, all content types)
+ * - feature-xyz_alchemy_docs (feature branch, all content types)
  */
-const buildIndexName = (
-  base: string,
-  indexerType: IndexerType,
-  branchId: string,
-): string => {
-  const parts = [branchId, base];
-
-  // Add type suffix (except for docs content)
-  if (indexerType !== "docs") {
-    parts.push(indexerType);
-  }
-
-  return parts.join("_");
+const buildIndexName = (base: string, branchId: string): string => {
+  return `${branchId}_${base}`;
 };
 
 /**
- * Uploads records to Algolia using atomic index swap for zero-downtime updates.
+ * Uploads records to Algolia using delete-then-upload strategy with indexerType filtering.
  *
  * Process:
- * 1. Upload all records to a temporary index
- * 2. Copy settings/synonyms from production index (if exists)
- * 3. Atomically swap temp index to production
+ * 1. Delete all records matching the indexer type (e.g., indexerType:docs)
+ * 2. Upload new records with the same indexerType
+ * 3. Measure and log downtime (gap when records are unavailable)
  *
- * This ensures users never see empty search results during updates.
+ * This approach allows multiple indexers to write to a single unified index,
+ * with each indexer managing its own records via the indexerType field.
  *
- * @param records - Algolia records to upload
+ * @param records - Algolia records to upload (must have indexerType field)
  * @param options - Configuration options
  * @param options.indexerType - Type of indexer ("docs", "sdk", or "changelog")
  * @param options.branchId - Branch identifier for index naming (e.g., "main", "branch-abc")
@@ -64,59 +55,46 @@ export const uploadToAlgolia = async (
     return;
   }
 
-  const targetIndexName = buildIndexName(
-    ALGOLIA_INDEX_NAME_BASE,
-    options.indexerType,
-    options.branchId,
-  );
-
+  const indexName = buildIndexName(ALGOLIA_INDEX_NAME_BASE, options.branchId);
   const client = algoliasearch(appId, adminKey);
-  const tempIndexName = `${targetIndexName}_temp`;
 
   console.info(
-    `📤 Uploading ${records.length} records to Algolia (${targetIndexName})...`,
+    `📤 Uploading ${records.length} records to Algolia (${indexName}, indexerType:${options.indexerType})...`,
   );
 
   // Truncate records to fit Algolia's 100KB limit
   const truncatedRecords = records.map(truncateRecord);
 
   try {
-    // 1. Upload all records to temporary index
-    await client.saveObjects({
-      indexName: tempIndexName,
-      objects: truncatedRecords as unknown as Array<Record<string, unknown>>,
-    });
-
-    console.info(`   ✓ Uploaded ${records.length} records to ${tempIndexName}`);
-
-    // 2. Copy settings/synonyms from production index (if it exists)
-    try {
-      await client.operationIndex({
-        indexName: targetIndexName,
-        operationIndexParams: {
-          operation: "copy",
-          destination: tempIndexName,
-          scope: ["settings", "synonyms", "rules"],
-        },
-      });
-      console.info("   ✓ Copied settings from production index");
-    } catch (_error) {
-      console.info(
-        "   ℹ️  No existing production index found (might be first run)",
-      );
-    }
-
-    // 3. Atomic swap: move temp index to production
-    console.info(`   🔄 Swapping ${tempIndexName} → ${targetIndexName}...`);
-    await client.operationIndex({
-      indexName: tempIndexName,
-      operationIndexParams: {
-        operation: "move",
-        destination: targetIndexName,
+    // 1. Delete all records with matching indexerType to ensure no orphaned records
+    await client.deleteBy({
+      indexName,
+      deleteByParams: {
+        filters: `indexerType:${options.indexerType}`,
       },
     });
+    const deleteEnd = performance.now();
 
-    console.info(`✅ Successfully updated Algolia index: ${targetIndexName}`);
+    // 2. Upload new records
+    await client.saveObjects({
+      indexName,
+      objects: truncatedRecords as unknown as Array<Record<string, unknown>>,
+    });
+    const uploadEnd = performance.now();
+
+    // 3. Calculate downtime (time records were unavailable)
+    const downtime = uploadEnd - deleteEnd;
+
+    console.info(
+      `   ✓ Complete (downtime: ${downtime.toFixed(0)}ms - records unavailable during delete→upload gap)`,
+    );
+
+    // Warn if downtime is significant
+    if (downtime > 5000) {
+      console.warn(
+        `   ⚠️  High downtime (${(downtime / 1000).toFixed(1)}s). Consider atomic index swap for zero-downtime updates.`,
+      );
+    }
   } catch (error) {
     console.error("❌ Failed to upload to Algolia:", error);
     throw error;
