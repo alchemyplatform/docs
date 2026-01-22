@@ -21,9 +21,10 @@ import { PathBuilder } from "./path-builder.ts";
 export const buildAllOutputs = (
   docsYml: DocsYml,
   contentCache: ContentCache,
+  indexerType: string,
   stripPathPrefix?: string,
 ): BuildAllOutputsResult => {
-  const context = new ProcessingContext();
+  const context = new ProcessingContext(indexerType);
 
   // Process each tab in docs.yml
   docsYml.navigation.forEach((navItem) => {

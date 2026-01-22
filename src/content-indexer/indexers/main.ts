@@ -11,6 +11,7 @@ export interface DocsIndexerConfig {
   source: ContentSource;
   stripPathPrefix?: string;
   branchId: string;
+  indexerType: "docs" | "sdk";
   mode?: "preview" | "production"; // Only relevant for logging
 }
 
@@ -48,6 +49,7 @@ export const buildDocsContentIndex = async (
   const outputs = buildAllOutputs(
     docsYml,
     contentCache,
+    config.indexerType,
     config.stripPathPrefix,
   );
 
