@@ -61,11 +61,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, deploy]
     if: ${{ needs.build.outputs.changed_specs != '[]' && needs.build.outputs.changed_specs != '' }}
+    permissions: {}
     steps:
       - name: Trigger spec revalidation
+        env:
+          CHANGED_SPECS: ${{ needs.build.outputs.changed_specs }}
         run: |
           # Create JSON payload and call revalidation API
-          PAYLOAD=$(jq -n --argjson urls '${{ needs.build.outputs.changed_specs }}' '{specUrls: $urls}')
+          PAYLOAD=$(jq -n --argjson urls "$CHANGED_SPECS" '{specUrls: $urls}')
 
           curl -X POST "${{ secrets.DOCS_SITE_URL }}/api/revalidate/specs" \
             -H "Authorization: Bearer ${{ secrets.DOCS_SITE_API_KEY }}" \

@@ -111,7 +111,7 @@ fi
 
 if [ "$CHANGE_COUNT" -gt 0 ]; then
   echo "✓ Found $CHANGE_COUNT changed spec(s):" >&2
-  echo "$CHANGED_URLS" | jq -r '.[] | "  - " + .' >&2 | head -10
+  echo "$CHANGED_URLS" | jq -r '.[] | "  - " + .' | head -10 >&2
   if [ "$CHANGE_COUNT" -gt 10 ]; then
     echo "  ... and $((CHANGE_COUNT - 10)) more" >&2
   fi
