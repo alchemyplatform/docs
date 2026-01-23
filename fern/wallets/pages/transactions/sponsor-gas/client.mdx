@@ -44,23 +44,16 @@ export const config = {
   policyId: process.env.ALCHEMY_POLICY_ID!,
 };
 
-const clientParams = {
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
+
+export const client = createSmartWalletClient({
   transport: alchemy({
     apiKey: process.env.ALCHEMY_API_KEY!,
   }),
   chain: sepolia,
-  signer: LocalAccountSigner.privateKeyToAccountSigner(
-    process.env.PRIVATE_KEY! as Hex,
-  ),
-};
-
-const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-const account = await clientWithoutAccount.requestAccount();
-
-export const client = createSmartWalletClient({
-  ...clientParams,
-  account: account.address,
+  signer,
 });
 ```
 
