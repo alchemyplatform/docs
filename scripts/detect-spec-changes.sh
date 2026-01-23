@@ -119,8 +119,8 @@ else
   echo "✓ No spec changes detected" >&2
 fi
 
-# Output changed URLs as JSON array to stdout (for GHA to capture)
-echo "$CHANGED_URLS"
+# Output changed URLs as JSON array to stdout (compact, single-line for GHA)
+echo "$CHANGED_URLS" | jq -c
 
 # Cleanup
 rm -f "$TMP_HASHES" "$OLD_HASHES_FILE"
