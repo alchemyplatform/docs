@@ -32,6 +32,24 @@ Bundler sponsorship, in contrast:
   For beta access, please reach out to [account-abstraction@alchemy.com](mailto:account-abstraction@alchemy.com).
 </Info>
 
+## Key Advantage: No Fee Estimation or Retries Required
+
+One of the most significant benefits of bundler sponsorship is the **elimination of fee estimation and retry logic**. With traditional user operations, you need to:
+
+* Estimate gas fees before submitting operations
+* Monitor if your estimated fees are sufficient
+* Implement drop-and-replace logic when fees are too low
+* Handle retry mechanisms when operations fail due to gas pricing
+
+**With bundler sponsorship, this complexity disappears entirely.** Simply set your Max Spend Per UO limit high enough, and the bundler will automatically handle landing your user operation without you needing to think about gas fees or implement retry logic. The bundler dynamically adjusts gas prices as needed to ensure your operation lands onchain, as long as it stays within your configured maximum.
+
+This provides:
+
+* **Zero fee estimation complexity**: No need to predict or calculate gas fees
+* **No retry logic required**: The bundler handles landing the operation automatically
+* **Simplified client code**: Remove drop-and-replace and retry mechanisms from your application
+* **Higher reliability**: Operations land successfully without manual intervention or monitoring
+
 ## Policy Setup
 
 To use bundler sponsorship, you must create a Gas Manager policy of type **Bundler Sponsored Operations** in your Alchemy dashboard.
@@ -145,6 +163,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 
 ## Benefits
 
+* **No Fee Estimation or Retries**: Eliminates the need for gas fee estimation, drop-and-replace logic, and retry mechanisms. Just set your max limit and the bundler handles the rest
 * **Simplified Architecture**: No need to deploy or manage paymaster contracts
 * **Lower Onchain Gas Costs**: Eliminates the gas overhead of paymaster verification and contract calls
 * **Reduced Latency**: Fewer network calls and onchain interactions result in faster user operation processing
