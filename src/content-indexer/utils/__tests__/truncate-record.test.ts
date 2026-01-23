@@ -8,6 +8,7 @@ describe("truncateRecord", () => {
   test("should return record unchanged if under size limit", () => {
     const record: AlgoliaRecord = {
       objectID: "abc123",
+      indexerType: "docs",
       path: "guides/quickstart",
       pageType: "Guide",
       title: "Quickstart",
@@ -25,6 +26,7 @@ describe("truncateRecord", () => {
     const largeContent = "x".repeat(150_000);
     const record: AlgoliaRecord = {
       objectID: "abc123",
+      indexerType: "docs",
       path: "guides/large",
       pageType: "Guide",
       title: "Large Page",
@@ -45,6 +47,7 @@ describe("truncateRecord", () => {
     const largeContent = "x".repeat(150_000);
     const record: AlgoliaRecord = {
       objectID: "abc123",
+      indexerType: "sdk",
       path: "reference/method",
       pageType: "API Method",
       title: "eth_getBalance",
@@ -65,6 +68,7 @@ describe("truncateRecord", () => {
   test("should throw error if overhead is too large", () => {
     const record: AlgoliaRecord = {
       objectID: "abc123",
+      indexerType: "docs",
       path: "guides/test",
       pageType: "Guide",
       title: "Test",
@@ -83,6 +87,7 @@ describe("truncateRecord", () => {
     const largeContent = "x".repeat(150_000);
     const record: AlgoliaRecord = {
       objectID: "abc123",
+      indexerType: "changelog",
       path: "guides/large",
       pageType: "Guide",
       title: "Large Page",
@@ -107,6 +112,7 @@ describe("truncateRecord", () => {
 
     const record: AlgoliaRecord = {
       objectID: "abc",
+      indexerType: "docs",
       path: "path",
       pageType: "Guide",
       title: "Title",

@@ -8,7 +8,7 @@ import { visitLink } from "../visit-link.ts";
 
 describe("visitLink", () => {
   test("should create link nav item", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const result = visitLink({
       item: {
         link: "External Resource",
@@ -31,7 +31,7 @@ describe("visitLink", () => {
   });
 
   test("should not add path index entries for links", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const result = visitLink({
       item: {
         link: "GitHub",
@@ -50,7 +50,7 @@ describe("visitLink", () => {
   });
 
   test("should preserve exact link title and href", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const result = visitLink({
       item: {
         link: "API Reference (External)",

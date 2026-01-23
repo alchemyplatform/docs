@@ -68,6 +68,7 @@ const buildIndexResults = async (
           basePath: path.join(process.cwd(), "fern"),
         },
         branchId,
+        indexerType: "docs",
         mode,
       });
     case "sdk": {
@@ -79,6 +80,7 @@ const buildIndexResults = async (
         },
         stripPathPrefix: "wallets/",
         branchId,
+        indexerType: "sdk",
       });
       return {
         ...result,
