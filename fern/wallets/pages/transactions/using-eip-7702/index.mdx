@@ -137,26 +137,20 @@ Once delegated, the user's account behaves as a Smart Wallet while keeping the s
     process.env.PRIVATE_KEY!,
   );
 
-  // Create client without account first
-  const clientWithoutAccount = createSmartWalletClient({
+  const client = createSmartWalletClient({
     transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
     chain: sepolia,
     signer,
   });
 
   // Request a Smart Contract Account
-  const account = await clientWithoutAccount.requestAccount();
+  const account = await client.requestAccount();
 
-  // Create a new client with the SCA address
-  const client = createSmartWalletClient({
-    transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
-    chain: sepolia,
-    signer,
-    account: account.address, // Use the SCA address, not the signer address
+  // Use the SCA address as the `from` param to bypass 7702 mode
+  await client.sendCalls({
+    from: account.address,
+    calls: [...],
   });
-
-  // Transactions will now use the SCA instead of 7702
-  await client.sendCalls({ calls: [...] });
   ```
 
   **API Example:**
@@ -192,8 +186,6 @@ Once delegated, the user's account behaves as a Smart Wallet while keeping the s
   * When you need backwards compatibility with existing Smart Contract Accounts
   * When working with chains that don't yet support EIP-7702
   * When you have specific requirements for smart contract account architecture
-
-  Note: If an existing non-7702 account is found in our database for a given signer, the system will automatically use that account even when you pass the signer address directly.
 </Accordion>
 
 ## Next steps

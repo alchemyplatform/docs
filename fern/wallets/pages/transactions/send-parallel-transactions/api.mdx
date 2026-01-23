@@ -2,7 +2,7 @@ You will need to fill in values wrapped in curly braces like `{SIGNER_ADDRESS}`.
 
 <Steps>
   <Step title="Prepare parallel calls">
-    Use your signer address directly as the `from` field. To send parallel calls, use the `nonceOverride` capability. This allows us to specify a `nonceKey` parameter, a hex value that fits inside a `uint152` and differentiates transactions.
+    Use your signer address directly as the `from` field to enable [EIP-7702](/wallets/transactions/using-eip-7702) by default. To send parallel calls, use the `nonceOverride` capability. This allows us to specify a `nonceKey` parameter, a hex value that fits inside a `uint152` and differentiates transactions.
 
     In production, as long as the nonce key override is nonzero (zero is the default), and different between `prepareCalls` requests, the transactions will be processed in parallel.
 
@@ -90,6 +90,8 @@ You will need to fill in values wrapped in curly braces like `{SIGNER_ADDRESS}`.
     ```
 
     Note the two `signatureRequest` objects that were returned for each request! Also keep the returned `data` object from each request, you'll need them when we send the parallel transactions!
+
+    On the first transaction for a new account, the response type will be `array` containing both an EIP-7702 authorization and a user operation. See [Send Transactions](/wallets/transactions/send-transactions) for handling first-time authorization signing.
   </Step>
 
   <Step title="Sign the signature requests">
