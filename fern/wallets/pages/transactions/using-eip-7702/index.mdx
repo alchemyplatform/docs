@@ -9,9 +9,14 @@ This gives users access to all of the capabilities of Smart Wallets including ga
 
 ## How it works
 
-EIP-7702 enables EOAs (Externally Owned Accounts) to delegate control to smart wallets that can execute code directly from their addresses. Users simply sign an authorization
-payload to delegate, then their account can function as a smart wallet with access to all of the user's assets. Wallet APIs will prompt the user to sign this authorization
-when the delegation is missing on the chain they're interacting with.
+EIP-7702 enables EOAs (Externally Owned Accounts) to delegate control to Smart Wallets that can execute code directly from their addresses. When using Transaction APIs:
+
+* Transaction APIs detect whether a user must first delegate via EIP-7702
+* If delegation is required, Transaction APIs prepare the correct authorization payload
+* Your application prompts the user to sign when required
+* We combine the delegation and transaction into a single onchain submission
+
+Once delegated, the user’s account behaves as a Smart Wallet while keeping the same address and assets.
 
 ## Prerequisites
 
@@ -31,61 +36,85 @@ when the delegation is missing on the chain they're interacting with.
 
 ## Advanced
 
-<Accordion title="When to use EIP-7702">
-  EIP-7702 is particularly useful when you have existing wallets that are being used as EOAs, but want access to smart wallet capabilities while allowing users
-  to keep their existing address and avoid transferring their assets. With EIP-7702, you can upgrade your users' EOAs directly to a Smart Wallet at their current address.
+<Accordion title="How Wallet APIs handle delegation and signing">
+  When interacting with Wallet APIs, delegation is handled automatically as part of transaction preparation.
 
-  See a full list of recommendations [here](https://www.alchemy.com/blog/eip-7702-ethereum-pectra-hardfork#for-developers-that-havent-yet-deployed-their-application).
+  If a user has not yet delegated on the target chain, the API response will include **multiple signature requests**:
+
+  1. An **EIP-7702 authorization signature** (for delegation)
+  2. An **ERC-4337 user operation signature** (for the transaction itself)
+
+  Your application is responsible for:
+
+  * Prompting the user to sign each request
+  * Returning the signatures to Alchemy
+
+  We combine these signatures into a single UserOperation and submits it to the bundler.
+  After delegation is completed, future requests only require a user operation signature.
 </Accordion>
 
-<Accordion title="Usage with prepare calls">
-  The EIP-7702 capability works with the prepare calls function in a similar way to its usage in send calls.
-  However, you are required to handle the authorization signature request in your code's logic.
+<Accordion title="EIP-7702 authorization signing">
+  When delegation is required, Wallet APIs return a **Prepared EIP-7702 Authorization** object.
 
-  When a delegation is required the response to prepare calls will return an array of signature requests:
+  This includes:
 
-  1. An authorization signature request
-  2. A user operation signature request
+  * The delegation contract address
+  * A nonce
+  * The chain ID
+  * A `signatureRequest` describing how the authorization must be signed
 
-  Both of these requests need to be signed and included in the `sendPreparedCalls` request. `sendPreparedCalls` takes
-  an array of signed calls for this purpose. These signatures are combined into a single transaction that is relayed onchain.
-  Once the delegation is signed, as long as the user doesn't delegate to another account, subsequent requests will only
-  contain the user operation signature request.
+  For quick testing purposes, you can simply use `eth_sign` to sign the `signatureRequest.rawPayload`.
 
-  Signing an authorization signature request requires logic specific to the wallet being used. Examples:
+  For production usage, we recommend:
+
+  * Verifying the delegation address is trusted
+  * Using a dedicated EIP-7702 signing utility to compute the hash to sign
+
+  Example of signing utility:
 
   * [Viem](https://viem.sh/docs/eip7702/signAuthorization)
-  * [Cast](https://getfoundry.sh/cast/reference/wallet/sign-auth/)
+</Accordion>
 
-  <Warning>
-    Most external wallet implementations, including browser wallets, will block
-    requests to sign authorizations. This is done for security reasons. To use
-    EIP-7702 ensure that your user's wallets support signing authorizations.
-  </Warning>
+<Accordion title="Delegation-only (smart account upgrade) flows">
+  You do not need to send a dummy or no-op transaction to perform delegation.
 
-  <Tabs>
-    <Tab title="JavaScript" language="typescript">
-      See the [`prepareCalls` SDK
-      reference](/wallets/reference/account-kit/wallet-client/functions/prepareCalls)
-    </Tab>
+  If a user needs to upgrade to a Smart Wallet:
 
-    <Tab title="API" language="bash">
-      See the [`wallet_prepareCalls` API
-      reference](/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls)
-    </Tab>
-  </Tabs>
+  * Call `wallet_prepareCalls` with your intended calls (or an empty call set)
+  * Wallet APIs detect that delegation is required
+  * The response includes the required authorization and user operation signature requests
+
+  We handle combining delegation with the user operation automatically.
+</Accordion>
+
+<Accordion title="Wallet compatibility considerations">
+  Some wallets restrict or block signing EIP-7702 authorizations for security reasons.
+
+  In particular:
+
+  * MetaMask only allows delegation to its own contract via its UI
+  * MetaMask does not support signing arbitrary EIP-7702 authorization payloads
+
+  For MetaMask users, you may need to rely on wallet-native features such as
+  ERC-5792 batching instead of direct EIP-7702 delegation flows.
+
+  Ensure your users’ wallets support EIP-7702 authorization signing before enabling this flow.
 </Accordion>
 
 <Accordion title="EIP-7702 delegations">
   The `eip7702Auth` capability supports the interface defined in [ERC-7902](https://eips.ethereum.org/EIPS/eip-7902).
-  However, it currently only supports a single delegation address: `0x69007702764179f14F51cdce752f4f775d74E139`. All other addresses will be rejected.
-  It's recommended to use `eip7702Auth: true` to avoid the extra complexity.
 
-  Once your account is delegated, it will remain delegated until the delegation is replaced or removed. We currently only support relaying delegations
-  for Modular Account v2. If you wish to replace or remove this delegation, you'll need to relay the delegation yourself or use a third party service.
-  Viem has a guide for this [here](https://viem.sh/docs/eip7702/contract-writes).
+  Currently, Wallet APIs only support delegation to the following contract:
+  `0x69007702764179f14F51cdce752f4f775d74E139` (Modular Account v2)
 
-  To reset an account back to a pure EOA with no delegation, delegate the account to `0x0000000000000000000000000000000000000000` as defined in [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702#behavior).
+  All other delegation addresses will be rejected.
+  To simplify usage, it is recommended to use `eip7702Auth: true`.
+
+  Once delegated, an account remains delegated until the delegation is replaced or removed.
+
+  To reset an account back to a pure EOA, delegate to
+  `0x0000000000000000000000000000000000000000`
+  as defined in [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702#behavior).
 </Accordion>
 
 <Accordion title="Third party signers">
