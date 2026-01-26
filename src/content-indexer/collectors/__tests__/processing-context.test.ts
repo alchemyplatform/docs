@@ -6,7 +6,7 @@ import { ProcessingContext } from "../processing-context.ts";
 
 describe("ProcessingContext", () => {
   test("should initialize with empty state", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const results = context.getResults();
 
     expect(results.pathIndex).toEqual({});
@@ -15,7 +15,7 @@ describe("ProcessingContext", () => {
   });
 
   test("should add path index entry", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     context.addPathIndexEntry("guides/quickstart", {
       type: "mdx",
       filePath: "fern/guides/quickstart.mdx",
@@ -29,7 +29,7 @@ describe("ProcessingContext", () => {
   });
 
   test("should add navigation item", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     context.addNavigationItem("guides", {
       title: "Quickstart",
       path: "/guides/quickstart",
@@ -42,7 +42,7 @@ describe("ProcessingContext", () => {
   });
 
   test("should add Guide Algolia record", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const breadcrumbs: NavItem[] = [
       { title: "Guides", path: "/guides", type: "section", children: [] },
     ];
@@ -59,10 +59,11 @@ describe("ProcessingContext", () => {
     expect(results.algoliaRecords).toHaveLength(1);
     expect(results.algoliaRecords[0].pageType).toBe("Guide");
     expect(results.algoliaRecords[0].httpMethod).toBeUndefined();
+    expect(results.algoliaRecords[0].indexerType).toBe("docs");
   });
 
   test("should add API Method Algolia record with httpMethod", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("sdk");
     const breadcrumbs: NavItem[] = [
       { title: "API", path: "/api", type: "section", children: [] },
     ];
@@ -80,10 +81,11 @@ describe("ProcessingContext", () => {
     expect(results.algoliaRecords).toHaveLength(1);
     expect(results.algoliaRecords[0].pageType).toBe("API Method");
     expect(results.algoliaRecords[0].httpMethod).toBe("POST");
+    expect(results.algoliaRecords[0].indexerType).toBe("sdk");
   });
 
   test("should accumulate multiple outputs simultaneously", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     // Add path index
     context.addPathIndexEntry("guides/quickstart", {
@@ -116,7 +118,7 @@ describe("ProcessingContext", () => {
   });
 
   test("should return correct stats", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("changelog");
 
     context.addPathIndexEntry("path1", {
       type: "mdx",
@@ -144,7 +146,7 @@ describe("ProcessingContext", () => {
   });
 
   test("should handle multiple tabs in navigation", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
 
     context.addNavigationItem("guides", {
       title: "Guide1",

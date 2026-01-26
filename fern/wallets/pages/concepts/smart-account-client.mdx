@@ -19,28 +19,7 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
 ## Implementation
 
 <Tabs>
-  <Tab title="React">
-    The [`useSmartAccountClient`](/docs/wallets/reference/account-kit/react/hooks/useSmartAccountClient) hook provides access to your smart account client using the API key and policy ID settings from \[`createConfig`]/docs/wallets/react/quickstart/ui-customization).
-
-    React hooks only support Alchemy Signer, so ensure you [set up your environment](/docs/wallets/react/quickstart/existing-project) and app integration before using the client.
-
-    <Note>
-      Don't call methods like `client.sendUserOperation()` directly on the client. Instead, use React hooks like [`useSendCalls`](/docs/wallets/reference/account-kit/react/hooks/useSendCalls) which provide better state management and error handling.
-    </Note>
-
-    ```tsx twoslash
-    import React from "react";
-    import { useSmartAccountClient, useSendCalls } from "@account-kit/react";
-
-    const { client } = useSmartAccountClient({});
-
-    const { sendCalls, isSendingCalls, sendCallsResult } = useSendCalls({
-      client,
-    });
-    ```
-  </Tab>
-
-  <Tab title="Javascript">
+  <Tab title="JavaScript" language="typescript">
     Use the [`createSmartWalletClient`](/docs/wallets/reference/account-kit/wallet-client/functions/createSmartWalletClient) function to create a smart wallet client.
 
     1. Replace the placeholders
@@ -77,7 +56,7 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
     ```
   </Tab>
 
-  <Tab title="API">
+  <Tab title="API" language="bash">
     When using the wallet [API](/docs/wallets/smart-wallet-quickstart/api), you don't need to define a client - send requests directly to the API endpoints.
   </Tab>
 </Tabs>
@@ -93,24 +72,6 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
     you'll need to upgrade it. Learn how to upgrade
     [here](/docs/wallets/smart-contracts/other-accounts/modular-account/upgrading-to-modular-account).
   </Tip>
-
-  **React and React Native**
-
-  Override the default account type using the `type` parameter:
-
-  * `type` (string) - Defines the smart account type. Options:
-    * `"ModularAccountV2"` (recommended and default)
-    * `"LightAccount"`
-    * `"MultiOwnerLightAccount"`
-
-  ```tsx twoslash
-  import React from "react";
-  import { useSmartAccountClient } from "@account-kit/react";
-
-  const { client } = useSmartAccountClient({
-    type: "LightAccount",
-  });
-  ```
 
   **Javascript**
 
@@ -140,17 +101,6 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
 
 <Accordion title="Connect to an existing account address">
   By default, account addresses are deterministically generated from the signer address. To connect to an existing account that doesn't match the deterministic address of your signer, specify the account address when creating the client.
-
-  **React & React Native**
-
-  ```tsx twoslash
-  import React from "react";
-  import { useSmartAccountClient } from "@account-kit/react";
-
-  const { client } = useSmartAccountClient({
-    accountAddress: "0xYOUR_SMART_ACCOUNT_ADDR",
-  });
-  ```
 
   **Javascript**
 

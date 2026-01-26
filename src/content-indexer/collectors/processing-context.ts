@@ -27,9 +27,10 @@ export interface BuildAllOutputsResult {
  */
 export class ProcessingContext {
   constructor(
+    indexerType: string,
     private pathIndexCollector = new PathIndexCollector(),
     private navigationTreesCollector = new NavigationTreesCollector(),
-    private algoliaCollector = new AlgoliaCollector(),
+    private algoliaCollector = new AlgoliaCollector(indexerType),
   ) {}
 
   /**

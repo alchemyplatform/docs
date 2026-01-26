@@ -1,9 +1,13 @@
+import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 
 import type { AlgoliaRecord } from "@/content-indexer/types/algolia.ts";
 import type { IndexerResult } from "@/content-indexer/types/indexer.ts";
-import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
+import type {
+  ChangelogPathIndexEntry,
+  PathIndex,
+} from "@/content-indexer/types/pathIndex.ts";
 import { readLocalFile } from "@/content-indexer/utils/filesystem.ts";
 import { truncateRecord } from "@/content-indexer/utils/truncate-record.ts";
 
@@ -83,21 +87,28 @@ export const buildChangelogIndex = async (
 
       // Build route: e.g., "2025/11/20"
       const route = `${year}/${Number(month)}/${Number(day)}`;
+      const fullPath = `changelog/${route}`;
 
       // Create path index entry
-      const pathIndexEntry = {
-        type: "mdx" as const,
-        filePath: `fern/changelog/${filename}`,
-        source: "changelog" as const,
-        tab: "changelog",
+      const pathIndexEntry: ChangelogPathIndexEntry = {
+        type: "changelog",
+        date, // ISO date string like "2025-12-11"
+        filePath: filename, // Filename like "2025-12-11.md"
       };
+
+      // Generate hash-based objectID from path (consistent with docs/SDK)
+      const objectID = createHash("sha256")
+        .update(fullPath)
+        .digest("hex")
+        .substring(0, 16);
 
       // Create Algolia record
       const algoliaRecord = truncateRecord({
-        objectID: `changelog-${date}`,
+        objectID,
+        indexerType: "changelog",
         title: `Changelog - ${date}`,
         content, // Raw markdown - truncateRecord will clean it
-        path: `changelog/${route}`,
+        path: fullPath,
         pageType: "Changelog" as const,
         breadcrumbs: ["Changelog", date],
       });

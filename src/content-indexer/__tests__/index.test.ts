@@ -81,6 +81,7 @@ describe("buildDocsContentIndex", () => {
     const result = await buildDocsContentIndex({
       source: { type: "filesystem", basePath: "/test/fern" },
       branchId: "test-branch",
+      indexerType: "docs",
       mode: "preview",
     });
 
@@ -93,6 +94,7 @@ describe("buildDocsContentIndex", () => {
     expect(buildAllOutputs).toHaveBeenCalledWith(
       expect.any(Object),
       mockCache,
+      "docs",
       undefined,
     );
 
@@ -131,13 +133,15 @@ describe("buildDocsContentIndex", () => {
       },
       stripPathPrefix: "wallets/",
       branchId: "main",
+      indexerType: "sdk",
       mode: "production",
     });
 
-    // Verify stripPathPrefix was passed to buildAllOutputs
+    // Verify indexerType and stripPathPrefix were passed to buildAllOutputs
     expect(buildAllOutputs).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(ContentCache),
+      "sdk",
       "wallets/",
     );
   });
