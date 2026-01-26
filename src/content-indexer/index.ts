@@ -4,7 +4,10 @@ import path from "path";
 
 import { buildChangelogIndex } from "@/content-indexer/indexers/changelog.ts";
 import { buildDocsContentIndex } from "@/content-indexer/indexers/main.ts";
-import type { IndexerResult } from "@/content-indexer/types/indexer.ts";
+import type {
+  IndexerResult,
+  IndexerType,
+} from "@/content-indexer/types/indexer.ts";
 import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.ts";
 import { storeToRedis } from "@/content-indexer/uploaders/redis.ts";
 
@@ -18,7 +21,7 @@ const parseArgs = () => {
   const args = process.argv.slice(2);
 
   const indexer =
-    args.find((arg) => arg.startsWith("--indexer="))?.split("=")[1] || "main";
+    args.find((arg) => arg.startsWith("--indexer="))?.split("=")[1] || "docs";
   const mode =
     args.find((arg) => arg.startsWith("--mode="))?.split("=")[1] ||
     "production";
@@ -26,9 +29,9 @@ const parseArgs = () => {
     args.find((arg) => arg.startsWith("--branch="))?.split("=")[1] || "main";
 
   // Validate arguments
-  if (!["main", "sdk", "changelog"].includes(indexer)) {
+  if (!["docs", "sdk", "changelog"].includes(indexer)) {
     throw new Error(
-      `Invalid indexer: ${indexer}. Must be 'main', 'sdk', or 'changelog'`,
+      `Invalid indexer: ${indexer}. Must be 'docs', 'sdk', or 'changelog'`,
     );
   }
 
@@ -37,7 +40,7 @@ const parseArgs = () => {
   }
 
   return {
-    indexer: indexer as "main" | "sdk" | "changelog",
+    indexer: indexer as IndexerType,
     mode: mode as "preview" | "production",
     branchId: branch,
   };
@@ -48,7 +51,7 @@ const parseArgs = () => {
 // ============================================================================
 
 const buildIndexResults = async (
-  indexerType: "main" | "sdk" | "changelog",
+  indexerType: IndexerType,
   branchId: string,
   mode: "preview" | "production" = "production",
 ): Promise<IndexerResult> => {
@@ -58,13 +61,14 @@ const buildIndexResults = async (
         localBasePath: path.join(process.cwd(), "fern/changelog"),
         branchId,
       });
-    case "main":
+    case "docs":
       return buildDocsContentIndex({
         source: {
           type: "filesystem",
           basePath: path.join(process.cwd(), "fern"),
         },
         branchId,
+        indexerType: "docs",
         mode,
       });
     case "sdk": {
@@ -76,6 +80,7 @@ const buildIndexResults = async (
         },
         stripPathPrefix: "wallets/",
         branchId,
+        indexerType: "sdk",
       });
       return {
         ...result,
@@ -88,12 +93,12 @@ const buildIndexResults = async (
 };
 
 const runIndexer = async (
-  indexerType: "main" | "sdk" | "changelog",
+  indexerType: IndexerType,
   branchId: string,
   mode?: "preview" | "production",
 ) => {
   console.info(
-    `\n🔍 Running ${indexerType.toUpperCase()} indexer${indexerType === "main" && mode ? ` (${mode} mode)` : ""} (branch: ${branchId})\n`,
+    `\n🔍 Running ${indexerType.toUpperCase()} indexer${indexerType === "docs" && mode ? ` (${mode} mode)` : ""} (branch: ${branchId})\n`,
   );
 
   const { pathIndex, algoliaRecords, navigationTrees } =

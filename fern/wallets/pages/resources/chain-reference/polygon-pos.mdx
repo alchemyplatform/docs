@@ -1,0 +1,52 @@
+---
+title: Polygon PoS Smart Wallet Reference
+---
+
+Polygon PoS is supported in both our Wallet APIs and our Low-Level Infra APIs.
+It has access to our capabilities such as EIP-7702 support, gas sponsorship, transaction batching, and more.
+
+The Polygon PoS network lacks a reliable private mempool for our bundler to submit its transactions through. This leads
+to a few restrictions that we must enforce in order to protect our bundler and users from front-running attacks.
+
+## Network Restrictions
+
+### MEV Protection
+
+Transactions are submitted to the Polygon Mainnet and Polygon Amoy public mempools. We do not offer any MEV protection for users on Polygon POS.
+
+### Transactions
+
+On Polygon Mainnet transactions (user operations) submitted through either our Wallet APIs or our Low-Level Bundler API **must use the Alchemy Gas Manager**.
+
+<Info>
+  We will begin enforcing this on 01/30/2026.
+
+  Request support by reaching out to wallets@alchemy.com or filling out this
+  [form](https://alchemy.chilipiper.com/router/wallet-services-chain-support-requests).
+</Info>
+
+This is done to ensure the following:
+
+1. The onchain account itself is not restricted in anyway. If the user wishes to upgrade/delegate their account or use their account with another provider, they can.
+2. All transactions submitted through our bundler are protected from front-running as our Gas Manager requires transactions to be submitted through trusted EOAs.
+
+### Gas Sponsorship
+
+On Polygon Mainnet and Polygon Amoy transactions that are sponsored by our Gas Manager **must** be submitted through either our Wallet APIs or Low-Level Bundler API.
+
+This is due to the new logic in our Gas Manager contracts that requires transactions to be submitted through trusted EOAs.
+
+<Info>
+  We will begin enforcing this on 01/30/2026.
+
+  Request support by reaching out to wallets@alchemy.com or filling out this
+  [form](https://alchemy.chilipiper.com/router/wallet-services-chain-support-requests).
+</Info>
+
+Users that attempt to use a sponsored transaction with a different API may see the following Solidity error:
+
+<CodeBlocks>
+  ```Solidity
+    error SenderNotAllowed(address sender);
+  ```
+</CodeBlocks>

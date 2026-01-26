@@ -9,7 +9,7 @@ import { visitSection } from "../visit-section.ts";
 
 describe("visitSection", () => {
   test("should create section nav item with children", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitSection(
@@ -47,7 +47,7 @@ describe("visitSection", () => {
   });
 
   test("should process all child items", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitSection(
@@ -87,7 +87,7 @@ describe("visitSection", () => {
   });
 
   test("should handle section with overview page", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setMdxContent("fern/guides/overview.mdx", {
@@ -123,7 +123,7 @@ describe("visitSection", () => {
   });
 
   test("should use custom slug if provided", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitSection(
@@ -152,7 +152,7 @@ describe("visitSection", () => {
   });
 
   test("should skip slug if skip-slug is true", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitSection(
@@ -182,7 +182,7 @@ describe("visitSection", () => {
   });
 
   test("should handle hidden section", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitSection(
@@ -213,7 +213,7 @@ describe("visitSection", () => {
   });
 
   test("should recursively process nested sections", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitSection(
@@ -249,7 +249,7 @@ describe("visitSection", () => {
   });
 
   test("should add section to breadcrumbs for children", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setMdxContent("fern/guides/quickstart.mdx", {
@@ -284,7 +284,7 @@ describe("visitSection", () => {
   });
 
   test("should handle section with mix of pages and subsections", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitSection(

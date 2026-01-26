@@ -8,7 +8,7 @@ import { visitPage } from "../visit-page.ts";
 
 describe("visitPage", () => {
   test("should create path index entry for page", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitPage({
@@ -33,7 +33,7 @@ describe("visitPage", () => {
   });
 
   test("should create nav item for visible page", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitPage({
@@ -57,7 +57,7 @@ describe("visitPage", () => {
   });
 
   test("should skip nav item for hidden page", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitPage({
@@ -79,7 +79,7 @@ describe("visitPage", () => {
   });
 
   test("should use custom slug if provided", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitPage({
@@ -108,7 +108,7 @@ describe("visitPage", () => {
   });
 
   test("should use frontmatter slug if available", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setMdxContent("fern/guides/quickstart.mdx", {
@@ -132,14 +132,16 @@ describe("visitPage", () => {
       navigationAncestors: [],
     });
 
-    expect(result.indexEntries["custom/frontmatter/path"]).toBeDefined();
-    expect(result.indexEntries["custom/frontmatter/path"].source).toBe(
-      "frontmatter",
-    );
+    const entry = result.indexEntries["custom/frontmatter/path"];
+    expect(entry).toBeDefined();
+    expect(entry.type).toBe("mdx");
+    if (entry.type === "mdx") {
+      expect(entry.source).toBe("frontmatter");
+    }
   });
 
   test("should add Algolia record if content cached and not hidden", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setMdxContent("fern/guides/quickstart.mdx", {
@@ -177,7 +179,7 @@ describe("visitPage", () => {
   });
 
   test("should fallback to page name for Algolia title if no frontmatter title", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setMdxContent("fern/guides/quickstart.mdx", {
@@ -203,7 +205,7 @@ describe("visitPage", () => {
   });
 
   test("should not add Algolia record if content not cached", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     visitPage({
@@ -224,7 +226,7 @@ describe("visitPage", () => {
   });
 
   test("should not add Algolia record if page is hidden", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setMdxContent("fern/guides/hidden.mdx", {

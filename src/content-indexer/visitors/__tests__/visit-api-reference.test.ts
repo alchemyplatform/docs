@@ -12,7 +12,7 @@ import { visitApiReference } from "../visit-api-reference.ts";
 
 describe("visitApiReference", () => {
   test("should return empty result if spec not in cache", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     const result = visitApiReference({
@@ -33,7 +33,7 @@ describe("visitApiReference", () => {
   });
 
   test("should process OpenAPI spec", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setSpec("ethereum-api", {
@@ -71,7 +71,7 @@ describe("visitApiReference", () => {
   });
 
   test("should process OpenRPC spec", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setSpec("solana-api", {
@@ -108,7 +108,7 @@ describe("visitApiReference", () => {
   });
 
   test("should use custom slug for API", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setSpec("ethereum-api", {
@@ -145,7 +145,7 @@ describe("visitApiReference", () => {
   });
 
   test("should skip slug if skip-slug is true", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setSpec("ethereum-api", {
@@ -183,7 +183,7 @@ describe("visitApiReference", () => {
   });
 
   test("should return no nav for hidden API", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setSpec("ethereum-api", {
@@ -220,7 +220,7 @@ describe("visitApiReference", () => {
   });
 
   test("should flatten API structure if flattened is true", () => {
-    const context = new ProcessingContext();
+    const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
     cache.setSpec("ethereum-api", {
