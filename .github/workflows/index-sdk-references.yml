@@ -34,3 +34,42 @@ jobs:
           KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
           ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
           ALGOLIA_ADMIN_API_KEY: ${{ secrets.ALGOLIA_ADMIN_API_KEY }}
+
+      - name: Revalidate SDK index and wallets nav cache
+        run: |
+          echo "Revalidating SDK index and wallets nav cache..."
+
+          # SDK indexer only updates the wallets nav tree (hardcoded in indexer)
+          PAYLOAD='{"pathIndices": ["sdk"], "navTrees": ["wallets"]}'
+
+          echo "Payload: $PAYLOAD"
+
+          # Call revalidation API
+          HTTP_CODE=$(curl -X POST "${{ secrets.DOCS_SITE_URL }}/api/revalidate/indices" \
+            -H "Authorization: Bearer ${{ secrets.DOCS_SITE_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            --max-time 30 \
+            --fail-with-body \
+            -o response.json \
+            -w "%{http_code}" \
+            -s)
+
+          echo ""
+          echo "Response (HTTP $HTTP_CODE):"
+          jq '.' response.json || cat response.json
+
+          # Check HTTP status
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Indices revalidation API returned status $HTTP_CODE"
+            exit 1
+          fi
+
+          # Check success field in response
+          SUCCESS=$(jq -r '.success' response.json)
+          if [ "$SUCCESS" != "true" ]; then
+            echo "::warning::Revalidation completed with errors"
+            jq -r '.errors[]?' response.json
+          else
+            echo "::notice::✅ Successfully revalidated SDK index and wallets nav"
+          fi
