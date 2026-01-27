@@ -100,6 +100,115 @@ components:
           type: object
           nullable: true
           description: Inner instructions if `innerInstructions` is true.
+    SimulateBundleParams:
+      title: SimulateBundle Parameters
+      type: object
+      properties:
+        encodedTransactions:
+          type: array
+          items:
+            type: string
+          description: Array of encoded, serialized transactions to simulate.
+      required:
+        - encodedTransactions
+    SimulateBundleConfig:
+      title: SimulateBundle Configuration
+      type: object
+      properties:
+        preExecutionAccountsConfigs:
+          type: array
+          description: >-
+            Account capture configs for each transaction before execution. Array
+            length must equal the number of transactions in the bundle. Use null
+            for entries where no account state is requested.
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/SimulateBundleAccountsConfig"
+              - type: "null"
+        postExecutionAccountsConfigs:
+          type: array
+          description: >-
+            Account capture configs for each transaction after execution. Array
+            length must equal the number of transactions in the bundle. Use null
+            for entries where no account state is requested.
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/SimulateBundleAccountsConfig"
+              - type: "null"
+        transactionEncoding:
+          type: string
+          description: Encoding used for the transactions in `encodedTransactions`.
+          enum:
+            - base64
+            - base58
+          default: base64
+        simulationBank:
+          type: string
+          description: Bank to simulate against.
+        skipSigVerify:
+          type: boolean
+          description: If true, signature verification is skipped before simulation.
+          default: false
+        replaceRecentBlockhash:
+          type: boolean
+          description: If true, replaces recent blockhash with the most recent one.
+          default: false
+    SimulateBundleAccountsConfig:
+      title: SimulateBundle Accounts Configuration
+      type: object
+      properties:
+        addresses:
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Base-58 encoded account addresses to capture.
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          description: Encoding used for returned account data.
+          default: base64
+    SimulatedBundleTransactionResult:
+      title: Simulated Bundle Transaction Result
+      type: object
+      properties:
+        err:
+          type: object
+          nullable: true
+          description: Error if the transaction failed, null if succeeded.
+        logs:
+          type: array
+          nullable: true
+          items:
+            type: string
+          description: Log messages output during execution.
+        preExecutionAccounts:
+          type: array
+          nullable: true
+          items:
+            $ref: "./account.yaml#/components/schemas/AccountInfo"
+          description: Account states before execution.
+        postExecutionAccounts:
+          type: array
+          nullable: true
+          items:
+            $ref: "./account.yaml#/components/schemas/AccountInfo"
+          description: Account states after execution.
+        unitsConsumed:
+          type: integer
+          description: Compute budget units consumed.
+        returnData:
+          $ref: "#/components/schemas/ReturnData"
+    SimulatedBundleResult:
+      title: Simulated Bundle Result
+      type: object
+      properties:
+        summary:
+          type: string
+          description: Summary of the bundle simulation result.
+        transactionResults:
+          type: array
+          description: Result details for each transaction in the bundle.
+          items:
+            $ref: "#/components/schemas/SimulatedBundleTransactionResult"
     ReturnData:
       title: Return Data
       type: object
