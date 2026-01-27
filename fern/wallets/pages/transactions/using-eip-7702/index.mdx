@@ -18,19 +18,76 @@ EIP-7702 enables EOAs (Externally Owned Accounts) to delegate control to Smart W
 
 Once delegated, the user's account behaves as a Smart Wallet while keeping the same address and assets. Subsequent transactions only require a single user operation signature.
 
-## Prerequisites
+For implementation details, see the [Send Transactions](/wallets/transactions/send-transactions) guide.
 
-* API key from your [dashboard](https://dashboard.alchemy.com/apps)
+## How to use non-7702 mode
 
-## Implementation
+If you need to use a traditional Smart Contract Account instead of EIP-7702, you can opt out of the default 7702 behavior by calling `wallet_requestAccount` first.
+
+When you call `wallet_requestAccount` with a signer address, it creates a dedicated Smart Contract Account address. Using this SCA address (instead of your signer address) in subsequent API calls will bypass 7702 mode.
+
+**When to use SCA mode:**
+* Backwards compatibility with existing Smart Contract Accounts
+* Using chains that don't yet support EIP-7702
+* Using a signer that doesn't support signing EIP-7702 authorizations
+* Specific requirements for smart contract account architecture
 
 <Tabs>
-  <Tab title="JavaScript" language="typescript">
-    <Markdown src="client.mdx" />
+  <Tab title="SDK">
+    ```ts
+    import { createSmartWalletClient } from "@account-kit/wallet-client";
+    import { LocalAccountSigner } from "@aa-sdk/core";
+    import { alchemy, sepolia } from "@account-kit/infra";
+
+    const signer = LocalAccountSigner.privateKeyToAccountSigner(
+      process.env.PRIVATE_KEY!,
+    );
+
+    const client = createSmartWalletClient({
+      transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
+      chain: sepolia,
+      signer,
+    });
+
+    // Request a Smart Contract Account
+    const account = await client.requestAccount();
+
+    // Use the SCA address as the `from` param to bypass 7702 mode
+    await client.sendCalls({
+      from: account.address,
+      calls: [...],
+    });
+    ```
   </Tab>
 
-  <Tab title="API" language="bash">
-    <Markdown src="api.mdx" />
+  <Tab title="API">
+    ```bash
+    # First, request a Smart Contract Account
+    ACCOUNT_ADDRESS=$(curl --request POST \
+      --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+      --header 'accept: application/json' \
+      --data '{
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "wallet_requestAccount",
+        "params": [{ "signerAddress": "'$SIGNER_ADDRESS'" }]
+      }' | jq -r '.result.accountAddress')
+
+    # Use the SCA address (not the signer address) in subsequent calls
+    curl --request POST \
+      --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+      --header 'accept: application/json' \
+      --data '{
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "wallet_prepareCalls",
+        "params": [{
+          "calls": [{ "to": "0x...", "data": "0x" }],
+          "from": "'$ACCOUNT_ADDRESS'",
+          "chainId": "'$CHAIN_ID'"
+        }]
+      }'
+    ```
   </Tab>
 </Tabs>
 
@@ -120,73 +177,6 @@ Once delegated, the user's account behaves as a Smart Wallet while keeping the s
 
 <Accordion title="Third party signers">
   <Markdown src="third-party.mdx" />
-</Accordion>
-
-<Accordion title="Using non-7702 Smart Contract Accounts (SCA mode)">
-  If you need to use a traditional Smart Contract Account instead of EIP-7702, you can opt out of the default 7702 behavior by calling `wallet_requestAccount` first.
-
-  When you call `wallet_requestAccount` with a signer address, it creates a dedicated Smart Contract Account address. Using this SCA address in subsequent API calls will bypass 7702 mode.
-
-  **SDK Example:**
-  ```ts
-  import { createSmartWalletClient } from "@account-kit/wallet-client";
-  import { LocalAccountSigner } from "@aa-sdk/core";
-  import { alchemy, sepolia } from "@account-kit/infra";
-
-  const signer = LocalAccountSigner.privateKeyToAccountSigner(
-    process.env.PRIVATE_KEY!,
-  );
-
-  const client = createSmartWalletClient({
-    transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
-    chain: sepolia,
-    signer,
-  });
-
-  // Request a Smart Contract Account
-  const account = await client.requestAccount();
-
-  // Use the SCA address as the `from` param to bypass 7702 mode
-  await client.sendCalls({
-    from: account.address,
-    calls: [...],
-  });
-  ```
-
-  **API Example:**
-  ```bash
-  # First, request a Smart Contract Account
-  ACCOUNT_ADDRESS=$(curl --request POST \
-    --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
-    --header 'accept: application/json' \
-    --data '{
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "wallet_requestAccount",
-      "params": [{ "signerAddress": "'$SIGNER_ADDRESS'" }]
-    }' | jq -r '.result.accountAddress')
-
-  # Use the SCA address (not the signer address) in subsequent calls
-  curl --request POST \
-    --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
-    --header 'accept: application/json' \
-    --data '{
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "wallet_prepareCalls",
-      "params": [{
-        "calls": [{ "to": "0x...", "data": "0x" }],
-        "from": "'$ACCOUNT_ADDRESS'",
-        "chainId": "'$CHAIN_ID'"
-      }]
-    }'
-  ```
-
-  **When to use SCA mode:**
-  * Backwards compatibility with existing Smart Contract Accounts is required
-  * Using chains that don't yet support EIP-7702
-  * Using a signer (EOA or embedded wallet) that doesn't support signing EIP-7702 authorizations
-  * You have specific requirements for smart contract account architecture
 </Accordion>
 
 ## Next steps
