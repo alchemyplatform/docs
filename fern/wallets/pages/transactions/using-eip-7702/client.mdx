@@ -15,10 +15,11 @@ for full descriptions of the parameters used in the following example.
 <CodeBlocks>
 
 ```tsx title="sendCalls.ts"
-import { client, config } from "./client.ts";
+import { client, config, signer } from "./client.ts";
 
 try {
   const { preparedCallIds } = await client.sendCalls({
+    from: await signer.getAddress(),
     capabilities: {
       paymasterService: {
         policyId: config.policyId,

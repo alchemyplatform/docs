@@ -7,13 +7,14 @@ for full descriptions of the parameters used in the following example.
 <CodeBlocks>
 
 ```ts title="signRawMessage.ts"
-import { client } from "./client";
+import { client, signer } from "./client";
 
 // Sign a raw hex message
 const rawSignature = await client.signMessage({
   message: {
     raw: "0x48656c6c6f2c20776f726c6421", // "Hello, world!" in hex
   },
+  account: await signer.getAddress(),
 });
 
 console.log("Signature over raw data:", rawSignature);

@@ -2,19 +2,20 @@ In JavaScript, you can use [Viem](https://viem.sh/docs/contract/encodeFunctionDa
 
 <CodeBlocks>
 
-```ts title="sendCalls.ts" focus={9-13}
+```ts title="sendCalls.ts" focus={9-14}
 import { encodeFunctionData } from "viem";
-import { client } from "./client.ts";
+import { client, signer } from "./client.ts";
 import { exampleAbi } from "./abi.ts";
 
 await client.sendCalls({
+  from: await signer.getAddress(),
   calls: [
     {
       to: "0x0000000000000000000000000000000000000000",
       data: encodeFunctionData({
         abi: exampleAbi,
         functionName: "mintTo",
-        args: [client.account!.address],
+        args: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"],
       }),
     },
   ],

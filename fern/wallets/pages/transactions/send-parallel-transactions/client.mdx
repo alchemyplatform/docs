@@ -14,13 +14,16 @@ You'll need the following env variables:
 
 <CodeBlocks>
   ```ts title="sendParallelCalls.ts"
-  import { client, config } from "./client.ts";
+  import { client, config, signer } from "./client.ts";
+
+  const signerAddress = await signer.getAddress();
 
   const [
     { preparedCallIds: preparedCallIdsOne },
     { preparedCallIds: preparedCallIdsTwo },
   ] = await Promise.all([
     client.sendCalls({
+      from: signerAddress,
       capabilities: {
         paymasterService: {
           policyId: config.policyId,
@@ -38,6 +41,7 @@ You'll need the following env variables:
       ],
     }),
     client.sendCalls({
+      from: signerAddress,
       capabilities: {
         paymasterService: {
           policyId: config.policyId,

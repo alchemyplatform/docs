@@ -4,11 +4,12 @@ You can use smart wallet client actions to prepare, sign, and send transactions.
 
 <CodeBlocks>
 
-```ts title="sendCalls.ts" focus={4-20}
+```ts title="sendCalls.ts" focus={4-21}
 import { parseEther, toHex } from "viem";
-import { client } from "./client.ts";
+import { client, signer } from "./client.ts";
 
 const preparedCalls = await client.prepareCalls({
+  from: await signer.getAddress(),
   calls: [
     {
       to: "0x0000000000000000000000000000000000000000",
