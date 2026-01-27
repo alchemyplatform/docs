@@ -56,7 +56,7 @@ PREPARE_CALLS_RESPONSE=$(curl --request POST \
 
 Sign the returned signature request. How you do this will vary depending on your environment.
 
-On the first transaction for a new account, the response type will be `array` containing both an EIP-7702 authorization and a user operation that need to be signed. On subsequent calls, only the user operation signature is needed.
+If the account hasn't been delegated yet, the response type will be `array` containing both an EIP-7702 authorization and a user operation that need to be signed. Once delegated (after the first successful transaction), subsequent calls will only return a user operation to sign.
 
 ```bash twoslash
 # Extract values from prepare calls response
