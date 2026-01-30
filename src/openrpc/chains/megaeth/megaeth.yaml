@@ -12,14 +12,223 @@ servers:
   - url: https://megaeth-testnet.g.alchemy.com/v2
     name: MegaETH Testnet
 methods:
-  - $ref: ../_components/custom/methods.yaml#/components/methods/eth_callMany
+  - name: eth_callMany
+    description: >
+      Executes one or more *bundles* of `eth_call`-style transactions against an
+      ephemeral state, without committing state to the chain. Transactions within
+      each bundle are executed sequentially: state changes from earlier transactions
+      in the bundle are visible to later ones. You can optionally override selected
+      block header fields per bundle.
+
+    params:
+      - name: Bundles
+        required: true
+        description: >
+          A list of bundles to execute. Each bundle specifies a list of transactions
+          (executed in order) and may include a per-bundle block header override.
+        schema:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: ["transactions"]
+            additionalProperties: false
+            properties:
+              transactions:
+                description: Array of transaction call objects (same shape as `eth_call`).
+                type: array
+                minItems: 1
+                items:
+                  $ref: "../_components/evm/transaction.yaml#/components/schemas/GenericTransaction"
+              blockOverride:
+                description: >
+                  Optional execution-context block header overrides for this bundle.
+                  When provided, these supersede the Simulation context for that bundle.
+                type: object
+                additionalProperties: false
+                properties:
+                  blockNumber:
+                    $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+                  blockHash:
+                    $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+                  coinbase:
+                    $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+                  timestamp:
+                    $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+                  difficulty:
+                    $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+                  gasLimit:
+                    $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+                  baseFee:
+                    $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+
+      - name: Simulation context
+        required: true
+        description: >
+          The base context for the simulation. If a bundle supplies `blockOverride`,
+          it takes precedence for that bundle.
+        schema:
+          type: object
+          required: ["blockNumber"]
+          additionalProperties: false
+          properties:
+            blockNumber:
+              $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+            transactionIndex:
+              type: integer
+              minimum: 0
+
+      - name: State overrides
+        required: false
+        description: >
+          Optional per-account state overrides applied during execution, identical
+          in shape to the `eth_call` state override parameter.
+        schema:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: false
+            properties:
+              balance:
+                $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              nonce:
+                $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+              code:
+                $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+              state:
+                description: Full storage override (slot -> value, 32-byte hex).
+                type: object
+                additionalProperties:
+                  $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+              stateDiff:
+                description: Partial storage diff (slot -> value, 32-byte hex).
+                type: object
+                additionalProperties:
+                  $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+
+      - name: Timeout
+        required: false
+        description: >
+          Maximum running time for the simulations in milliseconds. If omitted,
+          the node's default is used (commonly 5000).
+        schema:
+          type: integer
+          minimum: 1
+
+    result:
+      name: Call results
+      description: >
+        A list with one entry per bundle. Each bundle entry is an array with one
+        result per transaction in that bundle, in execution order. Each transaction
+        result is either a successful return `value` (ABI-encoded bytes), or an
+        `error` describing the revert/failure.
+      schema:
+        type: array
+        items:
+          type: array
+          items:
+            oneOf:
+              - type: object
+                additionalProperties: false
+                required: ["value"]
+                properties:
+                  value:
+                    $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+              - type: object
+                additionalProperties: false
+                required: ["error"]
+                properties:
+                  error:
+                    type: object
+                    additionalProperties: false
+                    required: ["code", "message"]
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
+                      data:
+                        description: Optional ABI-encoded revert data (e.g., `Error(string)`).
+                        $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+
+    examples:
+      - name: eth_callMany — balanceOf + decimals
+        params:
+          - name: Bundles
+            value:
+              - transactions:
+                  # balanceOf(owner)
+                  - to: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+                    data: "0x70a08231000000000000000000000000bc0e63965946815d105e7591407704e6e1964e59"
+                  # decimals()
+                  - to: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+                    data: "0x313ce567"
+          - name: Simulation context
+            value:
+              blockNumber: "latest"
+        result:
+          name: Call results
+          value:
+            - - value: "0x"
+              - value: "0x"
+
   - $ref: ../_components/custom/methods.yaml#/components/methods/eth_feeHistory
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_blockNumber
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_call
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_chainId
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_estimateGas
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_gasPrice
-  - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getAccount
+  - name: eth_getAccount
+    description: >
+      Retrieve account details (code hash, storage root, balance, nonce) for a given
+      address at a specified block number or tag.
+    params:
+      - name: address
+        required: true
+        description: The account address for which the information is to be retrieved.
+        schema:
+          $ref: "../_components/evm/base-types.yaml#/components/schemas/address"
+      - name: blockReference
+        required: true
+        description: >
+          The block number (hex quantity) or a tag: "latest", "pending", "safe", or "finalized".
+        schema:
+          $ref: "../_components/evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+    result:
+      name: Account information
+      description: Account fields at the requested block.
+      schema:
+        type: object
+        additionalProperties: false
+        required: ["codeHash", "storageRoot", "balance", "nonce"]
+        properties:
+          codeHash:
+            description: A 32-byte hash of the account's code (EOAs use keccak256(0x)).
+            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+          storageRoot:
+            description: The Merkle Patricia trie root of the account's storage.
+            $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+          balance:
+            description: The current balance of the account in wei (hex quantity).
+            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+          nonce:
+            description: The transaction count of the account (hex quantity).
+            $ref: "../_components/evm/base-types.yaml#/components/schemas/uint"
+    examples:
+      - name: eth_getAccount example
+        params:
+          - name: address
+            value: "0xA887dCB9D5f39Ef79272801d05Abdf707CFBbD1d"
+          - name: blockReference
+            value: "latest"
+        result:
+          name: Account information
+          value:
+            nonce: "0x272e53c"
+            balance: "0x0"
+            storageRoot: "0x0000000000000000000000000000000000000000000000000000000000000000"
+            codeHash: "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getBalance
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getBlockByHash
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getBlockByNumber
@@ -31,8 +240,31 @@ methods:
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getFilterChanges
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getFilterLogs
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getLogs
-  - $ref: >-
-      ../_components/evm/methods.yaml#/components/methods/eth_getRawTransactionByHash
+  - name: eth_getRawTransactionByHash
+    description: Returns the raw transaction data (RLP-encoded) for a transaction by its hash.
+    params:
+      - name: Transaction hash
+        required: true
+        description: The hash of the transaction to retrieve.
+        schema:
+          $ref: "../_components/evm/base-types.yaml#/components/schemas/hash32"
+    result:
+      name: Raw transaction data
+      description: The raw RLP-encoded transaction data as a hexadecimal string, or null if the transaction is not found.
+      schema:
+        oneOf:
+          - $ref: "../_components/evm/base-types.yaml#/components/schemas/notFound"
+          - title: Raw transaction data
+            $ref: "../_components/evm/base-types.yaml#/components/schemas/bytes"
+    examples:
+      - name: eth_getRawTransactionByHash example
+        params:
+          - name: Transaction hash
+            value: "0x691455c4cec43d76d15af9734556efec72b4c44b557254db1bbbfeea86d103fd"
+        result:
+          name: Raw transaction data
+          value: "0x02f903148210e6837df48283061a8083249f00831b774094897a33a0af45b3ba097bd6045187d622252e6acd80b902a49aec351f0000000000000000000000000000000000000000000000000006498f5183b1b000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000009534f4c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002bca5006e4254430000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007b0c50ddbbc55534443000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005f56ae2424e420000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000143361a7dc444f4745000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b26c205852500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000abde54141444100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001fd88a055534454000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005f348f0455448000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041a7c86cf0c001a01928d96c479187d068978a9665ba0d45548bc7255817daeda002e1df8a37367ba03b39d550b84be9557783b4c7d45e82eac42e033d48dcea9f39f1535c9f3791ae"
+
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_getStorageAt
   - $ref: >-
       ../_components/evm/methods.yaml#/components/methods/eth_getTransactionByBlockHashAndIndex
