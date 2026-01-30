@@ -9,9 +9,10 @@ Use the `paymasterService` capability on the smart wallet client `sendCalls` or 
 <CodeBlocks>
 
 ```ts title="sendCalls.ts"
-import { client, config } from "./client.ts";
+import { client, config, signer } from "./client.ts";
 
 const { preparedCallIds } = await client.sendCalls({
+  from: await signer.getAddress(),
   capabilities: {
     paymasterService: {
       policyId: config.policyId,
@@ -50,23 +51,16 @@ export const config = {
   approveAmount: toHex(10000000n), // 10 USDC
 };
 
-const clientParams = {
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
+
+export const client = createSmartWalletClient({
   transport: alchemy({
     apiKey: process.env.ALCHEMY_API_KEY!,
   }),
   chain: sepolia,
-  signer: LocalAccountSigner.privateKeyToAccountSigner(
-    process.env.PRIVATE_KEY! as Hex,
-  ),
-};
-
-const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-const account = await clientWithoutAccount.requestAccount();
-
-export const client = createSmartWalletClient({
-  ...clientParams,
-  account: account.address,
+  signer,
 });
 ```
 

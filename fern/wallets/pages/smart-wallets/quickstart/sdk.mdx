@@ -46,25 +46,48 @@ const client = createSmartWalletClient({
 });
 ```
 
-### 3. Request The Account
+### 3. Send A UserOp
 
-A counterfactual address is the account address associated with the given signer-- but the account contract hasn't been deployed yet.
+Use your signer address directly as the `from` field to enable [EIP-7702](/wallets/transactions/using-eip-7702) by default. This first transaction will delegate your account.
 
 ```ts
-const account = await client.requestAccount();
+import { zeroAddress } from "viem";
 
-// get the address
-const address = account.address;
+const signerAddress = await signer.getAddress();
+
+const preparedCalls = await client.prepareCalls({
+  calls: [{ to: zeroAddress, value: "0x0" }], // callData is optional in a "data" parameter
+  from: signerAddress,
+  // "capabilities" is a data structure that hold gas manager data (as seen below) or permission data
+  capabilities: {
+    paymasterService: {
+      policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
+    },
+  },
+});
+
+// Sign the calls (handles both authorization and user operation if account isn't delegated yet)
+const signedCalls = await client.signPreparedCalls(preparedCalls);
+
+// Send the userOp
+const result = await client.sendPreparedCalls(signedCalls);
+
+// Check calls status.
+const status = await client.getCallsStatus(result.preparedCallIds[0]!);
 ```
 
 ### 4. Sign A Message
 
+Once your account is delegated, you can sign messages.
+
 ```ts
 import { createPublicClient } from "viem";
 
+const signerAddress = await signer.getAddress();
+
 const message = "we are so back";
 
-const signature = await client.signMessage({ message });
+const signature = await client.signMessage({ message, account: signerAddress });
 
 const publicClient = createPublicClient({
   chain: arbitrumSepolia,
@@ -72,7 +95,7 @@ const publicClient = createPublicClient({
 });
 
 const isValid = await publicClient.verifyMessage({
-  address: account.address, // fetched from await client.requestAccount()
+  address: signerAddress,
   message,
   signature,
 });
@@ -82,39 +105,11 @@ const isValid = await publicClient.verifyMessage({
 
 ```ts
 // assuming you have a typedData variable
-const signature = await client.signTypedData({ typedData });
+const signature = await client.signTypedData({ typedData, account: signerAddress });
 
 const isValid = await publicClient.verifyTypedData({
-  address: account.address, // fetched from await client.requestAccount()
+  address: signerAddress,
   ...typedData,
   signature,
 });
-```
-
-### 6. Send A UserOp
-
-```ts
-import { zeroAddress } from "viem";
-
-const account = await client.requestAccount();
-
-const preparedCalls = await client.prepareCalls({
-  calls: [{ to: zeroAddress, value: "0x0" }], // callData is optional in a "data" parameter
-  from: account.address,
-  // "capabilities" is a data structure that hold gas manager data (as seen below) or permission data
-  capabilities: {
-    paymasterService: {
-      policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
-    },
-  },
-});
-
-// Sign the calls
-const signedCalls = await client.signPreparedCalls(preparedCalls);
-
-// Send the userOp
-const result = await client.sendPreparedCalls(signedCalls);
-
-// Check calls status.
-const status = await client.getCallsStatus(result.preparedCallIds[0]!);
 ```
