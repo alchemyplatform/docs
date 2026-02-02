@@ -115,11 +115,11 @@ const buildOpenApiNavigation = ({
       );
 
       const title = getOperationTitle(operationObj, operation.operationId);
+      const summary = getOperationSummary(operationObj);
 
       // Build Algolia record if not hidden
       if (!isHidden) {
         const description = getOperationDescription(operationObj);
-        const summary = getOperationSummary(operationObj);
 
         const breadcrumbs = apiSectionBreadcrumb
           ? [...navigationAncestors, apiSectionBreadcrumb]
@@ -141,6 +141,7 @@ const buildOpenApiNavigation = ({
         path: `/${finalPath}`,
         method: operation.method,
         type: "endpoint" as const,
+        description: summary,
       };
     });
 

@@ -55,21 +55,23 @@ export const visitPage = ({
   };
 
   // Build nav item (skip if hidden)
+  const descriptionRaw =
+    cached?.frontmatter.description || cached?.frontmatter.subtitle;
+  const description =
+    typeof descriptionRaw === "string" ? descriptionRaw : undefined;
+
   const navItem: NavItem | undefined = pageItem.hidden
     ? undefined
     : {
         title: pageItem.page,
         path: `/${finalPath}`,
         type: "page",
+        description,
       };
 
   // Build Algolia record (if content available and not hidden)
   if (cached && navItem) {
     const title = cached.frontmatter.title || pageItem.page;
-    const descriptionRaw =
-      cached.frontmatter.description || cached.frontmatter.subtitle;
-    const description =
-      typeof descriptionRaw === "string" ? descriptionRaw : undefined;
     context.addAlgoliaRecord({
       pageType: "Guide",
       path: finalPath,
