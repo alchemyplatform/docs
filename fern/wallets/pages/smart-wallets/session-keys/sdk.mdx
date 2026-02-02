@@ -52,17 +52,19 @@ const client = createSmartWalletClient({
 
 ### 3. Create the session key
 
-<Accordion title="Using EIP-7702?">
+<Accordion title="Need to delegate your account first?">
 
-If you are using an EIP-7702 account, the account must be delegated onchain
-before creating the session. If the account has already sent calls, it will
-already be delegated. If it hasn't sent any calls before creating the session
-key, you can delegate it by sending an empty call as the owner:
+EIP-7702 accounts must be delegated onchain before creating a session. If the
+account has already sent calls, it will already be delegated. If it hasn't sent
+any calls before creating the session key, you can delegate it by sending an
+empty call as the owner:
 
 ```ts
+const signerAddress = await signer.getAddress();
+
 const preparedCalls = await client.prepareCalls({
   calls: [], // empty array since you don't want to send any calls
-  from: account.address,
+  from: signerAddress,
   capabilities: {
     paymasterService: {
       policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
@@ -82,13 +84,13 @@ Now you can continue to create the session key as described below.
 </Accordion>
 
 ```ts
-const account = await client.requestAccount(); // Request an account for the owner signer
+const signerAddress = await signer.getAddress();
 
 // This is where you would use your session key signer!
 const sessionKey = LocalAccountSigner.generatePrivateKeySigner();
 
 const permissions = await client.grantPermissions({
-  account: account.address,
+  account: signerAddress,
   expirySec: Math.floor(Date.now() / 1000) + 60 * 60,
   key: {
     publicKey: await sessionKey.getAddress(),
@@ -105,7 +107,7 @@ import { signPreparedCalls } from "@account-kit/wallet-client";
 
 const preparedCalls = await client.prepareCalls({
   calls: [{ to: "0x0000000000000000000000000000000000000000", value: "0x0" }],
-  from: account.address,
+  from: signerAddress,
   capabilities: {
     paymasterService: {
       policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
