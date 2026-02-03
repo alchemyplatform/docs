@@ -1,7 +1,6 @@
 <Info>Required SDK version: ^v4.61.0</Info>
 
-Use the `eip7702Auth` capability on the smart wallet client `sendCalls` action. `sendCalls` will automatically
-sign any required authorization requests to delegate the EOA to Modular Account v2.
+EIP-7702 is the default mode for Smart Wallets. Simply create a client with your signer and use `sendCalls` - the SDK will automatically handle authorization requests to delegate the EOA to Modular Account v2 when needed.
 
 <Warning>
   If the signing EOA is delegated to a different smart contract, `sendCalls`
@@ -16,15 +15,15 @@ for full descriptions of the parameters used in the following example.
 <CodeBlocks>
 
 ```tsx title="sendCalls.ts"
-import { client, config } from "./client.ts";
+import { client, config, signer } from "./client.ts";
 
 try {
   const { preparedCallIds } = await client.sendCalls({
+    from: await signer.getAddress(),
     capabilities: {
       paymasterService: {
         policyId: config.policyId,
       },
-      eip7702Auth: true,
     },
     calls: [
       {
@@ -52,10 +51,9 @@ export const config = {
   policyId: process.env.ALCHEMY_POLICY_ID!,
 };
 
-const signer = LocalAccountSigner.privateKeyToAccountSigner(
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
   process.env.PRIVATE_KEY! as Hex,
 );
-const signerAddress = await signer.getAddress();
 
 export const client = createSmartWalletClient({
   transport: alchemy({
@@ -63,8 +61,6 @@ export const client = createSmartWalletClient({
   }),
   chain: sepolia,
   signer,
-  // hoist the signer address as the account when using 7702 mode
-  account: signerAddress,
 });
 ```
 

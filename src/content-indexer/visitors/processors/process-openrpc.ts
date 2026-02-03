@@ -69,14 +69,16 @@ export const processOpenRpcSpec = ({
       tab,
     };
 
+    const summary =
+      method.summary ||
+      (method.description ? removeMd(method.description) : undefined);
+
     // Build Algolia record if not hidden
     if (!isHidden) {
       const description = method.description
         ? removeMd(method.description)
         : method.summary || "";
-      const summary =
-        method.summary ||
-        (method.description ? removeMd(method.description) : undefined);
+
       const breadcrumbs = apiSectionBreadcrumb
         ? [...navigationAncestors, apiSectionBreadcrumb]
         : navigationAncestors;
@@ -98,6 +100,7 @@ export const processOpenRpcSpec = ({
       path: `/${finalPath}`,
       method: "POST",
       type: "endpoint",
+      description: summary,
     });
   });
 

@@ -4,11 +4,12 @@ You can use smart wallet client actions to prepare, sign, and send transactions.
 
 <CodeBlocks>
 
-```ts title="sendCalls.ts" focus={4-20}
+```ts title="sendCalls.ts" focus={4-21}
 import { parseEther, toHex } from "viem";
-import { client } from "./client.ts";
+import { client, signer } from "./client.ts";
 
 const preparedCalls = await client.prepareCalls({
+  from: await signer.getAddress(),
   calls: [
     {
       to: "0x0000000000000000000000000000000000000000",
@@ -28,30 +29,21 @@ console.log({ sentCalls });
 ```
 
 ```ts title="client.ts"
+import type { Hex } from "viem";
 import { LocalAccountSigner } from "@aa-sdk/core";
 import { alchemy, sepolia } from "@account-kit/infra";
-import {
-  createSmartWalletClient,
-  type SmartWalletClientParams,
-} from "@account-kit/wallet-client";
+import { createSmartWalletClient } from "@account-kit/wallet-client";
 
-const clientParams: SmartWalletClientParams = {
-  transport: alchemy({
-    apiKey: "your-alchemy-api-key",
-  }),
-  chain: sepolia,
-  signer: LocalAccountSigner.privateKeyToAccountSigner(
-    "0x-your-wallet-private-key",
-  ),
-};
-
-const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-const account = await clientWithoutAccount.requestAccount();
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
 
 export const client = createSmartWalletClient({
-  ...clientParams,
-  account: account.address,
+  transport: alchemy({
+    apiKey: process.env.ALCHEMY_API_KEY!,
+  }),
+  chain: sepolia,
+  signer,
 });
 ```
 

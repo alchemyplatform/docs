@@ -14,10 +14,11 @@ You'll need the following env variables:
 
 <CodeBlocks>
   ```ts title="retryTransaction.ts"
-  import { client, config } from "./client.ts";
+  import { client, config, signer } from "./client.ts";
 
   // Send initial transaction
   const { preparedCallIds } = await client.sendCalls({
+    from: await signer.getAddress(),
     capabilities: {
       paymasterService: {
         policyId: config.policyId,
@@ -35,9 +36,7 @@ You'll need the following env variables:
   console.log("Initial transaction:", preparedCallIds[0]);
 
   // Check status
-  const status = await client.getCallsStatus({
-    id: preparedCallIds[0]!,
-  });
+  const status = await client.getCallsStatus(preparedCallIds[0]!);
 
   console.log("Transaction status:", status.status);
 
@@ -47,6 +46,7 @@ You'll need the following env variables:
 
     // Re-send without nonceOverride to replace stuck transaction
     const { preparedCallIds: replacementIds } = await client.sendCalls({
+      from: await signer.getAddress(),
       capabilities: {
         paymasterService: {
           policyId: config.policyId,
@@ -64,7 +64,7 @@ You'll need the following env variables:
     console.log("Replacement transaction:", replacementIds[0]);
 
     // Wait for replacement to confirm
-    const result = await client.waitForCallsStatus(replacementIds[0]!);
+    const result = await client.waitForCallsStatus({ id: replacementIds[0]! });
 
     console.log("Replacement confirmed:", result);
   }
@@ -72,7 +72,7 @@ You'll need the following env variables:
 
   ```ts title="client.ts"
   import "dotenv/config";
-  import { type Address, type Hex, toHex } from "viem";
+  import type { Hex } from "viem";
   import { LocalAccountSigner } from "@aa-sdk/core";
   import { alchemy, sepolia } from "@account-kit/infra";
   import { createSmartWalletClient } from "@account-kit/wallet-client";
@@ -81,23 +81,16 @@ You'll need the following env variables:
     policyId: process.env.ALCHEMY_POLICY_ID!,
   };
 
-  const clientParams = {
+  export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+    process.env.PRIVATE_KEY! as Hex,
+  );
+
+  export const client = createSmartWalletClient({
     transport: alchemy({
       apiKey: process.env.ALCHEMY_API_KEY!,
     }),
     chain: sepolia,
-    signer: LocalAccountSigner.privateKeyToAccountSigner(
-      process.env.PRIVATE_KEY! as Hex,
-    ),
-  };
-
-  const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-  const account = await clientWithoutAccount.requestAccount();
-
-  export const client = createSmartWalletClient({
-    ...clientParams,
-    account: account.address,
+    signer,
   });
   ```
 </CodeBlocks>

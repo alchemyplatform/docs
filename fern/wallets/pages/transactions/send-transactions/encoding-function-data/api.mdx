@@ -1,4 +1,4 @@
-You can use [foundry](https://getfoundry.sh/cast/reference/calldata#cast-calldata) to encode function call data.
+You can use [foundry](https://getfoundry.sh/cast/reference/calldata#cast-calldata) to encode function call data. Use your signer address directly as the `from` field to enable [EIP-7702](/wallets/transactions/using-eip-7702) by default.
 
 ```bash twoslash focus={14}
 curl --request POST \
@@ -14,10 +14,10 @@ curl --request POST \
       "calls": [
         {
           "to": "0x0000000000000000000000000000000000000000",
-          "data": "'$(cast calldata "mintTo(address)" $ACCOUNT_ADDRESS)'"
+          "data": "'$(cast calldata "mintTo(address)" $SIGNER_ADDRESS)'"
         }
       ],
-      "from": "'$ACCOUNT_ADDRESS'",
+      "from": "'$SIGNER_ADDRESS'",
       "chainId": "'$CHAIN_ID'"
     }
   ]
