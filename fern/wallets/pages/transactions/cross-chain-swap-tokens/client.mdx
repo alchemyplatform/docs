@@ -14,9 +14,7 @@ You'll need the following env variables:
 <CodeBlocks>
   ```ts title="requestCrossChainQuote.ts"
   import { swapActions } from "@account-kit/wallet-client/experimental";
-  import { client } from "./client";
-
-  const account = await client.requestAccount();
+  import { client, signer } from "./client";
 
   // Add the swap actions to the client
   const swapClient = client.extend(swapActions);
@@ -24,7 +22,7 @@ You'll need the following env variables:
   // Request the cross-chain swap quote
   // Note: toChainId specifies the destination chain for the swap
   const { quote, callId, ...calls } = await swapClient.requestQuoteV0({
-    from: account.address,
+    from: await signer.getAddress(), // Your wallet address
     toChainId: "0x...", // Destination chain ID
     fromToken: "0x...",
     toToken: "0x...",
@@ -83,24 +81,17 @@ You'll need the following env variables:
   import { alchemy, sepolia } from "@account-kit/infra";
   import { createSmartWalletClient } from "@account-kit/wallet-client";
 
-  const clientParams = {
+  export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+    process.env.PRIVATE_KEY! as Hex,
+  )
+
+  export const client = createSmartWalletClient({
     transport: alchemy({
       apiKey: process.env.ALCHEMY_API_KEY!,
     }),
     chain: sepolia,
-    signer: LocalAccountSigner.privateKeyToAccountSigner(
-      process.env.PRIVATE_KEY! as Hex,
-    ),
+    signer,
     policyId: process.env.ALCHEMY_POLICY_ID!, // Optional: If you're using a gas manager policy
-  };
-
-  const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-  const account = await clientWithoutAccount.requestAccount();
-
-  export const client = createSmartWalletClient({
-    ...clientParams,
-    account: account.address,
   });
-  ```
+```
 </CodeBlocks>

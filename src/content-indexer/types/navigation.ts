@@ -7,12 +7,14 @@ interface BaseNavItem {
 interface PageNavItem extends BaseNavItem {
   type: "page";
   path: string;
+  description?: string;
 }
 
 interface EndpointNavItem extends BaseNavItem {
   type: "endpoint";
   path: string;
   method: string;
+  description?: string;
 }
 
 interface SectionNavItem extends BaseNavItem {
