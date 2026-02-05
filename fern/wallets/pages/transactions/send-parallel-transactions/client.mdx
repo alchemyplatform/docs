@@ -19,8 +19,8 @@ You'll need the following env variables:
   const signerAddress = await signer.getAddress();
 
   const [
-    { preparedCallIds: preparedCallIdsOne },
-    { preparedCallIds: preparedCallIdsTwo },
+    { id: idOne },
+    { id: idTwo },
   ] = await Promise.all([
     client.sendCalls({
       from: signerAddress,
@@ -60,11 +60,11 @@ You'll need the following env variables:
     }),
   ]);
 
-  console.log("sendCalls result:", { preparedCallIdsOne, preparedCallIdsTwo });
+  console.log("sendCalls result:", { idOne, idTwo });
 
   const callStatusResults = await Promise.all([
-    client.waitForCallsStatus({ id: preparedCallIdsOne[0]! }),
-    client.waitForCallsStatus({ id: preparedCallIdsTwo[0]! }),
+    client.waitForCallsStatus({ id: idOne }),
+    client.waitForCallsStatus({ id: idTwo }),
   ]);
 
   console.log("Calls status results:", callStatusResults);
