@@ -1,36 +1,93 @@
 ---
-title: Using EIP-7702
-description: Upgrade to Smart Wallets with EIP-7702
+title: How EIP-7702 Works
+description: Understanding how Smart Wallets use EIP-7702
 slug: wallets/transactions/using-eip-7702
 ---
 
-Upgrade your user's accounts to Smart Wallets using [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702).
-This gives users access to all of the capabilities of Smart Wallets including gas sponsorship, batching, and more.
+Alchemy Smart Wallets use [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) by default to give users access to all Smart Wallet capabilities including gas sponsorship, batching, and more - while keeping the same address.
 
 ## How it works
 
 EIP-7702 enables EOAs (Externally Owned Accounts) to delegate control to Smart Wallets that can execute code directly from their addresses. When using Transaction APIs:
 
-* Transaction APIs detect whether a user must first delegate via EIP-7702
+* You can use your signer address directly as the account address - no need to call `wallet_requestAccount` first
+* Transaction APIs automatically detect whether a user must first delegate via EIP-7702
 * If delegation is required, Transaction APIs prepare the correct authorization payload
 * Your application prompts the user to sign when required
 * We combine the delegation and transaction into a single onchain submission
 
-Once delegated, the user’s account behaves as a Smart Wallet while keeping the same address and assets.
+Once delegated, the user's account behaves as a Smart Wallet while keeping the same address and assets. Subsequent transactions only require a single user operation signature.
 
-## Prerequisites
+For implementation details, see the [Send Transactions](/wallets/transactions/send-transactions) guide.
 
-* API key from your [dashboard](https://dashboard.alchemy.com/apps)
+## How to use non-7702 mode
 
-## Implementation
+If you need to use a traditional Smart Contract Account instead of EIP-7702, you can opt out of the default 7702 behavior by calling `wallet_requestAccount` first.
+
+When you call `wallet_requestAccount` with a signer address, it creates a dedicated Smart Contract Account address. Using this SCA address (instead of your signer address) in subsequent API calls will bypass 7702 mode.
+
+**When to use SCA mode:**
+* Backwards compatibility with existing Smart Contract Accounts
+* Using chains that don't yet support EIP-7702
+* Using a signer that doesn't support signing EIP-7702 authorizations
+* Specific requirements for smart contract account architecture
 
 <Tabs>
-  <Tab title="JavaScript" language="typescript">
-    <Markdown src="client.mdx" />
+  <Tab title="SDK">
+    ```ts
+    import { createSmartWalletClient } from "@account-kit/wallet-client";
+    import { LocalAccountSigner } from "@aa-sdk/core";
+    import { alchemy, sepolia } from "@account-kit/infra";
+
+    const signer = LocalAccountSigner.privateKeyToAccountSigner(
+      process.env.PRIVATE_KEY!,
+    );
+
+    const client = createSmartWalletClient({
+      transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
+      chain: sepolia,
+      signer,
+    });
+
+    // Request a Smart Contract Account
+    const account = await client.requestAccount();
+
+    // Use the SCA address as the `from` param to bypass 7702 mode
+    await client.sendCalls({
+      from: account.address,
+      calls: [...],
+    });
+    ```
   </Tab>
 
-  <Tab title="API" language="bash">
-    <Markdown src="api.mdx" />
+  <Tab title="API">
+    ```bash
+    # First, request a Smart Contract Account
+    ACCOUNT_ADDRESS=$(curl --request POST \
+      --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+      --header 'accept: application/json' \
+      --data '{
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "wallet_requestAccount",
+        "params": [{ "signerAddress": "'$SIGNER_ADDRESS'" }]
+      }' | jq -r '.result.accountAddress')
+
+    # Use the SCA address (not the signer address) in subsequent calls
+    curl --request POST \
+      --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+      --header 'accept: application/json' \
+      --data '{
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "wallet_prepareCalls",
+        "params": [{
+          "calls": [{ "to": "0x...", "data": "0x" }],
+          "from": "'$ACCOUNT_ADDRESS'",
+          "chainId": "'$CHAIN_ID'"
+        }]
+      }'
+    ```
   </Tab>
 </Tabs>
 
@@ -102,19 +159,36 @@ Once delegated, the user’s account behaves as a Smart Wallet while keeping the
 </Accordion>
 
 <Accordion title="EIP-7702 delegations">
+  EIP-7702 delegation is now the default mode for Alchemy Smart Wallets. When you use your signer address directly with `wallet_prepareCalls` or other Transaction APIs, 7702 mode is automatically enabled.
+
   The `eip7702Auth` capability supports the interface defined in [ERC-7902](https://eips.ethereum.org/EIPS/eip-7902).
 
   Currently, Wallet APIs only support delegation to the following contract:
   `0x69007702764179f14F51cdce752f4f775d74E139` (Modular Account v2)
 
   All other delegation addresses will be rejected.
-  To simplify usage, it is recommended to use `eip7702Auth: true`.
 
   Once delegated, an account remains delegated until the delegation is replaced or removed.
 
   To reset an account back to a pure EOA, delegate to
   `0x0000000000000000000000000000000000000000`
   as defined in [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702#behavior).
+
+  **Undelegating (returning to a pure EOA)**
+
+  To remove a delegation and return an account to a pure EOA, you must **re-delegate to the zero address**:
+  `0x0000000000000000000000000000000000000000`.
+
+  **Bundlers cannot relay undelegations**, so you must submit this transaction directly from the account (with enough native gas token to cover fees). If you are re-delegating to another 4337 account, the bundler can relay the delegation.
+
+  To undelegate:
+
+  1. Fund the account with a native gas token.
+  2. Sign an EIP-7702 authorization delegating to `address(0)` with `currentNonce + 1`.
+  3. Send an empty transaction (using `currentNonce`) that includes the authorization.
+
+  We recommend using Viem to sign the EIP-7702 authorization (with `executor: self`):
+  [Viem signAuthorization](https://viem.sh/docs/eip7702/signAuthorization).
 </Accordion>
 
 <Accordion title="Third party signers">

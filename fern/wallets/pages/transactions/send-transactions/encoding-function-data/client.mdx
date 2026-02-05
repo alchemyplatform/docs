@@ -2,19 +2,20 @@ In JavaScript, you can use [Viem](https://viem.sh/docs/contract/encodeFunctionDa
 
 <CodeBlocks>
 
-```ts title="sendCalls.ts" focus={9-13}
+```ts title="sendCalls.ts" focus={9-14}
 import { encodeFunctionData } from "viem";
-import { client } from "./client.ts";
+import { client, signer } from "./client.ts";
 import { exampleAbi } from "./abi.ts";
 
 await client.sendCalls({
+  from: await signer.getAddress(),
   calls: [
     {
       to: "0x0000000000000000000000000000000000000000",
       data: encodeFunctionData({
         abi: exampleAbi,
         functionName: "mintTo",
-        args: [client.account!.address],
+        args: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"],
       }),
     },
   ],
@@ -34,30 +35,21 @@ export const exampleAbi = [
 ```
 
 ```ts title="client.ts"
+import type { Hex } from "viem";
 import { LocalAccountSigner } from "@aa-sdk/core";
 import { alchemy, sepolia } from "@account-kit/infra";
-import {
-  createSmartWalletClient,
-  type SmartWalletClientParams,
-} from "@account-kit/wallet-client";
+import { createSmartWalletClient } from "@account-kit/wallet-client";
 
-const clientParams: SmartWalletClientParams = {
-  transport: alchemy({
-    apiKey: "your-alchemy-api-key",
-  }),
-  chain: sepolia,
-  signer: LocalAccountSigner.privateKeyToAccountSigner(
-    "0x-your-wallet-private-key",
-  ),
-};
-
-const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-const account = await clientWithoutAccount.requestAccount();
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
 
 export const client = createSmartWalletClient({
-  ...clientParams,
-  account: account.address,
+  transport: alchemy({
+    apiKey: process.env.ALCHEMY_API_KEY!,
+  }),
+  chain: sepolia,
+  signer,
 });
 ```
 

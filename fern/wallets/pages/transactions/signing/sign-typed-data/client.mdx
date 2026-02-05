@@ -7,7 +7,9 @@ for full descriptions of the parameters used in the following example.
 <CodeBlocks>
 
 ```ts title="signTypedData.ts"
-import { client } from "./client";
+import { client, signer } from "./client";
+
+const signerAddress = await signer.getAddress();
 
 // Sign typed data
 const typedData = {
@@ -26,13 +28,16 @@ const typedData = {
   },
   primaryType: "Auth",
   message: {
-    user: "0x...", // wallet address
+    user: signerAddress,
     nonce: 12345,
     timestamp: Date.now(),
   },
 } as const;
 
-const signature = await client.signTypedData(typedData);
+const signature = await client.signTypedData({
+  ...typedData,
+  account: signerAddress,
+});
 
 console.log("Typed data signature:", signature);
 ```
@@ -44,23 +49,16 @@ import { LocalAccountSigner } from "@aa-sdk/core";
 import { alchemy, sepolia } from "@account-kit/infra";
 import { createSmartWalletClient } from "@account-kit/wallet-client";
 
-const clientParams = {
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
+
+export const client = createSmartWalletClient({
   transport: alchemy({
     apiKey: process.env.ALCHEMY_API_KEY!,
   }),
   chain: sepolia,
-  signer: LocalAccountSigner.privateKeyToAccountSigner(
-    process.env.PRIVATE_KEY! as Hex,
-  ),
-};
-
-const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-const account = await clientWithoutAccount.requestAccount();
-
-export const client = createSmartWalletClient({
-  ...clientParams,
-  account: account.address,
+  signer,
 });
 ```
 
