@@ -1,0 +1,56 @@
+In JavaScript, you can use [Viem](https://viem.sh/docs/contract/encodeFunctionData) to encode function call data.
+
+<CodeBlocks>
+
+```ts title="sendCalls.ts" focus={9-14}
+import { encodeFunctionData } from "viem";
+import { client, signer } from "./client.ts";
+import { exampleAbi } from "./abi.ts";
+
+await client.sendCalls({
+  from: await signer.getAddress(),
+  calls: [
+    {
+      to: "0x0000000000000000000000000000000000000000",
+      data: encodeFunctionData({
+        abi: exampleAbi,
+        functionName: "mintTo",
+        args: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"],
+      }),
+    },
+  ],
+});
+```
+
+```ts title="abi.ts"
+export const exampleAbi = [
+  {
+    inputs: [{ name: "recipient", type: "address" }],
+    name: "mintTo",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+```
+
+```ts title="client.ts"
+import type { Hex } from "viem";
+import { LocalAccountSigner } from "@aa-sdk/core";
+import { alchemy, sepolia } from "@account-kit/infra";
+import { createSmartWalletClient } from "@account-kit/wallet-client";
+
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
+
+export const client = createSmartWalletClient({
+  transport: alchemy({
+    apiKey: process.env.ALCHEMY_API_KEY!,
+  }),
+  chain: sepolia,
+  signer,
+});
+```
+
+</CodeBlocks>

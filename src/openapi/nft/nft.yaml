@@ -39,6 +39,7 @@ servers: # servers are also specified at the method level, if there isn't a spec
           - polygon-mainnet
           - polygon-amoy
           - monad-testnet
+          - mythos-mainnet
           - opt-mainnet
           - opt-sepolia
           - ronin-mainnet
@@ -414,7 +415,7 @@ paths:
 
         <Note>Please note that this API endpoint is only available to paid tier customers. Upgrade your account [here](https://dashboard.alchemy.com/account).</Note>
 
-        <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast. More to come soon!</Note>
+        <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, BNB, Gnosis, Zksync, Unichain, and Blast. More to come soon!</Note>
       tags: ["NFT Spam Endpoints"]
       servers:
         - url: https://{network}.g.alchemy.com/nft
@@ -449,7 +450,7 @@ paths:
 
         <Note>Please note that this API endpoint is only available to paid tier customers. Upgrade your account [here](https://dashboard.alchemy.com/account).</Note>
 
-        <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast. More to come soon!</Note>
+        <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, BNB, Gnosis, Zksync, Unichain, and Blast. More to come soon!</Note>
       tags: ["NFT Spam Endpoints"]
       servers:
         - url: https://{network}.g.alchemy.com/nft
@@ -910,7 +911,7 @@ paths:
       description: |
         Reports a specific address to the API if it is suspected to be spam.
 
-        <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast. More to come soon!</Note>
+        <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, BNB, Gnosis, Zksync, Unichain, and Blast. More to come soon!</Note>
       tags: ["NFT Spam Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -1781,7 +1782,7 @@ components:
       name: excludeFilters[]
       description: |-
         Array of filters (as ENUMS) that will be applied to the query. NFTs that match one or more of these filters will be excluded from the response. May not be used in conjunction with includeFilters[]. Filter Options:
-          - SPAM: NFTs that have been classified as spam. Spam classification has a wide range of criteria that includes but is not limited to emitting fake events and copying other well-known NFTs. Please note that this filter is currently supported on Mainnet for Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast, and is **available exclusively on paid tiers**.
+          - SPAM: NFTs that have been classified as spam. Spam classification has a wide range of criteria that includes but is not limited to emitting fake events and copying other well-known NFTs. Please note that this filter is currently supported on Mainnet for Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, BNB, Gnosis, Zksync, Unichain, and Blast, and is **available exclusively on paid tiers**.
           - AIRDROPS: NFTs that have were airdropped to the user. Airdrops are defined as NFTs that were minted to a user address in a transaction sent by a different address. NOTE: this filter is currently supported on Ethereum Mainnet, Ethereum Goerli, and Matic Mainnet only.
           - To learn more about spam, you can refer to this: <span class="custom-style"><a href="https://www.alchemy.com/overviews/spam-nfts" target="_blank">Spam NFTs and how to fix them</a></span>
       schema:
@@ -1805,7 +1806,7 @@ components:
       name: includeFilters[]
       description: |-
         Array of filters (as ENUMS) that will be applied to the query. Only NFTs that match one or more of these filters will be included in the response. May not be used in conjunction with excludeFilters[]. Filter Options:
-          - SPAM: NFTs that have been classified as spam. Spam classification has a wide range of criteria that includes but is not limited to emitting fake events and copying other well-known NFTs. Please note that this filter is currently supported on Mainnet for Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, Gnosis, Zksync, and Blast, and is **available exclusively on paid tiers**.
+          - SPAM: NFTs that have been classified as spam. Spam classification has a wide range of criteria that includes but is not limited to emitting fake events and copying other well-known NFTs. Please note that this filter is currently supported on Mainnet for Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, BNB, Gnosis, Zksync, Unichain, and Blast, and is **available exclusively on paid tiers**.
           - AIRDROPS: NFTs that have were airdropped to the user. Airdrops are defined as NFTs that were minted to a user address in a transaction sent by a different address. NOTE: this filter is currently supported on Ethereum Mainnet, Ethereum Goerli, and Matic Mainnet only.
           - To learn more about spam, you can refer to this: <span class="custom-style"><a href="https://www.alchemy.com/overviews/spam-nfts" target="_blank">Spam NFTs and how to fix them</a></span>
       schema:
@@ -1825,7 +1826,7 @@ components:
         The confidence level set means that any spam that is at that confidence level or higher will be filtered out. For example, if the confidence level is HIGH, contracts that we have HIGH or VERY_HIGH confidence in being spam will be filtered out from the response. 
         Defaults to VERY_HIGH for Ethereum Mainnet and MEDIUM for Matic Mainnet.
 
-        **Please note that this filter is only available on paid tiers. Upgrade your account [here](https://dashboard.alchemyapi.io/settings/billing/).**
+        **Please note that this filter is only available on paid tiers. Upgrade your account [here](https://dashboard.alchemy.com/settings/billing/).**
       schema:
         $ref: "#/components/schemas/spamConfidenceLevel"
       in: query
@@ -1953,7 +1954,7 @@ components:
       name: orderBy
       description: |-
         Enum - ordering scheme to use for ordering NFTs in the response. If unspecified, NFTs will be ordered by contract address and token ID.
-          - transferTime: NFTs will be ordered by the time they were transferred into the wallet, with newest NFTs first. NOTE: this ordering is only supported on Ethereum Mainnet and Polygon Mainnet.
+          - transferTime: NFTs will be ordered by the time they were transferred into the wallet, with newest NFTs first. Note: This ordering is supported on Ethereum Mainnet, Optimism Mainnet, Polygon Mainnet, Base Mainnet, Arbitrum One, Polygon Amoy, Base Sepolia, Arbitrum Sepolia, Ethereum Sepolia, and Optimism Sepolia.
       in: query
       schema:
         $ref: "#/components/schemas/orderBy"

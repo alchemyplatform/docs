@@ -1,0 +1,122 @@
+import { kebabCase } from "lodash-es";
+import removeMd from "remove-markdown";
+
+import type { PathBuilder } from "@/content-indexer/core/path-builder.ts";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
+import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
+import type { OpenRpcSpec } from "@/content-indexer/types/specs.ts";
+import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.ts";
+import { isValidOpenRpcSpec } from "@/content-indexer/utils/openrpc.ts";
+import type {
+  VisitorConfig,
+  VisitorResult,
+} from "@/content-indexer/visitors/index.js";
+
+/**
+ * Configuration for processing an OpenRPC specification
+ */
+export interface ProcessOpenRpcConfig {
+  spec: OpenRpcSpec;
+  specUrl: string;
+  visitorConfig: VisitorConfig;
+  apiPathBuilder: PathBuilder;
+  apiTitle: string;
+  isHidden: boolean;
+  isFlattened: boolean;
+}
+
+/**
+ * Processes an OpenRPC specification.
+ * Validates spec, builds path index, navigation, and Algolia records.
+ */
+export const processOpenRpcSpec = ({
+  spec,
+  specUrl,
+  visitorConfig,
+  apiPathBuilder,
+  apiTitle,
+  isHidden,
+  isFlattened,
+}: ProcessOpenRpcConfig): VisitorResult => {
+  const { tab, context, navigationAncestors } = visitorConfig;
+
+  if (!isValidOpenRpcSpec(spec)) {
+    console.error(`  ⚠️  Invalid OpenRPC spec for ${apiTitle}`);
+    return { indexEntries: {} };
+  }
+
+  const indexEntries: PathIndex = {};
+  const endpointNavItems: NavItem[] = [];
+
+  // Create breadcrumb for Algolia
+  const apiSectionBreadcrumb =
+    !isHidden && !isFlattened
+      ? createBreadcrumbNavItem(apiTitle, "api-section")
+      : undefined;
+
+  // Process each RPC method
+  spec.methods.forEach((method) => {
+    const slug = kebabCase(method.name);
+    const pathBuilder = apiPathBuilder.apply({ urlSlug: slug });
+    const finalPath = pathBuilder.get();
+
+    // Add to path index
+    indexEntries[finalPath] = {
+      type: "openrpc",
+      specUrl,
+      methodName: method.name,
+      source: "docs-yml",
+      tab,
+    };
+
+    const summary =
+      method.summary ||
+      (method.description ? removeMd(method.description) : undefined);
+
+    // Build Algolia record if not hidden
+    if (!isHidden) {
+      const description = method.description
+        ? removeMd(method.description)
+        : method.summary || "";
+
+      const breadcrumbs = apiSectionBreadcrumb
+        ? [...navigationAncestors, apiSectionBreadcrumb]
+        : navigationAncestors;
+
+      context.addAlgoliaRecord({
+        pageType: "API Method",
+        path: finalPath,
+        title: method.name,
+        content: description,
+        httpMethod: "POST",
+        breadcrumbs,
+        description: summary,
+      });
+    }
+
+    // Add navigation item
+    endpointNavItems.push({
+      title: method.name,
+      path: `/${finalPath}`,
+      method: "POST",
+      type: "endpoint",
+      description: summary,
+    });
+  });
+
+  // Return early if hidden
+  if (isHidden) {
+    return { indexEntries, navItem: undefined };
+  }
+
+  // Return flattened or wrapped navigation
+  const navItem: NavItem | NavItem[] = isFlattened
+    ? endpointNavItems
+    : {
+        title: apiTitle,
+        type: "api-section",
+        children: endpointNavItems,
+      };
+
+  return { indexEntries, navItem };
+};

@@ -1,0 +1,79 @@
+<Steps>
+  <Step title="Initial Prepare Calls">
+    Prepare calls using the `paymasterService` capability. Use your signer address directly as the `from` field to enable [EIP-7702](/wallets/transactions/using-eip-7702) by default.
+
+    ```bash
+    curl --request POST \
+      --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+      --header 'accept: application/json' \
+      --data '
+    {
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "wallet_prepareCalls",
+      "params": [
+        {
+          "capabilities": {
+            "paymasterService": {
+              "policyId": "'$ALCHEMY_POLICY_ID'",
+              "erc20": {
+                "tokenAddress": "'$GAS_TOKEN'",
+                "preOpSettings": {
+                  "autoPermit": {
+                    "below": "'$APPROVE_BELOW'",
+                    "amount": "'$APPROVE_AMOUNT'"
+                  }
+                }
+              }
+            }
+          },
+          "calls": [
+            {
+              "to": "0x0000000000000000000000000000000000000000"
+            }
+          ],
+          "from": "'$SIGNER_ADDRESS'",
+          "chainId": "'$CHAIN_ID'"
+        }
+      ]
+    }'
+    ```
+  </Step>
+
+  <Step title="(If Needed) Sign Permit Request">
+    If the response to step 1 is a type `paymaster-permit`, then the user must sign the signature request and return via a second call to `wallet_prepareCalls`. Else, skip to step 4.
+    The `data` field on the `paymaster-permit` response contains a [Permit typed message](https://eips.ethereum.org/EIPS/eip-2612). It is recommended that the user
+    checks the fields of this message prior to calculating its hash. The `signatureRequest` field on the `paymaster-permit` response is a required signature over the calculated
+    hash. This is typically an ERC-712 typed signature envelope with a field for the hash to sign over.
+  </Step>
+
+  <Step title="(If Needed) Second Prepare Calls">
+    After signing, another call to `wallet_prepareCalls` is needed to encode the permit into the operation. As a convenience, the `paymaster-permit` response type returns a `modifiedRequest`
+    parameter that modifies the initial request with the permit details. The second request is the `modifiedRequest` with an additional `paymasterPermitSignature` field set to the
+    signature from step 2. The user can also choose to recreate the request and set the corresponding fields in the `paymasterService` capability to the details returned in the permit signature.
+    For example:
+
+    ```json
+    {
+      "capabilities": {
+        "paymasterService": {
+          "erc20": {
+            "preOp": {
+              "permitDetails": {
+                "value": "0x...",
+                "deadline": "0x...",
+              }
+            }
+          }
+        }
+      }
+      ... // same request as step 1
+      "paymasterPermitSignature": "0x..."
+    }
+    ```
+  </Step>
+
+  <Step title="Sign & Send">
+    Sign and send the last prepared calls result as usual using `wallet_sendPreparedCalls`. If the account hasn't been delegated yet, the response type will be `array` containing both an EIP-7702 authorization and a user operation. See the [send transactions guide](/wallets/transactions/send-transactions) for a complete example.
+  </Step>
+</Steps>

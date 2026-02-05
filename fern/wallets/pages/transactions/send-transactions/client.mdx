@@ -1,0 +1,50 @@
+<Info>Required SDK version: ^v4.54.0</Info>
+
+See the [`sendCalls` SDK reference](/wallets/reference/account-kit/wallet-client/functions/sendCalls) for full descriptions of the parameters used in the following example.
+
+You can send transactions using the smart wallet client `sendCalls` action.
+
+<CodeBlocks>
+
+```ts title="sendCalls.ts"
+import { parseEther, toHex } from "viem";
+import { client, signer } from "./client.ts";
+
+const { preparedCallIds } = await client.sendCalls({
+  from: await signer.getAddress(),
+  calls: [
+    {
+      to: "0x0000000000000000000000000000000000000000",
+      value: toHex(parseEther("0")),
+      data: "0x",
+    },
+  ],
+});
+
+console.log({ preparedCallIds });
+
+const result = await client.waitForCallsStatus({ id: preparedCallIds[0] });
+
+console.log(result);
+```
+
+```ts title="client.ts"
+import type { Hex } from "viem";
+import { LocalAccountSigner } from "@aa-sdk/core";
+import { alchemy, sepolia } from "@account-kit/infra";
+import { createSmartWalletClient } from "@account-kit/wallet-client";
+
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
+
+export const client = createSmartWalletClient({
+  transport: alchemy({
+    apiKey: process.env.ALCHEMY_API_KEY!,
+  }),
+  chain: sepolia,
+  signer,
+});
+```
+
+</CodeBlocks>
