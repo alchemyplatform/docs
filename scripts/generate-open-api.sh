@@ -69,6 +69,27 @@ for dir in ${input_dir}/*/; do
   fi
 done
 
+# --- Remote specs ---
+# Specs hosted externally that should be included alongside local specs.
+# Format: "URL|output-name"
+remote_specs=("https://admin-api.alchemy.com/openapi.yaml|admin-api")
+
+for entry in "${remote_specs[@]}"; do
+  IFS='|' read -r url name <<< "$entry"
+  filename="${output_dir}/alchemy/rest/${name}.json"
+  (
+    if [ "$validate_only" = true ]; then
+      echo "Skipping remote spec: ${name} (validate-only mode)"
+    else
+      if ! pnpm exec redocly bundle "$url" --dereferenced --output "$filename" --ext json --remove-unused-components; then
+        exit 1
+      fi
+      jq '{"x-generated-warning": "⚠️ Auto-generated from remote spec. Do not edit."} + .' "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename" || exit 1
+    fi
+  ) &
+  pids+=($!)
+done
+
 # Wait for all background processes and check their exit codes
 for pid in "${pids[@]}"; do
   if ! wait $pid; then
