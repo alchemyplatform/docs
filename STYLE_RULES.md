@@ -108,7 +108,7 @@ RULE: Every code sample must include error handling (try/catch or equivalent).
 ✅ `fetch()` wrapped in try/catch with response status check
 
 RULE: Use `{apiKey}` as the API key placeholder.
-❌ YOUR\_API\_KEY, \<api-your-api-key, API\_KEY
+❌ YOUR\_API\_KEY, \<api-your-api-key\>, API\_KEY
 
 RULE: Use realistic values in examples. Real block numbers, real testnet addresses, real method names.
 ❌ `0x0000000000000000000000000000000000000000`
