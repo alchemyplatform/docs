@@ -22,7 +22,7 @@ RULE: Use "you" when addressing the reader. Never use "the developer", "the user
 ❌ "Users should deploy their contract"
 
 RULE: Use contractions. "you'll", "we've", "don't", "isn't."
-❌ "You will need to configure" → ✅ "Yogure"
+❌ "You will need to configure" → ✅ "You'll need to configure"
 
 RULE: Never use "simply", "just", "easy", "easily", or "obviously."
 ❌ "Simply call the endpoint"
