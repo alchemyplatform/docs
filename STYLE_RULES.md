@@ -1,4 +1,4 @@
-# ALCHEMY DOCS STYLE RULES
+# Alchemy docs style rules
 
 These rules govern all written documentation in this repository — MDX pages,
 API spec descriptions, changelog entries, and code sample comments.
