@@ -56,7 +56,7 @@ RULE: Headings describe what the reader will DO, not just label a topic.
 
 RULE: Never skip heading levels. H2 → H3 → H4. Never H2 → H4.
 
-RULE: Maxd lists ONLY for sequential steps. Use bullet lists for non-ordered items.
+RULE: Numbered lists ONLY for sequential steps. Use bullet lists for non-ordered items.
 
 RULE: All list items in a single list must have parallel structure. If one starts with a verb, all start with a verb.
 ✅ "Create an app", "Configure the SDK", "Send a request"
