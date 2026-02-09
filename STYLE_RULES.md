@@ -115,7 +115,7 @@ RULE: Use realistic values in examples. Real block numbers, real testnet address
 
 RULE: Every request example must be followed by an example response.
 
-RULE: Use fenced code blocks with language identifiers: `javascript, `bash, `json, `python, \`\`\`solidity.
+RULE: Use fenced code blocks with language identifiers: \`\`\`javascript\`\`\`, \`\`\`bash\`\`\`, \`\`\`json\`\`\`, \`\`\`python\`\`\`, \`\`\`solidity\`\`\`.
 
 RULE: Use inline code for: method names, parameter names, file names, terminal commands, values, technical chain references.
 ✅ "Call `eth_getBlockByNumber`"
