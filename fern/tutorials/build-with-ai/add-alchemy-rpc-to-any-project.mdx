@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
   const upstream = URLS[chain] || process.env.ALCHEMY_API_URL;
   if (!upstream) {
     return NextResponse.json(
-      { error: \`Missing upstream for chain "\${chain}". Set ALCHEMY_API_URL or chain-specific env.\` },
+      { error: `Missing upstream for chain "${chain}". Set ALCHEMY_API_URL or chain-specific env.` },
       { status: 500 }
     );
   }
@@ -145,7 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!upstream) {
     return res
       .status(500)
-      .json({ error: \`Missing upstream for chain "\${chain}". Set ALCHEMY_API_URL or chain-specific env.\` });
+      .json({ error: `Missing upstream for chain "${chain}". Set ALCHEMY_API_URL or chain-specific env.` });
   }
 
   const payload = req.body ?? {};
@@ -230,7 +230,7 @@ const server = http.createServer(async (req, res) => {
   if (!upstream) {
     res.statusCode = 500;
     res.setHeader("content-type", "application/json");
-    res.end(JSON.stringify({ error: \`Missing upstream for chain "\${chain}". Set ALCHEMY_API_URL or chain-specific env.\` }));
+    res.end(JSON.stringify({ error: `Missing upstream for chain "${chain}". Set ALCHEMY_API_URL or chain-specific env.` }));
     return;
   }
 
@@ -258,7 +258,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(\`[rpc-proxy] listening on http://localhost:\${PORT}/rpc\`);
+  console.log(`[rpc-proxy] listening on http://localhost:${PORT}/rpc`);
 });
 
 // Also, if in Fallback Node mode, update package.json to include this script
@@ -286,7 +286,7 @@ export async function rpc<T = unknown>(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(\`RPC HTTP \${res.status}\${text ? \`: \${text}\` : ""}\`);
+    throw new Error(`RPC HTTP ${res.status}${text ? `: ${text}` : ""}`);
   }
   const data = (await res.json()) as JsonRpcResponse<T>;
   if (data.error) throw new Error(data.error.message || "RPC error");
