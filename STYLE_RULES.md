@@ -132,7 +132,8 @@ RULE: Link text must describe the destination.
 ✅ "See the [quickstart guide](/docs/alchemy-quickstart-guide)"
 ❌ "Click [here](/docs/alchemy-quickstart-guide)"
 
-RULE: Internal docs links use relative paths: `/docs/...` not full U a term only on its first mention per section. Do not repeat-link.
+RULE: Internal docs links use relative paths: `/docs/...` not full URLs.
+RULE: Link a term only on its first mention per section. Do not repeat-link the same destination within the same section.
 
 ***
 
