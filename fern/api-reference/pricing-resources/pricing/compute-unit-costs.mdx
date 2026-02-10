@@ -320,6 +320,12 @@ Similar to the [NFT API](/reference/compute-unit-costs#nft-api), the Wallet APIs
 | wallet_createSession                       | 50   | -             |
 | wallet_getCallsStatus                      | 20   | -             |
 | wallet_listAccounts                        | 10   | -             |
+| wallet_formatSign                          | 15   | -             |
+| wallet_getAssets                           | 200  | -             |
+| wallet_getCapabilities                     | 10   | -             |
+| wallet_getCrossChainStatus_v0              | 40   | -             |
+| wallet_prepareSign                         | 15   | -             |
+| wallet_requestQuote_v0                     | 800  | -             |
 
 # Webhooks and Subscription APIs
 
@@ -392,28 +398,39 @@ On average, a typical webhook or WebSocket subscription event is about 1000 byte
 | starknet\_specVersion                     | 10   |
 | starknet\_getTransactionStatus            | 20   |
 | starknet\_simulateTransactions            | 20   |
+| starknet\_getCompiledCasm                | 20   |
+| starknet\_getMessagesStatus              | 20   |
+| starknet\_getStorageProof                | 20   |
+| starknet\_traceTransaction               | 20   |
 
 # zkSync Era: Specific Methods
 
-All zkSync Era specific methods cost 10 CUs, this includes the methods listed below:
-
-* [zks-estimatefee-zksync](/reference/zks-estimatefee-zksync)
-* [zks-estimategasl1tol2-zksync](/reference/zks-estimategasl1tol2-zksync)
-* [zks-getallaccountbalances-zksync](/reference/zks-getallaccountbalances-zksync)
-* [zks-getblockdetails-zksync](/reference/zks-getblockdetails-zksync)
-* [zks-getbridgecontracts-zksync](/reference/zks-getbridgecontracts-zksync)
-* [zks-getbytecodebyhash-zksync](/reference/zks-getbytecodebyhash-zksync)
-* [zks-getl1batchblockrange-zksync](/reference/zks-getl1batchblockrange-zksync)
-* [zks-getl1batchdetails-zksync](/reference/zks-getl1batchdetails-zksync)
-* [zks-getl2tol1logproof-zksync](/reference/zks-getl2tol1logproof-zksync)
-* [zks-getl2tol1msgproof-zksync](/reference/zks-getl2tol1msgproof-zksync)
-* [zks-getmaincontract-zksync](/reference/zks-getmaincontract-zksync)
-* [zks-getproof-zksync](/reference/zks-getproof-zksync)
-* [zks-getrawblocktransactions-zksync](/reference/zks-getrawblocktransactions-zksync)
-* [zks-gettestnetpaymaster-zksync](/reference/zks-gettestnetpaymaster-zksync)
-* [zks-gettransactiondetails-zksync](/reference/zks-gettransactiondetails-zksync)
-* [zks-l1batchnumber-zksync](/reference/zks-l1batchnumber-zksync)
-* [zks-l1chainid-zksync](/reference/zks-l1chainid-zksync)
+| Method                                          | CU |
+| ----------------------------------------------- | -- |
+| zks\_estimateFee                                | 10 |
+| zks\_estimateGasL1ToL2                          | 10 |
+| zks\_gasPerPubdata                              | 10 |
+| zks\_getAllAccountBalances                       | 10 |
+| zks\_getBaseTokenL1Address                      | 10 |
+| zks\_getBlockDetails                            | 10 |
+| zks\_getBridgeContracts                         | 10 |
+| zks\_getBridgehubContract                       | 10 |
+| zks\_getBytecodeByHash                          | 10 |
+| zks\_getConfirmedTokens                         | 10 |
+| zks\_getFeeParams                               | 10 |
+| zks\_getL1BatchBlockRange                       | 10 |
+| zks\_getL1BatchDetails                          | 10 |
+| zks\_getL1GasPrice                              | 10 |
+| zks\_getL2ToL1LogProof                          | 10 |
+| zks\_getL2ToL1MsgProof                          | 10 |
+| zks\_getMainContract                            | 10 |
+| zks\_getProtocolVersion                         | 10 |
+| zks\_getRawBlockTransactions                    | 10 |
+| zks\_getTestnetPaymaster                        | 10 |
+| zks\_getTransactionDetails                      | 10 |
+| zks\_L1BatchNumber                              | 10 |
+| zks\_L1ChainId                                  | 10 |
+| zks\_sendRawTransactionWithDetailedOutput       | 20 |
 
 # Ethereum Beacon: Standard HTTP API Methods
 
@@ -452,6 +469,12 @@ All zkSync Era specific methods cost 10 CUs, this includes the methods listed be
 | /eth/v1/validator/duties/sync/\{epoch}                         | 20  |
 | /eth/v1/validator/sync\_committee\_contribution                | 20  |
 | /eth/v2/beacon/blocks/\{block\_id}                             | 20  |
+| /eth/v1/beacon/blinded\_blocks/\{block\_id}                    | 20  |
+| /eth/v1/beacon/blobs/\{block\_id}                              | 20  |
+| /eth/v1/beacon/states/\{state\_id}/pending\_deposits           | 20  |
+| /eth/v1/beacon/states/\{state\_id}/proposer\_lookahead         | 20  |
+| /eth/v1/beacon/states/\{state\_id}/randao                      | 20  |
+| /eth/v1/beacon/states/\{state\_id}/validator\_identities       | 20  |
 
 # Aptos: Standard REST API Methods
 
@@ -550,6 +573,93 @@ All zkSync Era specific methods cost 10 CUs, this includes the methods listed be
 | da.Get                                                    | 20  |
 | fraud.Get                                                 | 20  |
 
+# Citrea: Specific Methods
+
+| Method                                      | CU |
+| ------------------------------------------- | -- |
+| citrea\_getL2StatusHeightsByL1Height        | 20 |
+| citrea\_getLastCommittedL2Height            | 20 |
+| citrea\_getLastProvenL2Height               | 20 |
+| citrea\_sendRawDepositTransaction           | 20 |
+| citrea\_syncStatus                          | 20 |
+| ledger\_getHeadL2Block                      | 20 |
+| ledger\_getHeadL2BlockHeight                | 20 |
+| ledger\_getL2BlockByHash                    | 20 |
+| ledger\_getL2BlockByNumber                  | 20 |
+| ledger\_getL2BlockRange                     | 20 |
+| ledger\_getL2GenesisStateRoot               | 20 |
+| ledger\_getLastScannedL1Height              | 20 |
+| ledger\_getLastVerifiedBatchProof           | 20 |
+| ledger\_getSequencerCommitmentByIndex       | 20 |
+| ledger\_getSequencerCommitmentsOnSlotByHash | 20 |
+| ledger\_getSequencerCommitmentsOnSlotByNumber | 20 |
+| ledger\_getVerifiedBatchProofsBySlotHeight  | 20 |
+
+# Linea: Specific Methods
+
+| Method                                        | CU |
+| --------------------------------------------- | -- |
+| linea\_estimateGas                            | 20 |
+| linea\_getProof                               | 20 |
+| linea\_getTransactionExclusionStatusV1        | 20 |
+
+# Sui: Standard Methods
+
+| Method                                   | CU |
+| ---------------------------------------- | -- |
+| sui\_devInspectTransactionBlock           | 20 |
+| sui\_dryRunTransactionBlock              | 20 |
+| sui\_executeTransactionBlock             | 20 |
+| sui\_getChainIdentifier                  | 20 |
+| sui\_getCheckpoint                       | 20 |
+| sui\_getCheckpoints                      | 20 |
+| sui\_getEvents                           | 20 |
+| sui\_getLatestCheckpointSequenceNumber   | 20 |
+| sui\_getMoveFunctionArgTypes             | 20 |
+| sui\_getNormalizedMoveFunction           | 20 |
+| sui\_getNormalizedMoveModule             | 20 |
+| sui\_getNormalizedMoveModulesByPackage   | 20 |
+| sui\_getNormalizedMoveStruct             | 20 |
+| sui\_getObject                           | 20 |
+| sui\_getProtocolConfig                   | 20 |
+| sui\_getTotalTransactionBlocks           | 20 |
+| sui\_getTransactionBlock                 | 20 |
+| sui\_multiGetObjects                     | 20 |
+| sui\_multiGetTransactionBlocks           | 20 |
+| sui\_tryGetPastObject                    | 20 |
+| sui\_tryMultiGetPastObjects              | 20 |
+| suix\_getAllBalances                      | 20 |
+| suix\_getAllCoins                         | 20 |
+| suix\_getBalance                         | 20 |
+| suix\_getCoinMetadata                    | 20 |
+| suix\_getCoins                           | 20 |
+| suix\_getCommitteeInfo                   | 20 |
+| suix\_getDynamicFieldObject              | 20 |
+| suix\_getDynamicFields                   | 20 |
+| suix\_getLatestBridge                    | 20 |
+| suix\_getLatestSuiSystemState            | 20 |
+| suix\_getOwnedObjects                    | 20 |
+| suix\_getReferenceGasPrice               | 20 |
+| suix\_getStakes                          | 20 |
+| suix\_getStakesByIds                     | 20 |
+| suix\_getTotalSupply                     | 20 |
+| suix\_queryEvents                        | 20 |
+| suix\_queryTransactionBlocks             | 20 |
+| suix\_resolveNameServiceAddress          | 20 |
+| unsafe\_batchTransaction                 | 20 |
+| unsafe\_mergeCoins                       | 20 |
+| unsafe\_moveCall                         | 20 |
+| unsafe\_pay                              | 20 |
+| unsafe\_payAllSui                        | 20 |
+| unsafe\_paySui                           | 20 |
+| unsafe\_publish                          | 20 |
+| unsafe\_requestAddStake                  | 20 |
+| unsafe\_requestWithdrawStake             | 20 |
+| unsafe\_splitCoin                        | 20 |
+| unsafe\_splitCoinEqual                   | 20 |
+| unsafe\_transferObject                   | 20 |
+| unsafe\_transferSui                      | 20 |
+
 # Tron: Standard HTTP Methods
 
 | Method                                                    | CU  |
@@ -602,10 +712,81 @@ All zkSync Era specific methods cost 10 CUs, this includes the methods listed be
 | /wallet/unfreezeasset                                     | 20  |
 | /wallet/updateaccount                                     | 20  |
 | /wallet/validateaddress                                   | 20  |
+| /wallet/createshieldedcontractparameters                  | 20  |
+| /wallet/createspendauthsig                                | 20  |
+| /wallet/delegateresource                                  | 20  |
+| /wallet/exchangecreate                                    | 20  |
+| /wallet/exchangeinject                                    | 20  |
+| /wallet/exchangetransaction                               | 20  |
+| /wallet/exchangewithdraw                                  | 20  |
+| /wallet/getakfromask                                      | 20  |
+| /wallet/getassetissuebyaccount                            | 20  |
+| /wallet/getassetissuelist                                 | 20  |
+| /wallet/getassetissuelistbyname                           | 20  |
+| /wallet/getavailableunfreezecount                         | 20  |
+| /wallet/getbandwidthprices                                | 20  |
+| /wallet/getblockbalance                                   | 20  |
+| /wallet/getcandelegatedmaxsize                            | 20  |
+| /wallet/getcanwithdrawunfreezeamount                      | 20  |
+| /wallet/getdelegatedresourceaccountindexv2                | 20  |
+| /wallet/getdelegatedresourcev2                            | 20  |
+| /wallet/getexpandedspendingkey                            | 20  |
+| /wallet/getnkfromnsk                                      | 20  |
+| /wallet/getpendingsize                                    | 20  |
+| /wallet/getspendingkey                                    | 20  |
+| /wallet/gettransactionfrompending                         | 20  |
+| /wallet/gettransactioninfobyblocknum                      | 20  |
+| /wallet/gettriggerinputforshieldedtrc20contract           | 20  |
+| /wallet/getzenpaymentaddress                              | 20  |
+| /wallet/isshieldedtrc20contractnotespent                  | 20  |
+| /wallet/listexchanges                                     | 20  |
+| /wallet/listproposals                                     | 20  |
+| /wallet/participateassetissue                             | 20  |
+| /wallet/proposalapprove                                   | 20  |
+| /wallet/proposaldelete                                    | 20  |
+| /wallet/scanshieldedtrc20notesbyivk                       | 20  |
+| /wallet/scanshieldedtrc20notesbyovk                       | 20  |
+| /wallet/undelegateresource                                | 20  |
+| /wallet/updateasset                                       | 20  |
+| /wallet/updateenergylimit                                 | 20  |
+| /wallet/updatesetting                                     | 20  |
+| /wallet/votewitnessaccount                                | 20  |
+| /wallet/withdrawexpireunfreeze                            | 20  |
+
+# Tron: Solidity HTTP Methods
+
+| Method                                                    | CU  |
+| --------------------------------------------------------- | --- |
+| /walletsolidity/estimateenergy                            | 20  |
 | /walletsolidity/getaccount                                | 20  |
-| /walletsolidity/gettransactionbyid                        | 20  |
-| /walletsolidity/gettransactioninfobyblocknum              | 20  |
+| /walletsolidity/getassetissuebyid                         | 20  |
+| /walletsolidity/getassetissuebyname                       | 20  |
+| /walletsolidity/getassetissuelist                         | 20  |
+| /walletsolidity/getassetissuelistbyname                   | 20  |
+| /walletsolidity/getavailableunfreezecount                 | 20  |
+| /walletsolidity/getblock                                  | 20  |
+| /walletsolidity/getblockbyid                              | 20  |
+| /walletsolidity/getblockbylatestnum                       | 20  |
+| /walletsolidity/getblockbylimitnext                       | 20  |
+| /walletsolidity/getblockbynum                             | 20  |
+| /walletsolidity/getburntrx                                | 20  |
+| /walletsolidity/getcandelegatedmaxsize                    | 20  |
+| /walletsolidity/getcanwithdrawunfreezeamount              | 20  |
+| /walletsolidity/getdelegatedresource                      | 20  |
+| /walletsolidity/getdelegatedresourceaccountindex          | 20  |
+| /walletsolidity/getdelegatedresourceaccountindexv2        | 20  |
+| /walletsolidity/getexchangebyid                           | 20  |
+| /walletsolidity/getnowblock                               | 20  |
 | /walletsolidity/getpaginatedassetissuelist                | 20  |
+| /walletsolidity/gettransactionbyid                        | 20  |
+| /walletsolidity/gettransactioncountbyblocknum             | 20  |
+| /walletsolidity/gettransactioninfobyblocknum              | 20  |
+| /walletsolidity/gettransactioninfobyid                    | 20  |
+| /walletsolidity/isshieldedtrc20contractnotespent          | 20  |
+| /walletsolidity/listexchanges                             | 20  |
+| /walletsolidity/scanshieldedtrc20notesbyivk               | 20  |
+| /walletsolidity/scanshieldedtrc20notesbyovk               | 20  |
+| /walletsolidity/triggerconstantcontract                   | 20  |
 
 # Compute unit cost for error codes
 
