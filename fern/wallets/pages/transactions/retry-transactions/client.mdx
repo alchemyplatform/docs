@@ -17,7 +17,7 @@ You'll need the following env variables:
   import { client, config, signer } from "./client.ts";
 
   // Send initial transaction
-  const { preparedCallIds } = await client.sendCalls({
+  const { id } = await client.sendCalls({
     from: await signer.getAddress(),
     capabilities: {
       paymasterService: {
@@ -33,10 +33,10 @@ You'll need the following env variables:
     ],
   });
 
-  console.log("Initial transaction:", preparedCallIds[0]);
+  console.log("Initial transaction:", id);
 
   // Check status
-  const status = await client.getCallsStatus(preparedCallIds[0]!);
+  const status = await client.getCallsStatus(id);
 
   console.log("Transaction status:", status.status);
 
@@ -45,7 +45,7 @@ You'll need the following env variables:
     console.log("Transaction pending, sending replacement...");
 
     // Re-send without nonceOverride to replace stuck transaction
-    const { preparedCallIds: replacementIds } = await client.sendCalls({
+    const { id: replacementId } = await client.sendCalls({
       from: await signer.getAddress(),
       capabilities: {
         paymasterService: {
@@ -61,10 +61,10 @@ You'll need the following env variables:
       ],
     });
 
-    console.log("Replacement transaction:", replacementIds[0]);
+    console.log("Replacement transaction:", replacementId);
 
     // Wait for replacement to confirm
-    const result = await client.waitForCallsStatus({ id: replacementIds[0]! });
+    const result = await client.waitForCallsStatus({ id: replacementId });
 
     console.log("Replacement confirmed:", result);
   }

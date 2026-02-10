@@ -158,13 +158,13 @@ async function main() {
     },
   });
 
-  if (!result.preparedCallIds?.length) {
-    throw new Error("No prepared call IDs returned");
+  if (!result.id) {
+    throw new Error("No call ID returned");
   }
 
   // Wait for transaction confirmation
   const txStatus = await client.waitForCallsStatus({
-    id: result.preparedCallIds[0],
+    id: result.id,
     timeout: 60_000,
   });
 

@@ -74,9 +74,9 @@ const preparedCalls = await client.prepareCalls({
 
 const signedCalls = await client.signPreparedCalls(preparedCalls);
 
-const { preparedCallIds } = await client.sendPreparedCalls(signedCalls);
+const { id } = await client.sendPreparedCalls(signedCalls);
 
-const status = await client.getCallsStatus(preparedCallIds[0]);
+const status = await client.getCallsStatus(id);
 ```
 
 Now you can continue to create the session key as described below.
@@ -121,7 +121,7 @@ const signedCalls = await signPreparedCalls(
   preparedCalls,
 );
 
-const { preparedCallIds } = await client.sendPreparedCalls({
+const { id } = await client.sendPreparedCalls({
   ...signedCalls,
   capabilities: {
     permissions,
@@ -129,5 +129,5 @@ const { preparedCallIds } = await client.sendPreparedCalls({
 });
 
 // Check calls status.
-const status = await client.getCallsStatus(preparedCallIds[0]);
+const status = await client.getCallsStatus(id);
 ```

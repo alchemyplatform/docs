@@ -10,7 +10,7 @@ You can send transactions using the smart wallet client `sendCalls` action.
 import { parseEther, toHex } from "viem";
 import { client, signer } from "./client.ts";
 
-const { preparedCallIds } = await client.sendCalls({
+const { id } = await client.sendCalls({
   from: await signer.getAddress(),
   calls: [
     {
@@ -21,9 +21,9 @@ const { preparedCallIds } = await client.sendCalls({
   ],
 });
 
-console.log({ preparedCallIds });
+console.log({ id });
 
-const result = await client.waitForCallsStatus({ id: preparedCallIds[0] });
+const result = await client.waitForCallsStatus({ id });
 
 console.log(result);
 ```
