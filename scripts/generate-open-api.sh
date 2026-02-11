@@ -81,7 +81,9 @@ if [ -f "$remote_specs_file" ]; then
     filename="${output_dir}/alchemy/rest/${name}.json"
     (
       if [ "$validate_only" = true ]; then
-        echo "Skipping remote spec: ${name} (validate-only mode)"
+        if ! pnpm exec redocly lint "$url" --format json; then
+          exit 1
+        fi
       else
         if ! pnpm exec redocly bundle "$url" --dereferenced --output "$filename" --ext json --remove-unused-components; then
           exit 1
