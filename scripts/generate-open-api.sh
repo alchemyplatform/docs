@@ -69,6 +69,32 @@ for dir in ${input_dir}/*/; do
   fi
 done
 
+# --- Remote specs ---
+# Specs hosted externally that should be included alongside local specs.
+# Config lives in fern/remote-specs.json as an array of { name, url } objects.
+remote_specs_file="fern/remote-specs.json"
+
+if [ -f "$remote_specs_file" ]; then
+  for entry in $(jq -c '.[]' "$remote_specs_file"); do
+    name=$(echo "$entry" | jq -r '.name')
+    url=$(echo "$entry" | jq -r '.url')
+    filename="${output_dir}/alchemy/rest/${name}.json"
+    (
+      if [ "$validate_only" = true ]; then
+        if ! pnpm exec redocly lint "$url" --format json; then
+          exit 1
+        fi
+      else
+        if ! pnpm exec redocly bundle "$url" --dereferenced --output "$filename" --ext json --remove-unused-components; then
+          exit 1
+        fi
+        jq '{"x-generated-warning": "⚠️ Auto-generated from remote spec. Do not edit."} + .' "$filename" > "$filename.tmp" && mv "$filename.tmp" "$filename" || exit 1
+      fi
+    ) &
+    pids+=($!)
+  done
+fi
+
 # Wait for all background processes and check their exit codes
 for pid in "${pids[@]}"; do
   if ! wait $pid; then

@@ -1,0 +1,174 @@
+---
+title: Admin API Quickstart
+subtitle: Create, configure, and manage an app using the Admin API.
+slug: reference/admin-api/quickstart
+---
+
+## Getting Started
+
+This guide walks through creating an app, retrieving its details, updating its configuration, and deleting it.
+
+### Prerequisites
+
+* An access key with App Management **write** permissions
+  * Refer to the overview authentication section for instructions to create an access key
+
+## Set up Environment Variables
+
+```bash
+export ALCHEMY_ADMIN_BASE_URL="https://admin-api.alchemy.com/v1"
+export ALCHEMY_ADMIN_ACCESS_KEY="YOUR_ACCESS_KEY_HERE"
+```
+
+Auth Header
+
+```bash
+export ALCHEMY_ADMIN_AUTH_HEADER="Authorization: Bearer $ALCHEMY_ADMIN_ACCESS_KEY"
+```
+
+## Get chain network options
+
+Use this endpoint to retrieve the list of supported networks and their identifiers. These values are required when configuring network allowlists.
+
+```bash
+curl "$ALCHEMY_ADMIN_BASE_URL/chains" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER"
+```
+
+## 1. Create an app
+
+Create a new app by providing a name, description, and supported networks.
+
+```bash
+curl -X POST "$ALCHEMY_ADMIN_BASE_URL/apps" \
+  -H "Content-Type: application/json" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+  -d '{
+    "name": "My App",
+    "description": "Example app",
+    "networkAllowlist": ["ETH_MAINNET", "ARB_MAINNET"],
+    "products": ["node-api", "webhooks"]
+  }'
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "id": "k5c99fzeegrljz2i",
+    "name": "Test App",
+    "description": "App for full workflow test",
+    "apiKey": "Ow7sB2EbdOgDvAU5P3N0V",
+    "webhookApiKey": "1JIfTRjWbCv4gZS2IWEyTxKHO8eqa2C7",
+    "chainNetworks": [
+      {
+        "name": "Ethereum Mainnet",
+        "id": "ETH_MAINNET",
+        "networkChainId": "1",
+        "rpcUrl": "https://eth-mainnet.g.alchemy.com/v2/Ow7sB2EbdOgDvAU5P3N0V",
+        "wsUrl": "wss://eth-mainnet.g.alchemy.com/v2/Ow7sB2EbdOgDvAU5P3N0V"
+      }
+    ],
+    "products": [],
+    "addressAllowlist": [],
+    "originAllowlist": [],
+    "ipAllowlist": [],
+    "createdAt": "2026-02-05T16:03:03.121+00:00"
+  }
+}
+```
+
+## 2. Get app info
+
+Retrieve details for a single app using its `app_id`.
+
+```bash
+APP_ID="app_123"
+
+curl "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER"
+```
+
+***
+
+## 3. Update app configuration
+
+App updates are split between **metadata updates** and **configuration updates**.
+
+* Use `PATCH /apps/{app_id}` to update name or description
+* Use configuration sub-endpoints to update networks, allowlists, and IP restrictions
+
+### Update app name and description
+
+```bash
+APP_ID="app_123"
+
+curl -X PATCH "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID" \
+  -H "Content-Type: application/json" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+  -d '{
+    "name": "Renamed App",
+    "description": "Updated description"
+  }'
+```
+
+### Update network allowlist (optional)
+
+Update the set of networks this app is allowed to access. Network values must come from the Chains endpoint. The networks provided will replace the current list.
+
+```bash
+APP_ID="app_123"
+
+curl -X PUT "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID/networks" \
+  -H "Content-Type: application/json" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+  -d '{
+    "networkAllowlist": ["ETH_MAINNET", "OPT_MAINNET"]
+  }'
+```
+
+### Update origin allowlist (optional)
+
+Update the origin URLs available for this app.
+
+```bash
+APP_ID="app_123"
+
+curl -X PUT "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID/origin-allowlist" \
+  -H "Content-Type: application/json" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+  -d '{
+    "originAllowlist": [
+      { "name": "Test Origin", "value": "https://example.com" }
+    ]
+  }'
+```
+
+### Update IP allowlist (optional)
+
+Update the IP addresses that can send requests via this app.
+
+```bash
+APP_ID="app_123"
+
+curl -X PUT "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID/ip-allowlist" \
+  -H "Content-Type: application/json" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+  -d '{
+    "ipAllowlist": [
+      { "name": "Test IP", "value": "203.0.113.1" }
+    ]
+  }'
+```
+
+## 4. Delete the app
+
+Permanently delete an app. This action cannot be undone.
+
+```bash
+APP_ID="app_123"
+
+curl -X DELETE "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER"
+```
