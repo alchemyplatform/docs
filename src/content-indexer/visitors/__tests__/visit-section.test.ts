@@ -181,7 +181,7 @@ describe("visitSection", () => {
     expect(result.indexEntries["guides/page"]).toBeDefined();
   });
 
-  test("should handle hidden section", () => {
+  test("should mark hidden section with hidden flag", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
@@ -207,7 +207,18 @@ describe("visitSection", () => {
       visitNavigationItem,
     );
 
-    expect(result.navItem).toBeUndefined();
+    expect(result.navItem).toBeDefined();
+    expect(result.navItem).toHaveProperty("hidden", true);
+    expect(result.navItem).toHaveProperty("type", "section");
+    expect(result.navItem).toHaveProperty("title", "Hidden Section");
+    // Children should still be present
+    if (
+      result.navItem &&
+      !Array.isArray(result.navItem) &&
+      "children" in result.navItem
+    ) {
+      expect(result.navItem.children).toHaveLength(1);
+    }
     // Index entries should still be created
     expect(Object.keys(result.indexEntries).length).toBeGreaterThan(0);
   });

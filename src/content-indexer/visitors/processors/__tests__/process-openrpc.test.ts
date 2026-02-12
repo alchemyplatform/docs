@@ -158,7 +158,7 @@ describe("processOpenRpcSpec", () => {
     expect(Array.isArray(result.navItem)).toBe(true);
   });
 
-  test("should not create nav if hidden", () => {
+  test("should mark nav as hidden if hidden", () => {
     const context = new ProcessingContext("docs");
 
     const result = processOpenRpcSpec({
@@ -187,7 +187,8 @@ describe("processOpenRpcSpec", () => {
       isFlattened: false,
     });
 
-    expect(result.navItem).toBeUndefined();
+    expect(result.navItem).toBeDefined();
+    expect(result.navItem).toHaveProperty("hidden", true);
     expect(Object.keys(result.indexEntries).length).toBeGreaterThan(0); // Index still created
   });
 
