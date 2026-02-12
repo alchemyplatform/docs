@@ -223,6 +223,84 @@ describe("visitSection", () => {
     expect(Object.keys(result.indexEntries).length).toBeGreaterThan(0);
   });
 
+  test("should mark section hidden when all children are hidden", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    const result = visitSection(
+      {
+        item: {
+          section: "Looks Visible",
+          contents: [
+            {
+              page: "Hidden A",
+              path: "fern/guides/a.mdx",
+              hidden: true,
+            },
+            {
+              page: "Hidden B",
+              path: "fern/guides/b.mdx",
+              hidden: true,
+            },
+          ],
+        },
+        parentPath: PathBuilder.init("guides"),
+        tab: "guides",
+        stripPathPrefix: undefined,
+        contentCache: cache,
+        context,
+        navigationAncestors: [],
+      },
+      visitNavigationItem,
+    );
+
+    // Section itself should be marked hidden since all children are hidden
+    expect(result.navItem).toBeDefined();
+    expect(result.navItem).toHaveProperty("hidden", true);
+    // Children should still be present
+    if (
+      result.navItem &&
+      !Array.isArray(result.navItem) &&
+      "children" in result.navItem
+    ) {
+      expect(result.navItem.children).toHaveLength(2);
+    }
+  });
+
+  test("should not mark section hidden when some children are visible", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    const result = visitSection(
+      {
+        item: {
+          section: "Mixed Section",
+          contents: [
+            {
+              page: "Hidden Page",
+              path: "fern/guides/hidden.mdx",
+              hidden: true,
+            },
+            {
+              page: "Visible Page",
+              path: "fern/guides/visible.mdx",
+            },
+          ],
+        },
+        parentPath: PathBuilder.init("guides"),
+        tab: "guides",
+        stripPathPrefix: undefined,
+        contentCache: cache,
+        context,
+        navigationAncestors: [],
+      },
+      visitNavigationItem,
+    );
+
+    expect(result.navItem).toBeDefined();
+    expect(result.navItem).not.toHaveProperty("hidden");
+  });
+
   test("should recursively process nested sections", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();

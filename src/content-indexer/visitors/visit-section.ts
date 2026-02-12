@@ -138,14 +138,17 @@ export const visitSection = (
     .flat()
     .filter((child): child is NavItem => child !== undefined);
 
-  // Skip section from nav if it has no visible children
+  // Skip section from nav if it has no children
   if (children.length === 0) {
     return { indexEntries, navItem: undefined };
   }
 
-  // Update section nav item with children (mark hidden if applicable)
+  // Update section nav item with children.
+  // Mark hidden if explicitly hidden OR if every child is hidden
+  // (prevents empty section headers when consumers filter hidden items).
   sectionNavItem.children = children;
-  if (sectionItem.hidden) {
+  const allChildrenHidden = children.every((child) => child.hidden === true);
+  if (sectionItem.hidden || allChildrenHidden) {
     sectionNavItem.hidden = true;
   }
 
