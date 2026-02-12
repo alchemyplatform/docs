@@ -182,7 +182,7 @@ describe("visitApiReference", () => {
     expect(firstPath).toBe("reference/get-balance");
   });
 
-  test("should return no nav for hidden API", () => {
+  test("should mark nav as hidden for hidden API", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
@@ -215,7 +215,8 @@ describe("visitApiReference", () => {
       navigationAncestors: [],
     });
 
-    expect(result.navItem).toBeUndefined();
+    expect(result.navItem).toBeDefined();
+    expect(result.navItem).toHaveProperty("hidden", true);
     expect(Object.keys(result.indexEntries).length).toBeGreaterThan(0); // Index still created
   });
 

@@ -184,15 +184,11 @@ export const processOpenApiSpec = ({
     tab,
   });
 
-  // Return early if hidden (index only, no navigation)
-  if (isHidden) {
-    return { indexEntries, navItem: undefined };
-  }
-
-  // Create breadcrumb for Algolia
-  const apiSectionBreadcrumb = isFlattened
-    ? undefined
-    : createBreadcrumbNavItem(apiTitle, "api-section");
+  // Create breadcrumb for Algolia (skip for hidden APIs)
+  const apiSectionBreadcrumb =
+    isHidden || isFlattened
+      ? undefined
+      : createBreadcrumbNavItem(apiTitle, "api-section");
 
   // Build navigation items
   const tagSections = buildOpenApiNavigation({
@@ -205,13 +201,14 @@ export const processOpenApiSpec = ({
     isHidden,
   });
 
-  // Return flattened or wrapped navigation
+  // Return flattened or wrapped navigation (marked hidden if applicable)
   const navItem: NavItem | NavItem[] = isFlattened
-    ? tagSections
+    ? tagSections.map((item) => (isHidden ? { ...item, hidden: true } : item))
     : {
         title: apiTitle,
         type: "api-section",
         children: tagSections,
+        ...(isHidden && { hidden: true }),
       };
 
   return { indexEntries, navItem };

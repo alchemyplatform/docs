@@ -56,7 +56,7 @@ describe("visitPage", () => {
     });
   });
 
-  test("should skip nav item for hidden page", () => {
+  test("should mark nav item as hidden for hidden page", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
@@ -74,7 +74,12 @@ describe("visitPage", () => {
       navigationAncestors: [],
     });
 
-    expect(result.navItem).toBeUndefined();
+    expect(result.navItem).toEqual({
+      title: "Hidden Page",
+      path: "/guides/hidden-page",
+      type: "page",
+      hidden: true,
+    });
     expect(result.indexEntries["guides/hidden-page"]).toBeDefined(); // Index still created
   });
 

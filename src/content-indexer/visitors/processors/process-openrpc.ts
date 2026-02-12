@@ -104,18 +104,16 @@ export const processOpenRpcSpec = ({
     });
   });
 
-  // Return early if hidden
-  if (isHidden) {
-    return { indexEntries, navItem: undefined };
-  }
-
-  // Return flattened or wrapped navigation
+  // Return flattened or wrapped navigation (marked hidden if applicable)
   const navItem: NavItem | NavItem[] = isFlattened
-    ? endpointNavItems
+    ? endpointNavItems.map((item) =>
+        isHidden ? { ...item, hidden: true } : item,
+      )
     : {
         title: apiTitle,
         type: "api-section",
         children: endpointNavItems,
+        ...(isHidden && { hidden: true }),
       };
 
   return { indexEntries, navItem };
