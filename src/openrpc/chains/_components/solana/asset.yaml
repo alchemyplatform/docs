@@ -42,14 +42,23 @@ components:
     GetAssetConfig:
       title: GetAsset Configuration
       type: object
+      required: [id]
       properties:
+        id:
+          $ref: "#/components/schemas/AssetId"
         displayOptions:
           $ref: "#/components/schemas/DisplayOptions"
 
     GetAssetsConfig:
       title: GetAssets Configuration
       type: object
+      required: [ids]
       properties:
+        ids:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetId"
+          description: An array of asset IDs to retrieve.
         sortBy:
           type: object
           description: Sorting criteria for assets.
@@ -383,6 +392,7 @@ components:
     GetAssetsByAuthorityConfig:
       title: GetAssetsByAuthority Configuration
       type: object
+      required: [authorityAddress]
       properties:
         sortBy:
           type: object
@@ -424,7 +434,11 @@ components:
     GetAssetsByOwnerConfig:
       title: GetAssetsByOwner Configuration
       type: object
+      required: [ownerAddress]
       properties:
+        ownerAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The owner address to filter assets by.
         sortBy:
           type: object
           description: Sorting criteria for assets.
@@ -468,6 +482,7 @@ components:
     GetAssetsByGroupConfig:
       title: GetAssetsByGroup Configuration
       type: object
+      required: [groupKey, groupValue]
       properties:
         sortBy:
           type: object
@@ -512,6 +527,7 @@ components:
     GetAssetsByCreatorConfig:
       title: GetAssetsByCreator Configuration
       type: object
+      required: [creatorAddress]
       properties:
         sortBy:
           type: object
@@ -655,7 +671,11 @@ components:
     GetAssetSignaturesConfig:
       title: GetAssetSignatures Configuration
       type: object
+      required: [id]
       properties:
+        id:
+          $ref: "#/components/schemas/AssetId"
+          description: The ID of the asset to get signatures for.
         limit:
           type: integer
           description: The maximum number of signatures to retrieve.
@@ -727,7 +747,11 @@ components:
     GetNftEditionsConfig:
       title: GetNftEditions Configuration
       type: object
+      required: [mint]
       properties:
+        mint:
+          $ref: "#/components/schemas/AssetId"
+          description: The ID of the master NFT to get editions for.
         limit:
           type: integer
           description: The maximum number of editions to retrieve.
@@ -805,3 +829,21 @@ components:
           items:
             $ref: "#/components/schemas/NftEdition"
           description: Array of NFT editions.
+
+    GetAssetProofParams:
+      title: GetAssetProof Parameters
+      type: object
+      required: [id]
+      properties:
+        id:
+          $ref: "#/components/schemas/AssetId"
+
+    GetAssetProofsParams:
+      title: GetAssetProofs Parameters
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetId"
