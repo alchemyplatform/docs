@@ -1,4 +1,3 @@
-// Cursor-generated
 import * as fs from "fs";
 import * as path from "path";
 
@@ -6,6 +5,43 @@ const API_SPECS_DIR = path.join(process.cwd(), "fern", "api-specs");
 const OUTPUT_FILE = path.join(API_SPECS_DIR, "metadata.json");
 const API_SPECS_URL = "https://dev-docs.alchemy.com";
 const DOCS_URL = "https://www.alchemy.com/docs";
+
+function extractLocs(xml: string): string[] {
+  return (
+    xml
+      .match(/<loc>(.*?)<\/loc>/g)
+      ?.map((tag) => tag.replace(/<\/?loc>/g, "")) || []
+  );
+}
+
+function isSitemapIndex(xml: string): boolean {
+  return xml.includes("<sitemapindex");
+}
+
+async function fetchSitemapUrls(sitemapUrl: string): Promise<string[]> {
+  const response = await fetch(sitemapUrl);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch ${sitemapUrl}: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const xml = await response.text();
+
+  if (isSitemapIndex(xml)) {
+    const childSitemapUrls = extractLocs(xml);
+    console.info(
+      `Found sitemap index with ${childSitemapUrls.length} sitemap(s)`,
+    );
+
+    const results = await Promise.all(
+      childSitemapUrls.map((url) => fetchSitemapUrls(url)),
+    );
+    return results.flat();
+  }
+
+  return extractLocs(xml);
+}
 
 (async () => {
   try {
@@ -27,22 +63,9 @@ const DOCS_URL = "https://www.alchemy.com/docs";
 
     traverse(API_SPECS_DIR);
 
-    // Fetch and parse sitemap
-    const sitemapResponse = await fetch(`${DOCS_URL}/sitemap.xml`);
+    const urls = await fetchSitemapUrls(`${DOCS_URL}/sitemap.xml`);
+    console.info(`Collected ${urls.length} page URL(s) from sitemap`);
 
-    if (!sitemapResponse.ok) {
-      throw new Error(`Failed to fetch sitemap: ${sitemapResponse.statusText}`);
-    }
-
-    const sitemapXml = await sitemapResponse.text();
-
-    // Extract URLs using regex and remove host
-    const urls =
-      sitemapXml
-        .match(/<loc>(.*?)<\/loc>/g)
-        ?.map((url) => url.replace(/<\/?loc>/g, "")) || [];
-
-    // Write to file
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify({ files, urls }, null, 2));
     console.info(`Successfully generated metadata file at ${OUTPUT_FILE}`);
   } catch (error) {
