@@ -108,62 +108,6 @@ methods:
               description: "Using signer address"
             - type: "object"
               required:
-                - "signerPublicKey"
-              properties:
-                signerPublicKey:
-                  allOf:
-                    - type: "object"
-                      required:
-                        - "x"
-                        - "y"
-                      properties:
-                        x:
-                          type: "string"
-                          pattern: "^0x.*$"
-                          errorMessage: "Must be a valid hex string starting with '0x'"
-                        y:
-                          type: "string"
-                          pattern: "^0x.*$"
-                          errorMessage: "Must be a valid hex string starting with '0x'"
-                    - type: "object"
-                      required:
-                        - "type"
-                      properties:
-                        type:
-                          type: "string"
-                          enum:
-                            - "webauthn-p256"
-                  errorMessage: "signerPublicKey must be a valid WebAuthn public key with type 'webauthn-p256'"
-                id:
-                  type: "string"
-                  format: "uuid"
-                  errorMessage: "Must be a valid UUID v4 string (e.g., '3061cc5f-1f96-48a9-ab45-41faad2dd23b')"
-                creationHint:
-                  allOf:
-                    - type: "object"
-                      properties:
-                        createAdditional:
-                          type: "boolean"
-                          description: "If true, will allow creating more than one smart wallet per signer."
-                          errorMessage: "createAdditional must be true or omitted"
-                        salt:
-                          type: "string"
-                          pattern: "^0x.*$"
-                          errorMessage: "Must be a valid hex string starting with '0x'"
-                    - type: "object"
-                      properties:
-                        accountType:
-                          type: "string"
-                          description: "Modular Account V2 WebAuthn account type"
-                          errorMessage: "accountType must be 'mav2-webauthn'"
-                          enum:
-                            - "mav2-webauthn"
-                includeCounterfactualInfo:
-                  type: "boolean"
-                  default: false
-              description: "Using WebAuthn signer public key"
-            - type: "object"
-              required:
                 - "accountAddress"
               properties:
                 accountAddress:
@@ -237,10 +181,6 @@ methods:
                     description: "Modular Account v2.0.0 SSV"
                     enum:
                       - "MAv2.0.0-ma-ssv"
-                  - type: "string"
-                    description: "Modular Account v2.0.0 WebAuthn"
-                    enum:
-                      - "MAv2.0.0-ma-webauthn"
                   - type: "string"
                     description: "Unknown factory type"
                     enum:
@@ -696,6 +636,16 @@ methods:
                             pattern: "^0x.*$"
                             errorMessage: "Must be a valid hex string starting with '0x'"
                         description: "Account override without state changes"
+                experimental_dataSuffix:
+                  type: "object"
+                  required:
+                    - "value"
+                  properties:
+                    value:
+                      type: "string"
+                      pattern: "^0x.*$"
+                      errorMessage: "Must be a valid hex string starting with '0x'"
+                  description: "ERC-8021 transaction attribution data suffix. The wallet appends these bytes to calldata to enable interoperable attribution tracking."
             paymasterPermitSignature:
               anyOf:
                 - type: "object"
@@ -2085,6 +2035,16 @@ methods:
                                       pattern: "^0x.*$"
                                       errorMessage: "Must be a valid hex string starting with '0x'"
                                   description: "Account override without state changes"
+                          experimental_dataSuffix:
+                            type: "object"
+                            required:
+                              - "value"
+                            properties:
+                              value:
+                                type: "string"
+                                pattern: "^0x.*$"
+                                errorMessage: "Must be a valid hex string starting with '0x'"
+                            description: "ERC-8021 transaction attribution data suffix. The wallet appends these bytes to calldata to enable interoperable attribution tracking."
                       paymasterPermitSignature:
                         anyOf:
                           - type: "object"
@@ -2611,56 +2571,6 @@ methods:
                                                     errorMessage: "Must be a valid hex string starting with '0x'"
                                                 description: "r, s, v"
                                         description: "ECDSA signature (alias for secp256k1)"
-                                      - type: "object"
-                                        required:
-                                          - "type"
-                                          - "data"
-                                        properties:
-                                          type:
-                                            type: "string"
-                                            enum:
-                                              - "webauthn-p256"
-                                          data:
-                                            type: "object"
-                                            required:
-                                              - "signature"
-                                              - "metadata"
-                                            properties:
-                                              signature:
-                                                anyOf:
-                                                  - type: "object"
-                                                    required:
-                                                      - "r"
-                                                      - "s"
-                                                    properties:
-                                                      r:
-                                                        type: "string"
-                                                        pattern: "^0x.*$"
-                                                        errorMessage: "Must be a valid hex string starting with '0x'"
-                                                      s:
-                                                        type: "string"
-                                                        pattern: "^0x.*$"
-                                                        errorMessage: "Must be a valid hex string starting with '0x'"
-                                                    description: "Signature r, s"
-                                                  - type: "string"
-                                                    pattern: "^0x.*$"
-                                                    errorMessage: "Must be a valid hex string starting with '0x'"
-                                                    description: "Signature as a single hex value, packing r and s sequentially into a 64-byte value."
-                                              metadata:
-                                                type: "object"
-                                                required:
-                                                  - "authenticatorData"
-                                                  - "clientDataJSON"
-                                                properties:
-                                                  authenticatorData:
-                                                    type: "string"
-                                                    pattern: "^0x.*$"
-                                                    errorMessage: "Must be a valid hex string starting with '0x'"
-                                                    description: "Authenticator data. Should be formatted as a hex string conforming to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API/Authenticator_data."
-                                                  clientDataJSON:
-                                                    type: "string"
-                                                    description: "Client data JSON. Should conform to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorResponse/clientDataJSON."
-                                                description: "WebAuthn signature metadata"
                             description: "Prepared User Operation (Entrypoint v0.6.0) with signature"
                           - allOf:
                               - type: "object"
@@ -2861,56 +2771,6 @@ methods:
                                                     errorMessage: "Must be a valid hex string starting with '0x'"
                                                 description: "r, s, v"
                                         description: "ECDSA signature (alias for secp256k1)"
-                                      - type: "object"
-                                        required:
-                                          - "type"
-                                          - "data"
-                                        properties:
-                                          type:
-                                            type: "string"
-                                            enum:
-                                              - "webauthn-p256"
-                                          data:
-                                            type: "object"
-                                            required:
-                                              - "signature"
-                                              - "metadata"
-                                            properties:
-                                              signature:
-                                                anyOf:
-                                                  - type: "object"
-                                                    required:
-                                                      - "r"
-                                                      - "s"
-                                                    properties:
-                                                      r:
-                                                        type: "string"
-                                                        pattern: "^0x.*$"
-                                                        errorMessage: "Must be a valid hex string starting with '0x'"
-                                                      s:
-                                                        type: "string"
-                                                        pattern: "^0x.*$"
-                                                        errorMessage: "Must be a valid hex string starting with '0x'"
-                                                    description: "Signature r, s"
-                                                  - type: "string"
-                                                    pattern: "^0x.*$"
-                                                    errorMessage: "Must be a valid hex string starting with '0x'"
-                                                    description: "Signature as a single hex value, packing r and s sequentially into a 64-byte value."
-                                              metadata:
-                                                type: "object"
-                                                required:
-                                                  - "authenticatorData"
-                                                  - "clientDataJSON"
-                                                properties:
-                                                  authenticatorData:
-                                                    type: "string"
-                                                    pattern: "^0x.*$"
-                                                    errorMessage: "Must be a valid hex string starting with '0x'"
-                                                    description: "Authenticator data. Should be formatted as a hex string conforming to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API/Authenticator_data."
-                                                  clientDataJSON:
-                                                    type: "string"
-                                                    description: "Client data JSON. Should conform to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorResponse/clientDataJSON."
-                                                description: "WebAuthn signature metadata"
                             description: "Prepared User Operation (Entrypoint v0.7.0) with signature"
                           - allOf:
                               - type: "object"
@@ -3255,56 +3115,6 @@ methods:
                                           errorMessage: "Must be a valid hex string starting with '0x'"
                                       description: "r, s, v"
                               description: "ECDSA signature (alias for secp256k1)"
-                            - type: "object"
-                              required:
-                                - "type"
-                                - "data"
-                              properties:
-                                type:
-                                  type: "string"
-                                  enum:
-                                    - "webauthn-p256"
-                                data:
-                                  type: "object"
-                                  required:
-                                    - "signature"
-                                    - "metadata"
-                                  properties:
-                                    signature:
-                                      anyOf:
-                                        - type: "object"
-                                          required:
-                                            - "r"
-                                            - "s"
-                                          properties:
-                                            r:
-                                              type: "string"
-                                              pattern: "^0x.*$"
-                                              errorMessage: "Must be a valid hex string starting with '0x'"
-                                            s:
-                                              type: "string"
-                                              pattern: "^0x.*$"
-                                              errorMessage: "Must be a valid hex string starting with '0x'"
-                                          description: "Signature r, s"
-                                        - type: "string"
-                                          pattern: "^0x.*$"
-                                          errorMessage: "Must be a valid hex string starting with '0x'"
-                                          description: "Signature as a single hex value, packing r and s sequentially into a 64-byte value."
-                                    metadata:
-                                      type: "object"
-                                      required:
-                                        - "authenticatorData"
-                                        - "clientDataJSON"
-                                      properties:
-                                        authenticatorData:
-                                          type: "string"
-                                          pattern: "^0x.*$"
-                                          errorMessage: "Must be a valid hex string starting with '0x'"
-                                          description: "Authenticator data. Should be formatted as a hex string conforming to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API/Authenticator_data."
-                                        clientDataJSON:
-                                          type: "string"
-                                          description: "Client data JSON. Should conform to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorResponse/clientDataJSON."
-                                      description: "WebAuthn signature metadata"
                   description: "Prepared User Operation (Entrypoint v0.6.0) with signature"
                 - allOf:
                     - type: "object"
@@ -3505,56 +3315,6 @@ methods:
                                           errorMessage: "Must be a valid hex string starting with '0x'"
                                       description: "r, s, v"
                               description: "ECDSA signature (alias for secp256k1)"
-                            - type: "object"
-                              required:
-                                - "type"
-                                - "data"
-                              properties:
-                                type:
-                                  type: "string"
-                                  enum:
-                                    - "webauthn-p256"
-                                data:
-                                  type: "object"
-                                  required:
-                                    - "signature"
-                                    - "metadata"
-                                  properties:
-                                    signature:
-                                      anyOf:
-                                        - type: "object"
-                                          required:
-                                            - "r"
-                                            - "s"
-                                          properties:
-                                            r:
-                                              type: "string"
-                                              pattern: "^0x.*$"
-                                              errorMessage: "Must be a valid hex string starting with '0x'"
-                                            s:
-                                              type: "string"
-                                              pattern: "^0x.*$"
-                                              errorMessage: "Must be a valid hex string starting with '0x'"
-                                          description: "Signature r, s"
-                                        - type: "string"
-                                          pattern: "^0x.*$"
-                                          errorMessage: "Must be a valid hex string starting with '0x'"
-                                          description: "Signature as a single hex value, packing r and s sequentially into a 64-byte value."
-                                    metadata:
-                                      type: "object"
-                                      required:
-                                        - "authenticatorData"
-                                        - "clientDataJSON"
-                                      properties:
-                                        authenticatorData:
-                                          type: "string"
-                                          pattern: "^0x.*$"
-                                          errorMessage: "Must be a valid hex string starting with '0x'"
-                                          description: "Authenticator data. Should be formatted as a hex string conforming to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API/Authenticator_data."
-                                        clientDataJSON:
-                                          type: "string"
-                                          description: "Client data JSON. Should conform to WebAuthn specification for 'webauthn.get' requests. See example here: https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorResponse/clientDataJSON."
-                                      description: "WebAuthn signature metadata"
                   description: "Prepared User Operation (Entrypoint v0.7.0) with signature"
             - type: "object"
               properties:
@@ -3640,88 +3400,43 @@ methods:
               errorMessage: "Must be a valid hex string starting with '0x'"
             description: "To be deprecated. Please use `id` instead."
           details:
-            anyOf:
-              - type: "object"
+            type: "object"
+            required:
+              - "type"
+              - "data"
+            properties:
+              type:
+                type: "string"
+                enum:
+                  - "user-operation"
+              data:
+                type: "object"
                 required:
-                  - "type"
-                  - "data"
+                  - "hash"
                 properties:
-                  type:
+                  hash:
                     type: "string"
-                    enum:
-                      - "user-operations"
-                  data:
+                    pattern: "^0x.*$"
+                    errorMessage: "Must be a valid hex string starting with '0x'"
+                  calls:
                     type: "array"
                     items:
                       type: "object"
                       required:
-                        - "callId"
-                        - "hash"
+                        - "to"
                       properties:
-                        callId:
+                        to:
+                          type: "string"
+                          pattern: "^0x.*$"
+                          errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
+                        data:
                           type: "string"
                           pattern: "^0x.*$"
                           errorMessage: "Must be a valid hex string starting with '0x'"
-                        hash:
+                        value:
                           type: "string"
                           pattern: "^0x.*$"
                           errorMessage: "Must be a valid hex string starting with '0x'"
-                        calls:
-                          type: "array"
-                          items:
-                            type: "object"
-                            required:
-                              - "to"
-                            properties:
-                              to:
-                                type: "string"
-                                pattern: "^0x.*$"
-                                errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
-                              data:
-                                type: "string"
-                                pattern: "^0x.*$"
-                                errorMessage: "Must be a valid hex string starting with '0x'"
-                              value:
-                                type: "string"
-                                pattern: "^0x.*$"
-                                errorMessage: "Must be a valid hex string starting with '0x'"
-              - type: "object"
-                required:
-                  - "type"
-                  - "data"
-                properties:
-                  type:
-                    type: "string"
-                    enum:
-                      - "user-operation"
-                  data:
-                    type: "object"
-                    required:
-                      - "hash"
-                    properties:
-                      hash:
-                        type: "string"
-                        pattern: "^0x.*$"
-                        errorMessage: "Must be a valid hex string starting with '0x'"
-                      calls:
-                        type: "array"
-                        items:
-                          type: "object"
-                          required:
-                            - "to"
-                          properties:
-                            to:
-                              type: "string"
-                              pattern: "^0x.*$"
-                              errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
-                            data:
-                              type: "string"
-                              pattern: "^0x.*$"
-                              errorMessage: "Must be a valid hex string starting with '0x'"
-                            value:
-                              type: "string"
-                              pattern: "^0x.*$"
-                              errorMessage: "Must be a valid hex string starting with '0x'"
 
     examples:
       - name: "wallet_sendPreparedCalls example"
@@ -3753,14 +3468,13 @@ methods:
             preparedCallIds:
               - "0x0000000000000000000000000000000000000000000000000000000000066eeec69e468aa6fafb5c7298c02841e76f976b433018266af39a5807bc29ea9ad392"
             details:
-              type: "user-operations"
+              type: "user-operation"
               data:
-                - callId: "0x0000000000000000000000000000000000000000000000000000000000066eeec69e468aa6fafb5c7298c02841e76f976b433018266af39a5807bc29ea9ad392"
-                  hash: "0xc69e468aa6fafb5c7298c02841e76f976b433018266af39a5807bc29ea9ad392"
-                  calls:
-                    - to: "0x1234567890123456789012345678901234567890"
-                      data: "0x"
-                      value: "0x0"
+                hash: "0xc69e468aa6fafb5c7298c02841e76f976b433018266af39a5807bc29ea9ad392"
+                calls:
+                  - to: "0x1234567890123456789012345678901234567890"
+                    data: "0x"
+                    value: "0x0"
 
   - name: wallet_createSession
     description: This method is used to create a session for a given address with specified permissions.
@@ -5094,55 +4808,22 @@ methods:
       - name: params[0]
         required: true
         schema:
-          allOf:
-            - type: "object"
-              properties:
-                limit:
-                  type: "number"
-                  minimum: 1
-                  maximum: 100
-                  default: 100
-                after:
-                  type: "string"
-                  format: "base64url"
-            - anyOf:
-                - type: "object"
-                  required:
-                    - "signerAddress"
-                  properties:
-                    signerAddress:
-                      type: "string"
-                      pattern: "^0x.*$"
-                      errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
-                - type: "object"
-                  required:
-                    - "signerPublicKey"
-                  properties:
-                    signerPublicKey:
-                      allOf:
-                        - type: "object"
-                          required:
-                            - "x"
-                            - "y"
-                          properties:
-                            x:
-                              type: "string"
-                              pattern: "^0x.*$"
-                              errorMessage: "Must be a valid hex string starting with '0x'"
-                            y:
-                              type: "string"
-                              pattern: "^0x.*$"
-                              errorMessage: "Must be a valid hex string starting with '0x'"
-                        - type: "object"
-                          required:
-                            - "type"
-                          properties:
-                            type:
-                              type: "string"
-                              enum:
-                                - "webauthn-p256"
-                      errorMessage: "signerPublicKey must be a valid WebAuthn public key with type 'webauthn-p256'"
-            - errorMessage: "Must provide either 'signerAddress' or 'signerPublicKey'"
+          type: "object"
+          required:
+            - "signerAddress"
+          properties:
+            signerAddress:
+              type: "string"
+              pattern: "^0x.*$"
+              errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
+            limit:
+              type: "number"
+              minimum: 1
+              maximum: 100
+              default: 100
+            after:
+              type: "string"
+              format: "base64url"
 
     result:
       name: listAccountsResponse
@@ -5903,6 +5584,16 @@ methods:
                                             pattern: "^0x.*$"
                                             errorMessage: "Must be a valid hex string starting with '0x'"
                                         description: "Account override without state changes"
+                                experimental_dataSuffix:
+                                  type: "object"
+                                  required:
+                                    - "value"
+                                  properties:
+                                    value:
+                                      type: "string"
+                                      pattern: "^0x.*$"
+                                      errorMessage: "Must be a valid hex string starting with '0x'"
+                                  description: "ERC-8021 transaction attribution data suffix. The wallet appends these bytes to calldata to enable interoperable attribution tracking."
                         - type: "object"
                           required:
                             - "fromAmount"
@@ -6353,6 +6044,16 @@ methods:
                                             pattern: "^0x.*$"
                                             errorMessage: "Must be a valid hex string starting with '0x'"
                                         description: "Account override without state changes"
+                                experimental_dataSuffix:
+                                  type: "object"
+                                  required:
+                                    - "value"
+                                  properties:
+                                    value:
+                                      type: "string"
+                                      pattern: "^0x.*$"
+                                      errorMessage: "Must be a valid hex string starting with '0x'"
+                                  description: "ERC-8021 transaction attribution data suffix. The wallet appends these bytes to calldata to enable interoperable attribution tracking."
                         - type: "object"
                           required:
                             - "minimumToAmount"
@@ -6926,6 +6627,16 @@ methods:
                                             pattern: "^0x.*$"
                                             errorMessage: "Must be a valid hex string starting with '0x'"
                                         description: "Account override without state changes"
+                                experimental_dataSuffix:
+                                  type: "object"
+                                  required:
+                                    - "value"
+                                  properties:
+                                    value:
+                                      type: "string"
+                                      pattern: "^0x.*$"
+                                      errorMessage: "Must be a valid hex string starting with '0x'"
+                                  description: "ERC-8021 transaction attribution data suffix. The wallet appends these bytes to calldata to enable interoperable attribution tracking."
                         - type: "object"
                           required:
                             - "fromAmount"
@@ -7363,6 +7074,16 @@ methods:
                                             pattern: "^0x.*$"
                                             errorMessage: "Must be a valid hex string starting with '0x'"
                                         description: "Account override without state changes"
+                                experimental_dataSuffix:
+                                  type: "object"
+                                  required:
+                                    - "value"
+                                  properties:
+                                    value:
+                                      type: "string"
+                                      pattern: "^0x.*$"
+                                      errorMessage: "Must be a valid hex string starting with '0x'"
+                                  description: "ERC-8021 transaction attribution data suffix. The wallet appends these bytes to calldata to enable interoperable attribution tracking."
                         - type: "object"
                           required:
                             - "minimumToAmount"
@@ -8802,6 +8523,16 @@ methods:
                                                   pattern: "^0x.*$"
                                                   errorMessage: "Must be a valid hex string starting with '0x'"
                                               description: "Account override without state changes"
+                                      experimental_dataSuffix:
+                                        type: "object"
+                                        required:
+                                          - "value"
+                                        properties:
+                                          value:
+                                            type: "string"
+                                            pattern: "^0x.*$"
+                                            errorMessage: "Must be a valid hex string starting with '0x'"
+                                        description: "ERC-8021 transaction attribution data suffix. The wallet appends these bytes to calldata to enable interoperable attribution tracking."
                                   paymasterPermitSignature:
                                     anyOf:
                                       - type: "object"
