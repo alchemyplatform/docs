@@ -372,6 +372,129 @@ describe("visitSection", () => {
     expect(results.algoliaRecords[0].breadcrumbs).toContain("Getting Started");
   });
 
+  test("should not add Algolia record for hidden section overview page", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    cache.setMdxContent("fern/guides/overview.mdx", {
+      frontmatter: { title: "Overview" },
+      content: "Hidden overview content",
+    });
+
+    visitSection(
+      {
+        item: {
+          section: "Hidden Section",
+          hidden: true,
+          path: "fern/guides/overview.mdx",
+          contents: [
+            {
+              page: "Page",
+              path: "fern/guides/page.mdx",
+            },
+          ],
+        },
+        parentPath: PathBuilder.init("guides"),
+        tab: "guides",
+        stripPathPrefix: undefined,
+        contentCache: cache,
+        context,
+        navigationAncestors: [],
+      },
+      visitNavigationItem,
+    );
+
+    const results = context.getResults();
+    expect(results.algoliaRecords).toHaveLength(0);
+  });
+
+  test("should not add Algolia records for children of hidden section", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    cache.setMdxContent("fern/guides/quickstart.mdx", {
+      frontmatter: { title: "Quickstart" },
+      content: "Content inside hidden section",
+    });
+
+    cache.setMdxContent("fern/guides/advanced.mdx", {
+      frontmatter: { title: "Advanced" },
+      content: "Advanced content inside hidden section",
+    });
+
+    visitSection(
+      {
+        item: {
+          section: "Hidden Section",
+          hidden: true,
+          contents: [
+            {
+              page: "Quickstart",
+              path: "fern/guides/quickstart.mdx",
+            },
+            {
+              page: "Advanced",
+              path: "fern/guides/advanced.mdx",
+            },
+          ],
+        },
+        parentPath: PathBuilder.init("guides"),
+        tab: "guides",
+        stripPathPrefix: undefined,
+        contentCache: cache,
+        context,
+        navigationAncestors: [],
+      },
+      visitNavigationItem,
+    );
+
+    const results = context.getResults();
+    // No Algolia records should be created for children of hidden sections
+    expect(results.algoliaRecords).toHaveLength(0);
+    // But index entries should still exist (routing still works)
+  });
+
+  test("should not add Algolia records for nested sections within hidden section", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    cache.setMdxContent("fern/guides/deep-page.mdx", {
+      frontmatter: { title: "Deep Page" },
+      content: "Deeply nested content",
+    });
+
+    visitSection(
+      {
+        item: {
+          section: "Hidden Parent",
+          hidden: true,
+          contents: [
+            {
+              section: "Visible Child Section",
+              contents: [
+                {
+                  page: "Deep Page",
+                  path: "fern/guides/deep-page.mdx",
+                },
+              ],
+            },
+          ],
+        },
+        parentPath: PathBuilder.init("guides"),
+        tab: "guides",
+        stripPathPrefix: undefined,
+        contentCache: cache,
+        context,
+        navigationAncestors: [],
+      },
+      visitNavigationItem,
+    );
+
+    const results = context.getResults();
+    // Hidden status should propagate through nested sections
+    expect(results.algoliaRecords).toHaveLength(0);
+  });
+
   test("should handle section with mix of pages and subsections", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
