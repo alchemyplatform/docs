@@ -35,18 +35,15 @@ When you call `wallet_requestAccount` with a signer address, it creates a dedica
 <Tabs>
   <Tab title="SDK">
     ```ts
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
-    import { LocalAccountSigner } from "@aa-sdk/core";
-    import { alchemy, sepolia } from "@account-kit/infra";
-
-    const signer = LocalAccountSigner.privateKeyToAccountSigner(
-      process.env.PRIVATE_KEY!,
-    );
+    import type { Hex } from "viem";
+    import { privateKeyToAccount } from "viem/accounts";
+    import { sepolia } from "viem/chains";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
     const client = createSmartWalletClient({
-      transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
+      transport: alchemyWalletTransport({ apiKey: process.env.ALCHEMY_API_KEY! }),
       chain: sepolia,
-      signer,
+      signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
     });
 
     // Request a Smart Contract Account

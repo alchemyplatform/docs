@@ -26,11 +26,11 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
     ### Installation
 
     ```bash
-    npm install @turnkey/sdk-server @turnkey/viem @account-kit/wallet-client @account-kit/infra @aa-sdk/core viem
+    npm install @turnkey/sdk-server @turnkey/viem @alchemy/wallet-apis@0.0.0-alpha.19 viem
     # or
-    yarn add @turnkey/sdk-server @turnkey/viem @account-kit/wallet-client @account-kit/infra @aa-sdk/core viem
+    yarn add @turnkey/sdk-server @turnkey/viem @alchemy/wallet-apis@0.0.0-alpha.19 viem
     # or
-    pnpm add @turnkey/sdk-server @turnkey/viem @account-kit/wallet-client @account-kit/infra @aa-sdk/core viem
+    pnpm add @turnkey/sdk-server @turnkey/viem @alchemy/wallet-apis@0.0.0-alpha.19 viem
     ```
 
     ### Prerequisites: Get your keys
@@ -57,9 +57,8 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
     Create a helper function that converts a Turnkey wallet into an Alchemy Smart Wallet client:
 
     ```ts twoslash
-    import { WalletClientSigner } from "@aa-sdk/core";
-    import { alchemy, baseSepolia } from "@account-kit/infra";
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
+    import { baseSepolia } from "viem/chains";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
     import { Turnkey } from "@turnkey/sdk-server";
     import { createAccount } from "@turnkey/viem";
     import { createWalletClient } from "viem";
@@ -112,18 +111,16 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
       const walletClient = createWalletClient({
         account: turnkeyAccount,
         chain: baseSepolia,
-        transport: alchemy({ apiKey: ALCHEMY_API_KEY }),
+        transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
       });
 
-      // Create signer from wallet client
-      const signer = new WalletClientSigner(walletClient, "turnkey-custom");
-
       // Create and return the Smart Wallet client
+      // Pass the walletClient directly as the signer
       return createSmartWalletClient({
         chain: baseSepolia,
-        transport: alchemy({ apiKey: ALCHEMY_API_KEY }),
-        signer,
-        policyId: ALCHEMY_GAS_POLICY_ID,
+        transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
+        signer: walletClient,
+        paymaster: { policyId: ALCHEMY_GAS_POLICY_ID },
       });
     }
     ```
@@ -147,17 +144,15 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
 
       // Send a gasless transaction with EIP-7702
       const result = await client.sendCalls({
-        from: TURNKEY_WALLET_ADDRESS,
         calls: [
           {
             to: "0x0000000000000000000000000000000000000000",
-            value: "0x0",
+            value: 0n,
             data: "0x",
           },
         ],
         capabilities: {
-          eip7702Auth: true,
-          paymasterService: {
+          paymaster: {
             policyId: ALCHEMY_GAS_POLICY_ID,
           },
         },
@@ -179,17 +174,15 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
       });
 
       const result = await client.sendCalls({
-        from: TURNKEY_WALLET_ADDRESS,
         calls: [
           {
             to: "0x0000000000000000000000000000000000000000",
-            value: "0x0",
+            value: 0n,
             data: "0x",
           },
         ],
         capabilities: {
-          eip7702Auth: true,
-          paymasterService: {
+          paymaster: {
             policyId: ALCHEMY_GAS_POLICY_ID,
           },
         },
@@ -216,15 +209,13 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
 
     ```ts twoslash
     const result = await client.sendCalls({
-      from: TURNKEY_WALLET_ADDRESS,
       calls: [
-        { to: "0x...", data: "0x...", value: "0x0" },
-        { to: "0x...", data: "0x...", value: "0x0" },
-        { to: "0x...", data: "0x...", value: "0x0" },
+        { to: "0x...", data: "0x...", value: 0n },
+        { to: "0x...", data: "0x...", value: 0n },
+        { to: "0x...", data: "0x...", value: 0n },
       ],
       capabilities: {
-        eip7702Auth: true,
-        paymasterService: {
+        paymaster: {
           policyId: ALCHEMY_GAS_POLICY_ID,
         },
       },
@@ -234,7 +225,7 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
     ### Notes
 
     * **EIP-7702**: Upgrades the Turnkey wallet to a smart wallet at transaction time without migration
-    * **Gas Sponsorship**: Use `paymasterService` with your policy ID for gasless transactions
-    * **Server-Side**: This example uses Turnkey's `@turnkey/sdk-server` package which is designed for server environments. However, the `@account-kit` packages (`@account-kit/wallet-client`, `@account-kit/infra`, etc.) can be used in any JavaScript environment including browsers, React Native, and Node.js
+    * **Gas Sponsorship**: Use `paymaster` with your policy ID for gasless transactions
+    * **Server-Side**: This example uses Turnkey's `@turnkey/sdk-server` package which is designed for server environments. However, `@alchemy/wallet-apis` can be used in any JavaScript environment including browsers, React Native, and Node.js
   </Tab>
 </Tabs>

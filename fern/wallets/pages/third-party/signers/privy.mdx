@@ -427,11 +427,11 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions (
     ### Installation
 
     ```bash
-    npm install @privy-io/node @account-kit/wallet-client @account-kit/infra @aa-sdk/core viem
+    npm install @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.19 viem
     # or
-    yarn add @privy-io/node @account-kit/wallet-client @account-kit/infra @aa-sdk/core viem
+    yarn add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.19 viem
     # or
-    pnpm add @privy-io/node @account-kit/wallet-client @account-kit/infra @aa-sdk/core viem
+    pnpm add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.19 viem
     ```
 
     ### Prerequisites: Get your keys
@@ -458,9 +458,8 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions (
     import { PrivyClient } from "@privy-io/node";
     import { createViemAccount } from "@privy-io/node/viem";
     import { createWalletClient } from "viem";
-    import { WalletClientSigner } from "@aa-sdk/core";
-    import { baseSepolia, alchemy } from "@account-kit/infra";
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
+    import { baseSepolia } from "viem/chains";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
     const ALCHEMY_API_KEY = "your-alchemy-api-key";
     const ALCHEMY_GAS_POLICY_ID = "your-gas-policy-id";
@@ -480,18 +479,16 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions (
       const walletClient = createWalletClient({
         account: viemAccount,
         chain: baseSepolia,
-        transport: alchemy({ apiKey: ALCHEMY_API_KEY }),
+        transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
       });
 
-      // Wrap it in a WalletClientSigner for Account Kit
-      const signer = new WalletClientSigner(walletClient, "privy-wallet");
-
       // Create and return the Smart Wallet client
+      // Pass the walletClient directly as the signer
       return createSmartWalletClient({
         chain: baseSepolia,
-        transport: alchemy({ apiKey: ALCHEMY_API_KEY }),
-        signer,
-        policyId: ALCHEMY_GAS_POLICY_ID,
+        transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
+        signer: walletClient,
+        paymaster: { policyId: ALCHEMY_GAS_POLICY_ID },
       });
     }
     ```
@@ -529,17 +526,15 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions (
 
       // Send a gasless transaction with EIP-7702
       const result = await client.sendCalls({
-        from: wallet.address,
         calls: [
           {
             to: "0x0000000000000000000000000000000000000000",
-            value: "0x0",
+            value: 0n,
             data: "0x",
           },
         ],
         capabilities: {
-          eip7702Auth: true,
-          paymasterService: {
+          paymaster: {
             policyId: ALCHEMY_GAS_POLICY_ID,
           },
         },
@@ -558,17 +553,15 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions (
       // ... (setup code from above)
 
       const result = await client.sendCalls({
-        from: wallet.address,
         calls: [
           {
             to: "0x0000000000000000000000000000000000000000",
-            value: "0x0",
+            value: 0n,
             data: "0x",
           },
         ],
         capabilities: {
-          eip7702Auth: true,
-          paymasterService: {
+          paymaster: {
             policyId: ALCHEMY_GAS_POLICY_ID,
           },
         },
@@ -595,15 +588,13 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions (
 
     ```ts twoslash
     const result = await client.sendCalls({
-      from: wallet.address,
       calls: [
-        { to: "0x...", data: "0x...", value: "0x0" },
-        { to: "0x...", data: "0x...", value: "0x0" },
-        { to: "0x...", data: "0x...", value: "0x0" },
+        { to: "0x...", data: "0x...", value: 0n },
+        { to: "0x...", data: "0x...", value: 0n },
+        { to: "0x...", data: "0x...", value: 0n },
       ],
       capabilities: {
-        eip7702Auth: true,
-        paymasterService: {
+        paymaster: {
           policyId: ALCHEMY_GAS_POLICY_ID,
         },
       },
@@ -613,8 +604,8 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions (
     ### Notes
 
     * **EIP-7702**: The examples above use EIP-7702 to upgrade the wallet to a smart wallet at transaction time without migration or separate deployment
-    * **Gas Sponsorship**: Use `paymasterService` with your policy ID for gasless transactions
-    * **Traditional Smart Accounts**: To use traditional smart accounts instead of EIP-7702, omit the `eip7702Auth` capability and request an account with `await client.requestAccount({ creationHint: { accountType: "sma-b" } })`
-    * **Server-Side**: This example uses Privy's `@privy-io/node` package which is designed for server environments. However, the `@account-kit` packages (`@account-kit/wallet-client`, `@account-kit/infra`, etc.) can be used in any JavaScript environment including browsers, React Native, and Node.js
+    * **Gas Sponsorship**: Use `paymaster` with your policy ID for gasless transactions
+    * **Traditional Smart Accounts**: To use traditional smart accounts instead of EIP-7702, call `requestAccount()` first and request an account with `await client.requestAccount({ creationHint: { accountType: "sma-b" } })`
+    * **Server-Side**: This example uses Privy's `@privy-io/node` package which is designed for server environments. However, `@alchemy/wallet-apis` can be used in any JavaScript environment including browsers, React Native, and Node.js
   </Tab>
 </Tabs>

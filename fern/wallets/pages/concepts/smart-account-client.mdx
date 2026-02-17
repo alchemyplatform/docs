@@ -20,39 +20,32 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
 
 <Tabs>
   <Tab title="JavaScript" language="typescript">
-    Use the [`createSmartWalletClient`](/docs/wallets/reference/account-kit/wallet-client/functions/createSmartWalletClient) function to create a smart wallet client.
+    {/* TODO: update SDK reference link */}
+    Use the `createSmartWalletClient` function to create a smart wallet client.
 
     1. Replace the placeholders
        a. API key from your Alchemy dashboard
        b. Policy ID from your gas policy
        c. Signer from [authentication](/docs/wallets/authentication/login-methods/email-otp#step-4-check-authentication-status) or your own signer
-    2. Create the initial client using [`createSmartWalletClient`](/docs/wallets/reference/account-kit/wallet-client/functions/createSmartWalletClient)
-    3. Generate your smart account by calling `requestAccount()`
-    4. Create the final client with your account attached
+    2. Create the client using `createSmartWalletClient` — the client defaults to EIP-7702 using the signer's address
 
     ```ts twoslash title="client.ts"
-    import { LocalAccountSigner } from "@aa-sdk/core";
-    import { alchemy, sepolia } from "@account-kit/infra";
+    import { privateKeyToAccount } from "viem/accounts";
+    import { sepolia } from "viem/chains";
     import {
       createSmartWalletClient,
-      type SmartWalletClientParams,
-    } from "@account-kit/wallet-client";
+      alchemyWalletTransport,
+      type CreateSmartWalletClientParams,
+    } from "@alchemy/wallet-apis";
 
-    const clientParams: SmartWalletClientParams = {
-      transport: alchemy({ apiKey: "your-alchemy-api-key"}),
+    const clientParams: CreateSmartWalletClientParams = {
+      transport: alchemyWalletTransport({ apiKey: "your-alchemy-api-key" }),
       chain: sepolia,
-      signer: LocalAccountSigner.privateKeyToAccountSigner("0x-your-wallet-private-key"),
-      policyId: "your-policy-id",
+      signer: privateKeyToAccount("0x-your-wallet-private-key"),
+      paymaster: { policyId: "your-policy-id" },
     };
 
-    const clientWithoutAccount = createSmartWalletClient(clientParams);
-
-    const account = await clientWithoutAccount.requestAccount();
-
-    export const client = createSmartWalletClient({
-      ...clientParams,
-      account: account.address,
-    });
+    export const client = createSmartWalletClient(clientParams);
     ```
   </Tab>
 
@@ -78,15 +71,14 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
   Specify the account type when calling `requestAccount` using the `creationHint` parameter. See all parameter [options](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-request-account#request.body.requestAccountRequest.creationHint).
 
   ```ts
-  const account = await clientWithoutAccount.requestAccount(
-    creationHint: {
-      accountType: "sma-b"
-    },
-  );
+  import {
+    createSmartWalletClient,
+    alchemyWalletTransport,
+  } from "@alchemy/wallet-apis";
 
   export const client = createSmartWalletClient({
     ...clientParams,
-    account: account.address,
+    accountType: "sma-b",
   });
   ```
 
@@ -104,9 +96,11 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
 
   **Javascript**
 
-  Pass the address to the `createSmartWalletClient` directly rather than calling `requestAccount`.
+  Pass the address to the `createSmartWalletClient` directly.
 
   ```ts
+  import { createSmartWalletClient } from "@alchemy/wallet-apis";
+
   export const client = createSmartWalletClient({
     ...clientParams,
     account: "0xYOUR_SMART_ACCOUNT_ADDR",

@@ -1,15 +1,16 @@
-<Info>Required SDK version: ^v4.59.1</Info>
+<Info>Required SDK version: @alchemy/wallet-apis@0.0.0-alpha.19</Info>
 
-See the [`signTypedData` SDK
+{/* TODO: Add SDK reference link once @alchemy/wallet-apis reference docs are published */}
+{/* See the [`signTypedData` SDK
 reference](/docs/wallets/reference/account-kit/wallet-client/functions/signTypedData)
-for full descriptions of the parameters used in the following example.
+for full descriptions of the parameters used in the following example. */}
 
 <CodeBlocks>
 
 ```ts title="signTypedData.ts"
-import { client, signer } from "./client";
+import { client } from "./client";
 
-const signerAddress = await signer.getAddress();
+const signerAddress = client.account.address;
 
 // Sign typed data
 const typedData = {
@@ -36,7 +37,6 @@ const typedData = {
 
 const signature = await client.signTypedData({
   ...typedData,
-  account: signerAddress,
 });
 
 console.log("Typed data signature:", signature);
@@ -45,20 +45,16 @@ console.log("Typed data signature:", signature);
 ```ts title="client.ts"
 import "dotenv/config";
 import type { Hex } from "viem";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, sepolia } from "@account-kit/infra";
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-  process.env.PRIVATE_KEY! as Hex,
-);
+import { privateKeyToAccount } from "viem/accounts";
+import { sepolia } from "viem/chains";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 export const client = createSmartWalletClient({
-  transport: alchemy({
+  transport: alchemyWalletTransport({
     apiKey: process.env.ALCHEMY_API_KEY!,
   }),
   chain: sepolia,
-  signer,
+  signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
 });
 ```
 

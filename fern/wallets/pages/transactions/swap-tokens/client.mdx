@@ -1,4 +1,4 @@
-<Info>Required SDK version: ^v4.65.0</Info>
+<Info>Required SDK version: @alchemy/wallet-apis@0.0.0-alpha.19</Info>
 
 You'll need the following env variables:
 
@@ -8,15 +8,14 @@ You'll need the following env variables:
 
 <CodeBlocks>
   ```ts title="requestQuote.ts"
-  import { swapActions } from "@account-kit/wallet-client/experimental";
-  import { client, signer } from "./client";
+  import { swapActions } from "@alchemy/wallet-apis/experimental";
+  import { client } from "./client";
 
   // Add the swap actions to the client
   const swapClient = client.extend(swapActions);
 
   // Request the swap quote
   const { quote, ...calls } = await swapClient.requestQuoteV0({
-    from: await signer.getAddress(), // Your wallet address
     fromToken: "0x...",
     toToken: "0x...",
     minimumToAmount: "0x...",
@@ -63,21 +62,17 @@ You'll need the following env variables:
   ```ts title="client.ts"
   import "dotenv/config";
   import type { Hex } from "viem";
-  import { LocalAccountSigner } from "@aa-sdk/core";
-  import { alchemy, sepolia } from "@account-kit/infra";
-  import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-  export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-    process.env.PRIVATE_KEY! as Hex,
-  );
+  import { privateKeyToAccount } from "viem/accounts";
+  import { sepolia } from "viem/chains";
+  import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
   export const client = createSmartWalletClient({
-    transport: alchemy({
+    transport: alchemyWalletTransport({
       apiKey: process.env.ALCHEMY_API_KEY!,
     }),
     chain: sepolia,
-    signer,
-    policyId: process.env.ALCHEMY_POLICY_ID!, // Optional: If you're using a gas manager policy
+    signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+    paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! }, // Optional: If you're using a gas manager policy
   });
   ```
 </CodeBlocks>

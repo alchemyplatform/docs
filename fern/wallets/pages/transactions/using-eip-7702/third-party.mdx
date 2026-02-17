@@ -6,27 +6,27 @@ This will allow you to use EIP-7702 to get features like gas sponsorship, batchi
   EIP-7702 authorizations in order to delegate to a smart account.
 </Warning>
 
-To bring your own signer, you create a `SmartAccountSigner` that implements `signAuthorization`. See the details for the interface requirements [here](/wallets/resources/types#smartaccountsigner).
+To bring your own signer, your signer must support signing EIP-7702 authorizations. See the details for the interface requirements [here](/wallets/resources/types#smartaccountsigner).
 
 For example, you can upgrade an existing Privy embedded EOA by extending a Wallet Client to use the `sign7702Authorization` action exposed by Privy.
 See full example code [here](https://github.com/alchemyplatform/alchemy-wallets-7702-thirdparty-example).
 
 The bulk of the logic happens in [`use-embedded-smart-wallet.ts`](https://github.com/alchemyplatform/alchemy-wallets-7702-thirdparty-example/blob/main/hooks/use-smart-embedded-wallet.ts).
-In this react hook, a Privy embedded wallet is wrapped in a `WalletClientSigner` that supports `signAuthorization`.
-This signer is then passed to `createSmartWalletClient` to construct a client for sending transactions.
+In this react hook, a Privy embedded wallet is wrapped in a viem `WalletClient` that supports `signAuthorization`.
+This `WalletClient` is then passed to `createSmartWalletClient` as the signer to construct a client for sending transactions.
 
 <CodeBlocks>
 
 ```ts twoslash title="use-smart-embedded-wallet.ts"
-import { Address, Authorization, createWalletClient, custom } from "viem";
+import { Address, createWalletClient, custom } from "viem";
 import { useSign7702Authorization } from "@privy-io/react-auth";
-import { AuthorizationRequest, WalletClientSigner } from "@aa-sdk/core";
-import { sepolia, alchemy } from "@account-kit/infra";
+import { sepolia } from "viem/chains";
 import { useEffect, useState } from "react";
 import {
   createSmartWalletClient,
-  SmartWalletClient,
-} from "@account-kit/wallet-client";
+  alchemyWalletTransport,
+  type SmartWalletClient,
+} from "@alchemy/wallet-apis";
 import { ConnectedWallet as PrivyWallet } from "@privy-io/react-auth";
 
 /\*_ Creates an Alchemy Smart Wallet client for an embedded Privy wallet using EIP-7702. _/;
@@ -46,26 +46,16 @@ export const useSmartEmbeddedWallet = ({
     (async () => {
       const provider = await embeddedWallet.getEthereumProvider();
 
-      const baseSigner = new WalletClientSigner(
-        createWalletClient({
-          account: embeddedWallet.address as Address,
-          chain: sepolia,
-          transport: custom(provider),
-        }),
-        "privy",
-      );
-
-      const signer = {
-        ...baseSigner,
-        signAuthorization: async (
-          unsignedAuth: AuthorizationRequest<number>,
-        ): Promise<Authorization<number, true>> => {
+      const baseAccount = {
+        address: embeddedWallet.address as Address,
+        type: "local" as const,
+        source: "privy" as const,
+        async signAuthorization(unsignedAuth: any) {
           const signature = await signAuthorization({
             ...unsignedAuth,
             contractAddress:
               unsignedAuth.address ?? unsignedAuth.contractAddress,
           });
-
           return {
             ...unsignedAuth,
             ...signature,
@@ -73,13 +63,21 @@ export const useSmartEmbeddedWallet = ({
         },
       };
 
+      const walletClient = createWalletClient({
+        account: baseAccount as any,
+        chain: sepolia,
+        transport: custom(provider),
+      });
+
       const client = createSmartWalletClient({
         chain: sepolia,
-        transport: alchemy({
+        transport: alchemyWalletTransport({
           apiKey,
         }),
-        signer,
-        policyId: process.env.NEXT_PUBLIC_ALCHEMY_POLICY_ID,
+        signer: walletClient,
+        paymaster: process.env.NEXT_PUBLIC_ALCHEMY_POLICY_ID
+          ? { policyId: process.env.NEXT_PUBLIC_ALCHEMY_POLICY_ID }
+          : undefined,
       });
 
       setClient(client);
@@ -92,7 +90,7 @@ export const useSmartEmbeddedWallet = ({
 
 </CodeBlocks>
 
-When using the `SmartWalletClient` you must set the `eip7702Auth` capability to `true`, as shown in [`smart-wallet-demo.tsx`](https://github.com/alchemyplatform/alchemy-wallets-7702-thirdparty-example/blob/main/components/smart-wallet-demo.tsx)
+When using the `SmartWalletClient` EIP-7702 is used by default, as shown in [`smart-wallet-demo.tsx`](https://github.com/alchemyplatform/alchemy-wallets-7702-thirdparty-example/blob/main/components/smart-wallet-demo.tsx)
 
 <CodeBlocks>
 
@@ -124,10 +122,6 @@ export const SmartWalletDemo = ({
       const {
         id: callId,
       } = await client.sendCalls({
-        capabilities: {
-          eip7702Auth: true,
-        },
-        from: embeddedWallet.address as Address,
         calls: [
           {
             to: "0x0000000000000000000000000000000000000000",

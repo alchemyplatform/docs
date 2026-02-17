@@ -1,20 +1,20 @@
-<Info>Required SDK version: ^v4.61.0</Info>
+<Info>Required SDK version: @alchemy/wallet-apis@0.0.0-alpha.19</Info>
 
-See the [`sendCalls` SDK
+{/* TODO: Add SDK reference link once @alchemy/wallet-apis reference docs are published */}
+{/* See the [`sendCalls` SDK
 reference](/wallets/reference/account-kit/wallet-client/functions/sendCalls)
-for full descriptions of the parameters used in the following example.
+for full descriptions of the parameters used in the following example. */}
 
-Use the `paymasterService` capability on the smart wallet client `sendCalls` or `prepareCalls` actions.
+Use the `paymaster` capability on the smart wallet client `sendCalls` or `prepareCalls` actions.
 
 <CodeBlocks>
 
 ```ts title="sendCalls.ts"
-import { client, config, signer } from "./client.ts";
+import { client, config } from "./client.ts";
 
 const { id } = await client.sendCalls({
-  from: await signer.getAddress(),
   capabilities: {
-    paymasterService: {
+    paymaster: {
       policyId: config.policyId,
       erc20: {
         tokenAddress: config.gasToken,
@@ -30,7 +30,7 @@ const { id } = await client.sendCalls({
   calls: [
     {
       to: "0x0000000000000000000000000000000000000000",
-      value: "0x00",
+      value: 0n,
       data: "0x",
     },
   ],
@@ -39,28 +39,24 @@ const { id } = await client.sendCalls({
 
 ```ts title="client.ts"
 import "dotenv/config";
-import { type Address, type Hex, toHex } from "viem";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, sepolia } from "@account-kit/infra";
-import { createSmartWalletClient } from "@account-kit/wallet-client";
+import type { Address, Hex } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { sepolia } from "viem/chains";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 export const config = {
   policyId: process.env.ALCHEMY_POLICY_ID!,
   gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as Address, // USDC on sepolia
-  approveBelow: toHex(1000000n), // 1 USDC
-  approveAmount: toHex(10000000n), // 10 USDC
+  approveBelow: 1000000n, // 1 USDC
+  approveAmount: 10000000n, // 10 USDC
 };
 
-export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-  process.env.PRIVATE_KEY! as Hex,
-);
-
 export const client = createSmartWalletClient({
-  transport: alchemy({
+  transport: alchemyWalletTransport({
     apiKey: process.env.ALCHEMY_API_KEY!,
   }),
   chain: sepolia,
-  signer,
+  signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
 });
 ```
 
