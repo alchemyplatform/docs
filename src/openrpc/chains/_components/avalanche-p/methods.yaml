@@ -1,0 +1,589 @@
+components:
+  methods:
+    platform.getBalance:
+      name: platform.getBalance
+      paramStructure: by-name
+      summary: Get balance
+      description: Get the balance of an asset controlled by a given address.
+      params:
+        - name: addresses
+          description: The addresses to get the balance of.
+          schema:
+            type: array
+            items: { type: string }
+      result:
+        name: result
+        description: The balance and UTXO information. Maps assetID to balance; utxoIDs list UTXOs referencing the address.
+        schema:
+          type: object
+          example:
+            balances:
+              BUuypiq2wyuLMvyhzFXcPyxPMCgSp7eeDohhQRqTChoBjKziC: "30000000000000000"
+            unlockeds:
+              BUuypiq2wyuLMvyhzFXcPyxPMCgSp7eeDohhQRqTChoBjKziC: "20000000000000000"
+            lockedStakeables:
+              BUuypiq2wyuLMvyhzFXcPyxPMCgSp7eeDohhQRqTChoBjKziC: "10000000000000000"
+            lockedNotStakeables: {}
+            utxoIDs:
+              - txID: "11111111111111111111111111111111LpoYY"
+                outputIndex: 1
+              - txID: "11111111111111111111111111111111LpoYY"
+                outputIndex: 0
+
+    platform.getBlockchainStatus:
+      name: platform.getBlockchainStatus
+      paramStructure: by-name
+      summary: Get blockchain status
+      description: Get the status of a blockchain.
+      params:
+        - name: blockchainID
+          required: true
+          description: The blockchain ID.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The blockchain status.
+        schema:
+          type: object
+          properties:
+            status: { type: string }
+          example:
+            status: "Validating"
+
+    platform.getBlockchains:
+      name: platform.getBlockchains
+      summary: Get all blockchains
+      description: Get all the blockchains that exist (excluding the P-Chain).
+      params: []
+      result:
+        name: result
+        description: The list of blockchains.
+        schema:
+          type: object
+          properties:
+            blockchains: { type: array }
+          example:
+            blockchains:
+              - id: "2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM"
+                name: "C-Chain"
+                subnetID: "11111111111111111111111111111111LpoYY"
+                vmID: "mgj786NP7uDwBCcq6YwThhaN8FLyybkCa4zBWTQbNgmK6k9A6"
+
+    platform.getCurrentSupply:
+      name: platform.getCurrentSupply
+      paramStructure: by-name
+      summary: Get current supply
+      description: Returns an upper bound on the number of AVAX that exist. This is an upper bound because it does not account for burnt tokens, including transaction fees.
+      params:
+        - name: subnetID
+          required: false
+          description: The subnet ID. If omitted, uses the Primary Network.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The supply value.
+        schema:
+          type: object
+          properties:
+            supply: { type: string }
+          example:
+            supply: "360000000000000000"
+
+    platform.getCurrentValidators:
+      name: platform.getCurrentValidators
+      paramStructure: by-name
+      summary: Get current validators
+      description: List the current validators of the given Subnet.
+      params:
+        - name: subnetID
+          required: false
+          description: The subnet whose validators are returned. If omitted, returns validators of the Primary Network.
+          schema:
+            type: string
+        - name: nodeIDs
+          required: false
+          description: List of node IDs to filter.
+          schema:
+            type: array
+            items: { type: string }
+      result:
+        name: result
+        description: The list of validators.
+        schema:
+          type: object
+          properties:
+            validators: { type: array }
+          example:
+            validators:
+              - txID: "2GDuS2R2L2R2L2R2L2R2L2R2L2R2L2R2L2R2L2R2L2R2L"
+                startTime: "1609459200"
+                endTime: "1640995200"
+                weight: "2000000000000"
+
+    platform.getFeeConfig:
+      name: platform.getFeeConfig
+      summary: Get fee config
+      description: Returns the dynamic fee configuration of the P-Chain.
+      params: []
+      result:
+        name: result
+        description: The fee configuration (weights, capacity, rates, minPrice, excessConversionConstant).
+        schema:
+          type: object
+          example:
+            weights: [1, 1000, 1000, 4]
+            maxCapacity: 1000000
+            maxPerSecond: 100000
+            targetPerSecond: 50000
+            minPrice: 1
+            excessConversionConstant: 2164043
+
+    platform.getFeeState:
+      name: platform.getFeeState
+      summary: Get fee state
+      description: Returns the current fee state of the P-Chain.
+      params: []
+      result:
+        name: result
+        description: The current fee state (capacity, excess, price, timestamp).
+        schema:
+          type: object
+          example:
+            capacity: 973044
+            excess: 26956
+            price: 1
+            timestamp: "2024-12-16T17:19:07Z"
+
+    platform.getHeight:
+      name: platform.getHeight
+      summary: Get height
+      description: Returns the height of the last accepted block.
+      params: []
+      result:
+        name: result
+        description: The current height.
+        schema:
+          type: object
+          properties:
+            height: { type: string }
+          example:
+            height: "35000000"
+
+    platform.getMinStake:
+      name: platform.getMinStake
+      paramStructure: by-name
+      summary: Get min stake
+      description: Get the minimum amount of AVAX required to validate the Primary Network and the minimum amount of AVAX that can be delegated.
+      params:
+        - name: subnetID
+          required: false
+          description: The subnet ID. If omitted, uses the Primary Network.
+          schema:
+            type: string
+      result:
+        name: result
+        description: Minimum validator and delegator stake.
+        schema:
+          type: object
+          example:
+            minValidatorStake: "2000000000000"
+            minDelegatorStake: "25000000000"
+
+    platform.getRewardUTXOs:
+      name: platform.getRewardUTXOs
+      paramStructure: by-name
+      summary: Get reward UTXOs
+      description: Returns the UTXOs that were rewarded after the provided transaction's staking or delegation period ended.
+      params:
+        - name: txID
+          required: true
+          description: The transaction ID of the staking or delegating transaction.
+          schema:
+            type: string
+        - name: encoding
+          required: false
+          description: Format for returned UTXOs. Can be "hex" when provided.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The reward UTXOs (numFetched, utxos array, encoding).
+        schema:
+          type: object
+          example:
+            numFetched: "2"
+            utxos: []
+            encoding: "hex"
+
+    platform.getStake:
+      name: platform.getStake
+      paramStructure: by-name
+      summary: Get stake
+      description: Get the amount of nAVAX staked by a set of addresses. The amount returned does not include staking rewards.
+      params:
+        - name: addresses
+          required: true
+          description: The addresses to get staked amounts for.
+          schema:
+            type: array
+            items: { type: string }
+        - name: validatorsOnly
+          required: false
+          description: If true, skip checking delegators for stake.
+          schema:
+            type: boolean
+      result:
+        name: result
+        description: Map of assetID to staked amount; stakedOutputs (encoded); encoding.
+        schema:
+          type: object
+          example:
+            staked: "6500000000000"
+            stakeds:
+              FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z: "6500000000000"
+            stakedOutputs: []
+            encoding: "hex"
+
+    platform.getStakingAssetID:
+      name: platform.getStakingAssetID
+      paramStructure: by-name
+      summary: Get staking asset ID
+      description: Retrieve an assetID for a subnet's staking asset. Currently this always returns the Primary Network's staking assetID.
+      params:
+        - name: subnetID
+          required: false
+          description: The subnet ID. If omitted, uses the Primary Network.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The staking asset ID.
+        schema:
+          type: object
+          example:
+            assetID: "FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z"
+
+    platform.getSubnets:
+      name: platform.getSubnets
+      paramStructure: by-name
+      summary: Get subnets
+      description: Get all the Subnets that exist.
+      params:
+        - name: ids
+          required: false
+          description: Optional list of subnet IDs to retrieve.
+          schema:
+            type: array
+            items: { type: string }
+      result:
+        name: result
+        description: The list of subnets.
+        schema:
+          type: object
+          properties:
+            subnets: { type: array }
+          example:
+            subnets:
+              - id: "11111111111111111111111111111111LpoYY"
+                controlKeys: []
+                threshold: "0"
+
+    platform.getTimestamp:
+      name: platform.getTimestamp
+      summary: Get timestamp
+      description: Returns the current timestamp of the P-Chain.
+      params: []
+      result:
+        name: result
+        description: The current timestamp.
+        schema:
+          type: object
+          properties:
+            timestamp: { type: string }
+          example:
+            timestamp: "1640000000"
+
+    platform.getTotalStake:
+      name: platform.getTotalStake
+      paramStructure: by-name
+      summary: Get total stake
+      description: Get the total amount of nAVAX staked on the Primary Network.
+      params:
+        - name: subnetID
+          required: false
+          description: The subnet ID. If omitted, uses the Primary Network.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The total stake.
+        schema:
+          type: object
+          example:
+            stake: "40000000000000000"
+
+    platform.getTx:
+      name: platform.getTx
+      paramStructure: by-name
+      summary: Get transaction
+      description: Get a transaction by its ID.
+      params:
+        - name: txID
+          required: true
+          description: The transaction ID.
+          schema:
+            type: string
+        - name: encoding
+          required: false
+          description: Format for the returned transaction. "hex" or "json". Defaults to "hex".
+          schema:
+            type: string
+      result:
+        name: result
+        description: The transaction and encoding used.
+        schema:
+          type: object
+          example:
+            tx: "0x..."
+            encoding: "hex"
+
+    platform.getTxStatus:
+      name: platform.getTxStatus
+      paramStructure: by-name
+      summary: Get transaction status
+      description: Get a transaction's status by its ID. Status is one of Committed, Processing, Dropped (includes reason), Unknown.
+      params:
+        - name: txID
+          required: true
+          description: The transaction ID.
+          schema:
+            type: string
+      result:
+        name: result
+        description: status (Committed|Processing|Dropped|Unknown); Dropped may include reason.
+        schema:
+          type: object
+          example:
+            status: "Committed"
+
+    platform.getUTXOs:
+      name: platform.getUTXOs
+      paramStructure: by-name
+      summary: Get UTXOs
+      description: Get the UTXOs that reference a given set of addresses. Supports pagination via startIndex/endIndex.
+      params:
+        - name: addresses
+          required: true
+          description: The addresses to get UTXOs for.
+          schema:
+            type: array
+            items: { type: string }
+        - name: limit
+          required: false
+          description: Maximum number of UTXOs to return (default 1024 if omitted or greater).
+          schema:
+            type: integer
+        - name: startIndex
+          required: false
+          description: Pagination cursor; object with address and utxo. Omit to fetch from start.
+          schema:
+            type: object
+            properties:
+              address: { type: string }
+              utxo: { type: string }
+        - name: sourceChain
+          required: false
+          description: If set, fetch UTXOs exported from this chain (e.g. "X" for X-Chain).
+          schema:
+            type: string
+        - name: encoding
+          required: false
+          description: Format for returned UTXOs. Can be "hex" when provided.
+          schema:
+            type: string
+      result:
+        name: result
+        description: numFetched, utxos array, endIndex for pagination, encoding.
+        schema:
+          type: object
+          example:
+            numFetched: "5"
+            utxos: []
+            endIndex:
+              address: "P-avax18jma8ppw3nhx5r4ap8clazz0dps7rv5ukulre5"
+              utxo: "kbUThAUfmBXUmRgTpgD6r3nLj7rJUGho6xyht5nouNNypH45j"
+            encoding: "hex"
+
+    platform.getValidatorFeeConfig:
+      name: platform.getValidatorFeeConfig
+      summary: Get validator fee config
+      description: Returns the validator fee configuration of the P-Chain (L1 validator capacity, target, minPrice, etc.).
+      params: []
+      result:
+        name: result
+        description: capacity, target, minPrice, excessConversionConstant (and optionally targetPerSecond).
+        schema:
+          type: object
+          example:
+            capacity: 20000
+            target: 10000
+            minPrice: 512
+            excessConversionConstant: 1246488515
+
+    platform.getValidatorFeeState:
+      name: platform.getValidatorFeeState
+      summary: Get validator fee state
+      description: Returns the current validator fee state of the P-Chain.
+      params: []
+      result:
+        name: result
+        description: excess, price, timestamp.
+        schema:
+          type: object
+          example:
+            excess: 26956
+            price: 512
+            timestamp: "2024-12-16T17:19:07Z"
+
+    platform.getValidatorsAt:
+      name: platform.getValidatorsAt
+      paramStructure: by-name
+      summary: Get validators at height
+      description: Get the validators and their weights of a subnet or the Primary Network at a given P-Chain height. Height can be an integer or the string "proposed" for this node's ProposerVM height.
+      params:
+        - name: height
+          required: true
+          description: The P-Chain height, or the string "proposed" for this node's ProposerVM height.
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+                enum: ["proposed"]
+        - name: subnetID
+          required: false
+          description: The subnet ID. If omitted, uses the Primary Network.
+          schema:
+            type: string
+      result:
+        name: result
+        description: validators is an object mapping nodeID to weight.
+        schema:
+          type: object
+          example:
+            validators:
+              "NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg": 2000000000000000
+              "NodeID-GWPcbFJZFfZreETSoWjPimr846mXEKCtu": 2000000000000000
+
+    platform.getAllValidatorsAt:
+      name: platform.getAllValidatorsAt
+      paramStructure: by-name
+      summary: Get all validators at height
+      description: Get the validators and their weights of all Subnets and the Primary Network at a given P-Chain height. Height can be an integer or the string "proposed".
+      params:
+        - name: height
+          required: true
+          description: The P-Chain height.
+          schema:
+            type: string
+      result:
+        name: result
+        description: validatorSets is an object keyed by subnet ID; each value has validators array and totalWeight.
+        schema:
+          type: object
+          example:
+            validatorSets:
+              "11111111111111111111111111111111LpoYY":
+                validators:
+                  - publicKey: "0x8048109c3da13de0700f9f3590c3270bfc42277417f6d0cc84282947e1a1f8b4980fd3e3fe223acf0f56a5838890814a"
+                    weight: "2000000000000000"
+                    nodeIDs:
+                      - "NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5"
+                totalWeight: "10000000000000000"
+
+    platform.issueTx:
+      name: platform.issueTx
+      paramStructure: by-name
+      summary: Issue transaction
+      description: Issue a transaction to the Platform Chain.
+      params:
+        - name: tx
+          required: true
+          description: The byte representation of the transaction.
+          schema:
+            type: string
+        - name: encoding
+          required: false
+          description: Encoding format for the transaction bytes. Can be "hex" when provided.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The transaction ID.
+        schema:
+          type: object
+          example:
+            txID: "2GDuS2R2L2R2L2R2L2R2L2R2L2R2L2R2L2R2L2R2L2R2L"
+
+    platform.sampleValidators:
+      name: platform.sampleValidators
+      paramStructure: by-name
+      summary: Sample validators
+      description: Sample validators from the specified Subnet. If subnetID is omitted, defaults to the Primary Network.
+      params:
+        - name: size
+          required: true
+          description: The number of validators to sample.
+          schema:
+            type: integer
+        - name: subnetID
+          required: false
+          description: The subnet to sample from. If omitted, uses the Primary Network.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The sampled validators.
+        schema:
+          type: object
+          example:
+            validators: []
+
+    platform.validatedBy:
+      name: platform.validatedBy
+      paramStructure: by-name
+      summary: Validated by
+      description: Get the Subnet that validates a given blockchain.
+      params:
+        - name: blockchainID
+          description: The blockchain ID.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The subnet ID that validates the blockchain.
+        schema:
+          type: object
+          example:
+            subnetID: "11111111111111111111111111111111LpoYY"
+
+    platform.validates:
+      name: platform.validates
+      paramStructure: by-name
+      summary: Validates
+      description: Get the IDs of the blockchains a Subnet validates.
+      params:
+        - name: subnetID
+          description: The subnet ID.
+          schema:
+            type: string
+      result:
+        name: result
+        description: The list of blockchain IDs the Subnet validates.
+        schema:
+          type: object
+          example:
+            blockchainIDs:
+              - "KDYHHKjM4yTJTT8H8qPs5KXzE6gQH5TZrmP1qVr1P6qECj3XN"
+              - "2TtHFqEAAJ6b33dromYMqfgavGPF3iCpdG3hwNMiart2aB5QHi"
