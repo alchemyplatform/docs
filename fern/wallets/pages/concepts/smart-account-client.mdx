@@ -35,17 +35,14 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
     import {
       createSmartWalletClient,
       alchemyWalletTransport,
-      type CreateSmartWalletClientParams,
     } from "@alchemy/wallet-apis";
 
-    const clientParams: CreateSmartWalletClientParams = {
+    export const client = createSmartWalletClient({
       transport: alchemyWalletTransport({ apiKey: "your-alchemy-api-key" }),
       chain: sepolia,
       signer: privateKeyToAccount("0x-your-wallet-private-key"),
       paymaster: { policyId: "your-policy-id" },
-    };
-
-    export const client = createSmartWalletClient(clientParams);
+    });
     ```
   </Tab>
 
@@ -56,39 +53,10 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
 
 ## Advanced
 
-<Accordion title="Override default account type">
-  By default, the Smart Wallet Client will use [ModularAccountV2](/docs/wallets/smart-contracts/modular-account-v2/overview)(MAv2). This is the cheapest and most advanced Smart Account, but you can specify other smart contract account types as needed. Learn more about the different smart accounts [here](/docs/wallets/smart-contracts/choosing-a-smart-account).
+<Accordion title="Use a non-7702 smart contract account">
+  By default, the client uses EIP-7702 with the signer's address. If you need to use a standalone smart contract account instead, see the [non-7702 mode guide](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode).
 
-  <Tip>
-    Changing the account type will deploy a different account. If you've already
-    deployed an account for a user and want to change the underlying account type,
-    you'll need to upgrade it. Learn how to upgrade
-    [here](/docs/wallets/smart-contracts/other-accounts/modular-account/upgrading-to-modular-account).
-  </Tip>
-
-  **Javascript**
-
-  Specify the account type when calling `requestAccount` using the `creationHint` parameter. See all parameter [options](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-request-account#request.body.requestAccountRequest.creationHint).
-
-  ```ts
-  import {
-    createSmartWalletClient,
-    alchemyWalletTransport,
-  } from "@alchemy/wallet-apis";
-
-  export const client = createSmartWalletClient({
-    ...clientParams,
-    accountType: "sma-b",
-  });
-  ```
-
-  **API**
-
-  Pass an [`accountType`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-request-account) to `creationHint` when calling `wallet_requestAccount`.
-
-  **Using 7702**
-
-  To use EIP-7702, please see [this guide](https://www.alchemy.com/docs/wallets/transactions/using-eip-7702). You'll need to set additional parameters on the client.
+  Learn more about the different smart account types [here](/docs/wallets/smart-contracts/choosing-a-smart-account).
 </Accordion>
 
 <Accordion title="Connect to an existing account address">
@@ -102,7 +70,7 @@ The [`SmartWalletClient`](https://github.com/alchemyplatform/aa-sdk/blob/b8dad09
   import { createSmartWalletClient } from "@alchemy/wallet-apis";
 
   export const client = createSmartWalletClient({
-    ...clientParams,
+    // ... your config
     account: "0xYOUR_SMART_ACCOUNT_ADDR",
   });
   ```

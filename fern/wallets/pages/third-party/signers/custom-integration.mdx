@@ -35,6 +35,7 @@ import {
   custom,
   type EIP1193Provider,
 } from "viem";
+import { toAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import {
   createSmartWalletClient,
@@ -72,28 +73,30 @@ export async function createSmartEmbeddedWalletClient({
   }
   const provider = await embeddedWallet.getEthereumProvider();
 
-  // Create an account-like object with signAuthorization support
-  const account = {
+  // Create a proper LocalAccount with signAuthorization for EIP-7702
+  const account = toAccount({
     address: embeddedWallet.address as Address,
-    type: "local" as const,
-    source: "custom" as const,
+    // Delegate standard signing methods to the wallet provider
+    signMessage: ({ message }) =>
+      provider.request({ method: "personal_sign", params: [message, embeddedWallet.address] }),
+    signTransaction: (transaction) =>
+      provider.request({ method: "eth_signTransaction", params: [transaction] }),
+    signTypedData: (typedData) =>
+      provider.request({ method: "eth_signTypedData_v4", params: [embeddedWallet.address, JSON.stringify(typedData)] }),
     // signAuthorization is required for EIP-7702 delegation
-    async signAuthorization(unsignedAuth: any) {
+    async signAuthorization(unsignedAuth) {
       const { address, ...rest } = unsignedAuth;
       const signature = await signAuthorization({
         ...rest,
         contractAddress: (address ?? rest.contractAddress) as `0x${string}`,
       });
-      return {
-        ...unsignedAuth,
-        ...signature,
-      };
+      return { ...unsignedAuth, ...signature };
     },
-  };
+  });
 
   // Create wallet client with the custom account
   const walletClient = createWalletClient({
-    account: account as any,
+    account,
     chain: baseSepolia,
     transport: custom(provider),
   });

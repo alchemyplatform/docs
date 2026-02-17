@@ -18,7 +18,8 @@ This `WalletClient` is then passed to `createSmartWalletClient` as the signer to
 <CodeBlocks>
 
 ```ts twoslash title="use-smart-embedded-wallet.ts"
-import { Address, createWalletClient, custom } from "viem";
+import { type Address, createWalletClient, custom } from "viem";
+import { toAccount } from "viem/accounts";
 import { useSign7702Authorization } from "@privy-io/react-auth";
 import { sepolia } from "viem/chains";
 import { useEffect, useState } from "react";
@@ -29,7 +30,7 @@ import {
 } from "@alchemy/wallet-apis";
 import { ConnectedWallet as PrivyWallet } from "@privy-io/react-auth";
 
-/\*_ Creates an Alchemy Smart Wallet client for an embedded Privy wallet using EIP-7702. _/;
+/** Creates an Alchemy Smart Wallet client for an embedded Privy wallet using EIP-7702. */
 export const useSmartEmbeddedWallet = ({
   embeddedWallet,
 }: {
@@ -46,25 +47,29 @@ export const useSmartEmbeddedWallet = ({
     (async () => {
       const provider = await embeddedWallet.getEthereumProvider();
 
-      const baseAccount = {
+      // Create a proper LocalAccount with signAuthorization for EIP-7702
+      const account = toAccount({
         address: embeddedWallet.address as Address,
-        type: "local" as const,
-        source: "privy" as const,
-        async signAuthorization(unsignedAuth: any) {
+        // Delegate standard signing methods to the Privy provider
+        signMessage: ({ message }) =>
+          provider.request({ method: "personal_sign", params: [message, embeddedWallet.address] }),
+        signTransaction: (transaction) =>
+          provider.request({ method: "eth_signTransaction", params: [transaction] }),
+        signTypedData: (typedData) =>
+          provider.request({ method: "eth_signTypedData_v4", params: [embeddedWallet.address, JSON.stringify(typedData)] }),
+        // signAuthorization is required for EIP-7702 delegation
+        async signAuthorization(unsignedAuth) {
           const signature = await signAuthorization({
             ...unsignedAuth,
             contractAddress:
               unsignedAuth.address ?? unsignedAuth.contractAddress,
           });
-          return {
-            ...unsignedAuth,
-            ...signature,
-          };
+          return { ...unsignedAuth, ...signature };
         },
-      };
+      });
 
       const walletClient = createWalletClient({
-        account: baseAccount as any,
+        account,
         chain: sepolia,
         transport: custom(provider),
       });
