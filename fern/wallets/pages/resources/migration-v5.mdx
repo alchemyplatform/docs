@@ -149,7 +149,16 @@ Key differences:
 * **No need to set `eip7702Auth: true` capability** — 7702 is the default mode
 * `requestAccount()` is still available for [non-7702 smart contract accounts](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode)
 
-## Viem-native types — bigints instead of hex strings
+## Fully viem-compatible types
+
+All action signatures and return types are now compatible with viem's built-in interfaces. This means you can use the SDK seamlessly alongside other viem tooling without type mismatches or manual conversions.
+
+Key changes:
+
+* **Bigints instead of hex strings** — `value: 0n` instead of `value: "0x00"`
+* **Signer types** — accepts standard `LocalAccount` and `WalletClient` (no custom wrappers)
+* **Chain types** — uses standard viem chain definitions from `viem/chains`
+* **Return types** — results like `UserOperation`, call status, and receipts use viem-compatible interfaces (e.g. `chainId` is `number`, not a hex string)
 
 **Before:**
 
@@ -166,8 +175,6 @@ await client.sendCalls({
   calls: [{ to: "0x...", value: 0n }],
 });
 ```
-
-Aligns with the viem ecosystem. No more manual hex encoding/decoding for values.
 
 ## Alchemy paymaster configuration — renamed
 
