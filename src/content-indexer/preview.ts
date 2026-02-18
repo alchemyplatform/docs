@@ -59,11 +59,11 @@ const main = async () => {
     await runIndexAndUpload(branch);
 
     const previewUrl = process.env.DOCS_SITE_URL;
-    const previewSecret = process.env.PREVIEW_SECRET;
+    const previewSecret = process.env.DOCS_SITE_API_KEY;
 
     if (!previewUrl || !previewSecret) {
       console.warn(
-        "\n⚠️  Set DOCS_SITE_URL and PREVIEW_SECRET in .env to get a preview URL",
+        "\n⚠️  Set DOCS_SITE_URL and DOCS_SITE_API_KEY in .env to get a preview URL",
       );
     } else {
       const url = buildPreviewUrl(branch, previewUrl, previewSecret);
