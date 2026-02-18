@@ -28,7 +28,7 @@ export const visitApiReference = (config: ApiVisitorConfig): VisitorResult => {
   const apiName = apiConfig["api-name"];
   const apiUrlSlug = apiConfig.slug ?? kebabCase(apiConfig.api);
   const skipSlug = apiConfig["skip-slug"] ?? false;
-  const isHidden = apiConfig.hidden ?? false;
+  const isHidden = apiConfig.hidden || config.isAncestorHidden || false;
   const isFlattened = apiConfig.flattened ?? false;
 
   // Build path for this API
