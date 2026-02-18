@@ -61,18 +61,18 @@ const main = async () => {
     const previewUrl = process.env.DOCS_SITE_PREVIEW_URL;
     const previewSecret = process.env.PREVIEW_SECRET;
 
-    if (previewUrl && previewSecret) {
-      const url = buildPreviewUrl(branch, previewUrl, previewSecret);
-      console.info(`\n🔗 Preview URL:\n   ${url}`);
-    } else {
+    if (!previewUrl || !previewSecret) {
       console.warn(
         "\n⚠️  Set DOCS_SITE_PREVIEW_URL and PREVIEW_SECRET in .env to get a preview URL",
       );
+    } else {
+      const url = buildPreviewUrl(branch, previewUrl, previewSecret);
+      console.info(`\n🔗 Preview URL:\n   ${url}`);
     }
 
     startWatchers(branch);
   } catch (error) {
-    console.error("\n❌ Error:", error);
+    console.error("\n❌ Error: ", error);
     process.exit(1);
   }
 };
