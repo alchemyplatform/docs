@@ -29,6 +29,7 @@ export const visitPage = ({
   contentCache,
   context,
   navigationAncestors,
+  isAncestorHidden,
 }: PageVisitorConfig): VisitorResult => {
   // Look up cached MDX content
   const cached = contentCache.getMdxContent(pageItem.path);
@@ -69,7 +70,7 @@ export const visitPage = ({
   };
 
   // Build Algolia record (if content available and not hidden)
-  if (cached && !pageItem.hidden) {
+  if (cached && !pageItem.hidden && !isAncestorHidden) {
     const title = cached.frontmatter.title || pageItem.page;
     context.addAlgoliaRecord({
       pageType: "Guide",
