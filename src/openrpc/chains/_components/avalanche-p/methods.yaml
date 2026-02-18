@@ -452,16 +452,13 @@ components:
       name: platform.getValidatorsAt
       paramStructure: by-name
       summary: Get validators at height
-      description: Get the validators and their weights of a subnet or the Primary Network at a given P-Chain height. Height can be an integer or the string "proposed" for this node's ProposerVM height.
+      description: Get the validators and their weights of a subnet or the Primary Network at a given P-Chain height.
       params:
         - name: height
-          required: true
-          description: The P-Chain height, or the string "proposed" for this node's ProposerVM height.
+          required: false
+          description: The P-Chain height.
           schema:
-            oneOf:
-              - type: integer
-              - type: string
-                enum: ["proposed"]
+            type: integer
         - name: subnetID
           required: false
           description: The subnet ID. If omitted, uses the Primary Network.
@@ -481,17 +478,13 @@ components:
       name: platform.getAllValidatorsAt
       paramStructure: by-name
       summary: Get all validators at height
-      description: Get the validators and their weights of all Subnets and the Primary Network at a given P-Chain height. Height can be an integer or the string "proposed".
+      description: Get the validators and their weights of all Subnets and the Primary Network at a given P-Chain height.
       params:
         - name: height
-          required: true
+          required: false
           description: The P-Chain height.
           schema:
-            oneOf:
-              - type: integer
-              - type: string
-                enum:
-                  - proposed
+            type: integer
       result:
         name: result
         description: validatorSets is an object keyed by subnet ID; each value has validators array and totalWeight.
