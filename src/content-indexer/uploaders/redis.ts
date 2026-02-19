@@ -22,7 +22,7 @@ const countItems = (items: NavigationTree): number => {
   }, 0);
 };
 
-const PREVIEW_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
+export const PREVIEW_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 /**
  * Stores path index and navigation trees to Redis with branch scoping.

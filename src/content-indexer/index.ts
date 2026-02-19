@@ -11,7 +11,7 @@ import type {
 import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.ts";
 import { storeToRedis } from "@/content-indexer/uploaders/redis.ts";
 
-dotenvConfig({ path: path.resolve(process.cwd(), ".env") });
+dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
 // ============================================================================
 // CLI Argument Parsing
