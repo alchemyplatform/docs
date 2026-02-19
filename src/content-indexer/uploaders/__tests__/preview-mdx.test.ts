@@ -109,9 +109,11 @@ describe("uploadMdxFile", () => {
 describe("uploadChangedMdxFiles", () => {
   test("uploads only changed files that exist in path index", async () => {
     const { execSync } = await import("child_process");
-    vi.mocked(execSync).mockReturnValue(
-      "fern/pages/intro.mdx\nfern/pages/deleted.mdx\nfern/pages/new.mdx\n",
-    );
+    vi.mocked(execSync)
+      .mockReturnValueOnce(
+        "fern/pages/intro.mdx\nfern/pages/deleted.mdx\nfern/pages/new.mdx\n",
+      )
+      .mockReturnValueOnce(""); // no untracked files
     vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
     mockRedis.get.mockResolvedValue(null);
 
@@ -150,6 +152,66 @@ describe("uploadChangedMdxFiles", () => {
       expect.any(String),
       expect.any(Object),
     );
+  });
+
+  test("includes untracked files in upload", async () => {
+    const { execSync } = await import("child_process");
+    vi.mocked(execSync)
+      .mockReturnValueOnce("fern/pages/changed.mdx\n") // git diff
+      .mockReturnValueOnce("fern/pages/new-untracked.mdx\n"); // git ls-files
+    vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
+    mockRedis.get.mockResolvedValue(null);
+
+    const pathIndex = {
+      "docs/changed": {
+        type: "mdx" as const,
+        filePath: "pages/changed.mdx",
+        source: "docs-yml" as const,
+        tab: "docs",
+      },
+      "docs/new-untracked": {
+        type: "mdx" as const,
+        filePath: "pages/new-untracked.mdx",
+        source: "docs-yml" as const,
+        tab: "docs",
+      },
+    };
+
+    await uploadChangedMdxFiles(pathIndex, "ds/feature", mockRedis as never);
+
+    expect(mockRedis.set).toHaveBeenCalledTimes(2);
+    expect(mockRedis.set).toHaveBeenCalledWith(
+      "ds/feature:mdx:pages/changed.mdx",
+      expect.any(String),
+      expect.any(Object),
+    );
+    expect(mockRedis.set).toHaveBeenCalledWith(
+      "ds/feature:mdx:pages/new-untracked.mdx",
+      expect.any(String),
+      expect.any(Object),
+    );
+  });
+
+  test("deduplicates files appearing in both diff and untracked", async () => {
+    const { execSync } = await import("child_process");
+    vi.mocked(execSync)
+      .mockReturnValueOnce("fern/pages/intro.mdx\n") // git diff
+      .mockReturnValueOnce("fern/pages/intro.mdx\n"); // git ls-files (same file)
+    vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
+    mockRedis.get.mockResolvedValue(null);
+
+    const pathIndex = {
+      "docs/intro": {
+        type: "mdx" as const,
+        filePath: "pages/intro.mdx",
+        source: "docs-yml" as const,
+        tab: "docs",
+      },
+    };
+
+    await uploadChangedMdxFiles(pathIndex, "ds/feature", mockRedis as never);
+
+    expect(mockRedis.set).toHaveBeenCalledTimes(1);
   });
 
   test("skips upload when no changed files", async () => {

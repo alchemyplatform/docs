@@ -68,16 +68,27 @@ export const uploadMdxFile = async (
 
 /**
  * Returns MDX/MD file paths (relative to fern/) that differ from main.
- * Uses git diff to compare the current branch against main.
+ * Includes both committed changes (git diff) and untracked new files
+ * so previews work without requiring a commit first.
  */
 const getChangedMdxFiles = (): string[] => {
-  const output = execSync("git diff --name-only main -- fern/", {
+  // Committed/staged changes vs main
+  const diffOutput = execSync("git diff --name-only main -- fern/", {
     encoding: "utf-8",
   });
 
-  return output
-    .trim()
-    .split("\n")
+  // Untracked new files not yet committed
+  const untrackedOutput = execSync(
+    "git ls-files --others --exclude-standard -- fern/",
+    { encoding: "utf-8" },
+  );
+
+  const allFiles = new Set([
+    ...diffOutput.trim().split("\n"),
+    ...untrackedOutput.trim().split("\n"),
+  ]);
+
+  return [...allFiles]
     .filter((line) => line.length > 0 && /\.(mdx|md)$/.test(line))
     .map((line) => line.replace(/^fern\//, ""));
 };
