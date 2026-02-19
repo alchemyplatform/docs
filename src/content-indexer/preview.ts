@@ -8,7 +8,7 @@ import { buildPreviewUrl } from "@/content-indexer/utils/preview-url.ts";
 import { startWatchers } from "@/content-indexer/utils/preview-watchers.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
 
-dotenvConfig({ path: path.resolve(process.cwd(), ".env") });
+dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
 const parseArgs = () => {
   const args = process.argv.slice(2);
