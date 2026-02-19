@@ -1,5 +1,6 @@
 // Typescript not supported in actions/github-script@v7
 // https://github.com/actions/github-script/issues/294
+const commentMarker = "<!-- docs-preview-comment -->";
 const commentTitle = "🔗 Preview Mode";
 
 /**
@@ -37,7 +38,7 @@ const getCommentBody = (status = "success", previewUrl = "") => {
   const statusMessage = statusDisplay[status];
   const previewLink = previewDisplay[status];
 
-  const headerRow = `## ${commentTitle}\n\n`;
+  const headerRow = `${commentMarker}\n## ${commentTitle}\n\n`;
   const tableHeader = `| Name | Status | Preview | Updated (UTC) |\n`;
   const tableDivider = `| :--- | :------ | :------ | :------ |\n`;
   const tableContent = `| **Alchemy Docs** | ${statusMessage} | ${previewLink} | ${timeUTC} |\n\n>`;
@@ -68,8 +69,10 @@ const updatePreviewComment = async ({
     issue_number: issue.number,
   });
 
-  const existingComment = allComments.data.find((comment) =>
-    comment.body.includes(commentTitle),
+  const existingComment = allComments.data.find(
+    (comment) =>
+      comment.body.includes(commentMarker) ||
+      comment.body.includes(commentTitle),
   );
 
   const commentBody = getCommentBody(status, previewUrl);

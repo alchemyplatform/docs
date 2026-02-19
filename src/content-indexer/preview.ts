@@ -83,7 +83,7 @@ const main = async () => {
     // Write preview URL to $GITHUB_OUTPUT for downstream workflow steps
     const ghOutput = process.env.GITHUB_OUTPUT;
     if (ghOutput) {
-      fs.appendFileSync(ghOutput, `preview-url=${url}\n`);
+      fs.appendFileSync(ghOutput, `preview_url=${url}\n`);
     }
 
     // In CI, exit after indexing — no watchers needed
