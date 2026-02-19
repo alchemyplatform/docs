@@ -4,11 +4,11 @@ See the [`sendCalls` SDK
 reference](/wallets/reference/account-kit/wallet-client/functions/sendCalls)
 for full descriptions of the parameters used in the following example.
 
-Use the `paymasterService` capability on the smart wallet client `sendCalls` or `prepareCalls` actions. Set `autoApprove: true` in `postOpSettings` to have the server automatically handle token approvals — the exact amount needed for gas is calculated and approved in the same operation.
+Use the `paymasterService` capability on the smart wallet client `sendCalls` or `prepareCalls` actions. Set `autoApprove: true` in `postOpSettings` to automatically handle token approvals — the exact amount needed for gas is calculated and approved in the same operation.
 
 <Tabs>
   <Tab title="Exact mode">
-    With `autoApprove: true`, the server calculates the precise token amount needed after gas estimation and approves exactly that — no more, no less. If the account already has sufficient allowance, no approval is added.
+    With `autoApprove: true`, the precise token amount needed is calculated after gas estimation and approved exactly — no more, no less. If the account already has sufficient allowance, no approval is added.
 
     <CodeBlocks>
 
@@ -40,15 +40,15 @@ Use the `paymasterService` capability on the smart wallet client `sendCalls` or 
 
     ```ts title="client.ts"
     import "dotenv/config";
-    import { type Address, type Hex } from "viem";
+    import type { Hex } from "viem";
     import { LocalAccountSigner } from "@aa-sdk/core";
     import { alchemy, sepolia } from "@account-kit/infra";
     import { createSmartWalletClient } from "@account-kit/wallet-client";
 
     export const config = {
       policyId: process.env.ALCHEMY_POLICY_ID!,
-      gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as Address, // USDC on sepolia
-    };
+      gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // USDC on sepolia
+    } as const;
 
     export const signer = LocalAccountSigner.privateKeyToAccountSigner(
       process.env.PRIVATE_KEY! as Hex,
@@ -67,7 +67,7 @@ Use the `paymasterService` capability on the smart wallet client `sendCalls` or 
   </Tab>
 
   <Tab title="Threshold mode">
-    With threshold mode, you set a `below` threshold and an `amount`. The server only injects an approval when the existing allowance drops below `below`, and approves the fixed `amount` you configure. This avoids re-approving on every operation, which saves gas for frequent transactions.
+    With threshold mode, you set a `below` threshold and an `amount`. An approval is only injected when the existing allowance drops below `below`, and it approves the fixed `amount` you configure. This avoids re-approving on every operation, which saves gas for frequent transactions.
 
     <CodeBlocks>
 
@@ -102,17 +102,17 @@ Use the `paymasterService` capability on the smart wallet client `sendCalls` or 
 
     ```ts title="client.ts"
     import "dotenv/config";
-    import { type Address, type Hex, toHex } from "viem";
+    import { type Hex, toHex } from "viem";
     import { LocalAccountSigner } from "@aa-sdk/core";
     import { alchemy, sepolia } from "@account-kit/infra";
     import { createSmartWalletClient } from "@account-kit/wallet-client";
 
     export const config = {
       policyId: process.env.ALCHEMY_POLICY_ID!,
-      gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as Address, // USDC on sepolia
+      gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",  // USDC on sepolia
       approveBelow: toHex(1000000n), // 1 USDC
       approveAmount: toHex(10000000n), // 10 USDC
-    };
+    } as const;
 
     export const signer = LocalAccountSigner.privateKeyToAccountSigner(
       process.env.PRIVATE_KEY! as Hex,

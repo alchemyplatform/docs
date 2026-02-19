@@ -121,13 +121,13 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
 
   **Exact mode (`autoApprove: true`)**
 
-  The server calculates the precise token amount needed after gas estimation and approves exactly that — no more, no less. If the account already has sufficient allowance, no approval is added.
+  The precise token amount needed is calculated after gas estimation and approved exactly — no more, no less. If the account already has sufficient allowance, no approval is added.
 
-  This is ideal when you want minimal token exposure to the paymaster, or when users send infrequent transactions.
+  This is ideal when you want minimal token exposure to the paymaster, don't want to estimate gas and figure out approval amounts yourself, or when users send infrequent transactions.
 
   **Threshold mode (`autoApprove: { below, amount }`)**
 
-  The server only injects an approval when the existing allowance drops below `below`, and approves the fixed `amount` you configure. This avoids re-approving on every operation, which saves gas for frequent transactions.
+  An approval is only injected when the existing allowance drops below `below`, approving the fixed `amount` you configure. This avoids re-approving on every operation, which saves gas for frequent transactions.
 
   Set `below` high enough to reasonably cover the gas cost for your most expensive operations. Set `amount` to a value
   you feel comfortable maintaining as an allowance on the paymaster contract. Setting a large `amount` is not recommended for security purposes.
@@ -140,7 +140,7 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
 </Accordion>
 
 <Accordion title="How exact mode works under the hood">
-  When `autoApprove: true` is set, the server performs the following during request preparation:
+  When `autoApprove: true` is set, the following steps are performed during request preparation:
 
   1. **Injects a sentinel approval** — A temporary `approve(paymaster, maxUint256)` call is prepended to your calls so gas estimation accounts for the approval's execution cost.
   2. **Estimates gas** — The full user operation (including the sentinel) is sent through gas estimation.
@@ -158,8 +158,6 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
 
   In pre-operation mode, you can set the paymaster service capability to automatically return a request for a Permit signature using the `erc20.preOp.autoPermit` field.
   This permit will allow an allowance to be set on the paymaster contract from the sender prior to any token transfers needed during pre operation.
-
-  Pre-op settings (`autoPermit`) and post-op settings (`autoApprove`) are mutually exclusive — you cannot use both.
 
   To be eligible for auto-injected permits, the payment gas token must:
 
