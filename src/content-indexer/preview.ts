@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 import { config as dotenvConfig } from "dotenv";
+import fs from "fs";
 import path from "path";
 
 import { uploadMdxFile } from "@/content-indexer/uploaders/preview-mdx.ts";
@@ -71,12 +72,23 @@ const main = async () => {
     const previewSecret = process.env.DOCS_SITE_API_KEY;
 
     if (!previewUrl || !previewSecret) {
-      console.warn(
-        "\n⚠️  Set DOCS_SITE_URL and DOCS_SITE_API_KEY in .env to get a preview URL",
+      throw new Error(
+        "DOCS_SITE_URL and DOCS_SITE_API_KEY must be set in environment",
       );
-    } else {
-      const url = buildPreviewUrl(branch, previewUrl, previewSecret);
-      console.info(`\n🔗 Preview URL:\n   ${url}`);
+    }
+
+    const url = buildPreviewUrl(branch, previewUrl, previewSecret);
+    console.info(`\n🔗 Preview URL:\n   ${url}`);
+
+    // Write preview URL to $GITHUB_OUTPUT for downstream workflow steps
+    const ghOutput = process.env.GITHUB_OUTPUT;
+    if (ghOutput) {
+      fs.appendFileSync(ghOutput, `preview-url=${url}\n`);
+    }
+
+    // In CI, exit after indexing — no watchers needed
+    if (process.env.CI) {
+      return;
     }
 
     startWatchers(branch);
