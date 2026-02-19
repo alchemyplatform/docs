@@ -55,6 +55,28 @@ describe("uploadMdxFile", () => {
     expect(result.reindexNeeded).toBe(true);
   });
 
+  test("falls back to main: when no branch key exists (first edit)", async () => {
+    const newContent = "---\ntitle: New Title\nslug: new-slug\n---\n# Hello";
+    const mainContent = "---\ntitle: Old Title\nslug: old-slug\n---\n# Hello";
+
+    vi.mocked(fs.readFile).mockResolvedValue(newContent);
+    mockRedis.get
+      .mockResolvedValueOnce(null) // branch key doesn't exist
+      .mockResolvedValueOnce(mainContent); // falls back to main:
+
+    const result = await uploadMdxFile(
+      "pages/intro.mdx",
+      "ds/feature",
+      mockRedis as never,
+    );
+
+    expect(mockRedis.get).toHaveBeenCalledWith(
+      "ds/feature:mdx:pages/intro.mdx",
+    );
+    expect(mockRedis.get).toHaveBeenCalledWith("main:mdx:pages/intro.mdx");
+    expect(result.reindexNeeded).toBe(true);
+  });
+
   test("returns reindexNeeded=false when frontmatter unchanged", async () => {
     const content = "---\ntitle: Same\nslug: same\n---\n# Body changed";
     const previousContent =
@@ -217,53 +239,6 @@ describe("uploadChangedMdxFiles", () => {
     await uploadChangedMdxFiles(pathIndex, "ds/feature", mockRedis as never);
 
     expect(mockRedis.set).toHaveBeenCalledTimes(1);
-  });
-
-  test("deletes stale branch keys for unchanged indexed files", async () => {
-    const { execSync } = await import("child_process");
-    vi.mocked(execSync)
-      .mockReturnValueOnce("fern/pages/changed.mdx\n")
-      .mockReturnValueOnce(""); // no untracked
-    vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
-    mockRedis.get.mockResolvedValue(null);
-
-    const pathIndex = {
-      "docs/changed": {
-        type: "mdx" as const,
-        filePath: "pages/changed.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-      "docs/unchanged": {
-        type: "mdx" as const,
-        filePath: "pages/unchanged.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-      "docs/also-unchanged": {
-        type: "mdx" as const,
-        filePath: "pages/also-unchanged.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-    };
-
-    await uploadChangedMdxFiles(pathIndex, "ds/feature", mockRedis as never);
-
-    // Should delete stale keys for unchanged files
-    expect(mockRedis.del).toHaveBeenCalledWith(
-      "ds/feature:mdx:pages/unchanged.mdx",
-    );
-    expect(mockRedis.del).toHaveBeenCalledWith(
-      "ds/feature:mdx:pages/also-unchanged.mdx",
-    );
-    // Should upload the changed file
-    expect(mockRedis.set).toHaveBeenCalledTimes(1);
-    expect(mockRedis.set).toHaveBeenCalledWith(
-      "ds/feature:mdx:pages/changed.mdx",
-      expect.any(String),
-      expect.any(Object),
-    );
   });
 
   test("skips upload when no changed files", async () => {

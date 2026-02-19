@@ -48,8 +48,11 @@ export const uploadMdxFile = async (
     throw error;
   }
 
-  // Check if routing-relevant frontmatter changed vs previous upload
-  const previousContent = await redis.get<string>(redisKey);
+  // Check if routing-relevant frontmatter changed vs previous upload.
+  // Falls back to main: if no branch key exists yet (first edit to this file).
+  const previousContent =
+    (await redis.get<string>(redisKey)) ??
+    (await redis.get<string>(`main:mdx:${filePath}`));
   let reindexNeeded = false;
 
   if (previousContent) {
@@ -115,21 +118,7 @@ export const uploadChangedMdxFiles = async (
       .map((entry) => entry.filePath),
   );
 
-  const changedSet = new Set(changedFiles);
   const toUpload = changedFiles.filter((f) => indexedFiles.has(f));
-
-  // Delete stale branch keys for unchanged files (e.g., from a previous
-  // session where files were edited then reverted between sessions)
-  const staleKeys = [...indexedFiles]
-    .filter((f) => !changedSet.has(f))
-    .map((f) => `${branch}:mdx:${f}`);
-
-  if (staleKeys.length > 0) {
-    console.info(
-      `\n🧹 Cleaning up ${staleKeys.length} stale branch key${staleKeys.length === 1 ? "" : "s"}...`,
-    );
-    await Promise.all(staleKeys.map((key) => redis.del(key)));
-  }
 
   if (toUpload.length === 0) {
     console.info("\n📤 No changed MDX files to upload");
