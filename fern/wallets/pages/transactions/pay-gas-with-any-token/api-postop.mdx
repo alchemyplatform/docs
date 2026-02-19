@@ -2,45 +2,88 @@ See the [`wallet_prepareCalls` API
 reference](/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls)
 for full descriptions of the parameters used in the following example.
 
+Set `autoApprove: true` in `postOpSettings` to have the server automatically handle the token approval. The exact amount needed for gas is calculated and approved in the same operation.
+
 <Steps>
   <Step title="Prepare Calls">
     Prepare calls using the `paymasterService` capability. Use your signer address directly as the `from` field to enable [EIP-7702](/wallets/transactions/using-eip-7702) by default.
-```bash
-curl --request POST \
-  --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
-  --header 'accept: application/json' \
-  --data '
-{
-  "id": 1,
-  "jsonrpc": "2.0",
-  "method": "wallet_prepareCalls",
-  "params": [
-    {
-      "capabilities": {
-        "paymasterService": {
-          "policyId": "'$ALCHEMY_POLICY_ID'",
-          "erc20": {
-            "tokenAddress": "'$GAS_TOKEN'",
-            "postOpSettings": {
-              "autoApprove": {
-                "below": "'$APPROVE_BELOW'",
-                "amount": "'$APPROVE_AMOUNT'"
-              }
-            }
-          }
-        }
-      },
-      "calls": [
+
+    <Tabs>
+      <Tab title="Exact mode">
+        ```bash
+        curl --request POST \
+          --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+          --header 'accept: application/json' \
+          --data '
         {
-          "to": "0x0000000000000000000000000000000000000000"
-        }
-      ],
-      "from": "'$SIGNER_ADDRESS'",
-      "chainId": "'$CHAIN_ID'"
-    }
-  ]
-}'
-```
+          "id": 1,
+          "jsonrpc": "2.0",
+          "method": "wallet_prepareCalls",
+          "params": [
+            {
+              "capabilities": {
+                "paymasterService": {
+                  "policyId": "'$ALCHEMY_POLICY_ID'",
+                  "erc20": {
+                    "tokenAddress": "'$GAS_TOKEN'",
+                    "postOpSettings": {
+                      "autoApprove": true
+                    }
+                  }
+                }
+              },
+              "calls": [
+                {
+                  "to": "0x0000000000000000000000000000000000000000"
+                }
+              ],
+              "from": "'$SIGNER_ADDRESS'",
+              "chainId": "'$CHAIN_ID'"
+            }
+          ]
+        }'
+        ```
+      </Tab>
+
+      <Tab title="Threshold mode">
+        ```bash
+        curl --request POST \
+          --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+          --header 'accept: application/json' \
+          --data '
+        {
+          "id": 1,
+          "jsonrpc": "2.0",
+          "method": "wallet_prepareCalls",
+          "params": [
+            {
+              "capabilities": {
+                "paymasterService": {
+                  "policyId": "'$ALCHEMY_POLICY_ID'",
+                  "erc20": {
+                    "tokenAddress": "'$GAS_TOKEN'",
+                    "postOpSettings": {
+                      "autoApprove": {
+                        "below": "'$APPROVE_BELOW'",
+                        "amount": "'$APPROVE_AMOUNT'"
+                      }
+                    }
+                  }
+                }
+              },
+              "calls": [
+                {
+                  "to": "0x0000000000000000000000000000000000000000"
+                }
+              ],
+              "from": "'$SIGNER_ADDRESS'",
+              "chainId": "'$CHAIN_ID'"
+            }
+          ]
+        }'
+        ```
+      </Tab>
+    </Tabs>
   </Step>
   <Step title="Sign & Send">
     Sign the returned signature request and send using `wallet_sendPreparedCalls`. If the account hasn't been delegated yet, the response type will be `array` containing both an EIP-7702 authorization and a user operation. See the [send transactions guide](/wallets/transactions/send-transactions) for a complete example.
