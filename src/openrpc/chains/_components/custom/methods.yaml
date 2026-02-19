@@ -729,6 +729,51 @@ components:
                     - "0xf90211a0c87222cccea2bf32759fcee9dbaacbe3ea4165dd6184af6773651c5e00e34a8ba0be90e6e5d1a67ab5587779c60ac136d6a96db62b84c04998a5f03a367346abd6a05344aa1c9ca2e3e56bf98fd718ec43728578d148e1967fbaf8bf17a2a073a0bda011a2f9312c3308640a0d6ceeae218747290f23806067456da1d444c65abae437a0b3097a108bfce79af6699da4ae3003cd4929f0b4576aad655c31cb725bde84c7a0c133d3c637e174f36a73c22b1039eb003da6374bc0929321241badb3efa3c4a9a0f13059f2301ad9862ce02e3f7f3f2c9ab78eb30583764d73654f7f1f8b1e86fda06544e3915748b18204e09df75ff20d2fa6bd8121e2e669699012d54590383d6fa070e3a8e093691581d58fadb560b510262a758037632cd8670d3a36df828976b7a062a88a2900544dc76a32255a6b2b2a2eef8fa68279700c00adc7508286702552a0a474aeebd5603dfce46a6ecd1ecd519068dc034a544fde03ac42d4018e60a334a0b7d528fc41c8fdc8ea18c6e7d0099270c777ec1403cf879d1f5134bdc12a6c6ca04440f1242e42c5bfa7c536591ab89c8e84bea417435871c32eef1e25295b20daa06a5dcfe3cc84cff9d3e3c3ae868cfba8f0dd111a90c3f85869dab5b893f96643a026b2fb9dd7d08b0ed2f1c44fbf875011412a384f86f751c92e1013248d4aa371a0c75597b2b789fc4e939b71937390ce9d7d53159431328ac52180eef08ef200f280"
                   value: "0x1"
 
+    eth_getAccountInfo:
+      name: eth_getAccountInfo
+      description: Retrieves account information including balance, code, and nonce for a given address at a specified block.
+      params:
+        - name: Address
+          required: true
+          description: The address of the account to query.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+        - name: Block
+          required: true
+          description: The block number, tag, or hash at which to retrieve the account information.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTagOrHash"
+      result:
+        name: Account information
+        description: An object containing the account's balance, code, and nonce.
+        schema:
+          type: object
+          additionalProperties: false
+          required: ["balance", "code", "nonce"]
+          properties:
+            balance:
+              description: The account's current balance in wei, encoded as a hexadecimal string.
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+            code:
+              description: The compiled bytecode deployed at the address.
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+            nonce:
+              description: The number of transactions sent from the account since genesis.
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: eth_getAccountInfo example
+          params:
+            - name: Address
+              value: "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+            - name: Block
+              value: "latest"
+          result:
+            name: Account information
+            value:
+              balance: "0x1cfe56f3795885980000"
+              code: "0x"
+              nonce: "0x5"
+
     # Blob methods
     eth_blobBaseFee:
       name: eth_blobBaseFee
