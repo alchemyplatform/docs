@@ -6,127 +6,121 @@ for full descriptions of the parameters used in the following example.
 
 Use the `paymasterService` capability on the smart wallet client `sendCalls` or `prepareCalls` actions. Set `autoApprove: true` in `postOpSettings` to automatically handle token approvals — the exact amount needed for gas is calculated and approved in the same operation.
 
-<Tabs>
-  <Tab title="Exact mode">
-    With `autoApprove: true`, the precise token amount needed is calculated after gas estimation and approved exactly — no more, no less. If the account already has sufficient allowance, no approval is added.
+<CodeBlocks>
 
-    <CodeBlocks>
+```ts title="sendCalls.ts"
+import { client, config, signer } from "./client.ts";
 
-    ```ts title="sendCalls.ts"
-    import { client, config, signer } from "./client.ts";
+const { id } = await client.sendCalls({
+  from: await signer.getAddress(),
+  capabilities: {
+    paymasterService: {
+      policyId: config.policyId,
+      erc20: {
+        tokenAddress: config.gasToken,
+        postOpSettings: {
+          autoApprove: true,
+        },
+      },
+    },
+  },
+  calls: [
+    {
+      to: "0x0000000000000000000000000000000000000000",
+      value: "0x00",
+      data: "0x",
+    },
+  ],
+});
+```
 
-    const { id } = await client.sendCalls({
-      from: await signer.getAddress(),
-      capabilities: {
-        paymasterService: {
-          policyId: config.policyId,
-          erc20: {
-            tokenAddress: config.gasToken,
-            postOpSettings: {
-              autoApprove: true,
+```ts title="client.ts"
+import "dotenv/config";
+import type { Hex } from "viem";
+import { LocalAccountSigner } from "@aa-sdk/core";
+import { alchemy, sepolia } from "@account-kit/infra";
+import { createSmartWalletClient } from "@account-kit/wallet-client";
+
+export const config = {
+  policyId: process.env.ALCHEMY_POLICY_ID!,
+  gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // USDC on sepolia
+} as const;
+
+export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+  process.env.PRIVATE_KEY! as Hex,
+);
+
+export const client = createSmartWalletClient({
+  transport: alchemy({
+    apiKey: process.env.ALCHEMY_API_KEY!,
+  }),
+  chain: sepolia,
+  signer,
+});
+```
+
+</CodeBlocks>
+
+<Accordion title="Using threshold mode instead">
+  With threshold mode, you set a `below` threshold and an `amount`. An approval is only injected when the existing allowance drops below `below`, and it approves the fixed `amount` you configure. This avoids re-approving on every operation, which saves gas for frequent transactions.
+
+  <CodeBlocks>
+
+  ```ts title="sendCalls.ts"
+  import { client, config, signer } from "./client.ts";
+
+  const { id } = await client.sendCalls({
+    from: await signer.getAddress(),
+    capabilities: {
+      paymasterService: {
+        policyId: config.policyId,
+        erc20: {
+          tokenAddress: config.gasToken,
+          postOpSettings: {
+            autoApprove: {
+              below: config.approveBelow,
+              amount: config.approveAmount,
             },
           },
         },
       },
-      calls: [
-        {
-          to: "0x0000000000000000000000000000000000000000",
-          value: "0x00",
-          data: "0x",
-        },
-      ],
-    });
-    ```
-
-    ```ts title="client.ts"
-    import "dotenv/config";
-    import type { Hex } from "viem";
-    import { LocalAccountSigner } from "@aa-sdk/core";
-    import { alchemy, sepolia } from "@account-kit/infra";
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-    export const config = {
-      policyId: process.env.ALCHEMY_POLICY_ID!,
-      gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // USDC on sepolia
-    } as const;
-
-    export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-      process.env.PRIVATE_KEY! as Hex,
-    );
-
-    export const client = createSmartWalletClient({
-      transport: alchemy({
-        apiKey: process.env.ALCHEMY_API_KEY!,
-      }),
-      chain: sepolia,
-      signer,
-    });
-    ```
-
-    </CodeBlocks>
-  </Tab>
-
-  <Tab title="Threshold mode">
-    With threshold mode, you set a `below` threshold and an `amount`. An approval is only injected when the existing allowance drops below `below`, and it approves the fixed `amount` you configure. This avoids re-approving on every operation, which saves gas for frequent transactions.
-
-    <CodeBlocks>
-
-    ```ts title="sendCalls.ts"
-    import { client, config, signer } from "./client.ts";
-
-    const { id } = await client.sendCalls({
-      from: await signer.getAddress(),
-      capabilities: {
-        paymasterService: {
-          policyId: config.policyId,
-          erc20: {
-            tokenAddress: config.gasToken,
-            postOpSettings: {
-              autoApprove: {
-                below: config.approveBelow,
-                amount: config.approveAmount,
-              },
-            },
-          },
-        },
+    },
+    calls: [
+      {
+        to: "0x0000000000000000000000000000000000000000",
+        value: "0x00",
+        data: "0x",
       },
-      calls: [
-        {
-          to: "0x0000000000000000000000000000000000000000",
-          value: "0x00",
-          data: "0x",
-        },
-      ],
-    });
-    ```
+    ],
+  });
+  ```
 
-    ```ts title="client.ts"
-    import "dotenv/config";
-    import { type Hex, toHex } from "viem";
-    import { LocalAccountSigner } from "@aa-sdk/core";
-    import { alchemy, sepolia } from "@account-kit/infra";
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
+  ```ts title="client.ts"
+  import "dotenv/config";
+  import { type Hex, toHex } from "viem";
+  import { LocalAccountSigner } from "@aa-sdk/core";
+  import { alchemy, sepolia } from "@account-kit/infra";
+  import { createSmartWalletClient } from "@account-kit/wallet-client";
 
-    export const config = {
-      policyId: process.env.ALCHEMY_POLICY_ID!,
-      gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",  // USDC on sepolia
-      approveBelow: toHex(1000000n), // 1 USDC
-      approveAmount: toHex(10000000n), // 10 USDC
-    } as const;
+  export const config = {
+    policyId: process.env.ALCHEMY_POLICY_ID!,
+    gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",  // USDC on sepolia
+    approveBelow: toHex(1000000n), // 1 USDC
+    approveAmount: toHex(10000000n), // 10 USDC
+  } as const;
 
-    export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-      process.env.PRIVATE_KEY! as Hex,
-    );
+  export const signer = LocalAccountSigner.privateKeyToAccountSigner(
+    process.env.PRIVATE_KEY! as Hex,
+  );
 
-    export const client = createSmartWalletClient({
-      transport: alchemy({
-        apiKey: process.env.ALCHEMY_API_KEY!,
-      }),
-      chain: sepolia,
-      signer,
-    });
-    ```
+  export const client = createSmartWalletClient({
+    transport: alchemy({
+      apiKey: process.env.ALCHEMY_API_KEY!,
+    }),
+    chain: sepolia,
+    signer,
+  });
+  ```
 
-    </CodeBlocks>
-  </Tab>
-</Tabs>
+  </CodeBlocks>
+</Accordion>
