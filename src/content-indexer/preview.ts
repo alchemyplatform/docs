@@ -13,7 +13,9 @@ dotenvConfig({ path: path.resolve(process.cwd(), ".env") });
 const parseArgs = () => {
   const args = process.argv.slice(2);
 
-  const branch = args.find((arg) => arg.startsWith("--branch="))?.split("=")[1];
+  const branch = args
+    .find((arg) => arg.startsWith("--branch="))
+    ?.replace(/^--branch=/, "");
   const uploadFile = args
     .find((arg) => arg.startsWith("--upload-file="))
     ?.split("=")
@@ -40,7 +42,14 @@ const main = async () => {
     if (uploadFile) {
       const redis = getRedis();
       const filePath = uploadFile.replace(/^fern\//, "");
-      await uploadMdxFile(filePath, branch, redis);
+      const { reindexNeeded } = await uploadMdxFile(filePath, branch, redis);
+
+      if (reindexNeeded) {
+        console.info(
+          "  🔄 Routing-relevant frontmatter changed, re-indexing...",
+        );
+        await runIndexAndUpload(branch);
+      }
       return;
     }
 

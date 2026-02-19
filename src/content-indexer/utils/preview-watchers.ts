@@ -20,7 +20,7 @@ export const startWatchers = (branch: string): void => {
       `--branch=${branch}`,
       "--upload-file={{changed}}",
     ],
-    { stdio: "inherit", shell: true },
+    { stdio: "inherit" },
   );
 
   const slowWatcher = spawn(
@@ -36,13 +36,12 @@ export const startWatchers = (branch: string): void => {
       `--branch=${branch}`,
       "--reindex",
     ],
-    { stdio: "inherit", shell: true },
+    { stdio: "inherit" },
   );
 
   const cleanup = () => {
     fastWatcher.kill();
     slowWatcher.kill();
-    process.exit(0);
   };
 
   process.on("SIGINT", cleanup);
