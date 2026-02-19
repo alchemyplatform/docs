@@ -2,6 +2,7 @@
 
 interface BaseNavItem {
   title: string;
+  hidden?: boolean;
 }
 
 interface PageNavItem extends BaseNavItem {

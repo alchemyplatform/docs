@@ -182,7 +182,7 @@ describe("visitApiReference", () => {
     expect(firstPath).toBe("reference/get-balance");
   });
 
-  test("should return no nav for hidden API", () => {
+  test("should mark nav as hidden for hidden API", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
@@ -215,8 +215,51 @@ describe("visitApiReference", () => {
       navigationAncestors: [],
     });
 
-    expect(result.navItem).toBeUndefined();
+    expect(result.navItem).toBeDefined();
+    expect(result.navItem).toHaveProperty("hidden", true);
     expect(Object.keys(result.indexEntries).length).toBeGreaterThan(0); // Index still created
+  });
+
+  test("should not add Algolia records if ancestor section is hidden", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    cache.setSpec("ethereum-api", {
+      specType: "openapi",
+      spec: openApiSpecFactory({
+        paths: {
+          "/balance": {
+            get: {
+              operationId: "getBalance",
+              summary: "Get Balance",
+              description: "Get the balance of an address",
+              responses: { "200": { description: "Success" } },
+            },
+          },
+        },
+      }),
+      specUrl: "https://example.com/spec.json",
+    });
+
+    const result = visitApiReference({
+      item: {
+        api: "Ethereum API",
+        "api-name": "ethereum-api",
+      },
+      parentPath: PathBuilder.init("reference"),
+      tab: "reference",
+      stripPathPrefix: undefined,
+      contentCache: cache,
+      context,
+      navigationAncestors: [],
+      isAncestorHidden: true,
+    });
+
+    // Index entries should still be created (routing still works)
+    expect(Object.keys(result.indexEntries).length).toBeGreaterThan(0);
+    // But no Algolia records
+    const results = context.getResults();
+    expect(results.algoliaRecords).toHaveLength(0);
   });
 
   test("should flatten API structure if flattened is true", () => {

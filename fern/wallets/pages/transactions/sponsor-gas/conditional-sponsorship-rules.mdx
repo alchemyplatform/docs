@@ -1,0 +1,120 @@
+---
+title: Conditional sponsorship rules
+description: Control gas sponsorship with spend limits and custom rules
+slug: wallets/transactions/sponsor-gas/conditional-sponsorship-rules
+---
+
+Conditional sponsorship gives you precise control over what transactions get sponsored.
+
+Use it to:
+
+* Protect your budget with hard spending limit
+* Prioritize high-value users and actions
+* Prevent abuse with allowlists, blocklists, and custom logic
+
+## Ways to configure sponsorship rules
+
+You can configure the same policy logic in two ways:
+
+1. **Dashboard**: Create or edit a Gas Manager policy in the [Alchemy dashboard](https://dashboard.alchemy.com/gas-manager/policy/create)
+2. **Admin API**: Create or update policies programmatically with the [Gas Manager Admin API](/wallets/api-reference/gas-manager-admin-api/gas-manager-admin-api-endpoints/gas-manager-admin-api-endpoints)
+
+Most teams start in the dashboard, then move to API-based management for automation.
+
+## Built-in policy limits
+
+Use built-in limits when you want fast setup without maintaining backend logic.
+
+You can combine these controls in one policy:
+
+* **Time-bounded policies**: Only sponsor during a specific start/end window
+* **Per-user spend limits**: Cap sponsorship spend per wallet/user
+* **Per-transaction spend limits**: Cap sponsorship per transaction
+* **Global max spend**: Set a hard maximum spend for the full policy
+* **Max transactions per user**: Limit number of sponsored transactions per user
+* **Sender allowlist / blocklist**: Explicitly allow or deny sponsorship for selected senders
+
+These limits are ideal for growth campaigns, onboarding credits, and controlled rollouts.
+
+## Custom rules with webhooks
+
+For advanced use cases, add a webhook so your server can approve or reject sponsorship requests in real time.
+
+Examples:
+
+* Sponsor only swaps
+* Sponsor only transactions that touch your contracts
+* Sponsor only high-ROI users (for example, power users)
+* Sponsor users with proof-of-humanity checks
+
+### How webhook-based sponsorship works
+
+When a sponsorship request is made, Gas Manager sends a `POST` request to your webhook.
+
+Your server evaluates the request and returns whether to approve sponsorship.
+
+#### Request payload
+
+```json
+{
+  "userOperation": {},
+  "policyId": "",
+  "chainId": "",
+  "webhookData": ""
+}
+```
+
+Payload fields:
+
+* `userOperation`: UserOperation payload (shape depends on EntryPoint version)
+* `policyId`: Policy ID receiving the sponsorship request
+* `chainId`: Chain ID for the request
+* `webhookData` (optional): Additional app data, such as user attestations
+
+#### Expected webhook response
+
+Return HTTP `200` and:
+
+```json
+{
+  "approved": true
+}
+```
+
+Set `approved` to:
+
+* `true` to sponsor gas
+* `false` to reject sponsorship
+
+### Configure webhook rules on your policy
+
+In your policy's **Custom Rules** section, set:
+
+* `webhookUrl` (required): Endpoint Gas Manager calls for eligibility
+* `approveOnFailure` (required, default `false`): If `true`, sponsorship is approved when webhook errors or times out
+
+In the Admin API, this configuration is represented as:
+
+```json
+{
+  "webhookRules": {
+    "webhookUrl": "https://your-server.com/sponsor-gas",
+    "approveOnFailure": false
+  }
+}
+```
+
+## Recommended setup pattern
+
+For most teams, the best approach is:
+
+1. Start with built-in limits for immediate spend protection
+2. Add webhook rules for business-specific checks
+3. Decide your failure mode (`approveOnFailure`) based on risk tolerance:
+   * Prefer uptime: set to `true`
+   * Prefer strict control: set to `false`
+
+## Next steps
+
+* [Full sponsorship implementation](/wallets/transactions/sponsor-gas)
+* [Gas Manager Admin API endpoints](/wallets/api-reference/gas-manager-admin-api/gas-manager-admin-api-endpoints/gas-manager-admin-api-endpoints)

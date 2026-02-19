@@ -70,8 +70,8 @@ export const visitSection = (
       tab,
     };
 
-    // Build Algolia record for section overview page (if content available)
-    if (cached) {
+    // Build Algolia record for section overview page (if content available and not hidden)
+    if (cached && !sectionItem.hidden && !config.isAncestorHidden) {
       const title = (cached.frontmatter.title as string) || sectionItem.section;
       const descriptionRaw =
         cached.frontmatter.description || cached.frontmatter.subtitle;
@@ -117,6 +117,10 @@ export const visitSection = (
     ? navigationAncestors // Don't include hidden sections in breadcrumbs
     : [...navigationAncestors, sectionBreadcrumb];
 
+  // Propagate hidden status: children of a hidden section should also be hidden
+  const childIsAncestorHidden =
+    sectionItem.hidden || config.isAncestorHidden || false;
+
   // Process all children with correct breadcrumbs
   const childResults = sectionItem.contents.map((childItem) =>
     visitNavigationItem({
@@ -124,6 +128,7 @@ export const visitSection = (
       item: childItem,
       parentPath: childPathBuilder,
       navigationAncestors: childAncestors,
+      isAncestorHidden: childIsAncestorHidden,
     }),
   );
 
@@ -138,13 +143,19 @@ export const visitSection = (
     .flat()
     .filter((child): child is NavItem => child !== undefined);
 
-  // Only include section in nav if it has children and is not hidden
-  if (children.length === 0 || sectionItem.hidden) {
+  // Skip section from nav if it has no children
+  if (children.length === 0) {
     return { indexEntries, navItem: undefined };
   }
 
-  // Update section nav item with children
+  // Update section nav item with children.
+  // Mark hidden if explicitly hidden OR if every child is hidden
+  // (prevents empty section headers when consumers filter hidden items).
   sectionNavItem.children = children;
+  const allChildrenHidden = children.every((child) => child.hidden === true);
+  if (sectionItem.hidden || allChildrenHidden) {
+    sectionNavItem.hidden = true;
+  }
 
   return { indexEntries, navItem: sectionNavItem };
 };
