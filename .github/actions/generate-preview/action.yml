@@ -1,0 +1,70 @@
+name: "Generate Preview"
+description: "Run the content indexer in preview mode and post a PR comment with the preview URL"
+
+inputs:
+  github-token:
+    description: "GitHub token for authentication"
+    required: true
+  branch:
+    description: "Branch name for preview scoping"
+    required: true
+  kv-rest-api-url:
+    description: "Upstash Redis REST API URL"
+    required: true
+  kv-rest-api-token:
+    description: "Upstash Redis REST API token"
+    required: true
+  docs-site-url:
+    description: "Docs site base URL for preview link generation"
+    required: true
+  docs-site-api-key:
+    description: "Docs site API key for HMAC-signed preview URLs"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup pnpm
+      uses: ./.github/actions/setup-pnpm
+
+    - name: Post building comment
+      uses: actions/github-script@v7
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      with:
+        script: |
+          const workspace = process.env.GITHUB_WORKSPACE;
+          const { updatePreviewComment } = await import(`${workspace}/scripts/preview-comment.js`);
+
+          await updatePreviewComment({
+            github,
+            context,
+            status: 'building',
+          });
+
+    - name: Run preview indexer
+      id: preview
+      shell: bash
+      run: npx tsx src/content-indexer/preview.ts --branch=${{ inputs.branch }}
+      env:
+        KV_REST_API_URL: ${{ inputs.kv-rest-api-url }}
+        KV_REST_API_TOKEN: ${{ inputs.kv-rest-api-token }}
+        DOCS_SITE_URL: ${{ inputs.docs-site-url }}
+        DOCS_SITE_API_KEY: ${{ inputs.docs-site-api-key }}
+
+    - name: Post result comment
+      uses: actions/github-script@v7
+      if: always()
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      with:
+        script: |
+          const workspace = process.env.GITHUB_WORKSPACE;
+          const { updatePreviewComment } = await import(`${workspace}/scripts/preview-comment.js`);
+
+          await updatePreviewComment({
+            github,
+            context,
+            status: '${{ steps.preview.outcome }}',
+            previewUrl: '${{ steps.preview.outputs.preview-url }}',
+          });

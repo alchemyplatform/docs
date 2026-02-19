@@ -1,6 +1,6 @@
 // Typescript not supported in actions/github-script@v7
 // https://github.com/actions/github-script/issues/294
-const commentTitle = "🌿 Documentation Preview";
+const commentTitle = "🔗 Preview Mode";
 
 /**
  * Generates the body of a PR comment for a documentation preview

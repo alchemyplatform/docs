@@ -62,12 +62,6 @@ const main = async () => {
     }
 
     // Mode: initial setup + watchers
-    console.info("\n🚀 Preview Mode");
-    console.info("================");
-    console.info(`   Branch: ${branch}`);
-
-    await runIndexAndUpload(branch);
-
     const previewUrl = process.env.DOCS_SITE_URL;
     const previewSecret = process.env.DOCS_SITE_API_KEY;
 
@@ -76,6 +70,12 @@ const main = async () => {
         "DOCS_SITE_URL and DOCS_SITE_API_KEY must be set in environment",
       );
     }
+
+    console.info("\n🚀 Preview Mode");
+    console.info("================");
+    console.info(`   Branch: ${branch}`);
+
+    await runIndexAndUpload(branch);
 
     const url = buildPreviewUrl(branch, previewUrl, previewSecret);
     console.info(`\n🔗 Preview URL:\n   ${url}`);
