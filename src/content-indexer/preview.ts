@@ -1,9 +1,8 @@
 #!/usr/bin/env tsx
-import { exec, execSync } from "child_process";
+import { execSync, spawn } from "child_process";
 import { config as dotenvConfig } from "dotenv";
 import fs from "fs";
 import path from "path";
-import { promisify } from "util";
 
 import { uploadMdxFile } from "@/content-indexer/uploaders/preview-mdx.ts";
 import { runIndexAndUpload } from "@/content-indexer/utils/preview-index.ts";
@@ -11,7 +10,16 @@ import { buildPreviewUrl } from "@/content-indexer/utils/preview-url.ts";
 import { startWatchers } from "@/content-indexer/utils/preview-watchers.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
 
-const execAsync = promisify(exec);
+/** Runs a command with inherited stdio, returning a promise that resolves on exit. */
+const spawnAsync = (command: string): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const child = spawn(command, { shell: true, stdio: "inherit" });
+    child.on("close", (code) =>
+      code === 0
+        ? resolve()
+        : reject(new Error(`"${command}" exited with code ${code}`)),
+    );
+  });
 
 dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
@@ -111,8 +119,8 @@ const main = async () => {
     // Run full spec generation on initial startup (both types in parallel)
     console.info("\n🔧 Generating specs...");
     await Promise.all([
-      execAsync("pnpm generate:rest"),
-      execAsync("pnpm generate:rpc"),
+      spawnAsync("pnpm generate:rest"),
+      spawnAsync("pnpm generate:rpc"),
     ]);
 
     await runIndexAndUpload(branch);
