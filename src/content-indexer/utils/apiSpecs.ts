@@ -23,7 +23,7 @@ const API_NAME_TO_FILENAME: Record<string, string> = {
   "polygon-zkevm": "polygonzkevm",
 };
 
-const DEV_DOCS_BASE = "https://dev-docs.alchemy.com/";
+const DEV_DOCS_BASE = "https://dev-docs.alchemy.com";
 
 let cachedMetadata: MetadataJson | null = null;
 
@@ -100,44 +100,33 @@ export const getSpecInfo = async (
 };
 
 /**
- * Reads metadata.json from local filesystem and finds spec info for a given API name.
+ * Recursively finds a file named `{filename}.json` under specsDir.
+ * Returns the path relative to specsDir, or undefined if not found.
  */
-const getLocalSpecInfo = async (
-  apiName: string,
+const findSpecFile = async (
   specsDir: string,
-): Promise<{ specUrl: string; specType: SpecType } | undefined> => {
-  const metadataPath = path.join(specsDir, "metadata.json");
-
-  let metadata: MetadataJson;
-  try {
-    const raw = await fs.readFile(metadataPath, "utf-8");
-    metadata = JSON.parse(raw) as MetadataJson;
-  } catch (error) {
-    console.warn(
-      `Failed to read local metadata.json at ${metadataPath}:`,
-      error,
-    );
+  filename: string,
+): Promise<string | undefined> => {
+  const search = async (dir: string): Promise<string | undefined> => {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        const found = await search(fullPath);
+        if (found) return found;
+      } else if (entry.name === `${filename}.json`) {
+        return path.relative(specsDir, fullPath);
+      }
+    }
     return undefined;
-  }
-
-  const filename = API_NAME_TO_FILENAME[apiName] ?? apiName;
-  const specUrl = metadata.files.find((file) =>
-    file.endsWith(`/${filename}.json`),
-  );
-
-  if (!specUrl) {
-    console.warn(
-      `Could not find spec for api-name: ${apiName} (filename: ${filename}) in local metadata`,
-    );
-    return undefined;
-  }
-
-  return { specUrl, specType: getSpecTypeFromUrl(specUrl) };
+  };
+  return search(specsDir);
 };
 
 /**
  * Reads a spec from the local filesystem instead of fetching from remote.
- * Uses the same specUrl (dev-docs.alchemy.com URL) for Redis key consistency.
+ * Walks specsDir to find the file, constructs the canonical specUrl for Redis key consistency.
+ * Does NOT require metadata.json — eliminates the generate:metadata dependency.
  */
 export const fetchLocalApiSpec = async (
   apiName: string,
@@ -147,16 +136,18 @@ export const fetchLocalApiSpec = async (
   | { specType: "openapi"; spec: OpenApiSpec; specUrl: string }
   | undefined
 > => {
-  const specInfo = await getLocalSpecInfo(apiName, specsDir);
+  const filename = API_NAME_TO_FILENAME[apiName] ?? apiName;
+  const relativePath = await findSpecFile(specsDir, filename);
 
-  if (!specInfo) {
+  if (!relativePath) {
+    console.warn(
+      `Could not find spec for api-name: ${apiName} (filename: ${filename}) in ${specsDir}`,
+    );
     return undefined;
   }
 
-  const { specUrl, specType } = specInfo;
-
-  // Map remote URL to local file path: strip base URL and join with specsDir
-  const relativePath = specUrl.replace(DEV_DOCS_BASE, "");
+  const specUrl = `${DEV_DOCS_BASE}/${relativePath}`;
+  const specType = getSpecTypeFromUrl(specUrl);
   const localPath = path.join(specsDir, relativePath);
 
   try {

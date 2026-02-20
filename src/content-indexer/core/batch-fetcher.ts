@@ -35,12 +35,9 @@ export const batchFetchContent = async (
   const cache = new ContentCache();
 
   // Fail fast if specsDir is set but doesn't exist (forgot to run generate?)
-  if (
-    source.specsDir &&
-    !fs.existsSync(path.join(source.specsDir, "metadata.json"))
-  ) {
+  if (source.specsDir && !fs.existsSync(source.specsDir)) {
     throw new Error(
-      `specsDir is set but ${source.specsDir}/metadata.json does not exist. Run "pnpm generate && pnpm generate:metadata" first.`,
+      `specsDir is set but ${source.specsDir} does not exist. Run "pnpm generate" first.`,
     );
   }
 

@@ -46,8 +46,8 @@ const parseArgs = () => {
 
 /**
  * Runs targeted spec generation based on which file changed.
- * - src/openapi/** → generate:rest + generate:metadata
- * - src/openrpc/** → generate:rpc + generate:metadata
+ * - src/openapi/** → generate:rest
+ * - src/openrpc/** → generate:rpc
  * - docs.yml or no file → skip generation (just reindex)
  */
 const runTargetedGeneration = (changedFile?: string): void => {
@@ -61,11 +61,9 @@ const runTargetedGeneration = (changedFile?: string): void => {
   if (changedFile.startsWith("src/openapi/")) {
     console.info("  🔧 Generating REST specs...");
     execSync("pnpm generate:rest", execOpts);
-    execSync("pnpm generate:metadata", execOpts);
   } else if (changedFile.startsWith("src/openrpc/")) {
     console.info("  🔧 Generating RPC specs...");
     execSync("pnpm generate:rpc", execOpts);
-    execSync("pnpm generate:metadata", execOpts);
   }
 };
 
@@ -116,7 +114,6 @@ const main = async () => {
       execAsync("pnpm generate:rest"),
       execAsync("pnpm generate:rpc"),
     ]);
-    execSync("pnpm generate:metadata", { stdio: "inherit" });
 
     await runIndexAndUpload(branch);
 
