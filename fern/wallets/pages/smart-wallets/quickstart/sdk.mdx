@@ -45,6 +45,9 @@ const client = createSmartWalletClient({
   }),
   chain: arbitrumSepolia,
   signer,
+  paymaster: {
+    policyId: GAS_MANAGER_POLICY_ID,
+  },
 });
 ```
 
@@ -55,16 +58,9 @@ The client defaults to [EIP-7702](/wallets/transactions/using-eip-7702). This fi
 ```ts
 import { zeroAddress } from "viem";
 
-const preparedCalls = await client.prepareCalls({
+const { id } = await client.sendCalls({
   calls: [{ to: zeroAddress, value: BigInt(0) }],
-  capabilities: {
-    paymaster: {
-      policyId: GAS_MANAGER_POLICY_ID,
-    },
-  },
 });
 
-const signedCalls = await client.signPreparedCalls(preparedCalls);
-const result = await client.sendPreparedCalls(signedCalls);
-const status = await client.getCallsStatus(result.id);
+const status = await client.getCallsStatus(id);
 ```
