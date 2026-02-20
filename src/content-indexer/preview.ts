@@ -1,14 +1,17 @@
 #!/usr/bin/env tsx
-import { execSync } from "child_process";
+import { exec, execSync } from "child_process";
 import { config as dotenvConfig } from "dotenv";
 import fs from "fs";
 import path from "path";
+import { promisify } from "util";
 
 import { uploadMdxFile } from "@/content-indexer/uploaders/preview-mdx.ts";
 import { runIndexAndUpload } from "@/content-indexer/utils/preview-index.ts";
 import { buildPreviewUrl } from "@/content-indexer/utils/preview-url.ts";
 import { startWatchers } from "@/content-indexer/utils/preview-watchers.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
+
+const execAsync = promisify(exec);
 
 dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
@@ -107,9 +110,12 @@ const main = async () => {
     console.info("================");
     console.info(`   Branch: ${branch}`);
 
-    // Run full spec generation on initial startup
+    // Run full spec generation on initial startup (both types in parallel)
     console.info("\n🔧 Generating specs...");
-    execSync("pnpm generate", { stdio: "inherit" });
+    await Promise.all([
+      execAsync("pnpm generate:rest"),
+      execAsync("pnpm generate:rpc"),
+    ]);
     execSync("pnpm generate:metadata", { stdio: "inherit" });
 
     await runIndexAndUpload(branch);

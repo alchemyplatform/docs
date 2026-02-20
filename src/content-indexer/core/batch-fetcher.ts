@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 
 import {
@@ -32,6 +33,16 @@ export const batchFetchContent = async (
   source: ContentSource,
 ): Promise<ContentCache> => {
   const cache = new ContentCache();
+
+  // Fail fast if specsDir is set but doesn't exist (forgot to run generate?)
+  if (
+    source.specsDir &&
+    !fs.existsSync(path.join(source.specsDir, "metadata.json"))
+  ) {
+    throw new Error(
+      `specsDir is set but ${source.specsDir}/metadata.json does not exist. Run "pnpm generate && pnpm generate:metadata" first.`,
+    );
+  }
 
   console.info(
     `   Reading ${scanResult.mdxPaths.size} MDX files and ${scanResult.specNames.size} specs...`,
