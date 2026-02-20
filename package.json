@@ -21,7 +21,7 @@
     "generate:rest:watch": "onchange \"src/openapi/**/*.{yaml,yml}\" -- pnpm run generate:rest",
     "generate:watch": "pnpm run generate:rpc:watch & pnpm run generate:rest:watch",
     "generate:metadata": "tsx ./scripts/generate-metadata.ts",
-    "generate": "pnpm run generate:rest & pnpm run generate:rpc & wait",
+    "generate": "pnpm run generate:rest & p1=$!; pnpm run generate:rpc & p2=$!; wait $p1 $p2",
     "upload-specs": "tsx scripts/upload-specs.ts",
     "clean": "rm -rf fern/api-specs",
     "validate:rest": "./scripts/generate-open-api.sh --validate-only",
