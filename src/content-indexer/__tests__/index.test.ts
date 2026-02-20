@@ -87,10 +87,14 @@ describe("buildDocsContentIndex", () => {
 
     // Verify all phases were called
     expect(scanDocsYml).toHaveBeenCalled();
-    expect(batchFetchContent).toHaveBeenCalledWith(mockScanResult, {
-      type: "filesystem",
-      basePath: "/test/fern",
-    });
+    expect(batchFetchContent).toHaveBeenCalledWith(
+      mockScanResult,
+      {
+        type: "filesystem",
+        basePath: "/test/fern",
+      },
+      { quiet: true },
+    );
     expect(buildAllOutputs).toHaveBeenCalledWith(
       expect.any(Object),
       mockCache,

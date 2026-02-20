@@ -25,7 +25,11 @@ export interface DocsIndexerConfig {
 export const buildDocsContentIndex = async (
   config: DocsIndexerConfig,
 ): Promise<IndexerResult> => {
-  console.info(`🔍 Building content index (branch: ${config.branchId})...`);
+  const quiet = config.mode === "preview";
+
+  if (!quiet) {
+    console.info(`🔍 Building content index (branch: ${config.branchId})...`);
+  }
 
   // Read docs.yml from local filesystem
   const docsYml = await readLocalDocsYml(config.source.basePath);
@@ -34,18 +38,22 @@ export const buildDocsContentIndex = async (
   }
 
   // PHASE 1: SCAN
-  console.info("📋 Phase 1: Scanning docs.yml...");
+  if (!quiet) console.info("📋 Phase 1: Scanning docs.yml...");
   const scanResult = scanDocsYml(docsYml);
-  console.info(
-    `   Found ${scanResult.mdxPaths.size} MDX files, ${scanResult.specNames.size} specs`,
-  );
+  if (!quiet) {
+    console.info(
+      `   Found ${scanResult.mdxPaths.size} MDX files, ${scanResult.specNames.size} specs`,
+    );
+  }
 
   // PHASE 2: BATCH FETCH
-  console.info("📥 Phase 2: Fetching content...");
-  const contentCache = await batchFetchContent(scanResult, config.source);
+  if (!quiet) console.info("📥 Phase 2: Fetching content...");
+  const contentCache = await batchFetchContent(scanResult, config.source, {
+    quiet,
+  });
 
   // PHASE 3: PROCESS
-  console.info("⚙️  Phase 3: Processing...");
+  if (!quiet) console.info("⚙️  Phase 3: Processing...");
   const outputs = buildAllOutputs(
     docsYml,
     contentCache,
@@ -53,9 +61,18 @@ export const buildDocsContentIndex = async (
     config.stripPathPrefix,
   );
 
-  console.info(
-    `📊 Generated ${Object.keys(outputs.pathIndex).length} routes, ${outputs.algoliaRecords.length} Algolia records`,
-  );
+  if (!quiet) {
+    console.info(
+      `📊 Generated ${Object.keys(outputs.pathIndex).length} routes, ${outputs.algoliaRecords.length} Algolia records`,
+    );
+  }
+
+  // In preview mode, emit a single condensed summary
+  if (quiet) {
+    console.info(
+      `   ${scanResult.mdxPaths.size} MDX, ${scanResult.specNames.size} specs → ${Object.keys(outputs.pathIndex).length} routes`,
+    );
+  }
 
   return {
     ...outputs,

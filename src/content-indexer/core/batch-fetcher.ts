@@ -31,7 +31,9 @@ export type ContentSource = {
 export const batchFetchContent = async (
   scanResult: ScanResult,
   source: ContentSource,
+  options?: { quiet?: boolean },
 ): Promise<ContentCache> => {
+  const { quiet = false } = options ?? {};
   const cache = new ContentCache();
 
   // Fail fast if specsDir is set but doesn't exist (forgot to run generate?)
@@ -41,9 +43,11 @@ export const batchFetchContent = async (
     );
   }
 
-  console.info(
-    `   Reading ${scanResult.mdxPaths.size} MDX files and ${scanResult.specNames.size} specs...`,
-  );
+  if (!quiet) {
+    console.info(
+      `   Reading ${scanResult.mdxPaths.size} MDX files and ${scanResult.specNames.size} specs...`,
+    );
+  }
 
   // Read all MDX files in parallel
   const mdxPromises = Array.from(scanResult.mdxPaths).map(async (mdxPath) => {
@@ -88,9 +92,11 @@ export const batchFetchContent = async (
   await Promise.all([...mdxPromises, specPromises]);
 
   const stats = cache.getStats();
-  console.info(
-    `   ✓ Read ${stats.mdxCount}/${scanResult.mdxPaths.size} MDX files and ${stats.specCount}/${scanResult.specNames.size} specs`,
-  );
+  if (!quiet) {
+    console.info(
+      `   ✓ Read ${stats.mdxCount}/${scanResult.mdxPaths.size} MDX files and ${stats.specCount}/${scanResult.specNames.size} specs`,
+    );
+  }
 
   return cache;
 };

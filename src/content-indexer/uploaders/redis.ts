@@ -39,8 +39,10 @@ export const storeToRedis = async (
   options: {
     branchId: string;
     indexerType: IndexerType;
+    quiet?: boolean;
   },
 ): Promise<void> => {
+  const { quiet = false } = options;
   const redis = getRedis();
 
   // Determine TTL: no expiration for main branch, 30 days for preview branches
@@ -55,9 +57,11 @@ export const storeToRedis = async (
   const pathIndexPromise = redis
     .set(pathIndexKey, stringify(pathIndex), setOptions)
     .then(() => {
-      console.info(
-        `✅ Path index saved to Redis (${Object.keys(pathIndex).length} routes) -> ${pathIndexKey}${ttlInfo}`,
-      );
+      if (!quiet) {
+        console.info(
+          `✅ Path index saved to Redis (${Object.keys(pathIndex).length} routes) -> ${pathIndexKey}${ttlInfo}`,
+        );
+      }
     });
 
   // Handle navigation trees
@@ -76,9 +80,11 @@ export const storeToRedis = async (
 
     navTreePromises = [
       redis.set(navTreeKey, stringify(mergedTree), setOptions).then(() => {
-        console.info(
-          `✅ Updated wallets nav tree with SDK refs (${countItems(mergedTree)} total items) -> ${navTreeKey}${ttlInfo}`,
-        );
+        if (!quiet) {
+          console.info(
+            `✅ Updated wallets nav tree with SDK refs (${countItems(mergedTree)} total items) -> ${navTreeKey}${ttlInfo}`,
+          );
+        }
       }),
     ];
   } else if (navigationTrees) {
@@ -96,9 +102,11 @@ export const storeToRedis = async (
 
         const itemCount = countItems(finalTree);
         await redis.set(redisKey, stringify(finalTree), setOptions);
-        console.info(
-          `✅ Navigation tree for '${tab}' saved to Redis (${itemCount} items) -> ${redisKey}${ttlInfo}`,
-        );
+        if (!quiet) {
+          console.info(
+            `✅ Navigation tree for '${tab}' saved to Redis (${itemCount} items) -> ${redisKey}${ttlInfo}`,
+          );
+        }
       },
     );
   }

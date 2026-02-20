@@ -10,15 +10,21 @@ import { buildPreviewUrl } from "@/content-indexer/utils/preview-url.ts";
 import { startWatchers } from "@/content-indexer/utils/preview-watchers.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
 
-/** Runs a command with inherited stdio, returning a promise that resolves on exit. */
-const spawnAsync = (command: string): Promise<void> =>
+/** Runs a command quietly, only showing output on failure. */
+const spawnQuiet = (command: string): Promise<void> =>
   new Promise((resolve, reject) => {
-    const child = spawn(command, { shell: true, stdio: "inherit" });
-    child.on("close", (code) =>
-      code === 0
-        ? resolve()
-        : reject(new Error(`"${command}" exited with code ${code}`)),
-    );
+    const child = spawn(command, { shell: true, stdio: "pipe" });
+    const chunks: Buffer[] = [];
+    child.stdout?.on("data", (data: Buffer) => chunks.push(data));
+    child.stderr?.on("data", (data: Buffer) => chunks.push(data));
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        process.stderr.write(Buffer.concat(chunks));
+        reject(new Error(`"${command}" exited with code ${code}`));
+      }
+    });
   });
 
 dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
@@ -64,14 +70,12 @@ const runTargetedGeneration = (changedFile?: string): void => {
     return;
   }
 
-  const execOpts = { stdio: "inherit" as const };
-
   if (changedFile.startsWith("src/openapi/")) {
     console.info("  🔧 Generating REST specs...");
-    execSync("pnpm generate:rest", execOpts);
+    execSync("pnpm generate:rest", { stdio: "pipe" });
   } else if (changedFile.startsWith("src/openrpc/")) {
     console.info("  🔧 Generating RPC specs...");
-    execSync("pnpm generate:rpc", execOpts);
+    execSync("pnpm generate:rpc", { stdio: "pipe" });
   }
 };
 
@@ -119,8 +123,8 @@ const main = async () => {
     // Run full spec generation on initial startup (both types in parallel)
     console.info("\n🔧 Generating specs...");
     await Promise.all([
-      spawnAsync("pnpm generate:rest"),
-      spawnAsync("pnpm generate:rpc"),
+      spawnQuiet("pnpm generate:rest"),
+      spawnQuiet("pnpm generate:rpc"),
     ]);
 
     await runIndexAndUpload(branch);

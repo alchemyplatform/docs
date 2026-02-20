@@ -12,7 +12,7 @@ import { getRedis } from "@/content-indexer/utils/redis.ts";
  * then uploads MDX files that differ from main, and all specs.
  */
 export const runIndexAndUpload = async (branch: string): Promise<void> => {
-  console.info("\n🔍 Running content indexer (preview mode)...\n");
+  console.info("\n🔍 Indexing...");
 
   const { pathIndex, navigationTrees, specs } = await buildDocsContentIndex({
     source: {
@@ -28,6 +28,7 @@ export const runIndexAndUpload = async (branch: string): Promise<void> => {
   await storeToRedis(pathIndex, navigationTrees, {
     branchId: branch,
     indexerType: "docs",
+    quiet: true,
   });
 
   const redis = getRedis();
