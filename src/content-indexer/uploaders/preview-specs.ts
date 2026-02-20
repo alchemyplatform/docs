@@ -28,12 +28,11 @@ export const uploadSpecs = async (
 
   await Promise.all(
     Array.from(specs.entries()).map(
-      async ([apiName, { specType, spec, specUrl }]) => {
+      async ([_apiName, { specType, spec, specUrl }]) => {
         const redisKey = `${branch}:${specType}-spec:${specUrl}`;
         await redis.set(redisKey, JSON.stringify(spec), {
           ex: PREVIEW_TTL_SECONDS,
         });
-        console.info(`  📋 ${apiName} -> ${redisKey}`);
       },
     ),
   );

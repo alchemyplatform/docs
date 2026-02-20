@@ -100,24 +100,18 @@ const main = async () => {
   const pipeline = redis.pipeline();
 
   // 5. Upload changed specs to Redis
-  if (changedUrls.length > 0) {
-    console.info(`${changedUrls.length} spec(s) changed:`);
-    changedUrls.forEach((specUrl) => {
-      const redisKey = `main:${getSpecTypeFromUrl(specUrl)}-spec:${specUrl}`;
-      pipeline.set(redisKey, specContents[specUrl]);
-      console.info(`  + ${specUrl}`);
-    });
-  }
+  changedUrls.forEach((specUrl) => {
+    const redisKey = `main:${getSpecTypeFromUrl(specUrl)}-spec:${specUrl}`;
+    pipeline.set(redisKey, specContents[specUrl]);
+  });
 
   // 6. Delete removed specs from Redis
-  if (deletedUrls.length > 0) {
-    console.info(`${deletedUrls.length} spec(s) deleted:`);
-    deletedUrls.forEach((specUrl) => {
-      const redisKey = `main:${getSpecTypeFromUrl(specUrl)}-spec:${specUrl}`;
-      pipeline.del(redisKey);
-      console.info(`  - ${specUrl}`);
-    });
-  }
+  deletedUrls.forEach((specUrl) => {
+    const redisKey = `main:${getSpecTypeFromUrl(specUrl)}-spec:${specUrl}`;
+    pipeline.del(redisKey);
+  });
+
+  console.info(`${changedUrls.length} changed, ${deletedUrls.length} deleted`);
 
   // 7. Update hash map
   pipeline.set(HASH_KEY, JSON.stringify(newHashes));

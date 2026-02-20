@@ -13,6 +13,7 @@ export const startWatchers = (branch: string): void => {
     "npx",
     [
       "onchange",
+      "--kill",
       "fern/**/*.{mdx,md}",
       "--",
       "tsx",
@@ -27,6 +28,7 @@ export const startWatchers = (branch: string): void => {
     "npx",
     [
       "onchange",
+      "--kill",
       "fern/docs.yml",
       "src/openapi/**",
       "src/openrpc/**",
