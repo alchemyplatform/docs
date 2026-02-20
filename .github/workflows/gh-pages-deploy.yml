@@ -1,16 +1,15 @@
 name: Build and Deploy Specs to GH Pages
 
 on:
-  workflow_run:
-    workflows:
-      - Sync Specs
+  push:
     branches:
       - main
-    types:
-      - completed
+    paths:
+      - "src/openapi/**"
+      - "src/openrpc/**"
   repository_dispatch:
-    types:
-      - remote-spec-updated
+    types: [remote-spec-updated]
+  workflow_dispatch: {}
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -18,7 +17,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'repository_dispatch' }}
     permissions:
       contents: read
     steps:
