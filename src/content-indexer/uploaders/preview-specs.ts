@@ -26,14 +26,13 @@ export const uploadSpecs = async (
     `\n📤 Uploading ${specs.size} spec${specs.size === 1 ? "" : "s"} to Redis...`,
   );
 
-  const isMainBranch = branch === "main";
-  const setOptions = isMainBranch ? {} : { ex: PREVIEW_TTL_SECONDS };
-
   await Promise.all(
     Array.from(specs.entries()).map(
       async ([apiName, { specType, spec, specUrl }]) => {
         const redisKey = `${branch}:${specType}-spec:${specUrl}`;
-        await redis.set(redisKey, JSON.stringify(spec), setOptions);
+        await redis.set(redisKey, JSON.stringify(spec), {
+          ex: PREVIEW_TTL_SECONDS,
+        });
         console.info(`  📋 ${apiName} -> ${redisKey}`);
       },
     ),
