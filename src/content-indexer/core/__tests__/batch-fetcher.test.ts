@@ -2,7 +2,10 @@ import fs from "fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { OpenApiSpec } from "@/content-indexer/types/specs.ts";
-import { readApiSpec } from "@/content-indexer/utils/apiSpecs.ts";
+import {
+  buildSpecFileMap,
+  readApiSpec,
+} from "@/content-indexer/utils/apiSpecs.ts";
 import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.ts";
 import { openApiSpecFactory } from "@/content-indexer/utils/test-factories.js";
 
@@ -14,6 +17,7 @@ vi.mock("@/content-indexer/utils/filesystem", () => ({
 }));
 
 vi.mock("@/content-indexer/utils/apiSpecs", () => ({
+  buildSpecFileMap: vi.fn().mockResolvedValue(new Map()),
   readApiSpec: vi.fn(),
 }));
 
@@ -88,10 +92,19 @@ describe("batchFetchContent", () => {
       specsDir: "/test/specs",
     });
 
-    // Verify reads were made
+    // Verify reads were made with the spec file map
+    expect(buildSpecFileMap).toHaveBeenCalledWith("/test/specs");
     expect(readApiSpec).toHaveBeenCalledTimes(2);
-    expect(readApiSpec).toHaveBeenCalledWith("ethereum-api", "/test/specs");
-    expect(readApiSpec).toHaveBeenCalledWith("solana-api", "/test/specs");
+    expect(readApiSpec).toHaveBeenCalledWith(
+      "ethereum-api",
+      "/test/specs",
+      expect.any(Map),
+    );
+    expect(readApiSpec).toHaveBeenCalledWith(
+      "solana-api",
+      "/test/specs",
+      expect.any(Map),
+    );
 
     // Verify cache was populated
     const stats = cache.getStats();

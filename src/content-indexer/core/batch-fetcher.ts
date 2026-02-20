@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
 
-import { readApiSpec } from "@/content-indexer/utils/apiSpecs.ts";
+import {
+  buildSpecFileMap,
+  readApiSpec,
+} from "@/content-indexer/utils/apiSpecs.ts";
 import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.ts";
 
 import { ContentCache } from "./content-cache.ts";
@@ -61,23 +64,28 @@ export const batchFetchContent = async (
     }
   });
 
-  // Read all API specs in parallel
+  // Read all API specs in parallel (build file map once, then look up each spec)
   const { specsDir } = source;
   const specPromises = specsDir
-    ? Array.from(scanResult.specNames).map(async (apiName) => {
-        try {
-          const result = await readApiSpec(apiName, specsDir);
-          if (result) {
-            cache.setSpec(apiName, result);
-          }
-        } catch (error) {
-          console.warn(`   ⚠️  Failed to read spec: ${apiName}`, error);
-        }
-      })
-    : [];
+    ? (async () => {
+        const specFileMap = await buildSpecFileMap(specsDir);
+        return Promise.all(
+          Array.from(scanResult.specNames).map(async (apiName) => {
+            try {
+              const result = await readApiSpec(apiName, specsDir, specFileMap);
+              if (result) {
+                cache.setSpec(apiName, result);
+              }
+            } catch (error) {
+              console.warn(`   ⚠️  Failed to read spec: ${apiName}`, error);
+            }
+          }),
+        );
+      })()
+    : Promise.resolve();
 
   // Wait for all reads to complete
-  await Promise.all([...mdxPromises, ...specPromises]);
+  await Promise.all([...mdxPromises, specPromises]);
 
   const stats = cache.getStats();
   console.info(

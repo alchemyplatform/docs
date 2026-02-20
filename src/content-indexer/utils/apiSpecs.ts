@@ -17,6 +17,9 @@ const API_NAME_TO_FILENAME: Record<string, string> = {
 
 export const DEV_DOCS_BASE = "https://dev-docs.alchemy.com";
 
+/** Subdirectories within api-specs that contain actual spec files. */
+export const SPEC_SUBDIRS = ["alchemy", "chains"];
+
 /**
  * Determines the spec type from the URL path.
  * - /chains/ → openrpc
@@ -30,44 +33,75 @@ export const getSpecTypeFromUrl = (url: string): SpecType => {
   return "openrpc";
 };
 
-/**
- * Recursively finds a file named `{filename}.json` under specsDir.
- * Returns the path relative to specsDir, or undefined if not found.
- */
-const findSpecFile = async (
-  specsDir: string,
-  filename: string,
-): Promise<string | undefined> => {
-  const search = async (dir: string): Promise<string | undefined> => {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
+/** Recursively collect all .json files under a directory. */
+const findJsonFiles = async (dir: string): Promise<string[]> => {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+
+  const nested = await Promise.all(
+    entries.map(async (entry) => {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        const found = await search(fullPath);
-        if (found) return found;
-      } else if (entry.name === `${filename}.json`) {
-        return path.relative(specsDir, fullPath);
+        return findJsonFiles(fullPath);
       }
-    }
-    return undefined;
-  };
-  return search(specsDir);
+      if (entry.name.endsWith(".json")) {
+        return [fullPath];
+      }
+      return [];
+    }),
+  );
+
+  return nested.flat();
 };
 
 /**
- * Reads an API spec from the local filesystem.
- * Walks specsDir to find the file, constructs the canonical specUrl for Redis key consistency.
+ * Scans SPEC_SUBDIRS under specsDir and builds a map of spec basename → relative path.
+ * Throws if two spec files share the same basename (ambiguous lookup).
+ *
+ * Example: { eth: "chains/eth.json", nft: "alchemy/rest/nft.json" }
+ */
+export const buildSpecFileMap = async (
+  specsDir: string,
+): Promise<Map<string, string>> => {
+  const files = (
+    await Promise.all(
+      SPEC_SUBDIRS.map((dir) => findJsonFiles(path.join(specsDir, dir))),
+    )
+  ).flat();
+
+  const map = new Map<string, string>();
+
+  files.forEach((filePath) => {
+    const relativePath = path.relative(specsDir, filePath);
+    const basename = path.basename(filePath, ".json");
+
+    const existing = map.get(basename);
+    if (existing) {
+      throw new Error(
+        `Duplicate spec filename "${basename}.json": found at "${existing}" and "${relativePath}"`,
+      );
+    }
+
+    map.set(basename, relativePath);
+  });
+
+  return map;
+};
+
+/**
+ * Reads an API spec from the local filesystem using a pre-built file map.
+ * Constructs the canonical specUrl for Redis key consistency.
  */
 export const readApiSpec = async (
   apiName: string,
   specsDir: string,
+  specFileMap: Map<string, string>,
 ): Promise<
   | { specType: "openrpc"; spec: OpenRpcSpec; specUrl: string }
   | { specType: "openapi"; spec: OpenApiSpec; specUrl: string }
   | undefined
 > => {
   const filename = API_NAME_TO_FILENAME[apiName] ?? apiName;
-  const relativePath = await findSpecFile(specsDir, filename);
+  const relativePath = specFileMap.get(filename);
 
   if (!relativePath) {
     console.warn(

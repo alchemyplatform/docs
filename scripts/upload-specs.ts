@@ -2,7 +2,7 @@
 /**
  * Standalone spec upload CLI with change detection.
  *
- * Walks fern/api-specs/{alchemy,chains}/, computes SHA-256 hashes, compares
+ * Scans fern/api-specs/{alchemy,chains}/, computes SHA-256 hashes, compares
  * against Redis, uploads only changed specs, and writes changed URLs as JSON
  * to an output file (default: fern/api-specs/changed-specs.json).
  *
@@ -16,6 +16,7 @@ import path from "path";
 
 import {
   DEV_DOCS_BASE,
+  buildSpecFileMap,
   getSpecTypeFromUrl,
 } from "@/content-indexer/utils/apiSpecs.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
@@ -26,9 +27,6 @@ const SPECS_DIR = path.resolve(process.cwd(), "fern/api-specs");
 const DEFAULT_OUTPUT = path.join(SPECS_DIR, "changed-specs.json");
 const HASH_KEY = "main:spec-hashes";
 
-/** Subdirectories within api-specs that contain actual spec files. */
-const SPEC_DIRS = ["alchemy", "chains"];
-
 type SpecHashMap = Record<string, string>;
 
 const parseArgs = () => {
@@ -38,26 +36,6 @@ const parseArgs = () => {
     ? path.resolve(process.cwd(), outputFlag.split("=")[1])
     : DEFAULT_OUTPUT;
   return { output };
-};
-
-/** Recursively find all .json files under a directory. */
-const findJsonFiles = async (dir: string): Promise<string[]> => {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-
-  const nested = await Promise.all(
-    entries.map(async (entry) => {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        return findJsonFiles(fullPath);
-      }
-      if (entry.name.endsWith(".json")) {
-        return [fullPath];
-      }
-      return [];
-    }),
-  );
-
-  return nested.flat();
 };
 
 const main = async () => {
@@ -75,20 +53,17 @@ const main = async () => {
 
   const redis = getRedis();
 
-  // 1. Walk spec subdirectories, read contents, and compute hashes
-  const files = (
-    await Promise.all(
-      SPEC_DIRS.map((dir) => findJsonFiles(path.join(SPECS_DIR, dir))),
-    )
-  ).flat();
-
-  console.info(`Found ${files.length} spec files`);
+  // 1. Build spec file map and read contents with hashes
+  const specFileMap = await buildSpecFileMap(SPECS_DIR);
+  console.info(`Found ${specFileMap.size} spec files`);
 
   const specEntries = await Promise.all(
-    files.map(async (filePath) => {
-      const relativePath = path.relative(SPECS_DIR, filePath);
+    Array.from(specFileMap.values()).map(async (relativePath) => {
       const specUrl = `${DEV_DOCS_BASE}/${relativePath}`;
-      const content = await fs.readFile(filePath, "utf-8");
+      const content = await fs.readFile(
+        path.join(SPECS_DIR, relativePath),
+        "utf-8",
+      );
       const hash = crypto.createHash("sha256").update(content).digest("hex");
       return { specUrl, content, hash };
     }),
