@@ -9,7 +9,9 @@ import type {
   IndexerType,
 } from "@/content-indexer/types/indexer.ts";
 import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.ts";
+import { uploadSpecs } from "@/content-indexer/uploaders/preview-specs.ts";
 import { storeToRedis } from "@/content-indexer/uploaders/redis.ts";
+import { getRedis } from "@/content-indexer/utils/redis.ts";
 
 dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
@@ -66,6 +68,7 @@ const buildIndexResults = async (
         source: {
           type: "filesystem",
           basePath: path.join(process.cwd(), "fern"),
+          specsDir: path.join(process.cwd(), "fern", "api-specs"),
         },
         branchId,
         indexerType: "docs",
@@ -101,15 +104,21 @@ const runIndexer = async (
     `\n🔍 Running ${indexerType.toUpperCase()} indexer${indexerType === "docs" && mode ? ` (${mode} mode)` : ""} (branch: ${branchId})\n`,
   );
 
-  const { pathIndex, algoliaRecords, navigationTrees } =
+  const { pathIndex, algoliaRecords, navigationTrees, specs } =
     await buildIndexResults(indexerType, branchId, mode);
 
   const shouldUploadToAlgolia = mode !== "preview";
 
   // Build upload promises array
-  const uploadPromises = [
+  const uploadPromises: Promise<void>[] = [
     storeToRedis(pathIndex, navigationTrees, { branchId, indexerType }),
   ];
+
+  // Upload specs to Redis (docs indexer only)
+  if (specs && specs.size > 0) {
+    const redis = getRedis();
+    uploadPromises.push(uploadSpecs(specs, branchId, redis));
+  }
 
   if (shouldUploadToAlgolia) {
     uploadPromises.push(

@@ -1,4 +1,7 @@
 // Utilities for fetching and processing OpenRPC/OpenAPI specifications
+import fs from "fs/promises";
+import path from "path";
+
 import type {
   OpenApiSpec,
   OpenRpcSpec,
@@ -19,6 +22,8 @@ const API_NAME_TO_FILENAME: Record<string, string> = {
   arbitrum: "arb",
   "polygon-zkevm": "polygonzkevm",
 };
+
+const DEV_DOCS_BASE = "https://dev-docs.alchemy.com/";
 
 let cachedMetadata: MetadataJson | null = null;
 
@@ -92,6 +97,81 @@ export const getSpecInfo = async (
   const specType = getSpecTypeFromUrl(specUrl);
 
   return { specUrl, specType };
+};
+
+/**
+ * Reads metadata.json from local filesystem and finds spec info for a given API name.
+ */
+const getLocalSpecInfo = async (
+  apiName: string,
+  specsDir: string,
+): Promise<{ specUrl: string; specType: SpecType } | undefined> => {
+  const metadataPath = path.join(specsDir, "metadata.json");
+
+  let metadata: MetadataJson;
+  try {
+    const raw = await fs.readFile(metadataPath, "utf-8");
+    metadata = JSON.parse(raw) as MetadataJson;
+  } catch (error) {
+    console.warn(
+      `Failed to read local metadata.json at ${metadataPath}:`,
+      error,
+    );
+    return undefined;
+  }
+
+  const filename = API_NAME_TO_FILENAME[apiName] ?? apiName;
+  const specUrl = metadata.files.find((file) =>
+    file.endsWith(`/${filename}.json`),
+  );
+
+  if (!specUrl) {
+    console.warn(
+      `Could not find spec for api-name: ${apiName} (filename: ${filename}) in local metadata`,
+    );
+    return undefined;
+  }
+
+  return { specUrl, specType: getSpecTypeFromUrl(specUrl) };
+};
+
+/**
+ * Reads a spec from the local filesystem instead of fetching from remote.
+ * Uses the same specUrl (dev-docs.alchemy.com URL) for Redis key consistency.
+ */
+export const fetchLocalApiSpec = async (
+  apiName: string,
+  specsDir: string,
+): Promise<
+  | { specType: "openrpc"; spec: OpenRpcSpec; specUrl: string }
+  | { specType: "openapi"; spec: OpenApiSpec; specUrl: string }
+  | undefined
+> => {
+  const specInfo = await getLocalSpecInfo(apiName, specsDir);
+
+  if (!specInfo) {
+    return undefined;
+  }
+
+  const { specUrl, specType } = specInfo;
+
+  // Map remote URL to local file path: strip base URL and join with specsDir
+  const relativePath = specUrl.replace(DEV_DOCS_BASE, "");
+  const localPath = path.join(specsDir, relativePath);
+
+  try {
+    const raw = await fs.readFile(localPath, "utf-8");
+    const spec = JSON.parse(raw);
+
+    if (specType === "openrpc") {
+      return { specType: "openrpc", spec: spec as OpenRpcSpec, specUrl };
+    } else {
+      return { specType: "openapi", spec: spec as OpenApiSpec, specUrl };
+    }
+  } catch (error) {
+    console.warn(`Failed to read local spec at ${localPath}:`, error);
+    return undefined;
+  }
 };
 
 /**

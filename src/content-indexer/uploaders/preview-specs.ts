@@ -1,0 +1,43 @@
+import type { Redis } from "@upstash/redis";
+
+import type { SpecCacheEntry } from "@/content-indexer/core/content-cache.ts";
+
+import { PREVIEW_TTL_SECONDS } from "./redis.ts";
+
+/**
+ * Uploads all specs to Redis under branch-scoped keys.
+ * Key format: {branch}:{specType}-spec:{specUrl}
+ *
+ * @param specs - Map of apiName → SpecCacheEntry from the indexer
+ * @param branch - Branch identifier for Redis key prefix
+ * @param redis - Redis client instance
+ */
+export const uploadSpecs = async (
+  specs: Map<string, SpecCacheEntry>,
+  branch: string,
+  redis: Redis,
+): Promise<void> => {
+  if (specs.size === 0) {
+    console.info("\n📤 No specs to upload");
+    return;
+  }
+
+  console.info(
+    `\n📤 Uploading ${specs.size} spec${specs.size === 1 ? "" : "s"} to Redis...`,
+  );
+
+  const isMainBranch = branch === "main";
+  const setOptions = isMainBranch ? {} : { ex: PREVIEW_TTL_SECONDS };
+
+  await Promise.all(
+    Array.from(specs.entries()).map(
+      async ([apiName, { specType, spec, specUrl }]) => {
+        const redisKey = `${branch}:${specType}-spec:${specUrl}`;
+        await redis.set(redisKey, JSON.stringify(spec), setOptions);
+        console.info(`  📋 ${apiName} -> ${redisKey}`);
+      },
+    ),
+  );
+
+  console.info(`✅ ${specs.size} spec${specs.size === 1 ? "" : "s"} uploaded`);
+};

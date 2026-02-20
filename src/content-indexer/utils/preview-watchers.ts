@@ -34,7 +34,7 @@ export const startWatchers = (branch: string): void => {
       "tsx",
       "src/content-indexer/preview.ts",
       `--branch=${branch}`,
-      "--reindex",
+      "--reindex={{changed}}",
     ],
     { stdio: "inherit" },
   );

@@ -57,5 +57,8 @@ export const buildDocsContentIndex = async (
     `📊 Generated ${Object.keys(outputs.pathIndex).length} routes, ${outputs.algoliaRecords.length} Algolia records`,
   );
 
-  return outputs;
+  return {
+    ...outputs,
+    specs: contentCache.getAllSpecs(),
+  };
 };

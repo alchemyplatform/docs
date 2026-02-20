@@ -1,6 +1,9 @@
 import path from "path";
 
-import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs.ts";
+import {
+  fetchApiSpec,
+  fetchLocalApiSpec,
+} from "@/content-indexer/utils/apiSpecs.ts";
 import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.ts";
 
 import { ContentCache } from "./content-cache.ts";
@@ -13,6 +16,7 @@ export type ContentSource = {
   type: "filesystem";
   basePath: string;
   stripPathPrefix?: string;
+  specsDir?: string; // when set, read specs locally instead of fetching from remote
 };
 
 /**
@@ -52,10 +56,12 @@ export const batchFetchContent = async (
     }
   });
 
-  // Fetch all API specs in parallel (always from remote)
+  // Fetch all API specs in parallel (local if specsDir set, otherwise remote)
   const specPromises = Array.from(scanResult.specNames).map(async (apiName) => {
     try {
-      const result = await fetchApiSpec(apiName);
+      const result = source.specsDir
+        ? await fetchLocalApiSpec(apiName, source.specsDir)
+        : await fetchApiSpec(apiName);
       if (result) {
         cache.setSpec(apiName, result);
       }

@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+import { execSync } from "child_process";
 import { config as dotenvConfig } from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -22,7 +23,12 @@ const parseArgs = () => {
     ?.split("=")
     .slice(1)
     .join("=");
-  const reindex = args.includes("--reindex");
+  const reindexArg = args.find((arg) => arg.startsWith("--reindex"));
+  // --reindex=<changed-file> or just --reindex (no value)
+  const reindex = reindexArg !== undefined;
+  const reindexFile = reindexArg?.includes("=")
+    ? reindexArg.split("=").slice(1).join("=")
+    : undefined;
 
   if (!branch) {
     throw new Error("--branch is required");
@@ -32,12 +38,37 @@ const parseArgs = () => {
     throw new Error("Cannot preview the main branch. Use a feature branch.");
   }
 
-  return { branch, uploadFile, reindex };
+  return { branch, uploadFile, reindex, reindexFile };
+};
+
+/**
+ * Runs targeted spec generation based on which file changed.
+ * - src/openapi/** → generate:rest + generate:metadata
+ * - src/openrpc/** → generate:rpc + generate:metadata
+ * - docs.yml or no file → skip generation (just reindex)
+ */
+const runTargetedGeneration = (changedFile?: string): void => {
+  if (!changedFile || changedFile.includes("docs.yml")) {
+    console.info("  ℹ️  Skipping spec generation (docs.yml change only)");
+    return;
+  }
+
+  const execOpts = { stdio: "inherit" as const };
+
+  if (changedFile.startsWith("src/openapi/")) {
+    console.info("  🔧 Generating REST specs...");
+    execSync("pnpm generate:rest", execOpts);
+    execSync("pnpm generate:metadata", execOpts);
+  } else if (changedFile.startsWith("src/openrpc/")) {
+    console.info("  🔧 Generating RPC specs...");
+    execSync("pnpm generate:rpc", execOpts);
+    execSync("pnpm generate:metadata", execOpts);
+  }
 };
 
 const main = async () => {
   try {
-    const { branch, uploadFile, reindex } = parseArgs();
+    const { branch, uploadFile, reindex, reindexFile } = parseArgs();
 
     // Mode: upload single file (fast path watcher)
     if (uploadFile) {
@@ -57,6 +88,7 @@ const main = async () => {
     // Mode: re-index (slow path watcher)
     if (reindex) {
       console.info(`\n🔄 Re-indexing for branch: ${branch}\n`);
+      runTargetedGeneration(reindexFile);
       await runIndexAndUpload(branch);
       return;
     }
@@ -74,6 +106,11 @@ const main = async () => {
     console.info("\n🚀 Preview Mode");
     console.info("================");
     console.info(`   Branch: ${branch}`);
+
+    // Run full spec generation on initial startup
+    console.info("\n🔧 Generating specs...");
+    execSync("pnpm generate", { stdio: "inherit" });
+    execSync("pnpm generate:metadata", { stdio: "inherit" });
 
     await runIndexAndUpload(branch);
 

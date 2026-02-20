@@ -75,6 +75,13 @@ export class ContentCache {
   }
 
   /**
+   * Returns all cached specs for iteration (e.g., by the uploader).
+   */
+  getAllSpecs(): Map<string, SpecCacheEntry> {
+    return this.specCache;
+  }
+
+  /**
    * Get cache statistics for debugging.
    */
   getStats(): CacheStats {
