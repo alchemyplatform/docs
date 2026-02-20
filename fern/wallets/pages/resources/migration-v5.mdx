@@ -1,121 +1,53 @@
 ---
 title: Migrating to 5.x.x
-description: Complete migration guide from @account-kit/wallet-client (v4) to @alchemy/wallet-apis (v5)
+description: Migration guide from @account-kit/wallet-client (v4) to @alchemy/wallet-apis (v5)
 slug: wallets/resources/migration-v5
 ---
 
-`@account-kit/wallet-client` is now `@alchemy/wallet-apis`. This guide covers every change and how to migrate.
+`@account-kit/wallet-client` is now `@alchemy/wallet-apis`. This guide covers what changed and how to migrate.
 
 ## Installation
-
-The new SDK consolidates multiple packages into fewer dependencies.
-
-**Before:**
-
-```bash
-npm install @account-kit/wallet-client @account-kit/infra @aa-sdk/core
-```
-
-**After:**
 
 ```bash
 npm install @alchemy/wallet-apis@0.0.0-alpha.19 viem
 ```
 
-Only 2 packages instead of 3+. No more `@aa-sdk/core` for signers, no more `@account-kit/infra` for transport and chains.
+Replaces `@account-kit/wallet-client`, `@account-kit/infra`, and `@aa-sdk/core`.
 
-## Signer creation — standard viem types
+## Import changes
 
-The custom `LocalAccountSigner` wrapper is replaced with viem's native `privateKeyToAccount`.
+| Before | After |
+|---|---|
+| `import { createSmartWalletClient } from "@account-kit/wallet-client"` | `import { createSmartWalletClient } from "@alchemy/wallet-apis"` |
+| `import { alchemy, sepolia } from "@account-kit/infra"` | `import { alchemyWalletTransport } from "@alchemy/wallet-apis"` + `import { sepolia } from "viem/chains"` |
+| `import { LocalAccountSigner } from "@aa-sdk/core"` | `import { privateKeyToAccount } from "viem/accounts"` |
+| `import { WalletClientSigner } from "@aa-sdk/core"` | *(remove — pass `WalletClient` directly as signer)* |
+| `import { type SmartWalletClientParams } from "@account-kit/wallet-client"` | `import { type CreateSmartWalletClientParams } from "@alchemy/wallet-apis"` |
 
-**Before:**
-
-```ts
-import { LocalAccountSigner } from "@aa-sdk/core";
-
-const signer = LocalAccountSigner.privateKeyToAccountSigner(
-  process.env.PRIVATE_KEY! as Hex,
-);
-```
-
-**After:**
-
-```ts
-import { privateKeyToAccount } from "viem/accounts";
-
-const signer = privateKeyToAccount(process.env.PRIVATE_KEY! as Hex);
-```
-
-The `SmartWalletSigner` type now accepts `LocalAccount | WalletClient` — both viem-native types. No custom signer wrappers needed for basic usage.
-
-## Transport — single package import
-
-**Before:**
-
-```ts
-import { alchemy } from "@account-kit/infra";
-
-const transport = alchemy({ apiKey: "your-api-key" });
-```
-
-**After:**
-
-```ts
-import { alchemyWalletTransport } from "@alchemy/wallet-apis";
-
-const transport = alchemyWalletTransport({ apiKey: "your-api-key" });
-```
-
-No separate `@account-kit/infra` package needed.
-
-## Chain imports — standard viem chains
-
-**Before:**
-
-```ts
-import { sepolia } from "@account-kit/infra";
-```
-
-**After:**
-
-```ts
-import { sepolia } from "viem/chains";
-```
-
-Works with any viem-supported chain.
+All chains now come from `viem/chains`, all signers use viem-native types (`LocalAccount` or `WalletClient`).
 
 ## EIP-7702 by default
 
-The client now defaults to using the signer's address via EIP-7702. This eliminates several steps from the old flow.
+The biggest change: the client defaults to EIP-7702. No more `requestAccount()` → create client → `sendCalls({ from })` dance.
 
 **Before:**
 
 ```ts
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, sepolia } from "@account-kit/infra";
-
-const signer = LocalAccountSigner.privateKeyToAccountSigner(PRIVATE_KEY);
-
-// Step 1: Create client without account
 const clientWithoutAccount = createSmartWalletClient({
-  transport: alchemy({ apiKey: ALCHEMY_API_KEY }),
+  transport: alchemy({ apiKey }),
   chain: sepolia,
   signer,
 });
 
-// Step 2: Request an account
 const account = await clientWithoutAccount.requestAccount();
 
-// Step 3: Create client with account
 const client = createSmartWalletClient({
-  transport: alchemy({ apiKey: ALCHEMY_API_KEY }),
+  transport: alchemy({ apiKey }),
   chain: sepolia,
   signer,
   account: account.address,
 });
 
-// Step 4: Send calls with `from`
 await client.sendCalls({
   from: account.address,
   calls: [{ to: "0x...", value: "0x0" }],
@@ -125,179 +57,56 @@ await client.sendCalls({
 **After:**
 
 ```ts
-import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
-import { privateKeyToAccount } from "viem/accounts";
-import { sepolia } from "viem/chains";
-
 const client = createSmartWalletClient({
-  transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
+  transport: alchemyWalletTransport({ apiKey }),
   chain: sepolia,
   signer: privateKeyToAccount(PRIVATE_KEY),
 });
 
-// Send calls directly — no requestAccount, no `from`
 await client.sendCalls({
   calls: [{ to: "0x...", value: BigInt(0) }],
 });
 ```
 
-Key differences:
-
-* **No need to call `requestAccount()` first** — you can call `sendCalls` / `prepareCalls` directly
-* **No need to specify `from`** on `sendCalls`, `prepareCalls`, etc. — defaults to signer address
-* **No need to specify `account`** on `signMessage`, `signTypedData`, `grantPermissions`, etc. — defaults to client account
-* **No need to set `eip7702Auth: true` capability** — 7702 is the default mode
+* No `requestAccount()` needed — call `sendCalls` / `prepareCalls` directly
+* No `from` or `account` params needed — defaults to signer address
+* No `eip7702Auth: true` capability — 7702 is the default
 * `requestAccount()` is still available for [non-7702 smart contract accounts](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode)
 
-## Fully viem-compatible types
-
-All action signatures and return types are now compatible with viem's built-in interfaces. This means you can use the SDK seamlessly alongside other viem tooling without type mismatches or manual conversions.
-
-Key changes:
-
-* **Bigints instead of hex strings** — `value: BigInt(0)` (or `0n`) instead of `value: "0x00"`
-* **Signer types** — accepts standard `LocalAccount` and `WalletClient` (no custom wrappers)
-* **Chain types** — uses standard viem chain definitions from `viem/chains`
-* **Return types** — results like `UserOperation`, call status, and receipts use viem-compatible interfaces (e.g. `chainId` is `number`, not a hex string)
-
-**Before:**
-
-```ts
-await client.sendCalls({
-  calls: [{ to: "0x...", value: "0x00" }],
-});
-```
-
-**After:**
-
-```ts
-await client.sendCalls({
-  calls: [{ to: "0x...", value: BigInt(0) }],
-});
-```
-
 <Note>
-  You can also use the `0n` BigInt literal syntax if your TypeScript config targets ES2020 or later.
+  Values are now bigints instead of hex strings (`BigInt(0)` instead of `"0x00"`). You can also use the `0n` literal syntax if your TypeScript config targets ES2020 or later.
 </Note>
 
-## Alchemy paymaster configuration — renamed
+## Paymaster configuration
 
-When using the [Alchemy Gas Manager](/wallets/transactions/sponsor-gas) for gas sponsorship, the capability and client-level config have been renamed for clarity.
-
-**Capability renamed:** `paymasterService` → `paymaster`
-
-**Before:**
+`paymasterService` → `paymaster`, `policyId` (top-level) → `paymaster: { policyId }`:
 
 ```ts
-// Client-level
-const client = createSmartWalletClient({
-  // ...
-  policyId: "your-policy-id",
-});
-
-// Per-call capability
-await client.sendCalls({
-  calls: [...],
-  capabilities: {
-    paymasterService: {
-      policyId: "your-policy-id",
-    },
-  },
-});
-```
-
-**After:**
-
-```ts
-// Client-level
 const client = createSmartWalletClient({
   // ...
   paymaster: { policyId: "your-policy-id" },
 });
-
-// Per-call capability
-await client.sendCalls({
-  calls: [...],
-  capabilities: {
-    paymaster: {
-      policyId: "your-policy-id",
-    },
-  },
-});
 ```
 
-Supports both single `policyId` and multiple `policyIds`.
+Can also be passed per-call via `capabilities.paymaster`. Supports both `policyId` and `policyIds`.
 
-## Third-party signer simplification
+## Third-party signers
 
-The `WalletClientSigner` wrapper from `@aa-sdk/core` is no longer needed. Pass a viem `WalletClient` (with a mounted account) directly as the signer.
-
-The signer's `WalletClient` should use the transport appropriate for your signer (e.g. `custom(window.ethereum)` for a browser extension wallet, or your embedded wallet provider's transport). Refer to your signer provider's documentation for how to obtain a `LocalAccount` or `WalletClient`. The `alchemyWalletTransport` is only used for the `SmartWalletClient` itself.
-
-**Before:**
-
-```ts
-import { WalletClientSigner } from "@aa-sdk/core";
-import { createWalletClient, custom } from "viem";
-import { alchemy, baseSepolia } from "@account-kit/infra";
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-// Create a WalletClient with your signer's transport
-const walletClient = createWalletClient({
-  account: viemAccount,
-  chain: baseSepolia,
-  transport: custom(window.ethereum), // your signer's provider
-});
-
-// v4: Wrap in WalletClientSigner
-const signer = new WalletClientSigner(walletClient, "my-wallet");
-
-const client = createSmartWalletClient({
-  chain: baseSepolia,
-  transport: alchemy({ apiKey }),
-  signer,
-  policyId: GAS_POLICY_ID,
-});
-```
-
-**After:**
-
-```ts
-import { createWalletClient, custom } from "viem";
-import { baseSepolia } from "viem/chains";
-import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
-
-// Create a WalletClient with your signer's transport
-const walletClient = createWalletClient({
-  account: viemAccount,
-  chain: baseSepolia,
-  transport: custom(window.ethereum), // your signer's provider
-});
-
-// v5: Pass WalletClient directly — no wrapper needed
-const client = createSmartWalletClient({
-  chain: baseSepolia,
-  transport: alchemyWalletTransport({ apiKey }), // Alchemy transport for the smart wallet client
-  signer: walletClient,
-  paymaster: { policyId: GAS_POLICY_ID },
-});
-```
-
-The `SmartWalletSigner` type accepts a `WalletClient` with a mounted account. No intermediary wrapper needed.
-
-## Client creation params — renamed type
-
-`SmartWalletClientParams` is now `CreateSmartWalletClientParams`.
+The `WalletClientSigner` wrapper is removed. Pass a viem `WalletClient` directly:
 
 ```ts
 // Before
-import { type SmartWalletClientParams } from "@account-kit/wallet-client";
+const signer = new WalletClientSigner(walletClient, "my-wallet");
 
-// After
-import { type CreateSmartWalletClientParams } from "@alchemy/wallet-apis";
+// After — just pass walletClient directly
+const client = createSmartWalletClient({
+  signer: walletClient, // WalletClient with a mounted account
+  transport: alchemyWalletTransport({ apiKey }),
+  chain: baseSepolia,
+});
 ```
 
-## Full migration cheat sheet
+## Full cheat sheet
 
 | Before (v4) | After (v5) |
 |---|---|
@@ -305,13 +114,9 @@ import { type CreateSmartWalletClientParams } from "@alchemy/wallet-apis";
 | `import { createSmartWalletClient } from "@account-kit/wallet-client"` | `import { createSmartWalletClient } from "@alchemy/wallet-apis"` |
 | `import { signPreparedCalls } from "@account-kit/wallet-client"` | `import { signPreparedCalls } from "@alchemy/wallet-apis"` |
 | `import { swapActions } from "@account-kit/wallet-client/experimental"` | `import { swapActions } from "@alchemy/wallet-apis/experimental"` |
-| `import { type SmartWalletClientParams } from "@account-kit/wallet-client"` | `import { type CreateSmartWalletClientParams } from "@alchemy/wallet-apis"` |
-| `import { alchemy, sepolia } from "@account-kit/infra"` | `import { alchemyWalletTransport } from "@alchemy/wallet-apis"` + `import { sepolia } from "viem/chains"` |
-| `import { LocalAccountSigner } from "@aa-sdk/core"` | `import { privateKeyToAccount } from "viem/accounts"` |
-| `import { WalletClientSigner } from "@aa-sdk/core"` | *(remove — pass WalletClient directly)* |
-| `LocalAccountSigner.privateKeyToAccountSigner(key)` | `privateKeyToAccount(key)` |
 | `alchemy({ apiKey })` | `alchemyWalletTransport({ apiKey })` |
-| `new WalletClientSigner(walletClient, "name")` | *(just use `walletClient` directly as signer)* |
+| `LocalAccountSigner.privateKeyToAccountSigner(key)` | `privateKeyToAccount(key)` |
+| `new WalletClientSigner(walletClient, "name")` | *(just use `walletClient` directly)* |
 | `policyId: "..."` (top-level) | `paymaster: { policyId: "..." }` |
 | `paymasterService: { policyId: "..." }` | `paymaster: { policyId: "..." }` |
 | `eip7702Auth: true` | *(remove — 7702 is default)* |
@@ -319,10 +124,5 @@ import { type CreateSmartWalletClientParams } from "@alchemy/wallet-apis";
 | `account: signerAddress` (on signing actions) | *(remove — defaults to client account)* |
 | `value: "0x0"` / `value: "0x00"` | `value: BigInt(0)` (or `0n`) |
 | `await signer.getAddress()` | `signer.address` (or `client.account.address`) |
-| `LocalAccountSigner.generatePrivateKeySigner()` | `privateKeyToAccount(generatePrivateKey())` |
 
-## What stays the same
-
-* **API (JSON-RPC / curl) usage** is unchanged
-* **Core method names**: `sendCalls`, `prepareCalls`, `signPreparedCalls`, `sendPreparedCalls`, `signMessage`, `signTypedData`, `grantPermissions`, `getCallsStatus`, `waitForCallsStatus`, `requestAccount`, `listAccounts`, `getCapabilities`
-* **All SDK flows** are the same — `sendCalls` still abstracts away the prepare → sign → send steps, and the lower-level `prepareCalls` / `signPreparedCalls` / `sendPreparedCalls` flow is still available when you need more control
+Core method names (`sendCalls`, `prepareCalls`, `signPreparedCalls`, `sendPreparedCalls`, `signMessage`, `signTypedData`, etc.) and all SDK flows are unchanged. JSON-RPC / curl usage is also unchanged.
