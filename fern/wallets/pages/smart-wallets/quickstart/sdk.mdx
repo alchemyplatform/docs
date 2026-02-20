@@ -64,39 +64,3 @@ const signedCalls = await client.signPreparedCalls(preparedCalls);
 const result = await client.sendPreparedCalls(signedCalls);
 const status = await client.getCallsStatus(result.id);
 ```
-
-### 4. Sign A Message
-
-Once your account is delegated, you can sign messages.
-
-```ts
-import { createPublicClient, http } from "viem";
-
-const message = "we are so back";
-
-const signature = await client.signMessage({ message });
-
-const publicClient = createPublicClient({
-  chain: arbitrumSepolia,
-  transport: http(),
-});
-
-const isValid = await publicClient.verifyMessage({
-  address: client.account.address,
-  message,
-  signature,
-});
-```
-
-### 5. Sign Typed Data
-
-```ts
-// assuming you have a typedData variable
-const signature = await client.signTypedData(typedData);
-
-const isValid = await publicClient.verifyTypedData({
-  address: client.account.address,
-  ...typedData,
-  signature,
-});
-```

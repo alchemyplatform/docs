@@ -8,14 +8,29 @@ for full descriptions of the parameters used in the following example. */}
 <CodeBlocks>
 
 ```ts title="signTextMessage.ts"
+import { createPublicClient, http } from "viem";
+import { sepolia } from "viem/chains";
 import { client } from "./client";
 
 // Sign a simple text message
-const textSignature = await client.signMessage({
-  message: "Hello, world!",
+const message = "Hello, world!";
+const signature = await client.signMessage({ message });
+
+console.log("Signature:", signature);
+
+// Verify the signature
+const publicClient = createPublicClient({
+  chain: sepolia,
+  transport: http(),
 });
 
-console.log("Signature over text:", textSignature);
+const isValid = await publicClient.verifyMessage({
+  address: client.account.address,
+  message,
+  signature,
+});
+
+console.log("Valid:", isValid); // true
 ```
 
 ```ts title="client.ts"

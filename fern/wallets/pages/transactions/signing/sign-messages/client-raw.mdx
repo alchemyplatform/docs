@@ -8,16 +8,31 @@ for full descriptions of the parameters used in the following example. */}
 <CodeBlocks>
 
 ```ts title="signRawMessage.ts"
+import { createPublicClient, http } from "viem";
+import { sepolia } from "viem/chains";
 import { client } from "./client";
 
 // Sign a raw hex message
-const rawSignature = await client.signMessage({
-  message: {
-    raw: "0x48656c6c6f2c20776f726c6421", // "Hello, world!" in hex
-  },
+const message = {
+  raw: "0x48656c6c6f2c20776f726c6421" as `0x${string}`, // "Hello, world!" in hex
+};
+const signature = await client.signMessage({ message });
+
+console.log("Signature:", signature);
+
+// Verify the signature
+const publicClient = createPublicClient({
+  chain: sepolia,
+  transport: http(),
 });
 
-console.log("Signature over raw data:", rawSignature);
+const isValid = await publicClient.verifyMessage({
+  address: client.account.address,
+  message,
+  signature,
+});
+
+console.log("Valid:", isValid); // true
 ```
 
 ```ts title="client.ts"

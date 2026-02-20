@@ -8,6 +8,8 @@ for full descriptions of the parameters used in the following example. */}
 <CodeBlocks>
 
 ```ts title="signTypedData.ts"
+import { createPublicClient, http } from "viem";
+import { sepolia } from "viem/chains";
 import { client } from "./client";
 
 const signerAddress = client.account.address;
@@ -39,7 +41,21 @@ const signature = await client.signTypedData({
   ...typedData,
 });
 
-console.log("Typed data signature:", signature);
+console.log("Signature:", signature);
+
+// Verify the signature
+const publicClient = createPublicClient({
+  chain: sepolia,
+  transport: http(),
+});
+
+const isValid = await publicClient.verifyTypedData({
+  address: client.account.address,
+  ...typedData,
+  signature,
+});
+
+console.log("Valid:", isValid); // true
 ```
 
 ```ts title="client.ts"
