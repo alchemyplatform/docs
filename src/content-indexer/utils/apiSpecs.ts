@@ -23,7 +23,7 @@ const API_NAME_TO_FILENAME: Record<string, string> = {
   "polygon-zkevm": "polygonzkevm",
 };
 
-const DEV_DOCS_BASE = "https://dev-docs.alchemy.com";
+export const DEV_DOCS_BASE = "https://dev-docs.alchemy.com";
 
 let cachedMetadata: MetadataJson | null = null;
 
@@ -58,7 +58,7 @@ const getMetadata = async (): Promise<MetadataJson | undefined> => {
  * - /alchemy/json-rpc/ → openrpc
  * - /alchemy/rest/ → openapi
  */
-const getSpecTypeFromUrl = (url: string): SpecType => {
+export const getSpecTypeFromUrl = (url: string): SpecType => {
   if (url.includes("/rest/")) {
     return "openapi";
   }
