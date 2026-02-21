@@ -58,7 +58,7 @@ export const uploadChangelogFile = async (
 const getChangedChangelogFiles = (): string[] => {
   // Committed/staged changes vs main
   const diffOutput = execSync(
-    "git diff --name-only main -- fern/changelog/",
+    "git diff --name-only origin/main -- fern/changelog/",
     { encoding: "utf-8" },
   );
 
