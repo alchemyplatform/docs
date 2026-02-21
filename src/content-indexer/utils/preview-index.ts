@@ -4,21 +4,23 @@ import { buildChangelogIndex } from "@/content-indexer/indexers/changelog.ts";
 import { buildDocsContentIndex } from "@/content-indexer/indexers/main.ts";
 import { uploadChangedChangelogFiles } from "@/content-indexer/uploaders/preview-changelog.ts";
 import { uploadChangedMdxFiles } from "@/content-indexer/uploaders/preview-mdx.ts";
+import { uploadSpecs } from "@/content-indexer/uploaders/preview-specs.ts";
 import { storeToRedis } from "@/content-indexer/uploaders/redis.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
 
 /**
- * Runs the content indexer in preview mode and uploads changed MDX files.
+ * Runs the content indexer in preview mode and uploads changed MDX files + specs.
  * Stores path index + nav trees under branch-scoped Redis keys,
- * then uploads only MDX files that differ from main.
+ * then uploads MDX files that differ from main, and all specs.
  */
 export const runIndexAndUpload = async (branch: string): Promise<void> => {
-  console.info("\n🔍 Running content indexer (preview mode)...\n");
+  console.info("\n🔍 Indexing...");
 
-  const { pathIndex, navigationTrees } = await buildDocsContentIndex({
+  const { pathIndex, navigationTrees, specs } = await buildDocsContentIndex({
     source: {
       type: "filesystem",
       basePath: path.join(process.cwd(), "fern"),
+      specsDir: path.join(process.cwd(), "fern", "api-specs"),
     },
     branchId: branch,
     indexerType: "docs",
@@ -28,10 +30,16 @@ export const runIndexAndUpload = async (branch: string): Promise<void> => {
   await storeToRedis(pathIndex, navigationTrees, {
     branchId: branch,
     indexerType: "docs",
+    quiet: true,
   });
 
   const redis = getRedis();
-  await uploadChangedMdxFiles(pathIndex, branch, redis);
+  await Promise.all([
+    uploadChangedMdxFiles(pathIndex, branch, redis),
+    specs && specs.size > 0
+      ? uploadSpecs(specs, branch, redis)
+      : Promise.resolve(),
+  ]);
 
   await runChangelogIndexAndUpload(branch);
 };
@@ -54,6 +62,7 @@ export const runChangelogIndexAndUpload = async (
   await storeToRedis(pathIndex, undefined, {
     branchId: branch,
     indexerType: "changelog",
+    quiet: true,
   });
 
   const redis = getRedis();

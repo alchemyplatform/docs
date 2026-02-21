@@ -66,6 +66,7 @@ const buildIndexResults = async (
         source: {
           type: "filesystem",
           basePath: path.join(process.cwd(), "fern"),
+          specsDir: path.join(process.cwd(), "fern", "api-specs"),
         },
         branchId,
         indexerType: "docs",
@@ -107,7 +108,7 @@ const runIndexer = async (
   const shouldUploadToAlgolia = mode !== "preview";
 
   // Build upload promises array
-  const uploadPromises = [
+  const uploadPromises: Promise<void>[] = [
     storeToRedis(pathIndex, navigationTrees, { branchId, indexerType }),
   ];
 

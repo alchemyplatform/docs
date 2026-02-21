@@ -13,6 +13,7 @@ export const startWatchers = (branch: string): void => {
     "npx",
     [
       "onchange",
+      "--kill",
       "fern/**/*.{mdx,md}",
       "--",
       "tsx",
@@ -27,6 +28,7 @@ export const startWatchers = (branch: string): void => {
     "npx",
     [
       "onchange",
+      "--kill",
       "fern/docs.yml",
       "src/openapi/**",
       "src/openrpc/**",
@@ -34,7 +36,7 @@ export const startWatchers = (branch: string): void => {
       "tsx",
       "src/content-indexer/preview.ts",
       `--branch=${branch}`,
-      "--reindex",
+      "--reindex={{changed}}",
     ],
     { stdio: "inherit" },
   );

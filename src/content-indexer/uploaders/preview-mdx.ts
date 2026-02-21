@@ -76,7 +76,7 @@ export const uploadMdxFile = async (
  */
 const getChangedMdxFiles = (): string[] => {
   // Committed/staged changes vs main
-  const diffOutput = execSync("git diff --name-only main -- fern/", {
+  const diffOutput = execSync("git diff --name-only origin/main -- fern/", {
     encoding: "utf-8",
   });
 

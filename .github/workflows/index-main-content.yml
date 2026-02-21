@@ -6,11 +6,16 @@ on:
       - main
     paths:
       - "fern/docs.yml"
+      - "fern/remote-specs.json"
+      - "src/openapi/**"
+      - "src/openrpc/**"
+  repository_dispatch:
+    types: [remote-spec-updated]
   workflow_dispatch: {}
 
 jobs:
   index-main:
-    name: Index Main Content
+    name: Index and sync main content
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,6 +25,15 @@ jobs:
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
+
+      - name: Generate API specs
+        run: pnpm generate
+
+      - name: Upload specs to Redis
+        run: pnpm upload-specs
+        env:
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
 
       - name: Run main content indexer
         run: pnpm index:main
@@ -74,3 +88,18 @@ jobs:
           else
             echo "::notice::✅ Successfully revalidated docs index and nav trees"
           fi
+
+      - name: Revalidate changed specs
+        run: |
+          CHANGED=$(cat fern/api-specs/changed-specs.json)
+          if [ "$CHANGED" = "[]" ]; then
+            echo "No spec changes to revalidate"
+            exit 0
+          fi
+          PAYLOAD=$(jq -n --argjson urls "$CHANGED" '{specUrls: $urls}')
+          curl -X POST "${{ secrets.DOCS_SITE_URL }}/api/revalidate/specs" \
+            -H "Authorization: Bearer ${{ secrets.DOCS_SITE_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            --max-time 120 \
+            --fail-with-body
