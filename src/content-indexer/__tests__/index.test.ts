@@ -87,10 +87,14 @@ describe("buildDocsContentIndex", () => {
 
     // Verify all phases were called
     expect(scanDocsYml).toHaveBeenCalled();
-    expect(batchFetchContent).toHaveBeenCalledWith(mockScanResult, {
-      type: "filesystem",
-      basePath: "/test/fern",
-    });
+    expect(batchFetchContent).toHaveBeenCalledWith(
+      mockScanResult,
+      {
+        type: "filesystem",
+        basePath: "/test/fern",
+      },
+      { quiet: true },
+    );
     expect(buildAllOutputs).toHaveBeenCalledWith(
       expect.any(Object),
       mockCache,
@@ -99,7 +103,7 @@ describe("buildDocsContentIndex", () => {
     );
 
     // Verify result
-    expect(result).toEqual(mockResult);
+    expect(result).toEqual({ ...mockResult, specs: new Map() });
   });
 
   test("should pass stripPathPrefix to buildAllOutputs", async () => {

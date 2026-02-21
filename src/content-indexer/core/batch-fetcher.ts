@@ -1,6 +1,10 @@
+import fs from "fs";
 import path from "path";
 
-import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs.ts";
+import {
+  buildSpecFileMap,
+  readApiSpec,
+} from "@/content-indexer/utils/apiSpecs.ts";
 import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.ts";
 
 import { ContentCache } from "./content-cache.ts";
@@ -13,6 +17,7 @@ export type ContentSource = {
   type: "filesystem";
   basePath: string;
   stripPathPrefix?: string;
+  specsDir?: string;
 };
 
 /**
@@ -26,12 +31,23 @@ export type ContentSource = {
 export const batchFetchContent = async (
   scanResult: ScanResult,
   source: ContentSource,
+  options?: { quiet?: boolean },
 ): Promise<ContentCache> => {
+  const { quiet = false } = options ?? {};
   const cache = new ContentCache();
 
-  console.info(
-    `   Reading ${scanResult.mdxPaths.size} MDX files and ${scanResult.specNames.size} specs...`,
-  );
+  // Fail fast if specsDir is set but doesn't exist (forgot to run generate?)
+  if (source.specsDir && !fs.existsSync(source.specsDir)) {
+    throw new Error(
+      `specsDir is set but ${source.specsDir} does not exist. Run "pnpm generate" first.`,
+    );
+  }
+
+  if (!quiet) {
+    console.info(
+      `   Reading ${scanResult.mdxPaths.size} MDX files and ${scanResult.specNames.size} specs...`,
+    );
+  }
 
   // Read all MDX files in parallel
   const mdxPromises = Array.from(scanResult.mdxPaths).map(async (mdxPath) => {
@@ -52,25 +68,35 @@ export const batchFetchContent = async (
     }
   });
 
-  // Fetch all API specs in parallel (always from remote)
-  const specPromises = Array.from(scanResult.specNames).map(async (apiName) => {
-    try {
-      const result = await fetchApiSpec(apiName);
-      if (result) {
-        cache.setSpec(apiName, result);
-      }
-    } catch (error) {
-      console.warn(`   ⚠️  Failed to fetch spec: ${apiName}`, error);
-    }
-  });
+  // Read all API specs in parallel (build file map once, then look up each spec)
+  const { specsDir } = source;
+  const specPromises = specsDir
+    ? (async () => {
+        const specFileMap = await buildSpecFileMap(specsDir);
+        return Promise.all(
+          Array.from(scanResult.specNames).map(async (apiName) => {
+            try {
+              const result = await readApiSpec(apiName, specsDir, specFileMap);
+              if (result) {
+                cache.setSpec(apiName, result);
+              }
+            } catch (error) {
+              console.warn(`   ⚠️  Failed to read spec: ${apiName}`, error);
+            }
+          }),
+        );
+      })()
+    : Promise.resolve();
 
-  // Wait for all fetches to complete
-  await Promise.all([...mdxPromises, ...specPromises]);
+  // Wait for all reads to complete
+  await Promise.all([...mdxPromises, specPromises]);
 
   const stats = cache.getStats();
-  console.info(
-    `   ✓ Read ${stats.mdxCount}/${scanResult.mdxPaths.size} MDX files and ${stats.specCount}/${scanResult.specNames.size} specs`,
-  );
+  if (!quiet) {
+    console.info(
+      `   ✓ Read ${stats.mdxCount}/${scanResult.mdxPaths.size} MDX files and ${stats.specCount}/${scanResult.specNames.size} specs`,
+    );
+  }
 
   return cache;
 };

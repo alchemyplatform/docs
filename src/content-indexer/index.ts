@@ -11,7 +11,7 @@ import type {
 import { uploadToAlgolia } from "@/content-indexer/uploaders/algolia.ts";
 import { storeToRedis } from "@/content-indexer/uploaders/redis.ts";
 
-dotenvConfig({ path: path.resolve(process.cwd(), ".env") });
+dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
 // ============================================================================
 // CLI Argument Parsing
@@ -66,6 +66,7 @@ const buildIndexResults = async (
         source: {
           type: "filesystem",
           basePath: path.join(process.cwd(), "fern"),
+          specsDir: path.join(process.cwd(), "fern", "api-specs"),
         },
         branchId,
         indexerType: "docs",
@@ -107,7 +108,7 @@ const runIndexer = async (
   const shouldUploadToAlgolia = mode !== "preview";
 
   // Build upload promises array
-  const uploadPromises = [
+  const uploadPromises: Promise<void>[] = [
     storeToRedis(pathIndex, navigationTrees, { branchId, indexerType }),
   ];
 

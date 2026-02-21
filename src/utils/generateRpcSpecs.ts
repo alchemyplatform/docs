@@ -4,6 +4,9 @@ import type { DerefedOpenRpcDoc } from "../types/openRpc.ts";
 import { formatOpenRpcDoc, writeOpenRpcDoc } from "./generationHelpers.ts";
 import { validateRpcSpec } from "./validateRpcSpec.ts";
 
+/** Extension: when true, server URL is already final (no apiKey path param). Do not add x-fern-parameters. */
+const SERVER_URL_FINAL_KEY = "x-alchemy-server-url-final" as const;
+
 /**
  * Generates an OpenRPC specification for the Alchemy JSON-RPC API.
  * @param srcDir - The source directory containing the Alchemy OpenRPC schema
@@ -22,23 +25,29 @@ export const generateOpenRpcSpec = async (
       preservedProperties: ["title", "description", "type", "pattern"],
     },
     continueOnError: true,
-  })) as DerefedOpenRpcDoc;
+  })) as DerefedOpenRpcDoc & { [SERVER_URL_FINAL_KEY]?: boolean };
 
+  const skipApiKeyParam = spec[SERVER_URL_FINAL_KEY] === true;
+  const { [SERVER_URL_FINAL_KEY]: _skipKey, ...specWithoutKey } = spec;
   const fullSpec = {
-    ...spec,
-    "x-fern-parameters": [
-      {
-        name: "apiKey",
-        in: "path",
-        schema: {
-          type: "string",
-          default: "docs-demo",
-          description:
-            "For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)",
-        },
-        required: true,
-      },
-    ],
+    ...specWithoutKey,
+    ...(skipApiKeyParam
+      ? {}
+      : {
+          "x-fern-parameters": [
+            {
+              name: "apiKey",
+              in: "path",
+              schema: {
+                type: "string",
+                default: "docs-demo",
+                description:
+                  "For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)",
+              },
+              required: true,
+            },
+          ],
+        }),
   };
 
   // wallet api sorts by method popularity
