@@ -47,11 +47,11 @@ When you call `wallet_requestAccount` with a signer address, it creates a dedica
     });
 
     // Request a Smart Contract Account
-    const account = await client.requestAccount();
+    const { address } = await client.requestAccount();
 
-    // Use the SCA address as the `from` param to bypass 7702 mode
+    // Pass the SCA address as the account to use non-7702 mode
     await client.sendCalls({
-      from: account.address,
+      account: address,
       calls: [...],
     });
     ```
