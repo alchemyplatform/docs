@@ -4,8 +4,12 @@ import { config as dotenvConfig } from "dotenv";
 import fs from "fs";
 import path from "path";
 
+import { uploadChangelogFile } from "@/content-indexer/uploaders/preview-changelog.ts";
 import { uploadMdxFile } from "@/content-indexer/uploaders/preview-mdx.ts";
-import { runIndexAndUpload } from "@/content-indexer/utils/preview-index.ts";
+import {
+  runChangelogIndexAndUpload,
+  runIndexAndUpload,
+} from "@/content-indexer/utils/preview-index.ts";
 import { buildPreviewUrl } from "@/content-indexer/utils/preview-url.ts";
 import { startWatchers } from "@/content-indexer/utils/preview-watchers.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
@@ -87,6 +91,23 @@ const main = async () => {
     if (uploadFile) {
       const redis = getRedis();
       const filePath = uploadFile.replace(/^fern\//, "");
+
+      // Changelog files: different key prefix + reindex logic
+      if (filePath.startsWith("changelog/") && filePath.endsWith(".md")) {
+        const filename = path.basename(filePath);
+        const { reindexNeeded } = await uploadChangelogFile(
+          filename,
+          branch,
+          redis,
+        );
+        if (reindexNeeded) {
+          console.info("  🔄 New/deleted changelog file, re-indexing...");
+          await runChangelogIndexAndUpload(branch);
+        }
+        return;
+      }
+
+      // MDX files (existing behavior)
       const { reindexNeeded } = await uploadMdxFile(filePath, branch, redis);
 
       if (reindexNeeded) {
