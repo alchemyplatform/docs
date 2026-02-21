@@ -36,7 +36,7 @@ pnpm add @alchemy/wallet-apis@0.0.0-alpha.19 viem
 
 ### 2. Create a client
 
-Given a signer (e.g. `privateKeyToAccount` from `viem/accounts`), all you need to do is follow a few simple steps to start sending user ops with Wallet APIs!
+This quickstart uses a local private key signer as an example. You can use any [viem-compatible signer](/wallets/third-party/signers/custom-integration), including providers like [Privy](/wallets/third-party/signers/privy) and [Turnkey](/wallets/third-party/signers/turnkey).
 
 ```ts
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
@@ -59,7 +59,7 @@ const client = createSmartWalletClient({
 
 ### 3. Send a sponsored transaction
 
-The client defaults to [EIP-7702](/wallets/transactions/using-eip-7702). This first transaction will delegate your account.
+The client defaults to [EIP-7702](/wallets/transactions/using-eip-7702), so your EOA will be delegated to a smart account to enable gas sponsorship, batching, and more. The SDK handles delegation automatically on the first transaction.
 
 ```ts
 import { zeroAddress } from "viem";
@@ -68,10 +68,18 @@ const { id } = await client.sendCalls({
   calls: [{ to: zeroAddress, value: BigInt(0) }],
 });
 
-const status = await client.getCallsStatus(id);
+const status = await client.waitForCallsStatus({ id });
 ```
 
 <Accordion title="Using @account-kit/wallet-client (v4)?">
   <Markdown src="../../../shared/v4-client-note.mdx" />
   <Markdown src="../../../shared/v4-paymaster-note.mdx" />
 </Accordion>
+
+### Next steps
+
+* [Bring your own signer](/wallets/third-party/signers/custom-integration)
+* [Refine your gas sponsorship rules](/wallets/transactions/sponsor-gas/conditional-sponsorship-rules)
+* [Sign messages](/wallets/transactions/signing/sign-messages)
+* [Sign typed data](/wallets/transactions/signing/sign-typed-data)
+* [Batch transactions](/wallets/transactions/send-batch-transactions)

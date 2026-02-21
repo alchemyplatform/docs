@@ -1,188 +1,129 @@
 ---
-title: Custom Integration
-description: Bring your own signer to Alchemy Smart Wallets via EIP-7702
+title: Bring your own signer
+description: Use any viem-compatible signer with Alchemy Smart Wallets
 slug: wallets/third-party/signers/custom-integration
 ---
 
-If you have an existing custom signer or another third-party embedded wallet provider, you can upgrade your embedded EOAs to smart wallets by connecting your existing signer.
-This will allow you to use EIP-7702 to get features like gas sponsorship, batching, and more.
+Any signer that provides a viem `LocalAccount` or `WalletClient` works with `createSmartWalletClient`. This guide covers the requirements and how to set up each type.
 
-<Warning>
-  **Requirement:** Your signer or embedded wallet provider must support signing
-  EIP-7702 authorizations in order to delegate to a smart account.
-</Warning>
+## Signer requirements
 
-To bring your own signer, you create a `SmartAccountSigner` that implements `signAuthorization`. See the details for the interface requirements [here](/wallets/resources/types#smartaccountsigner).
+Your signer must implement:
 
-<Note>
-  Using `@account-kit/wallet-client` (v4)? The `WalletClientSigner` wrapper is no longer needed in v5 — pass your `WalletClient` directly as the signer. See the [migration guide](/wallets/resources/migration-v5) for details.
-</Note>
+| Method | Required | Purpose |
+|---|---|---|
+| `signMessage` | Yes | Signs plaintext and raw messages (EIP-191) |
+| `signTypedData` | Yes | Signs structured data (EIP-712) |
+| `signAuthorization` | Yes (for EIP-7702) | Signs the EIP-7702 delegation authorization |
 
-<Tabs>
-  <Tab title="JavaScript" language="typescript">
-    For example, you can upgrade an existing embedded EOA by extending a viem `WalletClient` to use your provider's EIP-7702 authorization signing.
+`signAuthorization` is required for [EIP-7702](/wallets/transactions/using-eip-7702), which is the default mode. If your signer doesn't support it, you can use [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) instead.
 
-    The bulk of the logic happens in a function that returns a client. Your embedded wallet is wrapped in a viem `WalletClient` that supports `signAuthorization`, then passed to `createSmartWalletClient` to construct a client for sending transactions.
+## Option 1: `LocalAccount` (recommended)
 
-    Steps:
+Use a `LocalAccount` when your signer gives you direct access to a private key or a signing function. This is the recommended approach because it provides the `signAuthorization` interface needed for EIP-7702 delegation.
 
-    1. Create a viem `WalletClient` with an account that implements `signAuthorization`.
-    2. Create a `SmartWalletClient` by passing the `WalletClient` directly as the signer, with your Alchemy API key (optionally a `paymaster` config).
-    3. Send calls (with optional `paymaster.policyId`).
-
-    <CodeBlocks>
-
-```ts twoslash title="create-smart-embedded-wallet-client.ts"
-import {
-  type Address,
-  createWalletClient,
-  custom,
-  type EIP1193Provider,
-} from "viem";
+```ts
 import { toAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
-import {
-  createSmartWalletClient,
-  alchemyWalletTransport,
-  type SmartWalletClient,
-} from "@alchemy/wallet-apis";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
-export type EmbeddedWallet = {
-  address: string;
-  getEthereumProvider: () => Promise<EIP1193Provider>;
-};
+const account = toAccount({
+  address: "0xYOUR_SIGNER_ADDRESS",
 
-export type SignAuthorizationFn = (
-  req: { contractAddress?: string; chainId?: number; nonce?: number },
-) => Promise<{ r: string; s: string; yParity: number }>;
+  async signMessage({ message }) {
+    // delegate to your signer
+  },
 
-export type CreateSmartWalletParams = {
-  embeddedWallet: EmbeddedWallet;
-  signAuthorization: SignAuthorizationFn;
-  apiKey: string;
-  policyId?: string;
-};
+  async signTypedData(typedData) {
+    // delegate to your signer
+  },
 
-/**
- * Creates an Alchemy Smart Wallet client for a generic embedded wallet using EIP-7702.
- */
-export async function createSmartEmbeddedWalletClient({
-  embeddedWallet,
-  signAuthorization,
-  apiKey,
-  policyId,
-}: CreateSmartWalletParams): Promise<SmartWalletClient> {
-  if (!apiKey) {
-    throw new Error("Missing Alchemy API key");
-  }
-  const provider = await embeddedWallet.getEthereumProvider();
+  async signTransaction(transaction) {
+    // delegate to your signer
+  },
 
-  // Create a proper LocalAccount with signAuthorization for EIP-7702
-  const account = toAccount({
-    address: embeddedWallet.address as Address,
-    // Delegate standard signing methods to the wallet provider
-    signMessage: ({ message }) =>
-      provider.request({ method: "personal_sign", params: [message, embeddedWallet.address] }),
-    signTransaction: (transaction) =>
-      provider.request({ method: "eth_signTransaction", params: [transaction] }),
-    signTypedData: (typedData) =>
-      provider.request({ method: "eth_signTypedData_v4", params: [embeddedWallet.address, JSON.stringify(typedData)] }),
-    // signAuthorization is required for EIP-7702 delegation
-    async signAuthorization(unsignedAuth) {
-      const { address, ...rest } = unsignedAuth;
-      const signature = await signAuthorization({
-        ...rest,
-        contractAddress: (address ?? rest.contractAddress) as `0x${string}`,
-      });
-      return { ...unsignedAuth, ...signature };
-    },
-  });
+  async signAuthorization(unsignedAuth) {
+    // required for EIP-7702 delegation
+    // delegate to your signer and return { ...unsignedAuth, r, s, yParity }
+  },
+});
 
-  // Create wallet client with the custom account
-  const walletClient = createWalletClient({
-    account,
-    chain: baseSepolia,
-    transport: custom(provider),
-  });
-
-  return createSmartWalletClient({
-    chain: baseSepolia,
-    transport: alchemyWalletTransport({ apiKey }),
-    signer: walletClient,
-    paymaster: policyId ? { policyId } : undefined,
-  });
-}
+const client = createSmartWalletClient({
+  signer: account,
+  transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+  chain: baseSepolia,
+});
 ```
 
-    </CodeBlocks>
+For a private key signer, you can use viem's built-in helper which implements all methods automatically:
 
-    When using the `SmartWalletClient`, send transactions:
+```ts
+import { privateKeyToAccount } from "viem/accounts";
 
-    <CodeBlocks>
-
-```ts twoslash title="send-with-eip7702.ts"
-import type { Address, EIP1193Provider } from "viem";
-import {
-  createSmartEmbeddedWalletClient,
-  type SignAuthorizationFn,
-} from "./getClient";
-
-async function main() {
-  const embeddedWallet =
-    /* your embedded wallet instance */ null as unknown as {
-      address: string;
-      getEthereumProvider: () => Promise<EIP1193Provider>;
-    };
-  const signAuthorization: SignAuthorizationFn =
-    /* your EIP-7702 sign function */ async () => {
-      return { r: "0x", s: "0x", yParity: 1 };
-    };
-
-  const client = await createSmartEmbeddedWalletClient({
-    embeddedWallet,
-    signAuthorization,
-    apiKey: "YOUR_ALCHEMY_API_KEY",
-    policyId: "YOUR_GAS_POLICY_ID", // Optional: for gas sponsorship
-  });
-
-  // Send transaction with EIP-7702 and optional gas sponsorship
-  const result = await client.sendCalls({
-    calls: [
-      {
-        to: "0x0000000000000000000000000000000000000000",
-        value: BigInt(0),
-        data: "0x",
-      },
-    ],
-    capabilities: {
-      paymaster: {
-        policyId: "YOUR_GAS_POLICY_ID",
-      },
-    },
-  });
-
-  if (!result.id) {
-    throw new Error("No call ID returned");
-  }
-
-  // Wait for transaction confirmation
-  const txStatus = await client.waitForCallsStatus({
-    id: result.id,
-    timeout: 60_000,
-  });
-
-  const txnHash = txStatus.receipts?.[0]?.transactionHash;
-  if (!txnHash) {
-    throw new Error("Transaction hash not found in receipt");
-  }
-
-  console.log("Transaction confirmed:", txnHash);
-}
-
-main();
+const client = createSmartWalletClient({
+  signer: privateKeyToAccount("0x..."),
+  transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+  chain: baseSepolia,
+});
 ```
 
-    </CodeBlocks>
+## Option 2: `WalletClient`
 
-  </Tab>
-</Tabs>
+Use a `WalletClient` when your signer is a browser wallet or embedded wallet that exposes an EIP-1193 provider (e.g. `window.ethereum`).
+
+```ts
+import { createWalletClient, custom } from "viem";
+import { baseSepolia } from "viem/chains";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+
+// Create a WalletClient from the browser wallet
+const [address] = await window.ethereum.request({ method: "eth_requestAccounts" });
+
+const walletClient = createWalletClient({
+  account: address,
+  chain: baseSepolia,
+  transport: custom(window.ethereum),
+});
+
+// Pass the WalletClient as the signer
+const client = createSmartWalletClient({
+  signer: walletClient,
+  transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+  chain: baseSepolia,
+  paymaster: { policyId: "YOUR_GAS_POLICY_ID" }, // optional
+});
+```
+
+<Note>
+  EIP-7702 authorization signing requires a `LocalAccount` with `signAuthorization` implemented. If your wallet doesn't support this, use a `LocalAccount` (Option 1) or [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) instead.
+</Note>
+
+## Sending transactions
+
+Once you have a client, usage is the same regardless of signer type:
+
+```ts
+const result = await client.sendCalls({
+  calls: [
+    {
+      to: "0x0000000000000000000000000000000000000000",
+      value: BigInt(0),
+      data: "0x",
+    },
+  ],
+});
+
+const txStatus = await client.waitForCallsStatus({
+  id: result.id,
+  timeout: 60_000,
+});
+
+console.log("Transaction confirmed:", txStatus.receipts?.[0]?.transactionHash);
+```
+
+## Integrations
+
+See full integration guides for supported providers:
+
+* [Privy](/wallets/third-party/signers/privy)
+* [Turnkey](/wallets/third-party/signers/turnkey)

@@ -57,20 +57,11 @@ any calls before creating the session key, you can delegate it by sending an
 empty call as the owner:
 
 ```ts
-const preparedCalls = await client.prepareCalls({
-  calls: [], // empty array since you don't want to send any calls
-  capabilities: {
-    paymaster: {
-      policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
-    },
-  },
+const { id } = await client.sendCalls({
+  calls: [], // empty array since you just want to delegate
 });
 
-const signedCalls = await client.signPreparedCalls(preparedCalls);
-
-const { id } = await client.sendPreparedCalls(signedCalls);
-
-const status = await client.getCallsStatus({ id });
+await client.waitForCallsStatus({ id });
 ```
 
 Now you can continue to create the session key as described below.
@@ -99,7 +90,7 @@ const permissions = await client.grantPermissions({
 ```ts
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
-// Create a client with the session key as signer for signing
+// Create a client with the session key as signer
 const sessionKeyClient = createSmartWalletClient({
   transport: alchemyWalletTransport({
     apiKey: ALCHEMY_API_KEY,
@@ -109,28 +100,14 @@ const sessionKeyClient = createSmartWalletClient({
   account: client.account.address, // The original account that granted permissions
 });
 
-const preparedCalls = await client.prepareCalls({
+const { id } = await sessionKeyClient.sendCalls({
   calls: [{ to: "0x0000000000000000000000000000000000000000", value: BigInt(0) }],
   capabilities: {
-    paymaster: {
-      policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
-    },
     permissions,
   },
 });
 
-// Sign with the session key client
-const signedCalls = await sessionKeyClient.signPreparedCalls(preparedCalls);
-
-const { id } = await client.sendPreparedCalls({
-  ...signedCalls,
-  capabilities: {
-    permissions,
-  },
-});
-
-// Check calls status.
-const status = await client.getCallsStatus({ id });
+await sessionKeyClient.waitForCallsStatus({ id });
 ```
 
 <Accordion title="Using @account-kit/wallet-client (v4)?">
