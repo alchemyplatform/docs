@@ -43,56 +43,42 @@ jobs:
       - name: Run ESLint
         run: pnpm run lint:eslint
 
-  fern-check:
-    name: Fern Check
+  generate-preview:
+    name: Generate Preview
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
-
-      - name: Generate API Specs
-        run: pnpm run generate
-
-      - name: Check API is valid
-        run: pnpm fern check
-
-  generate-preview:
-    name: Generate Fern Preview
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      deployments: write
       pull-requests: write
-    outputs:
-      preview-url: ${{ steps.preview-action.outputs.url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Generate Preview
-        id: preview-action
         uses: ./.github/actions/generate-preview
         with:
           github-token: ${{ github.token }}
-          fern-token: ${{ secrets.FERN_TOKEN }}
-          ref: ${{ github.head_ref }}
+          branch: ${{ github.head_ref }}
+          kv-rest-api-url: ${{ secrets.KV_REST_API_URL }}
+          kv-rest-api-token: ${{ secrets.KV_REST_API_TOKEN }}
+          docs-site-url: ${{ secrets.DOCS_SITE_URL }}
+          docs-site-api-key: ${{ secrets.DOCS_SITE_API_KEY }}
 
-  link-check:
-    name: Link Check
-    runs-on: ubuntu-latest
-    needs: generate-preview
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Link Checker
-        id: lychee
-        uses: lycheeverse/lychee-action@v2
-        with:
-          args: ". --base-url ${{ needs.generate-preview.outputs.preview-url }}"
-          fail: true
+  # TODO: Re-enable link checking. The new preview uses cookie-based draft mode,
+  # so lychee can't crawl it without authentication. Need to design a new approach
+  # (e.g., build-time link validation or authenticated crawling).
+  # link-check:
+  #   name: Link Check
+  #   runs-on: ubuntu-latest
+  #   needs: generate-preview
+  #   permissions:
+  #     contents: read
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #     - name: Link Checker
+  #       id: lychee
+  #       uses: lycheeverse/lychee-action@v2
+  #       with:
+  #         args: ". --base-url ${{ needs.generate-preview.outputs.preview-url }}"
+  #         fail: true

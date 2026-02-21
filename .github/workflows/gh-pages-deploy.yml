@@ -1,16 +1,16 @@
 name: Build and Deploy Specs to GH Pages
 
 on:
-  workflow_run:
-    workflows:
-      - Publish Docs
+  push:
     branches:
       - main
-    types:
-      - completed
+    paths:
+      - "fern/remote-specs.json"
+      - "src/openapi/**"
+      - "src/openrpc/**"
   repository_dispatch:
-    types:
-      - remote-spec-updated
+    types: [remote-spec-updated]
+  workflow_dispatch: {}
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -18,11 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'repository_dispatch' }}
     permissions:
       contents: read
-    outputs:
-      changed_specs: ${{ steps.detect-changes.outputs.specUrls }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,17 +28,9 @@ jobs:
         uses: ./.github/actions/setup-pnpm
 
       - name: Run build script
-        id: build
         run: pnpm generate && pnpm generate:metadata
 
-      - name: Detect changed specs
-        id: detect-changes
-        run: |
-          CHANGED=$(pnpm -s detect-spec-changes)
-          echo "specUrls=$CHANGED" >> $GITHUB_OUTPUT
-
       - name: Upload static files as artifact
-        id: deploy-artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: fern/api-specs/
@@ -59,23 +48,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-  revalidate:
-    runs-on: ubuntu-latest
-    needs: [build, deploy]
-    if: ${{ needs.build.outputs.changed_specs != '[]' && needs.build.outputs.changed_specs != '' }}
-    permissions: {}
-    steps:
-      - name: Trigger spec revalidation
-        env:
-          CHANGED_SPECS: ${{ needs.build.outputs.changed_specs }}
-        run: |
-          # Create JSON payload and call revalidation API
-          PAYLOAD=$(jq -n --argjson urls "$CHANGED_SPECS" '{specUrls: $urls}')
-
-          curl -X POST "${{ secrets.DOCS_SITE_URL }}/api/revalidate/specs" \
-            -H "Authorization: Bearer ${{ secrets.DOCS_SITE_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD" \
-            --max-time 120 \
-            --fail-with-body

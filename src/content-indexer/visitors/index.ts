@@ -24,6 +24,8 @@ export interface VisitorConfigBase {
   contentCache: ContentCache;
   context: ProcessingContext;
   navigationAncestors: NavItem[];
+  /** When true, an ancestor section is hidden — suppress Algolia indexing. */
+  isAncestorHidden?: boolean;
 }
 
 export interface VisitorConfig extends VisitorConfigBase {

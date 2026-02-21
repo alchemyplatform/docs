@@ -1,7 +1,11 @@
+import fs from "fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { OpenApiSpec } from "@/content-indexer/types/specs.ts";
-import { fetchApiSpec } from "@/content-indexer/utils/apiSpecs.ts";
+import {
+  buildSpecFileMap,
+  readApiSpec,
+} from "@/content-indexer/utils/apiSpecs.ts";
 import { readLocalMdxFile } from "@/content-indexer/utils/filesystem.ts";
 import { openApiSpecFactory } from "@/content-indexer/utils/test-factories.js";
 
@@ -13,8 +17,11 @@ vi.mock("@/content-indexer/utils/filesystem", () => ({
 }));
 
 vi.mock("@/content-indexer/utils/apiSpecs", () => ({
-  fetchApiSpec: vi.fn(),
+  buildSpecFileMap: vi.fn().mockResolvedValue(new Map()),
+  readApiSpec: vi.fn(),
 }));
+
+vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 describe("batchFetchContent", () => {
   let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
@@ -62,7 +69,7 @@ describe("batchFetchContent", () => {
     expect(entry?.content).toContain("# Content");
   });
 
-  test("should fetch API specs and populate cache", async () => {
+  test("should read API specs and populate cache", async () => {
     const scanResult = {
       mdxPaths: new Set<string>(),
       specNames: new Set(["ethereum-api", "solana-api"]),
@@ -77,22 +84,49 @@ describe("batchFetchContent", () => {
       specUrl: "https://example.com/spec.json",
     };
 
-    vi.mocked(fetchApiSpec).mockResolvedValue(mockSpec);
+    vi.mocked(readApiSpec).mockResolvedValue(mockSpec);
+
+    const cache = await batchFetchContent(scanResult, {
+      type: "filesystem",
+      basePath: "/test/path",
+      specsDir: "/test/specs",
+    });
+
+    // Verify reads were made with the spec file map
+    expect(buildSpecFileMap).toHaveBeenCalledWith("/test/specs");
+    expect(readApiSpec).toHaveBeenCalledTimes(2);
+    expect(readApiSpec).toHaveBeenCalledWith(
+      "ethereum-api",
+      "/test/specs",
+      expect.any(Map),
+    );
+    expect(readApiSpec).toHaveBeenCalledWith(
+      "solana-api",
+      "/test/specs",
+      expect.any(Map),
+    );
+
+    // Verify cache was populated
+    const stats = cache.getStats();
+    expect(stats.mdxCount).toBe(0);
+    expect(stats.specCount).toBe(2);
+  });
+
+  test("should skip spec reading when specsDir is not set", async () => {
+    const scanResult = {
+      mdxPaths: new Set<string>(),
+      specNames: new Set(["ethereum-api"]),
+    };
 
     const cache = await batchFetchContent(scanResult, {
       type: "filesystem",
       basePath: "/test/path",
     });
 
-    // Verify fetches were made
-    expect(fetchApiSpec).toHaveBeenCalledTimes(2);
-    expect(fetchApiSpec).toHaveBeenCalledWith("ethereum-api");
-    expect(fetchApiSpec).toHaveBeenCalledWith("solana-api");
+    expect(readApiSpec).not.toHaveBeenCalled();
 
-    // Verify cache was populated
     const stats = cache.getStats();
-    expect(stats.mdxCount).toBe(0);
-    expect(stats.specCount).toBe(2);
+    expect(stats.specCount).toBe(0);
   });
 
   test("should handle stripPathPrefix configuration", async () => {
@@ -125,11 +159,12 @@ describe("batchFetchContent", () => {
     };
 
     vi.mocked(readLocalMdxFile).mockRejectedValue(new Error("File not found"));
-    vi.mocked(fetchApiSpec).mockRejectedValue(new Error("Spec not found"));
+    vi.mocked(readApiSpec).mockRejectedValue(new Error("Spec not found"));
 
     const cache = await batchFetchContent(scanResult, {
       type: "filesystem",
       basePath: "/test/path",
+      specsDir: "/test/specs",
     });
 
     // Verify warnings were logged
@@ -138,7 +173,7 @@ describe("batchFetchContent", () => {
       expect.any(Error),
     );
     expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Failed to fetch spec"),
+      expect.stringContaining("Failed to read spec"),
       expect.any(Error),
     );
 
@@ -155,11 +190,12 @@ describe("batchFetchContent", () => {
     };
 
     vi.mocked(readLocalMdxFile).mockResolvedValue(null);
-    vi.mocked(fetchApiSpec).mockResolvedValue(undefined);
+    vi.mocked(readApiSpec).mockResolvedValue(undefined);
 
     const cache = await batchFetchContent(scanResult, {
       type: "filesystem",
       basePath: "/test/path",
+      specsDir: "/test/specs",
     });
 
     // Cache should be empty
@@ -178,7 +214,7 @@ describe("batchFetchContent", () => {
       frontmatter: {},
       content: "Content",
     });
-    vi.mocked(fetchApiSpec).mockResolvedValue({
+    vi.mocked(readApiSpec).mockResolvedValue({
       specType: "openapi",
       spec: {} as OpenApiSpec,
       specUrl: "url",
@@ -187,6 +223,7 @@ describe("batchFetchContent", () => {
     await batchFetchContent(scanResult, {
       type: "filesystem",
       basePath: "/test/path",
+      specsDir: "/test/specs",
     });
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(
