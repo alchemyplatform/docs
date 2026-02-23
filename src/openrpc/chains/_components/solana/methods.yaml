@@ -642,18 +642,19 @@ components:
       name: getPriorityFeeEstimate
       description: Calculate optimal priority fee recommendations for Solana transactions based on real-time network conditions.
       params:
-        - name: Options
+        - name: Configuration
           required: true
-          description: Configuration object containing transaction or account keys and optional parameters for fee estimation.
+          description: Single params object. Top-level keys are transaction, accountKeys, and options (nested). Put priorityLevel, recommended, etc. inside options.
           schema:
             $ref: "./fee.yaml#/components/schemas/GetPriorityFeeEstimateParams"
       examples:
         - name: getPriorityFeeEstimate with transaction
           params:
-            - name: Options
+            - name: Configuration
               value:
                 transaction: "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDArczbMia1tLmq7zz4DinMNN0pJ1JtLdqIJPUw3YrGCzYAMHBsgN27lcgB6H2WQvFgyZuJYHa46puOQo9yQ8CVQbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCp20C7Wj2aiuk5TReAXo+VTVg8QTHjs0UjNMMKCvpzZ+ABAgEBARU="
-                priorityLevel: "High"
+                options:
+                  priorityLevel: "High"
       result:
         name: Priority fee estimate
         description: Optimal priority fee estimate and optional fee levels for different priority tiers.

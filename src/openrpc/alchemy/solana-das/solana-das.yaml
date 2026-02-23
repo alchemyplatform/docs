@@ -13,23 +13,23 @@ servers:
 methods:
   - name: getAsset
     description: Returns information about a single digital asset.
+    paramStructure: by-name
     params:
-      - name: Asset ID
+      - name: id
         required: true
-        description: The ID of the asset to retrieve.
+        description: The ID of the asset, typically a base-58 encoded string.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
-      - name: Configuration
+      - name: displayOptions
         required: false
-        description: Optional configuration object for display formatting.
+        description: Options for display formatting.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetConfig
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
       - name: getAsset example
         params:
-          - name: Asset ID
-            value:
-              id: "F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk"
+          - name: id
+            value: "F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk"
     result:
       name: Asset information
       description: Returns detailed information about the specified digital asset.
@@ -38,23 +38,67 @@ methods:
 
   - name: getAssets
     description: Returns information about multiple digital assets.
+    paramStructure: by-name
     params:
-      - name: Asset IDs
+      - name: ids
         required: true
         description: An array of asset IDs to retrieve.
         schema:
           type: array
           items:
             $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
-      - name: Configuration
+      - name: sortBy
         required: false
-        description: Optional configuration object for sorting and pagination.
+        description: Sorting criteria for assets.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetsConfig
+          type: object
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+      - name: limit
+        required: false
+        description: The maximum number of assets to retrieve.
+        schema:
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve assets before this cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve assets after this cursor.
+        schema:
+          type: string
+      - name: displayOptions
+        required: false
+        description: Options for display formatting.
+        schema:
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
       - name: getAssets example
         params:
-          - name: Asset IDs
+          - name: ids
             value:
               - "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
               - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
@@ -66,16 +110,17 @@ methods:
 
   - name: getAssetProof
     description: Returns the merkle proof for a compressed digital asset.
+    paramStructure: by-name
     params:
-      - name: Asset ID
+      - name: id
         required: true
-        description: The ID of the compressed asset to get proof for.
+        description: The ID of the compressed asset.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
     examples:
       - name: getAssetProof example
         params:
-          - name: Asset ID
+          - name: id
             value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
     result:
       name: Asset proof
@@ -85,10 +130,11 @@ methods:
 
   - name: getAssetProofs
     description: Returns merkle proofs for multiple compressed digital assets.
+    paramStructure: by-name
     params:
-      - name: Asset IDs
+      - name: ids
         required: true
-        description: An array of compressed asset IDs to get proofs for.
+        description: An array of compressed asset IDs.
         schema:
           type: array
           items:
@@ -96,7 +142,7 @@ methods:
     examples:
       - name: getAssetProofs example
         params:
-          - name: Asset IDs
+          - name: ids
             value:
               - "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
               - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
@@ -108,23 +154,61 @@ methods:
 
   - name: getAssetsByAuthority
     description: Returns assets filtered by their authority.
+    paramStructure: by-name
     params:
-      - name: Authority address
+      - name: authorityAddress
         required: true
-        description: The authority address to filter assets by.
+        description: The authority address to filter by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: Configuration
+      - name: sortBy
         required: false
-        description: Optional configuration object for sorting and pagination.
+        description: Sorting criteria for assets.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetsByAuthorityConfig
+          type: object
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+      - name: limit
+        required: false
+        description: The maximum number of assets to retrieve.
+        schema:
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve assets before this cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve assets after this cursor.
+        schema:
+          type: string
     examples:
       - name: getAssetsByAuthority example
         params:
-          - name: Authority address
-            value:
-              authorityAddress: "2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW"
+          - name: authorityAddress
+            value: "2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW"
     result:
       name: Assets by authority
       description: Returns assets filtered by the specified authority.
@@ -133,33 +217,84 @@ methods:
 
   - name: getAssetsByOwner
     description: Returns assets owned by the specified address.
+    paramStructure: by-name
     params:
-      - name: Owner address
+      - name: ownerAddress
         required: true
         description: The owner address to filter assets by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: Configuration
+      - name: sortBy
         required: false
-        description: Optional configuration object for sorting and pagination.
+        description: Sorting criteria for assets.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetsByOwnerConfig
+          type: object
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - id
+                - created
+                - updated
+                - recentAction
+                - none
+              description: >
+                The field to sort by. Note: Only `id` is supported for cursor-based pagination
+                (using `before`/`after`). Sorting by `created`, `updated`, `recentAction`, or `none`
+                requires page-based pagination (using `page`).
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+      - name: limit
+        required: false
+        description: The maximum number of assets to retrieve.
+        schema:
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve. Required when using sortBy values other than `id`.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve assets before this cursor. Only supported when sortBy is `id`.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve assets after this cursor. Only supported when sortBy is `id`.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Options for display formatting.
+        schema:
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
       - name: getAssetsByOwner example
         params:
-          - name: Owner address
+          - name: ownerAddress
+            value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: page
+            value: 1
+          - name: limit
+            value: 50
+          - name: sortBy
             value:
-              ownerAddress: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
-              page: 1
-              limit: 50
-              sortBy:
-                sortBy: "created"
-                sortDirection: "asc"
-              options:
-                showUnverifiedCollections: false
-                showCollectionMetadata: false
-                showFungible: false
-                showZeroBalance: false
+              sortBy: "created"
+              sortDirection: "asc"
+          - name: options
+            value:
+              showUnverifiedCollections: false
+              showCollectionMetadata: false
+              showFungible: false
+              showZeroBalance: false
     result:
       name: Assets by owner
       description: Returns assets owned by the specified address.
@@ -168,28 +303,67 @@ methods:
 
   - name: getAssetsByGroup
     description: Returns assets filtered by their group information.
+    paramStructure: by-name
     params:
-      - name: Group key
+      - name: groupKey
         required: true
-        description: The group key to filter assets by.
+        description: The group key to filter by.
         schema:
           type: string
-      - name: Group value
+      - name: groupValue
         required: true
-        description: The group value to filter assets by.
+        description: The group value to filter by.
         schema:
           type: string
-      - name: Configuration
+      - name: sortBy
         required: false
-        description: Optional configuration object for sorting and pagination.
+        description: Sorting criteria for assets.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetsByGroupConfig
+          type: object
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+      - name: limit
+        required: false
+        description: The maximum number of assets to retrieve.
+        schema:
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve assets before this cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve assets after this cursor.
+        schema:
+          type: string
     examples:
       - name: getAssetsByGroup example
         params:
-          - name: Group key
+          - name: groupKey
             value: "collection"
-          - name: Group value
+          - name: groupValue
             value: "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w"
     result:
       name: Assets by group
@@ -199,24 +373,67 @@ methods:
 
   - name: getAssetsByCreator
     description: Returns assets created by the specified address.
+    paramStructure: by-name
     params:
-      - name: Creator address
+      - name: creatorAddress
         required: true
-        description: The creator address to filter assets by.
+        description: The creator address to filter by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: Configuration
+      - name: onlyVerified
         required: false
-        description: Optional configuration object for sorting and pagination.
+        description: Only return assets where the creator is verified.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetsByCreatorConfig
+          type: boolean
+          default: false
+      - name: sortBy
+        required: false
+        description: Sorting criteria for assets.
+        schema:
+          type: object
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+      - name: limit
+        required: false
+        description: The maximum number of assets to retrieve.
+        schema:
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve assets before this cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve assets after this cursor.
+        schema:
+          type: string
     examples:
       - name: getAssetsByCreator example
         params:
-          - name: Creator address
-            value:
-              groupKey: "collection"
-              groupValue: "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w"
+          - name: creatorAddress
+            value: "9zsduBRp3VyGKaqim3b17dER3Z8fGCE1UYs4FNrqn1Km"
     result:
       name: Assets by creator
       description: Returns assets created by the specified address.
@@ -225,20 +442,150 @@ methods:
 
   - name: searchAssets
     description: Search for assets using a complex set of filter criteria.
+    paramStructure: by-name
     params:
-      - name: Search filters
+      - name: sortBy
         required: false
-        description: Object containing search criteria and filters.
+        description: Sorting criteria for assets.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/SearchAssetsConfig
+          type: object
+          properties:
+            sortBy:
+              type: string
+              enum:
+                - created
+                - updated
+                - recentAction
+                - none
+              description: The field to sort by.
+            sortDirection:
+              type: string
+              enum:
+                - asc
+                - desc
+              description: Sort direction.
+      - name: limit
+        required: false
+        description: The maximum number of assets to retrieve.
+        schema:
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve assets before this cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve assets after this cursor.
+        schema:
+          type: string
+      - name: negate
+        required: false
+        description: Invert the search filter.
+        schema:
+          type: boolean
+          default: false
+      - name: conditionType
+        required: false
+        description: Condition type for multiple filters.
+        schema:
+          type: string
+          enum:
+            - all
+            - any
+          default: all
+      - name: interface
+        required: false
+        description: The interface of the asset.
+        schema:
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetInterface
+      - name: ownerAddress
+        required: false
+        description: The owner address to filter by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: ownerType
+        required: false
+        description: The ownership model.
+        schema:
+          type: string
+          enum:
+            - single
+            - token
+      - name: creatorAddress
+        required: false
+        description: The creator address to filter by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: creatorVerified
+        required: false
+        description: Only include verified creators.
+        schema:
+          type: boolean
+      - name: authorityAddress
+        required: false
+        description: The authority address to filter by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: grouping
+        required: false
+        description: Grouping criteria for assets.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: delegateAddress
+        required: false
+        description: The delegate address to filter by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: frozen
+        required: false
+        description: Filter by frozen status.
+        schema:
+          type: boolean
+      - name: supply
+        required: false
+        description: Supply filter criteria.
+        schema:
+          type: object
+          properties:
+            printMaxSupply:
+              type: integer
+              description: Maximum print supply filter.
+            printCurrentSupply:
+              type: integer
+              description: Current print supply filter.
+      - name: mutable
+        required: false
+        description: Filter by mutable status.
+        schema:
+          type: boolean
+      - name: burnt
+        required: false
+        description: Filter by burnt status.
+        schema:
+          type: boolean
+      - name: jsonUri
+        required: false
+        description: Filter by JSON URI.
+        schema:
+          type: string
     examples:
       - name: searchAssets example
         params:
-          - name: Search filters
-            value:
-              ownerAddress: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
-              tokenType: "all"
-              limit: 50
+          - name: ownerAddress
+            value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: limit
+            value: 50
     result:
       name: Search results
       description: Returns assets matching the specified search criteria.
@@ -247,23 +594,46 @@ methods:
 
   - name: getAssetSignatures
     description: Returns signatures for transactions that have interacted with the given asset.
+    paramStructure: by-name
     params:
-      - name: Asset ID
+      - name: id
         required: true
         description: The ID of the asset to get signatures for.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
-      - name: Configuration
+      - name: limit
         required: false
-        description: Optional configuration object for pagination.
+        description: The maximum number of signatures to retrieve.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetAssetSignaturesConfig
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve signatures before this cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve signatures after this cursor.
+        schema:
+          type: string
+      - name: tree
+        required: false
+        description: The merkle tree address to filter by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
     examples:
       - name: getAssetSignatures example
         params:
-          - name: Asset ID
-            value:
-              id: "FNt6A9Mfnqbwc1tY7uwAguKQ1JcpBrxmhczDgbdJy5AC"
+          - name: id
+            value: "FNt6A9Mfnqbwc1tY7uwAguKQ1JcpBrxmhczDgbdJy5AC"
     result:
       name: Asset signatures
       description: Returns signatures for transactions involving the specified asset.
@@ -272,21 +642,40 @@ methods:
 
   - name: getNftEditions
     description: Returns all editions of a given master NFT.
+    paramStructure: by-name
     params:
-      - name: Master NFT ID
+      - name: mint
         required: true
         description: The ID of the master NFT to get editions for.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
-      - name: Configuration
+      - name: limit
         required: false
-        description: Optional configuration object for pagination.
+        description: The maximum number of editions to retrieve.
         schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/GetNftEditionsConfig
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: page
+        required: false
+        description: The index of the "page" to retrieve.
+        schema:
+          type: integer
+          default: 1
+      - name: before
+        required: false
+        description: Retrieve editions before this cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Retrieve editions after this cursor.
+        schema:
+          type: string
     examples:
       - name: getNftEditions example
         params:
-          - name: Master NFT ID
+          - name: mint
             value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
     result:
       name: NFT editions
@@ -296,18 +685,60 @@ methods:
 
   - name: getTokenAccounts
     description: Returns token accounts based on the specified filters.
+    paramStructure: by-name
     params:
-      - name: Configuration
+      - name: mint
         required: false
-        description: Configuration object for filtering and pagination.
+        description: The mint address to filter token accounts by.
         schema:
-          $ref: ../../chains/_components/solana/account.yaml#/components/schemas/GetTokenAccountsConfig
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: owner
+        required: false
+        description: The owner address to filter token accounts by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: programId
+        required: false
+        description: The program ID to filter accounts by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: commitment
+        required: false
+        description: The level of commitment desired for the query.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Commitment
+      - name: minContextSlot
+        required: false
+        description: The minimum slot that the request can be evaluated at.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/MinContextSlot
+      - name: dataSlice
+        required: false
+        description: Limit the returned account data.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/DataSlice
+      - name: encoding
+        required: false
+        description: Encoding format for account data.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Encoding
+      - name: limit
+        required: false
+        description: The maximum number of token accounts to retrieve.
+        schema:
+          type: integer
+          maximum: 1000
+          default: 100
+      - name: cursor
+        required: false
+        description: Cursor for pagination.
+        schema:
+          type: string
     examples:
       - name: getTokenAccounts example
         params:
-          - name: Configuration
-            value:
-              ownerAddress: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: owner
+            value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
     result:
       name: Token accounts
       description: Returns token accounts matching the specified criteria.
