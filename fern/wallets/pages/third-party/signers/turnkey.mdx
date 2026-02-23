@@ -17,219 +17,286 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
   minutes.
 </Tip>
 
-<Note>
-  Using `@account-kit/wallet-client` (v4)? The `WalletClientSigner` wrapper is no longer needed in v5 — pass your `WalletClient` directly as the signer. See the [migration guide](/wallets/resources/migration-v5) for details.
-</Note>
-
 <Tabs>
-  <Tab title="JavaScript" language="typescript">
+  <Tab title="React" language="react">
     ## Setup
 
-    Use Turnkey's `@turnkey/sdk-server` package with Smart Wallets infrastructure in a server environment.
+    Follow these steps to use Turnkey signers with the Wallet Client SDK.
 
     ### Installation
 
-    ```bash
+    <CodeGroup>
+    ```shell npm
+    npm install @alchemy/wallet-apis@0.0.0-alpha.19 @turnkey/react-wallet-kit @turnkey/viem viem
+    ```
+
+    ```shell bun
+    bun add @alchemy/wallet-apis@0.0.0-alpha.19 @turnkey/react-wallet-kit @turnkey/viem viem
+    ```
+
+    ```shell yarn
+    yarn add @alchemy/wallet-apis@0.0.0-alpha.19 @turnkey/react-wallet-kit @turnkey/viem viem
+    ```
+
+    ```shell pnpm
+    pnpm add @alchemy/wallet-apis@0.0.0-alpha.19 @turnkey/react-wallet-kit @turnkey/viem viem
+    ```
+    </CodeGroup>
+
+    ### Prerequisites: Get your keys (API key, Policy ID, Turnkey Organization ID)
+
+    * Alchemy API Key:
+      * Go to the [Alchemy Dashboard](https://dashboard.alchemy.com/)
+      * Create or select an app and copy the API key
+    * Gas sponsorship Policy ID (Gas Manager):
+      * Create a gas sponsorship policy in the [dashboard](https://dashboard.alchemy.com/services/gas-manager/configuration) and copy its Policy ID
+    * Turnkey Organization ID & Auth Proxy Config ID:
+      * Go to the [Turnkey Dashboard](https://app.turnkey.com/)
+      * Create or select an organization and copy the Organization ID
+      * Set up an Auth Proxy and copy the Config ID
+
+    <Warning>
+      The gas sponsorship policy must be linked to the application behind your Alchemy API key for sponsorship to work.
+    </Warning>
+
+    ### 1. Configure TurnkeyProvider
+
+    Wrap your app with `TurnkeyProvider` from `@turnkey/react-wallet-kit`:
+
+    ```tsx
+    import { TurnkeyProvider } from "@turnkey/react-wallet-kit";
+    import "@turnkey/react-wallet-kit/styles.css";
+
+    export function App() {
+      return (
+        <TurnkeyProvider
+          config={{
+            organizationId: "YOUR_TURNKEY_ORGANIZATION_ID",
+            authProxyConfigId: "YOUR_TURNKEY_AUTH_PROXY_CONFIG_ID",
+            auth: {
+              createSuborgParams: {
+                emailOtpAuth: {
+                  customWallet: {
+                    walletName: "Default Wallet",
+                    walletAccounts: [
+                      {
+                        curve: "CURVE_SECP256K1",
+                        pathFormat: "PATH_FORMAT_BIP32",
+                        path: "m/44'/60'/0'/0/0",
+                        addressFormat: "ADDRESS_FORMAT_ETHEREUM",
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          }}
+        >
+          <YourApp />
+        </TurnkeyProvider>
+      );
+    }
+    ```
+
+    ### 2. Get a signer from Turnkey
+
+    Use `useTurnkey` from `@turnkey/react-wallet-kit` and `createAccount` from `@turnkey/viem` to convert a Turnkey wallet into a viem `LocalAccount`:
+
+    ```tsx
+    import { useTurnkey } from "@turnkey/react-wallet-kit";
+    import { createAccount } from "@turnkey/viem";
+    import { useEffect, useState } from "react";
+    import type { LocalAccount } from "viem";
+
+    const useTurnkeySigner = () => {
+      const { httpClient, wallets, session } = useTurnkey();
+
+      const [signer, setSigner] = useState<LocalAccount>();
+
+      // Use the first Ethereum account from the first wallet
+      const account = wallets[0]?.accounts?.find(
+        (a) => a.addressFormat === "ADDRESS_FORMAT_ETHEREUM",
+      );
+
+      useEffect(() => {
+        if (!httpClient || !account || !session || signer) return;
+        createAccount({
+          client: httpClient,
+          organizationId: session.organizationId,
+          signWith: account.address,
+        }).then(setSigner);
+      }, [httpClient, account, session, signer]);
+
+      return signer;
+    };
+    ```
+
+    ### 3. Create the client and send a transaction
+
+    Pass the Turnkey signer to `createSmartWalletClient` and use it to send transactions:
+
+    ```tsx
+    import { useMemo, useCallback } from "react";
+    import { zeroAddress } from "viem";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+    import { arbitrumSepolia } from "viem/chains";
+
+    function SendTransaction({ signer }: { signer: LocalAccount }) {
+      const client = useMemo(
+        () =>
+          createSmartWalletClient({
+            signer,
+            transport: alchemyWalletTransport({
+              apiKey: "YOUR_ALCHEMY_API_KEY",
+            }),
+            chain: arbitrumSepolia,
+            paymaster: {
+              policyId: "YOUR_GAS_MANAGER_POLICY_ID",
+            },
+          }),
+        [signer],
+      );
+
+      const handleSend = useCallback(async () => {
+        // Send the transaction
+        const { id } = await client.sendCalls({
+          calls: [{ to: zeroAddress, value: BigInt(0), data: "0x" }],
+        });
+
+        // Check the transaction status
+        const result = await client.waitForCallsStatus({ id });
+        console.log(`Transaction hash: ${result.receipts?.[0]?.transactionHash}`);
+      }, [client]);
+
+      return <button onClick={handleSend}>Send transaction</button>;
+    }
+    ```
+
+    ### Notes
+
+    * The client defaults to [EIP-7702](/wallets/transactions/using-eip-7702), which delegates the Turnkey wallet to a smart account at send time. No deployment or wallet migration needed. See the [EIP-7702 guide](/wallets/transactions/using-eip-7702) for non-7702 mode.
+    * See the [Sponsor gas](/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
+  </Tab>
+
+  <Tab title="JavaScript" language="typescript">
+    ## Setup
+
+    Use Turnkey's `@turnkey/sdk-server` package with the Wallet Client SDK in a server environment.
+
+    ### Installation
+
+    <CodeGroup>
+    ```shell npm
     npm install @turnkey/sdk-server @turnkey/viem @alchemy/wallet-apis@0.0.0-alpha.19 viem
-    # or
+    ```
+
+    ```shell bun
+    bun add @turnkey/sdk-server @turnkey/viem @alchemy/wallet-apis@0.0.0-alpha.19 viem
+    ```
+
+    ```shell yarn
     yarn add @turnkey/sdk-server @turnkey/viem @alchemy/wallet-apis@0.0.0-alpha.19 viem
-    # or
+    ```
+
+    ```shell pnpm
     pnpm add @turnkey/sdk-server @turnkey/viem @alchemy/wallet-apis@0.0.0-alpha.19 viem
     ```
+    </CodeGroup>
 
     ### Prerequisites: Get your keys
 
     * Alchemy API Key:
-      * Go to the [dashboard](https://dashboard.alchemy.com/)
+      * Go to the [Alchemy Dashboard](https://dashboard.alchemy.com/)
       * Create or select an app and copy the API key
-    * Gas sponsorship Policy ID:
+    * Gas sponsorship Policy ID (Gas Manager):
       * Create a gas sponsorship policy in the [dashboard](https://dashboard.alchemy.com/services/gas-manager/configuration) and copy its Policy ID
     * Turnkey Credentials:
       * Go to the [Turnkey Dashboard](https://app.turnkey.com/)
       * Create or select an organization and copy the Organization ID
       * Create an API key pair and copy the API Public Key and Private Key
-      * Create or import a private key and copy the Private Key ID (UUID)
-      * Note the Ethereum address associated with that private key
 
     <Warning>
-      Both the Smart Wallets configuration and the gas sponsorship policy must be
-      linked to the application behind your API key for sponsorship to work.
+      The gas sponsorship policy must be linked to the application behind your Alchemy API key for sponsorship to work.
     </Warning>
 
-    ### Create Smart Wallet Client from Turnkey
+    ### Send a transaction
 
-    Create a helper function that converts a Turnkey wallet into an Alchemy Smart Wallet client:
-
-    ```ts twoslash
-    import { baseSepolia } from "viem/chains";
-    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+    ```ts
     import { Turnkey } from "@turnkey/sdk-server";
     import { createAccount } from "@turnkey/viem";
-    import { createWalletClient } from "viem";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+    import { arbitrumSepolia } from "viem/chains";
 
-    const ALCHEMY_API_KEY = "your-alchemy-api-key";
-    const ALCHEMY_GAS_POLICY_ID = "your-gas-policy-id";
-    const TURNKEY_ORGANIZATION_ID = "your-turnkey-org-id";
-    const TURNKEY_API_PRIVATE_KEY = "your-turnkey-api-private-key";
-    const TURNKEY_API_PUBLIC_KEY = "your-turnkey-api-public-key";
-
-    async function createTurnkeySmartWalletClient({
-      privateKeyId,
-      walletAddress,
-    }) {
-      // Initialize Turnkey SDK
-      const turnkey = new Turnkey({
-        defaultOrganizationId: TURNKEY_ORGANIZATION_ID,
-        apiBaseUrl: "https://api.turnkey.com",
-        apiPrivateKey: TURNKEY_API_PRIVATE_KEY,
-        apiPublicKey: TURNKEY_API_PUBLIC_KEY,
-      });
-
-      // Create a viem account using Turnkey's signing capabilities
-      const baseTurnkeyAccount = await createAccount({
-        client: turnkey.apiClient(),
-        organizationId: TURNKEY_ORGANIZATION_ID,
-        signWith: privateKeyId,
-        ethereumAddress: walletAddress,
-      });
-
-      // Wrap the account to fix the double 0x prefix bug in @turnkey/viem 0.14.8
-      const turnkeyAccount = {
-        ...baseTurnkeyAccount,
-        signAuthorization: async (authorization) => {
-          if (!baseTurnkeyAccount.signAuthorization) {
-            throw new Error("signAuthorization not available on Turnkey account");
-          }
-          const result = await baseTurnkeyAccount.signAuthorization(authorization);
-
-          // Strip the extra 0x prefix if present
-          return {
-            ...result,
-            r: result.r.replace(/^0x0x/, "0x"),
-            s: result.s.replace(/^0x0x/, "0x"),
-          };
-        },
-      };
-
-      // Create wallet client with Turnkey account
-      const walletClient = createWalletClient({
-        account: turnkeyAccount,
-        chain: baseSepolia,
-        transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
-      });
-
-      // Create and return the Smart Wallet client
-      // Pass the walletClient directly as the signer
-      return createSmartWalletClient({
-        chain: baseSepolia,
-        transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
-        signer: walletClient,
-        paymaster: { policyId: ALCHEMY_GAS_POLICY_ID },
-      });
-    }
-    ```
-
-    ### Send Transactions with EIP-7702
-
-    Send gasless transactions using EIP-7702 to upgrade the Turnkey wallet to a smart wallet:
-
-    ```ts twoslash
-    const TURNKEY_PRIVATE_KEY_ID = "your-private-key-uuid";
-    const TURNKEY_WALLET_ADDRESS = "0x...";
-
-    async function sendTransaction() {
-      console.log("Wallet address:", TURNKEY_WALLET_ADDRESS);
-
-      // Create Smart Wallet client from Turnkey wallet
-      const client = await createTurnkeySmartWalletClient({
-        privateKeyId: TURNKEY_PRIVATE_KEY_ID,
-        walletAddress: TURNKEY_WALLET_ADDRESS,
-      });
-
-      // Send a gasless transaction with EIP-7702
-      const result = await client.sendCalls({
-        calls: [
-          {
-            to: "0x0000000000000000000000000000000000000000",
-            value: BigInt(0),
-            data: "0x",
-          },
-        ],
-        capabilities: {
-          paymaster: {
-            policyId: ALCHEMY_GAS_POLICY_ID,
-          },
-        },
-      });
-
-      console.log("Transaction sent:", result.id);
-    }
-    ```
-
-    ### Wait for Transaction Confirmation
-
-    Wait for the transaction to be confirmed onchain:
-
-    ```ts twoslash
-    async function sendAndWaitForTransaction() {
-      const client = await createTurnkeySmartWalletClient({
-        privateKeyId: TURNKEY_PRIVATE_KEY_ID,
-        walletAddress: TURNKEY_WALLET_ADDRESS,
-      });
-
-      const result = await client.sendCalls({
-        calls: [
-          {
-            to: "0x0000000000000000000000000000000000000000",
-            value: BigInt(0),
-            data: "0x",
-          },
-        ],
-        capabilities: {
-          paymaster: {
-            policyId: ALCHEMY_GAS_POLICY_ID,
-          },
-        },
-      });
-
-      console.log("Waiting for confirmation...");
-
-      // Wait for the transaction to be confirmed
-      const txStatus = await client.waitForCallsStatus({
-        id: result.id,
-        timeout: 60_000, // 60 seconds
-      });
-
-      const txnHash = txStatus.receipts?.[0]?.transactionHash;
-
-      console.log("Transaction confirmed!");
-      console.log("Transaction hash:", txnHash);
-    }
-    ```
-
-    ### Batch Multiple Transactions
-
-    Send multiple transactions in a single batch:
-
-    ```ts twoslash
-    const result = await client.sendCalls({
-      calls: [
-        { to: "0x...", data: "0x...", value: BigInt(0) },
-        { to: "0x...", data: "0x...", value: BigInt(0) },
-        { to: "0x...", data: "0x...", value: BigInt(0) },
-      ],
-      capabilities: {
-        paymaster: {
-          policyId: ALCHEMY_GAS_POLICY_ID,
-        },
-      },
+    const turnkeySdk = new Turnkey({
+      apiBaseUrl: "https://api.turnkey.com",
+      apiPublicKey: process.env.TURNKEY_API_PUBLIC_KEY!,
+      apiPrivateKey: process.env.TURNKEY_API_PRIVATE_KEY!,
+      defaultOrganizationId: process.env.TURNKEY_ORGANIZATION_ID!,
     });
+
+    const turnkeyClient = turnkeySdk.apiClient();
+
+    // Get or create a wallet
+    const { wallets } = await turnkeyClient.getWallets();
+    let address: string;
+
+    if (wallets.length > 0) {
+      // Reuse existing wallet — get its first Ethereum account
+      const { accounts } = await turnkeyClient.getWalletAccounts({
+        walletId: wallets[0]!.walletId,
+      });
+      address = accounts[0]!.address;
+    } else {
+      // No wallets yet — create one
+      const { addresses } = await turnkeyClient.createWallet({
+        walletName: "Smart Wallet",
+        accounts: [
+          {
+            curve: "CURVE_SECP256K1",
+            pathFormat: "PATH_FORMAT_BIP32",
+            path: "m/44'/60'/0'/0/0",
+            addressFormat: "ADDRESS_FORMAT_ETHEREUM",
+          },
+        ],
+      });
+      address = addresses[0]!;
+    }
+
+    // Get a viem-compatible signer from Turnkey
+    const signer = await createAccount({
+      client: turnkeyClient,
+      organizationId: process.env.TURNKEY_ORGANIZATION_ID!,
+      signWith: address,
+    });
+
+    // Create the Smart Wallet client
+    const client = createSmartWalletClient({
+      signer,
+      transport: alchemyWalletTransport({ apiKey: process.env.ALCHEMY_API_KEY! }),
+      chain: arbitrumSepolia,
+      paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
+    });
+
+    // Send the transaction
+    const { id } = await client.sendCalls({
+      calls: [
+        {
+          to: "0x0000000000000000000000000000000000000000",
+          value: BigInt(0),
+          data: "0x",
+        },
+      ],
+    });
+
+    // Check the transaction status
+    const result = await client.waitForCallsStatus({ id });
+    console.log(`Transaction hash: ${result.receipts?.[0]?.transactionHash}`);
     ```
 
     ### Notes
 
-    * **EIP-7702**: Upgrades the Turnkey wallet to a smart wallet at transaction time without migration
-    * **Gas Sponsorship**: Use `paymaster` with your policy ID for gasless transactions
-    * **Server-Side**: This example uses Turnkey's `@turnkey/sdk-server` package which is designed for server environments. However, `@alchemy/wallet-apis` can be used in any JavaScript environment including browsers, React Native, and Node.js
+    * The client defaults to [EIP-7702](/wallets/transactions/using-eip-7702), which upgrades the Turnkey wallet to a smart wallet at transaction time without migration or separate deployment. See the [EIP-7702 guide](/wallets/transactions/using-eip-7702) for non-7702 mode.
+    * See the [Sponsor gas](/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
+    * This example uses Turnkey's `@turnkey/sdk-server` package which is designed for server environments. `@alchemy/wallet-apis` can be used in any JavaScript environment.
   </Tab>
 </Tabs>

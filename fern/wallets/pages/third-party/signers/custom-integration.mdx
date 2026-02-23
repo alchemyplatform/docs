@@ -24,7 +24,7 @@ Use a `LocalAccount` when your signer gives you direct access to a private key o
 
 ```ts
 import { toAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 const account = toAccount({
@@ -51,7 +51,7 @@ const account = toAccount({
 const client = createSmartWalletClient({
   signer: account,
   transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
-  chain: baseSepolia,
+  chain: arbitrumSepolia,
 });
 ```
 
@@ -63,7 +63,7 @@ import { privateKeyToAccount } from "viem/accounts";
 const client = createSmartWalletClient({
   signer: privateKeyToAccount("0x..."),
   transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
-  chain: baseSepolia,
+  chain: arbitrumSepolia,
 });
 ```
 
@@ -73,7 +73,7 @@ Use a `WalletClient` when your signer is a browser wallet or embedded wallet tha
 
 ```ts
 import { createWalletClient, custom } from "viem";
-import { baseSepolia } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 // Create a WalletClient from the browser wallet
@@ -81,7 +81,7 @@ const [address] = await window.ethereum.request({ method: "eth_requestAccounts" 
 
 const walletClient = createWalletClient({
   account: address,
-  chain: baseSepolia,
+  chain: arbitrumSepolia,
   transport: custom(window.ethereum),
 });
 
@@ -89,7 +89,7 @@ const walletClient = createWalletClient({
 const client = createSmartWalletClient({
   signer: walletClient,
   transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
-  chain: baseSepolia,
+  chain: arbitrumSepolia,
   paymaster: { policyId: "YOUR_GAS_POLICY_ID" }, // optional
 });
 ```
