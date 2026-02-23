@@ -2,9 +2,9 @@
 /**
  * Standalone spec upload CLI with change detection.
  *
- * Scans fern/api-specs/{alchemy,chains}/, computes SHA-256 hashes, compares
+ * Scans content/api-specs/{alchemy,chains}/, computes SHA-256 hashes, compares
  * against Redis, uploads only changed specs, and writes changed URLs as JSON
- * to an output file (default: fern/api-specs/changed-specs.json).
+ * to an output file (default: content/api-specs/changed-specs.json).
  *
  * Usage: pnpm upload-specs [--output path]
  * Env: KV_REST_API_URL, KV_REST_API_TOKEN
@@ -23,7 +23,7 @@ import { getRedis } from "@/content-indexer/utils/redis.ts";
 
 dotenvConfig({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
-const SPECS_DIR = path.resolve(process.cwd(), "fern/api-specs");
+const SPECS_DIR = path.resolve(process.cwd(), "content/api-specs");
 const DEFAULT_OUTPUT = path.join(SPECS_DIR, "changed-specs.json");
 const HASH_KEY = "main:spec-hashes";
 

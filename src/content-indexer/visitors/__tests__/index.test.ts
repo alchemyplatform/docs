@@ -13,7 +13,7 @@ describe("visitNavigationItem dispatcher", () => {
     const result = visitNavigationItem({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",
@@ -54,7 +54,7 @@ describe("visitNavigationItem dispatcher", () => {
         contents: [
           {
             page: "Quickstart",
-            path: "fern/guides/quickstart.mdx",
+            path: "content/guides/quickstart.mdx",
           },
         ],
       },

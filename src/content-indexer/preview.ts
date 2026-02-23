@@ -90,7 +90,7 @@ const main = async () => {
     // Mode: upload single file (fast path watcher)
     if (uploadFile) {
       const redis = getRedis();
-      const filePath = uploadFile.replace(/^fern\//, "");
+      const filePath = uploadFile.replace(/^content\//, "");
 
       // Changelog files: different key prefix + reindex logic
       if (filePath.startsWith("changelog/") && filePath.endsWith(".md")) {

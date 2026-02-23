@@ -79,7 +79,7 @@ describe("buildDocsContentIndex", () => {
     vi.mocked(buildAllOutputs).mockReturnValue(mockResult);
 
     const result = await buildDocsContentIndex({
-      source: { type: "filesystem", basePath: "/test/fern" },
+      source: { type: "filesystem", basePath: "/test/content" },
       branchId: "test-branch",
       indexerType: "docs",
       mode: "preview",
@@ -91,7 +91,7 @@ describe("buildDocsContentIndex", () => {
       mockScanResult,
       {
         type: "filesystem",
-        basePath: "/test/fern",
+        basePath: "/test/content",
       },
       { quiet: true },
     );
