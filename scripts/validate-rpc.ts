@@ -37,5 +37,5 @@ const validateOpenRpcSpecs = async (directory: string) => {
   );
 };
 
-validateOpenRpcSpecs("fern/api-specs/alchemy/json-rpc");
-validateOpenRpcSpecs("fern/api-specs/chains");
+validateOpenRpcSpecs("content/api-specs/alchemy/json-rpc");
+validateOpenRpcSpecs("content/api-specs/chains");

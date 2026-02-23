@@ -25,7 +25,7 @@ describe("storeToRedis", () => {
     const pathIndex: PathIndex = {
       "guides/quickstart": {
         type: "mdx",
-        filePath: "fern/guides/quickstart.mdx",
+        filePath: "content/guides/quickstart.mdx",
         source: "docs-yml",
         tab: "guides",
       },
@@ -47,7 +47,7 @@ describe("storeToRedis", () => {
     const pathIndex: PathIndex = {
       "guides/quickstart": {
         type: "mdx",
-        filePath: "fern/guides/quickstart.mdx",
+        filePath: "content/guides/quickstart.mdx",
         source: "docs-yml",
         tab: "guides",
       },

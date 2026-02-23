@@ -12,7 +12,7 @@ import { readLocalFile } from "@/content-indexer/utils/filesystem.ts";
 import { truncateRecord } from "@/content-indexer/utils/truncate-record.ts";
 
 export interface ChangelogIndexerConfig {
-  localBasePath: string; // Path to fern/changelog/ directory
+  localBasePath: string; // Path to content/changelog/ directory
   branchId: string;
 }
 

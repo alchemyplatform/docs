@@ -19,7 +19,7 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Quickstart",
-              path: "fern/guides/quickstart.mdx",
+              path: "content/guides/quickstart.mdx",
             },
           ],
         },
@@ -57,11 +57,11 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Overview",
-              path: "fern/reference/overview.mdx",
+              path: "content/reference/overview.mdx",
             },
             {
               page: "Authentication",
-              path: "fern/reference/auth.mdx",
+              path: "content/reference/auth.mdx",
             },
           ],
         },
@@ -90,7 +90,7 @@ describe("visitSection", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/overview.mdx", {
+    cache.setMdxContent("content/guides/overview.mdx", {
       frontmatter: { title: "Overview" },
       content: "Overview content",
     });
@@ -99,11 +99,11 @@ describe("visitSection", () => {
       {
         item: {
           section: "Getting Started",
-          path: "fern/guides/overview.mdx",
+          path: "content/guides/overview.mdx",
           contents: [
             {
               page: "Quickstart",
-              path: "fern/guides/quickstart.mdx",
+              path: "content/guides/quickstart.mdx",
             },
           ],
         },
@@ -134,7 +134,7 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Page",
-              path: "fern/guides/page.mdx",
+              path: "content/guides/page.mdx",
             },
           ],
         },
@@ -163,7 +163,7 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Page",
-              path: "fern/guides/page.mdx",
+              path: "content/guides/page.mdx",
             },
           ],
         },
@@ -193,7 +193,7 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Page",
-              path: "fern/guides/page.mdx",
+              path: "content/guides/page.mdx",
             },
           ],
         },
@@ -234,12 +234,12 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Hidden A",
-              path: "fern/guides/a.mdx",
+              path: "content/guides/a.mdx",
               hidden: true,
             },
             {
               page: "Hidden B",
-              path: "fern/guides/b.mdx",
+              path: "content/guides/b.mdx",
               hidden: true,
             },
           ],
@@ -278,12 +278,12 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Hidden Page",
-              path: "fern/guides/hidden.mdx",
+              path: "content/guides/hidden.mdx",
               hidden: true,
             },
             {
               page: "Visible Page",
-              path: "fern/guides/visible.mdx",
+              path: "content/guides/visible.mdx",
             },
           ],
         },
@@ -315,7 +315,7 @@ describe("visitSection", () => {
               contents: [
                 {
                   page: "Deep Page",
-                  path: "fern/guides/deep.mdx",
+                  path: "content/guides/deep.mdx",
                 },
               ],
             },
@@ -341,7 +341,7 @@ describe("visitSection", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/quickstart.mdx", {
+    cache.setMdxContent("content/guides/quickstart.mdx", {
       frontmatter: { title: "Quickstart" },
       content: "Content",
     });
@@ -353,7 +353,7 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Quickstart",
-              path: "fern/guides/quickstart.mdx",
+              path: "content/guides/quickstart.mdx",
             },
           ],
         },
@@ -376,7 +376,7 @@ describe("visitSection", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/overview.mdx", {
+    cache.setMdxContent("content/guides/overview.mdx", {
       frontmatter: { title: "Overview" },
       content: "Hidden overview content",
     });
@@ -386,11 +386,11 @@ describe("visitSection", () => {
         item: {
           section: "Hidden Section",
           hidden: true,
-          path: "fern/guides/overview.mdx",
+          path: "content/guides/overview.mdx",
           contents: [
             {
               page: "Page",
-              path: "fern/guides/page.mdx",
+              path: "content/guides/page.mdx",
             },
           ],
         },
@@ -412,12 +412,12 @@ describe("visitSection", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/quickstart.mdx", {
+    cache.setMdxContent("content/guides/quickstart.mdx", {
       frontmatter: { title: "Quickstart" },
       content: "Content inside hidden section",
     });
 
-    cache.setMdxContent("fern/guides/advanced.mdx", {
+    cache.setMdxContent("content/guides/advanced.mdx", {
       frontmatter: { title: "Advanced" },
       content: "Advanced content inside hidden section",
     });
@@ -430,11 +430,11 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Quickstart",
-              path: "fern/guides/quickstart.mdx",
+              path: "content/guides/quickstart.mdx",
             },
             {
               page: "Advanced",
-              path: "fern/guides/advanced.mdx",
+              path: "content/guides/advanced.mdx",
             },
           ],
         },
@@ -458,7 +458,7 @@ describe("visitSection", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/deep-page.mdx", {
+    cache.setMdxContent("content/guides/deep-page.mdx", {
       frontmatter: { title: "Deep Page" },
       content: "Deeply nested content",
     });
@@ -474,7 +474,7 @@ describe("visitSection", () => {
               contents: [
                 {
                   page: "Deep Page",
-                  path: "fern/guides/deep-page.mdx",
+                  path: "content/guides/deep-page.mdx",
                 },
               ],
             },
@@ -506,14 +506,14 @@ describe("visitSection", () => {
           contents: [
             {
               page: "Overview",
-              path: "fern/docs/overview.mdx",
+              path: "content/docs/overview.mdx",
             },
             {
               section: "API Reference",
               contents: [
                 {
                   page: "Authentication",
-                  path: "fern/docs/auth.mdx",
+                  path: "content/docs/auth.mdx",
                 },
               ],
             },

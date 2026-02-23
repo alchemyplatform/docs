@@ -21,11 +21,11 @@ describe("scanner", () => {
           layout: [
             {
               page: "Quickstart",
-              path: "fern/guides/quickstart.mdx",
+              path: "content/guides/quickstart.mdx",
             },
             {
               page: "Advanced",
-              path: "fern/guides/advanced.mdx",
+              path: "content/guides/advanced.mdx",
             },
           ],
         },
@@ -33,8 +33,8 @@ describe("scanner", () => {
     };
 
     const result = scanDocsYml(docsYml);
-    expect(result.mdxPaths).toContain("fern/guides/quickstart.mdx");
-    expect(result.mdxPaths).toContain("fern/guides/advanced.mdx");
+    expect(result.mdxPaths).toContain("content/guides/quickstart.mdx");
+    expect(result.mdxPaths).toContain("content/guides/advanced.mdx");
     expect(result.mdxPaths.size).toBe(2);
   });
 
@@ -74,11 +74,11 @@ describe("scanner", () => {
               contents: [
                 {
                   page: "Quickstart",
-                  path: "fern/guides/quickstart.mdx",
+                  path: "content/guides/quickstart.mdx",
                 },
                 {
                   page: "Installation",
-                  path: "fern/guides/installation.mdx",
+                  path: "content/guides/installation.mdx",
                 },
               ],
             },
@@ -88,8 +88,8 @@ describe("scanner", () => {
     };
 
     const result = scanDocsYml(docsYml);
-    expect(result.mdxPaths).toContain("fern/guides/quickstart.mdx");
-    expect(result.mdxPaths).toContain("fern/guides/installation.mdx");
+    expect(result.mdxPaths).toContain("content/guides/quickstart.mdx");
+    expect(result.mdxPaths).toContain("content/guides/installation.mdx");
     expect(result.mdxPaths.size).toBe(2);
   });
 
@@ -101,11 +101,11 @@ describe("scanner", () => {
           layout: [
             {
               section: "Getting Started",
-              path: "fern/guides/overview.mdx",
+              path: "content/guides/overview.mdx",
               contents: [
                 {
                   page: "Quickstart",
-                  path: "fern/guides/quickstart.mdx",
+                  path: "content/guides/quickstart.mdx",
                 },
               ],
             },
@@ -115,8 +115,8 @@ describe("scanner", () => {
     };
 
     const result = scanDocsYml(docsYml);
-    expect(result.mdxPaths).toContain("fern/guides/overview.mdx");
-    expect(result.mdxPaths).toContain("fern/guides/quickstart.mdx");
+    expect(result.mdxPaths).toContain("content/guides/overview.mdx");
+    expect(result.mdxPaths).toContain("content/guides/quickstart.mdx");
     expect(result.mdxPaths.size).toBe(2);
   });
 
@@ -128,7 +128,7 @@ describe("scanner", () => {
           layout: [
             {
               page: "Quickstart",
-              path: "fern/guides/quickstart.mdx",
+              path: "content/guides/quickstart.mdx",
             },
             {
               link: "External Link",
@@ -141,7 +141,7 @@ describe("scanner", () => {
 
     const result = scanDocsYml(docsYml);
     expect(result.mdxPaths.size).toBe(1);
-    expect(result.mdxPaths).toContain("fern/guides/quickstart.mdx");
+    expect(result.mdxPaths).toContain("content/guides/quickstart.mdx");
   });
 
   test("should skip changelog in navigation", () => {
@@ -152,7 +152,7 @@ describe("scanner", () => {
           layout: [
             {
               page: "Quickstart",
-              path: "fern/guides/quickstart.mdx",
+              path: "content/guides/quickstart.mdx",
             },
             {
               changelog: "CHANGELOG.md",
@@ -180,7 +180,7 @@ describe("scanner", () => {
                   contents: [
                     {
                       page: "Deep Page",
-                      path: "fern/guides/deep.mdx",
+                      path: "content/guides/deep.mdx",
                     },
                   ],
                 },
@@ -192,7 +192,7 @@ describe("scanner", () => {
     };
 
     const result = scanDocsYml(docsYml);
-    expect(result.mdxPaths).toContain("fern/guides/deep.mdx");
+    expect(result.mdxPaths).toContain("content/guides/deep.mdx");
   });
 
   test("should deduplicate paths using Set", () => {
@@ -203,7 +203,7 @@ describe("scanner", () => {
           layout: [
             {
               page: "Page",
-              path: "fern/guides/page.mdx",
+              path: "content/guides/page.mdx",
             },
           ],
         },
@@ -212,7 +212,7 @@ describe("scanner", () => {
           layout: [
             {
               page: "Page",
-              path: "fern/guides/page.mdx", // Duplicate
+              path: "content/guides/page.mdx", // Duplicate
             },
           ],
         },
@@ -231,7 +231,7 @@ describe("scanner", () => {
           layout: [
             {
               page: "Guide",
-              path: "fern/guides/guide.mdx",
+              path: "content/guides/guide.mdx",
             },
             {
               api: "API",
@@ -242,7 +242,7 @@ describe("scanner", () => {
               contents: [
                 {
                   page: "Nested",
-                  path: "fern/guides/nested.mdx",
+                  path: "content/guides/nested.mdx",
                 },
               ],
             },
@@ -258,8 +258,8 @@ describe("scanner", () => {
     const result = scanDocsYml(docsYml);
     expect(result.mdxPaths.size).toBe(2);
     expect(result.specNames.size).toBe(1);
-    expect(result.mdxPaths).toContain("fern/guides/guide.mdx");
-    expect(result.mdxPaths).toContain("fern/guides/nested.mdx");
+    expect(result.mdxPaths).toContain("content/guides/guide.mdx");
+    expect(result.mdxPaths).toContain("content/guides/nested.mdx");
     expect(result.specNames).toContain("my-api");
   });
 });

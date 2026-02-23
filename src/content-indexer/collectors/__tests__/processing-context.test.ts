@@ -18,7 +18,7 @@ describe("ProcessingContext", () => {
     const context = new ProcessingContext("docs");
     context.addPathIndexEntry("guides/quickstart", {
       type: "mdx",
-      filePath: "fern/guides/quickstart.mdx",
+      filePath: "content/guides/quickstart.mdx",
       source: "docs-yml",
       tab: "guides",
     });
@@ -90,7 +90,7 @@ describe("ProcessingContext", () => {
     // Add path index
     context.addPathIndexEntry("guides/quickstart", {
       type: "mdx",
-      filePath: "fern/guides/quickstart.mdx",
+      filePath: "content/guides/quickstart.mdx",
       source: "docs-yml",
       tab: "guides",
     });

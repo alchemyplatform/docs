@@ -19,8 +19,8 @@ export const runIndexAndUpload = async (branch: string): Promise<void> => {
   const { pathIndex, navigationTrees, specs } = await buildDocsContentIndex({
     source: {
       type: "filesystem",
-      basePath: path.join(process.cwd(), "fern"),
-      specsDir: path.join(process.cwd(), "fern", "api-specs"),
+      basePath: path.join(process.cwd(), "content"),
+      specsDir: path.join(process.cwd(), "content", "api-specs"),
     },
     branchId: branch,
     indexerType: "docs",
@@ -55,7 +55,7 @@ export const runChangelogIndexAndUpload = async (
   console.info("\n🔍 Running changelog indexer (preview mode)...\n");
 
   const { pathIndex } = await buildChangelogIndex({
-    localBasePath: path.join(process.cwd(), "fern/changelog"),
+    localBasePath: path.join(process.cwd(), "content/changelog"),
     branchId: branch,
   });
 
