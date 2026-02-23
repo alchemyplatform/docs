@@ -5,8 +5,9 @@ url: https://www.alchemy.com/docs/wallets/smart-wallet-quickstart/sdk
 slug: wallets/smart-wallet-quickstart/sdk
 ---
 
+{/* TODO(jh): Replace repo link once published somewhere proper */}
 <Note>
-  `@alchemy/wallet-apis` (v5) is the recommended SDK and is currently in beta. If you're still on v4, see the [migration guide](/wallets/resources/migration-v5).
+  [`@alchemy/wallet-apis`](https://github.com/alchemyplatform/aa-sdk/tree/moldy/v5-base/packages/wallet-apis) (v5) is the recommended SDK and is currently in beta. If you're still on v4, see the [migration guide](/wallets/resources/migration-v5).
 </Note>
 
 Prefer raw JSON-RPC calls? See the [API quickstart](/wallets/smart-wallet-quickstart/api).
@@ -64,11 +65,14 @@ The client defaults to [EIP-7702](/wallets/transactions/using-eip-7702), so your
 ```ts
 import { zeroAddress } from "viem";
 
+// Send the transaction
 const { id } = await client.sendCalls({
   calls: [{ to: zeroAddress, value: BigInt(0) }],
 });
 
+// Check the transaction status
 const status = await client.waitForCallsStatus({ id });
+console.log(`Transaction hash: ${status.receipts?.[0]?.transactionHash}`);
 ```
 
 <Accordion title="Using @account-kit/wallet-client (v4)?">

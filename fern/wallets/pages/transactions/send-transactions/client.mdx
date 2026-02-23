@@ -8,6 +8,7 @@ You can send transactions using the smart wallet client `sendCalls` action.
   ```ts title="sendCalls.ts"
   import { client } from "./client.ts";
 
+  // Send the transaction
   const { id } = await client.sendCalls({
     calls: [
       {
@@ -20,6 +21,7 @@ You can send transactions using the smart wallet client `sendCalls` action.
 
   console.log({ id });
 
+  // Check the transaction status
   const result = await client.waitForCallsStatus({ id });
 
   console.log(result);
@@ -37,6 +39,8 @@ You can send transactions using the smart wallet client `sendCalls` action.
     }),
     chain: arbitrumSepolia,
     signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+    // Optional: sponsor gas for your users (see "Sponsor gas" guide)
+    // paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
   });
   ```
 </CodeBlocks>

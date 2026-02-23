@@ -14,6 +14,7 @@ You can batch transactions using either the smart wallet client `sendCalls` or `
 
   const DEMO_SWAP_ADDRESS: Address = "0xB0AEC4c25E8332256A91bBaf169E3C32dfC3C33C";
 
+  // Send a batch of calls — approve + swap in a single transaction
   const { id } = await client.sendCalls({
     calls: [
       // To batch, simply specify multiple calls in the calls array
@@ -37,6 +38,11 @@ You can batch transactions using either the smart wallet client `sendCalls` or `
       },
     ],
   });
+
+  // Check the transaction status
+  const result = await client.waitForCallsStatus({ id });
+
+  console.log(result);
   ```
 
   ```ts title="client.ts"
@@ -52,6 +58,8 @@ You can batch transactions using either the smart wallet client `sendCalls` or `
     }),
     chain: arbitrumSepolia,
     signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+    // Optional: sponsor gas for your users (see "Sponsor gas" guide)
+    // paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
   });
   ```
 
