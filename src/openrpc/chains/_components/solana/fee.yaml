@@ -65,21 +65,33 @@ components:
     GetPriorityFeeEstimateParams:
       title: GetPriorityFeeEstimate Parameters
       type: object
+      description: |
+        The single element in params (the config object). This object has two levels:
+        - Top-level: transaction (optional), accountKeys (optional), and options (optional).
+        - Put priorityLevel, recommended, lookbackSlots, etc. inside the options object, not next to transaction.
       properties:
         transaction:
           type: string
-          description: Base58 or Base64 encoded Solana transaction for fee estimation analysis.
+          description: Base58 or Base64 encoded Solana transaction for fee estimation analysis. Top-level key (sibling to options).
         accountKeys:
           type: array
           items:
             type: string
-          description: Array of Base58-encoded Solana account public keys.
+          description: Array of Base58-encoded Solana account public keys. Top-level key (sibling to options).
+        options:
+          $ref: "#/components/schemas/GetPriorityFeeEstimateOptions"
+          description: Nested object for tuning; put priorityLevel, recommended, lookbackSlots, etc. here.
+    GetPriorityFeeEstimateOptions:
+      title: GetPriorityFeeEstimate Options (nested)
+      type: object
+      description: Nested under the options key of the params object. Do not put transaction or accountKeys here.
+      properties:
         transactionEncoding:
           type: string
           enum:
-            - Base58
-            - Base64
-          description: Encoding format of the transaction.
+            - base58
+            - base64
+          description: Encoding format of the transaction (default base58).
         priorityLevel:
           type: string
           enum:
@@ -89,24 +101,27 @@ components:
             - High
             - VeryHigh
             - UnsafeMax
+            - Default
           description: Priority level for fee estimation.
         includeAllPriorityFeeLevels:
           type: boolean
-          description: Return estimates for all priority levels.
+          description: When true, return estimates for all priority levels.
+        ignoreZeroFees:
+          type: boolean
+          description: When true, exclude zero-fee transactions from percentile calculation.
         lookbackSlots:
           type: integer
           minimum: 1
           maximum: 150
-          description: Number of recent slots to analyze for fee estimation.
-        includeVote:
-          type: boolean
-          description: Include vote transactions in fee calculation.
+          description: Number of recent slots to analyze for fee estimation. Default and max is 150.
         recommended:
           type: boolean
-          description: Return recommended optimal fee.
-        evaluateEmptySlotAsZero:
+          default: false
+          description: When true, return the recommended optimal fee (median).
+        detailedBreakdown:
           type: boolean
-          description: Treat empty slots as zero-fee in calculations.
+          default: false
+          description: When true, return per-account fee breakdown.
     PriorityFeeLevels:
       title: Priority Fee Levels
       type: object
@@ -132,10 +147,26 @@ components:
     GetPriorityFeeEstimateResult:
       title: Priority Fee Estimate Result
       type: object
+      description: Optimal priority fee estimate and optional fee levels for different priority tiers.
       properties:
-        priorityFeeEstimate:
-          type: number
-          description: Estimated optimal fee in microlamports.
+        priorityFee:
+          type: integer
+          description: Estimated optimal fee in microlamports per compute unit (returned when a single priorityLevel or recommended is requested).
         priorityFeeLevels:
           $ref: "#/components/schemas/PriorityFeeLevels"
-          description: Fee estimates for each priority tier.
+          description: Fee estimates for each priority tier (returned when includeAllPriorityFeeLevels is true).
+        detailedBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountFeeDetails"
+          description: Per-account fee breakdown (returned when detailedBreakdown option is true).
+    AccountFeeDetails:
+      title: Account Fee Details
+      type: object
+      properties:
+        account:
+          type: string
+          description: Base58-encoded account public key.
+        priorityFees:
+          $ref: "#/components/schemas/PriorityFeeLevels"
+          description: Fee estimates for this specific account.
