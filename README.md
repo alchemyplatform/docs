@@ -11,7 +11,7 @@ The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
 ├── src/
 │   ├── openapi/     # REST API definitions (OpenAPI)
 │   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
-└── fern/
+└── content/
     ├── <tab>/       # Written documentation for that tab (MDX)
     ├── api-specs/   # Dereferenced API Specs generated from definitions (gitignored)
     └── docs.yml     # Navigation and structure config
@@ -74,7 +74,7 @@ Production OpenAPI and OpenRPC specs are generated using scripts from their defi
 pnpm run generate
 ```
 
-This will generate all specs as dereferenced json files in the `fern/api-specs` directory.
+This will generate all specs as dereferenced json files in the `content/api-specs` directory.
 
 ### Validation
 

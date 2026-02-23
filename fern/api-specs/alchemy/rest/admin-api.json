@@ -1,0 +1,4984 @@
+{
+  "x-generated-warning": "⚠️ Auto-generated from remote spec. Do not edit.",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Apps API",
+    "version": "1.0.0",
+    "description": "Alchemy API to manage your apps",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://admin-api.alchemy.com"
+    }
+  ],
+  "paths": {
+    "/v1/chains": {
+      "get": {
+        "operationId": "ListChains",
+        "responses": {
+          "200": {
+            "description": "Retrieved chains successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Alchemy chain network id (`{chain}_{network}`)."
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Display name for the network."
+                          },
+                          "networkChainId": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                          },
+                          "isTestnet": {
+                            "type": "boolean",
+                            "description": "Indicates whether the network is a testnet."
+                          },
+                          "availability": {
+                            "description": "Availability for the network (public, prerelease, deprecated).",
+                            "enum": ["prerelease", "public", "deprecated"],
+                            "type": "string"
+                          },
+                          "docsUrl": {
+                            "type": "string",
+                            "description": "Useful documentation link for the network."
+                          },
+                          "explorerUrl": {
+                            "type": "string",
+                            "description": "Explorer URL for the network."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "description": "Native currency ticker."
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "isTestnet",
+                          "availability",
+                          "docsUrl",
+                          "explorerUrl",
+                          "currency"
+                        ],
+                        "type": "object",
+                        "additionalProperties": false
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Retrieves a list of all blockchain networks supported by Alchemy, including their identifiers, display names, testnet status, and availability. Use this endpoint to discover valid network values for configuring app network allowlists.",
+        "summary": "List chains",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ", "ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": []
+      }
+    },
+    "/v1/apps": {
+      "get": {
+        "operationId": "ListApps",
+        "responses": {
+          "200": {
+            "description": "Retrieved apps successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "apps": {
+                          "items": {
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "App ID"
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "Description"
+                              },
+                              "apiKey": {
+                                "type": "string",
+                                "description": "API key to access chain network"
+                              },
+                              "webhookApiKey": {
+                                "type": "string",
+                                "description": "API key used to access webhook's management API"
+                              },
+                              "chainNetworks": {
+                                "items": {
+                                  "properties": {
+                                    "name": {
+                                      "type": "string",
+                                      "description": "Display name"
+                                    },
+                                    "id": {
+                                      "type": "string",
+                                      "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                                    },
+                                    "networkChainId": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                                    },
+                                    "rpcUrl": {
+                                      "type": "string",
+                                      "description": "HTTPS RPC endpoint"
+                                    },
+                                    "wsUrl": {
+                                      "type": "string",
+                                      "description": "WebSocket endpoint"
+                                    },
+                                    "grpcUrl": {
+                                      "type": "string",
+                                      "description": "gRPC endpoint (when available, e.g. Solana)"
+                                    }
+                                  },
+                                  "required": ["name", "id", "rpcUrl"],
+                                  "type": "object",
+                                  "additionalProperties": false
+                                },
+                                "type": "array",
+                                "description": "Networks configured for this app"
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "description": "Creation timestamp (ISO 8601)"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "apiKey",
+                              "webhookApiKey",
+                              "chainNetworks",
+                              "createdAt"
+                            ],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "List of apps for the current page"
+                        },
+                        "totalCount": {
+                          "type": "integer",
+                          "format": "int32",
+                          "description": "Total number of apps matching the query"
+                        },
+                        "cursor": {
+                          "type": "string",
+                          "description": "Opaque cursor for fetching the next page.\nOnly present if more results exist."
+                        }
+                      },
+                      "required": ["apps", "totalCount"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 400,
+                        "status": 400,
+                        "message": "limit must be a positive integer between 1 and 25"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Retrieves a paginated list of all applications associated with your account. Each app includes its API keys, configured chain networks with RPC endpoints, and creation timestamp.",
+        "summary": "List apps",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ", "ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Opaque cursor for fetching the next page",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of apps to return per page (default: 25, max: 25)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "CreateApp",
+        "responses": {
+          "201": {
+            "description": "Created new app",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Display name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description"
+                        },
+                        "apiKey": {
+                          "type": "string",
+                          "description": "API key to access chain network"
+                        },
+                        "webhookApiKey": {
+                          "type": "string",
+                          "description": "API key used to access webhook's management API"
+                        },
+                        "chainNetworks": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                              },
+                              "networkChainId": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                              },
+                              "rpcUrl": {
+                                "type": "string",
+                                "description": "HTTPS RPC endpoint"
+                              },
+                              "wsUrl": {
+                                "type": "string",
+                                "description": "WebSocket endpoint"
+                              },
+                              "grpcUrl": {
+                                "type": "string",
+                                "description": "gRPC endpoint (when available, e.g. Solana)"
+                              }
+                            },
+                            "required": ["name", "id", "rpcUrl"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Networks configured for this app"
+                        },
+                        "products": {
+                          "items": {
+                            "enum": [
+                              "node-api",
+                              "nft-api",
+                              "swaps-api",
+                              "block-timestamp-api",
+                              "token-api",
+                              "transfers-api",
+                              "bundler-api",
+                              "debug-api",
+                              "embedded-accounts",
+                              "gas-manager-api",
+                              "trace-api",
+                              "prices-api",
+                              "transaction-simulation-api",
+                              "transaction-receipts-api",
+                              "user-operations-api",
+                              "smart-websockets",
+                              "webhooks",
+                              "blast"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array",
+                          "description": "Products enabled for this app"
+                        },
+                        "addressAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Wallet address value.",
+                                "example": "0x0000000000000000000000000000000000000001"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Address allowlist entries for this app"
+                        },
+                        "originAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Origin value. Accepts full URLs or bare domains.",
+                                "example": "https://example.com"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Origin allowlist entries for this app"
+                        },
+                        "ipAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Office"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "IP address or CIDR range.",
+                                "example": "203.0.113.1"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "IP allowlist entries for this app"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "description": "Creation timestamp (ISO 8601)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "apiKey",
+                        "webhookApiKey",
+                        "chainNetworks",
+                        "products",
+                        "addressAllowlist",
+                        "originAllowlist",
+                        "ipAllowlist",
+                        "createdAt"
+                      ],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 400,
+                        "status": 400,
+                        "message": "Invalid input"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "App name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 1000,
+                        "status": 409,
+                        "message": "App name already exists"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Creates a new application with the specified name, network allowlist, and optional description and products. Returns the created app with its generated API keys and configured chain network endpoints.",
+        "summary": "Create app",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "networkAllowlist": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Alchemy chain network id to be enabled. Value is in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                  },
+                  "products": {
+                    "items": {
+                      "enum": [
+                        "node-api",
+                        "nft-api",
+                        "swaps-api",
+                        "block-timestamp-api",
+                        "token-api",
+                        "transfers-api",
+                        "bundler-api",
+                        "debug-api",
+                        "embedded-accounts",
+                        "gas-manager-api",
+                        "trace-api",
+                        "prices-api",
+                        "transaction-simulation-api",
+                        "transaction-receipts-api",
+                        "user-operations-api",
+                        "smart-websockets",
+                        "webhooks",
+                        "blast"
+                      ],
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Product to be enabled for app"
+                  }
+                },
+                "required": ["name", "networkAllowlist"],
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/apps/{id}": {
+      "get": {
+        "operationId": "GetApp",
+        "responses": {
+          "200": {
+            "description": "Retrieved app successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Display name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description"
+                        },
+                        "apiKey": {
+                          "type": "string",
+                          "description": "API key to access chain network"
+                        },
+                        "webhookApiKey": {
+                          "type": "string",
+                          "description": "API key used to access webhook's management API"
+                        },
+                        "chainNetworks": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                              },
+                              "networkChainId": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                              },
+                              "rpcUrl": {
+                                "type": "string",
+                                "description": "HTTPS RPC endpoint"
+                              },
+                              "wsUrl": {
+                                "type": "string",
+                                "description": "WebSocket endpoint"
+                              },
+                              "grpcUrl": {
+                                "type": "string",
+                                "description": "gRPC endpoint (when available, e.g. Solana)"
+                              }
+                            },
+                            "required": ["name", "id", "rpcUrl"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Networks configured for this app"
+                        },
+                        "products": {
+                          "items": {
+                            "enum": [
+                              "node-api",
+                              "nft-api",
+                              "swaps-api",
+                              "block-timestamp-api",
+                              "token-api",
+                              "transfers-api",
+                              "bundler-api",
+                              "debug-api",
+                              "embedded-accounts",
+                              "gas-manager-api",
+                              "trace-api",
+                              "prices-api",
+                              "transaction-simulation-api",
+                              "transaction-receipts-api",
+                              "user-operations-api",
+                              "smart-websockets",
+                              "webhooks",
+                              "blast"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array",
+                          "description": "Products enabled for this app"
+                        },
+                        "addressAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Wallet address value.",
+                                "example": "0x0000000000000000000000000000000000000001"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Address allowlist entries for this app"
+                        },
+                        "originAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Origin value. Accepts full URLs or bare domains.",
+                                "example": "https://example.com"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Origin allowlist entries for this app"
+                        },
+                        "ipAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Office"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "IP address or CIDR range.",
+                                "example": "203.0.113.1"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "IP allowlist entries for this app"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "description": "Creation timestamp (ISO 8601)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "apiKey",
+                        "webhookApiKey",
+                        "chainNetworks",
+                        "products",
+                        "addressAllowlist",
+                        "originAllowlist",
+                        "ipAllowlist",
+                        "createdAt"
+                      ],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 404,
+                        "status": 404,
+                        "message": "App not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Retrieves detailed information about a specific application, including its API keys, configured chain networks with RPC/WebSocket/gRPC endpoints, enabled products, security allowlists, and creation timestamp.",
+        "summary": "Get app",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ", "ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "DeleteApp",
+        "responses": {
+          "200": {
+            "description": "Deleted app successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "Confirmation message."
+                        }
+                      },
+                      "required": ["id", "message"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 404,
+                        "status": 404,
+                        "message": "App not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Permanently removes an application and its associated API keys. This action cannot be undone.",
+        "summary": "Delete app",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "PatchApp",
+        "responses": {
+          "200": {
+            "description": "Updated app successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Display name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description"
+                        },
+                        "apiKey": {
+                          "type": "string",
+                          "description": "API key to access chain network"
+                        },
+                        "webhookApiKey": {
+                          "type": "string",
+                          "description": "API key used to access webhook's management API"
+                        },
+                        "chainNetworks": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                              },
+                              "networkChainId": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                              },
+                              "rpcUrl": {
+                                "type": "string",
+                                "description": "HTTPS RPC endpoint"
+                              },
+                              "wsUrl": {
+                                "type": "string",
+                                "description": "WebSocket endpoint"
+                              },
+                              "grpcUrl": {
+                                "type": "string",
+                                "description": "gRPC endpoint (when available, e.g. Solana)"
+                              }
+                            },
+                            "required": ["name", "id", "rpcUrl"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Networks configured for this app"
+                        },
+                        "products": {
+                          "items": {
+                            "enum": [
+                              "node-api",
+                              "nft-api",
+                              "swaps-api",
+                              "block-timestamp-api",
+                              "token-api",
+                              "transfers-api",
+                              "bundler-api",
+                              "debug-api",
+                              "embedded-accounts",
+                              "gas-manager-api",
+                              "trace-api",
+                              "prices-api",
+                              "transaction-simulation-api",
+                              "transaction-receipts-api",
+                              "user-operations-api",
+                              "smart-websockets",
+                              "webhooks",
+                              "blast"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array",
+                          "description": "Products enabled for this app"
+                        },
+                        "addressAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Wallet address value.",
+                                "example": "0x0000000000000000000000000000000000000001"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Address allowlist entries for this app"
+                        },
+                        "originAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Origin value. Accepts full URLs or bare domains.",
+                                "example": "https://example.com"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Origin allowlist entries for this app"
+                        },
+                        "ipAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Office"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "IP address or CIDR range.",
+                                "example": "203.0.113.1"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "IP allowlist entries for this app"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "description": "Creation timestamp (ISO 8601)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "apiKey",
+                        "webhookApiKey",
+                        "chainNetworks",
+                        "products",
+                        "addressAllowlist",
+                        "originAllowlist",
+                        "ipAllowlist",
+                        "createdAt"
+                      ],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 400,
+                        "status": 400,
+                        "message": "Invalid input"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 404,
+                        "status": 404,
+                        "message": "App not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "App name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 1000,
+                        "status": 409,
+                        "message": "App name already exists"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Updates an application's metadata such as its name or description. Returns the full updated app object.",
+        "summary": "Update app",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "New app name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "New app description"
+                  }
+                },
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/apps/{id}/networks": {
+      "put": {
+        "operationId": "UpdateAppNetworkAllowlist",
+        "responses": {
+          "200": {
+            "description": "Updated app network allowlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Display name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description"
+                        },
+                        "apiKey": {
+                          "type": "string",
+                          "description": "API key to access chain network"
+                        },
+                        "webhookApiKey": {
+                          "type": "string",
+                          "description": "API key used to access webhook's management API"
+                        },
+                        "chainNetworks": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                              },
+                              "networkChainId": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                              },
+                              "rpcUrl": {
+                                "type": "string",
+                                "description": "HTTPS RPC endpoint"
+                              },
+                              "wsUrl": {
+                                "type": "string",
+                                "description": "WebSocket endpoint"
+                              },
+                              "grpcUrl": {
+                                "type": "string",
+                                "description": "gRPC endpoint (when available, e.g. Solana)"
+                              }
+                            },
+                            "required": ["name", "id", "rpcUrl"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Networks configured for this app"
+                        },
+                        "products": {
+                          "items": {
+                            "enum": [
+                              "node-api",
+                              "nft-api",
+                              "swaps-api",
+                              "block-timestamp-api",
+                              "token-api",
+                              "transfers-api",
+                              "bundler-api",
+                              "debug-api",
+                              "embedded-accounts",
+                              "gas-manager-api",
+                              "trace-api",
+                              "prices-api",
+                              "transaction-simulation-api",
+                              "transaction-receipts-api",
+                              "user-operations-api",
+                              "smart-websockets",
+                              "webhooks",
+                              "blast"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array",
+                          "description": "Products enabled for this app"
+                        },
+                        "addressAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Wallet address value.",
+                                "example": "0x0000000000000000000000000000000000000001"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Address allowlist entries for this app"
+                        },
+                        "originAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Origin value. Accepts full URLs or bare domains.",
+                                "example": "https://example.com"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Origin allowlist entries for this app"
+                        },
+                        "ipAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Office"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "IP address or CIDR range.",
+                                "example": "203.0.113.1"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "IP allowlist entries for this app"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "description": "Creation timestamp (ISO 8601)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "apiKey",
+                        "webhookApiKey",
+                        "chainNetworks",
+                        "products",
+                        "addressAllowlist",
+                        "originAllowlist",
+                        "ipAllowlist",
+                        "createdAt"
+                      ],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 400,
+                        "status": 400,
+                        "message": "Invalid input"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 404,
+                        "status": 404,
+                        "message": "App not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Replaces the network allowlist for an application, controlling which blockchain networks the app can access. The provided list fully replaces the existing allowlist.",
+        "summary": "Update app network allowlist",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "networkAllowlist": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Updated network allowlist."
+                  }
+                },
+                "required": ["networkAllowlist"],
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/apps/{id}/address-allowlist": {
+      "put": {
+        "operationId": "UpdateAppAddressAllowlist",
+        "responses": {
+          "200": {
+            "description": "Updated app address allowlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Display name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description"
+                        },
+                        "apiKey": {
+                          "type": "string",
+                          "description": "API key to access chain network"
+                        },
+                        "webhookApiKey": {
+                          "type": "string",
+                          "description": "API key used to access webhook's management API"
+                        },
+                        "chainNetworks": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                              },
+                              "networkChainId": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                              },
+                              "rpcUrl": {
+                                "type": "string",
+                                "description": "HTTPS RPC endpoint"
+                              },
+                              "wsUrl": {
+                                "type": "string",
+                                "description": "WebSocket endpoint"
+                              },
+                              "grpcUrl": {
+                                "type": "string",
+                                "description": "gRPC endpoint (when available, e.g. Solana)"
+                              }
+                            },
+                            "required": ["name", "id", "rpcUrl"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Networks configured for this app"
+                        },
+                        "products": {
+                          "items": {
+                            "enum": [
+                              "node-api",
+                              "nft-api",
+                              "swaps-api",
+                              "block-timestamp-api",
+                              "token-api",
+                              "transfers-api",
+                              "bundler-api",
+                              "debug-api",
+                              "embedded-accounts",
+                              "gas-manager-api",
+                              "trace-api",
+                              "prices-api",
+                              "transaction-simulation-api",
+                              "transaction-receipts-api",
+                              "user-operations-api",
+                              "smart-websockets",
+                              "webhooks",
+                              "blast"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array",
+                          "description": "Products enabled for this app"
+                        },
+                        "addressAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Wallet address value.",
+                                "example": "0x0000000000000000000000000000000000000001"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Address allowlist entries for this app"
+                        },
+                        "originAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Origin value. Accepts full URLs or bare domains.",
+                                "example": "https://example.com"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Origin allowlist entries for this app"
+                        },
+                        "ipAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Office"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "IP address or CIDR range.",
+                                "example": "203.0.113.1"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "IP allowlist entries for this app"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "description": "Creation timestamp (ISO 8601)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "apiKey",
+                        "webhookApiKey",
+                        "chainNetworks",
+                        "products",
+                        "addressAllowlist",
+                        "originAllowlist",
+                        "ipAllowlist",
+                        "createdAt"
+                      ],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 400,
+                        "status": 400,
+                        "message": "Invalid input"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 404,
+                        "status": 404,
+                        "message": "App not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Replaces the address allowlist for an application, controlling which wallet addresses are permitted to interact with the app. The provided list fully replaces the existing allowlist.",
+        "summary": "Update app address allowlist",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "addressAllowlist": {
+                    "items": {
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Label for the allowlist entry.",
+                          "example": "Primary"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Wallet address value.",
+                          "example": "0x0000000000000000000000000000000000000001"
+                        }
+                      },
+                      "required": ["value"],
+                      "type": "object",
+                      "additionalProperties": false
+                    },
+                    "type": "array",
+                    "description": "Updated address allowlist."
+                  }
+                },
+                "required": ["addressAllowlist"],
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/apps/{id}/origin-allowlist": {
+      "put": {
+        "operationId": "UpdateAppOriginAllowlist",
+        "responses": {
+          "200": {
+            "description": "Updated app origin allowlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Display name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description"
+                        },
+                        "apiKey": {
+                          "type": "string",
+                          "description": "API key to access chain network"
+                        },
+                        "webhookApiKey": {
+                          "type": "string",
+                          "description": "API key used to access webhook's management API"
+                        },
+                        "chainNetworks": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                              },
+                              "networkChainId": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                              },
+                              "rpcUrl": {
+                                "type": "string",
+                                "description": "HTTPS RPC endpoint"
+                              },
+                              "wsUrl": {
+                                "type": "string",
+                                "description": "WebSocket endpoint"
+                              },
+                              "grpcUrl": {
+                                "type": "string",
+                                "description": "gRPC endpoint (when available, e.g. Solana)"
+                              }
+                            },
+                            "required": ["name", "id", "rpcUrl"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Networks configured for this app"
+                        },
+                        "products": {
+                          "items": {
+                            "enum": [
+                              "node-api",
+                              "nft-api",
+                              "swaps-api",
+                              "block-timestamp-api",
+                              "token-api",
+                              "transfers-api",
+                              "bundler-api",
+                              "debug-api",
+                              "embedded-accounts",
+                              "gas-manager-api",
+                              "trace-api",
+                              "prices-api",
+                              "transaction-simulation-api",
+                              "transaction-receipts-api",
+                              "user-operations-api",
+                              "smart-websockets",
+                              "webhooks",
+                              "blast"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array",
+                          "description": "Products enabled for this app"
+                        },
+                        "addressAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Wallet address value.",
+                                "example": "0x0000000000000000000000000000000000000001"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Address allowlist entries for this app"
+                        },
+                        "originAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Origin value. Accepts full URLs or bare domains.",
+                                "example": "https://example.com"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Origin allowlist entries for this app"
+                        },
+                        "ipAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Office"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "IP address or CIDR range.",
+                                "example": "203.0.113.1"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "IP allowlist entries for this app"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "description": "Creation timestamp (ISO 8601)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "apiKey",
+                        "webhookApiKey",
+                        "chainNetworks",
+                        "products",
+                        "addressAllowlist",
+                        "originAllowlist",
+                        "ipAllowlist",
+                        "createdAt"
+                      ],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 400,
+                        "status": 400,
+                        "message": "Invalid input"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 404,
+                        "status": 404,
+                        "message": "App not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Replaces the origin allowlist for an application, controlling which domain origins are allowed to make requests. Accepts full URLs or bare domains. The provided list fully replaces the existing allowlist.",
+        "summary": "Update app origin allowlist",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "originAllowlist": {
+                    "items": {
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Label for the allowlist entry.",
+                          "example": "Primary"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Origin value. Accepts full URLs or bare domains.",
+                          "example": "https://example.com"
+                        }
+                      },
+                      "required": ["value"],
+                      "type": "object",
+                      "additionalProperties": false
+                    },
+                    "type": "array",
+                    "description": "Updated origin allowlist."
+                  }
+                },
+                "required": ["originAllowlist"],
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/apps/{id}/ip-allowlist": {
+      "put": {
+        "operationId": "UpdateAppIpAllowlist",
+        "responses": {
+          "200": {
+            "description": "Updated app IP allowlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "App ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Display name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description"
+                        },
+                        "apiKey": {
+                          "type": "string",
+                          "description": "API key to access chain network"
+                        },
+                        "webhookApiKey": {
+                          "type": "string",
+                          "description": "API key used to access webhook's management API"
+                        },
+                        "chainNetworks": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Display name"
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                              },
+                              "networkChainId": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                              },
+                              "rpcUrl": {
+                                "type": "string",
+                                "description": "HTTPS RPC endpoint"
+                              },
+                              "wsUrl": {
+                                "type": "string",
+                                "description": "WebSocket endpoint"
+                              },
+                              "grpcUrl": {
+                                "type": "string",
+                                "description": "gRPC endpoint (when available, e.g. Solana)"
+                              }
+                            },
+                            "required": ["name", "id", "rpcUrl"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Networks configured for this app"
+                        },
+                        "products": {
+                          "items": {
+                            "enum": [
+                              "node-api",
+                              "nft-api",
+                              "swaps-api",
+                              "block-timestamp-api",
+                              "token-api",
+                              "transfers-api",
+                              "bundler-api",
+                              "debug-api",
+                              "embedded-accounts",
+                              "gas-manager-api",
+                              "trace-api",
+                              "prices-api",
+                              "transaction-simulation-api",
+                              "transaction-receipts-api",
+                              "user-operations-api",
+                              "smart-websockets",
+                              "webhooks",
+                              "blast"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array",
+                          "description": "Products enabled for this app"
+                        },
+                        "addressAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Wallet address value.",
+                                "example": "0x0000000000000000000000000000000000000001"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Address allowlist entries for this app"
+                        },
+                        "originAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Primary"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Origin value. Accepts full URLs or bare domains.",
+                                "example": "https://example.com"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "Origin allowlist entries for this app"
+                        },
+                        "ipAllowlist": {
+                          "items": {
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Label for the allowlist entry.",
+                                "example": "Office"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "IP address or CIDR range.",
+                                "example": "203.0.113.1"
+                              }
+                            },
+                            "required": ["value"],
+                            "type": "object",
+                            "additionalProperties": false
+                          },
+                          "type": "array",
+                          "description": "IP allowlist entries for this app"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "description": "Creation timestamp (ISO 8601)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "apiKey",
+                        "webhookApiKey",
+                        "chainNetworks",
+                        "products",
+                        "addressAllowlist",
+                        "originAllowlist",
+                        "ipAllowlist",
+                        "createdAt"
+                      ],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["data"],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 400,
+                        "status": 400,
+                        "message": "Invalid input"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Requires authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 401,
+                        "status": 401,
+                        "message": "Requires authentication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 403,
+                        "status": 403,
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "App not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "format": "int32"
+                            },
+                            {
+                              "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "status": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "context": {
+                          "description": "Additional information about the error specific to the endpoint.",
+                          "properties": {},
+                          "type": "object",
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": ["message", "code", "status"],
+                      "type": "object",
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "error": {
+                        "code": 404,
+                        "status": 404,
+                        "message": "App not found"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Replaces the IP allowlist for an application, controlling which IP addresses or CIDR ranges are authorized to send requests. The provided list fully replaces the existing allowlist.",
+        "summary": "Update app IP allowlist",
+        "security": [
+          {
+            "api_key": ["ADMIN_APPS_READ_WRITE"]
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "ipAllowlist": {
+                    "items": {
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Label for the allowlist entry.",
+                          "example": "Office"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "IP address or CIDR range.",
+                          "example": "203.0.113.1"
+                        }
+                      },
+                      "required": ["value"],
+                      "type": "object",
+                      "additionalProperties": false
+                    },
+                    "type": "array",
+                    "description": "Updated IP allowlist."
+                  }
+                },
+                "required": ["ipAllowlist"],
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "examples": {},
+    "headers": {},
+    "parameters": {},
+    "requestBodies": {},
+    "responses": {},
+    "schemas": {
+      "ChainNetworkOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Alchemy chain network id (`{chain}_{network}`)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name for the network."
+          },
+          "networkChainId": {
+            "type": "string",
+            "nullable": true,
+            "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+          },
+          "isTestnet": {
+            "type": "boolean",
+            "description": "Indicates whether the network is a testnet."
+          },
+          "availability": {
+            "description": "Availability for the network (public, prerelease, deprecated).",
+            "enum": ["prerelease", "public", "deprecated"],
+            "type": "string"
+          },
+          "docsUrl": {
+            "type": "string",
+            "description": "Useful documentation link for the network."
+          },
+          "explorerUrl": {
+            "type": "string",
+            "description": "Explorer URL for the network."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Native currency ticker."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isTestnet",
+          "availability",
+          "docsUrl",
+          "explorerUrl",
+          "currency"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "StandardResponse_ChainNetworkOption-Array_": {
+        "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+        "properties": {
+          "data": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Alchemy chain network id (`{chain}_{network}`)."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Display name for the network."
+                },
+                "networkChainId": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                },
+                "isTestnet": {
+                  "type": "boolean",
+                  "description": "Indicates whether the network is a testnet."
+                },
+                "availability": {
+                  "description": "Availability for the network (public, prerelease, deprecated).",
+                  "enum": ["prerelease", "public", "deprecated"],
+                  "type": "string"
+                },
+                "docsUrl": {
+                  "type": "string",
+                  "description": "Useful documentation link for the network."
+                },
+                "explorerUrl": {
+                  "type": "string",
+                  "description": "Explorer URL for the network."
+                },
+                "currency": {
+                  "type": "string",
+                  "description": "Native currency ticker."
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "isTestnet",
+                "availability",
+                "docsUrl",
+                "explorerUrl",
+                "currency"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array"
+          }
+        },
+        "required": ["data"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ErrorResponse": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                "type": "number"
+              }
+            ]
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "context": {
+            "description": "Additional information about the error specific to the endpoint.",
+            "properties": {},
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": ["message", "code", "status"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "StandardErrorResponse": {
+        "description": "Standard error response wrapper.\nAll error responses are wrapped in this format for consistency.",
+        "properties": {
+          "error": {
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "code": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "enum": [500, 400, 401, 403, 404, 200, 201, 1000],
+                    "type": "number"
+                  }
+                ]
+              },
+              "status": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "context": {
+                "description": "Additional information about the error specific to the endpoint.",
+                "properties": {},
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": ["message", "code", "status"],
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "required": ["error"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "AppListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "App ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description"
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "API key to access chain network"
+          },
+          "webhookApiKey": {
+            "type": "string",
+            "description": "API key used to access webhook's management API"
+          },
+          "chainNetworks": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Display name"
+                },
+                "id": {
+                  "type": "string",
+                  "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                },
+                "networkChainId": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                },
+                "rpcUrl": {
+                  "type": "string",
+                  "description": "HTTPS RPC endpoint"
+                },
+                "wsUrl": {
+                  "type": "string",
+                  "description": "WebSocket endpoint"
+                },
+                "grpcUrl": {
+                  "type": "string",
+                  "description": "gRPC endpoint (when available, e.g. Solana)"
+                }
+              },
+              "required": ["name", "id", "rpcUrl"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "Networks configured for this app"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp (ISO 8601)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "apiKey",
+          "webhookApiKey",
+          "chainNetworks",
+          "createdAt"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ListAppsResponse": {
+        "properties": {
+          "apps": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "App ID"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Display name"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Description"
+                },
+                "apiKey": {
+                  "type": "string",
+                  "description": "API key to access chain network"
+                },
+                "webhookApiKey": {
+                  "type": "string",
+                  "description": "API key used to access webhook's management API"
+                },
+                "chainNetworks": {
+                  "items": {
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Display name"
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                      },
+                      "networkChainId": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                      },
+                      "rpcUrl": {
+                        "type": "string",
+                        "description": "HTTPS RPC endpoint"
+                      },
+                      "wsUrl": {
+                        "type": "string",
+                        "description": "WebSocket endpoint"
+                      },
+                      "grpcUrl": {
+                        "type": "string",
+                        "description": "gRPC endpoint (when available, e.g. Solana)"
+                      }
+                    },
+                    "required": ["name", "id", "rpcUrl"],
+                    "type": "object",
+                    "additionalProperties": false
+                  },
+                  "type": "array",
+                  "description": "Networks configured for this app"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "Creation timestamp (ISO 8601)"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "apiKey",
+                "webhookApiKey",
+                "chainNetworks",
+                "createdAt"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "List of apps for the current page"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total number of apps matching the query"
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Opaque cursor for fetching the next page.\nOnly present if more results exist."
+          }
+        },
+        "required": ["apps", "totalCount"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "StandardResponse_ListAppsResponse_": {
+        "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+        "properties": {
+          "data": {
+            "properties": {
+              "apps": {
+                "items": {
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "App ID"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Display name"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Description"
+                    },
+                    "apiKey": {
+                      "type": "string",
+                      "description": "API key to access chain network"
+                    },
+                    "webhookApiKey": {
+                      "type": "string",
+                      "description": "API key used to access webhook's management API"
+                    },
+                    "chainNetworks": {
+                      "items": {
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Display name"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                          },
+                          "networkChainId": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                          },
+                          "rpcUrl": {
+                            "type": "string",
+                            "description": "HTTPS RPC endpoint"
+                          },
+                          "wsUrl": {
+                            "type": "string",
+                            "description": "WebSocket endpoint"
+                          },
+                          "grpcUrl": {
+                            "type": "string",
+                            "description": "gRPC endpoint (when available, e.g. Solana)"
+                          }
+                        },
+                        "required": ["name", "id", "rpcUrl"],
+                        "type": "object",
+                        "additionalProperties": false
+                      },
+                      "type": "array",
+                      "description": "Networks configured for this app"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "description": "Creation timestamp (ISO 8601)"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "apiKey",
+                    "webhookApiKey",
+                    "chainNetworks",
+                    "createdAt"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "type": "array",
+                "description": "List of apps for the current page"
+              },
+              "totalCount": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Total number of apps matching the query"
+              },
+              "cursor": {
+                "type": "string",
+                "description": "Opaque cursor for fetching the next page.\nOnly present if more results exist."
+              }
+            },
+            "required": ["apps", "totalCount"],
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "required": ["data"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "App": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "App ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description"
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "API key to access chain network"
+          },
+          "webhookApiKey": {
+            "type": "string",
+            "description": "API key used to access webhook's management API"
+          },
+          "chainNetworks": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Display name"
+                },
+                "id": {
+                  "type": "string",
+                  "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                },
+                "networkChainId": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                },
+                "rpcUrl": {
+                  "type": "string",
+                  "description": "HTTPS RPC endpoint"
+                },
+                "wsUrl": {
+                  "type": "string",
+                  "description": "WebSocket endpoint"
+                },
+                "grpcUrl": {
+                  "type": "string",
+                  "description": "gRPC endpoint (when available, e.g. Solana)"
+                }
+              },
+              "required": ["name", "id", "rpcUrl"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "Networks configured for this app"
+          },
+          "products": {
+            "items": {
+              "enum": [
+                "node-api",
+                "nft-api",
+                "swaps-api",
+                "block-timestamp-api",
+                "token-api",
+                "transfers-api",
+                "bundler-api",
+                "debug-api",
+                "embedded-accounts",
+                "gas-manager-api",
+                "trace-api",
+                "prices-api",
+                "transaction-simulation-api",
+                "transaction-receipts-api",
+                "user-operations-api",
+                "smart-websockets",
+                "webhooks",
+                "blast"
+              ],
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Products enabled for this app"
+          },
+          "addressAllowlist": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Label for the allowlist entry.",
+                  "example": "Primary"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Wallet address value.",
+                  "example": "0x0000000000000000000000000000000000000001"
+                }
+              },
+              "required": ["value"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "Address allowlist entries for this app"
+          },
+          "originAllowlist": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Label for the allowlist entry.",
+                  "example": "Primary"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Origin value. Accepts full URLs or bare domains.",
+                  "example": "https://example.com"
+                }
+              },
+              "required": ["value"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "Origin allowlist entries for this app"
+          },
+          "ipAllowlist": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Label for the allowlist entry.",
+                  "example": "Office"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "IP address or CIDR range.",
+                  "example": "203.0.113.1"
+                }
+              },
+              "required": ["value"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "IP allowlist entries for this app"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp (ISO 8601)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "apiKey",
+          "webhookApiKey",
+          "chainNetworks",
+          "products",
+          "addressAllowlist",
+          "originAllowlist",
+          "ipAllowlist",
+          "createdAt"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "StandardResponse_App_": {
+        "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+        "properties": {
+          "data": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "App ID"
+              },
+              "name": {
+                "type": "string",
+                "description": "Display name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description"
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "API key to access chain network"
+              },
+              "webhookApiKey": {
+                "type": "string",
+                "description": "API key used to access webhook's management API"
+              },
+              "chainNetworks": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Display name"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "Alchemy chain network id in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+                    },
+                    "networkChainId": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "EIP-155 network chain id when available. Null for non-EVM chains."
+                    },
+                    "rpcUrl": {
+                      "type": "string",
+                      "description": "HTTPS RPC endpoint"
+                    },
+                    "wsUrl": {
+                      "type": "string",
+                      "description": "WebSocket endpoint"
+                    },
+                    "grpcUrl": {
+                      "type": "string",
+                      "description": "gRPC endpoint (when available, e.g. Solana)"
+                    }
+                  },
+                  "required": ["name", "id", "rpcUrl"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "type": "array",
+                "description": "Networks configured for this app"
+              },
+              "products": {
+                "items": {
+                  "enum": [
+                    "node-api",
+                    "nft-api",
+                    "swaps-api",
+                    "block-timestamp-api",
+                    "token-api",
+                    "transfers-api",
+                    "bundler-api",
+                    "debug-api",
+                    "embedded-accounts",
+                    "gas-manager-api",
+                    "trace-api",
+                    "prices-api",
+                    "transaction-simulation-api",
+                    "transaction-receipts-api",
+                    "user-operations-api",
+                    "smart-websockets",
+                    "webhooks",
+                    "blast"
+                  ],
+                  "type": "string"
+                },
+                "type": "array",
+                "description": "Products enabled for this app"
+              },
+              "addressAllowlist": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Label for the allowlist entry.",
+                      "example": "Primary"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "Wallet address value.",
+                      "example": "0x0000000000000000000000000000000000000001"
+                    }
+                  },
+                  "required": ["value"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "type": "array",
+                "description": "Address allowlist entries for this app"
+              },
+              "originAllowlist": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Label for the allowlist entry.",
+                      "example": "Primary"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "Origin value. Accepts full URLs or bare domains.",
+                      "example": "https://example.com"
+                    }
+                  },
+                  "required": ["value"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "type": "array",
+                "description": "Origin allowlist entries for this app"
+              },
+              "ipAllowlist": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Label for the allowlist entry.",
+                      "example": "Office"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "IP address or CIDR range.",
+                      "example": "203.0.113.1"
+                    }
+                  },
+                  "required": ["value"],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "type": "array",
+                "description": "IP allowlist entries for this app"
+              },
+              "createdAt": {
+                "type": "string",
+                "description": "Creation timestamp (ISO 8601)"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "apiKey",
+              "webhookApiKey",
+              "chainNetworks",
+              "products",
+              "addressAllowlist",
+              "originAllowlist",
+              "ipAllowlist",
+              "createdAt"
+            ],
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "required": ["data"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "CreateAppInput": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "networkAllowlist": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Alchemy chain network id to be enabled. Value is in the form of `{chain}_{network}` (e.g. `ETH_MAINNET`)"
+          },
+          "products": {
+            "items": {
+              "enum": [
+                "node-api",
+                "nft-api",
+                "swaps-api",
+                "block-timestamp-api",
+                "token-api",
+                "transfers-api",
+                "bundler-api",
+                "debug-api",
+                "embedded-accounts",
+                "gas-manager-api",
+                "trace-api",
+                "prices-api",
+                "transaction-simulation-api",
+                "transaction-receipts-api",
+                "user-operations-api",
+                "smart-websockets",
+                "webhooks",
+                "blast"
+              ],
+              "type": "string"
+            },
+            "type": "array",
+            "description": "Product to be enabled for app"
+          }
+        },
+        "required": ["name", "networkAllowlist"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "StandardResponse_DeleteAppResponse_": {
+        "description": "Standard API response wrapper.\nAll API responses are wrapped in this format for consistency.",
+        "properties": {
+          "data": {
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "App ID"
+              },
+              "message": {
+                "type": "string",
+                "description": "Confirmation message."
+              }
+            },
+            "required": ["id", "message"],
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "required": ["data"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "UpdateAppAddressAllowlistInput": {
+        "properties": {
+          "addressAllowlist": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Label for the allowlist entry.",
+                  "example": "Primary"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Wallet address value.",
+                  "example": "0x0000000000000000000000000000000000000001"
+                }
+              },
+              "required": ["value"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "Updated address allowlist."
+          }
+        },
+        "required": ["addressAllowlist"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "UpdateAppOriginAllowlistInput": {
+        "properties": {
+          "originAllowlist": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Label for the allowlist entry.",
+                  "example": "Primary"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Origin value. Accepts full URLs or bare domains.",
+                  "example": "https://example.com"
+                }
+              },
+              "required": ["value"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "Updated origin allowlist."
+          }
+        },
+        "required": ["originAllowlist"],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "UpdateAppIpAllowlistInput": {
+        "properties": {
+          "ipAllowlist": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Label for the allowlist entry.",
+                  "example": "Office"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "IP address or CIDR range.",
+                  "example": "203.0.113.1"
+                }
+              },
+              "required": ["value"],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "type": "array",
+            "description": "Updated IP allowlist."
+          }
+        },
+        "required": ["ipAllowlist"],
+        "type": "object",
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "api_key": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

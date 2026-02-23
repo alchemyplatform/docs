@@ -23,8 +23,8 @@ describe("ContentCache", () => {
       content: "# Quickstart\n\nContent here",
     };
 
-    cache.setMdxContent("fern/guides/quickstart.mdx", mdxEntry);
-    const retrieved = cache.getMdxContent("fern/guides/quickstart.mdx");
+    cache.setMdxContent("content/guides/quickstart.mdx", mdxEntry);
+    const retrieved = cache.getMdxContent("content/guides/quickstart.mdx");
 
     expect(retrieved).toEqual(mdxEntry);
     expect(retrieved?.frontmatter.title).toBe("Quickstart");

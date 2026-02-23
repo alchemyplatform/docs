@@ -10,7 +10,7 @@ const isHiddenDir = (file: string) =>
   !file.startsWith("_") && !file.startsWith(".");
 
 const SCHEMAS_ROOT = "src/openrpc";
-const OUTPUT_ROOT = "fern/api-specs";
+const OUTPUT_ROOT = "content/api-specs";
 
 const main = async () => {
   const allChainsDir = `${SCHEMAS_ROOT}/chains`;

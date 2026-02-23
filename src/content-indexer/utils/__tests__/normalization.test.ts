@@ -42,12 +42,15 @@ describe("normalization utils", () => {
 
   describe("normalizeFilePath", () => {
     test("should remove stripPathPrefix", () => {
-      const result = normalizeFilePath("fern/guides/quickstart.mdx", "fern/");
+      const result = normalizeFilePath(
+        "content/guides/quickstart.mdx",
+        "content/",
+      );
       expect(result).toBe("guides/quickstart.mdx");
     });
 
     test("should handle path without matching prefix", () => {
-      const result = normalizeFilePath("guides/quickstart.mdx", "fern/");
+      const result = normalizeFilePath("guides/quickstart.mdx", "content/");
       expect(result).toBe("guides/quickstart.mdx");
     });
 
@@ -63,8 +66,8 @@ describe("normalization utils", () => {
 
     test("should handle complex path", () => {
       const result = normalizeFilePath(
-        "fern/docs/reference/ethereum/methods/eth_getBalance.mdx",
-        "fern/docs/",
+        "content/docs/reference/ethereum/methods/eth_getBalance.mdx",
+        "content/docs/",
       );
       expect(result).toBe("reference/ethereum/methods/eth_getBalance.mdx");
     });
@@ -76,11 +79,11 @@ describe("normalization utils", () => {
 
     test("should strip multiple occurrences of prefix", () => {
       const result = normalizeFilePath(
-        "fern/fern/guides/quickstart.mdx",
-        "fern/",
+        "content/content/guides/quickstart.mdx",
+        "content/",
       );
       // replace() only replaces first occurrence by default
-      expect(result).toBe("fern/guides/quickstart.mdx");
+      expect(result).toBe("content/guides/quickstart.mdx");
     });
   });
 });

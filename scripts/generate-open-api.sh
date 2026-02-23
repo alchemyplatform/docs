@@ -33,7 +33,7 @@ pids=()
 lint_failed=0
 
 input_dir="src/openapi"
-output_dir="fern/api-specs"
+output_dir="content/api-specs"
 
 # Process only the main YAML file in each subdirectory
 for dir in ${input_dir}/*/; do
@@ -71,8 +71,8 @@ done
 
 # --- Remote specs ---
 # Specs hosted externally that should be included alongside local specs.
-# Config lives in fern/remote-specs.json as an array of { name, url } objects.
-remote_specs_file="fern/remote-specs.json"
+# Config lives in content/remote-specs.json as an array of { name, url } objects.
+remote_specs_file="content/remote-specs.json"
 
 if [ -f "$remote_specs_file" ]; then
   for entry in $(jq -c '.[]' "$remote_specs_file"); do

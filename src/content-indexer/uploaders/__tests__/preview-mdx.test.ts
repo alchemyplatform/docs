@@ -138,7 +138,7 @@ describe("uploadChangedMdxFiles", () => {
     const { execSync } = await import("child_process");
     vi.mocked(execSync)
       .mockReturnValueOnce(
-        "fern/pages/intro.mdx\nfern/pages/deleted.mdx\nfern/pages/new.mdx\n",
+        "content/pages/intro.mdx\ncontent/pages/deleted.mdx\ncontent/pages/new.mdx\n",
       )
       .mockReturnValueOnce(""); // no untracked files
     vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
@@ -184,8 +184,8 @@ describe("uploadChangedMdxFiles", () => {
   test("includes untracked files in upload", async () => {
     const { execSync } = await import("child_process");
     vi.mocked(execSync)
-      .mockReturnValueOnce("fern/pages/changed.mdx\n") // git diff
-      .mockReturnValueOnce("fern/pages/new-untracked.mdx\n"); // git ls-files
+      .mockReturnValueOnce("content/pages/changed.mdx\n") // git diff
+      .mockReturnValueOnce("content/pages/new-untracked.mdx\n"); // git ls-files
     vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
     mockRedis.get.mockResolvedValue(null);
 
@@ -222,8 +222,8 @@ describe("uploadChangedMdxFiles", () => {
   test("deduplicates files appearing in both diff and untracked", async () => {
     const { execSync } = await import("child_process");
     vi.mocked(execSync)
-      .mockReturnValueOnce("fern/pages/intro.mdx\n") // git diff
-      .mockReturnValueOnce("fern/pages/intro.mdx\n"); // git ls-files (same file)
+      .mockReturnValueOnce("content/pages/intro.mdx\n") // git diff
+      .mockReturnValueOnce("content/pages/intro.mdx\n"); // git ls-files (same file)
     vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
     mockRedis.get.mockResolvedValue(null);
 

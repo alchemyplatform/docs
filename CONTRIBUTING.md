@@ -17,7 +17,7 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
 
 #### Written Documentation
 
-* Located in `fern/docs/`
+* Located in `content/docs/`
 * Written in MDX format
 * Update `docs.yml` when adding/moving pages
 

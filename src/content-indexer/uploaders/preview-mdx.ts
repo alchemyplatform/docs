@@ -15,7 +15,7 @@ const ROUTING_FIELDS = ["slug", "hidden", "title", "description"] as const;
  * Uploads a single MDX file to Redis under a branch-scoped key.
  * Returns true if routing-relevant frontmatter changed (caller should reindex).
  *
- * @param filePath - Path relative to fern/ (e.g., "pages/intro.mdx")
+ * @param filePath - Path relative to content/ (e.g., "pages/intro.mdx")
  * @param branch - Branch identifier for Redis key prefix
  * @param redis - Redis client instance
  */
@@ -24,12 +24,12 @@ export const uploadMdxFile = async (
   branch: string,
   redis: Redis,
 ): Promise<{ reindexNeeded: boolean }> => {
-  const baseDir = path.join(process.cwd(), "fern");
+  const baseDir = path.join(process.cwd(), "content");
   const fullPath = path.resolve(baseDir, filePath);
 
-  // Prevent path traversal outside fern/
+  // Prevent path traversal outside content/
   if (!fullPath.startsWith(baseDir + path.sep)) {
-    console.warn(`  ⚠️ Skipping ${filePath}: path outside fern/`);
+    console.warn(`  ⚠️ Skipping ${filePath}: path outside content/`);
     return { reindexNeeded: false };
   }
 
@@ -70,19 +70,19 @@ export const uploadMdxFile = async (
 };
 
 /**
- * Returns MDX/MD file paths (relative to fern/) that differ from main.
+ * Returns MDX/MD file paths (relative to content/) that differ from main.
  * Includes both committed changes (git diff) and untracked new files
  * so previews work without requiring a commit first.
  */
 const getChangedMdxFiles = (): string[] => {
   // Committed/staged changes vs main
-  const diffOutput = execSync("git diff --name-only origin/main -- fern/", {
+  const diffOutput = execSync("git diff --name-only origin/main -- content/", {
     encoding: "utf-8",
   });
 
   // Untracked new files not yet committed
   const untrackedOutput = execSync(
-    "git ls-files --others --exclude-standard -- fern/",
+    "git ls-files --others --exclude-standard -- content/",
     { encoding: "utf-8" },
   );
 
@@ -93,7 +93,7 @@ const getChangedMdxFiles = (): string[] => {
 
   return [...allFiles]
     .filter((line) => line.length > 0 && /\.(mdx|md)$/.test(line))
-    .map((line) => line.replace(/^fern\//, ""));
+    .map((line) => line.replace(/^content\//, ""));
 };
 
 /**

@@ -218,7 +218,7 @@ export function generateGeneratorsYaml(chainName: string): string {
 }
 
 export function updateDocsYml(chainName: string, displayName: string): void {
-  const docsYmlPath = path.join(process.cwd(), "fern", "docs.yml");
+  const docsYmlPath = path.join(process.cwd(), "content", "docs.yml");
   const docsContent = fs.readFileSync(docsYmlPath, "utf8");
 
   const indexToPutNewSectionIn = docsContent.indexOf("- tab: data");
@@ -269,7 +269,7 @@ export function updateChainApisOverview(
 ): void {
   const overviewPath = path.join(
     process.cwd(),
-    "fern",
+    "content",
     "api-reference",
     "introduction",
     "alchemy-api-reference-overview",
@@ -375,7 +375,7 @@ export function createDirectoryStructure(chainName: string): {
 } {
   const quickstartDir = path.join(
     process.cwd(),
-    "fern",
+    "content",
     "api-reference",
     chainName,
   );
@@ -418,7 +418,7 @@ export function checkIfChainExists(chainName: string): boolean {
   // Check if documentation files already exist instead of OpenRPC chain files
   const quickstartDir = path.join(
     process.cwd(),
-    "fern",
+    "content",
     "api-reference",
     chainName,
   );

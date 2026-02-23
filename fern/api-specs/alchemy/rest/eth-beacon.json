@@ -1,0 +1,4280 @@
+{
+  "x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ethereum Beacon",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://eth-mainnetbeacon.g.alchemy.com/v2/{apiKey}",
+      "variables": {
+        "apiKey": {
+          "default": "docs-demo"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/eth/v2/beacon/blocks/{block_id}/attestations": {
+      "get": {
+        "summary": "/v2/beacon/blocks/{block_id}/attestations",
+        "description": "Retrieves attestations included in the requested block.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attestations included in the block.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "Schema version of the response.",
+                      "example": "electra"
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the block is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of attestations in this block.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "aggregation_bits": {
+                            "type": "string",
+                            "description": "Bitlist indicating which validators in the committee participated.",
+                            "example": "0x01"
+                          },
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "slot": {
+                                "type": "string",
+                                "description": "Slot number.",
+                                "example": "1"
+                              },
+                              "index": {
+                                "type": "string",
+                                "description": "Committee index.",
+                                "example": "1"
+                              },
+                              "beacon_block_root": {
+                                "type": "string",
+                                "description": "Root of the beacon block being attested.",
+                                "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                              },
+                              "source": {
+                                "type": "object",
+                                "properties": {
+                                  "epoch": {
+                                    "type": "string",
+                                    "example": "1"
+                                  },
+                                  "root": {
+                                    "type": "string",
+                                    "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                                  }
+                                }
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "epoch": {
+                                    "type": "string",
+                                    "example": "1"
+                                  },
+                                  "root": {
+                                    "type": "string",
+                                    "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "signature": {
+                            "type": "string",
+                            "description": "BLS signature of the attestation.",
+                            "example": "0xa9723fa732151636f66ddeb896962776246b89ffd69d3e29241f0ca7ddbe6b12aaa2413096f445da7d7de95b78e8c64811244f1677cfd104b7860c027e0a86ac707fc6b302a54e45a6d8a1053785144596d8e05a8c0972e89f038ac083b89ab3"
+                          },
+                          "committee_bits": {
+                            "type": "string",
+                            "description": "Bits indicating which committee indices signed.",
+                            "example": "0xffffffffffffffff"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "version": "electra",
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "aggregation_bits": "0xfffffffffffffffffffffffffffe...",
+                          "data": {
+                            "slot": "12304636",
+                            "index": "0",
+                            "beacon_block_root": "0xcc83a9c3856bb3ca5d5cd41fdb7079e849ecab0d3477fc19fd584c97a69b090f",
+                            "source": {
+                              "epoch": "384518",
+                              "root": "0x3697abccaeb877bb4c6ae3a6777bfbca017b816a43b7130235edc4eab5baee1b"
+                            },
+                            "target": {
+                              "epoch": "384519",
+                              "root": "0x0c28d4f4f4d7583f5b644c2340a882f8867a35bcf8f96c0a2ac5b647cabcabe0"
+                            }
+                          },
+                          "signature": "0xb27f1518049ca0eb23cdbf09d1bd98b0a9ca67e4f034952da74fd275c4a740583e7f0e6f7c95cea664ac3b7d0daae427063219ff844e271e92d9f85362d720d823b40496cccda1e0892553c782b59f3944d7b3d8dfac8735786c9d02fb9c4702",
+                          "committee_bits": "0x20d07a084b7aafdf"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/blocks/{block_id}/root": {
+      "get": {
+        "summary": "/v1/beacon/blocks/{block_id}/root",
+        "description": "Retrieves the hashTreeRoot of a BeaconBlock or BeaconBlockHeader.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Root of the requested block.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the block is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "root": {
+                          "type": "string",
+                          "description": "HashTreeRoot of the block or block header.",
+                          "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "root": "0xf8f483ed7ddcdd9c172789a6811607c74f980601071f02391ffb6824d7ceed44"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/blob_sidecars/{block_id}": {
+      "get": {
+        "summary": "/v1/beacon/blob_sidecars/{block_id}",
+        "description": "Retrieves blob sidecars for a given block.  \nIf the `indices` query parameter is specified, only the blob sidecars with the given indices will be returned.   Ordering of returned blob sidecars is not guaranteed.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`.\n"
+          },
+          {
+            "name": "indices",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": ["0", "1"]
+            },
+            "description": "Array of indices for blob sidecars to request.   If not provided, all blob sidecars in the block will be returned.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blob sidecars retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "Protocol version (e.g. \"electra\")."
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the block is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "string",
+                            "description": "Blob sidecar index.",
+                            "example": "0"
+                          },
+                          "blob": {
+                            "type": "string",
+                            "description": "Blob data (hex-encoded).",
+                            "example": "0x1bba050000000000000000000000000000000000000000000000000000000000"
+                          },
+                          "kzg_commitment": {
+                            "type": "string",
+                            "description": "KZG commitment for the blob."
+                          },
+                          "kzg_proof": {
+                            "type": "string",
+                            "description": "KZG proof for the blob."
+                          },
+                          "signed_block_header": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "object",
+                                "properties": {
+                                  "slot": {
+                                    "type": "string"
+                                  },
+                                  "proposer_index": {
+                                    "type": "string"
+                                  },
+                                  "parent_root": {
+                                    "type": "string"
+                                  },
+                                  "state_root": {
+                                    "type": "string"
+                                  },
+                                  "body_root": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "signature": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "kzg_commitment_inclusion_proof": {
+                            "type": "array",
+                            "description": "Merkle inclusion proof for the commitment.",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "version": "electra",
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "index": "0",
+                          "blob": "0x1bba050000000000000000000000000000000000000000000000000000000000",
+                          "kzg_commitment": "0x9721f6bddeb94fe4bc809c63300cbb399ca7a04f5f75d7cf8c1ab9748b48aa37d7984353bc4bb2f6ac340289602b5690",
+                          "kzg_proof": "0x9834b06604317c27b6be7d1afb1b554bd8cd389d7c0895e7d4d3ce86e080493238b5fc2a845ebaf9d91c0b132f3a9799",
+                          "signed_block_header": {
+                            "message": {
+                              "slot": "12304801",
+                              "proposer_index": "354571",
+                              "parent_root": "0x18a7f340369eb4459e2274fc3eb98aad725351a9031fe3cbea8e75e888d5f78d",
+                              "state_root": "0x94c85d613e6ac2db8aa7cd03ba14e2c4d5da01f9ce80982ea42071d2f476a2aa",
+                              "body_root": "0x1b003d536c816c724abe2155314b88172b415eed0188c93eea1490d4c997b09a"
+                            },
+                            "signature": "0x9246ca0bf19832b17da41cce8456bc5fe426306607557f44a115a0070c886c9e30fa72e1102e8d8bbb3303cc44f5715c17db0b7c25959d828e4b555c1763dbad111f4cbed00cb3ac6447affec07976339bd799145b24d75ce0127eeae76d9640"
+                          },
+                          "kzg_commitment_inclusion_proof": [
+                            "0x2816498e2a6e7dfb3397712273c67699cebc8c18502a18a743629287ae80b940",
+                            "0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+                            "0x4f4e84e7c7d803068cf23187f44b8f8e18175c62ea1730d06c42573ef2494526",
+                            "0xc78009fdf07fc56a11f122370658a353aaa542ed63e44c4bc15ff4cd105ab33c"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v2/beacon/blocks/{block_id}": {
+      "get": {
+        "summary": "/v2/beacon/blocks/{block_id}",
+        "description": "Retrieves full block details for the given block identifier.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "Protocol version (e.g. \"electra\")."
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the block is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Block contents.",
+                      "properties": {
+                        "message": {
+                          "type": "object",
+                          "properties": {
+                            "slot": {
+                              "type": "string"
+                            },
+                            "proposer_index": {
+                              "type": "string"
+                            },
+                            "parent_root": {
+                              "type": "string"
+                            },
+                            "state_root": {
+                              "type": "string"
+                            },
+                            "body": {
+                              "type": "object",
+                              "properties": {
+                                "randao_reveal": {
+                                  "type": "string"
+                                },
+                                "eth1_data": {
+                                  "type": "object",
+                                  "properties": {
+                                    "deposit_root": {
+                                      "type": "string"
+                                    },
+                                    "deposit_count": {
+                                      "type": "string"
+                                    },
+                                    "block_hash": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "graffiti": {
+                                  "type": "string"
+                                },
+                                "proposer_slashings": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "attester_slashings": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "attestations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "deposits": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "voluntary_exits": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "sync_aggregate": {
+                                  "type": "object"
+                                },
+                                "bls_to_execution_changes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "blob_kzg_commitments": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "execution_payload": {
+                                  "type": "object"
+                                },
+                                "execution_requests": {
+                                  "type": "object"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "signature": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "exampleResponse": {
+                    "summary": "Example real response",
+                    "value": {
+                      "version": "electra",
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "message": {
+                          "slot": "12304813",
+                          "proposer_index": "356622",
+                          "parent_root": "0x9d7bf160847cebe069890d0d1811bd7665bff49fb65c311805ee0f124f4c7de2",
+                          "state_root": "0xb0850a65116ed2fdd74340230967f3688d076d3d9903e61d0de174ff9a09a385",
+                          "body": {
+                            "randao_reveal": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505",
+                            "eth1_data": {
+                              "deposit_root": "0x2ebc563cabdbbacbc56f0de1d2d1c2d5315a4b071fcd8566aabbf0a45161c64e",
+                              "deposit_count": "2045305",
+                              "block_hash": "0x0958d83550263ff0d9f9a0bc5ea3cd2a136e0933b6f43cbb17f36e4da8d809b1"
+                            },
+                            "graffiti": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                            "proposer_slashings": [],
+                            "attester_slashings": [],
+                            "attestations": [
+                              {
+                                "aggregation_bits": "0xfffffffbffffffff...",
+                                "data": {
+                                  "slot": "12304812",
+                                  "index": "0",
+                                  "beacon_block_root": "0x9d7bf160847cebe069890d0d1811bd7665bff49fb65c311805ee0f124f4c7de2",
+                                  "source": {
+                                    "epoch": "384524",
+                                    "root": "0x69d231105c8c6e602d868fc5e4015b429cf330125c3fdade8ac034db36f049b0"
+                                  },
+                                  "target": {
+                                    "epoch": "384525",
+                                    "root": "0x18a7f340369eb4459e2274fc3eb98aad725351a9031fe3cbea8e75e888d5f78d"
+                                  }
+                                },
+                                "signature": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505",
+                                "committee_bits": "0xffffffffffffffff"
+                              }
+                            ],
+                            "deposits": [],
+                            "voluntary_exits": [],
+                            "sync_aggregate": {
+                              "sync_committee_bits": "0x01",
+                              "sync_committee_signature": "0xa5fc41bbabe5c6bf0e118146e6d517..."
+                            },
+                            "bls_to_execution_changes": [],
+                            "blob_kzg_commitments": [],
+                            "execution_payload": {
+                              "parent_hash": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+                              "fee_recipient": "0xAbcF8e0d4e9587369b2301D0790347320302cc09",
+                              "state_root": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+                              "block_number": "1",
+                              "gas_limit": "1",
+                              "gas_used": "1",
+                              "timestamp": "1",
+                              "transactions": [],
+                              "withdrawals": []
+                            },
+                            "execution_requests": {
+                              "deposits": [],
+                              "withdrawals": [],
+                              "consolidations": []
+                            }
+                          }
+                        },
+                        "signature": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/genesis": {
+      "get": {
+        "summary": "/v1/beacon/genesis",
+        "description": "Retrieve details of the chain's genesis which can be used to identify the chain.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "genesis_time": {
+                          "type": "string",
+                          "description": "Time of chain genesis in Unix timestamp (seconds).",
+                          "example": "1606824023"
+                        },
+                        "genesis_validators_root": {
+                          "type": "string",
+                          "description": "Root of all validators at genesis.",
+                          "example": "0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95"
+                        },
+                        "genesis_fork_version": {
+                          "type": "string",
+                          "description": "Fork version of the chain at genesis.",
+                          "example": "0x00000000"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": {
+                        "genesis_time": "1606824023",
+                        "genesis_validators_root": "0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95",
+                        "genesis_fork_version": "0x00000000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/headers": {
+      "get": {
+        "summary": "/v1/beacon/headers",
+        "description": "Retrieves block headers matching the given query.   By default, it will fetch the current head slot blocks.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "12304896"
+            },
+            "description": "Slot number. If provided, returns headers for this slot.\n"
+          },
+          {
+            "name": "parent_root",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "hex",
+              "example": "0x3590c9b1a918586a2dabde886abea7f26cfa3a11683be1ab73283e6af70733ba"
+            },
+            "description": "Parent root hash to filter block headers by.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved block headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the block is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of block headers.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "root": {
+                            "type": "string",
+                            "description": "Root hash of the block.",
+                            "example": "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267"
+                          },
+                          "canonical": {
+                            "type": "boolean",
+                            "description": "Whether this header is canonical.",
+                            "example": true
+                          },
+                          "header": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "object",
+                                "properties": {
+                                  "slot": {
+                                    "type": "string",
+                                    "description": "Slot number for this block.",
+                                    "example": "12304896"
+                                  },
+                                  "proposer_index": {
+                                    "type": "string",
+                                    "description": "Index of the block proposer.",
+                                    "example": "1093008"
+                                  },
+                                  "parent_root": {
+                                    "type": "string",
+                                    "description": "Parent block root hash.",
+                                    "example": "0x3590c9b1a918586a2dabde886abea7f26cfa3a11683be1ab73283e6af70733ba"
+                                  },
+                                  "state_root": {
+                                    "type": "string",
+                                    "description": "State root after this block.",
+                                    "example": "0xf5bcaecf4eeaf601cdce952429a40fbe1b3cc24c25baba21f5eed360f6e636f2"
+                                  },
+                                  "body_root": {
+                                    "type": "string",
+                                    "description": "Root of the block body.",
+                                    "example": "0xb2d5058e1f4bc888fa4d6a859a88c975bee5d853aec239a2e67ecf92c3b2d6c5"
+                                  }
+                                }
+                              },
+                              "signature": {
+                                "type": "string",
+                                "description": "Block signature.",
+                                "example": "0x8c5a8efa6e472c358dd7024fae6f6569cd60af754591ddc78ef9e9db287aa68cb7d38c171b96ae11d1b033c1f4921151021bc1d1f4541a5528d15e926d0ca8385286ca49670adcd0e8f26ec231895dc32d7146db55360e0f1ed5ab7757e34258"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "root": "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267",
+                          "canonical": true,
+                          "header": {
+                            "message": {
+                              "slot": "12304896",
+                              "proposer_index": "1093008",
+                              "parent_root": "0x3590c9b1a918586a2dabde886abea7f26cfa3a11683be1ab73283e6af70733ba",
+                              "state_root": "0xf5bcaecf4eeaf601cdce952429a40fbe1b3cc24c25baba21f5eed360f6e636f2",
+                              "body_root": "0xb2d5058e1f4bc888fa4d6a859a88c975bee5d853aec239a2e67ecf92c3b2d6c5"
+                            },
+                            "signature": "0x8c5a8efa6e472c358dd7024fae6f6569cd60af754591ddc78ef9e9db287aa68cb7d38c171b96ae11d1b033c1f4921151021bc1d1f4541a5528d15e926d0ca8385286ca49670adcd0e8f26ec231895dc32d7146db55360e0f1ed5ab7757e34258"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/headers/{block_id}": {
+      "get": {
+        "summary": "/v1/beacon/headers/{block_id}",
+        "description": "Retrieves the block header for the given block identifier.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved block header.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the block is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "root": {
+                          "type": "string",
+                          "description": "Root hash of the block.",
+                          "example": "0x352dd41c368cea0c91374483378ce9f65f7a7180ca6fa5e08ae17ca509d19c0c"
+                        },
+                        "canonical": {
+                          "type": "boolean",
+                          "description": "Whether this header is canonical.",
+                          "example": true
+                        },
+                        "header": {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "object",
+                              "properties": {
+                                "slot": {
+                                  "type": "string",
+                                  "description": "Slot number for this block.",
+                                  "example": "12304928"
+                                },
+                                "proposer_index": {
+                                  "type": "string",
+                                  "description": "Index of the block proposer.",
+                                  "example": "691971"
+                                },
+                                "parent_root": {
+                                  "type": "string",
+                                  "description": "Parent block root hash.",
+                                  "example": "0xbc985d8c2759cbc7cc71c0e228fe26198dc3194c5bdb01f84579f285c5165f96"
+                                },
+                                "state_root": {
+                                  "type": "string",
+                                  "description": "State root after this block.",
+                                  "example": "0x1010f4f05c6cdde0b1ca0cba5f3a39e00b2c13f774536513572b6fdd26d659dd"
+                                },
+                                "body_root": {
+                                  "type": "string",
+                                  "description": "Root of the block body.",
+                                  "example": "0x1eec5d666b09799ad0b5e2909ba8393ef79b2aef2335ff41c0168066df5bd039"
+                                }
+                              }
+                            },
+                            "signature": {
+                              "type": "string",
+                              "description": "Block signature.",
+                              "example": "0x95aca2adcf0456e6b5a59bd0ff9267a884a10aaf5b2fce62f6d5df44edc3546edc17ba5891f6dc03885200b84ca5bef50f67c2d3fc7cfd0127e202b9bc3a084045b9daf0ac54c4309b6931e493415002272672e4520608af5fb821267821aa92"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "root": "0x352dd41c368cea0c91374483378ce9f65f7a7180ca6fa5e08ae17ca509d19c0c",
+                        "canonical": true,
+                        "header": {
+                          "message": {
+                            "slot": "12304928",
+                            "proposer_index": "691971",
+                            "parent_root": "0xbc985d8c2759cbc7cc71c0e228fe26198dc3194c5bdb01f84579f285c5165f96",
+                            "state_root": "0x1010f4f05c6cdde0b1ca0cba5f3a39e00b2c13f774536513572b6fdd26d659dd",
+                            "body_root": "0x1eec5d666b09799ad0b5e2909ba8393ef79b2aef2335ff41c0168066df5bd039"
+                          },
+                          "signature": "0x95aca2adcf0456e6b5a59bd0ff9267a884a10aaf5b2fce62f6d5df44edc3546edc17ba5891f6dc03885200b84ca5bef50f67c2d3fc7cfd0127e202b9bc3a084045b9daf0ac54c4309b6931e493415002272672e4520608af5fb821267821aa92"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/pool/voluntary_exits": {
+      "get": {
+        "summary": "/v1/beacon/pool/voluntary_exits",
+        "description": "Retrieves voluntary exits known by the node, but not necessarily incorporated into any block.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved voluntary exits from the pool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "List of voluntary exit messages.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "object",
+                            "properties": {
+                              "epoch": {
+                                "type": "string",
+                                "description": "Epoch at which validator exited.",
+                                "example": "382458"
+                              },
+                              "validator_index": {
+                                "type": "string",
+                                "description": "Validator index exiting.",
+                                "example": "1698277"
+                              }
+                            }
+                          },
+                          "signature": {
+                            "type": "string",
+                            "description": "BLS signature of the exit message.",
+                            "example": "0xb27e369d96ff799b4a86c9ed961b4c2fbdceef1a2e2f6edad21e6d34b7ec7197..."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": [
+                        {
+                          "message": {
+                            "epoch": "261424",
+                            "validator_index": "1180136"
+                          },
+                          "signature": "0xb3f71961be8f324ee67019db9b266d5fa0aa887a033ccdbc4f0d534af583ea3dac5edaf5b624e378745a63efce1cb9f108eee5b2c0ff61fb7d981dab91778fbc7f604f4ad1954889216a6256b37ce3395bbafc46fe008d349a65658ede2d26e1"
+                        },
+                        {
+                          "message": {
+                            "epoch": "382458",
+                            "validator_index": "1698277"
+                          },
+                          "signature": "0xb27e369d96ff799b4a86c9ed961b4c2fbdceef1a2e2f6edad21e6d34b7ec719792f83f48337793061b4810b03047dacf10dbaa4c56939a5b177de63c782be6f06d226ff557d388328d50c99566042d8929585f14119684446a9c618c391502f6"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v2/beacon/pool/attestations": {
+      "get": {
+        "summary": "/v2/beacon/pool/attestations",
+        "description": "Retrieves attestations known by the beacon node but not necessarily incorporated into any block.\nThis endpoint returns attestations currently present in the node’s operation pool.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved attestations from the pool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "Protocol version of the response.",
+                      "example": "electra"
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of attestations in the pool.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "aggregation_bits": {
+                            "type": "string",
+                            "description": "Bitlist indicating which validators participated.",
+                            "example": "0x01"
+                          },
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "slot": {
+                                "type": "string",
+                                "example": "12304636"
+                              },
+                              "index": {
+                                "type": "string",
+                                "example": "0"
+                              },
+                              "beacon_block_root": {
+                                "type": "string",
+                                "example": "0xcc83a9c3856bb3ca5d5cd41fdb7079e849ecab0d3477fc19fd584c97a69b090f"
+                              },
+                              "source": {
+                                "type": "object",
+                                "properties": {
+                                  "epoch": {
+                                    "type": "string",
+                                    "example": "384518"
+                                  },
+                                  "root": {
+                                    "type": "string",
+                                    "example": "0x3697abccaeb877bb4c6ae3a6777bfbca017b816a43b7130235edc4eab5baee1b"
+                                  }
+                                }
+                              },
+                              "target": {
+                                "type": "object",
+                                "properties": {
+                                  "epoch": {
+                                    "type": "string",
+                                    "example": "384519"
+                                  },
+                                  "root": {
+                                    "type": "string",
+                                    "example": "0x0c28d4f4f4d7583f5b644c2340a882f8867a35bcf8f96c0a2ac5b647cabcabe0"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "signature": {
+                            "type": "string",
+                            "description": "BLS signature of the attestation.",
+                            "example": "0xb27f1518049ca0eb23cdbf09d1bd98b0a9ca67e4f034952da74fd275c4a740583..."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/committees": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/committees",
+        "description": "Retrieves the committees for the given state.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`, `finalized`,  `justified`, `<slot>`, `<hex encoded stateRoot with 0x prefix>`\n"
+          },
+          {
+            "name": "epoch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Fetch committees for the given epoch. If not present, committees for the epoch of the state will be returned."
+          },
+          {
+            "name": "index",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Restrict returned values to those matching the supplied committee index."
+          },
+          {
+            "name": "slot",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Restrict returned values to those matching the supplied slot."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Committees for the requested state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of committees in this state.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "string",
+                            "description": "Committee index.",
+                            "example": "0"
+                          },
+                          "slot": {
+                            "type": "string",
+                            "description": "Slot number for this committee.",
+                            "example": "12304512"
+                          },
+                          "validators": {
+                            "type": "array",
+                            "description": "List of validator indices in this committee.",
+                            "items": {
+                              "type": "string",
+                              "example": "1332420"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "index": "0",
+                          "slot": "12304512",
+                          "validators": ["1332420", "641570", "784221"]
+                        },
+                        {
+                          "index": "1",
+                          "slot": "12304512",
+                          "validators": ["900123", "900456", "900789"]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/finality_checkpoints": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/finality_checkpoints",
+        "description": "Returns finality checkpoints for the given state.   If finality is not yet achieved, the checkpoint will return epoch `0` and `ZERO_HASH` as root.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Finality checkpoints for the requested state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "previous_justified": {
+                          "type": "object",
+                          "properties": {
+                            "epoch": {
+                              "type": "string",
+                              "description": "Previous justified epoch.",
+                              "example": "384528"
+                            },
+                            "root": {
+                              "type": "string",
+                              "description": "Root hash of the previous justified epoch.",
+                              "example": "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267"
+                            }
+                          }
+                        },
+                        "current_justified": {
+                          "type": "object",
+                          "properties": {
+                            "epoch": {
+                              "type": "string",
+                              "description": "Current justified epoch.",
+                              "example": "384529"
+                            },
+                            "root": {
+                              "type": "string",
+                              "description": "Root hash of the current justified epoch.",
+                              "example": "0x352dd41c368cea0c91374483378ce9f65f7a7180ca6fa5e08ae17ca509d19c0c"
+                            }
+                          }
+                        },
+                        "finalized": {
+                          "type": "object",
+                          "properties": {
+                            "epoch": {
+                              "type": "string",
+                              "description": "Finalized epoch.",
+                              "example": "384528"
+                            },
+                            "root": {
+                              "type": "string",
+                              "description": "Root hash of the finalized epoch.",
+                              "example": "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "previous_justified": {
+                          "epoch": "384528",
+                          "root": "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267"
+                        },
+                        "current_justified": {
+                          "epoch": "384529",
+                          "root": "0x352dd41c368cea0c91374483378ce9f65f7a7180ca6fa5e08ae17ca509d19c0c"
+                        },
+                        "finalized": {
+                          "epoch": "384528",
+                          "root": "0x95656528b8dbed879305ffa67ed688f8e262b2dfa5f620e384056f49dec95267"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/fork": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/fork",
+        "description": "Returns the Fork object for the given state.   The Fork contains information about protocol versioning (previous and current fork versions, plus the epoch at which they apply).\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fork object for the requested state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "previous_version": {
+                          "type": "string",
+                          "description": "Previous fork version.",
+                          "example": "0x04000000"
+                        },
+                        "current_version": {
+                          "type": "string",
+                          "description": "Current fork version.",
+                          "example": "0x05000000"
+                        },
+                        "epoch": {
+                          "type": "string",
+                          "description": "Epoch at which the current fork version is activated.",
+                          "example": "364032"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "previous_version": "0x04000000",
+                        "current_version": "0x05000000",
+                        "epoch": "364032"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/pending_consolidations": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/pending_consolidations",
+        "description": "Returns pending consolidations for the given state.   Pending consolidations represent validator indices that are scheduled to consolidate.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending consolidations for the requested state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "Protocol version (Electra).",
+                      "example": "electra"
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of pending consolidations in this state.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "source_index": {
+                            "type": "string",
+                            "description": "Index of the source validator.",
+                            "example": "1491340"
+                          },
+                          "target_index": {
+                            "type": "string",
+                            "description": "Index of the target validator.",
+                            "example": "1491339"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "version": "electra",
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "source_index": "1491340",
+                          "target_index": "1491339"
+                        },
+                        {
+                          "source_index": "1491347",
+                          "target_index": "1491345"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/root": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/root",
+        "description": "Calculates the `HashTreeRoot` for the state with the given `stateId`.   If `stateId` itself is a root, the same value will be returned.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HashTreeRoot for the requested state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "root": {
+                          "type": "string",
+                          "description": "The calculated HashTreeRoot.",
+                          "example": "0xc9ebd508f4c6176153fd2df98b16ac51b24e2198bb8f6821da5085a70b7f7e2e"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "root": "0xc9ebd508f4c6176153fd2df98b16ac51b24e2198bb8f6821da5085a70b7f7e2e"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/sync_committees": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/sync_committees",
+        "description": "Retrieves the current sync committee for the given state.   Also returns the subcommittee assignments.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          },
+          {
+            "name": "epoch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "1"
+            },
+            "description": "Fetch sync committees for the given epoch.   If not provided, the sync committees for the epoch of the state will be returned.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync committee information for the given state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "validators": {
+                          "type": "array",
+                          "description": "List of validator indices in the sync committee.",
+                          "items": {
+                            "type": "string",
+                            "example": "103943"
+                          }
+                        },
+                        "validator_aggregates": {
+                          "type": "array",
+                          "description": "Subcommittee assignments.   Each sub-array represents validators grouped into an aggregate.\n",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "example": "103943"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "validators": ["103943", "986657", "657591", "874958"],
+                        "validator_aggregates": [
+                          ["103943", "986657"],
+                          ["657591", "874958"]
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/randao": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/randao",
+        "description": "Fetches the RANDAO mix for the requested epoch from the state identified by `state_id`.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier. Can be one of: `head` (canonical head in node's view), `genesis`, `finalized`, `justified`, `<slot>`, `<hex encoded stateRoot with 0x prefix>`.\n"
+          },
+          {
+            "name": "epoch",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "387896"
+            },
+            "description": "Epoch for which to retrieve the RANDAO mix.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RANDAO mix for the requested epoch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "randao": {
+                          "type": "string",
+                          "description": "RANDAO mix for the given epoch (bytes32, hex-encoded).",
+                          "example": "0x8d4f4d6ec7e8f83a8a9b41bafc0b4a4c6e2d1e2b6e7c4c8b2f4a7a1d9e3c6f2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "randao": "0x8d4f4d6ec7e8f83a8a9b41bafc0b4a4c6e2d1e2b6e7c4c8b2f4a7a1d9e3c6f2"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/validator_balances": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/validator_balances",
+        "description": "Returns a filterable list of validator balances.   Balances will be returned for all indices or public keys that match known validators.   If an index or public key does not match any known validator, no balance will be returned,   but this will not cause an error.   The response does not guarantee ordering, so the `index` should be used to match inputs.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "0x8c5a8efa6e472c358dd7024fae6f6569cd60af754591ddc78ef9e9db287aa68c"
+              }
+            },
+            "description": "Optional filter: hex-encoded validator public key (`bytes48` with 0x prefix)   or validator index. Multiple values can be provided.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validator balances for the given state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of validator balances.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "string",
+                            "description": "Validator index.",
+                            "example": "1"
+                          },
+                          "balance": {
+                            "type": "string",
+                            "description": "Validator balance in Gwei.",
+                            "example": "32000000000"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "index": "1",
+                          "balance": "32000000000"
+                        },
+                        {
+                          "index": "2",
+                          "balance": "31950000000"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/validators": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/validators",
+        "description": "Returns a filterable list of validators with their balance, status, and index.   Information will be returned for all indices or public keys that match known validators.   If an index or public key does not match any known validator, no information will be returned,   but this will not cause an error.   The response does not guarantee ordering, so both the `index` and `pubkey` can be used to confirm inputs.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "12345"
+              }
+            },
+            "description": "Optional filter: validator index or hex-encoded public key (`bytes48` with 0x prefix).   Multiple values can be provided.\n"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "active_ongoing"
+              }
+            },
+            "description": "Optional filter: restrict results to validators with the given status.   Status values include:   `pending_initialized`, `pending_queued`, `active_ongoing`, `active_exiting`, `active_slashed`,   `exited_unslashed`, `exited_slashed`, `withdrawal_possible`, `withdrawal_done`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validator details for the given state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of validators matching the query.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "string",
+                            "description": "Validator index.",
+                            "example": "1"
+                          },
+                          "balance": {
+                            "type": "string",
+                            "description": "Current validator balance in Gwei.",
+                            "example": "32000000000"
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "Current validator status.",
+                            "example": "active_ongoing"
+                          },
+                          "validator": {
+                            "type": "object",
+                            "description": "Validator information.",
+                            "properties": {
+                              "pubkey": {
+                                "type": "string",
+                                "description": "Validator public key.",
+                                "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                              },
+                              "withdrawal_credentials": {
+                                "type": "string",
+                                "description": "Withdrawal credentials.",
+                                "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                              },
+                              "effective_balance": {
+                                "type": "string",
+                                "description": "Effective balance of the validator.",
+                                "example": "32000000000"
+                              },
+                              "slashed": {
+                                "type": "boolean",
+                                "description": "Whether the validator has been slashed.",
+                                "example": false
+                              },
+                              "activation_eligibility_epoch": {
+                                "type": "string",
+                                "description": "Epoch when validator became eligible for activation.",
+                                "example": "1"
+                              },
+                              "activation_epoch": {
+                                "type": "string",
+                                "description": "Epoch when validator was activated.",
+                                "example": "1"
+                              },
+                              "exit_epoch": {
+                                "type": "string",
+                                "description": "Epoch when validator exited.",
+                                "example": "1"
+                              },
+                              "withdrawable_epoch": {
+                                "type": "string",
+                                "description": "Epoch when validator can withdraw funds.",
+                                "example": "1"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "index": "1",
+                          "balance": "32000000000",
+                          "status": "active_ongoing",
+                          "validator": {
+                            "pubkey": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a",
+                            "withdrawal_credentials": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+                            "effective_balance": "32000000000",
+                            "slashed": false,
+                            "activation_eligibility_epoch": "10",
+                            "activation_epoch": "15",
+                            "exit_epoch": "18446744073709551615",
+                            "withdrawable_epoch": "18446744073709551615"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/states/{state_id}/validators/{validator_id}": {
+      "get": {
+        "summary": "/v1/beacon/states/{state_id}/validators/{validator_id}",
+        "description": "Returns validator specified by state and ID or public key,   along with its status and balance.   The validator can be referenced by its index (numeric) or hex-encoded public key (`bytes48` with 0x prefix).\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `justified`,   `<slot>`,   `<hex encoded stateRoot with 0x prefix>`.\n"
+          },
+          {
+            "name": "validator_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "474200"
+            },
+            "description": "Validator identifier.   Either validator index (integer) or hex-encoded public key (bytes48 with `0x` prefix).\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validator details for the given state and identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "finalized": {
+                      "type": "boolean",
+                      "description": "Whether the state is finalized."
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Validator details.",
+                      "properties": {
+                        "index": {
+                          "type": "string",
+                          "description": "Validator index.",
+                          "example": "474200"
+                        },
+                        "balance": {
+                          "type": "string",
+                          "description": "Current validator balance in Gwei.",
+                          "example": "2048384789135"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Current validator status.",
+                          "example": "active_ongoing"
+                        },
+                        "validator": {
+                          "type": "object",
+                          "description": "Validator information.",
+                          "properties": {
+                            "pubkey": {
+                              "type": "string",
+                              "description": "Validator public key.",
+                              "example": "0x842b273237caa03ff23a25e2664e5c9c6fb17342c0ec2f12b018cf0958cbe0e42f07500150bc5a9f8b44cfcf477e4a78"
+                            },
+                            "withdrawal_credentials": {
+                              "type": "string",
+                              "description": "Withdrawal credentials.",
+                              "example": "0x02000000000000000000000039fd78fe6a72faae2ab5f1f053c253b2e3685c15"
+                            },
+                            "effective_balance": {
+                              "type": "string",
+                              "description": "Effective balance of the validator.",
+                              "example": "2048000000000"
+                            },
+                            "slashed": {
+                              "type": "boolean",
+                              "description": "Whether the validator has been slashed.",
+                              "example": false
+                            },
+                            "activation_eligibility_epoch": {
+                              "type": "string",
+                              "description": "Epoch when validator became eligible for activation.",
+                              "example": "162210"
+                            },
+                            "activation_epoch": {
+                              "type": "string",
+                              "description": "Epoch when validator was activated.",
+                              "example": "162260"
+                            },
+                            "exit_epoch": {
+                              "type": "string",
+                              "description": "Epoch when validator exited, or max uint64 if not scheduled.",
+                              "example": "18446744073709551615"
+                            },
+                            "withdrawable_epoch": {
+                              "type": "string",
+                              "description": "Epoch when validator can withdraw funds, or max uint64 if not scheduled.",
+                              "example": "18446744073709551615"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "index": "474200",
+                        "balance": "2048384789135",
+                        "status": "active_ongoing",
+                        "validator": {
+                          "pubkey": "0x842b273237caa03ff23a25e2664e5c9c6fb17342c0ec2f12b018cf0958cbe0e42f07500150bc5a9f8b44cfcf477e4a78",
+                          "withdrawal_credentials": "0x02000000000000000000000039fd78fe6a72faae2ab5f1f053c253b2e3685c15",
+                          "effective_balance": "2048000000000",
+                          "slashed": false,
+                          "activation_eligibility_epoch": "162210",
+                          "activation_epoch": "162260",
+                          "exit_epoch": "18446744073709551615",
+                          "withdrawable_epoch": "18446744073709551615"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/rewards/sync_committee/{block_id}": {
+      "post": {
+        "summary": "/v1/beacon/rewards/sync_committee/{block_id}",
+        "description": "Retrieves rewards info for sync committee members specified by array of public keys or validator indices.   If no array is provided, the rewards for **all sync committee members** are returned.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`.\n"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "description": "Optional list of validator identifiers.   Each entry may be either: - hex encoded public key (48 bytes, `0x` prefix), or   - validator index (string).\n",
+                "items": {
+                  "type": "string"
+                },
+                "example": ["474200"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rewards for sync committee members.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean"
+                    },
+                    "finalized": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "Rewards info.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "validator_index": {
+                            "type": "string",
+                            "example": "1"
+                          },
+                          "reward": {
+                            "type": "string",
+                            "description": "Reward amount in Gwei.",
+                            "example": "2000"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response_example": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": [
+                        {
+                          "validator_index": "1",
+                          "reward": "2000"
+                        }
+                      ]
+                    }
+                  },
+                  "empty_response_example": {
+                    "summary": "Example response (no rewards returned)",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": []
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/rewards/blocks/{block_id}": {
+      "get": {
+        "summary": "/v1/beacon/rewards/blocks/{block_id}",
+        "description": "Retrieve block reward info for a single block.   The `total` reward is the sum of proposer rewards from **attestations**, **sync committees**, and **slashings** included in the proposal.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block reward info.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean"
+                    },
+                    "finalized": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "proposer_index": {
+                          "type": "string",
+                          "description": "Index of the block proposer.",
+                          "example": "193817"
+                        },
+                        "total": {
+                          "type": "string",
+                          "description": "Total reward in Gwei.",
+                          "example": "46942298"
+                        },
+                        "attestations": {
+                          "type": "string",
+                          "description": "Reward from attestations.",
+                          "example": "45286422"
+                        },
+                        "sync_aggregate": {
+                          "type": "string",
+                          "description": "Reward from sync aggregate.",
+                          "example": "1655876"
+                        },
+                        "proposer_slashings": {
+                          "type": "string",
+                          "description": "Reward from proposer slashings.",
+                          "example": "0"
+                        },
+                        "attester_slashings": {
+                          "type": "string",
+                          "description": "Reward from attester slashings.",
+                          "example": "0"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response_example": {
+                    "summary": "Example response (real)",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "proposer_index": "193817",
+                        "total": "46942298",
+                        "attestations": "45286422",
+                        "sync_aggregate": "1655876",
+                        "proposer_slashings": "0",
+                        "attester_slashings": "0"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/rewards/attestations/{epoch}": {
+      "post": {
+        "summary": "/v1/beacon/rewards/attestations/{epoch}",
+        "description": "Retrieve attestation reward info for validators specified by an array of **public keys** or **validator indices**.   If no array is provided, reward info for **every validator** will be returned.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "1"
+            },
+            "description": "Epoch identifier from which to retrieve rewards info."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "Either hex encoded public key (0x…48 bytes) or validator index."
+                },
+                "example": ["474200"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Attestation rewards for validators.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean"
+                    },
+                    "finalized": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "ideal_rewards": {
+                          "type": "array",
+                          "description": "Ideal rewards baselines for validators.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "effective_balance": {
+                                "type": "string",
+                                "example": "32000000000"
+                              },
+                              "head": {
+                                "type": "string",
+                                "example": "2500"
+                              },
+                              "target": {
+                                "type": "string",
+                                "example": "5000"
+                              },
+                              "source": {
+                                "type": "string",
+                                "example": "5000"
+                              },
+                              "inclusion_delay": {
+                                "type": "string",
+                                "example": "1"
+                              },
+                              "inactivity": {
+                                "type": "string",
+                                "example": "5000"
+                              }
+                            }
+                          }
+                        },
+                        "total_rewards": {
+                          "type": "array",
+                          "description": "Total rewards actually received by validators.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "validator_index": {
+                                "type": "string",
+                                "example": "474200"
+                              },
+                              "head": {
+                                "type": "string",
+                                "example": "2000"
+                              },
+                              "target": {
+                                "type": "string",
+                                "example": "2000"
+                              },
+                              "source": {
+                                "type": "string",
+                                "example": "4000"
+                              },
+                              "inclusion_delay": {
+                                "type": "string",
+                                "example": "1"
+                              },
+                              "inactivity": {
+                                "type": "string",
+                                "example": "2000"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response_example": {
+                    "summary": "Example response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "ideal_rewards": [
+                          {
+                            "effective_balance": "32000000000",
+                            "head": "2500",
+                            "target": "5000",
+                            "source": "5000",
+                            "inclusion_delay": "1",
+                            "inactivity": "5000"
+                          }
+                        ],
+                        "total_rewards": [
+                          {
+                            "validator_index": "474200",
+                            "head": "2000",
+                            "target": "2000",
+                            "source": "4000",
+                            "inclusion_delay": "1",
+                            "inactivity": "2000"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/beacon/blinded_blocks/{block_id}": {
+      "get": {
+        "summary": "/v1/beacon/blinded_blocks/{block_id}",
+        "description": "Retrieves a blinded beacon block for the given block identifier.   The response can be returned as JSON or SSZ bytes depending on the Accept header.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "block_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "Block identifier.   Can be one of:   `head` (canonical head in node's view),   `genesis`,   `finalized`,   `<slot>`,   `<hex encoded blockRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "example": "electra"
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean"
+                    },
+                    "finalized": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "object",
+                          "properties": {
+                            "slot": {
+                              "type": "string",
+                              "example": "1"
+                            },
+                            "proposer_index": {
+                              "type": "string",
+                              "example": "1"
+                            },
+                            "parent_root": {
+                              "type": "string",
+                              "example": "0xfb31daa6101912aa79e36ad6dd7855cd2bc8b815bca9fabdfb67e6cacf584675"
+                            },
+                            "state_root": {
+                              "type": "string",
+                              "example": "0xc6e15c23bfdac16571045506f720ab4ec8c56e48991c519a48dc908775ea1d21"
+                            },
+                            "body": {
+                              "type": "object",
+                              "properties": {
+                                "randao_reveal": {
+                                  "type": "string"
+                                },
+                                "eth1_data": {
+                                  "type": "object",
+                                  "properties": {
+                                    "deposit_root": {
+                                      "type": "string"
+                                    },
+                                    "deposit_count": {
+                                      "type": "string"
+                                    },
+                                    "block_hash": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "graffiti": {
+                                  "type": "string"
+                                },
+                                "proposer_slashings": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "signed_header_1": {
+                                        "type": "object",
+                                        "properties": {
+                                          "message": {
+                                            "type": "object",
+                                            "properties": {
+                                              "slot": {
+                                                "type": "string"
+                                              },
+                                              "proposer_index": {
+                                                "type": "string"
+                                              },
+                                              "parent_root": {
+                                                "type": "string"
+                                              },
+                                              "state_root": {
+                                                "type": "string"
+                                              },
+                                              "body_root": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          },
+                                          "signature": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      },
+                                      "signed_header_2": {
+                                        "type": "object",
+                                        "properties": {
+                                          "message": {
+                                            "type": "object",
+                                            "properties": {
+                                              "slot": {
+                                                "type": "string"
+                                              },
+                                              "proposer_index": {
+                                                "type": "string"
+                                              },
+                                              "parent_root": {
+                                                "type": "string"
+                                              },
+                                              "state_root": {
+                                                "type": "string"
+                                              },
+                                              "body_root": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          },
+                                          "signature": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "attester_slashings": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "attestations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "aggregation_bits": {
+                                        "type": "string"
+                                      },
+                                      "data": {
+                                        "type": "object",
+                                        "properties": {
+                                          "slot": {
+                                            "type": "string"
+                                          },
+                                          "index": {
+                                            "type": "string"
+                                          },
+                                          "beacon_block_root": {
+                                            "type": "string"
+                                          },
+                                          "source": {
+                                            "type": "object",
+                                            "properties": {
+                                              "epoch": {
+                                                "type": "string"
+                                              },
+                                              "root": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          },
+                                          "target": {
+                                            "type": "object",
+                                            "properties": {
+                                              "epoch": {
+                                                "type": "string"
+                                              },
+                                              "root": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "signature": {
+                                        "type": "string"
+                                      },
+                                      "committee_bits": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                "deposits": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "voluntary_exits": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "sync_aggregate": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sync_committee_bits": {
+                                      "type": "string"
+                                    },
+                                    "sync_committee_signature": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "bls_to_execution_changes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                },
+                                "blob_kzg_commitments": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "execution_payload_header": {
+                                  "type": "object",
+                                  "properties": {
+                                    "parent_hash": {
+                                      "type": "string"
+                                    },
+                                    "fee_recipient": {
+                                      "type": "string"
+                                    },
+                                    "state_root": {
+                                      "type": "string"
+                                    },
+                                    "receipts_root": {
+                                      "type": "string"
+                                    },
+                                    "logs_bloom": {
+                                      "type": "string"
+                                    },
+                                    "prev_randao": {
+                                      "type": "string"
+                                    },
+                                    "block_number": {
+                                      "type": "string"
+                                    },
+                                    "gas_limit": {
+                                      "type": "string"
+                                    },
+                                    "gas_used": {
+                                      "type": "string"
+                                    },
+                                    "timestamp": {
+                                      "type": "string"
+                                    },
+                                    "extra_data": {
+                                      "type": "string"
+                                    },
+                                    "base_fee_per_gas": {
+                                      "type": "string"
+                                    },
+                                    "blob_gas_used": {
+                                      "type": "string"
+                                    },
+                                    "excess_blob_gas": {
+                                      "type": "string"
+                                    },
+                                    "block_hash": {
+                                      "type": "string"
+                                    },
+                                    "transactions_root": {
+                                      "type": "string"
+                                    },
+                                    "withdrawals_root": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "execution_requests": {
+                                  "type": "object",
+                                  "properties": {
+                                    "deposits": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object"
+                                      }
+                                    },
+                                    "withdrawals": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object"
+                                      }
+                                    },
+                                    "consolidations": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "signature": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "version": "electra",
+                      "execution_optimistic": false,
+                      "finalized": false,
+                      "data": {
+                        "message": {
+                          "slot": "1",
+                          "proposer_index": "1",
+                          "parent_root": "0xfb31daa6101912aa79e36ad6dd7855cd2bc8b815bca9fabdfb67e6cacf584675",
+                          "state_root": "0xc6e15c23bfdac16571045506f720ab4ec8c56e48991c519a48dc908775ea1d21",
+                          "body": {
+                            "randao_reveal": "0xb17165349aea618941de957b402be1a1389525d87ff7fc279ea2143c5100762f519c7a020384b61730de6264be8cd8ab0b5ac81bb318f25eb3c225ac6fe795f1673588f1e821ad06ef5536dc9518c0415b44f93587dabef1b0e2ecdbe3ea89eb",
+                            "eth1_data": {
+                              "deposit_root": "0x2ebc563cabdbbacbc56f0de1d2d1c2d5315a4b071fcd8566aabbf0a45161c64e.",
+                              "deposit_count": "1",
+                              "block_hash": "0x0958d83550263ff0d9f9a0bc5ea3cd2a136e0933b6f43cbb17f36e4da8d809b1"
+                            },
+                            "graffiti": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                            "proposer_slashings": [],
+                            "attester_slashings": [],
+                            "attestations": [],
+                            "deposits": [],
+                            "voluntary_exits": [],
+                            "sync_aggregate": {
+                              "sync_committee_bits": "0xfffffffffffffffffffffffffffffffbffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffffffdfffffff",
+                              "sync_committee_signature": "0x9136e6660f3c8abf726639a9e9814671d215fbc2975afa8cae3c8e9144616660b9809fa6ed7e44744cc4a8071e21944e0cb217661b293390d12a1a69866d703992c689bf49d487b05f0929492f2a68a36efd361d2f65d4cf689e1804bab9d979"
+                            },
+                            "bls_to_execution_changes": [],
+                            "blob_kzg_commitments": [],
+                            "execution_payload_header": {
+                              "parent_hash": "0xb621b64ad77c6a789fbfc34bc5945851a0e583fa859a9e5dc2f2927e8298bd97",
+                              "fee_recipient": "0x396343362be2a4da1ce0c1c210945346fb82aa49",
+                              "state_root": "0xad75af7b799b4b7366609705769818174427d349961f1b3002774169e38dd5f9",
+                              "receipts_root": "0x6b45e493bc93a2803e4af1e91988d8cc7254741baed70f67e8b8f2ad453884ea",
+                              "logs_bloom": "0x00...",
+                              "prev_randao": "0x9fce095f1f0b3c977503e04467b6bf9ea83cb50c6e5321f66ae06e3ea27c2d87",
+                              "block_number": "23088792",
+                              "gas_limit": "44912026",
+                              "gas_used": "15221062",
+                              "timestamp": "1754564939",
+                              "extra_data": "0xe29ca82051756173617220287175617361722e77696e2920e29ca8",
+                              "base_fee_per_gas": "1003546327",
+                              "blob_gas_used": "1048576",
+                              "excess_blob_gas": "2228224",
+                              "block_hash": "0x6609ed5a861d5208061bb53ec034365bd9c19f9abb16ffb0b841c295fb98e422",
+                              "transactions_root": "0x46dcf07b05940e27f9874fb18d4b48daa787e5ebfdb655bbb86c4d14efca2918",
+                              "withdrawals_root": "0x11c64584cf1052c0f73f20933a7887b512df8416e5ca3015739bcaeb03870ce2"
+                            },
+                            "execution_requests": {
+                              "deposits": [],
+                              "withdrawals": [],
+                              "consolidations": []
+                            }
+                          }
+                        },
+                        "signature": "0xb5670662afcb921b4e92b5378f33f110f0281c5d13b57fa6a7d6119481ed6f54435034337e4fe3eb0dae3a12b307a5d81a00d64df8c0c00f2b9926233e623e853b3d7cde2f10aa1e4b54c7e1e585bc144e22397dea647404657a23f740e0f35e"
+                      }
+                    }
+                  }
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "examples": {
+                  "ssz_bytes": {
+                    "summary": "SSZ-serialized blinded block",
+                    "description": "Returned when `Accept application/octet-stream` (or other SSZ media type) is used.",
+                    "value": ""
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/config/deposit_contract": {
+      "get": {
+        "summary": "/v1/config/deposit_contract",
+        "description": "Retrieve the **Ethereum 1.0 deposit contract** address and chain ID.   This contract is used for staking deposits into the Beacon Chain.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deposit contract details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "chain_id": {
+                          "type": "string",
+                          "description": "Chain ID of the Eth1 network where the deposit contract is deployed.",
+                          "example": "1"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Hex encoded Ethereum 1.0 deposit contract address.",
+                          "example": "0x00000000219ab540356cBB839Cbe05303d7705Fa"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response_example": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": {
+                        "chain_id": "1",
+                        "address": "0x00000000219ab540356cbb839cbe05303d7705fa"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/config/fork_schedule": {
+      "get": {
+        "summary": "/v1/config/fork_schedule",
+        "description": "Retrieve all forks (past, present, and future) known to the node.   Each fork entry contains the previous and current protocol version along with the epoch at which the fork occurred.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of known fork schedule entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "List of forks known by the node.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "previous_version": {
+                            "type": "string",
+                            "description": "Previous fork version (hex).",
+                            "example": "0x00000000"
+                          },
+                          "current_version": {
+                            "type": "string",
+                            "description": "Current fork version (hex).",
+                            "example": "0x01000000"
+                          },
+                          "epoch": {
+                            "type": "string",
+                            "description": "Epoch number at which the fork occurred.",
+                            "example": "74240"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response_example": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": [
+                        {
+                          "previous_version": "0x00000000",
+                          "current_version": "0x00000000",
+                          "epoch": "0"
+                        },
+                        {
+                          "previous_version": "0x00000000",
+                          "current_version": "0x01000000",
+                          "epoch": "74240"
+                        },
+                        {
+                          "previous_version": "0x01000000",
+                          "current_version": "0x02000000",
+                          "epoch": "144896"
+                        },
+                        {
+                          "previous_version": "0x02000000",
+                          "current_version": "0x03000000",
+                          "epoch": "194048"
+                        },
+                        {
+                          "previous_version": "0x03000000",
+                          "current_version": "0x04000000",
+                          "epoch": "269568"
+                        },
+                        {
+                          "previous_version": "0x04000000",
+                          "current_version": "0x05000000",
+                          "epoch": "364032"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/config/spec": {
+      "get": {
+        "summary": "/v1/config/spec",
+        "description": "Retrieve the specification configuration used on this node.  \nThe configuration includes: - Constants for all hard forks known by the beacon node (e.g. Phase0, Altair, Bellatrix, Capella, Deneb, Electra, etc.) - Presets for hard forks supplied to the node - Mainnet or testnet specific configuration values  \n**Format rules:** - Any value starting with `0x` is returned as a hex string. - Numeric values are returned as a quoted integer.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Specification constants and presets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "description": "Key-value pairs of specification constants and configuration values.\n",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response_example": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": {
+                        "CONFIG_NAME": "mainnet",
+                        "PRESET_BASE": "mainnet",
+                        "TERMINAL_TOTAL_DIFFICULTY": "58750000000000000000000",
+                        "TERMINAL_BLOCK_HASH": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                        "TERMINAL_BLOCK_HASH_ACTIVATION_EPOCH": "18446744073709551615",
+                        "MIN_GENESIS_ACTIVE_VALIDATOR_COUNT": "16384",
+                        "MIN_GENESIS_TIME": "1606824000",
+                        "GENESIS_FORK_VERSION": "0x00000000",
+                        "ALTAIR_FORK_VERSION": "0x01000000",
+                        "BELLATRIX_FORK_VERSION": "0x02000000",
+                        "CAPELLA_FORK_VERSION": "0x03000000",
+                        "DENEB_FORK_VERSION": "0x04000000",
+                        "ELECTRA_FORK_VERSION": "0x05000000",
+                        "FULU_FORK_VERSION": "0x06000000",
+                        "SECONDS_PER_SLOT": "12",
+                        "DEPOSIT_CHAIN_ID": "1",
+                        "DEPOSIT_CONTRACT_ADDRESS": "0x00000000219ab540356cbb839cbe05303d7705fa"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/events": {
+      "get": {
+        "summary": "/v1/events",
+        "description": "Stream real-time beacon chain events from the beacon node. Subscribe by specifying one or more event topics using the\n`topics` query parameter.\n\n<Info>\n**Note:** This is an EventSource (Server-Sent Events) style endpoint.\nThe HTTP connection remains open and continuously pushes events as they\noccur.\n</Info>\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "topics",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Topics to subscribe to for event streaming.",
+              "example": "head"
+            },
+            "description": "Comma-separated list of event topics to subscribe to. Valid topics include: `head`, `block`, `finalized_checkpoint`, `chain_reorg`, `voluntary_exit`, and others depending on the beacon node implementation.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stream of Server-Sent Events (SSE)",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object"
+                },
+                "examples": {
+                  "head_event": {
+                    "summary": "Example head event stream message (real response)",
+                    "value": {
+                      "slot": "13052702",
+                      "block": "0x3cf2223424524bf1094e2b010ea50b75e7914919c677d2702287bd423fd0f9b0",
+                      "state": "0x9f27eb9578662934019ffc91d611a521e40e5b4d37c683f8cd6819ec0540c28d",
+                      "current_duty_dependent_root": "0x0e45201599b353ea9f315dc466591929db1b555f2a3d5ed109bd46ff89b47ad0",
+                      "previous_duty_dependent_root": "0xe6c5de54a9febcfd1c9f7edd95ba52e2353b19f970f82efe385947fdee0752f7",
+                      "epoch_transition": false,
+                      "execution_optimistic": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/node/peer_count": {
+      "get": {
+        "summary": "/v1/node/peer_count",
+        "description": "Retrieves the number of peers the beacon node knows about, grouped by connection status.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "responses": {
+          "200": {
+            "description": "Request successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "disconnected": {
+                          "type": "string",
+                          "description": "Number of peers that are disconnected.",
+                          "example": "520"
+                        },
+                        "connecting": {
+                          "type": "string",
+                          "description": "Number of peers currently in the process of connecting.",
+                          "example": "0"
+                        },
+                        "connected": {
+                          "type": "string",
+                          "description": "Number of peers successfully connected.",
+                          "example": "90"
+                        },
+                        "disconnecting": {
+                          "type": "string",
+                          "description": "Number of peers in the process of disconnecting.",
+                          "example": "0"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": {
+                        "connected": "90",
+                        "connecting": "0",
+                        "disconnected": "520",
+                        "disconnecting": "0"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/node/peers": {
+      "get": {
+        "summary": "/v1/node/peers",
+        "description": "Retrieves data about the node's network peers.   By default this returns all peers.   Multiple query params are combined using **AND** conditions.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "disconnected",
+                  "connecting",
+                  "connected",
+                  "disconnecting"
+                ]
+              }
+            },
+            "description": "Filter peers by their connection state.   Available values: `disconnected`, `connecting`, `connected`, `disconnecting`.\n"
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["inbound", "outbound"]
+              }
+            },
+            "description": "Filter peers by their connection direction.   Available values: `inbound`, `outbound`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "List of peers.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "peer_id": {
+                            "type": "string",
+                            "description": "Peer ID in libp2p format.",
+                            "example": "16Uiu2HAmKBWSS9nVbC6wWiqYumsJpgahXTXfTcETChDPFrX7ME3n"
+                          },
+                          "enr": {
+                            "type": ["string", "null"],
+                            "description": "Ethereum Node Record (ENR) if available.",
+                            "example": "enr:-MS4QJrTKMsIQZ8uT7BvXygCvABCPpIUIMrI1lUE..."
+                          },
+                          "last_seen_p2p_address": {
+                            "type": "string",
+                            "description": "Multiaddr where peer was last seen.",
+                            "example": "/ip4/4.36.26.74/tcp/31060/p2p/16Uiu2HAmKBW..."
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "Connection state of peer.",
+                            "enum": [
+                              "disconnected",
+                              "connecting",
+                              "connected",
+                              "disconnecting"
+                            ],
+                            "example": "disconnected"
+                          },
+                          "direction": {
+                            "type": "string",
+                            "description": "Direction of connection.",
+                            "enum": ["inbound", "outbound"],
+                            "example": "outbound"
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Metadata about peer list.",
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                          "description": "Number of peers returned.",
+                          "example": 3
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": [
+                        {
+                          "peer_id": "16Uiu2HAmKBWSS9nVbC6wWiqYumsJpgahXTXfTcETChDPFrX7ME3n",
+                          "enr": "enr:-MS4QJrTKMsIQZ8uT7BvXygCvABCPpIUIMrI1lUEwH...",
+                          "last_seen_p2p_address": "/ip4/4.36.26.74/tcp/31060/p2p/16Uiu2HAmKB...",
+                          "state": "disconnected",
+                          "direction": "outbound"
+                        },
+                        {
+                          "peer_id": "16Uiu2HAm1oi2ANh2sM3bgWyB6HqDjkYtn8V8R41GeKmPJj5HXq2o",
+                          "enr": "enr:-N24QGpYPOnbQcf2gKSYFhVw3OPc5cFtsvqE0rxaAR...",
+                          "last_seen_p2p_address": "/ip4/34.235.154.119/tcp/9000/p2p/16Uiu2HAm...",
+                          "state": "disconnected",
+                          "direction": "outbound"
+                        }
+                      ],
+                      "meta": {
+                        "count": 2
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/node/syncing": {
+      "get": {
+        "summary": "/v1/node/syncing",
+        "description": "Requests the beacon node to describe if it's currently syncing or not, and if it is,   what block it is up to.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "responses": {
+          "200": {
+            "description": "Request successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "head_slot": {
+                          "type": "string",
+                          "description": "The slot of the head block.",
+                          "example": "12305681"
+                        },
+                        "sync_distance": {
+                          "type": "string",
+                          "description": "Number of slots the node is behind the head of the chain.",
+                          "example": "0"
+                        },
+                        "is_syncing": {
+                          "type": "boolean",
+                          "description": "Whether the node is currently syncing.",
+                          "example": false
+                        },
+                        "is_optimistic": {
+                          "type": "boolean",
+                          "description": "Whether the node is in optimistic sync mode.",
+                          "example": false
+                        },
+                        "el_offline": {
+                          "type": "boolean",
+                          "description": "Whether the execution layer (EL) is considered offline.",
+                          "example": false
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": {
+                        "is_syncing": false,
+                        "is_optimistic": false,
+                        "el_offline": false,
+                        "head_slot": "12305681",
+                        "sync_distance": "0"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/node/version": {
+      "get": {
+        "summary": "/v1/node/version",
+        "description": "Requests that the beacon node identify information about its implementation,   in a format similar to a HTTP `User-Agent` field.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "responses": {
+          "200": {
+            "description": "Request successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "description": "Implementation name and version of the beacon node.",
+                          "example": "Lighthouse/v7.1.0-cfb1f73/x86_64-linux"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": {
+                        "version": "Lighthouse/v7.1.0-cfb1f73/x86_64-linux"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v2/debug/beacon/states/{state_id}": {
+      "get": {
+        "summary": "/v2/debug/beacon/states/{state_id}",
+        "description": "Returns the full BeaconState object for the given state identifier. This is a debug endpoint intended for advanced inspection and troubleshooting.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "head"
+            },
+            "description": "State identifier. Can be one of: `head` (canonical head in node's view), `genesis`, `finalized`, `justified`, `<slot>`, `<hex encoded stateRoot with 0x prefix>`.\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "BeaconState retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "Protocol version.",
+                      "example": "electra"
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean"
+                    },
+                    "finalized": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Full BeaconState (debug).",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/debug/fork_choice": {
+      "get": {
+        "summary": "/v1/debug/fork_choice",
+        "description": "Retrieves the current fork choice context of the beacon node. This debug endpoint exposes internal fork choice data and is intended for advanced inspection and troubleshooting.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fork choice data retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "description": "Fork choice context (debug).",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v2/validator/aggregate_attestation": {
+      "get": {
+        "summary": "/v2/validator/aggregate_attestation",
+        "description": "Aggregates all attestations matching the given attestation data root, slot and committee index. Returns a single aggregated attestation. 503 is returned if the block identified by the response `beacon_block_root` is optimistic (i.e., the aggregated attestation attests to a block not fully verified by an execution engine). 404 is returned if no attestation is available for the requested `attestation_data_root`.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "attestation_data_root",
+            "in": "query",
+            "required": true,
+            "description": "HashTreeRoot (hex) of the AttestationData to aggregate.",
+            "schema": {
+              "type": "string",
+              "format": "hex",
+              "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+            }
+          },
+          {
+            "name": "slot",
+            "in": "query",
+            "required": true,
+            "description": "Slot of the attestation.",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          },
+          {
+            "name": "committee_index",
+            "in": "query",
+            "required": true,
+            "description": "Committee index of the attestation.",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns aggregated Attestation object with the same AttestationData root, slot and committee index.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "example": "electra"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "aggregation_bits": {
+                          "type": "string",
+                          "example": "0x01"
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "slot": {
+                              "type": "string",
+                              "example": "1"
+                            },
+                            "index": {
+                              "type": "string",
+                              "example": "1"
+                            },
+                            "beacon_block_root": {
+                              "type": "string",
+                              "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                            },
+                            "source": {
+                              "type": "object",
+                              "properties": {
+                                "epoch": {
+                                  "type": "string",
+                                  "example": "1"
+                                },
+                                "root": {
+                                  "type": "string",
+                                  "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                                }
+                              }
+                            },
+                            "target": {
+                              "type": "object",
+                              "properties": {
+                                "epoch": {
+                                  "type": "string",
+                                  "example": "1"
+                                },
+                                "root": {
+                                  "type": "string",
+                                  "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "signature": {
+                          "type": "string",
+                          "example": "0x1b66ac1f...171505"
+                        },
+                        "committee_bits": {
+                          "type": "string",
+                          "example": "0x0000000000000001"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "version": "electra",
+                      "data": {
+                        "aggregation_bits": "0x01",
+                        "data": {
+                          "slot": "1",
+                          "index": "1",
+                          "beacon_block_root": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+                          "source": {
+                            "epoch": "1",
+                            "root": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                          },
+                          "target": {
+                            "epoch": "1",
+                            "root": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                          }
+                        },
+                        "signature": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505",
+                        "committee_bits": "0x0000000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/duties/attester/{epoch}": {
+      "post": {
+        "summary": "/v1/validator/duties/attester/{epoch}",
+        "description": "Requests the beacon node to provide a set of attestation duties, which should be performed by validators, for a particular epoch. Duties should only need to be checked once per epoch, however a chain reorganization could occur, resulting in a change of duties.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "387896"
+            },
+            "description": "Should only be allowed 1 epoch ahead.\n"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "description": "An array of the validator indices for which to obtain the duties.",
+                "items": {
+                  "type": "string"
+                },
+                "example": ["474200"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dependent_root": {
+                      "type": "string",
+                      "description": "Dependent root for these duties.",
+                      "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "List of attester duties for the requested indices.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pubkey": {
+                            "type": "string",
+                            "description": "Validator public key.",
+                            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                          },
+                          "validator_index": {
+                            "type": "string",
+                            "description": "Validator index.",
+                            "example": "1"
+                          },
+                          "committee_index": {
+                            "type": "string",
+                            "description": "Committee index for the validator at the duty slot.",
+                            "example": "1"
+                          },
+                          "committee_length": {
+                            "type": "string",
+                            "description": "Number of validators in the committee.",
+                            "example": "1"
+                          },
+                          "committees_at_slot": {
+                            "type": "string",
+                            "description": "Total number of committees at the duty slot.",
+                            "example": "1"
+                          },
+                          "validator_committee_index": {
+                            "type": "string",
+                            "description": "Position of the validator within the committee.",
+                            "example": "1"
+                          },
+                          "slot": {
+                            "type": "string",
+                            "description": "Slot at which the validator should attest.",
+                            "example": "1"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "dependent_root": "0x017c4443db02f7e4ece54ada0ba2e1516596e39150261c59338b9b6f22d8fbeb",
+                      "execution_optimistic": false,
+                      "data": [
+                        {
+                          "pubkey": "0x842b273237caa03ff23a25e2664e5c9c6fb17342c0ec2f12b018cf0958cbe0e42f07500150bc5a9f8b44cfcf477e4a78",
+                          "validator_index": "474200",
+                          "committees_at_slot": "64",
+                          "committee_index": "44",
+                          "committee_length": "528",
+                          "validator_committee_index": "308",
+                          "slot": "12412675"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/duties/proposer/{epoch}": {
+      "get": {
+        "summary": "/v1/validator/duties/proposer/{epoch}",
+        "description": "Return all validators scheduled to propose a block in the given epoch. Duties are typically stable within an epoch, but may change after a chain reorg. For full safety, monitor head events and confirm the dependent root in this response matches:\n  • event.current_duty_dependent_root when compute_epoch_at_slot(event.slot) == epoch\n  • event.block otherwise\nThe dependent_root is get_block_root_at_slot(state, compute_start_slot_at_epoch(epoch) - 1), or the genesis block root in case of underflow.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "description": "Epoch to query proposer duties for.",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dependent_root": {
+                      "type": "string",
+                      "description": "Root that duties depend on; must be checked against head events as documented.",
+                      "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                    },
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic.",
+                      "example": false
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "Proposer duties for the epoch.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pubkey": {
+                            "type": "string",
+                            "description": "Validator BLS public key (0x…48 bytes)."
+                          },
+                          "validator_index": {
+                            "type": "string",
+                            "description": "Validator index."
+                          },
+                          "slot": {
+                            "type": "string",
+                            "description": "Slot in which the validator is scheduled to propose."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response_real": {
+                    "summary": "Example response (real)",
+                    "value": {
+                      "dependent_root": "0x51b5d760095b40e1ff476b00a913e8ca543caa20a5db0c25bea28e2d33769cf5",
+                      "execution_optimistic": false,
+                      "data": [
+                        {
+                          "pubkey": "0xb44cc2b9f06ba5746c99c30ed055bc67273f80498075afa42c8c5dae26f4e13ab35cf242f1e6123fcda0c32704ba471e",
+                          "validator_index": "754422",
+                          "slot": "12311040"
+                        },
+                        {
+                          "pubkey": "0xb7dcbc581390651c3b6033153e3d81e6fe1b40560f94f381bb665f411c9c9ef8a802d078be55ee713b49dac507e6ead5",
+                          "validator_index": "2028810",
+                          "slot": "12311041"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/duties/sync/{epoch}": {
+      "post": {
+        "summary": "/v1/validator/duties/sync/{epoch}",
+        "description": "Returns the sync committee duties for the given epoch and the specified validator indices. The `epoch` must satisfy: ``` EPOCHS_PER_SYNC_COMMITTEE_PERIOD <= current_epoch <= EPOCHS_PER_SYNC_COMMITTEE_PERIOD + 1 ```\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "description": "Epoch to query sync committee duties for.",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "description": "Array of validator indices for which to obtain the duties.",
+                "items": {
+                  "type": "string",
+                  "example": "1"
+                }
+              },
+              "example": ["1"]
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "execution_optimistic": {
+                      "type": "boolean",
+                      "description": "Whether the execution payload is optimistic.",
+                      "example": false
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pubkey": {
+                            "type": "string",
+                            "description": "Validator BLS public key (0x…48 bytes).",
+                            "example": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a"
+                          },
+                          "validator_index": {
+                            "type": "string",
+                            "description": "Validator index.",
+                            "example": "1"
+                          },
+                          "validator_sync_committee_indices": {
+                            "type": "array",
+                            "description": "List of sync committee indices this validator belongs to.",
+                            "items": {
+                              "type": "string",
+                              "example": "1"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "real_response": {
+                    "summary": "Example real response",
+                    "value": {
+                      "execution_optimistic": false,
+                      "data": [
+                        {
+                          "pubkey": "0x93247f2209abcacf57b75a51dafae777f9dd38bc7053d1af526f220a7489a6d3a2753e5f3e8b1cfe39b56f43611df74a",
+                          "validator_index": "1",
+                          "validator_sync_committee_indices": ["1"]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/sync_committee_contribution": {
+      "get": {
+        "summary": "/v1/validator/sync_committee_contribution",
+        "description": "Requests that the beacon node produce a sync committee contribution.\n- Return **503** if the block identified by the response `beacon_block_root` is optimistic\n  (i.e., the contribution refers to a block not fully verified by an execution engine).\n- Return **404** if no sync committee contribution is available for the requested `beacon_block_root`.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot",
+            "in": "query",
+            "required": true,
+            "description": "The slot for which a sync committee contribution should be created.",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          },
+          {
+            "name": "subcommittee_index",
+            "in": "query",
+            "required": true,
+            "description": "The subcommittee index for which to produce the contribution.",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          },
+          {
+            "name": "beacon_block_root",
+            "in": "query",
+            "required": true,
+            "description": "The block root (hex) for which to produce the contribution.",
+            "schema": {
+              "type": "string",
+              "format": "hex",
+              "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "slot": {
+                          "type": "string",
+                          "example": "1"
+                        },
+                        "beacon_block_root": {
+                          "type": "string",
+                          "format": "hex",
+                          "example": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+                        },
+                        "subcommittee_index": {
+                          "type": "string",
+                          "example": "1"
+                        },
+                        "aggregation_bits": {
+                          "type": "string",
+                          "description": "Bitlist of participating validators for the subcommittee.",
+                          "example": "0xffffffffffffffffffffffffffffffff"
+                        },
+                        "signature": {
+                          "type": "string",
+                          "description": "BLS signature of the contribution.",
+                          "example": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example_response": {
+                    "summary": "Example response",
+                    "value": {
+                      "data": {
+                        "slot": "1",
+                        "beacon_block_root": "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+                        "subcommittee_index": "1",
+                        "aggregation_bits": "0xffffffffffffffffffffffffffffffff",
+                        "signature": "0x1b66ac1f...71505"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eth/v1/validator/contribution_and_proofs": {
+      "post": {
+        "summary": "/v1/validator/contribution_and_proofs",
+        "description": "Publishes multiple signed sync committee contribution and proofs to the beacon node.\n",
+        "tags": ["Ethereum Beacon API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "description": "Array of SignedContributionAndProof objects.",
+                "items": {
+                  "type": "object",
+                  "required": ["message", "signature"],
+                  "properties": {
+                    "message": {
+                      "type": "object",
+                      "required": [
+                        "aggregator_index",
+                        "contribution",
+                        "selection_proof"
+                      ],
+                      "properties": {
+                        "aggregator_index": {
+                          "type": "string",
+                          "description": "Validator index of the aggregator.",
+                          "example": "474200"
+                        },
+                        "contribution": {
+                          "type": "object",
+                          "required": [
+                            "slot",
+                            "beacon_block_root",
+                            "subcommittee_index",
+                            "aggregation_bits",
+                            "signature"
+                          ],
+                          "properties": {
+                            "slot": {
+                              "type": "string",
+                              "example": "12412675"
+                            },
+                            "beacon_block_root": {
+                              "type": "string",
+                              "format": "hex",
+                              "example": "0x3cf2223424524bf1094e2b010ea50b75e7914919c677d2702287bd423fd0f9b0"
+                            },
+                            "subcommittee_index": {
+                              "type": "string",
+                              "example": "1"
+                            },
+                            "aggregation_bits": {
+                              "type": "string",
+                              "description": "Bitvector indicating participants in the subcommittee.",
+                              "example": "0xffffffffffffffffffffffffffffffff"
+                            },
+                            "signature": {
+                              "type": "string",
+                              "description": "BLS signature over the SyncCommitteeContribution.",
+                              "example": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                            }
+                          }
+                        },
+                        "selection_proof": {
+                          "type": "string",
+                          "description": "BLS signature used to prove aggregator selection.",
+                          "example": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                        }
+                      }
+                    },
+                    "signature": {
+                      "type": "string",
+                      "description": "BLS signature over ContributionAndProof.",
+                      "example": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "request": {
+                  "summary": "Example request",
+                  "value": [
+                    {
+                      "message": {
+                        "aggregator_index": "474200",
+                        "contribution": {
+                          "slot": "12412675",
+                          "beacon_block_root": "0x3cf2223424524bf1094e2b010ea50b75e7914919c677d2702287bd423fd0f9b0",
+                          "subcommittee_index": "1",
+                          "aggregation_bits": "0xffffffffffffffffffffffffffffffff",
+                          "signature": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                        },
+                        "selection_proof": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                      },
+                      "signature": "0x1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505cc411d61252fb6cb3fa0017b679f8bb2305b26a285fa2737f175668d0dff91cc1b66ac1fb663c9bc59509846d6ec05345bd908eda73e670af888da41af171505"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully published contribution and proofs."
+          }
+        }
+      }
+    }
+  }
+}

@@ -14,7 +14,7 @@ export const startWatchers = (branch: string): void => {
     [
       "onchange",
       "--kill",
-      "fern/**/*.{mdx,md}",
+      "content/**/*.{mdx,md}",
       "--",
       "tsx",
       "src/content-indexer/preview.ts",
@@ -29,7 +29,7 @@ export const startWatchers = (branch: string): void => {
     [
       "onchange",
       "--kill",
-      "fern/docs.yml",
+      "content/docs.yml",
       "src/openapi/**",
       "src/openrpc/**",
       "--",
@@ -50,10 +50,10 @@ export const startWatchers = (branch: string): void => {
   process.on("SIGTERM", cleanup);
 
   console.info(
-    "  📝 Watching fern/**/*.{mdx,md} for content changes (fast path)",
+    "  📝 Watching content/**/*.{mdx,md} for content changes (fast path)",
   );
   console.info(
-    "  📋 Watching fern/docs.yml, src/openapi/**, src/openrpc/** for structural changes (slow path)",
+    "  📋 Watching content/docs.yml, src/openapi/**, src/openrpc/** for structural changes (slow path)",
   );
   console.info("\n  Press Ctrl+C to stop.\n");
 };

@@ -1,0 +1,5177 @@
+{
+  "x-generated-warning": "⚠️ This file is auto-generated. Do not edit manually",
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tron HTTP API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://tron-mainnet.g.alchemy.com/v2/{apiKey}",
+      "variables": {
+        "apiKey": {
+          "default": "docs-demo"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/wallet/validateaddress": {
+      "post": {
+        "summary": "Validate an address",
+        "description": "Validates whether the given address is a valid TRON address.   It can optionally check whether the address is in base58check format (`visible: true`) or hex format (`visible: false`).\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "description": "The TRON address to validate.",
+                    "example": "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Set to `true` if the address is in base58check format (default for user-facing), or `false` if it is in hex format (starting with 0x).\n",
+                    "example": true
+                  }
+                },
+                "required": ["address"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "Whether the address is valid."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Description of the validation result."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "result": true,
+                      "message": "Base58check format"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/broadcasttransaction": {
+      "post": {
+        "summary": "Broadcast a transaction",
+        "description": "Broadcasts a signed transaction to the TRON network.   The transaction must be correctly formed and signed before being sent.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "raw_data": {
+                    "type": "object",
+                    "description": "Raw transaction object.",
+                    "properties": {
+                      "contract": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "parameter": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "object",
+                                  "properties": {
+                                    "amount": {
+                                      "type": "integer"
+                                    },
+                                    "owner_address": {
+                                      "type": "string"
+                                    },
+                                    "to_address": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "amount",
+                                    "owner_address",
+                                    "to_address"
+                                  ]
+                                },
+                                "type_url": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["value", "type_url"]
+                            },
+                            "type": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["parameter", "type"]
+                        },
+                        "description": "List of contract actions in this transaction.",
+                        "example": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "amount": 1000,
+                                "owner_address": "41608f8da72479edc7dd921e4c30bb7e7cddbe722e",
+                                "to_address": "41e9d79cc47518930bc322d9bf7cddd260a0260a8d"
+                              },
+                              "type_url": "type.googleapis.com/protocol.TransferContract"
+                            },
+                            "type": "TransferContract"
+                          }
+                        ]
+                      },
+                      "ref_block_bytes": {
+                        "type": "string",
+                        "example": "5e4b"
+                      },
+                      "ref_block_hash": {
+                        "type": "string",
+                        "example": "47c9dc89341b300d"
+                      },
+                      "expiration": {
+                        "type": "integer",
+                        "example": 1591089627000
+                      },
+                      "timestamp": {
+                        "type": "integer",
+                        "example": 1591089567635
+                      }
+                    }
+                  },
+                  "raw_data_hex": {
+                    "type": "string",
+                    "description": "Hex-encoded raw transaction data.",
+                    "example": "0a025e4b220847c9dc89341b300d40f8fed3a2a72e5a66080112620a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412310a1541608f8da72479edc7dd921e4c30bb7e7cddbe722e121541e9d79cc47518930bc322d9bf7cddd260a0260a8d18e8077093afd0a2a72e"
+                  }
+                },
+                "required": ["raw_data", "raw_data_hex"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Broadcast result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Broadcast result code."
+                    },
+                    "txid": {
+                      "type": "string",
+                      "description": "Transaction ID."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Encoded message string."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response for expired transaction",
+                    "value": {
+                      "code": "TRANSACTION_EXPIRATION_ERROR",
+                      "txid": "77ddfa7093cc5f745c0d3a54abb89ef070f983343c05e0f89e5a52f3e5401299",
+                      "message": "5472616e73616374696f6e2065787069726564"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/broadcasthex": {
+      "post": {
+        "summary": "Broadcast a hex-encoded transaction",
+        "description": "Broadcasts a signed transaction to the TRON network using a hex-encoded string.   This is useful when a transaction has already been constructed and signed externally.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["transaction"],
+                "properties": {
+                  "transaction": {
+                    "type": "string",
+                    "description": "The hex-encoded signed transaction to be broadcast.",
+                    "example": "0A8A010A0202DB2208C89D4811359A28004098A4E0A6B52D5A730802126F0A32747970652E676F6F676C65617069732E636F6D2F70726F746F636F6C2E5472616E736665724173736574436F6E747261637412390A07313030303030311215415A523B449890854C8FC460AB602DF9F31FE4293F1A15416B0580DA195542DDABE288FEC436C7D5AF769D24206412418BF3F2E492ED443607910EA9EF0A7EF79728DAAAAC0EE2BA6CB87DA38366DF9AC4ADE54B2912C1DEB0EE6666B86A07A6C7DF68F1F9DA171EEE6A370B3CA9CBBB00"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Broadcast result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "Whether the transaction was accepted by the network."
+                    },
+                    "txid": {
+                      "type": "string",
+                      "description": "Transaction ID."
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Response code in case of error."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Optional message, often encoded."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example success response",
+                    "value": {
+                      "result": true,
+                      "txid": "7c2d4206c03a883dd9066d6c839d0deaef32dc5a0d9b15f6d06e506906c90332"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/createtransaction": {
+      "post": {
+        "summary": "Create a transaction",
+        "description": "Creates an unsigned TRON transfer transaction between two accounts. The transaction must be signed and broadcast separately after creation.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "to_address", "amount"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the sender.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "to_address": {
+                    "type": "string",
+                    "description": "Base58 address of the receiver.",
+                    "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "description": "Amount to transfer in SUN (1 TRX = 1,000,000 SUN).",
+                    "example": 1000000
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are in base58 format.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created transaction object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string",
+                      "description": "Transaction ID."
+                    },
+                    "raw_data": {
+                      "type": "object",
+                      "properties": {
+                        "contract": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "parameter": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "integer"
+                                      },
+                                      "owner_address": {
+                                        "type": "string"
+                                      },
+                                      "to_address": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "type_url": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "ref_block_bytes": {
+                          "type": "string"
+                        },
+                        "ref_block_hash": {
+                          "type": "string"
+                        },
+                        "expiration": {
+                          "type": "integer"
+                        },
+                        "timestamp": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "raw_data_hex": {
+                      "type": "string",
+                      "description": "Hex-encoded raw transaction."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "227f5e04e8a7083015c12a5a1d6678ac8c61679bd342d2d45cb12e3cabcd020d",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "amount": 1000,
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "to_address": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                              },
+                              "type_url": "type.googleapis.com/protocol.TransferContract"
+                            },
+                            "type": "TransferContract"
+                          }
+                        ],
+                        "ref_block_bytes": "37df",
+                        "ref_block_hash": "6fe24d2c44f1f32d",
+                        "expiration": 1762267590000,
+                        "timestamp": 1762267531387
+                      },
+                      "raw_data_hex": "0a0237df22086fe24d2c44f1f32d40f0dad5faa4335a66080112620a2d747970..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/createaccount": {
+      "post": {
+        "summary": "Create an account",
+        "description": "Creates a new account under the specified owner address. This is a permissioned action that must be signed and broadcasted to the TRON network.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "account_address"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account creator.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "account_address": {
+                    "type": "string",
+                    "description": "Base58 address of the new account to create.",
+                    "example": "TFgY1uN8buRxAtV2r6Zy5sG3ACko6pJT1y"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are in base58 format.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for account creation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string",
+                      "description": "Transaction ID."
+                    },
+                    "raw_data": {
+                      "type": "object",
+                      "properties": {
+                        "contract": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "parameter": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "object",
+                                    "properties": {
+                                      "owner_address": {
+                                        "type": "string"
+                                      },
+                                      "account_address": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "type_url": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "ref_block_bytes": {
+                          "type": "string"
+                        },
+                        "ref_block_hash": {
+                          "type": "string"
+                        },
+                        "expiration": {
+                          "type": "integer"
+                        },
+                        "timestamp": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "raw_data_hex": {
+                      "type": "string",
+                      "description": "Hex-encoded raw transaction."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example response",
+                    "value": {
+                      "visible": true,
+                      "txID": "a1b2c3d4e5f6g7h8i9j0",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "account_address": "TFgY1uN8buRxAtV2r6Zy5sG3ACko6pJT1y"
+                              },
+                              "type_url": "type.googleapis.com/protocol.AccountCreateContract"
+                            },
+                            "type": "AccountCreateContract"
+                          }
+                        ],
+                        "ref_block_bytes": "abcd",
+                        "ref_block_hash": "12345678abcdef12",
+                        "expiration": 1762267590000,
+                        "timestamp": 1762267531387
+                      },
+                      "raw_data_hex": "0a02abcd220812345678abcdef1240f0dad5faa4335a66080112610a2b747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e4163636f756e74437265617465436f6e747261637412300a1541fd49eda0f23ff7ec1d03b52c3a45991c24cd440e121541d902345d3021c9e6bcd312a555b9a8887edcc75a540"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getaccount": {
+      "post": {
+        "summary": "Get account details",
+        "description": "Retrieves details about a specific TRON account, including balances, permissions, and resource usage.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["address"],
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to retrieve.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "address": {
+                      "type": "string"
+                    },
+                    "balance": {
+                      "type": "integer"
+                    },
+                    "create_time": {
+                      "type": "integer"
+                    },
+                    "latest_consume_time": {
+                      "type": "integer"
+                    },
+                    "net_window_size": {
+                      "type": "integer"
+                    },
+                    "net_window_optimized": {
+                      "type": "boolean"
+                    },
+                    "account_resource": {
+                      "type": "object",
+                      "properties": {
+                        "latest_consume_time_for_energy": {
+                          "type": "integer"
+                        },
+                        "energy_window_size": {
+                          "type": "integer"
+                        },
+                        "acquired_delegated_frozenV2_balance_for_energy": {
+                          "type": "integer"
+                        },
+                        "energy_window_optimized": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "owner_permission": {
+                      "type": "object",
+                      "properties": {
+                        "permission_name": {
+                          "type": "string"
+                        },
+                        "threshold": {
+                          "type": "integer"
+                        },
+                        "keys": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "address": {
+                                "type": "string"
+                              },
+                              "weight": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "active_permission": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "permission_name": {
+                            "type": "string"
+                          },
+                          "threshold": {
+                            "type": "integer"
+                          },
+                          "operations": {
+                            "type": "string"
+                          },
+                          "keys": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "address": {
+                                  "type": "string"
+                                },
+                                "weight": {
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "frozenV2": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "acquired_delegated_frozenV2_balance_for_bandwidth": {
+                      "type": "integer"
+                    },
+                    "asset_optimized": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                      "balance": 7099325165,
+                      "create_time": 1637411103000,
+                      "latest_consume_time": 1762098462000,
+                      "net_window_size": 28800000,
+                      "net_window_optimized": true,
+                      "account_resource": {
+                        "latest_consume_time_for_energy": 1762098450000,
+                        "energy_window_size": 28800000,
+                        "acquired_delegated_frozenV2_balance_for_energy": 3000000,
+                        "energy_window_optimized": true
+                      },
+                      "owner_permission": {
+                        "permission_name": "owner",
+                        "threshold": 1,
+                        "keys": [
+                          {
+                            "address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                            "weight": 1
+                          }
+                        ]
+                      },
+                      "active_permission": [
+                        {
+                          "type": "Active",
+                          "id": 2,
+                          "permission_name": "active",
+                          "threshold": 1,
+                          "operations": "7fff1fc0033e3b00000000000000000000000000000000000000000000000000",
+                          "keys": [
+                            {
+                              "address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                              "weight": 1
+                            }
+                          ]
+                        }
+                      ],
+                      "frozenV2": [
+                        {},
+                        {
+                          "type": "ENERGY"
+                        },
+                        {
+                          "type": "TRON_POWER"
+                        }
+                      ],
+                      "acquired_delegated_frozenV2_balance_for_bandwidth": 7000000,
+                      "asset_optimized": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/updateaccount": {
+      "post": {
+        "summary": "Update account name",
+        "description": "Updates the account name associated with the given owner address.   The name must be a hex-encoded string and is limited in length.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "account_name"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to be updated.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "account_name": {
+                    "type": "string",
+                    "description": "Hex-encoded string representing the new account name.",
+                    "example": "0x7570646174654e616d6531353330383933343635353139"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for account update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string",
+                      "description": "Transaction ID."
+                    },
+                    "raw_data": {
+                      "type": "object",
+                      "properties": {
+                        "contract": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "parameter": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "object",
+                                    "properties": {
+                                      "account_name": {
+                                        "type": "string"
+                                      },
+                                      "owner_address": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "type_url": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "ref_block_bytes": {
+                          "type": "string"
+                        },
+                        "ref_block_hash": {
+                          "type": "string"
+                        },
+                        "expiration": {
+                          "type": "integer"
+                        },
+                        "timestamp": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "raw_data_hex": {
+                      "type": "string",
+                      "description": "Hex-encoded raw transaction."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "57562c43cce62010383214da21f754e4045a94fb96e3dd19e01021f2c61f3790",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "account_name": "0x7570646174654e616d6531353330383933343635353139",
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                              },
+                              "type_url": "type.googleapis.com/protocol.AccountUpdateContract"
+                            },
+                            "type": "AccountUpdateContract"
+                          }
+                        ],
+                        "ref_block_bytes": "3958",
+                        "ref_block_hash": "4272662977a1f39c",
+                        "expiration": 1762268721000,
+                        "timestamp": 1762268663618
+                      },
+                      "raw_data_hex": "0a02395822084272662977a1f39c40e8de9afba4335a8301080a127f0a32747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e4163636f756e74557064617465436f6e747261637412490a30307837353730363436313734363534653631366436353331333533333330333833393333333433363335333533313339121541fd49eda0f23ff7ec1d03b52c3a45991c24cd440e70c29e97fba433"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/accountpermissionupdate": {
+      "post": {
+        "summary": "Update account permissions",
+        "description": "Updates the owner and active permission structures of a TRON account.   This allows fine-grained control over account access and required thresholds.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "owner"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to update.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "owner": {
+                    "type": "object",
+                    "description": "New owner permission structure.",
+                    "properties": {
+                      "type": {
+                        "type": "integer"
+                      },
+                      "permission_name": {
+                        "type": "string"
+                      },
+                      "threshold": {
+                        "type": "integer"
+                      },
+                      "keys": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "address": {
+                              "type": "string",
+                              "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                            },
+                            "weight": {
+                              "type": "integer",
+                              "example": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "actives": {
+                    "type": "array",
+                    "description": "List of active permission structures.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "integer"
+                        },
+                        "permission_name": {
+                          "type": "string"
+                        },
+                        "threshold": {
+                          "type": "integer"
+                        },
+                        "operations": {
+                          "type": "string"
+                        },
+                        "keys": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "address": {
+                                "type": "string",
+                                "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                              },
+                              "weight": {
+                                "type": "integer",
+                                "example": 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for permission update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object",
+                      "properties": {
+                        "contract": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "parameter": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "object",
+                                    "properties": {
+                                      "owner_address": {
+                                        "type": "string"
+                                      },
+                                      "owner": {
+                                        "type": "object"
+                                      },
+                                      "actives": {
+                                        "type": "array"
+                                      }
+                                    },
+                                    "required": ["owner_address", "owner"]
+                                  },
+                                  "type_url": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "ref_block_bytes": {
+                          "type": "string"
+                        },
+                        "ref_block_hash": {
+                          "type": "string"
+                        },
+                        "expiration": {
+                          "type": "integer"
+                        },
+                        "timestamp": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "ea4ba1263582de8e1d2a4e4945fec9f15dbb36e379fe0c0d25f602540aacc57f",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner": {
+                                  "keys": [
+                                    {
+                                      "address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                      "weight": 1
+                                    }
+                                  ],
+                                  "threshold": 1,
+                                  "permission_name": "owner"
+                                },
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "actives": [
+                                  {
+                                    "operations": "7fff1fc0037e0000000000000000000000000000000000000000000000000000",
+                                    "keys": [
+                                      {
+                                        "address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                        "weight": 1
+                                      },
+                                      {
+                                        "address": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1",
+                                        "weight": 1
+                                      }
+                                    ],
+                                    "threshold": 2,
+                                    "type": "Active",
+                                    "permission_name": "active0"
+                                  }
+                                ]
+                              },
+                              "type_url": "type.googleapis.com/protocol.AccountPermissionUpdateContract"
+                            },
+                            "type": "AccountPermissionUpdateContract"
+                          }
+                        ],
+                        "ref_block_bytes": "39f9",
+                        "ref_block_hash": "d5c2dff00da77ceb",
+                        "expiration": 1762269210000,
+                        "timestamp": 1762269150611
+                      },
+                      "raw_data_hex": "0a0239f92208d5c2dff00da77ceb4090cbb8fba4335aea01082e12e5010a3c..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getaccountbalance": {
+      "post": {
+        "summary": "Get account balance at a specific block",
+        "description": "Retrieves the account balance for a specific TRON address at a given block.   This method is useful for historical balance lookups.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_identifier", "block_identifier"],
+                "properties": {
+                  "account_identifier": {
+                    "type": "object",
+                    "required": ["address"],
+                    "properties": {
+                      "address": {
+                        "type": "string",
+                        "description": "Base58 address of the account.",
+                        "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                      }
+                    }
+                  },
+                  "block_identifier": {
+                    "type": "object",
+                    "required": ["hash", "number"],
+                    "properties": {
+                      "hash": {
+                        "type": "string",
+                        "description": "Block hash.",
+                        "example": "0000000000000000000000000000000000000000000000000000000000000000"
+                      },
+                      "number": {
+                        "type": "integer",
+                        "description": "Block number.",
+                        "example": 12345678
+                      }
+                    }
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account balance response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "balances": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "currency": {
+                            "type": "object",
+                            "properties": {
+                              "symbol": {
+                                "type": "string"
+                              },
+                              "decimals": {
+                                "type": "integer"
+                              },
+                              "metadata": {
+                                "type": "object",
+                                "additionalProperties": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "balances": [
+                    {
+                      "value": "100000000",
+                      "currency": {
+                        "symbol": "TRX",
+                        "decimals": 6,
+                        "metadata": {}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getaccountresource": {
+      "post": {
+        "summary": "Get account resource limits",
+        "description": "Returns resource limit and usage information for a given TRON address, including Net and Energy values.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["address"],
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to query.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account resource usage and limits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "freeNetLimit": {
+                      "type": "integer",
+                      "description": "Free Net limit available to the account."
+                    },
+                    "NetLimit": {
+                      "type": "integer",
+                      "description": "Net limit for the account."
+                    },
+                    "TotalNetLimit": {
+                      "type": "integer",
+                      "description": "Total Net limit in the network."
+                    },
+                    "TotalNetWeight": {
+                      "type": "integer",
+                      "description": "Total weight used to allocate Net across the network."
+                    },
+                    "EnergyLimit": {
+                      "type": "integer",
+                      "description": "Energy limit for the account."
+                    },
+                    "TotalEnergyLimit": {
+                      "type": "integer",
+                      "description": "Total Energy limit in the network."
+                    },
+                    "TotalEnergyWeight": {
+                      "type": "integer",
+                      "description": "Total weight used to allocate Energy across the network."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "freeNetLimit": 600,
+                      "NetLimit": 4,
+                      "TotalNetLimit": 43200000000,
+                      "TotalNetWeight": 68292467803,
+                      "EnergyLimit": 228,
+                      "TotalEnergyLimit": 180000000000,
+                      "TotalEnergyWeight": 2363311832
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getaccountnet": {
+      "post": {
+        "summary": "Get account Net resource info",
+        "description": "Returns Net resource limits and usage for a given TRON address. This is a simplified version of the resource query focused only on Net metrics.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["address"],
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to query.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Net resource usage and limits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "freeNetLimit": {
+                      "type": "integer",
+                      "description": "Free Net limit available to the account."
+                    },
+                    "NetLimit": {
+                      "type": "integer",
+                      "description": "Net limit for the account."
+                    },
+                    "TotalNetLimit": {
+                      "type": "integer",
+                      "description": "Total Net limit in the network."
+                    },
+                    "TotalNetWeight": {
+                      "type": "integer",
+                      "description": "Total weight used to allocate Net across the network."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "freeNetLimit": 600,
+                      "NetLimit": 4,
+                      "TotalNetLimit": 43200000000,
+                      "TotalNetWeight": 68292467803
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/freezebalance": {
+      "post": {
+        "summary": "Freeze balance for resource allocation",
+        "description": "Freezes TRX tokens in an account to gain bandwidth or energy resources.   Frozen tokens will be locked for a specified duration.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "owner_address",
+                  "frozen_balance",
+                  "frozen_duration",
+                  "resource"
+                ],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to freeze TRX from.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "frozen_balance": {
+                    "type": "integer",
+                    "description": "Amount to freeze, in SUN (1 TRX = 1,000,000 SUN).",
+                    "example": 10000000
+                  },
+                  "frozen_duration": {
+                    "type": "integer",
+                    "description": "Duration to freeze the tokens, in days.",
+                    "example": 3
+                  },
+                  "resource": {
+                    "type": "string",
+                    "enum": ["BANDWIDTH", "ENERGY"],
+                    "description": "Type of resource to gain from freezing.",
+                    "example": "BANDWIDTH"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for freeze operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "txID": "d1e3a6b3b342f6f8b7b3d9e2c7bfe8cd3b10f9e76d89b9f9cbb8f50d6a82b3a7",
+                      "raw_data": {
+                        "contract": ["..."]
+                      },
+                      "raw_data_hex": "0a020a1b2208abcd1234567890ef40e0f7cbfba433..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/unfreezebalance": {
+      "post": {
+        "summary": "Unfreeze account balance",
+        "description": "Unfreezes a previously frozen TRON account balance to restore access to tokens. The unfreeze operation must specify the resource type originally frozen.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "resource"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account performing the unfreeze.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "resource": {
+                    "type": "string",
+                    "description": "Resource type to unfreeze. Can be `BANDWIDTH` or `ENERGY`.",
+                    "example": "BANDWIDTH"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for unfreezing balance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string",
+                      "description": "Hex-encoded raw transaction."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "a1b2c3d4e5f6g7h8i9j0",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "resource": "BANDWIDTH"
+                              },
+                              "type_url": "type.googleapis.com/protocol.UnfreezeBalanceContract"
+                            },
+                            "type": "UnfreezeBalanceContract"
+                          }
+                        ],
+                        "ref_block_bytes": "abcd",
+                        "ref_block_hash": "12345678abcdef12",
+                        "expiration": 1762267590000,
+                        "timestamp": 1762267531387
+                      },
+                      "raw_data_hex": "0a02abcd220812345678abcdef1240f0dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getdelegatedresource": {
+      "post": {
+        "summary": "Get delegated resource information",
+        "description": "Returns the amount of resource delegated from one address to another. This includes bandwidth and energy delegated.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fromAddress", "toAddress"],
+                "properties": {
+                  "fromAddress": {
+                    "type": "string",
+                    "description": "Base58 address of the account delegating resources.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "toAddress": {
+                    "type": "string",
+                    "description": "Base58 address of the account receiving resources.",
+                    "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the addresses are in base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delegated resource information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "delegatedResource": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "delegatedResource": {
+                        "fromAddress": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                        "toAddress": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1",
+                        "bandwidth": 5000,
+                        "energy": 2000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getdelegatedresourceaccountindex": {
+      "post": {
+        "summary": "Get delegated resource account index",
+        "description": "Returns the account address for which delegated resource index information is being queried.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["value"],
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "description": "Base58 address to check the delegated resource account index for.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delegated resource account index.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "account": {
+                      "type": "string",
+                      "description": "The account associated with the delegated resource index."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "account": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/freezebalancev2": {
+      "post": {
+        "summary": "Freeze balance using FreezeBalanceV2",
+        "description": "Freezes TRX tokens in an account to gain ENERGY resources using the newer FreezeBalanceV2 mechanism.   This version omits the `frozen_duration` parameter and is considered an improved alternative to `/freezebalance`.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "frozen_balance", "resource"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to freeze TRX from.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "frozen_balance": {
+                    "type": "integer",
+                    "description": "Amount to freeze, in SUN (1 TRX = 1,000,000 SUN).",
+                    "example": 10000000
+                  },
+                  "resource": {
+                    "type": "string",
+                    "enum": ["BANDWIDTH", "ENERGY"],
+                    "description": "Type of resource to gain from freezing.",
+                    "example": "ENERGY"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for FreezeBalanceV2 operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object",
+                      "properties": {
+                        "contract": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "parameter": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "object",
+                                    "properties": {
+                                      "owner_address": {
+                                        "type": "string"
+                                      },
+                                      "frozen_balance": {
+                                        "type": "integer"
+                                      },
+                                      "resource": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "type_url": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "ref_block_bytes": {
+                          "type": "string"
+                        },
+                        "ref_block_hash": {
+                          "type": "string"
+                        },
+                        "expiration": {
+                          "type": "integer"
+                        },
+                        "timestamp": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "raw_data_hex": {
+                      "type": "string",
+                      "description": "Hex-encoded raw transaction."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "63b44752122878519d28fa39215c073442d111205b93c7841d1cec92de6bd3c5",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "resource": "ENERGY",
+                                "frozen_balance": 10000000,
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                              },
+                              "type_url": "type.googleapis.com/protocol.FreezeBalanceV2Contract"
+                            },
+                            "type": "FreezeBalanceV2Contract"
+                          }
+                        ],
+                        "ref_block_bytes": "41ab",
+                        "ref_block_hash": "6e4741b021c6afe5",
+                        "expiration": 1762275138000,
+                        "timestamp": 1762275080550
+                      },
+                      "raw_data_hex": "0a0241ab22086e4741b021c6afe540d0b3a2fea4335a5a083612560a34747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e467265657a6542616c616e63655632436f6e7472616374121e0a1541fd49eda0f23ff7ec1d03b52c3a45991c24cd440e1080ade204180170e6f29efea433"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/delegateresource": {
+      "post": {
+        "summary": "Delegate resource to another account",
+        "description": "Delegates bandwidth or energy resources from one account to another. The delegator must have previously frozen TRX to obtain the resources.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "owner_address",
+                  "receiver_address",
+                  "balance",
+                  "resource"
+                ],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account delegating the resource.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "receiver_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account receiving the delegated resource.",
+                    "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                  },
+                  "balance": {
+                    "type": "integer",
+                    "description": "Amount of resource to delegate, in SUN (1 TRX = 1,000,000 SUN).",
+                    "example": 1000000
+                  },
+                  "resource": {
+                    "type": "string",
+                    "enum": ["BANDWIDTH", "ENERGY"],
+                    "description": "Type of resource to delegate.",
+                    "example": "BANDWIDTH"
+                  },
+                  "lock": {
+                    "type": "boolean",
+                    "description": "Whether the delegated resource is locked.",
+                    "example": false
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are in base58 format.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for delegating resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "d9f8c5a1e345617b3f4bcb9c5e3db4320dbf0c1a8e3a7a2f9c4d37ccefb25a61",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "receiver_address": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1",
+                                "balance": 1000000,
+                                "resource": "BANDWIDTH",
+                                "lock": false
+                              },
+                              "type_url": "type.googleapis.com/protocol.DelegateResourceContract"
+                            },
+                            "type": "DelegateResourceContract"
+                          }
+                        ],
+                        "ref_block_bytes": "abcd",
+                        "ref_block_hash": "12345678abcdef12",
+                        "expiration": 1762267590000,
+                        "timestamp": 1762267531387
+                      },
+                      "raw_data_hex": "0a02abcd220812345678abcdef1240f0dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/undelegateresource": {
+      "post": {
+        "summary": "Undelegate resource from another account",
+        "description": "Removes previously delegated bandwidth or energy resources from a target account.   The operation reclaims the resource back to the owner's account.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "owner_address",
+                  "receiver_address",
+                  "balance",
+                  "resource"
+                ],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account undelegating the resource.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "receiver_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account losing the delegated resource.",
+                    "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                  },
+                  "balance": {
+                    "type": "integer",
+                    "description": "Amount of resource to undelegate, in SUN (1 TRX = 1,000,000 SUN).",
+                    "example": 1000000
+                  },
+                  "resource": {
+                    "type": "string",
+                    "enum": ["BANDWIDTH", "ENERGY"],
+                    "description": "Type of resource to undelegate.",
+                    "example": "BANDWIDTH"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are in base58 format.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for undelegating resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "f1a2b3c4d5e6f7g8h9i0",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "receiver_address": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1",
+                                "balance": 1000000,
+                                "resource": "BANDWIDTH"
+                              },
+                              "type_url": "type.googleapis.com/protocol.UnDelegateResourceContract"
+                            },
+                            "type": "UnDelegateResourceContract"
+                          }
+                        ],
+                        "ref_block_bytes": "abcd",
+                        "ref_block_hash": "12345678abcdef12",
+                        "expiration": 1762267590000,
+                        "timestamp": 1762267531387
+                      },
+                      "raw_data_hex": "0a02abcd220812345678abcdef1240f0dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/withdrawexpireunfreeze": {
+      "post": {
+        "summary": "Withdraw expired unfreeze balance",
+        "description": "Withdraws TRX from expired unfreeze operations.   This retrieves tokens that were frozen and then unfrozen, but not yet withdrawn.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to withdraw from.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for withdrawal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string",
+                      "description": "Hex-encoded raw transaction."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "a1b2c3d4e5f6g7h8i9j0",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                              },
+                              "type_url": "type.googleapis.com/protocol.WithdrawExpireUnfreezeContract"
+                            },
+                            "type": "WithdrawExpireUnfreezeContract"
+                          }
+                        ],
+                        "ref_block_bytes": "abcd",
+                        "ref_block_hash": "12345678abcdef12",
+                        "expiration": 1762267590000,
+                        "timestamp": 1762267531387
+                      },
+                      "raw_data_hex": "0a02abcd220812345678abcdef1240f0dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getavailableunfreezecount": {
+      "post": {
+        "summary": "Get available unfreeze count",
+        "description": "Returns the number of available unfreeze operations for the specified account.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to query.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Available unfreeze count.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of available unfreeze operations."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "count": 32
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getcanwithdrawunfreezeamount": {
+      "post": {
+        "summary": "Get withdrawable unfreeze amount",
+        "description": "Returns the amount of TRX that can be withdrawn from expired unfreeze operations for the specified account at a given timestamp.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "timestamp"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the account to query.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "timestamp": {
+                    "type": "integer",
+                    "description": "The current timestamp in milliseconds.",
+                    "example": 1762267531387
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Withdrawable unfreeze amount.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "integer",
+                      "description": "Amount of TRX that can be withdrawn."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "amount": 10000000
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getcandelegatedmaxsize": {
+      "post": {
+        "summary": "Get maximum delegatable resource size",
+        "description": "Returns the maximum amount of resources (in SUN) that can be delegated by a given account.   The type can be 0 for BANDWIDTH or 1 for ENERGY.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "type"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the delegating account.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "type": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "0 for BANDWIDTH, 1 for ENERGY.",
+                    "example": 0
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Maximum delegatable size.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "max_size": {
+                      "type": "integer",
+                      "description": "Maximum size in SUN that can be delegated."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "max_size": 3000000
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getdelegatedresourcev2": {
+      "post": {
+        "summary": "Get delegated resource details (V2)",
+        "description": "In Stake 2.0, queries detailed information of resource shares delegated from one account to another. Returns amounts staked for BANDWIDTH and ENERGY, and their expiration times if present.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fromAddress", "toAddress"],
+                "properties": {
+                  "fromAddress": {
+                    "type": "string",
+                    "description": "Base58 address of the account delegating resources.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "toAddress": {
+                    "type": "string",
+                    "description": "Base58 address of the account receiving the delegated resources.",
+                    "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the addresses are in base58 format (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delegated resource details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "delegatedResource": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "from": {
+                            "type": "string",
+                            "description": "The delegating account address."
+                          },
+                          "to": {
+                            "type": "string",
+                            "description": "The receiving account address."
+                          },
+                          "frozen_balance_for_bandwidth": {
+                            "type": "integer",
+                            "description": "Amount of TRX staked for bandwidth delegation."
+                          },
+                          "frozen_balance_for_energy": {
+                            "type": "integer",
+                            "description": "Amount of TRX staked for energy delegation."
+                          },
+                          "expire_time_for_bandwidth": {
+                            "type": "integer",
+                            "description": "Lock‑up deadline for bandwidth delegation, in ms."
+                          },
+                          "expire_time_for_energy": {
+                            "type": "integer",
+                            "description": "Lock‑up deadline for energy delegation, in ms."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "delegatedResource": [
+                        {
+                          "from": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                          "to": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1",
+                          "frozen_balance_for_bandwidth": 10000000,
+                          "frozen_balance_for_energy": 5000000,
+                          "expire_time_for_bandwidth": 1763000000000,
+                          "expire_time_for_energy": 1763005000000
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getdelegatedresourceaccountindexv2": {
+      "post": {
+        "summary": "Get delegated resource account index (V2)",
+        "description": "Returns the delegated resource account index under Stake 2.0 for the given address.   This is used to locate accounts participating in delegation relationships.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["value"],
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "description": "Base58 address to query.",
+                    "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delegated resource account index (V2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "account": {
+                      "type": "string",
+                      "description": "The account participating in delegation."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "account": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getblock": {
+      "post": {
+        "summary": "Get block by number or ID",
+        "description": "Retrieves a block from the TRON blockchain by its number or block ID.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "description": "Block number or ID to retrieve.",
+                    "example": "123456"
+                  }
+                },
+                "required": ["value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Block details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "examples": {
+                  "response": {
+                    "summary": "Example block response",
+                    "value": {
+                      "blockID": "000000000001e240a8b9ed3e37a5c7b8a9d6c4e2c3b2a1f0e9d8c7b6a5e4d3c2",
+                      "block_header": {
+                        "raw_data": {
+                          "number": 123456,
+                          "txTrieRoot": "e9d8c7b6a5e4d3c2b1a09f8e7d6c5b4a3b2c1d0e9f8e7d6c5b4a3b2c1d0e9f8",
+                          "witness_address": "41e9d79cc47518930bc322d9bf7cddd260a0260a8d",
+                          "parentHash": "000000000001e23fa8b9ed3e37a5c7b8a9d6c4e2c3b2a1f0e9d8c7b6a5e4d3c1",
+                          "version": 1,
+                          "timestamp": 1591089567635
+                        }
+                      },
+                      "transactions": []
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getblockbynum": {
+      "post": {
+        "summary": "Get block by number",
+        "description": "Retrieves a block by its block number.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "num": {
+                    "type": "integer",
+                    "description": "Block number to retrieve.",
+                    "example": 200
+                  }
+                },
+                "required": ["num"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with block details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "blockID": {
+                      "type": "string"
+                    },
+                    "block_header": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "example": {
+                  "blockID": "00000000000000c82a54a3bbdc956e1ddebc903f29b8daf28505b56f55a3f87d",
+                  "block_header": {
+                    "raw_data": {
+                      "number": 200,
+                      "txTrieRoot": "0000000000000000000000000000000000000000000000000000000000000000",
+                      "witness_address": "411661f25387370c9cd3a9a5d97e60ca90f4844e7e",
+                      "parentHash": "00000000000000c7c8f27726916dfddca3c1c3481eb01da8a08938263674cea4",
+                      "timestamp": 1529892138000
+                    },
+                    "witness_signature": "691e9116963b54ef7eb07692266319b029217e4d4ae8e8cb97e341617460f3822eff149c690aac6f2e0ad27d0af4fa8824d113d7a71c091245f778438ca4bde801"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getblockbyid": {
+      "post": {
+        "summary": "Get block by ID",
+        "description": "Retrieves a block by its unique block ID.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "description": "The block ID to retrieve.",
+                    "example": "00000000000f424013e51b18e0782a32fa079ddafdb2f4c343468cf8896dc887"
+                  }
+                },
+                "required": ["value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with block details by ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "blockID": {
+                      "type": "string"
+                    },
+                    "block_header": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "example": {
+                  "blockID": "00000000000f424013e51b18e0782a32fa079ddafdb2f4c343468cf8896dc887",
+                  "block_header": {
+                    "raw_data": {
+                      "number": 123456,
+                      "txTrieRoot": "...",
+                      "witness_address": "...",
+                      "parentHash": "...",
+                      "timestamp": 1762343259000
+                    },
+                    "witness_signature": "..."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getblockbylatestnum": {
+      "post": {
+        "summary": "Get latest blocks by number",
+        "description": "Retrieves the latest N blocks starting from the most recent one.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "num": {
+                    "type": "integer",
+                    "description": "Number of blocks to retrieve.",
+                    "example": 5
+                  }
+                },
+                "required": ["num"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved blocks."
+          }
+        }
+      }
+    },
+    "/wallet/getblockbylimitnext": {
+      "post": {
+        "summary": "Get blocks by range",
+        "description": "Retrieves blocks between the specified range of block numbers.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "startNum": {
+                    "type": "integer",
+                    "description": "Starting block number (inclusive).",
+                    "example": 1
+                  },
+                  "endNum": {
+                    "type": "integer",
+                    "description": "Ending block number (exclusive).",
+                    "example": 5
+                  }
+                },
+                "required": ["startNum", "endNum"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved blocks.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "response": {
+                    "value": {
+                      "block": [
+                        {
+                          "blockID": "00000000000000010ff5414c5cfbe9eae982e8cef7eb2399a39118e1206c8247",
+                          "block_header": {
+                            "raw_data": {
+                              "number": 1,
+                              "txTrieRoot": "000...",
+                              "witness_address": "415095d4f4...",
+                              "parentHash": "000...",
+                              "timestamp": 1529891469000
+                            },
+                            "witness_signature": "4544a600..."
+                          }
+                        },
+                        {
+                          "blockID": "0000000000000002018d6e36...",
+                          "block_header": {
+                            "raw_data": {
+                              "number": 2,
+                              "txTrieRoot": "000...",
+                              "witness_address": "41df3bd4...",
+                              "parentHash": "000...",
+                              "timestamp": 1529891481000
+                            },
+                            "witness_signature": "97686769..."
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getnowblock": {
+      "post": {
+        "summary": "Get the latest block",
+        "description": "Retrieves the latest block from the TRON blockchain.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "example": {
+                  "blockID": "00000000049a6697b8f1c40f7d26ad00f6799c7209726fa3257c07543f9197e9",
+                  "block_header": {
+                    "raw_data": {
+                      "number": 77227671,
+                      "txTrieRoot": "324d76c3c724dce375f40ec5039f3b8d554ef430dcb7345078986ac1e9391811",
+                      "witness_address": "41a4ce68cfcdd27884bde52cec653354048e0aa989",
+                      "parentHash": "00000000049a669664e8b7685381ae63324be5ef3df6188a435a52e7147b4587",
+                      "version": 32,
+                      "timestamp": 1762344189000
+                    },
+                    "witness_signature": "645b7b7a34bccf536f08245e8c6a2daad9e9c6781e4d560a7ea01015b1b6491264ccf7563e37d291c103a975b7e10b8007607fc9688ac85486fcef427437133301"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/gettransactionbyid": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Get transaction by ID",
+        "description": "Retrieves the full transaction information given its ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "example": "b61fc25144514889c725452e557e78f773672aac2e89da3f14704b8129a63e49",
+                    "description": "The transaction ID."
+                  }
+                },
+                "required": ["value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ret": [
+                    {
+                      "contractRet": "SUCCESS"
+                    }
+                  ],
+                  "signature": [
+                    "b8e16a05d6d0299425c00a5e336eeb975999c2b5f83860f58b957ce737465f0e47442f19de5bd381b3d265dbeae577ad9208ff540d53f1adcd8e4c587ae88a2000"
+                  ],
+                  "txID": "b61fc25144514889c725452e557e78f773672aac2e89da3f14704b8129a63e49",
+                  "raw_data": {
+                    "contract": [
+                      {
+                        "parameter": {
+                          "value": {
+                            "data": "a9059cbb0000000000000000000000001500f43493489e872ec5d8817813944dfce319d500000000000000000000000000000000000000000000000000000000813871c0",
+                            "owner_address": "412c14dd4db74751e2d39a81ae3decb7b5eb88e6c6",
+                            "contract_address": "41a614f803b6fd780986a42c78ec9c7f77e6ded13c"
+                          },
+                          "type_url": "type.googleapis.com/protocol.TriggerSmartContract"
+                        },
+                        "type": "TriggerSmartContract"
+                      }
+                    ],
+                    "ref_block_bytes": "ba0a",
+                    "ref_block_hash": "b147c98bf55c86<truncated__content/>"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/gettransactionlistfrompending": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Retrieve a list of pending transactions by ID",
+        "description": "Returns the transaction details for a list of pending transaction IDs currently in the pending pool.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "txId": [
+                  "3b81c36f9c1cf6f7e4d082aa870c940046b3a4fe33079babd2361470ae792e89",
+                  "af4582b61d4fdc703f9c4ef3b970c816838f071d2c89134edef89ed83dc92a3b",
+                  "26304c01d524cb027b3344b649bb6a65b27a78c2db2d3d7d6432b064a0a033a6"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A list of pending transactions",
+            "content": {
+              "application/json": {
+                "example": {
+                  "transactions": [
+                    {
+                      "txID": "3b81c36f9c1cf6f7e4d082aa870c940046b3a4fe33079babd2361470ae792e89",
+                      "raw_data": {
+                        "...": null
+                      }
+                    },
+                    {
+                      "txID": "af4582b61d4fdc703f9c4ef3b970c816838f071d2c89134edef89ed83dc92a3b",
+                      "raw_data": {
+                        "...": null
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getpendingsize": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Get size of pending transaction pool",
+        "description": "Returns the number of transactions currently in the pending pool.",
+        "responses": {
+          "200": {
+            "description": "The current size of the pending transaction pool",
+            "content": {
+              "application/json": {
+                "example": {
+                  "pendingSize": 660
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/gettransactionfrompending": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Get a single transaction from pending pool",
+        "description": "Retrieves detailed information for a specific transaction currently in the pending pool using its transaction ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "value": "b61fc25144514889c725452e557e78f773672aac2e89da3f14704b8129a63e49"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detailed transaction information from the pending pool",
+            "content": {
+              "application/json": {
+                "example": {
+                  "txID": "b61fc25144514889c725452e557e78f773672aac2e89da3f14704b8129a63e49",
+                  "raw_data": {
+                    "contract": [
+                      {
+                        "parameter": {
+                          "type_url": "type.googleapis.com/protocol.TransferContract",
+                          "value": {
+                            "owner_address": "TXYZ...",
+                            "to_address": "TABC...",
+                            "amount": 1000
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getassetissuebyname": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Get asset issue by name",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "description": "Asset name in base64 or string format.",
+                    "example": "Tether USD"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Flag to indicate if addresses should be visible.",
+                    "example": true
+                  }
+                },
+                "required": ["value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "example": {
+                  "owner_address": "41d23e38f645ab7bd25bbf5c55d2fdb42053ed55a7",
+                  "name": "545344",
+                  "abbr": "545344",
+                  "total_supply": 100000000000,
+                  "frozen_supply": [
+                    {
+                      "frozen_amount": 50000000,
+                      "frozen_days": 10
+                    }
+                  ],
+                  "trx_num": 1000000,
+                  "num": 5,
+                  "start_time": 1548057600000,
+                  "end_time": 1550649600000,
+                  "description": "54657374206173736574206973737565206279206e616d6520616e6420726573706f6e7365",
+                  "url": "68747470733a2f2f6578616d706c652e636f6d",
+                  "id": "1003001"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getassetissuelistbyname": {
+      "post": {
+        "summary": "Get Asset Issue List by Name",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "example": "31303030303031"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/wallet/getpaginatedassetissuelist": {
+      "post": {
+        "summary": "Get Paginated Asset Issue List",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "offset": {
+                    "type": "integer",
+                    "example": 0
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "example": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "assetIssue": [
+                    {
+                      "owner_address": "416b1171698969a36e5eb2eb6ea7aa9204d5e10cfc",
+                      "name": "21212121474f4c44434f494e",
+                      "abbr": "474f4c44",
+                      "total_supply": 9000000000000000000,
+                      "trx_num": 1000000,
+                      "num": 1000,
+                      "start_time": 1556094180182,
+                      "end_time": 1871799840182,
+                      "description": "474f4c44",
+                      "url": "68747470733a2f2f676f6c64636861696e2e78797a",
+                      "id": "1002341"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/transferasset": {
+      "post": {
+        "summary": "Transfer Asset",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "to_address": {
+                    "type": "string",
+                    "example": "TPswDDCAWhJAZGdHPidFg5nEf8TkNToDX1"
+                  },
+                  "asset_name": {
+                    "type": "string",
+                    "example": "31303030303031"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/wallet/createassetissue": {
+      "post": {
+        "summary": "Create Asset Issue",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "0x6173736574497373756531353330383934333132313538"
+                  },
+                  "abbr": {
+                    "type": "string",
+                    "example": "0x6162627231353330383934333132313538"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "0x4578616d706c654465736372697074696f6e"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "0x7777772e6578616d706c652e636f6d"
+                  },
+                  "frozen_supply": {
+                    "type": "object",
+                    "properties": {
+                      "frozen_amount": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "frozen_days": {
+                        "type": "integer",
+                        "example": 2
+                      }
+                    }
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/wallet/participateassetissue": {
+      "post": {
+        "summary": "Participate in Asset Issue",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "asset_name": {
+                    "type": "string",
+                    "example": "31303030303031"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "example": 100
+                  }
+                },
+                "required": [
+                  "to_address",
+                  "owner_address",
+                  "asset_name",
+                  "amount"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Participation transaction",
+            "content": {
+              "application/json": {
+                "example": {
+                  "result": true,
+                  "txid": "abc123..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/unfreezeasset": {
+      "post": {
+        "summary": "Unfreeze Asset",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  }
+                },
+                "required": ["owner_address"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unfreeze result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "result": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getcontract": {
+      "post": {
+        "summary": "Get contract",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "example": "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs",
+                    "description": "Base58 address of the contract."
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "Format visibility flag."
+                  }
+                },
+                "required": ["value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contract info"
+          }
+        }
+      }
+    },
+    "/wallet/getcontractinfo": {
+      "post": {
+        "summary": "Get contract info",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "example": "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs",
+                    "description": "Base58 address of the contract."
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "Format visibility flag."
+                  }
+                },
+                "required": ["value"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contract info details"
+          }
+        }
+      }
+    },
+    "/wallet/triggersmartcontract": {
+      "post": {
+        "summary": "Trigger smart contract",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "contract_address": {
+                    "type": "string",
+                    "example": "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs"
+                  },
+                  "function_selector": {
+                    "type": "string",
+                    "example": "transfer(address,uint256)"
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "00000000000000000000004115208EF33A926919ED270E2FA61367B2DA3753DA0000000000000000000000000000000000000000000000000000000000000032"
+                  },
+                  "fee_limit": {
+                    "type": "integer",
+                    "example": 1000000000
+                  },
+                  "call_value": {
+                    "type": "integer",
+                    "example": 0
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                },
+                "required": [
+                  "owner_address",
+                  "contract_address",
+                  "function_selector"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Smart contract triggered"
+          }
+        }
+      }
+    },
+    "/wallet/triggerconstantcontract": {
+      "post": {
+        "summary": "Trigger constant smart contract",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "contract_address": {
+                    "type": "string",
+                    "example": "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs"
+                  },
+                  "function_selector": {
+                    "type": "string",
+                    "example": "balanceOf(address)"
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "000000000000000000000000a614f803b6fd780986a42c78ec9c7f77e6ded13c"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                },
+                "required": [
+                  "owner_address",
+                  "contract_address",
+                  "function_selector"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Constant contract call result"
+          }
+        }
+      }
+    },
+    "/wallet/deploycontract": {
+      "post": {
+        "summary": "Deploy a smart contract",
+        "description": "Deploys a new smart contract to the TRON blockchain. The owner address must have sufficient funds to pay for the deployment.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "abi", "bytecode"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract deployer.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "abi": {
+                    "type": "string",
+                    "description": "JSON-encoded ABI string for the smart contract.",
+                    "example": "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"}],\"name\":\"set\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+                  },
+                  "bytecode": {
+                    "type": "string",
+                    "description": "Hex-encoded bytecode of the smart contract.",
+                    "example": "608060405234801561001057600080fd5b5061011e806100206000396000f3fe..."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Name for the contract.",
+                    "example": "MyContract"
+                  },
+                  "consume_user_resource_percent": {
+                    "type": "integer",
+                    "description": "Percent of user resource consumption for contract execution (0-100).",
+                    "example": 100
+                  },
+                  "origin_energy_limit": {
+                    "type": "integer",
+                    "description": "Maximum energy limit for contract execution.",
+                    "example": 10000000
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "description": "Constructor parameters, hex-encoded.",
+                    "example": ""
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if the address is base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for contract deployment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "b1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "abi": "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"}],\"name\":\"set\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+                                "bytecode": "608060405234801561001057600080fd5b5061011e806100206000396000f3fe...",
+                                "name": "MyContract",
+                                "consume_user_resource_percent": 100,
+                                "origin_energy_limit": 10000000,
+                                "parameter": ""
+                              },
+                              "type_url": "type.googleapis.com/protocol.CreateSmartContract"
+                            },
+                            "type": "CreateSmartContract"
+                          }
+                        ],
+                        "ref_block_bytes": "abcd",
+                        "ref_block_hash": "12345678abcdef12",
+                        "expiration": 1762267590000,
+                        "timestamp": 1762267531387
+                      },
+                      "raw_data_hex": "0a02abcd220812345678abcdef1240f0dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/updatesetting": {
+      "post": {
+        "summary": "Update contract setting",
+        "description": "Updates settings for an existing smart contract, such as energy limit or user resource percent.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "owner_address",
+                  "contract_address",
+                  "setting_type",
+                  "value"
+                ],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract owner.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "contract_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract to update.",
+                    "example": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+                  },
+                  "setting_type": {
+                    "type": "integer",
+                    "description": "Type of setting to update (e.g. 0 for energy limit, 1 for user resource percent).",
+                    "example": 0
+                  },
+                  "value": {
+                    "type": "integer",
+                    "description": "New value for the setting.",
+                    "example": 20000000
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for contract setting update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2b1a2c3d4",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "contract_address": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf",
+                                "setting_type": 0,
+                                "value": 20000000
+                              },
+                              "type_url": "type.googleapis.com/protocol.UpdateSettingContract"
+                            },
+                            "type": "UpdateSettingContract"
+                          }
+                        ],
+                        "ref_block_bytes": "bcda",
+                        "ref_block_hash": "abcdef1234567890",
+                        "expiration": 1762268600000,
+                        "timestamp": 1762268500000
+                      },
+                      "raw_data_hex": "0a02bcda2208abcdef123456789040e0dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/updateenergylimit": {
+      "post": {
+        "summary": "Update contract energy limit",
+        "description": "Updates the maximum energy limit for an existing smart contract.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "owner_address",
+                  "contract_address",
+                  "origin_energy_limit"
+                ],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract owner.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "contract_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract to update.",
+                    "example": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+                  },
+                  "origin_energy_limit": {
+                    "type": "integer",
+                    "description": "New maximum energy limit.",
+                    "example": 30000000
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for contract energy limit update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2b1a2c3d4e5f6a7b8",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "contract_address": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf",
+                                "origin_energy_limit": 30000000
+                              },
+                              "type_url": "type.googleapis.com/protocol.UpdateEnergyLimitContract"
+                            },
+                            "type": "UpdateEnergyLimitContract"
+                          }
+                        ],
+                        "ref_block_bytes": "cdef",
+                        "ref_block_hash": "fedcba9876543210",
+                        "expiration": 1762269500000,
+                        "timestamp": 1762269400000
+                      },
+                      "raw_data_hex": "0a02cdef2208fedcba987654321040f0dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/clearabi": {
+      "post": {
+        "summary": "Clear contract ABI",
+        "description": "Clears the ABI of a smart contract, removing all method and event definitions.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "contract_address"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract owner.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "contract_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract.",
+                    "example": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned transaction object for clearing contract ABI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "txID": {
+                      "type": "string"
+                    },
+                    "raw_data": {
+                      "type": "object"
+                    },
+                    "raw_data_hex": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "visible": true,
+                      "txID": "f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2b1a2c3d4e5f6a7b8c9d0e1",
+                      "raw_data": {
+                        "contract": [
+                          {
+                            "parameter": {
+                              "value": {
+                                "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                                "contract_address": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+                              },
+                              "type_url": "type.googleapis.com/protocol.ClearABIContract"
+                            },
+                            "type": "ClearABIContract"
+                          }
+                        ],
+                        "ref_block_bytes": "deab",
+                        "ref_block_hash": "a1b2c3d4e5f6a7b8",
+                        "expiration": 1762270500000,
+                        "timestamp": 1762270400000
+                      },
+                      "raw_data_hex": "0a02deab2208a1b2c3d4e5f6a7b84000dad5faa4335a..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/estimateenergy": {
+      "post": {
+        "summary": "Estimate energy usage for contract call",
+        "description": "Estimates the amount of energy that will be consumed by a smart contract call with given parameters.\n",
+        "tags": ["Tron HTTP API Endpoints"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["owner_address", "contract_address", "data"],
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "Base58 address calling the contract.",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "contract_address": {
+                    "type": "string",
+                    "description": "Base58 address of the contract to call.",
+                    "example": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+                  },
+                  "data": {
+                    "type": "string",
+                    "description": "Hex-encoded call data (function selector and arguments).",
+                    "example": "a9059cbb0000000000000000000000001500f43493489e872ec5d8817813944dfce319d500000000000000000000000000000000000000000000000000000000813871c0"
+                  },
+                  "call_value": {
+                    "type": "integer",
+                    "description": "Amount of TRX to transfer with the call (in SUN).",
+                    "example": 0
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indicates if addresses are base58 (true) or hex (false).",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Energy estimation for contract call.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "energy_required": {
+                      "type": "integer",
+                      "description": "Estimated energy required for the call."
+                    },
+                    "result": {
+                      "type": "boolean",
+                      "description": "Whether the estimation was successful."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Additional message or error."
+                    }
+                  }
+                },
+                "examples": {
+                  "response": {
+                    "value": {
+                      "energy_required": 28560,
+                      "result": true,
+                      "message": "Estimation completed successfully"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getspendingkey": {
+      "post": {
+        "summary": "Generate a spending key",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Spending key generated successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "spending_key": "aabbccddeeff..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getexpandedspendingkey": {
+      "post": {
+        "summary": "Get expanded spending key from spending key",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "spending_key": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "spending_key": "aabbccddeeff..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Expanded key generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ask": "11aa22bb33...",
+                  "nsk": "4455667788..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getakfromask": {
+      "post": {
+        "summary": "Get ak from ask",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ask": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "ask": "11aa22bb33..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ak key generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ak": "99ff88ee77..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getnkfromnsk": {
+      "post": {
+        "summary": "Get nk from nsk",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nsk": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "nsk": "4455667788..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "nk key generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "nk": "77dd66ccbb..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getincomingviewingkey": {
+      "post": {
+        "summary": "Get incoming viewing key",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ak": {
+                    "type": "string"
+                  },
+                  "nk": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "ak": "99ff88ee77...",
+                "nk": "77dd66ccbb..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ivk key generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ivk": "abcd1234ef56..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getdiversifier": {
+      "post": {
+        "summary": "Generate a diversifier",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diversifier generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "dk": "ddee998877..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getzenpaymentaddress": {
+      "post": {
+        "summary": "Get ZEN payment address",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ivk": {
+                    "type": "string"
+                  },
+                  "dk": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "ivk": "abcd1234ef56...",
+                "dk": "ddee998877..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ZEN payment address generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "address": "ztron1q23..."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getnewshieldedaddress": {
+      "post": {
+        "summary": "Generate a new shielded address",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully generated shielded address",
+            "content": {
+              "application/json": {
+                "example": {
+                  "address": "ztron1q...k9x",
+                  "sk": "abcd1234",
+                  "ask": "efgh5678",
+                  "nsk": "ijkl9012",
+                  "ovk": "mnop3456"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/createshieldedcontractparameters": {
+      "post": {
+        "summary": "Create shielded contract parameters",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "type": "string"
+                  },
+                  "output": {
+                    "type": "string"
+                  },
+                  "sk": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "input": "input_data",
+                "output": "output_data",
+                "sk": "secret_key"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shielded contract parameters created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "parameter": "contract_param"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/createspendsauthsig": {
+      "post": {
+        "summary": "Create spend authorization signature",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sk": {
+                    "type": "string"
+                  },
+                  "data": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "sk": "secret_key",
+                "data": "message_to_sign"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Spend authorization signature created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "signature": "signed_data"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/gettriggerinputforshieldedtrc20contract": {
+      "post": {
+        "summary": "Get trigger input for shielded TRC20 contract",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "parameter": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "parameter": "contract_param"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Trigger input generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "input": "trigger_input"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/scanshieldedtrc20notesbyivk": {
+      "post": {
+        "summary": "Scan shielded TRC20 notes by IVK",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ivk": {
+                    "type": "string"
+                  },
+                  "note_commitments": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "ivk": "view_key",
+                "note_commitments": ["commitment1", "commitment2"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notes scanned using IVK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "notes": ["note1", "note2"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/scanshieldedtrc20notesbyovk": {
+      "post": {
+        "summary": "Scan shielded TRC20 notes by OVK",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ovk": {
+                    "type": "string"
+                  },
+                  "ciphertexts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "ovk": "outgoing_view_key",
+                "ciphertexts": ["cipher1", "cipher2"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notes scanned using OVK",
+            "content": {
+              "application/json": {
+                "example": {
+                  "notes": ["noteA", "noteB"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/isshieldedtrc20contractnotespent": {
+      "post": {
+        "summary": "Check if shielded TRC20 note is spent",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nullifier": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "nullifier": "nullifier_hash"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Note spent status checked",
+            "content": {
+              "application/json": {
+                "example": {
+                  "spent": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/votewitnessaccount": {
+      "post": {
+        "summary": "Vote Witness Account",
+        "description": "Casts votes for Super Representatives (witnesses) using TRX tokens from the voter's account.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "description": "The address of the account voting for witnesses (Base58 or hex, depending on `visible` flag)."
+                  },
+                  "votes": {
+                    "type": "array",
+                    "description": "A list of votes containing witness addresses and the number of votes.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "vote_address": {
+                          "type": "string",
+                          "description": "The address of the witness to vote for."
+                        },
+                        "vote_count": {
+                          "type": "integer",
+                          "description": "The number of votes to cast for this witness."
+                        }
+                      }
+                    }
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Whether the input addresses are in base58 format."
+                  }
+                },
+                "example": {
+                  "owner_address": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g",
+                  "votes": [
+                    {
+                      "vote_address": "TYMwiU7KPcd2ydAYsWb1aDZ9f3o2a1qCHs",
+                      "vote_count": 2
+                    }
+                  ],
+                  "visible": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vote transaction data.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "visible": true,
+                  "txID": "8a245289f1e36a7a621c9aa7d75e56e58f18cc5e861de99e02aebf04a9cce65a",
+                  "raw_data": {
+                    "contract": [
+                      {
+                        "parameter": {
+                          "value": {
+                            "owner_address": "41758be32e9aa19858a7c5f3d8e7dd01f7869ccdbc",
+                            "votes": [
+                              {
+                                "vote_address": "41a4ce68cfcdd27884bde52cec653354048e0aa989",
+                                "vote_count": 2
+                              }
+                            ]
+                          },
+                          "type_url": "type.googleapis.com/protocol.VoteWitnessContract"
+                        },
+                        "type": "VoteWitnessContract"
+                      }
+                    ],
+                    "ref_block_bytes": "f58e",
+                    "ref_block_hash": "3a12e8dc94260b7e",
+                    "expiration": 1762349250000,
+                    "timestamp": 1762349191922
+                  },
+                  "raw_data_hex": "0a02f58e22083a12e8dc94260b7e40c8dc84a1a5335ad801081e12b6010a32747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e566f74655769746e657373436f6e74726163741280010a1541758be32e9aa19858a7c5f3d8e7dd01f7869ccdbc1a290a1541a4ce68cfcdd27884bde52cec653354048e0aa989108002"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/listproposals": {
+      "post": {
+        "summary": "List Proposals",
+        "description": "Retrieves the list of all current proposals on the TRON network, including proposer, parameters, approvals, and state.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of proposals with details.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "proposals": [
+                    {
+                      "proposal_id": 104,
+                      "proposer_address": "412a4d700c196a78f8ff7f0bf17d93fe6018396d2e",
+                      "parameters": [
+                        {
+                          "key": 11,
+                          "value": 100
+                        }
+                      ],
+                      "expiration_time": 1756468800000,
+                      "create_time": 1756202439000,
+                      "approvals": [
+                        "412a4d700c196a78f8ff7f0bf17d93fe6018396d2e",
+                        "4167e39013be3cdd3814bed152d7439fb5b6791409"
+                      ],
+                      "state": "APPROVED"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getproposalbyid": {
+      "post": {
+        "summary": "Get proposal by its ID",
+        "description": "Retrieve detailed information about a proposal based on its unique ID, including parameters, approvals, timestamps, and state.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "GetProposalById": {
+                  "value": {
+                    "id": 1,
+                    "visible": true
+                  }
+                }
+              },
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "visible": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with proposal details",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "value": {
+                      "proposal_id": 1,
+                      "proposer_address": "TTcYhypP8m4phDhN6oRexz2174zAerjEWP",
+                      "parameters": [
+                        {
+                          "key": 9,
+                          "value": 1
+                        }
+                      ],
+                      "expiration_time": 1539259200000,
+                      "create_time": 1538981229000,
+                      "approvals": [
+                        "TTcYhypP8m4phDhN6oRexz2174zAerjEWP",
+                        "TKSXDA8HfE9E1y39RczVQ1ZascUEtaSToF",
+                        "TNmas2SUNGJ2R1jq4Sivya5nHDLYN9ggpG"
+                      ],
+                      "state": "APPROVED"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/proposalapprove": {
+      "post": {
+        "summary": "Approve proposal",
+        "description": "This method allows the caller to add or remove their approval on an existing governance proposal.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "ApproveProposal": {
+                  "value": {
+                    "owner_address": "TUeTYVYJFfmBj3hVyopAZB97yc432Aay4N",
+                    "proposal_id": 89,
+                    "is_add_approval": true,
+                    "visible": true
+                  }
+                }
+              },
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string"
+                  },
+                  "proposal_id": {
+                    "type": "integer"
+                  },
+                  "is_add_approval": {
+                    "type": "boolean"
+                  },
+                  "visible": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proposal approval status updated"
+          }
+        }
+      }
+    },
+    "/wallet/proposaldelete": {
+      "post": {
+        "summary": "Delete an existing proposal",
+        "description": "This method deletes a governance proposal by ID, only if conditions for deletion are met (e.g., owner is the proposer).",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "DeleteProposal": {
+                  "value": {
+                    "owner_address": "TCuM8e98jmPwT1RU2jW7dekUC5HpXbGzFG",
+                    "proposal_id": 89,
+                    "visible": true
+                  }
+                }
+              },
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string"
+                  },
+                  "proposal_id": {
+                    "type": "integer"
+                  },
+                  "visible": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proposal successfully deleted"
+          }
+        }
+      }
+    },
+    "/wallet/listexchanges": {
+      "post": {
+        "summary": "Retrieve all existing token exchanges",
+        "description": "Returns a list of all token exchange records created via the TRON network's exchange contract. Each exchange includes token IDs, balances, creator address, and creation time.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "responses": {
+          "200": {
+            "description": "List of token exchanges",
+            "content": {
+              "application/json": {
+                "example": {
+                  "exchanges": [
+                    {
+                      "exchange_id": 186,
+                      "creator_address": "411aa7ca8c558e44c34b05d49121b5256ef7f86f52",
+                      "create_time": 1713505692000,
+                      "first_token_id": "31303035303338",
+                      "first_token_balance": 198100000,
+                      "second_token_id": "5f",
+                      "second_token_balance": 49974761
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/getexchangebyid": {
+      "post": {
+        "summary": "Retrieve a specific exchange by ID",
+        "description": "Returns the detailed configuration of a specific exchange on the TRON blockchain, identified by its unique exchange ID.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Exchange details",
+            "content": {
+              "application/json": {
+                "example": {
+                  "exchange_id": 1,
+                  "creator_address": "41f596e85bfd042744f76880979a133da0728679d9",
+                  "create_time": 1539673398000,
+                  "first_token_id": "31303030353634",
+                  "first_token_balance": 5,
+                  "second_token_id": "5f",
+                  "second_token_balance": 4326459
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/exchangecreate": {
+      "post": {
+        "summary": "Create a new token exchange",
+        "description": "Initializes a new token exchange (liquidity pool) between two tokens on the TRON blockchain. Requires token IDs and initial balances for both tokens.",
+        "tags": ["Tron HTTP API Endpoints"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "first_token_id": {
+                    "type": "string",
+                    "example": "31303030343837"
+                  },
+                  "first_token_balance": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "second_token_id": {
+                    "type": "string",
+                    "example": "31303030303031"
+                  },
+                  "second_token_balance": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Exchange creation response",
+            "content": {
+              "application/json": {
+                "example": {
+                  "result": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/exchangeinject": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Inject tokens into an exchange",
+        "description": "Adds liquidity to an existing exchange by injecting a specific quantity of a token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "exchange_id": {
+                    "type": "integer",
+                    "example": 12
+                  },
+                  "token_id": {
+                    "type": "string",
+                    "example": "31303030343837"
+                  },
+                  "quant": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token injection result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "result": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/exchangewithdraw": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Withdraw tokens from an exchange",
+        "description": "Withdraws a specific quantity of a token from an exchange.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "exchange_id": {
+                    "type": "integer",
+                    "example": 12
+                  },
+                  "token_id": {
+                    "type": "string",
+                    "example": "31303030343837"
+                  },
+                  "quant": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token withdrawal result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "result": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/exchangetransaction": {
+      "post": {
+        "tags": ["Tron HTTP API Endpoints"],
+        "summary": "Perform a token exchange transaction",
+        "description": "Executes a transaction on an exchange by trading one token for another.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "owner_address": {
+                    "type": "string",
+                    "example": "TZ4UXDV5ZhNW7fb2AMSbgfAEZ7hWsnYS2g"
+                  },
+                  "exchange_id": {
+                    "type": "integer",
+                    "example": 12
+                  },
+                  "token_id": {
+                    "type": "string",
+                    "example": "31303030343837"
+                  },
+                  "quant": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "expected": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "visible": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Exchange transaction result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "result": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

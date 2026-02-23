@@ -58,15 +58,15 @@ const buildIndexResults = async (
   switch (indexerType) {
     case "changelog":
       return buildChangelogIndex({
-        localBasePath: path.join(process.cwd(), "fern/changelog"),
+        localBasePath: path.join(process.cwd(), "content/changelog"),
         branchId,
       });
     case "docs":
       return buildDocsContentIndex({
         source: {
           type: "filesystem",
-          basePath: path.join(process.cwd(), "fern"),
-          specsDir: path.join(process.cwd(), "fern", "api-specs"),
+          basePath: path.join(process.cwd(), "content"),
+          specsDir: path.join(process.cwd(), "content", "api-specs"),
         },
         branchId,
         indexerType: "docs",
