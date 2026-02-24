@@ -2,9 +2,9 @@
 
 Content Indexer is the indexing system that builds path indexes, navigation trees, and Algolia search records for the Alchemy docs site. It lives in the `docs` repository and processes documentation from three sources:
 
-1. **Main Docs** - Manual content from `docs/fern/docs.yml` (local filesystem)
+1. **Main Docs** - Manual content from `docs/content/docs.yml` (local filesystem)
 2. **SDK References** - Generated content from `aa-sdk/docs/docs.yml` (sparse checkout in GHA)
-3. **Changelog** - Entries from `docs/fern/changelog/*.md` (local filesystem)
+3. **Changelog** - Entries from `docs/content/changelog/*.md` (local filesystem)
 
 ## Three Indexers
 
@@ -14,8 +14,8 @@ The system provides three independent indexers, each triggered by different cont
 
 Indexes manual documentation content from the local `docs` repository.
 
-* **Trigger**: Changes to `docs/fern/docs.yml` or manual content files
-* **Source**: Local filesystem (`docs/fern/`)
+* **Trigger**: Changes to `docs/content/docs.yml` or manual content files
+* **Source**: Local filesystem (`docs/content/`)
 * **Modes**:
   * `production` - Full indexing with Algolia upload (default)
   * `preview` - Branch-scoped indexing without Algolia upload
@@ -39,8 +39,8 @@ Indexes SDK reference documentation from the `aa-sdk` repository.
 
 Indexes changelog entries from date-based markdown files.
 
-* **Trigger**: Changes to `docs/fern/changelog/*.md`
-* **Source**: Local filesystem (`docs/fern/changelog/`)
+* **Trigger**: Changes to `docs/content/changelog/*.md`
+* **Source**: Local filesystem (`docs/content/changelog/`)
 * **Updates**:
   * `{branch}/path-index:changelog` (Redis)
   * No navigation tree (changelogs don't have a sidebar)
@@ -111,7 +111,7 @@ flowchart TD
 
 **Key difference between main and SDK:**
 
-* **Main**: Reads from local filesystem (`docs/fern/`)
+* **Main**: Reads from local filesystem (`docs/content/`)
 * **SDK**: Reads from local filesystem (`aa-sdk-docs/docs/`) after sparse checkout in GHA
 
 ### Changelog Indexer: Simpler Flow
@@ -120,7 +120,7 @@ The changelog indexer reads date-based markdown files directly:
 
 ```mermaid
 flowchart TD
-    Start[buildChangelogIndex] --> ReadDir[Read fern/changelog/]
+    Start[buildChangelogIndex] --> ReadDir[Read content/changelog/]
     ReadDir --> ParseFiles[Parse date from filenames]
     ParseFiles --> Parallel[Fetch all files in parallel]
     Parallel --> BuildOutputs[Build PathIndex + Algolia records]
@@ -409,7 +409,7 @@ Promise.all([
 
 The changelog indexer uses a simpler flow:
 
-1. **Read directory**: List all files in `fern/changelog/`
+1. **Read directory**: List all files in `content/changelog/`
 2. **Parse filenames**: Extract dates from `YYYY-MM-DD.md` pattern
 3. **Fetch in parallel**: Read all files with `Promise.all`
 4. **Build outputs**: Create path index + Algolia records (no nav trees)
@@ -515,7 +515,7 @@ Low coverage in I/O utilities (`filesystem.ts`, `github.ts`) is expected and acc
 
 **Cause:**
 
-* (Main indexer) File doesn't exist locally at `fern/docs.yml`
+* (Main indexer) File doesn't exist locally at `content/docs.yml`
 * (SDK indexer) `aa-sdk-docs/docs/` directory not found
 
 **Fix:**
@@ -528,7 +528,7 @@ Low coverage in I/O utilities (`filesystem.ts`, `github.ts`) is expected and acc
 
 **Cause:** Changelog file doesn't follow expected `YYYY-MM-DD.md` naming pattern
 
-**Fix:** Ensure all changelog files in `fern/changelog/` are named like `2025-11-20.md`
+**Fix:** Ensure all changelog files in `content/changelog/` are named like `2025-11-20.md`
 
 ### SDK References not appearing in wallets sidebar
 

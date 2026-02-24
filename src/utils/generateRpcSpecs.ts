@@ -4,7 +4,7 @@ import type { DerefedOpenRpcDoc } from "../types/openRpc.ts";
 import { formatOpenRpcDoc, writeOpenRpcDoc } from "./generationHelpers.ts";
 import { validateRpcSpec } from "./validateRpcSpec.ts";
 
-/** Extension: when true, server URL is already final (no apiKey path param). Do not add x-fern-parameters. */
+/** Extension: when true, server URL is already final (no apiKey path param). Do not add x-auth-params. */
 const SERVER_URL_FINAL_KEY = "x-alchemy-server-url-final" as const;
 
 /**
@@ -34,7 +34,7 @@ export const generateOpenRpcSpec = async (
     ...(skipApiKeyParam
       ? {}
       : {
-          "x-fern-parameters": [
+          "x-auth-params": [
             {
               name: "apiKey",
               in: "path",

@@ -4,8 +4,6 @@ import fs from "fs/promises";
 import matter from "gray-matter";
 import path from "path";
 
-import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
-
 import { PREVIEW_TTL_SECONDS } from "./redis.ts";
 
 /** Frontmatter fields that affect routing or nav structure. */
@@ -15,7 +13,7 @@ const ROUTING_FIELDS = ["slug", "hidden", "title", "description"] as const;
  * Uploads a single MDX file to Redis under a branch-scoped key.
  * Returns true if routing-relevant frontmatter changed (caller should reindex).
  *
- * @param filePath - Path relative to fern/ (e.g., "pages/intro.mdx")
+ * @param filePath - Path relative to content/ (e.g., "pages/intro.mdx")
  * @param branch - Branch identifier for Redis key prefix
  * @param redis - Redis client instance
  */
@@ -24,12 +22,12 @@ export const uploadMdxFile = async (
   branch: string,
   redis: Redis,
 ): Promise<{ reindexNeeded: boolean }> => {
-  const baseDir = path.join(process.cwd(), "fern");
+  const baseDir = path.join(process.cwd(), "content");
   const fullPath = path.resolve(baseDir, filePath);
 
-  // Prevent path traversal outside fern/
+  // Prevent path traversal outside content/
   if (!fullPath.startsWith(baseDir + path.sep)) {
-    console.warn(`  ⚠️ Skipping ${filePath}: path outside fern/`);
+    console.warn(`  ⚠️ Skipping ${filePath}: path outside content/`);
     return { reindexNeeded: false };
   }
 
@@ -70,19 +68,19 @@ export const uploadMdxFile = async (
 };
 
 /**
- * Returns MDX/MD file paths (relative to fern/) that differ from main.
+ * Returns MDX/MD file paths (relative to content/) that differ from main.
  * Includes both committed changes (git diff) and untracked new files
  * so previews work without requiring a commit first.
  */
 const getChangedMdxFiles = (): string[] => {
   // Committed/staged changes vs main
-  const diffOutput = execSync("git diff --name-only origin/main -- fern/", {
+  const diffOutput = execSync("git diff --name-only origin/main -- content/", {
     encoding: "utf-8",
   });
 
   // Untracked new files not yet committed
   const untrackedOutput = execSync(
-    "git ls-files --others --exclude-standard -- fern/",
+    "git ls-files --others --exclude-standard -- content/",
     { encoding: "utf-8" },
   );
 
@@ -93,32 +91,31 @@ const getChangedMdxFiles = (): string[] => {
 
   return [...allFiles]
     .filter((line) => line.length > 0 && /\.(mdx|md)$/.test(line))
-    .map((line) => line.replace(/^fern\//, ""));
+    .map((line) => line.replace(/^content\//, ""));
 };
 
 /**
- * Uploads only MDX files that differ from main and exist in the path index.
+ * Uploads all changed MDX files that exist on disk under content/.
+ * This includes both files directly referenced in docs.yml AND sub-files
+ * included via <Markdown src="..." /> which are not in the path index but
+ * still need branch-scoped Redis keys for preview to work correctly.
+ *
  * Files unchanged from main are skipped — previewGet falls back to main: keys.
  *
- * @param pathIndex - The path index to validate against
  * @param branch - Branch identifier for Redis key prefix
  * @param redis - Redis client instance
  */
 export const uploadChangedMdxFiles = async (
-  pathIndex: PathIndex,
   branch: string,
   redis: Redis,
 ): Promise<void> => {
   const changedFiles = getChangedMdxFiles();
 
-  // Only upload files that are in the path index (filters out deleted files)
-  const indexedFiles = new Set(
-    Object.values(pathIndex)
-      .filter((entry) => entry.type === "mdx")
-      .map((entry) => entry.filePath),
-  );
-
-  const toUpload = changedFiles.filter((f) => indexedFiles.has(f));
+  // Upload all changed MDX/MD files under content/ — not just those in the
+  // path index. Sub-files (e.g. client.mdx, api.mdx) are referenced via
+  // <Markdown src="..." /> and need branch-scoped keys so previewGet doesn't
+  // fall back to the stale main: version.
+  const toUpload = changedFiles;
 
   if (toUpload.length === 0) {
     console.info("\n📤 No changed MDX files to upload");

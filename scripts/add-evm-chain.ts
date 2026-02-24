@@ -159,7 +159,7 @@ function createChainConfig(
 function logSuccess(chainName: string): void {
   console.info("\n🎉 Successfully created quickstart and FAQ guides!");
   console.info("📍 Locations:");
-  console.info(`   - Quickstart: fern/api-reference/${chainName}/`);
+  console.info(`   - Quickstart: content/api-reference/${chainName}/`);
   console.info("\n📋 Files created:");
   console.info(`   - ${chainName}-api-quickstart.mdx`);
   console.info(`   - ${chainName}-api-faq.mdx`);

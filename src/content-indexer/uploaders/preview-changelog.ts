@@ -20,7 +20,7 @@ export const uploadChangelogFile = async (
   branch: string,
   redis: Redis,
 ): Promise<{ reindexNeeded: boolean }> => {
-  const fullPath = path.join(process.cwd(), "fern", "changelog", filename);
+  const fullPath = path.join(process.cwd(), "content", "changelog", filename);
   const redisKey = `${branch}:changelog:${filename}`;
 
   let content: string;
@@ -58,13 +58,13 @@ export const uploadChangelogFile = async (
 const getChangedChangelogFiles = (): string[] => {
   // Committed/staged changes vs main
   const diffOutput = execSync(
-    "git diff --name-only origin/main -- fern/changelog/",
+    "git diff --name-only origin/main -- content/changelog/",
     { encoding: "utf-8" },
   );
 
   // Untracked new files not yet committed
   const untrackedOutput = execSync(
-    "git ls-files --others --exclude-standard -- fern/changelog/",
+    "git ls-files --others --exclude-standard -- content/changelog/",
     { encoding: "utf-8" },
   );
 

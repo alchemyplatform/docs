@@ -14,7 +14,7 @@ describe("visitPage", () => {
     const result = visitPage({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",
@@ -26,7 +26,7 @@ describe("visitPage", () => {
 
     expect(result.indexEntries["guides/quickstart"]).toEqual({
       type: "mdx",
-      filePath: "fern/guides/quickstart.mdx",
+      filePath: "content/guides/quickstart.mdx",
       source: "docs-yml",
       tab: "guides",
     });
@@ -39,7 +39,7 @@ describe("visitPage", () => {
     const result = visitPage({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",
@@ -63,7 +63,7 @@ describe("visitPage", () => {
     const result = visitPage({
       item: {
         page: "Hidden Page",
-        path: "fern/guides/hidden.mdx",
+        path: "content/guides/hidden.mdx",
         hidden: true,
       },
       parentPath: PathBuilder.init("guides"),
@@ -90,7 +90,7 @@ describe("visitPage", () => {
     const result = visitPage({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
         slug: "custom-slug",
       },
       parentPath: PathBuilder.init("guides"),
@@ -116,7 +116,7 @@ describe("visitPage", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/quickstart.mdx", {
+    cache.setMdxContent("content/guides/quickstart.mdx", {
       frontmatter: {
         slug: "docs/custom/frontmatter/path",
         title: "Custom Title",
@@ -127,7 +127,7 @@ describe("visitPage", () => {
     const result = visitPage({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",
@@ -149,7 +149,7 @@ describe("visitPage", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/quickstart.mdx", {
+    cache.setMdxContent("content/guides/quickstart.mdx", {
       frontmatter: {
         title: "Quick Start Guide",
       },
@@ -159,7 +159,7 @@ describe("visitPage", () => {
     visitPage({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",
@@ -187,7 +187,7 @@ describe("visitPage", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/quickstart.mdx", {
+    cache.setMdxContent("content/guides/quickstart.mdx", {
       frontmatter: {},
       content: "Content without title",
     });
@@ -195,7 +195,7 @@ describe("visitPage", () => {
     visitPage({
       item: {
         page: "Quickstart Page Name",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",
@@ -216,7 +216,7 @@ describe("visitPage", () => {
     visitPage({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",
@@ -234,7 +234,7 @@ describe("visitPage", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/hidden.mdx", {
+    cache.setMdxContent("content/guides/hidden.mdx", {
       frontmatter: { title: "Hidden Page" },
       content: "Secret content",
     });
@@ -242,7 +242,7 @@ describe("visitPage", () => {
     visitPage({
       item: {
         page: "Hidden",
-        path: "fern/guides/hidden.mdx",
+        path: "content/guides/hidden.mdx",
         hidden: true,
       },
       parentPath: PathBuilder.init("guides"),
@@ -261,7 +261,7 @@ describe("visitPage", () => {
     const context = new ProcessingContext("docs");
     const cache = new ContentCache();
 
-    cache.setMdxContent("fern/guides/quickstart.mdx", {
+    cache.setMdxContent("content/guides/quickstart.mdx", {
       frontmatter: { title: "Quickstart" },
       content: "Content inside a hidden section",
     });
@@ -269,7 +269,7 @@ describe("visitPage", () => {
     const result = visitPage({
       item: {
         page: "Quickstart",
-        path: "fern/guides/quickstart.mdx",
+        path: "content/guides/quickstart.mdx",
       },
       parentPath: PathBuilder.init("guides"),
       tab: "guides",

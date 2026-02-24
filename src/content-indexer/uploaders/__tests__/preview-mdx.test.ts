@@ -134,43 +134,28 @@ describe("uploadMdxFile", () => {
 });
 
 describe("uploadChangedMdxFiles", () => {
-  test("uploads only changed files that exist in path index", async () => {
+  test("uploads all changed MDX files including sub-files not in path index", async () => {
     const { execSync } = await import("child_process");
     vi.mocked(execSync)
       .mockReturnValueOnce(
-        "fern/pages/intro.mdx\nfern/pages/deleted.mdx\nfern/pages/new.mdx\n",
+        "content/pages/intro.mdx\ncontent/pages/sub-file.mdx\ncontent/pages/new.mdx\n",
       )
       .mockReturnValueOnce(""); // no untracked files
     vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
     mockRedis.get.mockResolvedValue(null);
 
-    const pathIndex = {
-      "docs/intro": {
-        type: "mdx" as const,
-        filePath: "pages/intro.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-      "docs/new": {
-        type: "mdx" as const,
-        filePath: "pages/new.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-      "docs/spec": {
-        type: "spec" as const,
-        specPath: "/openapi/spec.yaml",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-    };
+    await uploadChangedMdxFiles("ds/feature", mockRedis as never);
 
-    await uploadChangedMdxFiles(pathIndex, "ds/feature", mockRedis as never);
-
-    // Should upload intro.mdx and new.mdx (in index), skip deleted.mdx (not in index)
-    expect(mockRedis.set).toHaveBeenCalledTimes(2);
+    // Should upload all three files, including sub-file.mdx which is not in
+    // docs.yml but may be referenced via <Markdown src="..." />
+    expect(mockRedis.set).toHaveBeenCalledTimes(3);
     expect(mockRedis.set).toHaveBeenCalledWith(
       "ds/feature:mdx:pages/intro.mdx",
+      expect.any(String),
+      expect.any(Object),
+    );
+    expect(mockRedis.set).toHaveBeenCalledWith(
+      "ds/feature:mdx:pages/sub-file.mdx",
       expect.any(String),
       expect.any(Object),
     );
@@ -184,27 +169,12 @@ describe("uploadChangedMdxFiles", () => {
   test("includes untracked files in upload", async () => {
     const { execSync } = await import("child_process");
     vi.mocked(execSync)
-      .mockReturnValueOnce("fern/pages/changed.mdx\n") // git diff
-      .mockReturnValueOnce("fern/pages/new-untracked.mdx\n"); // git ls-files
+      .mockReturnValueOnce("content/pages/changed.mdx\n") // git diff
+      .mockReturnValueOnce("content/pages/new-untracked.mdx\n"); // git ls-files
     vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
     mockRedis.get.mockResolvedValue(null);
 
-    const pathIndex = {
-      "docs/changed": {
-        type: "mdx" as const,
-        filePath: "pages/changed.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-      "docs/new-untracked": {
-        type: "mdx" as const,
-        filePath: "pages/new-untracked.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-    };
-
-    await uploadChangedMdxFiles(pathIndex, "ds/feature", mockRedis as never);
+    await uploadChangedMdxFiles("ds/feature", mockRedis as never);
 
     expect(mockRedis.set).toHaveBeenCalledTimes(2);
     expect(mockRedis.set).toHaveBeenCalledWith(
@@ -222,21 +192,12 @@ describe("uploadChangedMdxFiles", () => {
   test("deduplicates files appearing in both diff and untracked", async () => {
     const { execSync } = await import("child_process");
     vi.mocked(execSync)
-      .mockReturnValueOnce("fern/pages/intro.mdx\n") // git diff
-      .mockReturnValueOnce("fern/pages/intro.mdx\n"); // git ls-files (same file)
+      .mockReturnValueOnce("content/pages/intro.mdx\n") // git diff
+      .mockReturnValueOnce("content/pages/intro.mdx\n"); // git ls-files (same file)
     vi.mocked(fs.readFile).mockResolvedValue("---\ntitle: Test\n---\n# Test");
     mockRedis.get.mockResolvedValue(null);
 
-    const pathIndex = {
-      "docs/intro": {
-        type: "mdx" as const,
-        filePath: "pages/intro.mdx",
-        source: "docs-yml" as const,
-        tab: "docs",
-      },
-    };
-
-    await uploadChangedMdxFiles(pathIndex, "ds/feature", mockRedis as never);
+    await uploadChangedMdxFiles("ds/feature", mockRedis as never);
 
     expect(mockRedis.set).toHaveBeenCalledTimes(1);
   });
@@ -245,7 +206,7 @@ describe("uploadChangedMdxFiles", () => {
     const { execSync } = await import("child_process");
     vi.mocked(execSync).mockReturnValue("");
 
-    await uploadChangedMdxFiles({}, "ds/feature", mockRedis as never);
+    await uploadChangedMdxFiles("ds/feature", mockRedis as never);
 
     expect(mockRedis.set).not.toHaveBeenCalled();
   });

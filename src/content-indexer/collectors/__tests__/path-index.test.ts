@@ -12,7 +12,7 @@ describe("PathIndexCollector", () => {
     const collector = new PathIndexCollector();
     collector.add("guides/quickstart", {
       type: "mdx",
-      filePath: "fern/guides/quickstart.mdx",
+      filePath: "content/guides/quickstart.mdx",
       source: "docs-yml",
       tab: "guides",
     });
@@ -20,7 +20,7 @@ describe("PathIndexCollector", () => {
     const index = collector.getIndex();
     expect(index["guides/quickstart"]).toEqual({
       type: "mdx",
-      filePath: "fern/guides/quickstart.mdx",
+      filePath: "content/guides/quickstart.mdx",
       source: "docs-yml",
       tab: "guides",
     });
@@ -70,13 +70,13 @@ describe("PathIndexCollector", () => {
     const collector = new PathIndexCollector();
     collector.add("guides/quickstart", {
       type: "mdx",
-      filePath: "fern/guides/quickstart.mdx",
+      filePath: "content/guides/quickstart.mdx",
       source: "docs-yml",
       tab: "guides",
     });
     collector.add("guides/advanced", {
       type: "mdx",
-      filePath: "fern/guides/advanced.mdx",
+      filePath: "content/guides/advanced.mdx",
       source: "frontmatter",
       tab: "guides",
     });
@@ -91,13 +91,13 @@ describe("PathIndexCollector", () => {
     const collector = new PathIndexCollector();
     collector.add("guides/quickstart", {
       type: "mdx",
-      filePath: "fern/guides/quickstart.mdx",
+      filePath: "content/guides/quickstart.mdx",
       source: "docs-yml",
       tab: "guides",
     });
     collector.add("guides/quickstart", {
       type: "mdx",
-      filePath: "fern/guides/quickstart-v2.mdx",
+      filePath: "content/guides/quickstart-v2.mdx",
       source: "frontmatter",
       tab: "guides",
     });
@@ -105,7 +105,7 @@ describe("PathIndexCollector", () => {
     const index = collector.getIndex();
     const entry = index["guides/quickstart"];
     if (entry && "filePath" in entry) {
-      expect(entry.filePath).toBe("fern/guides/quickstart-v2.mdx");
+      expect(entry.filePath).toBe("content/guides/quickstart-v2.mdx");
       if ("source" in entry) {
         expect(entry.source).toBe("frontmatter");
       }

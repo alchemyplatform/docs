@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - "fern/docs.yml"
-      - "fern/remote-specs.json"
+      - "content/docs.yml"
+      - "content/remote-specs.json"
       - "src/openapi/**"
       - "src/openrpc/**"
   repository_dispatch:
@@ -49,7 +49,7 @@ jobs:
           echo "Revalidating docs index and navigation caches..."
 
           # Extract tab IDs from docs.yml (these are the nav tree keys)
-          NAV_TREES=$(yq -o=json '.tabs | keys' fern/docs.yml)
+          NAV_TREES=$(yq -o=json '.tabs | keys' content/docs.yml)
           echo "Nav trees to revalidate: $NAV_TREES"
 
           # Create JSON payload using jq
@@ -91,7 +91,7 @@ jobs:
 
       - name: Revalidate changed specs
         run: |
-          CHANGED=$(cat fern/api-specs/changed-specs.json)
+          CHANGED=$(cat content/api-specs/changed-specs.json)
           if [ "$CHANGED" = "[]" ]; then
             echo "No spec changes to revalidate"
             exit 0
