@@ -93,7 +93,7 @@ export const extractOpenApiOperations = (
       )
       .map(([method, operation]) => {
         const op = operation as Record<string, unknown>;
-        // Extract the first tag (Fern uses tags[0] for organization)
+        // Extract the first tag (tags[0] is used for organization)
         const tags = Array.isArray(op.tags) ? op.tags : [];
         const tag = tags[0] as string | undefined;
 

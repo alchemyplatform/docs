@@ -2,6 +2,17 @@
 
 Thank you for your interest in contributing to Alchemy's documentation! This guide will help you get started with the contribution process.
 
+## Architecture Overview
+
+Alchemy's documentation is split across two repositories:
+
+| Repository | Description |
+|---|---|
+| [`alchemyplatform/docs`](https://github.com/alchemyplatform/docs) (this repo) | Content repository — MDX pages, API specs (OpenAPI/OpenRPC), navigation config, and content indexing |
+| [`OMGWINNING/docs-site`](https://github.com/OMGWINNING/docs-site) (private) | Site repository — custom Next.js application that renders the content |
+
+As a content contributor, you only need to work in **this repo**. The docs site fetches content from here via the GitHub API and caches it in Redis. When changes are merged to `main`, the live site is automatically revalidated.
+
 ## Getting Started
 
 1. Fork the repository
@@ -11,15 +22,20 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
    git remote add upstream https://github.com/alchemyplatform/docs.git
    ```
 4. Install dependencies: `pnpm i`
-5. Create a new branch: `git checkout -b feature/your-feature-name`
+5. Create a new branch: `git checkout -b initials/your-feature-name`
+
+> \[!INFO]
+> Alchemy employees do not need to create their own fork!
 
 ### Documentation Types
 
 #### Written Documentation
 
-* Located in `content/docs/`
+* Located in `content/`
 * Written in MDX format
-* Update `docs.yml` when adding/moving pages
+* Update `content/docs.yml` when adding, removing, or moving pages
+
+For available MDX components and syntax, see the [MDX Features Reference](MDX_FEATURES.md).
 
 #### API Documentation
 
@@ -42,9 +58,9 @@ Thank you for your interest in contributing to Alchemy's documentation! This gui
 > \[!TIP]
 > Use the [YAML VSCode extension](https://marketplace.cursorapi.com/items?itemName=redhat.vscode-yaml) to get some basic OpenRPC validation with Intellisense.
 
-### Account Kit Documentation
+### Smart Wallet Documentation
 
-Account Kit documentation is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
+Smart Wallets documentation has its own [contributing guide](https://github.com/alchemyplatform/docs/blob/main/content/wallets/README.md). Additionally, Account Kit SDK references are maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk).
 
 ## Making Changes
 
@@ -52,10 +68,21 @@ If you are not an [Alchemy Employee](#alchemy-employees), you will need to creat
 
 1. Fork the repo (if you haven't already)
 2. Make your changes
-3. Test locally using `pnpm dev`
+3. Run linting: `pnpm run lint`
 4. Commit your changes
 5. Push to your fork
 6. Create a pull request to the upstream
+
+### Previewing Changes
+
+This is a content-only repository — there is no local dev server. Instead, users can preview branch changes before merging via the preview link generated on each PR. Alchemy contributors can also preview local content using the following command:
+
+```bash
+pnpm preview
+```
+
+> \[!NOTE]
+> Previewing local content requires environment variables. See `.env.example` for the required variables.
 
 ## Markdown Style Guide
 
@@ -112,10 +139,10 @@ git push origin main
 ### Video Embeds
 
 ```markdown
-<embed 
-  src="https://alchemyapi-res.cloudinary.com/raw/upload/v1234567890/docs/section/video.webm" 
-  type="video/webm" 
-  style={{ width: '100%' }} 
+<embed
+  src="https://alchemyapi-res.cloudinary.com/raw/upload/v1234567890/docs/section/video.webm"
+  type="video/webm"
+  style={{ width: '100%' }}
 />
 ```
 
@@ -144,6 +171,5 @@ If you have any questions or need help, please open an issue in the repository.
 
 ## Resources
 
-* [Fern Documentation](https://buildwithfern.com/learn)
 * [OpenAPI Specification](https://swagger.io/specification/)
 * [OpenRPC Specification](https://spec.open-rpc.org/)
