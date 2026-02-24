@@ -89,7 +89,7 @@ Headings also populate the **Table of Contents** sidebar automatically.
 
 ## Code Blocks
 
-Fenced code blocks support syntax highlighting via [Shiki](https://shiki.matsu.io/) with dual light/dark themes.
+Fenced code blocks support syntax highlighting via [rehype-pretty-code](https://rehype-pretty-code.netlify.app/) (powered by Shiki) with dual light/dark themes.
 
 ````md
 ```javascript
@@ -104,6 +104,18 @@ console.log(greeting);
 * **Copy button** auto-attached to each code block
 * **Line numbers** shown for non-shell languages
 * **Shell prompt styling** for `sh`, `bash`, `zsh`, and `terminal` languages (displays `$` prompt, no line numbers)
+* **Line highlighting** to emphasize specific lines
+
+### Line Highlighting
+
+Highlight specific lines or ranges by adding line numbers in curly braces after the language:
+
+````md
+```ts {1,12-13}
+const x = 1;
+// lines 12-13 would be highlighted
+```
+````
 
 ### Titles
 
@@ -303,48 +315,42 @@ Steps are automatically numbered and appear in the Table of Contents.
 
 ### Usage
 
-```md
+`````md
 <Steps>
   <Step title="Install the SDK">
     Install the package from npm:
 
-```
-
+````
 ```bash
 npm install @alchemy/sdk
 ```
-
-```
+````
 
   </Step>
   <Step title="Initialize the client">
     Create a new instance:
 
-```
-
+````
 ```javascript
 import { Alchemy } from "@alchemy/sdk";
 const alchemy = new Alchemy({ apiKey: "your-api-key" });
 ```
-
-```
+````
 
   </Step>
   <Step title="Make your first request">
     Fetch the latest block number:
 
-```
-
+````
 ```javascript
 const blockNumber = await alchemy.core.getBlockNumber();
 console.log(blockNumber);
 ```
-
-```
+````
 
   </Step>
 </Steps>
-```
+`````
 
 ***
 
@@ -411,7 +417,7 @@ Include reusable MDX snippets from other files. Paths are resolved relative to t
 
 ## Icon
 
-Renders an icon from the sprite sheet. Supports FontAwesome-style names for backwards compatibility.
+Renders an icon from the [sprite sheet](https://www.alchemy.com/docs/icons/sprites.svg). Supports FontAwesome-style names for backwards compatibility.
 
 ### Props
 
@@ -466,7 +472,7 @@ Mermaid diagrams are rendered server-side as SVGs. If rendering fails, a gracefu
 
 ## StickyTable
 
-Wraps a standard markdown table with sticky column headers for large data sets. Use this when you have wide tables that need horizontal scrolling.
+Wraps a standard markdown table with sticky column headers for large data sets. Use this when you have long tables that benefit from vertical scrolling while keeping headers visible.
 
 ### Usage
 
