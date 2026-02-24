@@ -1,0 +1,138 @@
+---
+title: Debug transactions
+description: Inspect transaction lifecycles and debug failed Wallet API calls with AI-powered error explanations
+slug: wallets/transactions/debug-transactions
+---
+
+<Warning>
+  The Transaction Lifecycle Dashboard is in **early access**. [Request early access!](mailto:wallets@alchemy.com?subject=Transaction%20Lifecycle%20Dashboard%20%E2%80%93%20Early%20Access%20Request&body=Hi%20team%2C%0A%0AI%E2%80%99d%20like%20to%20request%20early%20access%20to%20the%20Transaction%20Lifecycle%20Dashboard.%0A%0ATeam%20name%3A%20%0AUse%20case%3A%20%0A%0AThanks!)
+</Warning>
+
+The Transaction Lifecycle Dashboard gives you full visibility into every step of a Wallet API transaction from preparation to confirmation and helps you debug failures with AI-powered error explanations.
+
+## Why use it
+
+When you send a transaction through the Wallet API, it goes through multiple steps:
+
+1. **Prepare** — [`wallet_prepareCalls`](/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls) prepares the transaction for submission
+2. **Send** — [`wallet_sendPreparedCalls`](/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-send-prepared-calls) submits the prepared transaction onchain
+3. **Track** — [`wallet_getCallsStatus`](/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-get-calls-status) polls for confirmation or failure
+
+A failure at any step can be difficult to diagnose from raw logs alone. The Transaction Lifecycle Dashboard groups all steps by Call ID so you can see exactly where things went wrong — and why.
+
+<img src="https://alchemyapi-res.cloudinary.com/image/upload/v1771946650/docs/aa-sdk/images/wallets/tld-overview.png" alt="Transaction Lifecycle Dashboard overview" />
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Transaction lifecycle view" icon="fa-solid fa-layer-group">
+    See every step of a Wallet API call grouped by Call ID, with status, duration, and full request/response payloads
+  </Card>
+
+  <Card title="AI error explanations" icon="fa-solid fa-bolt">
+    Get plain-language explanations of why a transaction failed, along with specific remediation steps
+  </Card>
+
+  <Card title="Filters & search" icon="fa-solid fa-chart-line">
+    Filter by status, app, network, and time range to find the exact transactions you're looking for
+  </Card>
+
+  <Card title="Detailed payloads" icon="fa-solid fa-code">
+    Inspect full JSON request and response bodies for each step, with copy support
+  </Card>
+</CardGroup>
+
+## Access the dashboard
+
+1. Open the [Alchemy dashboard](https://dashboard.alchemy.com)
+2. In the left sidebar, navigate to **Tools > Logs**
+3. Click the **Wallet API Logs** tab
+
+Direct link: [dashboard.alchemy.com/logs/wallet-api](https://dashboard.alchemy.com/logs/wallet-api)
+
+You can also access logs scoped to a specific app by navigating to **Apps > \[Your App] > Logs > Wallet API Logs**.
+
+## View transaction details
+
+Select any row in the log table to open the **Transaction Details** panel on the right. It shows:
+
+* **Call ID** — The unique identifier linking all steps of the transaction
+* **Status** — Current state of the transaction (e.g., Confirmed, Pending, Prepare Failed)
+* **App & Network** — Which app and network the call was made on
+* **Step timeline** — Each Wallet API method call shown as an expandable card with status, duration, and full request/response JSON
+
+<img src="https://alchemyapi-res.cloudinary.com/image/upload/v1771869711/docs/aa-sdk/images/wallets/tld-detail-panel.png" alt="Transaction details panel with step timeline" />
+
+Click on any step to expand it and inspect the full request and response payloads.
+
+### Transaction statuses
+
+| Status | Description |
+| --- | --- |
+| **Confirmed** | Transaction successfully included onchain |
+| **Pending** | Transaction submitted and awaiting confirmation |
+| **Preconfirmed** | Transaction detected but not yet finalized |
+| **Prepared** | Transaction prepared but not yet sent |
+| **Sent** | Transaction sent and awaiting status |
+| **Cross Chain Pending** | Cross-chain transaction in progress |
+| **Prepare Failed** | Transaction failed during preparation (e.g., validation error) |
+| **Send Failed** | Transaction failed during submission |
+| **Status Failed** | Failed to retrieve transaction status |
+| **Offchain Failure** | Transaction failed offchain before reaching the network |
+| **Onchain Failure** | Transaction was included onchain but reverted |
+| **Partial Failure** | Some calls in the batch succeeded while others failed |
+| **Cross Chain Refunded** | Cross-chain transaction was refunded |
+| **Unknown** | Transaction status could not be determined |
+
+## Debug errors with AI
+
+When a transaction step fails, the detail panel displays the error message and an **Explain this error** button.
+
+<img src="https://alchemyapi-res.cloudinary.com/image/upload/v1771956236/docs/aa-sdk/images/wallets/tld-ai-explanation.png" alt="AI error explanation with category, explanation, and remediation steps" />
+
+Clicking the button sends the error context to an AI model that analyzes the failure and returns:
+
+* **Error category** — A classification such as Validation Error, Sponsorship Failure, Session Key Error, Signing Error, or Contract Error
+* **What happened** — A plain-language description of the root cause
+* **How to fix** — Specific steps to resolve the issue
+
+<Info>
+  AI-generated explanations are provided as guidance and may not always be accurate. Always verify the details independently before making changes to your integration.
+</Info>
+
+### Common error categories
+
+<Accordion title="Validation Error">
+  The transaction failed input validation before reaching the network. Common causes include malformed addresses, invalid calldata encoding, or missing required fields. Check your `wallet_prepareCalls` request payload against the [API reference](/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls).
+</Accordion>
+
+<Accordion title="Sponsorship Failure">
+  Gas sponsorship was rejected by the gas manager policy. Verify that your [gas policy](https://dashboard.alchemy.com/gas-manager) is active, has sufficient balance, and that the transaction meets your sponsorship rules.
+</Accordion>
+
+<Accordion title="Session Key Error">
+  The session key used to sign the transaction is invalid, expired, or does not have permission for the requested action. Review your [session key configuration](/wallets/reference/wallet-apis-session-keys/api).
+</Accordion>
+
+<Accordion title="Signing Error">
+  The transaction signature was rejected or could not be produced. This can happen when the signer is not authorized for the account, the signing method is incompatible, or the signer service is unavailable.
+</Accordion>
+
+<Accordion title="Contract Error">
+  The target contract reverted the transaction. This typically indicates an issue with the contract call itself — check the calldata, function parameters, and contract state.
+</Accordion>
+
+## Filter and search
+
+Use the filter bar above the log table to narrow results:
+
+* **Time range** — Choose from presets or set a custom range.
+* **Statuses** — Multi-select filter to show only specific transaction states (e.g., failures only)
+* **Apps** — Filter by a specific app when viewing across all apps
+* **Networks** — Filter by blockchain network
+
+## Next steps
+
+* [Send transactions](/wallets/transactions/send-transactions) — Learn how to send Wallet API transactions
+* [Sponsor gas](/wallets/transactions/sponsor-gas) — Eliminate gas fees for your users
+* [Common errors](/wallets/resources/faqs#common-errors) — Reference for frequently encountered issues
