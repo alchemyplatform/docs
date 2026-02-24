@@ -14,22 +14,15 @@ npm install @alchemy/wallet-apis@0.0.0-alpha.21 viem
 
 Replaces `@account-kit/wallet-client`, `@account-kit/infra`, and `@aa-sdk/core`.
 
-## Import changes
+## Key changes
 
-| Before | After |
-|---|---|
-| `import { createSmartWalletClient } from "@account-kit/wallet-client"` | `import { createSmartWalletClient } from "@alchemy/wallet-apis"` |
-| `import { alchemy, sepolia } from "@account-kit/infra"` | `import { alchemyWalletTransport } from "@alchemy/wallet-apis"` + `import { sepolia } from "viem/chains"` |
-| `import { LocalAccountSigner } from "@aa-sdk/core"` | `import { privateKeyToAccount } from "viem/accounts"` |
-| `import { WalletClientSigner } from "@aa-sdk/core"` | *(remove — pass `WalletClient` directly as signer)* |
-| `import { swapActions } from "@account-kit/wallet-client/experimental"` | `import { swapActions } from "@alchemy/wallet-apis/experimental"` |
-| `import { type SmartWalletClientParams } from "@account-kit/wallet-client"` | `import { type CreateSmartWalletClientParams } from "@alchemy/wallet-apis"` |
-
-All chains now come from `viem/chains`, all signers use viem-native types (`LocalAccount` or `WalletClient`). Interfaces are now fully viem-compatible — values are bigints instead of hex strings (`BigInt(0)` instead of `"0x00"`).
+* **Chains** come from `viem/chains`
+* **Signers** use viem-native types (`LocalAccount` or `WalletClient`)
+* **Values** are bigints instead of hex strings (`BigInt(0)` instead of `"0x00"`)
 
 ## EIP-7702 by default
 
-The biggest change: the client defaults to EIP-7702. For 7702 accounts, you no longer need to call `requestAccount()` before sending transactions.
+The client defaults to EIP-7702. For 7702 accounts, you no longer need to call `requestAccount()` before sending transactions.
 
 **Before:**
 
@@ -106,3 +99,14 @@ const client = createSmartWalletClient({
   ...
 });
 ```
+
+## Import changes
+
+| Before | After |
+|---|---|
+| `import { createSmartWalletClient } from "@account-kit/wallet-client"` | `import { createSmartWalletClient } from "@alchemy/wallet-apis"` |
+| `import { alchemy, sepolia } from "@account-kit/infra"` | `import { alchemyWalletTransport } from "@alchemy/wallet-apis"` + `import { sepolia } from "viem/chains"` |
+| `import { LocalAccountSigner } from "@aa-sdk/core"` | `import { privateKeyToAccount } from "viem/accounts"` |
+| `import { WalletClientSigner } from "@aa-sdk/core"` | *(remove — pass `WalletClient` directly as signer)* |
+| `import { swapActions } from "@account-kit/wallet-client/experimental"` | `import { swapActions } from "@alchemy/wallet-apis/experimental"` |
+| `import { type SmartWalletClientParams } from "@account-kit/wallet-client"` | `import { type CreateSmartWalletClientParams } from "@alchemy/wallet-apis"` |
