@@ -57,6 +57,7 @@ Tables are automatically wrapped in a scrollable container for responsiveness.
 
 ### Task Lists
 
+<!-- prettier-ignore -->
 ```md
 * \[x] Completed task
 * \[ ] Incomplete task
