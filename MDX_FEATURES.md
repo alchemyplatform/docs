@@ -58,8 +58,8 @@ Tables are automatically wrapped in a scrollable container for responsiveness.
 ### Task Lists
 
 ```md
-* [x] Completed task
-* [ ] Incomplete task
+* \[x] Completed task
+* \[ ] Incomplete task
 ```
 
 ### Autolinks
@@ -315,42 +315,36 @@ Steps are automatically numbered and appear in the Table of Contents.
 
 ### Usage
 
-`````md
+````md
 <Steps>
   <Step title="Install the SDK">
     Install the package from npm:
 
-````
 ```bash
 npm install @alchemy/sdk
 ```
-````
 
   </Step>
   <Step title="Initialize the client">
     Create a new instance:
 
-````
 ```javascript
 import { Alchemy } from "@alchemy/sdk";
 const alchemy = new Alchemy({ apiKey: "your-api-key" });
 ```
-````
 
   </Step>
   <Step title="Make your first request">
     Fetch the latest block number:
 
-````
 ```javascript
 const blockNumber = await alchemy.core.getBlockNumber();
 console.log(blockNumber);
 ```
-````
 
   </Step>
 </Steps>
-`````
+````
 
 ***
 
