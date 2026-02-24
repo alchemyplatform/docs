@@ -4,8 +4,6 @@ import fs from "fs/promises";
 import matter from "gray-matter";
 import path from "path";
 
-import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
-
 import { PREVIEW_TTL_SECONDS } from "./redis.ts";
 
 /** Frontmatter fields that affect routing or nav structure. */
@@ -97,28 +95,27 @@ const getChangedMdxFiles = (): string[] => {
 };
 
 /**
- * Uploads only MDX files that differ from main and exist in the path index.
+ * Uploads all changed MDX files that exist on disk under content/.
+ * This includes both files directly referenced in docs.yml AND sub-files
+ * included via <Markdown src="..." /> which are not in the path index but
+ * still need branch-scoped Redis keys for preview to work correctly.
+ *
  * Files unchanged from main are skipped — previewGet falls back to main: keys.
  *
- * @param pathIndex - The path index to validate against
  * @param branch - Branch identifier for Redis key prefix
  * @param redis - Redis client instance
  */
 export const uploadChangedMdxFiles = async (
-  pathIndex: PathIndex,
   branch: string,
   redis: Redis,
 ): Promise<void> => {
   const changedFiles = getChangedMdxFiles();
 
-  // Only upload files that are in the path index (filters out deleted files)
-  const indexedFiles = new Set(
-    Object.values(pathIndex)
-      .filter((entry) => entry.type === "mdx")
-      .map((entry) => entry.filePath),
-  );
-
-  const toUpload = changedFiles.filter((f) => indexedFiles.has(f));
+  // Upload all changed MDX/MD files under content/ — not just those in the
+  // path index. Sub-files (e.g. client.mdx, api.mdx) are referenced via
+  // <Markdown src="..." /> and need branch-scoped keys so previewGet doesn't
+  // fall back to the stale main: version.
+  const toUpload = changedFiles;
 
   if (toUpload.length === 0) {
     console.info("\n📤 No changed MDX files to upload");
