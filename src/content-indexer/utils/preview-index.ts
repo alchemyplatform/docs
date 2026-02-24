@@ -35,7 +35,7 @@ export const runIndexAndUpload = async (branch: string): Promise<void> => {
 
   const redis = getRedis();
   await Promise.all([
-    uploadChangedMdxFiles(pathIndex, branch, redis),
+    uploadChangedMdxFiles(branch, redis),
     specs && specs.size > 0
       ? uploadSpecs(specs, branch, redis)
       : Promise.resolve(),
