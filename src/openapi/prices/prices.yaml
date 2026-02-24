@@ -368,13 +368,9 @@ components:
       type: object
       description: >
         Response containing historical price data. It will either include `symbol` or both `network` and `address` based on the request.
-      properties:
-        data:
-          oneOf:
-            - $ref: "#/components/schemas/HistoricalPricesBySymbol"
-            - $ref: "#/components/schemas/HistoricalPricesByAddress"
-      required:
-        - data
+      oneOf:
+        - $ref: "#/components/schemas/HistoricalPricesBySymbol"
+        - $ref: "#/components/schemas/HistoricalPricesByAddress"
 
     HistoricalPricesBySymbol:
       type: object
@@ -384,14 +380,20 @@ components:
           description: Token symbol.
           example: "ETH"
           default: "ETH"
-        prices:
+        currency:
+          type: string
+          description: Currency identifier.
+          example: "usd"
+          default: "usd"
+        data:
           type: array
           description: List of historical price data points.
           items:
             $ref: "#/components/schemas/HistoricalPriceItem"
       required:
         - symbol
-        - prices
+        - currency
+        - data
 
     HistoricalPricesByAddress:
       type: object
@@ -406,7 +408,12 @@ components:
           description: Token contract address.
           example: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
           default: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-        prices:
+        currency:
+          type: string
+          description: Currency identifier.
+          example: "usd"
+          default: "usd"
+        data:
           type: array
           description: List of historical price data points.
           items:
@@ -414,7 +421,8 @@ components:
       required:
         - network
         - address
-        - prices
+        - currency
+        - data
 
     HistoricalPriceItem:
       type: object
