@@ -1,4 +1,4 @@
-// Types for parsing Fern's docs.yml structure
+// Types for parsing the docs.yml navigation structure
 
 export interface PageConfig {
   page: string;
