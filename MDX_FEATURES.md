@@ -58,8 +58,8 @@ Tables are automatically wrapped in a scrollable container for responsiveness.
 ### Task Lists
 
 ```md
-* \[x] Completed task
-* \[ ] Incomplete task
+* [x] Completed task
+* [ ] Incomplete task
 ```
 
 ### Autolinks
@@ -113,7 +113,7 @@ Highlight specific lines or ranges by adding line numbers in curly braces after 
 ````md
 ```ts {1,12-13}
 const x = 1;
-// lines 12-13 would be highlighted
+// lines 1 and 12-13 would be highlighted
 ```
 ````
 
