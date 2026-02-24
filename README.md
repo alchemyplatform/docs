@@ -165,6 +165,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Resources
 
+* [MDX Features Reference](MDX_FEATURES.md)
 * [OpenAPI Specification](https://swagger.io/specification/)
 * [OpenRPC Specification](https://spec.open-rpc.org/)
 

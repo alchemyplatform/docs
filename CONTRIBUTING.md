@@ -35,7 +35,7 @@ As a content contributor, you only need to work in **this repo**. The docs site 
 * Written in MDX format
 * Update `content/docs.yml` when adding, removing, or moving pages
 
-<!-- TODO: Link to MDX_FEATURES.md once https://github.com/alchemyplatform/docs/pull/1045 is merged -->
+For available MDX components and syntax, see the [MDX Features Reference](MDX_FEATURES.md).
 
 #### API Documentation
 
