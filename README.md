@@ -1,24 +1,51 @@
 # Alchemy Documentation
 
-This repository contains the documentation for Alchemy's APIs and services. The documentation is built using [Fern](https://buildwithfern.com/), a modern documentation platform.
+This repository contains the content and API specifications for Alchemy's developer documentation. The documentation site is a custom Next.js application hosted in a [separate private repository](https://github.com/OMGWINNING/docs-site), which consumes content from this repo via the GitHub API.
 
-The latest documentation lives on https://alchemy.docs.buildwithfern.com/home
+The production site lives at <https://alchemy.com/docs>
 
 ## Project Structure
 
 ```text
 /
 ├── src/
-│   ├── openapi/     # REST API definitions (OpenAPI)
-│   └── openrpc/     # JSON-RPC API definitions (OpenRPC)
+│   ├── openapi/           # REST API definitions (OpenAPI YAML)
+│   ├── openrpc/           # JSON-RPC API definitions (OpenRPC YAML)
+│   │   ├── alchemy/       # Alchemy-specific APIs
+│   │   └── chains/        # Chain-specific APIs (e.g., ethereum, polygon)
+│   ├── content-indexer/   # Indexer that syncs content to Redis and Algolia
+│   └── utils/             # Shared utilities for spec generation
 └── content/
-    ├── <tab>/       # Written documentation for that tab (MDX)
-    ├── api-specs/   # Dereferenced API Specs generated from definitions (gitignored)
-    └── docs.yml     # Navigation and structure config
+    ├── <tab>/             # Written documentation for each tab (MDX)
+    ├── api-specs/         # Dereferenced API specs generated from src/ (gitignored)
+    └── docs.yml           # Navigation and structure config
 ```
 
 > \[!WARNING]
-> Account Kit documentation is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). See its [README](https://github.com/alchemyplatform/aa-sdk/blob/main/docs/README.md) for contribution guidelines.
+> Account Kit SDK references content is maintained separately in the [aa-sdk repository](https://github.com/alchemyplatform/aa-sdk). Those files are auto-generated using TypeDoc.
+
+## How It Works
+
+This is a **content-only** repository. It does not run the docs site directly. Instead:
+
+1. Content authors write MDX files in `content/` and API specs in `src/`
+2. The [docs-site](https://github.com/OMGWINNING/docs-site) fetches content from this repo
+3. Content fetched from Github and cached in Redis (Upstash)
+4. Navigation structure is defined in `content/docs.yml` and indexed into Redis by the content indexer
+5. On merge to `main`, a GitHub Action triggers revalidation on the live site
+
+### Previewing Changes
+
+This is a content-only repository — there is no local dev server. Instead, users can preview branch changes before merging via the preview link generated on each PR. Alchemy contributors can also preview local content using the following command:
+
+```bash
+pnpm preview
+```
+
+> \[!NOTE]
+> Previewing local content requires environment variables. See `.env.example` for the required variables.
+
+This mode works by indexing your current branch's content in Redis with a branch-scoped prefix, then activating [Next.js draft mode](https://nextjs.org/docs/app/guides/draft-mode) to dynamically render the uploaded content. Since pages are rendered dynamically, page loads are slower compared to production. However, users no longer need to wait for long build times.
 
 ## Consuming Specs
 
@@ -38,6 +65,7 @@ Each individual API spec can be found via a simple URL pattern:
 ### Prerequisites
 
 * [pnpm](https://pnpm.io/)
+* Node.js 22.x (install via [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev/))
 
 ### Installation
 
@@ -54,17 +82,11 @@ Each individual API spec can be found via a simple URL pattern:
    pnpm i
    ```
 
+### Environment Variables
+
+Certain operations (previewing, indexing) require environment variables for Redis and Algolia. See `.env.example` for the required variables.
+
 ## Development
-
-### Local Development
-
-Start the development server:
-
-```bash
-pnpm dev
-```
-
-This will start a local server with live reloading. Visit `http://localhost:3020` to view the documentation.
 
 ### Building API Specs
 
@@ -75,6 +97,12 @@ pnpm run generate
 ```
 
 This will generate all specs as dereferenced json files in the `content/api-specs` directory.
+
+To watch for changes during development:
+
+```bash
+pnpm run generate:watch
+```
 
 ### Validation
 
@@ -95,12 +123,21 @@ pnpm run validate
 
 The project uses several linting tools to ensure code quality and consistency:
 
-* **ESLint**: For JavaScript and TypeScript code linting
+* **ESLint**: For JavaScript, TypeScript, and MDX code linting
 * **Prettier**: For code formatting
 * **Remark**: For Markdown/MDX linting
 * **TypeScript**: For type checking
 
-You can find the appropriate commands for running each in `package.json`
+```bash
+# Run all linters
+pnpm run lint
+
+# Auto-fix issues
+pnpm run lint:fix
+
+# Check for broken links
+pnpm run lint:broken-links
+```
 
 #### Enforcement
 
@@ -128,7 +165,6 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Resources
 
-* [Fern Documentation](https://buildwithfern.com/learn)
 * [OpenAPI Specification](https://swagger.io/specification/)
 * [OpenRPC Specification](https://spec.open-rpc.org/)
 
