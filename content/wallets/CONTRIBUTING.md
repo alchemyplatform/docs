@@ -223,7 +223,8 @@ Ensure you are using aa-sdk version 3.x or later...
 
 **Highlighting**:
 
-* Use [Fern highlighting](https://buildwithfern.com/learn/docs/writing-content/components/code-blocks) to focus on critical parts
+* Use code highlighting to focus on critical parts
+  * Designate highlighted lines using brackets, ex: {4,10-13}
 * Use snippets for common configuration to avoid duplication
 
 ***
