@@ -40,10 +40,7 @@ export const useSmartEmbeddedWallet = ({
   const [client, setClient] = useState<SmartWalletClient>();
 
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
-    if (!apiKey) {
-      throw new Error("Missing NEXT_PUBLIC_ALCHEMY_API_KEY");
-    }
+    const apiKey = "YOUR_API_KEY";
     (async () => {
       const provider = await embeddedWallet.getEthereumProvider();
 
@@ -80,9 +77,7 @@ export const useSmartEmbeddedWallet = ({
           apiKey,
         }),
         signer: walletClient,
-        paymaster: process.env.NEXT_PUBLIC_ALCHEMY_POLICY_ID
-          ? { policyId: process.env.NEXT_PUBLIC_ALCHEMY_POLICY_ID }
-          : undefined,
+        paymaster: { policyId: "YOUR_POLICY_ID" },
       });
 
       setClient(client);

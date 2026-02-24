@@ -10,8 +10,9 @@ Any signer that provides a viem `LocalAccount` or `WalletClient` works with `cre
 
 Your signer must implement:
 
-| Method | Required | Purpose |
+| Property | Required | Purpose |
 |---|---|---|
+| `address` | Yes | The signer's Ethereum address |
 | `signMessage` | Yes | Signs plaintext and raw messages (EIP-191) |
 | `signTypedData` | Yes | Signs structured data (EIP-712) |
 | `signAuthorization` | Yes (for EIP-7702) | Signs the EIP-7702 delegation authorization |
@@ -39,7 +40,8 @@ const account = toAccount({
   },
 
   async signTransaction(transaction) {
-    // delegate to your signer
+    // unused by the Smart Wallet client
+    throw new Error("signTransaction is not implemented");
   },
 
   async signAuthorization(unsignedAuth) {
@@ -95,7 +97,7 @@ const client = createSmartWalletClient({
 ```
 
 <Note>
-  EIP-7702 authorization signing requires a `LocalAccount` with `signAuthorization` implemented. If your wallet doesn't support this, use a `LocalAccount` (Option 1) or [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) instead.
+  EIP-7702 authorization signing requires a `LocalAccount` with `signAuthorization` implemented. If your wallet doesn't support this, you may need to use [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) instead.
 </Note>
 
 ## Sending transactions

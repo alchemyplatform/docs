@@ -11,12 +11,6 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions, 
 * 99.9% SLAs
 * Trusted by Worldcoin, JP Morgan, Gensyn, and more
 
-<Tip>
-  Don't have social login or a wallet set up yet? Start with the
-  <a href="/wallets/quickstart">Smart Wallet Quickstart</a> to create one in
-  minutes.
-</Tip>
-
 <Tabs>
   <Tab title="React" language="react">
     ## Setup
@@ -27,19 +21,19 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions, 
 
     <CodeGroup>
     ```shell npm
-    npm install @alchemy/wallet-apis@0.0.0-alpha.21 @privy-io/react-auth viem
+    npm install @alchemy/wallet-apis@0.0.0-alpha.19 @privy-io/react-auth viem
     ```
 
     ```shell bun
-    bun add @alchemy/wallet-apis@0.0.0-alpha.21 @privy-io/react-auth viem
+    bun add @alchemy/wallet-apis@0.0.0-alpha.19 @privy-io/react-auth viem
     ```
 
     ```shell yarn
-    yarn add @alchemy/wallet-apis@0.0.0-alpha.21 @privy-io/react-auth viem
+    yarn add @alchemy/wallet-apis@0.0.0-alpha.19 @privy-io/react-auth viem
     ```
 
     ```shell pnpm
-    pnpm add @alchemy/wallet-apis@0.0.0-alpha.21 @privy-io/react-auth viem
+    pnpm add @alchemy/wallet-apis@0.0.0-alpha.19 @privy-io/react-auth viem
     ```
     </CodeGroup>
 
@@ -109,33 +103,7 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions, 
     };
     ```
 
-    ### 3. Handle login
-
-    Use `usePrivy` to manage authentication state and conditionally render your wallet UI once the user is logged in:
-
-    ```tsx
-    import { usePrivy } from "@privy-io/react-auth";
-
-    function PrivyWallet() {
-      const { ready, authenticated, login, logout } = usePrivy();
-      const signer = usePrivySigner();
-
-      if (!ready) return <p>Loading...</p>;
-
-      if (!authenticated) {
-        return <button onClick={() => login()}>Login with Privy</button>;
-      }
-
-      return (
-        <div>
-          <button onClick={() => logout()}>Logout</button>
-          {signer ? <SendTransaction signer={signer} /> : <p>Loading signer...</p>}
-        </div>
-      );
-    }
-    ```
-
-    ### 4. Create the client and send a transaction
+    ### 3. Create the client and send a transaction
 
     Pass the Privy signer to `createSmartWalletClient` and use it to send transactions:
 
@@ -167,7 +135,7 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions, 
           calls: [{ to: zeroAddress, value: BigInt(0), data: "0x" }],
         });
 
-        // Wait for the transaction to be confirmed
+        // Check the transaction status
         const result = await client.waitForCallsStatus({ id });
         console.log(`Transaction hash: ${result.receipts?.[0]?.transactionHash}`);
       }, [client]);
@@ -191,19 +159,19 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions, 
 
     <CodeGroup>
     ```shell npm
-    npm install @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.21 viem
+    npm install @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.19 viem
     ```
 
     ```shell bun
-    bun add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.21 viem
+    bun add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.19 viem
     ```
 
     ```shell yarn
-    yarn add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.21 viem
+    yarn add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.19 viem
     ```
 
     ```shell pnpm
-    pnpm add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.21 viem
+    pnpm add @privy-io/node @alchemy/wallet-apis@0.0.0-alpha.19 viem
     ```
     </CodeGroup>
 
@@ -267,7 +235,7 @@ Upgrade existing Privy wallets to Smart Wallets to enable gasless transactions, 
       ],
     });
 
-    // Wait for the transaction to be confirmed
+    // Check the transaction status
     const result = await client.waitForCallsStatus({ id });
     console.log(`Transaction hash: ${result.receipts?.[0]?.transactionHash}`);
     ```

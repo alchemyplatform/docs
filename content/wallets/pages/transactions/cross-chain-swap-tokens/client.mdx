@@ -74,7 +74,6 @@ You'll need the following env variables:
   ```
 
   ```ts title="client.ts"
-  import "dotenv/config";
   import type { Hex } from "viem";
   import { privateKeyToAccount } from "viem/accounts";
   import { base } from "viem/chains";
@@ -82,11 +81,11 @@ You'll need the following env variables:
 
   export const client = createSmartWalletClient({
     transport: alchemyWalletTransport({
-      apiKey: process.env.ALCHEMY_API_KEY!,
+      apiKey: "YOUR_API_KEY",
     }),
     chain: base,
-    signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
-    paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! }, // Optional: If you're using a gas manager policy
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
+    paymaster: { policyId: "YOUR_POLICY_ID" }, // Optional: If you're using a gas manager policy
   });
 ```
 </CodeBlocks>

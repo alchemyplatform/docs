@@ -7,7 +7,7 @@ slug: wallets/smart-wallet-quickstart/sdk
 
 {/* TODO(jh): Replace repo link once published somewhere proper */}
 <Note>
-  [`@alchemy/wallet-apis`](https://github.com/alchemyplatform/aa-sdk/tree/moldy/v5-base/packages/wallet-apis) (v5) is the recommended SDK and is currently in beta. If you're still on v4, see the [migration guide](/wallets/resources/migration-v5).
+  [`@alchemy/wallet-apis`](https://github.com/alchemyplatform/aa-sdk/tree/moldy/v5-base/packages/wallet-apis) (v5.x.x) is the recommended SDK and is currently in beta. If you're still on v4.x.x, see the [migration guide](/wallets/resources/migration-v5).
 </Note>
 
 Prefer raw JSON-RPC calls? See the [API quickstart](/wallets/smart-wallet-quickstart/api).
@@ -44,16 +44,14 @@ import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet
 import { arbitrumSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 
-const signer = privateKeyToAccount(PRIVATE_KEY); // we use a private key signer as an example here
-
 const client = createSmartWalletClient({
   transport: alchemyWalletTransport({
-    apiKey: ALCHEMY_API_KEY,
+    apiKey: "YOUR_API_KEY",
   }),
   chain: arbitrumSepolia,
-  signer,
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
   paymaster: {
-    policyId: GAS_MANAGER_POLICY_ID,
+    policyId: "YOUR_POLICY_ID",
   },
 });
 ```
@@ -70,7 +68,7 @@ const { id } = await client.sendCalls({
 });
 ```
 
-### 4. Check the transaction status
+### 4. Wait for the transaction to be confirmed
 
 ```ts
 const status = await client.waitForCallsStatus({ id });
@@ -78,7 +76,7 @@ const txHash = status.receipts?.[0]?.transactionHash;
 console.log(`Explorer: https://sepolia.arbiscan.io/tx/${txHash}`);
 ```
 
-<Markdown src="../../../shared/v4-accordion-with-paymaster.mdx" />
+<Markdown src="../../../shared/v4-accordion.mdx" />
 
 ### Next steps
 

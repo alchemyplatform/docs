@@ -14,7 +14,7 @@ import { client } from "./client";
 
 // Sign a raw hex message
 const message = {
-  raw: "0x48656c6c6f2c20776f726c6421" as `0x${string}`, // "Hello, world!" in hex
+  raw: "0x48656c6c6f2c20776f726c6421" as const, // "Hello, world!" in hex
 };
 const signature = await client.signMessage({ message });
 
@@ -36,7 +36,6 @@ console.log("Valid:", isValid); // true
 ```
 
 ```ts title="client.ts"
-import "dotenv/config";
 import type { Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrumSepolia } from "viem/chains";
@@ -44,10 +43,10 @@ import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet
 
 export const client = createSmartWalletClient({
   transport: alchemyWalletTransport({
-    apiKey: process.env.ALCHEMY_API_KEY!,
+    apiKey: "YOUR_API_KEY",
   }),
   chain: arbitrumSepolia,
-  signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
 });
 ```
 

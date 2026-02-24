@@ -1,26 +1,29 @@
-<Accordion title="Using @account-kit/wallet-client (v4)?">
-The examples on this page use `@alchemy/wallet-apis` (v5). If you're using `@account-kit/wallet-client` (v4), the client setup looks like this:
+<Accordion title="Using @account-kit/wallet-client (v4.x.x)?">
+The examples on this page use `@alchemy/wallet-apis` (v5.x.x). If you're using `@account-kit/wallet-client` (v4.x.x), the client setup looks like this:
 
-```ts title="client.ts (v4)"
-import "dotenv/config";
-import type { Hex } from "viem";
+```ts title="client.ts (v4.x.x)"
 import { LocalAccountSigner } from "@aa-sdk/core";
 import { createSmartWalletClient } from "@account-kit/wallet-client";
 import { alchemy, sepolia } from "@account-kit/infra";
 
-const signer = LocalAccountSigner.privateKeyToAccountSigner(process.env.PRIVATE_KEY! as Hex);
+const signer = LocalAccountSigner.privateKeyToAccountSigner("0xYOUR_PRIVATE_KEY" as const);
 
 export const client = createSmartWalletClient({
-  transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
+  transport: alchemy({ apiKey: "YOUR_API_KEY" }),
   chain: sepolia,
   signer,
-  account: signer.address, // required in v4 — use the signer address for EIP-7702
+  account: signer.address, // can also be passed per action as `from` or `account`
+  // Optional: sponsor gas for your users (see "Sponsor gas" guide)
+  policyId: "YOUR_POLICY_ID", 
 });
 ```
 
-Other v4 differences:
-* **Values** use hex strings: `value: "0x0"` instead of `value: BigInt(0)`
-* **Paymaster capability** is called `paymasterService` instead of `paymaster`
+Key v4.x.x differences:
+* **Account address** must be specified on the client or per action (`from` or `account`). In v5.x.x, the client automatically uses the signer's address as the account address via [EIP-7702](/wallets/transactions/using-eip-7702).
+* **Chain imports** come directly from `@account-kit/infra` instead of `viem/chains`.
+* **Numeric values** use hex strings: `value: "0x0"` instead of `value: BigInt(0)`.
+* In v4.x.x, the **paymaster capability** on `prepareCalls` or `sendCalls` is called `paymasterService` instead of `paymaster`, or you can set the `policyId` directly on the client.
+* **Signers** use `LocalAccountSigner` / `WalletClientSigner` from `@aa-sdk/core`. In v5.x.x, a viem `LocalAccount` or `WalletClient` is used directly.
 
 See the [full migration guide](/wallets/resources/migration-v5) for a complete cheat sheet.
 </Accordion>

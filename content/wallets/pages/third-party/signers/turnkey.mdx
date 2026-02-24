@@ -131,7 +131,33 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
     };
     ```
 
-    ### 3. Create the client and send a transaction
+    ### 3. Handle login
+
+    Use `useTurnkey` to manage authentication state and conditionally render your wallet UI once the user is logged in:
+
+    ```tsx
+    import { useTurnkey, ClientState, AuthState } from "@turnkey/react-wallet-kit";
+
+    function TurnkeyWallet() {
+      const { clientState, authState, handleLogin, logout } = useTurnkey();
+      const signer = useTurnkeySigner();
+
+      if (clientState !== ClientState.Ready) return <p>Loading...</p>;
+
+      if (authState !== AuthState.Authenticated) {
+        return <button onClick={() => handleLogin()}>Login with Turnkey</button>;
+      }
+
+      return (
+        <div>
+          <button onClick={() => logout()}>Logout</button>
+          {signer ? <SendTransaction signer={signer} /> : <p>Loading signer...</p>}
+        </div>
+      );
+    }
+    ```
+
+    ### 4. Create the client and send a transaction
 
     Pass the Turnkey signer to `createSmartWalletClient` and use it to send transactions:
 
@@ -163,7 +189,7 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
           calls: [{ to: zeroAddress, value: BigInt(0), data: "0x" }],
         });
 
-        // Check the transaction status
+        // Wait for the transaction to be confirmed
         const result = await client.waitForCallsStatus({ id });
         console.log(`Transaction hash: ${result.receipts?.[0]?.transactionHash}`);
       }, [client]);
@@ -288,7 +314,7 @@ Upgrade existing Turnkey wallets to Smart Wallets to enable gasless transactions
       ],
     });
 
-    // Check the transaction status
+    // Wait for the transaction to be confirmed
     const result = await client.waitForCallsStatus({ id });
     console.log(`Transaction hash: ${result.receipts?.[0]?.transactionHash}`);
     ```

@@ -19,9 +19,9 @@ You can send transactions using the smart wallet client `sendCalls` action.
     ],
   });
 
-  console.log({ id });
+  console.log({ id }); // the Call ID
 
-  // Check the transaction status
+  // Wait for the transaction to be confirmed
   const result = await client.waitForCallsStatus({ id });
 
   console.log(result);
@@ -35,12 +35,12 @@ You can send transactions using the smart wallet client `sendCalls` action.
 
   export const client = createSmartWalletClient({
     transport: alchemyWalletTransport({
-      apiKey: process.env.ALCHEMY_API_KEY!,
+      apiKey: "YOUR_API_KEY",
     }),
     chain: arbitrumSepolia,
-    signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
     // Optional: sponsor gas for your users (see "Sponsor gas" guide)
-    // paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
+    // paymaster: { policyId: "YOUR_POLICY_ID" },
   });
   ```
 </CodeBlocks>

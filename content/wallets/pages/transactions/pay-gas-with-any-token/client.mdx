@@ -35,23 +35,22 @@ const { id } = await client.sendCalls({
 ```
 
 ```ts title="client.ts"
-import "dotenv/config";
 import type { Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { sepolia } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 export const config = {
-  policyId: process.env.ALCHEMY_POLICY_ID!,
-  gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // USDC on sepolia
+  policyId: "YOUR_POLICY_ID",
+  gasToken: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d", // USDC on Arbitrum Sepolia
 } as const;
 
 export const client = createSmartWalletClient({
   transport: alchemyWalletTransport({
-    apiKey: process.env.ALCHEMY_API_KEY!,
+    apiKey: "YOUR_API_KEY",
   }),
-  chain: sepolia,
-  signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+  chain: arbitrumSepolia,
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
 });
 ```
 
@@ -91,25 +90,24 @@ export const client = createSmartWalletClient({
   ```
 
   ```ts title="client.ts"
-  import "dotenv/config";
   import type { Address, Hex } from "viem";
   import { privateKeyToAccount } from "viem/accounts";
-  import { sepolia } from "viem/chains";
+  import { arbitrumSepolia } from "viem/chains";
   import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
   export const config = {
-    policyId: process.env.ALCHEMY_POLICY_ID!,
-    gasToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as Address, // USDC on sepolia
+    policyId: "YOUR_POLICY_ID",
+    gasToken: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d" as const, // USDC on Arbitrum Sepolia
     approveBelow: BigInt(1_000_000), // 1 USDC
     approveAmount: BigInt(10_000_000), // 10 USDC
   };
 
   export const client = createSmartWalletClient({
     transport: alchemyWalletTransport({
-      apiKey: process.env.ALCHEMY_API_KEY!,
+      apiKey: "YOUR_API_KEY",
     }),
-    chain: sepolia,
-    signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+    chain: arbitrumSepolia,
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
   });
   ```
 

@@ -36,22 +36,21 @@ try {
 ```
 
 ```ts title="client.ts"
-import "dotenv/config";
 import type { Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrumSepolia } from "viem/chains";
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 export const config = {
-  policyId: process.env.ALCHEMY_POLICY_ID!,
+  policyId: "YOUR_POLICY_ID",
 };
 
 export const client = createSmartWalletClient({
   transport: alchemyWalletTransport({
-    apiKey: process.env.ALCHEMY_API_KEY!,
+    apiKey: "YOUR_API_KEY",
   }),
   chain: arbitrumSepolia,
-  signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
 });
 ```
 

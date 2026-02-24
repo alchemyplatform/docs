@@ -39,14 +39,13 @@ You can batch transactions using either the smart wallet client `sendCalls` or `
     ],
   });
 
-  // Check the transaction status
+  // Wait for the transaction to be confirmed
   const result = await client.waitForCallsStatus({ id });
 
   console.log(result);
   ```
 
   ```ts title="client.ts"
-  import "dotenv/config";
   import type { Hex } from "viem";
   import { arbitrumSepolia } from "viem/chains";
   import { privateKeyToAccount } from "viem/accounts";
@@ -54,12 +53,12 @@ You can batch transactions using either the smart wallet client `sendCalls` or `
 
   export const client = createSmartWalletClient({
     transport: alchemyWalletTransport({
-      apiKey: process.env.ALCHEMY_API_KEY!,
+      apiKey: "YOUR_API_KEY",
     }),
     chain: arbitrumSepolia,
-    signer: privateKeyToAccount(process.env.PRIVATE_KEY! as Hex),
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
     // Optional: sponsor gas for your users (see "Sponsor gas" guide)
-    // paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
+    // paymaster: { policyId: "YOUR_POLICY_ID" },
   });
   ```
 
