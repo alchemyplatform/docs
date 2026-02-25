@@ -77,6 +77,7 @@ const tslintConfigs = tseslint.config({
 
 const mdxConfig: ConfigWithExtends = {
   name: "MDX Eslint Config",
+  ignores: ["broken-links.md"],
   ...mdx.flat,
   processor: mdx.createRemarkProcessor({
     lintCodeBlocks: true,
