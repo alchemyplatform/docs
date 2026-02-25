@@ -92,7 +92,20 @@ jobs:
                 echo "::warning::Batch $BATCH_NUM: HTTP 200 but success=false"
                 jq -r '(.errors // [])[]?' response.json
                 jq -r '[(.revalidated // [])[]? | select(.error) | .error] | .[]?' response.json
-                FAILED=$((FAILED + CHUNK_SIZE))
+                ITEM_COUNT=$(jq -r '(.revalidated // []) | length' response.json)
+
+                if [ "$ITEM_COUNT" -gt 0 ]; then
+                  if [ "$ITEM_COUNT" -gt "$CHUNK_SIZE" ]; then
+                    ITEM_COUNT=$CHUNK_SIZE
+                  fi
+                  ERRORS=$(jq -r '[(.revalidated // [])[]? | select(.error)] | length' response.json)
+                  ITEM_SUCCEEDED=$((ITEM_COUNT - ERRORS))
+                  UNREPORTED=$((CHUNK_SIZE - ITEM_COUNT))
+                  SUCCEEDED=$((SUCCEEDED + ITEM_SUCCEEDED))
+                  FAILED=$((FAILED + ERRORS + UNREPORTED))
+                else
+                  FAILED=$((FAILED + CHUNK_SIZE))
+                fi
               fi
             else
               echo "::error::Batch $BATCH_NUM: HTTP $HTTP_CODE"
