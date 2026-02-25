@@ -85,15 +85,14 @@ jobs:
             if [ "$HTTP_CODE" = "200" ]; then
               SUCCESS=$(jq -r '.success' response.json)
               if [ "$SUCCESS" = "true" ]; then
-                COUNT=$(jq -r '.revalidated | length' response.json)
+                COUNT=$(jq -r '(.revalidated // []) | length' response.json)
                 echo "✅ Batch $BATCH_NUM: $COUNT paths revalidated"
                 SUCCEEDED=$((SUCCEEDED + COUNT))
               else
                 echo "::warning::Batch $BATCH_NUM: HTTP 200 but success=false"
-                jq -r '.errors[]?' response.json
-                ERRORS=$(jq -r '[.revalidated[] | select(.error)] | length' response.json)
-                SUCCEEDED=$((SUCCEEDED + CHUNK_SIZE - ERRORS))
-                FAILED=$((FAILED + ERRORS))
+                jq -r '(.errors // [])[]?' response.json
+                jq -r '[(.revalidated // [])[]? | select(.error) | .error] | .[]?' response.json
+                FAILED=$((FAILED + CHUNK_SIZE))
               fi
             else
               echo "::error::Batch $BATCH_NUM: HTTP $HTTP_CODE"
