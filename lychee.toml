@@ -6,6 +6,11 @@ format = "markdown"
 # Timeout in seconds for each request
 timeout = 10
 
+# Exclude files/paths from being scanned
+exclude_path = [
+    "(?i).*/README\\.md$",
+]
+
 # Exclude links with these patterns
 exclude = [
     "(?i).*\\.png$",                # All PNG files (case insensitive) - relative asset paths won't work
@@ -21,4 +26,9 @@ exclude = [
 include = [
     "(?i).*cloudinary\\.com.*\\.png$",    # PNG files from Cloudinary (case insensitive)
     "(?i).*cloudinary\\.com.*\\.jpe?g$",  # JPEG/JPG files from Cloudinary (case insensitive)
+]
+
+# Normalize internal docs links so both `/foo` and `/docs/foo` resolve the same
+remap = [
+    "^https://www\\.alchemy\\.com/((?:[^d].*|d(?:$|[^o].*)|do(?:$|[^c].*)|doc(?:$|[^s].*)))$ https://www.alchemy.com/docs/$1",
 ]
