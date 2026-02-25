@@ -71,7 +71,7 @@ If this new terminology feels overwhelming, don't worry. We can simplify the mai
 
 When shifting from developing traditional web3 applications to building under the Account Abstraction paradigm, developers need to understand two key aspects. Firstly, they need to understand the concept of account creation. Within the context of Account Abstraction, "account creation" doesn't actually refer to the creation of the SCA. Rather, it's about calculating the SCA's address. The actual deployment of the SCA only occurs when the user sends their first userOp to a bundler.
 
-Secondly, the approach to sending transactions to the network changes under Account Abstraction. Instead of sending a transaction from an EOA, the user's wallet constructs a userOp that is then sent to a bundler. Just as in traditional Ethereum programming, there are numerous ways to accomplish this, ranging from manual, low-level coding where you personally create the userOp, fill in all the fields, and then sign it, to more convenient methods utilizing third-party tools like [Alchemy's AA SDK](/reference/account-abstraction-sdk).
+Secondly, the approach to sending transactions to the network changes under Account Abstraction. Instead of sending a transaction from an EOA, the user's wallet constructs a userOp that is then sent to a bundler. Just as in traditional Ethereum programming, there are numerous ways to accomplish this, ranging from manual, low-level coding where you personally create the userOp, fill in all the fields, and then sign it, to more convenient methods utilizing third-party tools like [Alchemy's AA SDK](/docs/reference/account-abstraction-sdk).
 
 ## Understanding the Structure of a UserOp
 
@@ -97,13 +97,13 @@ In order to achieve this, the standard proposes a factory contract equipped with
 
 The factory contract address, the function that creates the SCA (usually called \*\*`createAccount`), and its parameters are all contained within the **initCode** field. The parameters are the owner account address and a salt, all encoded in the form of a calldata field.
 
-Fortunately, you won't have to concern yourself with this account-creation process, as libraries and SDKs like [Alchemy's AA SDK](/reference/account-abstraction-sdk) simplify it for you. By the way, if terms like "salt" and "factory" are new to you, just check out this great tutorial: [/docs/create2-an-alternative-to-deriving-contract-addresses](/docs/create2-an-alternative-to-deriving-contract-addresses).
+Fortunately, you won't have to concern yourself with this account-creation process, as libraries and SDKs like [Alchemy's AA SDK](/docs/reference/account-abstraction-sdk) simplify it for you. By the way, if terms like "salt" and "factory" are new to you, just check out this great tutorial: [/docs/create2-an-alternative-to-deriving-contract-addresses](/docs/create2-an-alternative-to-deriving-contract-addresses).
 
 **callData**
 
 While the **callData** field also exists in traditional transactions, its function within Account Abstraction differs. Here, **callData** refers to the code the SCA will execute. The specific function inside the SCA that this field calls is determined by the intended use of the SCA, and can therefore vary.
 
-In the case of [Alchemy's AA SDK](/reference/account-abstraction-sdk), it offers a `UserOperation` method that triggers an `execute` function within an example SCA. This function accepts three parameters:
+In the case of [Alchemy's AA SDK](/docs/reference/account-abstraction-sdk), it offers a `UserOperation` method that triggers an `execute` function within an example SCA. This function accepts three parameters:
 
 1. The target smart contract's address to which the transaction is sent
 2. The value (in wei) sent with the transaction
@@ -116,7 +116,7 @@ Alchemy offers a wide range of learning resources to make it easy for any develo
 The main products offered by Alchemy for Account Abstraction are its SDK and API endpoints:
 
 * **Account Abstraction SDK:** Enables creation of and interaction with ERC-4337 compliant SCAs by simplifying the use of account abstraction primitives, such as entry points, paymasters and bundlers.
-* **Bundler API Endpoint**: Enables developers to submit userOps to the Bundler. For more information about the Bundler API see [our docs](/reference/bundler-api-endpoints).
+* **Bundler API Endpoint**: Enables developers to submit userOps to the Bundler. For more information about the Bundler API see [our docs](/docs/reference/bundler-api-endpoints).
 * **Gas Manager Admin API Endpoint**: Enables developers to programmatically create, update and manage gas manager policies for their app.
 * **Gas Manager Coverage API Endpoint:** Allows for sponsoring user operations on behalf of users, and abstracting away the concept of "gas" from them.
 
@@ -128,7 +128,7 @@ Alchemy's AA SDK provides a ready-to-use solution, with ERC-4337-compliant imple
 
 1. **userOp Signing**: While the ERC-4337 standard doesn't specify how the signing of a userOp should be implemented, it leaves it up to the developer to decide how to do it. While beneficial for innovation, this flexibility can pose challenges for developers who are new to the standard. With the AA SDK, you don't even need to worry about signing the userOp before sending it. The SDK takes care of this for you using the conventional private-key method. Moreover, if a different signing method is ever needed, the SDK enables you to easily do this customization.
 2. **Gas management**: Many of a userOp's fields are related to gas: callGasLimit, verificationGasLimit, preVerificationGas, maxFeePerGas and maxPriorityFeePerGas. If you were to manually craft your own userOps, you'd have to deal with all these fields and work out the appropriate values for each one so that the userOp is handled correctly. The AA SDK takes care of this under the hood, saving you the trouble.
-3. **Bundler functionality**: Technically, you could send your userOps directly to the Entry Point, but this would be similar to operating a node and sending your transactions directly to it. While doable, it's not as convenient as using a third-party infrastructure, like [Alchemy's AA Bundler Infrastructure](/reference/bundler-api-quickstart) and [AA SDK](/reference/account-abstraction-sdk).
+3. **Bundler functionality**: Technically, you could send your userOps directly to the Entry Point, but this would be similar to operating a node and sending your transactions directly to it. While doable, it's not as convenient as using a third-party infrastructure, like [Alchemy's AA Bundler Infrastructure](/docs/reference/bundler-api-quickstart) and [AA SDK](/docs/reference/account-abstraction-sdk).
 
 ## Potential Drawbacks for Account Abstraction
 
