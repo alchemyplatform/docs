@@ -1,7 +1,7 @@
 // Typescript not supported in actions/github-script@v7
 // https://github.com/actions/github-script/issues/294
 const commentMarker = "<!-- docs-link-check-comment -->";
-const commentTitle = "🔗 Link Check";
+const commentTitle = "🔍 Link Check";
 
 const formatSummaryTable = (stats) => {
   const rows = [

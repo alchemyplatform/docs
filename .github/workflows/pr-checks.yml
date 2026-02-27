@@ -162,6 +162,19 @@ jobs:
             const fs = require("fs");
             const workspace = process.env.GITHUB_WORKSPACE;
             const { updateLinkCheckComment } = await import(`${workspace}/scripts/link-check-comment.js`);
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+
+            const jobs = await github.paginate(
+              github.rest.actions.listJobsForWorkflowRun,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: Number(process.env.GITHUB_RUN_ID),
+                per_page: 100,
+              },
+            );
+            const currentJob = jobs.find((job) => job.name === "Link Check");
+            const jobUrl = currentJob?.html_url ?? runUrl;
 
             const hasContentChanges = '${{ steps.changed-files.outputs.has-content-changes }}' === 'true';
             const lycheeStatus = '${{ steps.lychee.outcome }}' || 'skipped';
@@ -176,5 +189,5 @@ jobs:
               hasContentChanges,
               lycheeStatus,
               reportJsonContent,
-              runUrl: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+              runUrl: jobUrl,
             });
