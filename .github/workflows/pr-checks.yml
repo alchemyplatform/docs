@@ -68,6 +68,8 @@ jobs:
   link-check:
     name: Link Check
     runs-on: ubuntu-latest
+    # generate-preview uploads branch-scoped preview content to Redis.
+    # If link-check runs before that upload completes, it can validate against stale/main data.
     needs: generate-preview
     permissions:
       contents: read
@@ -132,7 +134,7 @@ jobs:
         if: steps.changed-files.outputs.has-content-changes == 'true'
         uses: lycheeverse/lychee-action@v2
         with:
-          args: "--no-progress --cookie-jar ./.artifacts/lychee-cookies.json \"${{ steps.preview_url.outputs.preview_url }}\""
+          args: '--no-progress --cookie-jar ./.artifacts/lychee-cookies.json "${{ steps.preview_url.outputs.preview_url }}"'
           fail: true
 
       - name: Link Checker
@@ -140,7 +142,7 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: "--config ./lychee.toml --base-url \"${{ secrets.DOCS_SITE_URL }}\" --no-progress --cookie-jar ./.artifacts/lychee-cookies.json ./content"
+          args: '--config ./lychee.toml --base-url "${{ secrets.DOCS_SITE_URL }}" --no-progress --cookie-jar ./.artifacts/lychee-cookies.json ./content'
           fail: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
