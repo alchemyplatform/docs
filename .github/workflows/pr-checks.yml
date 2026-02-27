@@ -47,7 +47,7 @@ jobs:
     name: Generate Preview
     runs-on: ubuntu-latest
     outputs:
-      preview-url: ${{ steps.generate-preview.outputs.preview-url }}
+      preview_url: ${{ steps.generate_preview.outputs.preview_url }}
     permissions:
       contents: read
       pull-requests: write
@@ -57,7 +57,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Generate Preview
-        id: generate-preview
+        id: generate_preview
         uses: ./.github/actions/generate-preview
         with:
           github-token: ${{ github.token }}
@@ -110,7 +110,7 @@ jobs:
         if: steps.changed-files.outputs.has-content-changes == 'true'
         shell: bash
         env:
-          PREVIEW_URL: ${{ needs.generate-preview.outputs.preview-url }}
+          PREVIEW_URL: ${{ needs['generate-preview'].outputs.preview_url }}
         run: |
           set -euo pipefail
 
