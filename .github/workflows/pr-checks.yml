@@ -46,8 +46,6 @@ jobs:
   generate-preview:
     name: Generate Preview
     runs-on: ubuntu-latest
-    outputs:
-      preview_url: ${{ steps.generate_preview.outputs.preview_url }}
     permissions:
       contents: read
       pull-requests: write
@@ -57,7 +55,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: Generate Preview
-        id: generate_preview
         uses: ./.github/actions/generate-preview
         with:
           github-token: ${{ github.token }}
@@ -110,14 +107,18 @@ jobs:
         if: steps.changed-files.outputs.has-content-changes == 'true'
         shell: bash
         env:
-          PREVIEW_URL: ${{ needs['generate-preview'].outputs.preview_url }}
+          DOCS_SITE_URL: ${{ secrets.DOCS_SITE_URL }}
+          DOCS_SITE_API_KEY: ${{ secrets.DOCS_SITE_API_KEY }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
 
-          if [ -z "${PREVIEW_URL:-}" ]; then
-            echo "::error::Missing preview URL from generate-preview job output"
+          if [ -z "${DOCS_SITE_URL:-}" ] || [ -z "${DOCS_SITE_API_KEY:-}" ] || [ -z "${BRANCH:-}" ]; then
+            echo "::error::Missing DOCS_SITE_URL, DOCS_SITE_API_KEY, or BRANCH"
             exit 1
           fi
+
+          PREVIEW_URL=$(node -e 'const crypto=require("crypto"); const base=process.env.DOCS_SITE_URL; const branch=process.env.BRANCH; const secret=process.env.DOCS_SITE_API_KEY; const sig=crypto.createHmac("sha256", secret).update(branch).digest("hex"); process.stdout.write(`${base}/api/preview/start?branch=${encodeURIComponent(branch)}&sig=${sig}`);')
 
           curl --silent --show-error --fail --location \
             --cookie-jar .lychee-cookies \
