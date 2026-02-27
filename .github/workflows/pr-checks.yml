@@ -73,6 +73,7 @@ jobs:
     needs: generate-preview
     permissions:
       contents: read
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -145,7 +146,33 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: '--config ./lychee.toml --base-url "${{ secrets.DOCS_SITE_URL }}" --no-progress --cookie-jar ./.artifacts/lychee-cookies.json ./content'
+          args: '--config ./lychee.toml --base-url "${{ secrets.DOCS_SITE_URL }}" --no-progress --format json --output ./broken-links.json --cookie-jar ./.artifacts/lychee-cookies.json ./content'
           fail: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Post link check comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const fs = require("fs");
+            const workspace = process.env.GITHUB_WORKSPACE;
+            const { updateLinkCheckComment } = await import(`${workspace}/scripts/link-check-comment.js`);
+
+            const hasContentChanges = '${{ steps.changed-files.outputs.has-content-changes }}' === 'true';
+            const lycheeStatus = '${{ steps.lychee.outcome }}' || 'skipped';
+            const reportPath = `${workspace}/broken-links.json`;
+            const reportJsonContent = fs.existsSync(reportPath)
+              ? fs.readFileSync(reportPath, "utf8")
+              : "";
+
+            await updateLinkCheckComment({
+              github,
+              context,
+              hasContentChanges,
+              lycheeStatus,
+              reportJsonContent,
+              runUrl: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+            });
