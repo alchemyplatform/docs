@@ -55,6 +55,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Generate Preview
+        id: generate-preview
         uses: ./.github/actions/generate-preview
         with:
           github-token: ${{ github.token }}
@@ -63,6 +64,19 @@ jobs:
           kv-rest-api-token: ${{ secrets.KV_REST_API_TOKEN }}
           docs-site-url: ${{ secrets.DOCS_SITE_URL }}
           docs-site-api-key: ${{ secrets.DOCS_SITE_API_KEY }}
+
+      - name: Bootstrap preview cookies for Lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: "--no-progress --cookie-jar ./.artifacts/lychee-cookies.json \"${{ steps.generate-preview.outputs.preview_url }}\""
+          fail: true
+
+      - name: Upload preview cookie jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: lychee-preview-cookies
+          path: ./.artifacts/lychee-cookies.json
+          retention-days: 1
 
   link-check:
     name: Link Check
@@ -105,31 +119,17 @@ jobs:
 
       - name: Bootstrap preview cookies
         if: steps.changed-files.outputs.has-content-changes == 'true'
-        shell: bash
-        env:
-          DOCS_SITE_URL: ${{ secrets.DOCS_SITE_URL }}
-          DOCS_SITE_API_KEY: ${{ secrets.DOCS_SITE_API_KEY }}
-          BRANCH: ${{ github.event.pull_request.head.ref }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${DOCS_SITE_URL:-}" ] || [ -z "${DOCS_SITE_API_KEY:-}" ] || [ -z "${BRANCH:-}" ]; then
-            echo "::error::Missing DOCS_SITE_URL, DOCS_SITE_API_KEY, or BRANCH"
-            exit 1
-          fi
-
-          PREVIEW_URL=$(node -e 'const crypto=require("crypto"); const base=process.env.DOCS_SITE_URL; const branch=process.env.BRANCH; const secret=process.env.DOCS_SITE_API_KEY; const sig=crypto.createHmac("sha256", secret).update(branch).digest("hex"); process.stdout.write(`${base}/api/preview/start?branch=${encodeURIComponent(branch)}&sig=${sig}`);')
-
-          curl --silent --show-error --fail --location \
-            --cookie-jar .lychee-cookies \
-            "$PREVIEW_URL" > /dev/null
+        uses: actions/download-artifact@v4
+        with:
+          name: lychee-preview-cookies
+          path: ./.artifacts
 
       - name: Link Checker
         if: steps.changed-files.outputs.has-content-changes == 'true'
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: "--config ./lychee.toml --no-progress --cookie-jar ./.lychee-cookies ./content"
+          args: "--config ./lychee.toml --no-progress --cookie-jar ./.artifacts/lychee-cookies.json ./content"
           fail: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
