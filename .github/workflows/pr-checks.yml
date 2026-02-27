@@ -65,10 +65,22 @@ jobs:
           docs-site-url: ${{ secrets.DOCS_SITE_URL }}
           docs-site-api-key: ${{ secrets.DOCS_SITE_API_KEY }}
 
+      - name: Build signed preview URL
+        id: preview_url
+        shell: bash
+        env:
+          DOCS_SITE_URL: ${{ secrets.DOCS_SITE_URL }}
+          DOCS_SITE_API_KEY: ${{ secrets.DOCS_SITE_API_KEY }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          PREVIEW_URL=$(node -e 'const crypto=require("crypto"); const base=process.env.DOCS_SITE_URL; const branch=process.env.BRANCH; const secret=process.env.DOCS_SITE_API_KEY; const sig=crypto.createHmac("sha256", secret).update(branch).digest("hex"); process.stdout.write(`${base}/api/preview/start?branch=${encodeURIComponent(branch)}&sig=${sig}`);')
+          echo "preview_url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
+
       - name: Bootstrap preview cookies for Lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: "--no-progress --cookie-jar ./.artifacts/lychee-cookies.json \"${{ steps.generate-preview.outputs.preview_url }}\""
+          args: "--no-progress --cookie-jar ./.artifacts/lychee-cookies.json \"${{ steps.preview_url.outputs.preview_url }}\""
           fail: true
 
       - name: Upload preview cookie jar
