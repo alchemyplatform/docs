@@ -132,6 +132,9 @@ jobs:
 
       - name: Bootstrap preview cookies
         if: steps.changed-files.outputs.has-content-changes == 'true'
+        # Cookie priming step only: this warms lychee's JSON cookie jar with
+        # docs-site draft-mode cookies from the signed preview URL.
+        # The real link validation happens in the next "Link Checker" step.
         uses: lycheeverse/lychee-action@v2
         with:
           args: '--no-progress --cookie-jar ./.artifacts/lychee-cookies.json "${{ steps.preview_url.outputs.preview_url }}"'
