@@ -15,7 +15,7 @@ In the world of Web3 development, you might want to find all the contracts deplo
 
 ![2236](https://alchemyapi-res.cloudinary.com/image/upload/v1764192926/docs/tutorials/transactions/transaction-history/231792f-terminal-ss.png "terminal-ss.png")
 
-We will be using Alchemy's [getAssetTransfers](/reference/alchemy-getassettransfers) API to fetch transaction data for a specific wallet address and, from there, extract the contracts deployed by it using the [eth_getTransactionReceipt](/reference/eth-gettransactionreceipt) method.
+We will be using Alchemy's [getAssetTransfers](/docs/reference/alchemy-getassettransfers) API to fetch transaction data for a specific wallet address and, from there, extract the contracts deployed by it using the [eth_getTransactionReceipt](/docs/reference/eth-gettransactionreceipt) method.
 
 ***
 
@@ -23,11 +23,11 @@ We will be using Alchemy's [getAssetTransfers](/reference/alchemy-getassettransf
 
 To achieve our goal, we will follow these steps:
 
-1. First, we will use the [alchemy_getAssetTransfers](/reference/alchemy-getassettransfers) method ([Alchemy's Transfers API](/reference/transfers-api-quickstart)) to fetch all transactions associated with the wallet address of interest. This method allows us to retrieve a list of transactions `to` or `from` the specified wallet address.
+1. First, we will use the [alchemy_getAssetTransfers](/docs/reference/alchemy-getassettransfers) method ([Alchemy's Transfers API](/docs/reference/transfers-api-quickstart)) to fetch all transactions associated with the wallet address of interest. This method allows us to retrieve a list of transactions `to` or `from` the specified wallet address.
 
 2. Next, we will filter the list of transactions to find only those where the `to` field is `null`. This condition indicates that the transaction resulted in the deployment of a new contract. This is true because when a contract is deployed, it does not have an address yet, as it does not exist on the blockchain. Therefore, the `to` field in the transaction is set to `null`.
 
-3. Finally, for each of the filtered transactions, we will call the [eth_getTransactionReceipt](/reference/eth-gettransactionreceipt) method. This method will return the transaction receipt containing the contract address for the newly deployed contract.
+3. Finally, for each of the filtered transactions, we will call the [eth_getTransactionReceipt](/docs/reference/eth-gettransactionreceipt) method. This method will return the transaction receipt containing the contract address for the newly deployed contract.
 
 4. We will store the addresses of the deployed contracts in an array and finally log that array to the console.
 
@@ -203,10 +203,10 @@ Let's break down the code in bullet points:
 
 * The script defines the Alchemy API URL and uses fetch to make direct HTTP requests to Alchemy's endpoints.
 * Then, it defines an asynchronous function `findContractsDeployed` that accepts a wallet address as its argument.
-* Inside the `findContractsDeployed` function, it fetches the transaction history of the wallet address using Alchemy's [`getAssetTransfers`](/reference/sdk-getassettransfers) method.
+* Inside the `findContractsDeployed` function, it fetches the transaction history of the wallet address using Alchemy's [`getAssetTransfers`](/docs/reference/sdk-getassettransfers) method.
 * The script paginates through the results and aggregates them in the `transfers` array.
 * It then filters the transfers to only include contract deployments by checking if the `"to"` property is `null`.
-* Then it maps the filtered deployments to their corresponding transaction hashes and fetches the transaction receipts for each of the deployment transactions using Alchemy's [`getTransactionReceipt`](/reference/sdk-gettransactionreceipt) method.
+* Then it maps the filtered deployments to their corresponding transaction hashes and fetches the transaction receipts for each of the deployment transactions using Alchemy's [`getTransactionReceipt`](/docs/reference/sdk-gettransactionreceipt) method.
 * Finally, the script waits for all the transaction receipts to be fetched and maps them to their respective deployed contract addresses using the `contractAddress` property in the transaction receipt.
 * The function then returns the array of these contract addresses.
 * The main function initializes the wallet address and calls the `findContractsDeployed` function to get the array of contract addresses deployed by the given wallet address.

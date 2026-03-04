@@ -47,49 +47,6 @@ methods:
           type: array
           items:
             $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
-      - name: sortBy
-        required: false
-        description: Sorting criteria for assets.
-        schema:
-          type: object
-          properties:
-            sortBy:
-              type: string
-              enum:
-                - created
-                - updated
-                - recentAction
-                - none
-              description: The field to sort by.
-            sortDirection:
-              type: string
-              enum:
-                - asc
-                - desc
-              description: Sort direction.
-      - name: limit
-        required: false
-        description: The maximum number of assets to retrieve.
-        schema:
-          type: integer
-          maximum: 1000
-          default: 100
-      - name: page
-        required: false
-        description: The index of the "page" to retrieve.
-        schema:
-          type: integer
-          default: 1
-      - name: before
-        required: false
-        description: Retrieve assets before this cursor.
-        schema:
-          type: string
-      - name: after
-        required: false
-        description: Retrieve assets after this cursor.
-        schema:
-          type: string
       - name: displayOptions
         required: false
         description: Options for display formatting.
@@ -209,6 +166,12 @@ methods:
         params:
           - name: authorityAddress
             value: "2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW"
+          - name: sortBy
+            value:
+              sortBy: "created"
+              sortDirection: "asc"
+          - name: page
+            value: 1
     result:
       name: Assets by authority
       description: Returns assets filtered by the specified authority.
@@ -365,6 +328,12 @@ methods:
             value: "collection"
           - name: groupValue
             value: "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w"
+          - name: sortBy
+            value:
+              sortBy: "created"
+              sortDirection: "asc"
+          - name: page
+            value: 1
     result:
       name: Assets by group
       description: Returns assets filtered by the specified group.
@@ -434,6 +403,12 @@ methods:
         params:
           - name: creatorAddress
             value: "9zsduBRp3VyGKaqim3b17dER3Z8fGCE1UYs4FNrqn1Km"
+          - name: sortBy
+            value:
+              sortBy: "created"
+              sortDirection: "asc"
+          - name: page
+            value: 1
     result:
       name: Assets by creator
       description: Returns assets created by the specified address.
@@ -584,6 +559,12 @@ methods:
         params:
           - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: sortBy
+            value:
+              sortBy: "created"
+              sortDirection: "asc"
+          - name: page
+            value: 1
           - name: limit
             value: 50
     result:
@@ -644,7 +625,7 @@ methods:
     description: Returns all editions of a given master NFT.
     paramStructure: by-name
     params:
-      - name: mint
+      - name: mintAddress
         required: true
         description: The ID of the master NFT to get editions for.
         schema:
@@ -675,7 +656,7 @@ methods:
     examples:
       - name: getNftEditions example
         params:
-          - name: mint
+          - name: mintAddress
             value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
     result:
       name: NFT editions
@@ -687,12 +668,12 @@ methods:
     description: Returns token accounts based on the specified filters.
     paramStructure: by-name
     params:
-      - name: mint
+      - name: mintAddress
         required: false
         description: The mint address to filter token accounts by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: owner
+      - name: ownerAddress
         required: false
         description: The owner address to filter token accounts by.
         schema:
@@ -737,7 +718,7 @@ methods:
     examples:
       - name: getTokenAccounts example
         params:
-          - name: owner
+          - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
     result:
       name: Token accounts

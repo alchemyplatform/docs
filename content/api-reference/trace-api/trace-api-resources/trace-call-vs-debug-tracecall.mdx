@@ -7,7 +7,7 @@ slug: reference/trace_call-vs-debug_tracecall
 
 # Introduction
 
-Geth and OpenEthereum are two popular Ethereum clients. In this article, we'll compare and contrast the [trace\_call](/reference/trace-call) method offered by OpenEthereum with the [debug\_traceCall](/reference/debug-tracecall) method offered by Geth. Both of these methods are used for transaction tracing.
+Geth and OpenEthereum are two popular Ethereum clients. In this article, we'll compare and contrast the [trace\_call](/docs/reference/trace-call) method offered by OpenEthereum with the [debug\_traceCall](/docs/reference/debug-tracecall) method offered by Geth. Both of these methods are used for transaction tracing.
 
 <Info>
   The `trace_call` method was initially supported by the OpenEthereum client but now OpenEthereum has been deprecated and a new client Erigon is supporting the trace methods.
@@ -17,11 +17,11 @@ Geth and OpenEthereum are two popular Ethereum clients. In this article, we'll c
 
 # Prerequisites
 
-Before reading this article you should know about [Ethereum Clients](https://www.alchemy.com/overviews/execution-layer-and-consensus-layer-node-clients) and [EVM Traces](/reference/what-are-evm-traces).
+Before reading this article you should know about [Ethereum Clients](https://www.alchemy.com/overviews/execution-layer-and-consensus-layer-node-clients) and [EVM Traces](/docs/reference/what-are-evm-traces).
 
 # The trace\_call method
 
-The [trace\_call](/reference/trace-call) method executes the given call (transaction) and returns a number of possible traces for it. It’s helpful for debugging transactions and analyzing state changes due to a transaction. Under the hood,[trace\_call](/reference/trace-call) is only supported by OpenEthereum or Erigon clients, but if you’re using an Alchemy API key we’ll automatically route the request for you so you don’t have to worry about the node client.
+The [trace\_call](/docs/reference/trace-call) method executes the given call (transaction) and returns a number of possible traces for it. It’s helpful for debugging transactions and analyzing state changes due to a transaction. Under the hood,[trace\_call](/docs/reference/trace-call) is only supported by OpenEthereum or Erigon clients, but if you’re using an Alchemy API key we’ll automatically route the request for you so you don’t have to worry about the node client.
 
 Here are the parameters and response payloads for `trace_call`
 
@@ -53,7 +53,7 @@ Here are the parameters and response payloads for `trace_call`
 
 ## Example Request and Response
 
-The `trace_call` method returns an array of traces. The structure of these traces is explained in [Types of Trace Actions and their Structure](/reference/what-are-evm-traces#types-of-trace-actions). Below you can find an example.
+The `trace_call` method returns an array of traces. The structure of these traces is explained in [Types of Trace Actions and their Structure](/docs/reference/what-are-evm-traces#types-of-trace-actions). Below you can find an example.
 
 ### Request
 
@@ -138,7 +138,7 @@ The `trace_call` method returns an array of traces. The structure of these trace
 
 # The debug\_traceCall method
 
-The [debug\_traceCall](/reference/debug-tracecall) method executes the given call (transaction) and returns a number of possible traces for it. It’s helpful for debugging transactions and analyzing state changes due to a transaction. Under the hood,[debug\_traceCall](/reference/debug-tracecall) is only supported by OpenEthereum or Erigon clients, but if you’re using an Alchemy API key we’ll automatically route the request for you so you don’t have to worry about the node client.
+The [debug\_traceCall](/docs/reference/debug-tracecall) method executes the given call (transaction) and returns a number of possible traces for it. It’s helpful for debugging transactions and analyzing state changes due to a transaction. Under the hood,[debug\_traceCall](/docs/reference/debug-tracecall) is only supported by OpenEthereum or Erigon clients, but if you’re using an Alchemy API key we’ll automatically route the request for you so you don’t have to worry about the node client.
 
 Here are the parameters and response payloads for `debug_traceCall`
 
@@ -178,7 +178,7 @@ The parameters for the `debug_traceCall` method are:
 
 The `callTracer` tracks all the call frames executed during a transaction. The result will be a nested list of call frames. They form a tree with the top-level call at the root and sub-calls as children of the higher levels.
 
-It’s similar to the `trace` option of the [trace\_call](/reference/trace-call) method. Each call frame has the following fields:
+It’s similar to the `trace` option of the [trace\_call](/docs/reference/trace-call) method. Each call frame has the following fields:
 
 | field        | type                 | description                          |
 | ------------ | -------------------- | ------------------------------------ |
@@ -198,7 +198,7 @@ It’s similar to the `trace` option of the [trace\_call](/reference/trace-call)
 
 The `prestateTracer` replays the transaction and tracks every part of state that is touched during that transaction.
 
-This is similar to the `stateDiff` option of the [trace\_call](/reference/trace-call) method. The result is an object. The keys are addresses of accounts. The value is an object with the following fields:
+This is similar to the `stateDiff` option of the [trace\_call](/docs/reference/trace-call) method. The result is an object. The keys are addresses of accounts. The value is an object with the following fields:
 
 | field   | type               | description                   |
 | ------- | ------------------ | ----------------------------- |
@@ -207,9 +207,9 @@ This is similar to the `stateDiff` option of the [trace\_call](/reference/trace-
 | code    | string             | hex-encoded bytecode          |
 | storage | map\[string]string | storage slots of the contract |
 
-As you've seen that the `callTracer` and `prestateTracer` options of [debug\_traceCall](/reference/debug-tracecall) are similar to `trace` and `stateDiff` options of [debug\_traceCall](/reference/debug-tracecall), here's a table depicting this:
+As you've seen that the `callTracer` and `prestateTracer` options of [debug\_traceCall](/docs/reference/debug-tracecall) are similar to `trace` and `stateDiff` options of [debug\_traceCall](/docs/reference/debug-tracecall), here's a table depicting this:
 
-| Options of [trace\_call](/reference/trace-call) | Similar options of [debug\_traceCall](/reference/debug-tracecall) |
+| Options of [trace\_call](/docs/reference/trace-call) | Similar options of [debug\_traceCall](/docs/reference/debug-tracecall) |
 | ----------------------------------------------- | ----------------------------------------------------------------- |
 | trace                                           | callTrace                                                         |
 | stateDiff                                       | prestateTracer                                                    |
@@ -295,7 +295,7 @@ As you've seen that the `callTracer` and `prestateTracer` options of [debug\_tra
 
 # Difference between `trace_call` and `debug_traceCall`
 
-Since [trace\_call](/reference/trace-call) is OpenEthereum's (Now Erigon's) equivalent to Geth's [debug\_traceCall](/reference/debug-tracecall) there are not many differences between them but there are some minor differences which are mentioned below:
+Since [trace\_call](/docs/reference/trace-call) is OpenEthereum's (Now Erigon's) equivalent to Geth's [debug\_traceCall](/docs/reference/debug-tracecall) there are not many differences between them but there are some minor differences which are mentioned below:
 
 * You can choose to trace only the main call (the top-level call) in `debug_traceCall` by setting the `onlyTopCall` option to `true`. This avoids extra processing if only the top-level info is required (like getting the revert reason). However, this is not possible using `trace_call` as you always get back the complete trace.
 
@@ -379,8 +379,8 @@ In response for this request you will get both `trace` and `stateDiff`:
   ```
 </CodeGroup>
 
-But by using [debug\_traceCall](/reference/debug-tracecall) you can either get the traces using `callTracer` or the state difference using `prestateTracer` in one request.
+But by using [debug\_traceCall](/docs/reference/debug-tracecall) you can either get the traces using `callTracer` or the state difference using `prestateTracer` in one request.
 
 # Conclusion
 
-In conclusion, [trace\_call](/reference/trace-call) and [debug\_traceCall](/reference/debug-tracecall) are two important methods for transaction tracing. They are accessible through different Ethereum clients and are slightly different from each other.
+In conclusion, [trace\_call](/docs/reference/trace-call) and [debug\_traceCall](/docs/reference/debug-tracecall) are two important methods for transaction tracing. They are accessible through different Ethereum clients and are slightly different from each other.

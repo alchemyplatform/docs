@@ -6,7 +6,7 @@ slug: wallets/resources/types
 
 ## `BatchUserOperationCallData`
 
-An array of `UserOperationCallData`, representing a sequence of `UserOperations` to be executed in batch by calling the `executeBatch` function on the `SmartContractAccount` contract. Check out our guide on [How to submit batch transactions](/wallets/transactions/send-batch-transactions) to learn more about batching multiple transactions into a single `UserOperation`.
+An array of `UserOperationCallData`, representing a sequence of `UserOperations` to be executed in batch by calling the `executeBatch` function on the `SmartContractAccount` contract. Check out our guide on [How to submit batch transactions](/docs/wallets/transactions/send-batch-transactions) to learn more about batching multiple transactions into a single `UserOperation`.
 
 <Accordion title="BatchUserOperationCallData">
 
@@ -47,7 +47,7 @@ export const BigNumberishRangeSchema = z
 
 ## `BundlerAction`
 
-Bundler Actions are `viem` [`Actions`](https://viem.sh/docs/actions/public/introduction) that map one-to-one with "public" [`Bundler`](/wallets/resources/terms#bundler) RPC methods (`eth_sendUserOperation`, `eth_getUserOperationByHash`, etc.) under the [EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) and [EIP-6900](https://eips.ethereum.org/EIPS/eip-6900) standards. They are used with a [`BundlerClient`](#bundlerclient). `BundlerActions` do not require any special permissions, nor do they provide "signing" capabilities to the user. Examples of `BundlerActions` include retrieving the details of a specific user operation, estimating user operation gas, etc.
+Bundler Actions are `viem` [`Actions`](https://viem.sh/docs/actions/public/introduction) that map one-to-one with "public" [`Bundler`](/docs/wallets/resources/terms#bundler) RPC methods (`eth_sendUserOperation`, `eth_getUserOperationByHash`, etc.) under the [EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) and [EIP-6900](https://eips.ethereum.org/EIPS/eip-6900) standards. They are used with a [`BundlerClient`](#bundlerclient). `BundlerActions` do not require any special permissions, nor do they provide "signing" capabilities to the user. Examples of `BundlerActions` include retrieving the details of a specific user operation, estimating user operation gas, etc.
 
 <Accordion title="BundlerAction">
 
@@ -116,9 +116,9 @@ export type BundlerActions = {
 
 ## `BundlerClient`
 
-`BundlerClient` is a custom `viem` [`Client`](https://viem.sh/docs/clients/custom) that extends viem's [`PublicClient`](https://viem.sh/docs/clients/public) with bundler-specific actions for [EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) operations and [EIP-6900](https://eips.ethereum.org/EIPS/eip-6900) standards. The actions are defined in [`@aa-sdk/core`](/wallets/reference/aa-sdk/core). It's account agnostic and only exposes methods for interacting directly with Bundler RPC and ETH RPC methods.
+`BundlerClient` is a custom `viem` [`Client`](https://viem.sh/docs/clients/custom) that extends viem's [`PublicClient`](https://viem.sh/docs/clients/public) with bundler-specific actions for [EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) operations and [EIP-6900](https://eips.ethereum.org/EIPS/eip-6900) standards. The actions are defined in [`@aa-sdk/core`](/docs/wallets/reference/aa-sdk/core). It's account agnostic and only exposes methods for interacting directly with Bundler RPC and ETH RPC methods.
 `BundlerClient` also supports [`Public Actions`](https://viem.sh/docs/actions/public/introduction) for client applications to connect, query, and interact with the blockchain (i.e., sending transactions, smart contract executions, data retrieval, etc.). Additionally, it is EIP-1193 compliant, so can easily be swapped out in place of other web3 providers (eg. `window.ethereum`).
-In the vast majority of cases, you will not use this client directly. Use the [`SmartAccountClient`](/wallets/concepts/smart-account-client) instead, which wraps the Bundler Client and provides the same actions plus account-specific functionality.
+In the vast majority of cases, you will not use this client directly. Use the [`SmartAccountClient`](/docs/wallets/concepts/smart-account-client) instead, which wraps the Bundler Client and provides the same actions plus account-specific functionality.
 
 <Accordion title="BundlerClient">
 
@@ -161,7 +161,7 @@ export const createBundlerClientFromExisting: <
 
 ## `ClientMiddleware`
 
-Middleware represents different operations involved in the [`SmartAccountClient`](/wallets/concepts/smart-account-client) pipeline for constructing a user operation given the user inputs by populating the UO with other data, including gas fees, paymaster data, etc.
+Middleware represents different operations involved in the [`SmartAccountClient`](/docs/wallets/concepts/smart-account-client) pipeline for constructing a user operation given the user inputs by populating the UO with other data, including gas fees, paymaster data, etc.
 
 <Accordion title="ClientMiddleware">
 
@@ -185,7 +185,7 @@ export type ClientMiddleware<
 
 ## `ClientMiddlewareConfig`
 
-Configuration object to configure `ClientMiddleware` of the [`SmartAccountClient`](/wallets/concepts/smart-account-client) during the client instantiation. You can configure using this object to configure the middleware of your interest selectively.
+Configuration object to configure `ClientMiddleware` of the [`SmartAccountClient`](/docs/wallets/concepts/smart-account-client) during the client instantiation. You can configure using this object to configure the middleware of your interest selectively.
 
 <Accordion title="ClientMiddlewareFn">
 
@@ -300,7 +300,7 @@ export interface SmartAccountAuthenticator<AuthParams, AuthDetails, Inner = any>
 
 ## `SmartAccountClient`
 
-`SmartAccountClient` is a custom `viem` `Client`, like the [`BundlerClient`](#bundlerclient), which is an intermediary or connector that enables your client application to interact with the `SmartContractAccount`. `SmartAccountClient` is analogous to the [`WalletClient`](https://viem.sh/docs/clients/wallet). The difference is that while `WalletClient` has [`WalletActions`](https://viem.sh/docs/actions/wallet/introduction) that lets your client application interact with an [Externally-owned account (EOA)](https://ethereum.org/developers/docs/accounts) with a [wallet](/wallets/resources/terms#wallet), `SmartAccountClient` provides [`SmartAccountClientActions`](#smartaccountclientaction) for client applications to interact with `SmartContractAccounts`.
+`SmartAccountClient` is a custom `viem` `Client`, like the [`BundlerClient`](#bundlerclient), which is an intermediary or connector that enables your client application to interact with the `SmartContractAccount`. `SmartAccountClient` is analogous to the [`WalletClient`](https://viem.sh/docs/clients/wallet). The difference is that while `WalletClient` has [`WalletActions`](https://viem.sh/docs/actions/wallet/introduction) that lets your client application interact with an [Externally-owned account (EOA)](https://ethereum.org/developers/docs/accounts) with a [wallet](/docs/wallets/resources/terms#wallet), `SmartAccountClient` provides [`SmartAccountClientActions`](#smartaccountclientaction) for client applications to interact with `SmartContractAccounts`.
 
 <Accordion title="SmartAccountClient">
 
@@ -331,7 +331,7 @@ export type SmartAccountClient<
 
 ## `SmartAccountClientAction`
 
-`SmartAccountClientActions` are `viem` [`Actions`](https://viem.sh/docs/actions/wallet/introduction) that map one-to-one with smart contract account-related or "signable" actions, such as constructing user operation requests to be sent to the [`Bundler`](/wallets/resources/terms/#bundler), signing messages or user operation requests, sending user operations to the `Bundler`, upgrading accounts to different implementation address, etc. They are used with a `SmartAccountClient`. `SmartAccountClientActions` require special permissions and provide signing capabilities for `SmartContractAccounts`.
+`SmartAccountClientActions` are `viem` [`Actions`](https://viem.sh/docs/actions/wallet/introduction) that map one-to-one with smart contract account-related or "signable" actions, such as constructing user operation requests to be sent to the [`Bundler`](/docs/wallets/resources/terms/#bundler), signing messages or user operation requests, sending user operations to the `Bundler`, upgrading accounts to different implementation address, etc. They are used with a `SmartAccountClient`. `SmartAccountClientActions` require special permissions and provide signing capabilities for `SmartContractAccounts`.
 
 <Accordion title="SmartAccountClientAction">
 
@@ -353,7 +353,7 @@ export type SmartAccountClientActions<
 
 ## `SmartAccountSigner`
 
-An interface representing a signer capable of signing messages and typed data. It provides methods to retrieve the signer's address (`getAddress`), sign a message (`signMessage`), and sign typed data (`signTypedData`). `SmartAccountSigner` refers to the [`Signer`](/wallets/resources/terms#signer) instance responsible for the signing activities using its private key for smart account activities. Often, the `Signer` is referred to as the `Owner` of the account as it has the authority to use the smart account on-chain with its signatures.
+An interface representing a signer capable of signing messages and typed data. It provides methods to retrieve the signer's address (`getAddress`), sign a message (`signMessage`), and sign typed data (`signTypedData`). `SmartAccountSigner` refers to the [`Signer`](/docs/wallets/resources/terms#signer) instance responsible for the signing activities using its private key for smart account activities. Often, the `Signer` is referred to as the `Owner` of the account as it has the authority to use the smart account on-chain with its signatures.
 
 <Accordion title="SmartAccountSigner">
 
@@ -408,10 +408,10 @@ Within Smart Wallets, implementations for Light Account and Modular Account are 
 single and batch UO execution, and signing of messages, typed data, and UOs.
 
 Smart Contract Accounts are rarely used on their own, and are typically passed in to [Smart Account Client](#TODO/concepts/smart-account-client) implementations.
-When using either the [React](/wallets/react/quickstart) or [Core](/wallets/core/overview) libraries, the connection of an account and a client are handled for you.
+When using either the [React](/docs/wallets/react/quickstart) or [Core](/docs/wallets/core/overview) libraries, the connection of an account and a client are handled for you.
 
-It's also possible to use a custom account when using the [Infra](/wallets/reference/account-kit/infra) library.
-Within `@aa-sdk/core`, a method [`toSmartContractAccount`](/wallets/reference/aa-sdk/core/functions/toSmartContractAccount) is provided so you can create an instance of your Smart Contract Account.
+It's also possible to use a custom account when using the [Infra](/docs/wallets/reference/account-kit/infra) library.
+Within `@aa-sdk/core`, a method [`toSmartContractAccount`](/docs/wallets/reference/aa-sdk/core/functions/toSmartContractAccount) is provided so you can create an instance of your Smart Contract Account.
 
 <Accordion title="SmartContractAccount">
 
@@ -452,7 +452,7 @@ State overrides allow you to customize the network state for the purpose of the 
 
 ## `ToSmartContractAccountParams`
 
-This type defines the parameters to the `SmartContractAccount` instantiation action, [`toSmartContractAccount`](/wallets/reference/aa-sdk/core/functions/toSmartContractAccount). You can configure this parameter to specify the [`Transport`](https://viem.sh/docs/clients/intro#transports), [`Chain`](https://viem.sh/docs/glossary/types#chain), [`EntryPointDef`](#entrypointdef), and other base functionalities of the smart account that you are creating.
+This type defines the parameters to the `SmartContractAccount` instantiation action, [`toSmartContractAccount`](/docs/wallets/reference/aa-sdk/core/functions/toSmartContractAccount). You can configure this parameter to specify the [`Transport`](https://viem.sh/docs/clients/intro#transports), [`Chain`](https://viem.sh/docs/glossary/types#chain), [`EntryPointDef`](#entrypointdef), and other base functionalities of the smart account that you are creating.
 
 <Accordion title="ToSmartContractAccountParams">
 
@@ -485,7 +485,7 @@ export type ToSmartContractAccountParams<
 
 ## `User`
 
-`User` is a type that defines the model for the details of a user's Embedded Account via an Alchemy Signer. It includes the user's `email`, `orgId`, `userId`, `userId`, `address` (the EOA signer address corresponding to the user credentials), and `credentialId`. You can use the [`useUser`](/wallets/reference/account-kit/react/hooks/useUser) react hook to look up a user.
+`User` is a type that defines the model for the details of a user's Embedded Account via an Alchemy Signer. It includes the user's `email`, `orgId`, `userId`, `userId`, `address` (the EOA signer address corresponding to the user credentials), and `credentialId`. You can use the [`useUser`](/docs/wallets/reference/account-kit/react/hooks/useUser) react hook to look up a user.
 
 <Accordion title="User">
 
@@ -508,7 +508,7 @@ export type User = {
 
 ## `UserOperationCallData`
 
-`UserOperationCallData` is a type that represents the user's "intent" or the desired outcome representing a specific objective a user aims to accomplish. It includes `target` (the destination address), `data` (the [`Transaction calldata`](/wallets/resources/terms#transaction-calldata)), and `value` (the amount value of ETH, or the native token to send). It acts as the input to the `sendUserOperation` method on [`SmartAccountClient`](#smartaccountclient).
+`UserOperationCallData` is a type that represents the user's "intent" or the desired outcome representing a specific objective a user aims to accomplish. It includes `target` (the destination address), `data` (the [`Transaction calldata`](/docs/wallets/resources/terms#transaction-calldata)), and `value` (the amount value of ETH, or the native token to send). It acts as the input to the `sendUserOperation` method on [`SmartAccountClient`](#smartaccountclient).
 
 <Accordion title="UserOperationCallData">
 
@@ -529,7 +529,7 @@ export type UserOperationCallData =
 
 ## `UserOperationEstimateGasResponse`
 
-An interface that defines the structure for the response received from the RPC method [`eth_estimateUserOperationGas`](https://alchemy.com/docs/reference/eth-estimateuseroperationgas). This response provides detailed information about the estimated gas usage for a `UserOperation`.
+An interface that defines the structure for the response received from the RPC method [`eth_estimateUserOperationGas`](https://www.alchemy.com/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-estimate-user-operation-gas). This response provides detailed information about the estimated gas usage for a `UserOperation`.
 
 <Accordion title="UserOperationEstimateGasResponse">
 
@@ -614,7 +614,7 @@ export type UserOperationOverrides<
 
 ## `UserOperationReceipt`
 
-An interface that defines the structure for the response received from the RPC method [`eth_getUserOperationReceipt`](https://alchemy.com/docs/reference/eth-getuseroperationreceipt). It includes details like sender, nonce, gas cost, and success status of the `UserOperation`.
+An interface that defines the structure for the response received from the RPC method [`eth_getUserOperationReceipt`](https://www.alchemy.com/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-get-user-operation-receipt). It includes details like sender, nonce, gas cost, and success status of the `UserOperation`.
 
 <Accordion title="UserOperationReceipt">
 
@@ -671,7 +671,7 @@ export type UserOperationRequest<
 
 ## `UserOperationResponse`
 
-An interface that defines the structure for the response received from the RPC method [`eth_getUserOperationByHash`](https://alchemy.com/docs/reference/eth-getuseroperationbyhash), detailing the result of executing a `UserOperation`. It includes the block number, block hash, transaction hash and more information associated with the UO.
+An interface that defines the structure for the response received from the RPC method [`eth_getUserOperationByHash`](https://www.alchemy.com/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-get-user-operation-by-hash), detailing the result of executing a `UserOperation`. It includes the block number, block hash, transaction hash and more information associated with the UO.
 
 <Accordion title="UserOperationResponse">
 

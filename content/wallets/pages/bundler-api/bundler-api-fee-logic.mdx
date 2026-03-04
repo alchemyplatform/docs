@@ -10,9 +10,9 @@ Fee logic for Bundler API ( `eth_sendUserOperation` )
 
 ## Fee Logic
 
-To provide its services, Alchemy's Rundler requires fees when using [`eth_sendUserOperation`](/reference/eth-senduseroperation), and these fees differ based on the mainnet or testnet in use. Rundler's requirements for priority fees are expressed via the [`rundler_maxPriorityFeePerGas`](/reference/rundler-maxpriorityfeepergas) endpoint.
+To provide its services, Alchemy's Rundler requires fees when using [`eth_sendUserOperation`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation), and these fees differ based on the mainnet or testnet in use. Rundler's requirements for priority fees are expressed via the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) endpoint.
 
-Each Bundler API endpoint has an [associated compute unit cost](/reference/compute-unit-costs#gas-manager--bundler-apis).
+Each Bundler API endpoint has an [associated compute unit cost](/docs/reference/compute-unit-costs#gas-manager--bundler-apis).
 
 **The following table provides a detailed breakdown of the fee logic and recommendations for each network type:**
 
@@ -24,11 +24,11 @@ Each Bundler API endpoint has an [associated compute unit cost](/reference/compu
 
 **Recommended Actions for Calculating `maxFeePerGas`**:
 
-1. **Fetch Current Base Fee**: Use the method [`eth_getBlockByNumber`](/reference/eth-getblockbynumber) with the `'latest'` parameter to get the current `baseFeePerGas`.
+1. **Fetch Current Base Fee**: Use the method [`eth_getBlockByNumber`](/docs/reference/eth-getblockbynumber) with the `'latest'` parameter to get the current `baseFeePerGas`.
 
 2. **Apply Buffer on Base Fee**: To account for potential fee changes, apply a buffer on the current base fee based on the requirements and recommendations in the table shown above. (27% is the minimum for bundler acceptance, but we recommend at least 50%)
 
-3. **Fetch Current Priority Fee with Rundler**: Use the [`rundler_maxPriorityFeePerGas`](/reference/rundler-maxpriorityfeepergas) method to query the current priority fee for the network.
+3. **Fetch Current Priority Fee with Rundler**: Use the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) method to query the current priority fee for the network.
 
 4. **Apply Buffer on Priority Fee**: Once you have the current priority fee using `rundler_maxPriorityFeePerGas`, increase it according to the fee requirement table shown above for any unexpected changes (No buffer for Arbitrum Mainnet and 25% buffer for all other mainnets).
 
@@ -59,16 +59,16 @@ Each Bundler API endpoint has an [associated compute unit cost](/reference/compu
 
 You can deploy a smart contract account in two ways:
 
-* **Contract deployment by a sending transaction**: You can deploy the smart contract account which is essentially a contract by sending a transaction through [`eth_sendRawTransaction`](/reference/eth-sendrawtransaction) from an EOA. This is same as other contract deployments. In this case, it will cost you 250 CUs which is the cost of calling `eth_sendRawTransaction`.
-* **Contract deployment by sending a user operation**: You can deploy the smart contract account by sending a user operation through [`eth_sendUserOperation`](/reference/eth-senduseroperation) with a non-empty `initCode`. In this case it will cost you 1000 CUs which is the cost of calling `eth_sendUserOperation`.
+* **Contract deployment by a sending transaction**: You can deploy the smart contract account which is essentially a contract by sending a transaction through [`eth_sendRawTransaction`](/docs/reference/eth-sendrawtransaction) from an EOA. This is same as other contract deployments. In this case, it will cost you 250 CUs which is the cost of calling `eth_sendRawTransaction`.
+* **Contract deployment by sending a user operation**: You can deploy the smart contract account by sending a user operation through [`eth_sendUserOperation`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) with a non-empty `initCode`. In this case it will cost you 1000 CUs which is the cost of calling `eth_sendUserOperation`.
 
 ### How do we determine fee values to give your UO the best chance of landing on chain?
 
-* [alchemy\_requestGasAndPaymasterAndData](/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) is an opinionated endpoint that tries to set fee values that give your user operations a high chance of landing on-chain. Its likely that we're over-estimating here a bit, but this is intentional in order to land your UOs faster!
+* [alchemy\_requestGasAndPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) is an opinionated endpoint that tries to set fee values that give your user operations a high chance of landing on-chain. Its likely that we're over-estimating here a bit, but this is intentional in order to land your UOs faster!
 
 * We encourage you to try out different fee percentages and determine what works best for you as a balance between cost and chance/time to mine.
 
-* For [alchemy\_requestGasAndPaymasterAndData](/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) we offer the ability to override our fee estimates with the `feeOverride` parameters.
+* For [alchemy\_requestGasAndPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) we offer the ability to override our fee estimates with the `feeOverride` parameters.
 
   * We default to increasing baseFee by 50% and priorityFee by 5%.
-  * **Note**: The feeOverride parameters don't include preVerificationGas (PVG) . The method will always increase the estimated PVG by 5% to give the UO a better chance to mine if the L1 /L2 fee ratio changes. If you would like to modify this value, its recommended you use [alchemy\_requestPaymasterAndData](/reference/alchemy-requestpaymasteranddata) instead.
+  * **Note**: The feeOverride parameters don't include preVerificationGas (PVG) . The method will always increase the estimated PVG by 5% to give the UO a better chance to mine if the L1 /L2 fee ratio changes. If you would like to modify this value, its recommended you use [alchemy\_requestPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-paymaster-and-data) instead.

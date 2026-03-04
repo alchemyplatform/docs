@@ -58,12 +58,11 @@ To do so, follow the next steps:
 
 1. **Re-estimate gas fees**: This can be done in various ways which are mentioned below:
 
-   1. Use the [`eth_maxPriorityFeePerGas`](/reference/eth-maxpriorityfeepergas) method to obtain `maxPriorityFeePerGas`.
-   2. If using the Alchemy SDK, use the [`getFeeData`](/reference/sdk-getfeedata) method to obtain both the current `maxPriorityFeePerGas` and `maxFeePerGas`. This method is also available on web3 libraries like `ethers.js` and can be accessed through the provider as `provider.getFeeData()`.
+   1. Use [`eth_maxPriorityFeePerGas`](/docs/chains/ethereum/ethereum-api-endpoints/eth-max-priority-fee-per-gas) to obtain `maxPriorityFeePerGas`. This method is also available on web3 libraries like `ethers.js` and can be accessed through the provider as `provider.getFeeData()`.
 
 2. **Choose the suitable increase values**: Once you have the re-estimated gas fees, choose the maximum of a 10% increase or the re-estimated values. This ensures that your new gas fee is competitively priced to be included in a block.
 
-3. **Account for Rundler's service tip**: Rundler requires a small tip for its services via `maxPriorityFeePerGas`. Detailed information about this can be found [below](/reference/bundler-faqs#fees).
+3. **Account for Rundler's service tip**: Rundler requires a small tip for its services via `maxPriorityFeePerGas`. Detailed information about this can be found [below](/docs/reference/bundler-faqs#fees).
 
 After calculating the new values, send your `userOp` again with the updated fees and it should go through successfully.
 
@@ -89,7 +88,7 @@ To debug these errors, you should:
 
 ### What is the maximum number of supported parallel nonces?
 
-Our bundler supports up to 4 parallel nonces (default value from ERC-7562) for unstaked senders and unlimited parallel nonces for staked senders. See [below](/reference/bundler-faqs#what-is-the-minimum-amount-that-must-be-staked-with-the-entrypoint) for stake requirements.
+Our bundler supports up to 4 parallel nonces (default value from ERC-7562) for unstaked senders and unlimited parallel nonces for staked senders. See [below](/docs/reference/bundler-faqs#what-is-the-minimum-amount-that-must-be-staked-with-the-entrypoint) for stake requirements.
 
 Unstaked accounts that attempt to exceed this limit will receive the error `Max operations (4) reached for account`. Staking the account removes the restriction. Accounts can be staked by calling `addStake(uint32 unstakeDelaySec)` on the EntryPoint contract, and later `unlockStake()` followed by `withdrawStake(address payable)` to recover the stake.
 
@@ -97,7 +96,7 @@ Staked senders are subject to ERC-7562 reputation rules. If a sender submits a l
 
 ### Can I include multiple parallel nonces in a single bundle?
 
-To include multiple parallel nonces in the same bundle, the account must stake the [minimum stake amount](/reference/bundler-faqs#what-is-the-minimum-amount-that-must-be-staked-with-the-entrypoint) with the EntryPoint.
+To include multiple parallel nonces in the same bundle, the account must stake the [minimum stake amount](/docs/reference/bundler-faqs#what-is-the-minimum-amount-that-must-be-staked-with-the-entrypoint) with the EntryPoint.
 
 ## Signatures
 
@@ -105,15 +104,15 @@ To include multiple parallel nonces in the same bundle, the account must stake t
 
 Our APIs are compatible with any type of smart account. This means regardless of the smart account you're using, our endpoints will work with it. However, different smart accounts have unique ways of signing transactions, known as signature patterns. A dummy signature is essentially a template or example signature that aligns with the signature pattern of your specific account type.
 
-For certain API endpoints (ex: [eth\_estimateUserOperationGas](/reference/eth-estimateuseroperationgas)), particularly those involved in gas estimation, a dummy signature is required in the request. This is because these endpoints need to simulate or estimate the transaction without actually executing it, and the dummy signature helps in this process.
+For certain API endpoints (ex: [eth\_estimateUserOperationGas](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-estimate-user-operation-gas)), particularly those involved in gas estimation, a dummy signature is required in the request. This is because these endpoints need to simulate or estimate the transaction without actually executing it, and the dummy signature helps in this process.
 
 ## Fees
 
 ### What are the bundler fees?
 
-To provide its services, Alchemy's Rundler requires fees when using [`eth_sendUserOperation`](/reference/eth-senduseroperation), and these fees differ based on the mainnet or testnet in use. Rundler's requirements for priority fees are expressed via the [`rundler_maxPriorityFeePerGas`](/reference/rundler-maxpriorityfeepergas) endpoint.
+To provide its services, Alchemy's Rundler requires fees when using [`eth_sendUserOperation`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation), and these fees differ based on the mainnet or testnet in use. Rundler's requirements for priority fees are expressed via the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) endpoint.
 
-Each Bundler API endpoint has an [associated compute unit cost](/reference/compute-unit-costs#gas-manager--bundler-apis).
+Each Bundler API endpoint has an [associated compute unit cost](/docs/reference/compute-unit-costs#gas-manager--bundler-apis).
 
 The following table provides a detailed breakdown of the fee logic and recommendations for each network type:
 
@@ -125,11 +124,11 @@ The following table provides a detailed breakdown of the fee logic and recommend
 
 Recommended Actions for Calculating `maxFeePerGas`:
 
-1. **Fetch Current Base Fee**: Use the method [`eth_getBlockByNumber`](/reference/eth-getblockbynumber) with the `'latest'` parameter to get the current `baseFeePerGas`.
+1. **Fetch Current Base Fee**: Use the method [`eth_getBlockByNumber`](/docs/reference/eth-getblockbynumber) with the `'latest'` parameter to get the current `baseFeePerGas`.
 
 2. **Apply Buffer on Base Fee**: To account for potential fee changes, apply a buffer on the current base fee based on the requirements and recommendations in the table shown above. (27% is the minimum for bundler acceptance, but we recommend at least 50%)
 
-3. **Fetch Current Priority Fee with Rundler**: Use the [`rundler_maxPriorityFeePerGas`](/reference/rundler-maxpriorityfeepergas) method to query the current priority fee for the network.
+3. **Fetch Current Priority Fee with Rundler**: Use the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) method to query the current priority fee for the network.
 
 4. **Apply Buffer on Priority Fee**: Once you have the current priority fee using `rundler_maxPriorityFeePerGas`, increase it according to the fee requirement table shown above for any unexpected changes (No buffer for Arbitrum Mainnet and 25% buffer for all other mainnets).
 
@@ -155,14 +154,14 @@ Recommended Actions for Calculating `maxFeePerGas`:
 
 ### How do we determine fee values to give your userOp the best chance of landing on chain?
 
-* [alchemy\_requestGasAndPaymasterAndData](/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) is on opinionated endpoint that tries to set fee values that give your userOps a high chance of landing on-chain. It's likely that we're over-estimating here a bit, but this is intentional in order to land your UOs faster!
+* [alchemy\_requestGasAndPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) is on opinionated endpoint that tries to set fee values that give your userOps a high chance of landing on-chain. It's likely that we're over-estimating here a bit, but this is intentional in order to land your UOs faster!
 
 * We encourage you to try out different fee percentages and determine what works best for you as a balance between cost and chance/time to mine.
 
-* For [alchemy\_requestGasAndPaymasterAndData](/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) we offer the ability to override our fee estimates with the `feeOverride` parameters.
+* For [alchemy\_requestGasAndPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) we offer the ability to override our fee estimates with the `feeOverride` parameters.
 
   * We default to increasing baseFee by 50% and priorityFee by 5%.
-  * **Note**: The feeOverride parameters don't include preVerificationGas (PVG). The method will always increase the estimated PVG by 5% to give the UO a better chance to mine if the L1 /L2 fee ratio changes. If you would like to modify this value, its recommended you use [alchemy\_requestPaymasterAndData](/reference/alchemy-requestpaymasteranddata) instead.
+  * **Note**: The feeOverride parameters don't include preVerificationGas (PVG). The method will always increase the estimated PVG by 5% to give the UO a better chance to mine if the L1 /L2 fee ratio changes. If you would like to modify this value, its recommended you use [alchemy\_requestPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-paymaster-and-data) instead.
 
 ## EntryPoint
 
