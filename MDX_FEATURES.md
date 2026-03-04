@@ -58,8 +58,8 @@ Tables are automatically wrapped in a scrollable container for responsiveness.
 ### Task Lists
 
 ```md
-* [x] Completed task
-* [ ] Incomplete task
+* \[x] Completed task
+* \[ ] Incomplete task
 ```
 
 ### Autolinks
