@@ -4,15 +4,13 @@ on:
   repository_dispatch:
     types:
       - index-sdk-references
-  workflow_dispatch: {}
 
 jobs:
   index-sdk:
     name: Index SDK References
     runs-on: ubuntu-latest
-    # For repository_dispatch, only run if the event came from aa-sdk.
-    # workflow_dispatch has no client_payload and should still run.
-    if: github.event_name != 'repository_dispatch' || github.event.client_payload.source == 'alchemyplatform/aa-sdk'
+    # Only run if the dispatch came from the aa-sdk repository
+    if: github.event.client_payload.source == 'alchemyplatform/aa-sdk'
     permissions:
       contents: read
     steps:
