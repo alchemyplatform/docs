@@ -104,7 +104,7 @@ All branch-scoped Redis keys use a 30-day TTL for automatic cleanup.
 
 * **MDX files**: All changed files vs `main` (not just path-indexed ones), stored at `{branch}:mdx:{filePath}`
 * **Changelog files**: Changed files that exist in the path index, stored at `{branch}:changelog:{filename}`
-* **API specs**: Generated specs, stored at `{branch}:{specType}-spec:{specUrl}`
+* **API specs**: Generated specs, stored at `{branch}:{specType}-spec:{specId}`
 * **Path index + nav trees**: Full re-index output, stored at `{branch}/path-index:{type}` and `{branch}/nav-tree:{tab}`
 
 ### CI Integration

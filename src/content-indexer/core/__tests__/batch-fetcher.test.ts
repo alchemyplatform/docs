@@ -81,7 +81,7 @@ describe("batchFetchContent", () => {
         openapi: "3.0.0",
         info: { title: "Test", version: "1.0" },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     };
 
     vi.mocked(readApiSpec).mockResolvedValue(mockSpec);
@@ -217,7 +217,7 @@ describe("batchFetchContent", () => {
     vi.mocked(readApiSpec).mockResolvedValue({
       specType: "openapi",
       spec: {} as OpenApiSpec,
-      specUrl: "url",
+      specId: "url",
     });
 
     await batchFetchContent(scanResult, {

@@ -22,7 +22,7 @@ export interface MdxCacheEntry {
 export interface SpecCacheEntry {
   specType: "openrpc" | "openapi";
   spec: OpenRpcSpec | OpenApiSpec;
-  specUrl: string;
+  specId: string;
 }
 
 /**

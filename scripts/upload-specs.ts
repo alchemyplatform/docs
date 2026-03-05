@@ -3,7 +3,7 @@
  * Standalone spec upload CLI with change detection.
  *
  * Scans content/api-specs/{alchemy,chains}/, computes SHA-256 hashes, compares
- * against Redis, uploads only changed specs, and writes changed URLs as JSON
+ * against Redis, uploads only changed specs, and writes changed spec IDs as JSON
  * to an output file (default: content/api-specs/changed-specs.json).
  *
  * Usage: pnpm upload-specs [--output path]
@@ -15,9 +15,8 @@ import fs from "fs/promises";
 import path from "path";
 
 import {
-  DEV_DOCS_BASE,
   buildSpecFileMap,
-  getSpecTypeFromUrl,
+  getSpecType,
 } from "@/content-indexer/utils/apiSpecs.ts";
 import { getRedis } from "@/content-indexer/utils/redis.ts";
 
@@ -59,39 +58,39 @@ const main = async () => {
 
   const specEntries = await Promise.all(
     Array.from(specFileMap.values()).map(async (relativePath) => {
-      const specUrl = `${DEV_DOCS_BASE}/${relativePath}`;
+      const specId = relativePath;
       const content = await fs.readFile(
         path.join(SPECS_DIR, relativePath),
         "utf-8",
       );
       const hash = crypto.createHash("sha256").update(content).digest("hex");
-      return { specUrl, content, hash };
+      return { specId, content, hash };
     }),
   );
 
   const newHashes: SpecHashMap = Object.fromEntries(
-    specEntries.map(({ specUrl, hash }) => [specUrl, hash]),
+    specEntries.map(({ specId, hash }) => [specId, hash]),
   );
   const specContents: Record<string, string> = Object.fromEntries(
-    specEntries.map(({ specUrl, content }) => [specUrl, content]),
+    specEntries.map(({ specId, content }) => [specId, content]),
   );
 
   // 2. Fetch existing hashes from Redis
   const oldHashes = (await redis.get<SpecHashMap>(HASH_KEY)) ?? {};
 
-  // 3. Find changed spec URLs (new or modified)
-  const changedUrls = Object.keys(newHashes).filter(
-    (url) => oldHashes[url] !== newHashes[url],
+  // 3. Find changed spec IDs (new or modified)
+  const changedIds = Object.keys(newHashes).filter(
+    (id) => oldHashes[id] !== newHashes[id],
   );
 
-  // 4. Find deleted spec URLs (in old but not in new)
-  const deletedUrls = Object.keys(oldHashes).filter(
-    (url) => !(url in newHashes),
+  // 4. Find deleted spec IDs (in old but not in new)
+  const deletedIds = Object.keys(oldHashes).filter(
+    (id) => !(id in newHashes),
   );
 
-  const allAffectedUrls = [...changedUrls, ...deletedUrls];
+  const allAffectedIds = [...changedIds, ...deletedIds];
 
-  if (allAffectedUrls.length === 0) {
+  if (allAffectedIds.length === 0) {
     console.info("No spec changes detected");
     await fs.writeFile(output, JSON.stringify([]));
     return;
@@ -100,18 +99,18 @@ const main = async () => {
   const pipeline = redis.pipeline();
 
   // 5. Upload changed specs to Redis
-  changedUrls.forEach((specUrl) => {
-    const redisKey = `main:${getSpecTypeFromUrl(specUrl)}-spec:${specUrl}`;
-    pipeline.set(redisKey, specContents[specUrl]);
+  changedIds.forEach((specId) => {
+    const redisKey = `main:${getSpecType(specId)}-spec:${specId}`;
+    pipeline.set(redisKey, specContents[specId]);
   });
 
   // 6. Delete removed specs from Redis
-  deletedUrls.forEach((specUrl) => {
-    const redisKey = `main:${getSpecTypeFromUrl(specUrl)}-spec:${specUrl}`;
+  deletedIds.forEach((specId) => {
+    const redisKey = `main:${getSpecType(specId)}-spec:${specId}`;
     pipeline.del(redisKey);
   });
 
-  console.info(`${changedUrls.length} changed, ${deletedUrls.length} deleted`);
+  console.info(`${changedIds.length} changed, ${deletedIds.length} deleted`);
 
   // 7. Update hash map
   pipeline.set(HASH_KEY, JSON.stringify(newHashes));
@@ -119,8 +118,8 @@ const main = async () => {
   await pipeline.exec();
   console.info("Upload complete");
 
-  // 8. Write all affected URLs to output file
-  await fs.writeFile(output, JSON.stringify(allAffectedUrls));
+  // 8. Write all affected IDs to output file
+  await fs.writeFile(output, JSON.stringify(allAffectedIds));
 };
 
 main().catch((error) => {

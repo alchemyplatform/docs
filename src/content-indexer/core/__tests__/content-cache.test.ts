@@ -43,7 +43,7 @@ describe("ContentCache", () => {
     const specEntry = {
       specType: "openapi" as const,
       spec: spec,
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     };
 
     cache.setSpec("ethereum-api", specEntry);
@@ -59,7 +59,7 @@ describe("ContentCache", () => {
     const specEntry = {
       specType: "openrpc" as const,
       spec: spec,
-      specUrl: "https://example.com/rpc-spec.json",
+      specId: "https://example.com/rpc-spec.json",
     };
 
     cache.setSpec("solana-das-api", specEntry);
@@ -98,12 +98,12 @@ describe("ContentCache", () => {
     cache.setSpec("api1", {
       specType: "openapi",
       spec: openApiSpecFactory(),
-      specUrl: "url1",
+      specId: "url1",
     });
     cache.setSpec("api2", {
       specType: "openrpc",
       spec: openRpcSpecFactory(),
-      specUrl: "url2",
+      specId: "url2",
     });
 
     expect(cache.getSpec("api1")?.specType).toBe("openapi");
@@ -124,7 +124,7 @@ describe("ContentCache", () => {
     cache.setSpec("api1", {
       specType: "openapi",
       spec: openApiSpecFactory(),
-      specUrl: "url1",
+      specId: "url1",
     });
 
     const stats = cache.getStats();
@@ -154,16 +154,16 @@ describe("ContentCache", () => {
     cache.setSpec("api", {
       specType: "openapi",
       spec: openApiSpecFactory({ info: { title: "API", version: "1.0.0" } }),
-      specUrl: "url1",
+      specId: "url1",
     });
     cache.setSpec("api", {
       specType: "openrpc",
       spec: openRpcSpecFactory({ info: { title: "API", version: "2.0.0" } }),
-      specUrl: "url2",
+      specId: "url2",
     });
 
     const retrieved = cache.getSpec("api");
     expect(retrieved?.specType).toBe("openrpc");
-    expect(retrieved?.specUrl).toBe("url2");
+    expect(retrieved?.specId).toBe("url2");
   });
 });

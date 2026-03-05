@@ -50,7 +50,7 @@ describe("visitApiReference", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     });
 
     const result = visitApiReference({
@@ -87,7 +87,7 @@ describe("visitApiReference", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/rpc-spec.json",
+      specId: "https://example.com/rpc-spec.json",
     });
 
     const result = visitApiReference({
@@ -123,7 +123,7 @@ describe("visitApiReference", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     });
 
     const result = visitApiReference({
@@ -160,7 +160,7 @@ describe("visitApiReference", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     });
 
     const result = visitApiReference({
@@ -198,7 +198,7 @@ describe("visitApiReference", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     });
 
     const result = visitApiReference({
@@ -238,7 +238,7 @@ describe("visitApiReference", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     });
 
     const result = visitApiReference({
@@ -279,7 +279,7 @@ describe("visitApiReference", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "https://example.com/spec.json",
     });
 
     const result = visitApiReference({
