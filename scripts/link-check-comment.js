@@ -74,33 +74,33 @@ const getCommentBody = ({
     errorCount,
   });
 
+  const isTerminal = lycheeStatus === "success" || lycheeStatus === "failure";
+
   const lines = [
     commentMarker,
     `## ${commentTitle}`,
     "",
     `**Status:** ${status}`,
     "",
-    "### Summary",
-    summary,
-    "",
   ];
 
-  if (!hasContentChanges) {
-    lines.push("No markdown content files changed in this PR.");
-    lines.push("");
-  } else if (errorCount === 0) {
-    lines.push("No broken links found ✅");
-    lines.push("");
-  } else if (errorsSection) {
-    lines.push("<details>");
-    lines.push(
-      `<summary>Broken links (${errorCount}) — click to expand</summary>`,
-    );
-    lines.push("");
-    lines.push(errorsSection);
-    lines.push("");
-    lines.push("</details>");
-    lines.push("");
+  if (isTerminal) {
+    lines.push("### Summary", summary, "");
+
+    if (errorCount === 0) {
+      lines.push("No broken links found ✅");
+      lines.push("");
+    } else if (errorsSection) {
+      lines.push("<details>");
+      lines.push(
+        `<summary>Broken links (${errorCount}) — click to expand</summary>`,
+      );
+      lines.push("");
+      lines.push(errorsSection);
+      lines.push("");
+      lines.push("</details>");
+      lines.push("");
+    }
   }
 
   if (runUrl) {
