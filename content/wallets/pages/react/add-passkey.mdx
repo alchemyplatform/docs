@@ -1,17 +1,24 @@
 ---
-title: Add Passkey
-description: Learn how to add a passkey to your users' accounts with Smart Wallets.
+title: Add a passkey
+description: Add a passkey during sign-up or from your app settings.
 slug: wallets/react/add-passkey
 ---
 
-You may have noticed in the [Demo App](https://demo.alchemy.com/) that you can allow a user to log in with an existing passkey, but there's no way to sign-up with a passkey. This guide will outline
-how to add a passkey to a user's account after they've signed up.
+Use this guide to add passkeys as an authentication method in your React app.
+You can prompt for a passkey during sign-up or let a signed-in user add one
+later from a settings screen.
 
-If you're not sure how to authenticate your users, see [this guide](/docs/wallets/react/getting-started).
+## Prerequisites
 
-## Add a passkey on sign up
+* A React app with Smart Wallets configured
+* Authentication already set up in your app. If you still need that, start with
+  [React quickstart](/wallets/react/quickstart) and [environment setup](/wallets/react/setup).
+* For the second example, a user must already be signed in
 
-The easiest way to add a passkey to users is right when they signup! This can be done by updating your `ui` config in the `createConfig` call to enable the UI components to prompt the user for a passkey.
+## Add a passkey during sign-up
+
+Enable `addPasskeyOnSignup` in your `createConfig` call to prompt for a passkey
+as part of sign-up.
 
 ```ts twoslash config.ts
 // @noErrors
@@ -33,33 +40,44 @@ export const config = createConfig(
 );
 ```
 
-Now, when a user signs up, they will be prompted to create a passkey.
+When sign-up starts, the UI prompts the user to create a passkey and attach it
+to the account.
 
-## Add a passkey later
+## Add a passkey after sign-up
 
-With the above config, the user will only be prompted when they first create their account in your app. If you want to add the ability to add a passkey elsewhere in your app, for example in a settings page, you can use the [`useAddPasskey`](/docs/wallets/reference/account-kit/react/hooks/useAddPasskey) hook.
+Use `useAddPasskey` when you want to add passkeys from a settings page or any
+other authenticated screen.
 
 <Warning>
-  This hook requires that the user already be authenticated or else it will
-  throw an error!
+  `useAddPasskey` requires an authenticated user. Call it only after sign-in is
+  complete.
 </Warning>
 
 ```tsx twoslash
 import React from "react";
 import { useAddPasskey } from "@account-kit/react";
 
-export default function MyComponent() {
+export default function SettingsPage() {
   const { addPasskey, isAddingPasskey } = useAddPasskey();
 
   return (
     <button
       disabled={isAddingPasskey}
-      onClick={() => {
-        addPasskey();
+      onClick={async () => {
+        await addPasskey();
       }}
     >
-      Add Passkey
+      {isAddingPasskey ? "Adding passkey..." : "Add passkey"}
     </button>
   );
 }
 ```
+
+When the button is clicked, the browser opens the passkey creation flow. After
+the flow completes, the new passkey is available as a login method for that
+account.
+
+## Next steps
+
+* [Sign in with a passkey](/wallets/react/login-methods/passkey-login)
+* [Add and remove login methods](/wallets/signer/authentication/adding-and-removing-login-methods)
