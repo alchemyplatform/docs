@@ -61,10 +61,7 @@ Interpret these labels consistently:
 * `Preferred` means use this by default, but it can be overridden for clarity or local context
 * `Avoid` means do not do this unless there is a specific reason
 
-Section-specific guides override this document when they are more specific. For
-example, Wallets documentation has its own contributing guide at
-`content/wallets/CONTRIBUTING.md`. In those docs, follow the Wallets-specific
-rules first and use this guide as the fallback for anything not covered there.
+Section-specific guides override this document when they are more specific. For example, Wallets documentation has its own contributing guide at `content/wallets/CONTRIBUTING.md`. In those docs, follow the Wallets-specific rules first and use this guide as the fallback for anything not covered there.
 
 Some choices in this repo are enforced by tooling such as Prettier, ESLint, and markdown linting. This guide should not duplicate those checks. It should cover the places where judgment matters: what to say, how to organize it, and how much to explain.
 
