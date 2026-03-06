@@ -18,7 +18,7 @@ Required:
 * Use the preferred terminology table exactly
 * Use JavaScript or TypeScript for authored examples unless the page has a stronger existing convention
 * Put changelog updates under product-area headings and place `Node` after more user-facing sections when both are present
-* * For files under `content/wallets/`, follow `content/wallets/CONTRIBUTING.md` before this guide
+* For files under `content/wallets/`, follow `content/wallets/CONTRIBUTING.md` before this guide
 * In changelog, use `Updates` for launches, availability changes, deprecations, and behavior changes
 * In changelog, Use `Upgrades` for version bumps and maintenance entries
 * Do not hand-edit generated API reference output; update the source specs instead
