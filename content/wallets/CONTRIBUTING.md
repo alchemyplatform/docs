@@ -6,6 +6,9 @@
 
 **ROLE**: You are helping write documentation for Alchemy's Smart Wallets product. Always follow these rules when generating or editing content.
 
+**PRECEDENCE**: These rules override the repo-wide style guide in
+[`STYLE_RULES.md`](../../STYLE_RULES.md) for content under `content/wallets/`.
+
 **CORE PRINCIPLES**:
 
 * SIMPLIFY: Hide blockchain complexity, focus on developer outcomes
@@ -30,6 +33,10 @@
 ## Overview
 
 When writing or editing documentation for Alchemy Smart Wallets, follow these comprehensive style guidelines. These rules ensure consistency, clarity, and developer-focused content that abstracts away blockchain complexity.
+
+**Scope**: These guidelines extend the repo-wide style guide in
+[`STYLE_RULES.md`](../../STYLE_RULES.md). If a Wallets-specific rule conflicts
+with the repo-wide guide, follow this document for Wallets content.
 
 **Foundation**: Follow the [Google Developer Documentation Style Guide](https://developers.google.com/style) as the base standard.
 
