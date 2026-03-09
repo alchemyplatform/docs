@@ -104,13 +104,13 @@ To include multiple parallel nonces in the same bundle, the account must stake t
 
 Our APIs are compatible with any type of smart account. This means regardless of the smart account you're using, our endpoints will work with it. However, different smart accounts have unique ways of signing transactions, known as signature patterns. A dummy signature is essentially a template or example signature that aligns with the signature pattern of your specific account type.
 
-For certain API endpoints (ex: [eth\_estimateUserOperationGas](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-estimate-user-operation-gas)), particularly those involved in gas estimation, a dummy signature is required in the request. This is because these endpoints need to simulate or estimate the transaction without actually executing it, and the dummy signature helps in this process.
+For certain API endpoints (ex: [eth\_estimateUserOperationGas](/docs/wallets/api/bundler-api/bundler-api-endpoints/eth-estimate-user-operation-gas)), particularly those involved in gas estimation, a dummy signature is required in the request. This is because these endpoints need to simulate or estimate the transaction without actually executing it, and the dummy signature helps in this process.
 
 ## Fees
 
 ### What are the bundler fees?
 
-To provide its services, Alchemy's Rundler requires fees when using [`eth_sendUserOperation`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation), and these fees differ based on the mainnet or testnet in use. Rundler's requirements for priority fees are expressed via the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) endpoint.
+To provide its services, Alchemy's Rundler requires fees when using [`eth_sendUserOperation`](/docs/wallets/api/bundler-api/bundler-api-endpoints/eth-send-user-operation), and these fees differ based on the mainnet or testnet in use. Rundler's requirements for priority fees are expressed via the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) endpoint.
 
 Each Bundler API endpoint has an [associated compute unit cost](/docs/reference/compute-unit-costs#gas-manager--bundler-apis).
 
@@ -128,7 +128,7 @@ Recommended Actions for Calculating `maxFeePerGas`:
 
 2. **Apply Buffer on Base Fee**: To account for potential fee changes, apply a buffer on the current base fee based on the requirements and recommendations in the table shown above. (27% is the minimum for bundler acceptance, but we recommend at least 50%)
 
-3. **Fetch Current Priority Fee with Rundler**: Use the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) method to query the current priority fee for the network.
+3. **Fetch Current Priority Fee with Rundler**: Use the [`rundler_maxPriorityFeePerGas`](/docs/wallets/api/bundler-api/bundler-api-endpoints/rundler-max-priority-fee-per-gas) method to query the current priority fee for the network.
 
 4. **Apply Buffer on Priority Fee**: Once you have the current priority fee using `rundler_maxPriorityFeePerGas`, increase it according to the fee requirement table shown above for any unexpected changes (No buffer for Arbitrum Mainnet and 25% buffer for all other mainnets).
 
