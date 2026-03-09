@@ -43,7 +43,7 @@ describe("ContentCache", () => {
     const specEntry = {
       specType: "openapi" as const,
       spec: spec,
-      specId: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
     };
 
     cache.setSpec("ethereum-api", specEntry);
@@ -59,7 +59,7 @@ describe("ContentCache", () => {
     const specEntry = {
       specType: "openrpc" as const,
       spec: spec,
-      specId: "https://example.com/rpc-spec.json",
+      specId: "chains/test.json",
     };
 
     cache.setSpec("solana-das-api", specEntry);
@@ -98,12 +98,12 @@ describe("ContentCache", () => {
     cache.setSpec("api1", {
       specType: "openapi",
       spec: openApiSpecFactory(),
-      specId: "url1",
+      specId: "alchemy/rest/test-one.json",
     });
     cache.setSpec("api2", {
       specType: "openrpc",
       spec: openRpcSpecFactory(),
-      specId: "url2",
+      specId: "chains/test-two.json",
     });
 
     expect(cache.getSpec("api1")?.specType).toBe("openapi");
@@ -124,7 +124,7 @@ describe("ContentCache", () => {
     cache.setSpec("api1", {
       specType: "openapi",
       spec: openApiSpecFactory(),
-      specId: "url1",
+      specId: "alchemy/rest/test.json",
     });
 
     const stats = cache.getStats();
@@ -154,16 +154,16 @@ describe("ContentCache", () => {
     cache.setSpec("api", {
       specType: "openapi",
       spec: openApiSpecFactory({ info: { title: "API", version: "1.0.0" } }),
-      specId: "url1",
+      specId: "alchemy/rest/test-v1.json",
     });
     cache.setSpec("api", {
       specType: "openrpc",
       spec: openRpcSpecFactory({ info: { title: "API", version: "2.0.0" } }),
-      specId: "url2",
+      specId: "chains/test-v2.json",
     });
 
     const retrieved = cache.getSpec("api");
     expect(retrieved?.specType).toBe("openrpc");
-    expect(retrieved?.specId).toBe("url2");
+    expect(retrieved?.specId).toBe("chains/test-v2.json");
   });
 });

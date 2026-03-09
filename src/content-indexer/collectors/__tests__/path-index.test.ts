@@ -30,7 +30,7 @@ describe("PathIndexCollector", () => {
     const collector = new PathIndexCollector();
     collector.add("reference/eth-getbalance", {
       type: "openapi",
-      specId: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       operationId: "eth_getBalance",
       source: "docs-yml",
       tab: "reference",
@@ -39,7 +39,7 @@ describe("PathIndexCollector", () => {
     const index = collector.getIndex();
     expect(index["reference/eth-getbalance"]).toEqual({
       type: "openapi",
-      specId: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       operationId: "eth_getBalance",
       source: "docs-yml",
       tab: "reference",
@@ -50,7 +50,7 @@ describe("PathIndexCollector", () => {
     const collector = new PathIndexCollector();
     collector.add("reference/getAsset", {
       type: "openrpc",
-      specId: "https://example.com/spec.json",
+      specId: "chains/test.json",
       methodName: "getAsset",
       source: "docs-yml",
       tab: "reference",
@@ -59,7 +59,7 @@ describe("PathIndexCollector", () => {
     const index = collector.getIndex();
     expect(index["reference/getAsset"]).toEqual({
       type: "openrpc",
-      specId: "https://example.com/spec.json",
+      specId: "chains/test.json",
       methodName: "getAsset",
       source: "docs-yml",
       tab: "reference",
