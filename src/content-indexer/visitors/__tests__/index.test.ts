@@ -96,7 +96,7 @@ describe("visitNavigationItem dispatcher", () => {
     cache.setSpec("ethereum-api", {
       specType: "openapi",
       spec: openApiSpecFactory(),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
     });
 
     const result = visitNavigationItem({

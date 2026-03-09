@@ -31,7 +31,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "Ethereum API", "api-name": "ethereum-api" },
         parentPath: PathBuilder.init(),
@@ -74,7 +74,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
@@ -120,7 +120,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
@@ -154,7 +154,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
@@ -189,7 +189,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
@@ -223,7 +223,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "Ethereum API", "api-name": "ethereum-api" },
         parentPath: PathBuilder.init(),
@@ -265,7 +265,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
@@ -299,7 +299,7 @@ describe("processOpenApiSpec", () => {
           },
         },
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
