@@ -23,7 +23,7 @@ import type {
  */
 export interface ProcessOpenApiConfig {
   spec: OpenApiSpec;
-  specUrl: string;
+  specId: string;
   visitorConfig: VisitorConfig;
   apiPathBuilder: PathBuilder;
   apiTitle: string;
@@ -34,7 +34,7 @@ export interface ProcessOpenApiConfig {
 interface BuildOpenApiIndexEntriesConfig {
   operations: ExtractedOperation[];
   apiPathBuilder: PathBuilder;
-  specUrl: string;
+  specId: string;
   tab: string;
 }
 
@@ -54,7 +54,7 @@ interface BuildOpenApiNavigationConfig {
 const buildOpenApiIndexEntries = ({
   operations,
   apiPathBuilder,
-  specUrl,
+  specId,
   tab,
 }: BuildOpenApiIndexEntriesConfig): PathIndex => {
   const indexEntries: PathIndex = {};
@@ -68,7 +68,7 @@ const buildOpenApiIndexEntries = ({
 
     indexEntries[finalPath] = {
       type: "openapi",
-      specUrl,
+      specId,
       operationId: operation.operationId,
       source: "docs-yml",
       tab,
@@ -166,7 +166,7 @@ const buildOpenApiNavigation = ({
  */
 export const processOpenApiSpec = ({
   spec,
-  specUrl,
+  specId,
   visitorConfig,
   apiPathBuilder,
   apiTitle,
@@ -180,7 +180,7 @@ export const processOpenApiSpec = ({
   const indexEntries = buildOpenApiIndexEntries({
     operations,
     apiPathBuilder,
-    specUrl,
+    specId,
     tab,
   });
 

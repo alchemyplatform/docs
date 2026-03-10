@@ -6,7 +6,7 @@ import { PREVIEW_TTL_SECONDS } from "./redis.ts";
 
 /**
  * Uploads all specs to Redis under branch-scoped keys.
- * Key format: {branch}:{specType}-spec:{specUrl}
+ * Key format: {branch}:{specType}-spec:{specId}
  *
  * @param specs - Map of apiName → SpecCacheEntry from the indexer
  * @param branch - Branch identifier for Redis key prefix
@@ -28,8 +28,8 @@ export const uploadSpecs = async (
 
   await Promise.all(
     Array.from(specs.entries()).map(
-      async ([_apiName, { specType, spec, specUrl }]) => {
-        const redisKey = `${branch}:${specType}-spec:${specUrl}`;
+      async ([_apiName, { specType, spec, specId }]) => {
+        const redisKey = `${branch}:${specType}-spec:${specId}`;
         await redis.set(redisKey, JSON.stringify(spec), {
           ex: PREVIEW_TTL_SECONDS,
         });

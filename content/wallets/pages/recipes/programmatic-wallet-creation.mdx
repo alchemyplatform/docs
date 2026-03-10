@@ -4,6 +4,8 @@ description: Generate a signer, initialize a Smart Wallet Client, sponsor gas wi
 slug: wallets/recipes/programmatic-wallet-creation
 ---
 
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
+
 This recipe shows how to programmatically create a smart wallet: you’ll generate a signer, spin up a Smart Wallet Client, read the counterfactual address before deployment and deploy the wallet by sending your first gas sponsored `UserOperation` (prepared → signed → sent).
 
 <Steps>
@@ -11,13 +13,13 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
     You'll need the following packages for this recipe:
 
     * **@account-kit/signer**: Server wallet signer and access key generation
-    * **@account-kit/infra**: Alchemy transport & chain constants (e.g., `arbitrumSepolia`)
-    * **@account-kit/wallet-client**: Smart Wallet Client (prepare/sign/send flows)
+    * **@alchemy/wallet-apis**: Smart Wallet Client (prepare/sign/send flows)
+    * **viem**: Chain definitions and utilities
     * **dotenv**: Read .env for your API key & policy id
     * **typescript + tsx + @types/node**: Run TypeScript files directly
 
     ```bash
-    npm i @account-kit/signer @account-kit/infra @account-kit/wallet-client dotenv
+    npm i @account-kit/signer @alchemy/wallet-apis viem dotenv
     npm i -D typescript tsx @types/node
     ```
   </Step>
@@ -81,13 +83,11 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
 
   <Step title="Create the Smart Wallet Client">
     ```ts
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
-    import { alchemy, arbitrumSepolia } from "@account-kit/infra";
-
-    const transport = alchemy({ apiKey: process.env.ALCHEMY_API_KEY! });
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+    import { arbitrumSepolia } from "viem/chains";
 
     const client = createSmartWalletClient({
-      transport,
+      transport: alchemyWalletTransport({ apiKey: process.env.ALCHEMY_API_KEY! }),
       chain: arbitrumSepolia,
       signer,
     });
@@ -105,24 +105,24 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
   </Step>
 
   <Step title="Prepare → sign → send a sponsored call">
-    Use the **capabilities** pipeline with `paymasterService` to sponsor gas via your policy and deploy the account contract by sending a gas sponsored UserOperation.
+    Use the **capabilities** pipeline with `paymaster` to sponsor gas via your policy and deploy the account contract by sending a gas sponsored UserOperation.
 
     ```ts
     const prepared = await client.prepareCalls({
-      from: address,
+      account: address,
       calls: [
         {
           to: "0x0000000000000000000000000000000000000000",
           data: "0x",
-          value: "0x0",
+          value: BigInt(0),
         },
       ], // minimal call to deploy the account contract
       capabilities: {
-        paymasterService: { policyId: process.env.ALCHEMY_POLICY_ID! },
+        paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
       },
     });
 
-    const signed = await client.signPreparedCalls(prepared);
+    const signed = await client.signPreparedCalls(prepared); // signed by the signer on the client
     const sent = await client.sendPreparedCalls(signed);
 
     const txHash = await client.waitForCallsStatus({ id: sent.id });
@@ -131,7 +131,7 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
     ```
 
     <Note>
-      For non-sponsored path, remove the `paymasterService` capability in
+      For non-sponsored path, remove the `paymaster` capability in
       `prepareCalls` and **fund the account** to pay gas. The rest of the flow is
       unchanged.
     </Note>
@@ -141,8 +141,8 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
     ```ts provision.ts
     import "dotenv/config";
     import { createServerSigner } from "@account-kit/signer";
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
-    import { alchemy, arbitrumSepolia } from "@account-kit/infra";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+    import { arbitrumSepolia } from "viem/chains";
 
     const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
     const ALCHEMY_POLICY_ID = process.env.ALCHEMY_POLICY_ID!;
@@ -163,10 +163,9 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
         },
       });
 
-      // 2) Transport + Smart Wallet Client
-      const transport = alchemy({ apiKey: ALCHEMY_API_KEY });
+      // 2) Smart Wallet Client
       const client = createSmartWalletClient({
-        transport,
+        transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
         chain: arbitrumSepolia,
         signer,
       });
@@ -178,20 +177,20 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
 
       // 4) Prepare → sign → send (sponsored) to trigger deployment
       const prepared = await client.prepareCalls({
-        from: address,
+        account: address,
         calls: [
           {
             to: "0x0000000000000000000000000000000000000000",
             data: "0x",
-            value: "0x0",
+            value: BigInt(0),
           },
         ], // minimal call to deploy the account contract
         capabilities: {
-          paymasterService: { policyId: ALCHEMY_POLICY_ID },
+          paymaster: { policyId: ALCHEMY_POLICY_ID },
         },
       });
 
-      const signed = await client.signPreparedCalls(prepared);
+      const signed = await client.signPreparedCalls(prepared); // signed by the signer on the client
       const sent = await client.sendPreparedCalls(signed);
 
       // 5) Wait for inclusion → tx hash
@@ -221,7 +220,7 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
   <Step title="Run it">
     ```bash
     # one-time per project
-    npm i @account-kit/signer @account-kit/infra @account-kit/wallet-client dotenv
+    npm i @account-kit/signer @alchemy/wallet-apis viem dotenv
     npm i -D typescript tsx @types/node
 
     # then run

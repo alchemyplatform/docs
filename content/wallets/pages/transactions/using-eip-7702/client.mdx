@@ -1,4 +1,4 @@
-<Info>Required SDK version: ^v4.61.0</Info>
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
 
 EIP-7702 is the default mode for Smart Wallets. Simply create a client with your signer and use `sendCalls` - the SDK will automatically handle authorization requests to delegate the EOA to Modular Account v2 when needed.
 
@@ -8,27 +8,27 @@ EIP-7702 is the default mode for Smart Wallets. Simply create a client with your
   delegation.
 </Warning>
 
-See the [`sendCalls` SDK
-reference](/docs/wallets/reference/account-kit/wallet-client/functions/sendCalls)
-for full descriptions of the parameters used in the following example.
+{/* TODO: Add SDK reference link once @alchemy/wallet-apis reference docs are published */}
+{/* See the [`sendCalls` SDK
+reference](/wallets/reference/account-kit/wallet-client/functions/sendCalls)
+for full descriptions of the parameters used in the following example. */}
 
 <CodeBlocks>
 
 ```tsx title="sendCalls.ts"
-import { client, config, signer } from "./client.ts";
+import { client, config } from "./client.ts";
 
 try {
   const { id } = await client.sendCalls({
-    from: await signer.getAddress(),
     capabilities: {
-      paymasterService: {
+      paymaster: {
         policyId: config.policyId,
       },
     },
     calls: [
       {
         to: "0x0000000000000000000000000000000000000000",
-        value: "0x00",
+        value: BigInt(0),
         data: "0x",
       },
     ],
@@ -41,26 +41,21 @@ try {
 ```
 
 ```ts title="client.ts"
-import "dotenv/config";
 import type { Hex } from "viem";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, sepolia } from "@account-kit/infra";
-import { createSmartWalletClient } from "@account-kit/wallet-client";
+import { privateKeyToAccount } from "viem/accounts";
+import { sepolia } from "viem/chains";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 export const config = {
-  policyId: process.env.ALCHEMY_POLICY_ID!,
+  policyId: "YOUR_POLICY_ID",
 };
 
-export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-  process.env.PRIVATE_KEY! as Hex,
-);
-
 export const client = createSmartWalletClient({
-  transport: alchemy({
-    apiKey: process.env.ALCHEMY_API_KEY!,
+  transport: alchemyWalletTransport({
+    apiKey: "YOUR_API_KEY",
   }),
   chain: sepolia,
-  signer,
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
 });
 ```
 

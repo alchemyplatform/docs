@@ -30,7 +30,7 @@ describe("PathIndexCollector", () => {
     const collector = new PathIndexCollector();
     collector.add("reference/eth-getbalance", {
       type: "openapi",
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       operationId: "eth_getBalance",
       source: "docs-yml",
       tab: "reference",
@@ -39,7 +39,7 @@ describe("PathIndexCollector", () => {
     const index = collector.getIndex();
     expect(index["reference/eth-getbalance"]).toEqual({
       type: "openapi",
-      specUrl: "https://example.com/spec.json",
+      specId: "alchemy/rest/test.json",
       operationId: "eth_getBalance",
       source: "docs-yml",
       tab: "reference",
@@ -50,7 +50,7 @@ describe("PathIndexCollector", () => {
     const collector = new PathIndexCollector();
     collector.add("reference/getAsset", {
       type: "openrpc",
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       methodName: "getAsset",
       source: "docs-yml",
       tab: "reference",
@@ -59,7 +59,7 @@ describe("PathIndexCollector", () => {
     const index = collector.getIndex();
     expect(index["reference/getAsset"]).toEqual({
       type: "openrpc",
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       methodName: "getAsset",
       source: "docs-yml",
       tab: "reference",
@@ -122,14 +122,14 @@ describe("PathIndexCollector", () => {
     });
     collector.add("path2", {
       type: "openapi",
-      specUrl: "spec.json",
+      specId: "spec.json",
       operationId: "op1",
       source: "docs-yml",
       tab: "tab1",
     });
     collector.add("path3", {
       type: "openrpc",
-      specUrl: "spec.json",
+      specId: "spec.json",
       methodName: "method1",
       source: "docs-yml",
       tab: "tab1",

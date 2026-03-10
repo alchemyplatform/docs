@@ -1,15 +1,18 @@
-<Info>Required SDK version: ^v4.59.1</Info>
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
 
-See the [`signTypedData` SDK
+{/* TODO: Add SDK reference link once @alchemy/wallet-apis reference docs are published */}
+{/* See the [`signTypedData` SDK
 reference](/docs/wallets/reference/account-kit/wallet-client/functions/signTypedData)
-for full descriptions of the parameters used in the following example.
+for full descriptions of the parameters used in the following example. */}
 
 <CodeBlocks>
 
 ```ts title="signTypedData.ts"
-import { client, signer } from "./client";
+import { createPublicClient, http } from "viem";
+import { arbitrumSepolia } from "viem/chains";
+import { client } from "./client";
 
-const signerAddress = await signer.getAddress();
+const signerAddress = client.account.address;
 
 // Sign typed data
 const typedData = {
@@ -36,29 +39,37 @@ const typedData = {
 
 const signature = await client.signTypedData({
   ...typedData,
-  account: signerAddress,
 });
 
-console.log("Typed data signature:", signature);
+console.log("Signature:", signature);
+
+// Verify the signature
+const publicClient = createPublicClient({
+  chain: arbitrumSepolia,
+  transport: http(),
+});
+
+const isValid = await publicClient.verifyTypedData({
+  address: client.account.address,
+  ...typedData,
+  signature,
+});
+
+console.log("Valid:", isValid); // true
 ```
 
 ```ts title="client.ts"
-import "dotenv/config";
 import type { Hex } from "viem";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, sepolia } from "@account-kit/infra";
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-  process.env.PRIVATE_KEY! as Hex,
-);
+import { privateKeyToAccount } from "viem/accounts";
+import { arbitrumSepolia } from "viem/chains";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
 export const client = createSmartWalletClient({
-  transport: alchemy({
-    apiKey: process.env.ALCHEMY_API_KEY!,
+  transport: alchemyWalletTransport({
+    apiKey: "YOUR_API_KEY",
   }),
-  chain: sepolia,
-  signer,
+  chain: arbitrumSepolia,
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
 });
 ```
 

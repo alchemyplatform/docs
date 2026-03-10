@@ -1,8 +1,6 @@
-<Info>Required SDK version: ^v4.61.0</Info>
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
 
-See the [`sendCalls` SDK
-reference](/docs/wallets/reference/account-kit/wallet-client/functions/sendCalls)
-for full descriptions of the parameters used in the following example.
+{/* TODO: Add SDK reference link once @alchemy/wallet-apis reference docs are published */}
 
 When re-sending calls without a `nonceOverride`, the client automatically uses the same nonce as the pending transaction, replacing it.
 
@@ -14,20 +12,19 @@ You'll need the following env variables:
 
 <CodeBlocks>
   ```ts title="retryTransaction.ts"
-  import { client, config, signer } from "./client.ts";
+  import { client, config } from "./client.ts";
 
   // Send initial transaction
   const { id } = await client.sendCalls({
-    from: await signer.getAddress(),
     capabilities: {
-      paymasterService: {
+      paymaster: {
         policyId: config.policyId,
       },
     },
     calls: [
       {
         to: "0x0000000000000000000000000000000000000000",
-        value: "0x00",
+        value: BigInt(0),
         data: "0x",
       },
     ],
@@ -46,16 +43,15 @@ You'll need the following env variables:
 
     // Re-send without nonceOverride to replace stuck transaction
     const { id: replacementId } = await client.sendCalls({
-      from: await signer.getAddress(),
       capabilities: {
-        paymasterService: {
+        paymaster: {
           policyId: config.policyId,
         },
       },
       calls: [
         {
           to: "0x0000000000000000000000000000000000000000",
-          value: "0x00",
+          value: BigInt(0),
           data: "0x",
         },
       ],
@@ -71,26 +67,21 @@ You'll need the following env variables:
   ```
 
   ```ts title="client.ts"
-  import "dotenv/config";
   import type { Hex } from "viem";
-  import { LocalAccountSigner } from "@aa-sdk/core";
-  import { alchemy, sepolia } from "@account-kit/infra";
-  import { createSmartWalletClient } from "@account-kit/wallet-client";
+  import { sepolia } from "viem/chains";
+  import { privateKeyToAccount } from "viem/accounts";
+  import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
   export const config = {
-    policyId: process.env.ALCHEMY_POLICY_ID!,
+    policyId: "YOUR_POLICY_ID",
   };
 
-  export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-    process.env.PRIVATE_KEY! as Hex,
-  );
-
   export const client = createSmartWalletClient({
-    transport: alchemy({
-      apiKey: process.env.ALCHEMY_API_KEY!,
+    transport: alchemyWalletTransport({
+      apiKey: "YOUR_API_KEY",
     }),
     chain: sepolia,
-    signer,
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
   });
   ```
 </CodeBlocks>

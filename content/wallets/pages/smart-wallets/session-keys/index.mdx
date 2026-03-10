@@ -37,16 +37,16 @@ We'll demonstrate how to create and use session keys [using the SDK client](/doc
 To specify permissions during a session key installation, include them in the `permissions` array when calling `client.grantPermission()` via the SDK or `wallet_createSession` via the API.
 
 ```ts
-const signerAddress = await signer.getAddress();
-
+// See the SDK or API guide above for full client and session key setup
 const permissions = await client.grantPermissions({
-  account: signerAddress,
   expirySec: Math.floor(Date.now() / 1000) + 60 * 60,
   key: {
-    publicKey: await sessionKey.getAddress(),
+    publicKey: sessionKey.address,
     type: "secp256k1",
   },
-  permissions: [{ PERMISSION_ONE }, { PERMISSION_TWO }],
+  permissions: [
+    // Add one or more permission types (see below)
+  ],
 });
 ```
 

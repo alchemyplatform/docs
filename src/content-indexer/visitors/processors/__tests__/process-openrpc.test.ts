@@ -15,7 +15,7 @@ describe("processOpenRpcSpec", () => {
 
     const result = processOpenRpcSpec({
       spec: {} as OpenRpcSpec, // Invalid spec without methods array
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
@@ -59,7 +59,7 @@ describe("processOpenRpcSpec", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/rpc-spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
@@ -97,7 +97,7 @@ describe("processOpenRpcSpec", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
@@ -139,7 +139,7 @@ describe("processOpenRpcSpec", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
@@ -171,7 +171,7 @@ describe("processOpenRpcSpec", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
@@ -206,7 +206,7 @@ describe("processOpenRpcSpec", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "Solana API", "api-name": "solana-api" },
         parentPath: PathBuilder.init(),
@@ -249,7 +249,7 @@ describe("processOpenRpcSpec", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),
@@ -284,7 +284,7 @@ describe("processOpenRpcSpec", () => {
           },
         ],
       }),
-      specUrl: "https://example.com/spec.json",
+      specId: "chains/test.json",
       visitorConfig: {
         item: { api: "API", "api-name": "api" },
         parentPath: PathBuilder.init(),

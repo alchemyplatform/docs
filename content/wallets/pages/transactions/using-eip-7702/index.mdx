@@ -26,6 +26,10 @@ If you need to use a traditional Smart Contract Account instead of EIP-7702, you
 
 When you call `wallet_requestAccount` with a signer address, it creates a dedicated Smart Contract Account address. Using this SCA address (instead of your signer address) in subsequent API calls will bypass 7702 mode.
 
+<Note>
+If you've already used a signer address in 7702 mode (e.g. by calling `wallet_prepareCalls` with the signer address), you'll need to specify `creationHint: { accountType: "sma-b" }` when calling `wallet_requestAccount` to create a separate Smart Contract Account for that signer.
+</Note>
+
 **When to use SCA mode:**
 * Backwards compatibility with existing Smart Contract Accounts
 * Using chains that don't yet support EIP-7702
@@ -35,26 +39,23 @@ When you call `wallet_requestAccount` with a signer address, it creates a dedica
 <Tabs>
   <Tab title="SDK">
     ```ts
-    import { createSmartWalletClient } from "@account-kit/wallet-client";
-    import { LocalAccountSigner } from "@aa-sdk/core";
-    import { alchemy, sepolia } from "@account-kit/infra";
-
-    const signer = LocalAccountSigner.privateKeyToAccountSigner(
-      process.env.PRIVATE_KEY!,
-    );
+    import type { Hex } from "viem";
+    import { privateKeyToAccount } from "viem/accounts";
+    import { sepolia } from "viem/chains";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
     const client = createSmartWalletClient({
-      transport: alchemy({ apiKey: process.env.ALCHEMY_API_KEY! }),
+      transport: alchemyWalletTransport({ apiKey: "YOUR_API_KEY" }),
       chain: sepolia,
-      signer,
+      signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
     });
 
     // Request a Smart Contract Account
-    const account = await client.requestAccount();
+    const { address } = await client.requestAccount({ creationHint: { accountType: "sma-b" } });
 
-    // Use the SCA address as the `from` param to bypass 7702 mode
+    // Pass the SCA address as the account to use non-7702 mode
     await client.sendCalls({
-      from: account.address,
+      account: address,
       calls: [...],
     });
     ```
@@ -70,7 +71,7 @@ When you call `wallet_requestAccount` with a signer address, it creates a dedica
         "id": 1,
         "jsonrpc": "2.0",
         "method": "wallet_requestAccount",
-        "params": [{ "signerAddress": "'$SIGNER_ADDRESS'" }]
+        "params": [{ "signerAddress": "'$SIGNER_ADDRESS'", "creationHint": { "accountType": "sma-b" } }]
       }' | jq -r '.result.accountAddress')
 
     # Use the SCA address (not the signer address) in subsequent calls
@@ -173,9 +174,9 @@ When you call `wallet_requestAccount` with a signer address, it creates a dedica
   To reset an account back to a pure EOA, delegate to
   `0x0000000000000000000000000000000000000000`
   as defined in [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702#behavior).
+</Accordion>
 
-  **Undelegating (returning to a pure EOA)**
-
+<Accordion title="Un-delegating accounts">
   To remove a delegation and return an account to a pure EOA, you must **re-delegate to the zero address**:
   `0x0000000000000000000000000000000000000000`.
 
@@ -191,9 +192,7 @@ When you call `wallet_requestAccount` with a signer address, it creates a dedica
   [Viem signAuthorization](https://viem.sh/docs/eip7702/signAuthorization).
 </Accordion>
 
-<Accordion title="Third party signers">
-  <Markdown src="third-party.mdx" />
-</Accordion>
+<Markdown src="../../../shared/v4-accordion.mdx" />
 
 ## Next steps
 
