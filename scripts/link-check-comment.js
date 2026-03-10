@@ -15,12 +15,10 @@ const formatSummaryTable = (stats) => {
     ["⛔ Unsupported", stats.unsupported ?? 0],
   ];
 
-  const body = rows.map(([label, value]) => `| ${label} | ${value} |`).join("\n");
-  return [
-    "| Status | Count |",
-    "|---|---:|",
-    body,
-  ].join("\n");
+  const body = rows
+    .map(([label, value]) => `| ${label} | ${value} |`)
+    .join("\n");
+  return ["| Status | Count |", "|---|---:|", body].join("\n");
 };
 
 const formatErrorsSection = (errorMap = {}) => {
@@ -67,7 +65,8 @@ const getCommentBody = ({
   reportJsonContent,
   runUrl,
 }) => {
-  const { summary, errorsSection, errorCount } = parseJsonReport(reportJsonContent);
+  const { summary, errorsSection, errorCount } =
+    parseJsonReport(reportJsonContent);
   const status = getStatusDisplay({
     hasContentChanges,
     lycheeStatus,

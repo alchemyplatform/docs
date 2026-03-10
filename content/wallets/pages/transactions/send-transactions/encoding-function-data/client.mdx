@@ -1,56 +1,49 @@
 In JavaScript, you can use [Viem](https://viem.sh/docs/contract/encodeFunctionData) to encode function call data.
 
 <CodeBlocks>
+  ```ts title="sendCalls.ts" focus={9-14}
+  import { encodeFunctionData } from "viem";
+  import { client } from "./client.ts";
+  import { exampleAbi } from "./abi.ts";
 
-```ts title="sendCalls.ts" focus={9-14}
-import { encodeFunctionData } from "viem";
-import { client, signer } from "./client.ts";
-import { exampleAbi } from "./abi.ts";
+  await client.sendCalls({
+    calls: [
+      {
+        to: "0x0000000000000000000000000000000000000000",
+        data: encodeFunctionData({
+          abi: exampleAbi,
+          functionName: "mintTo",
+          args: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"],
+        }),
+      },
+    ],
+  });
+  ```
 
-await client.sendCalls({
-  from: await signer.getAddress(),
-  calls: [
+  ```ts title="abi.ts"
+  export const exampleAbi = [
     {
-      to: "0x0000000000000000000000000000000000000000",
-      data: encodeFunctionData({
-        abi: exampleAbi,
-        functionName: "mintTo",
-        args: ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"],
-      }),
+      inputs: [{ name: "recipient", type: "address" }],
+      name: "mintTo",
+      outputs: [{ name: "", type: "uint256" }],
+      stateMutability: "nonpayable",
+      type: "function",
     },
-  ],
-});
-```
+  ] as const;
+  ```
 
-```ts title="abi.ts"
-export const exampleAbi = [
-  {
-    inputs: [{ name: "recipient", type: "address" }],
-    name: "mintTo",
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
-```
+  ```ts title="client.ts"
+  import type { Hex } from "viem";
+  import { arbitrumSepolia } from "viem/chains";
+  import { privateKeyToAccount } from "viem/accounts";
+  import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
-```ts title="client.ts"
-import type { Hex } from "viem";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, sepolia } from "@account-kit/infra";
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-  process.env.PRIVATE_KEY! as Hex,
-);
-
-export const client = createSmartWalletClient({
-  transport: alchemy({
-    apiKey: process.env.ALCHEMY_API_KEY!,
-  }),
-  chain: sepolia,
-  signer,
-});
-```
-
+  export const client = createSmartWalletClient({
+    transport: alchemyWalletTransport({
+      apiKey: "YOUR_API_KEY",
+    }),
+    chain: arbitrumSepolia,
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
+  });
+  ```
 </CodeBlocks>

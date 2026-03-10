@@ -42,7 +42,10 @@ describe("normalization utils", () => {
 
   describe("normalizeFilePath", () => {
     test("should remove stripPathPrefix", () => {
-      const result = normalizeFilePath("content/guides/quickstart.mdx", "content/");
+      const result = normalizeFilePath(
+        "content/guides/quickstart.mdx",
+        "content/",
+      );
       expect(result).toBe("guides/quickstart.mdx");
     });
 

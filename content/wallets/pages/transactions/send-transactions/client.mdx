@@ -1,50 +1,46 @@
-<Info>Required SDK version: ^v4.54.0</Info>
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
 
-See the [`sendCalls` SDK reference](/docs/wallets/reference/account-kit/wallet-client/functions/sendCalls) for full descriptions of the parameters used in the following example.
+{/* TODO: Add SDK reference link once @alchemy/wallet-apis reference docs are published. */}
 
 You can send transactions using the smart wallet client `sendCalls` action.
 
 <CodeBlocks>
+  ```ts title="sendCalls.ts"
+  import { client } from "./client.ts";
 
-```ts title="sendCalls.ts"
-import { parseEther, toHex } from "viem";
-import { client, signer } from "./client.ts";
+  // Send the transaction
+  const { id } = await client.sendCalls({
+    calls: [
+      {
+        to: "0x0000000000000000000000000000000000000000",
+        value: BigInt(0),
+        data: "0x",
+      },
+    ],
+  });
 
-const { id } = await client.sendCalls({
-  from: await signer.getAddress(),
-  calls: [
-    {
-      to: "0x0000000000000000000000000000000000000000",
-      value: toHex(parseEther("0")),
-      data: "0x",
-    },
-  ],
-});
+  console.log({ id }); // the Call ID
 
-console.log({ id });
+  // Wait for the transaction to be confirmed
+  const result = await client.waitForCallsStatus({ id });
 
-const result = await client.waitForCallsStatus({ id });
+  console.log(result);
+  ```
 
-console.log(result);
-```
+  ```ts title="client.ts"
+  import type { Hex } from "viem";
+  import { arbitrumSepolia } from "viem/chains";
+  import { privateKeyToAccount } from "viem/accounts";
+  import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
-```ts title="client.ts"
-import type { Hex } from "viem";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, sepolia } from "@account-kit/infra";
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-  process.env.PRIVATE_KEY! as Hex,
-);
-
-export const client = createSmartWalletClient({
-  transport: alchemy({
-    apiKey: process.env.ALCHEMY_API_KEY!,
-  }),
-  chain: sepolia,
-  signer,
-});
-```
-
+  export const client = createSmartWalletClient({
+    transport: alchemyWalletTransport({
+      apiKey: "YOUR_API_KEY",
+    }),
+    chain: arbitrumSepolia,
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
+    // Optional: sponsor gas for your users (see "Sponsor gas" guide)
+    // paymaster: { policyId: "YOUR_POLICY_ID" },
+  });
+  ```
 </CodeBlocks>
