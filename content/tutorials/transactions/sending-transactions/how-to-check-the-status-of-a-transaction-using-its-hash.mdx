@@ -1,190 +1,121 @@
 ---
-title: How to Check the Status of a Transaction using its Hash
-description: Learn how to check the status of a transaction using the transaction hash
-subtitle: Learn how to check the status of a transaction using the transaction hash
+title: How to check a transaction status from its hash
+description: Use a transaction hash and eth_getTransactionReceipt to tell whether a transaction succeeded, reverted, or is still pending.
+subtitle: Use a transaction hash and eth_getTransactionReceipt to tell whether a transaction succeeded, reverted, or is still pending.
 slug: docs/how-to-check-the-status-of-a-transaction-using-its-hash
 ---
 
-<Tip title="Don’t have an API key?" icon="star">
-  Start using this API in your app today. [Get started for free](https://dashboard.alchemy.com/signup)
-</Tip>
+This guide shows you how to use a transaction hash and `eth_getTransactionReceipt`
+to tell whether a transaction succeeded, reverted, or is still pending.
 
-<Info>
-  This tutorial uses the **[getTransactionReceipt](/docs/chains/ethereum/ethereum-api-endpoints/eth-get-transaction-receipt)** endpoint.
-</Info>
+## Prerequisites
 
-# Introduction
+* Node.js 18 or later
+* An Alchemy API key
+* A transaction hash on Ethereum Mainnet
 
-The transaction hash is a unique identifier that is assigned to every transaction on the blockchain network. In this article, we will explain how you can use Alchemy's [getTransactionReceipt](/docs/chains/ethereum/ethereum-api-endpoints/eth-get-transaction-receipt) API to check the status of a transaction using its transaction hash.
+<Note>
+  A transaction receipt exists only after the transaction is mined. If the
+  method returns `null`, the transaction is still pending or the hash is
+  unknown.
+</Note>
 
-# Creating the Status Checker Script
+<Steps>
+  <Step title="Set your API key">
+    Export your API key as an environment variable:
 
-***
+    ```bash
+    export ALCHEMY_API_KEY="YOUR_API_KEY"
+    ```
+  </Step>
 
-## Step 1: Install Node and npm
+  <Step title="Create the script">
+    Create a file named `check-status.mjs` and add this code:
 
-In case you haven't already, [install node and npm](https://nodejs.org/en/download/) on your local machine.
+    ```javascript title="check-status.mjs"
+    const apiKey = process.env.ALCHEMY_API_KEY;
 
-Make sure that node is at least **v14 or higher** by typing the following in your terminal:
+    if (!apiKey) {
+      throw new Error("Set the ALCHEMY_API_KEY environment variable first.");
+    }
 
-<CodeGroup>
-  ```shell shell
-  node -v
-  ```
-</CodeGroup>
+    const rpcUrl = `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
+    const txHash =
+      "0xd488331be3a2f9cdd0f2b351f2b13f5151630aaafd2c2b246f7f3cd7fd0b1dfc";
 
-## Step 2: Create an Alchemy app
+    async function checkTransactionStatus(hash) {
+      const response = await fetch(rpcUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "eth_getTransactionReceipt",
+          params: [hash],
+        }),
+      });
 
-***
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
 
-In case you haven't already, [sign up for a free Alchemy account](https://dashboard.alchemy.com/signup).
+      const payload = await response.json();
 
-![2880](https://alchemyapi-res.cloudinary.com/image/upload/v1764192918/docs/tutorials/transactions/understanding-transactions/06c375a-Screenshot_2022-11-04_at_10.36.40_PM.png "Screenshot 2022-11-04 at 10.36.40 PM.png")
+      if (payload.error) {
+        throw new Error(payload.error.message);
+      }
 
-Alchemy's account dashboard where developers can create a new app on the Ethereum blockchain.
-
-Next, navigate to the [Alchemy Dashboard](https://dashboard.alchemy.com/signup) and create a new app.
-
-Make sure you set the chain to Ethereum and the network to Mainnet. Once the app is created, click on your app's *View Key* button on the dashboard.
-
-Take note of the **HTTP URL**.
-
-The URL will be in this form: `https://eth-mainnet.g.alchemy.com/v2/xxxxxxxxx`
-
-You will need this later.
-
-***
-
-## Step 3: Create a node project
-
-Let's now create an empty repository and install all node dependencies.
-
-Run the following commands in order to create your node project.
-
-<CodeGroup>
-  ```shell Viem
-  mkdir transaction-status-checker && cd transaction-status-checker
-  npm init -y
-  npm install --save viem
-  touch main.js
-  ```
-
-  ```shell Ethers.js
-  mkdir transaction-status-checker && cd transaction-status-checker
-  npm init -y
-  npm install --save ethers
-  touch main.js
-  ```
-</CodeGroup>
-
-This will create a repository named `transaction-status-checker` that holds all your files and dependencies.
-
-Next, open this repo in your favorite code editor.
-
-We will write all our code in the `main.js` file.
-
-## Step 4: Check the Transaction Status
-
-To check the status of the transaction using its transaction hash, we will use the [getTransactionReceipt](/docs/chains/ethereum/ethereum-api-endpoints/eth-get-transaction-receipt) method.
-
-* This method accepts a transaction hash and returns the transaction receipt, which is an object that contains the details about the transaction. The returned object has a property called `status`.
-* If the value of the `status` property is `1`, it means that the transaction was successful, on the other hand, a value of `0` signifies that the transaction failed.
-* If no object (transaction receipt) is returned from the `getTransactionReceipt` method, it means either the transaction is pending or the hash provided is an invalid/unknown transaction hash.
-
-Add the following code to the `main.js` file:
-
-<CodeGroup>
-  ```javascript Viem
-  import { createPublicClient, http } from 'viem'
-  import { mainnet } from 'viem/chains'
-
-  // Replace with your Alchemy API Key
-  const apiKey = "demo";
-
-  const client = createPublicClient({
-    chain: mainnet,
-    transport: http(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`)
-  })
-
-  // Transaction hash for the transaction whose status we want to check
-  const txHash = "0xd488331be3a2f9cdd0f2b351f2b13f5151630aaafd2c2b246f7f3cd7fd0b1dfc";
-
-  // Getting the status of the transaction using getTransactionReceipt and logging accordingly
-  const checkTransactionStatus = async () => {
-    try {
-      const receipt = await client.getTransactionReceipt({ hash: txHash });
+      const receipt = payload.result;
 
       if (!receipt) {
-        console.log("Pending or Unknown Transaction");
-      } else if (receipt.status === 'success') {
-        console.log("Transaction was successful!");
-      } else {
-        console.log("Transaction failed!");
+        console.log("Transaction is still pending or the hash is unknown.");
+        return;
       }
-    } catch (error) {
-      console.log("Pending or Unknown Transaction");
-    }
-  };
 
-  checkTransactionStatus();
-  ```
-
-  ```javascript Ethers.js
-  import { ethers } from 'ethers'
-
-  // Replace with your Alchemy API Key
-  const apiKey = "demo";
-  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${apiKey}`);
-
-  // Transaction hash for the transaction whose status we want to check
-  const txHash = "0xd488331be3a2f9cdd0f2b351f2b13f5151630aaafd2c2b246f7f3cd7fd0b1dfc";
-
-  // Getting the status of the transaction using getTransactionReceipt and logging accordingly
-  const checkTransactionStatus = async () => {
-    try {
-      const receipt = await provider.getTransactionReceipt(txHash);
-
-      if (!receipt) {
-        console.log("Pending or Unknown Transaction");
-      } else if (receipt.status === 1) {
-        console.log("Transaction was successful!");
-      } else {
-        console.log("Transaction failed!");
+      if (receipt.status === "0x1") {
+        console.log("Transaction succeeded.");
+        return;
       }
-    } catch (error) {
-      console.log("Pending or Unknown Transaction");
+
+      console.log("Transaction reverted.");
     }
-  };
 
-  checkTransactionStatus();
+    await checkTransactionStatus(txHash);
+    ```
+  </Step>
 
-  // Status is 1 for success, 0 for failure.
-  ```
-</CodeGroup>
+  <Step title="Run the script">
+    Run the file:
 
-Here's an explanation of what the code is doing:
+    ```bash
+    node check-status.mjs
+    ```
 
-* Imports either Viem or Ethers.js library to interact with Ethereum.
-* Configures the client/provider with the Alchemy API key and Ethereum mainnet.
-* Defines the transaction hash for the transaction whose status we want to check.
-* Calls the `getTransactionReceipt` method, passing in the transaction hash as an argument.
-* This returns the transaction receipt for the transaction, which contains the status of the transaction.
-* It then logs the status of the transaction to the console according to the value of the `status` property. If the receipt is `null`, it means that the transaction is either pending or unknown. For Viem, the status is 'success' or 'reverted', while for Ethers.js the status is `1` for success and `0` for failure.
+    A successful run prints one of these results:
 
-Run the script using:
+    ```text
+    Transaction succeeded.
+    ```
 
-<CodeGroup>
-  ```shell shell
-  node main.js
-  ```
-</CodeGroup>
+    ```text
+    Transaction reverted.
+    ```
 
-If all goes well, you should see an output with the status of the transaction:
+    ```text
+    Transaction is still pending or the hash is unknown.
+    ```
+  </Step>
+</Steps>
 
-```shell
-Transaction was successful!
-```
+## How to interpret the result
 
-# Conclusion
+* `Transaction succeeded.` means the receipt exists and `status` is `0x1`
+* `Transaction reverted.` means the receipt exists and `status` is `0x0`
+* `Transaction is still pending or the hash is unknown.` means the receipt is `null`
 
-In conclusion, checking the status of a transaction using its hash is a simple process. By following the steps outlined in this article, you can easily track the status of your transaction.
+## Next steps
+
+* [Get transaction details](/docs/how-to-get-transaction-details)
+* [Learn more about sending transactions](/docs/sending-transactions)
