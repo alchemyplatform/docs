@@ -15,19 +15,16 @@ const API_NAME_TO_FILENAME: Record<string, string> = {
   "polygon-zkevm": "polygonzkevm",
 };
 
-export const DEV_DOCS_BASE = "https://dev-docs.alchemy.com";
-
 /** Subdirectories within api-specs that contain actual spec files. */
 export const SPEC_SUBDIRS = ["alchemy", "chains"];
 
 /**
- * Determines the spec type from the URL path.
- * - /chains/ → openrpc
- * - /alchemy/json-rpc/ → openrpc
- * - /alchemy/rest/ → openapi
+ * Determines the spec type from the identifier path.
+ * - /rest/ → openapi
+ * - Everything else → openrpc
  */
-export const getSpecTypeFromUrl = (url: string): SpecType => {
-  if (url.includes("/rest/")) {
+export const getSpecType = (specId: string): SpecType => {
+  if (specId.includes("/rest/")) {
     return "openapi";
   }
   return "openrpc";
@@ -89,15 +86,15 @@ export const buildSpecFileMap = async (
 
 /**
  * Reads an API spec from the local filesystem using a pre-built file map.
- * Constructs the canonical specUrl for Redis key consistency.
+ * Returns the relative path as specId for use as a Redis key identifier.
  */
 export const readApiSpec = async (
   apiName: string,
   specsDir: string,
   specFileMap: Map<string, string>,
 ): Promise<
-  | { specType: "openrpc"; spec: OpenRpcSpec; specUrl: string }
-  | { specType: "openapi"; spec: OpenApiSpec; specUrl: string }
+  | { specType: "openrpc"; spec: OpenRpcSpec; specId: string }
+  | { specType: "openapi"; spec: OpenApiSpec; specId: string }
   | undefined
 > => {
   const filename = API_NAME_TO_FILENAME[apiName] ?? apiName;
@@ -110,8 +107,8 @@ export const readApiSpec = async (
     return undefined;
   }
 
-  const specUrl = `${DEV_DOCS_BASE}/${relativePath}`;
-  const specType = getSpecTypeFromUrl(specUrl);
+  const specId = relativePath;
+  const specType = getSpecType(specId);
   const localPath = path.join(specsDir, relativePath);
 
   try {
@@ -119,9 +116,9 @@ export const readApiSpec = async (
     const spec = JSON.parse(raw);
 
     if (specType === "openrpc") {
-      return { specType: "openrpc", spec: spec as OpenRpcSpec, specUrl };
+      return { specType: "openrpc", spec: spec as OpenRpcSpec, specId };
     } else {
-      return { specType: "openapi", spec: spec as OpenApiSpec, specUrl };
+      return { specType: "openapi", spec: spec as OpenApiSpec, specId };
     }
   } catch (error) {
     console.warn(`Failed to read spec at ${localPath}:`, error);

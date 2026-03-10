@@ -94,7 +94,7 @@ describe("buildAllOutputs", () => {
             type: "openapi",
             source: "docs-yml",
             operationId: "getBalance",
-            specUrl: "url",
+            specId: "url",
             tab: "reference",
           },
         },

@@ -45,14 +45,14 @@ export const visitApiReference = (config: ApiVisitorConfig): VisitorResult => {
     return { indexEntries: {} };
   }
 
-  const { specType, spec, specUrl } = cached;
+  const { specType, spec, specId } = cached;
 
   // Delegate to spec-specific processor
   switch (specType) {
     case "openapi":
       return processOpenApiSpec({
         spec: spec as OpenApiSpec,
-        specUrl,
+        specId,
         visitorConfig: config,
         apiPathBuilder,
         apiTitle: apiConfig.api,
@@ -63,7 +63,7 @@ export const visitApiReference = (config: ApiVisitorConfig): VisitorResult => {
     case "openrpc":
       return processOpenRpcSpec({
         spec: spec as OpenRpcSpec,
-        specUrl,
+        specId,
         visitorConfig: config,
         apiPathBuilder,
         apiTitle: apiConfig.api,

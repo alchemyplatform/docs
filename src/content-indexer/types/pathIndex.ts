@@ -7,7 +7,7 @@ export interface MdxPathIndexEntry {
 
 export interface OpenRpcPathIndexEntry {
   type: "openrpc";
-  specUrl: string;
+  specId: string;
   methodName: string;
   source: "docs-yml";
   tab: string;
@@ -15,7 +15,7 @@ export interface OpenRpcPathIndexEntry {
 
 export interface OpenApiPathIndexEntry {
   type: "openapi";
-  specUrl: string;
+  specId: string;
   operationId: string;
   source: "docs-yml";
   tab: string;

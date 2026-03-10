@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,14 +42,47 @@ jobs:
           if [ -z "$CHANGED_FILES" ]; then
             echo "No MDX files changed in /content/ directory"
             echo "filePaths=[]" >> $GITHUB_OUTPUT
+            echo "frontmatterChanged=false" >> $GITHUB_OUTPUT
             exit 0
           fi
+
+          # Detect whether any changed file has frontmatter changes
+          FRONTMATTER_CHANGED=false
+          extract_frontmatter() {
+            local ref="$1"
+            local path="$2"
+
+            if ! git cat-file -e "${ref}:${path}" 2>/dev/null; then
+              return 0
+            fi
+
+            git show "${ref}:${path}" | awk '
+              NR == 1 && $0 != "---" { exit }
+              NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+              in_frontmatter && $0 == "---" { exit }
+              in_frontmatter { print }
+            '
+          }
+
+          while IFS= read -r FILE; do
+            [ -z "$FILE" ] && continue
+            OLD_FRONTMATTER=$(extract_frontmatter "${{ github.event.before }}" "$FILE")
+            NEW_FRONTMATTER=$(extract_frontmatter "${{ github.event.after }}" "$FILE")
+
+            if [ "$OLD_FRONTMATTER" != "$NEW_FRONTMATTER" ]; then
+              FRONTMATTER_CHANGED=true
+              echo "Frontmatter changed in: $FILE"
+              break
+            fi
+          done <<< "$CHANGED_FILES"
 
           # Strip 'content/' prefix and convert to JSON array
           FILE_PATHS_JSON=$(echo "$CHANGED_FILES" | sed 's|^content/||' | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
           echo "File paths JSON: $FILE_PATHS_JSON"
+          echo "frontmatterChanged: $FRONTMATTER_CHANGED"
           echo "filePaths=$FILE_PATHS_JSON" >> $GITHUB_OUTPUT
+          echo "frontmatterChanged=$FRONTMATTER_CHANGED" >> $GITHUB_OUTPUT
 
       - name: Call revalidation API
         if: steps.changed-files.outputs.filePaths != '[]'
@@ -128,3 +162,12 @@ jobs:
           fi
 
           echo "::notice::✅ Successfully revalidated $SUCCEEDED files"
+
+      - name: Trigger reindex if frontmatter changed
+        if: steps.changed-files.outputs.frontmatterChanged == 'true'
+        run: |
+          echo "Frontmatter changes detected, triggering content indexer..."
+          gh workflow run index-main-content.yml
+          echo "::notice::✅ Triggered index-main-content.yml workflow"
+        env:
+          GH_TOKEN: ${{ github.token }}

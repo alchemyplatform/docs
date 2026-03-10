@@ -1,0 +1,24 @@
+name: Rebuild Site on Redirect Changes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "content/redirects.yml"
+
+permissions: {}
+
+jobs:
+  trigger-rebuild:
+    name: Trigger Vercel Rebuild
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}")
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            echo "::error::Deploy hook returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          echo "::notice::Triggered Vercel rebuild (HTTP $HTTP_CODE)"

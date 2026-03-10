@@ -17,7 +17,7 @@ import type {
  */
 export interface ProcessOpenRpcConfig {
   spec: OpenRpcSpec;
-  specUrl: string;
+  specId: string;
   visitorConfig: VisitorConfig;
   apiPathBuilder: PathBuilder;
   apiTitle: string;
@@ -31,7 +31,7 @@ export interface ProcessOpenRpcConfig {
  */
 export const processOpenRpcSpec = ({
   spec,
-  specUrl,
+  specId,
   visitorConfig,
   apiPathBuilder,
   apiTitle,
@@ -63,7 +63,7 @@ export const processOpenRpcSpec = ({
     // Add to path index
     indexEntries[finalPath] = {
       type: "openrpc",
-      specUrl,
+      specId,
       methodName: method.name,
       source: "docs-yml",
       tab,
