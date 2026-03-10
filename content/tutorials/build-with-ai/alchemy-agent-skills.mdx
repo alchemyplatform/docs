@@ -1,0 +1,105 @@
+---
+title: Alchemy Agent Skills
+description: Install Alchemy's agent skills to give your AI coding agent full knowledge of Alchemy's APIs.
+subtitle: Install Alchemy's agent skills to give your AI coding agent full knowledge of Alchemy's APIs.
+slug: docs/alchemy-agent-skills
+---
+
+Give your AI coding agent full knowledge of every Alchemy API with a single command. Once installed, your agent knows every endpoint, authentication method, pagination pattern, and error handling strategy — no manual prompting required.
+
+Skills work with [Claude Code](https://www.anthropic.com/claude-code), [Codex](https://openai.com/index/codex/), [Cursor](https://cursor.com), and any AI tool that supports the [Agent Skills specification](https://github.com/alchemyplatform/skills).
+
+## Install the skills
+
+```bash
+npx skills add alchemyplatform/skills --yes
+```
+
+This installs two skills:
+
+| Skill | Auth method | Best for |
+|---|---|---|
+| `alchemy-api` | API key | You have an [Alchemy API key](https://dashboard.alchemy.com/) and you're building a server or dApp |
+| `agentic-gateway` | Wallet + x402 | Your agent needs to access Alchemy without an API key |
+
+After installation, your agent will ask which path you want before making any API requests.
+
+## What's included
+
+Both skills cover the full Alchemy API surface:
+
+- **Node RPC** — EVM JSON-RPC methods (`eth_*`) and Alchemy-enhanced methods across Ethereum, Base, Arbitrum, BNB, and more
+- **Token API** — `alchemy_getTokenBalances`, `alchemy_getTokenMetadata`, allowances
+- **NFT API** — Ownership lookups, metadata, contract data, spam filtering
+- **Transfers API** — `alchemy_getAssetTransfers` with filtering and pagination
+- **Prices API** — Spot prices by symbol/address, historical price data
+- **Portfolio API** — Multi-chain token balances and NFT data
+- **Simulation API** — `alchemy_simulateAssetChanges` for transaction previews
+- **Webhooks** — Address activity monitoring, webhook creation and signature verification
+- **Solana** — RPC, DAS API (`getAssetsByOwner`), and gRPC streams
+
+Each skill includes endpoint URLs, authentication patterns, code examples, pagination limits, error handling guidance, and network naming conventions.
+
+## Use the alchemy-api skill
+
+The `alchemy-api` skill is for developers who have an [Alchemy API key](https://dashboard.alchemy.com/). It teaches your agent the full API surface with key-based authentication.
+
+**Base URLs:**
+
+| API | URL |
+|---|---|
+| EVM RPC | `https://{network}.g.alchemy.com/v2/$ALCHEMY_API_KEY` |
+| NFT API | `https://{network}.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/*` |
+| Prices API | `https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/*` |
+| Portfolio API | `https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/*` |
+| Solana RPC | `https://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY` |
+| Notify API | `https://dashboard.alchemy.com/api` |
+
+**Example — fetch token balances:**
+
+```bash
+curl https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"alchemy_getTokenBalances","params":["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"]}'
+```
+
+If you don't have an API key, create one for free at the [Alchemy Dashboard](https://dashboard.alchemy.com/).
+
+## Use the agentic-gateway skill
+
+The `agentic-gateway` skill is for autonomous agents that need to access Alchemy without a pre-provisioned API key. It teaches your agent the full [Alchemy for Agents](docs/alchemy-for-agents) flow — wallet setup, SIWE authentication, x402 payments, and all gateway endpoints.
+
+This skill activates when `$ALCHEMY_API_KEY` isn't set.
+
+**Gateway URLs:**
+
+| API | URL |
+|---|---|
+| Node RPC | `https://x402.alchemy.com/{chainNetwork}/v2` |
+| NFT API | `https://x402.alchemy.com/{chainNetwork}/nft/v3/*` |
+| Prices API | `https://x402.alchemy.com/prices/v1/*` |
+| Portfolio API | `https://x402.alchemy.com/data/v1/*` |
+
+See [Alchemy for Agents](docs/alchemy-for-agents) for full details on authentication and payment.
+
+## How skills work
+
+Agent Skills follow an open specification. A skill is a Markdown file (`SKILL.md`) that contains structured knowledge — API docs, code examples, decision trees, and rules — that an AI agent reads and follows.
+
+When you run `npx skills add`, the skill files are added to your project. Your AI agent reads these files and uses them as context when writing code or making API requests.
+
+Skills are different from MCP servers:
+
+| | Agent Skills | MCP Server |
+|---|---|---|
+| **What it does** | Teaches the agent *how* to use APIs | Gives the agent *tools* to call APIs directly |
+| **When it's used** | When the agent writes code that uses Alchemy APIs | When the agent needs to query live blockchain data |
+| **Output** | The agent writes code using Alchemy APIs | The agent gets blockchain data back in the conversation |
+
+You can use both together — Skills for API knowledge and MCP for live data queries.
+
+## Next steps
+
+- [GitHub: alchemyplatform/skills](https://github.com/alchemyplatform/skills) — Source repository
+- [Alchemy Dashboard](https://dashboard.alchemy.com/) — Get a free API key
+- [Alchemy for Agents](docs/alchemy-for-agents) — Wallet-based authentication with x402
