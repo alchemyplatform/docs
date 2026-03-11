@@ -30,6 +30,7 @@ export const PREVIEW_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
  * need to be merged. The docs-site reads each key independently.
  */
 const SDK_BRANCH_INDEX_SUFFIX: Record<string, string> = {
+  "refs/heads/main": "sdk",
   "refs/heads/v5.x.x": "sdk-v5",
 };
 
