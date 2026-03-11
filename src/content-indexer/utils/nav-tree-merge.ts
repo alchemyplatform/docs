@@ -67,7 +67,24 @@ export const mergeWalletsNavTree = (
 
   // Determine which sections are new and which to preserve
   const manualSections = indexerType === "docs" ? newTree : existingManual;
-  const sdkSections = indexerType === "sdk" ? newTree : existingSDK;
+  let sdkSections: NavigationTree;
+  if (indexerType === "sdk") {
+    // Merge by section title: replace only the SDK sections whose titles
+    // match the incoming tree, preserving SDK sections from other branches.
+    // e.g., a v5.x.x run updates "SDK Reference (v5.x.x)" but preserves
+    // main's "SDK Reference" section, and vice versa.
+    const newTitles = new Set(
+      newTree.filter(isSDKReferenceSection).map((s) => s.title),
+    );
+    const preservedSDK = existingSDK.filter(
+      (s) =>
+        (s.type === "section" || s.type === "api-section") &&
+        !newTitles.has(s.title),
+    );
+    sdkSections = [...preservedSDK, ...newTree];
+  } else {
+    sdkSections = existingSDK;
+  }
 
   // Log preservation info
   if (indexerType === "docs" && sdkSections.length > 0) {

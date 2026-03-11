@@ -107,9 +107,18 @@ const runIndexer = async (
 
   const shouldUploadToAlgolia = mode !== "preview";
 
+  // For SDK indexer, pass the source branch ref so storeToRedis can determine
+  // which path prefixes this run owns (for merging with other branches' routes).
+  const sourceBranch =
+    indexerType === "sdk" ? process.env.SDK_SOURCE_BRANCH : undefined;
+
   // Build upload promises array
   const uploadPromises: Promise<void>[] = [
-    storeToRedis(pathIndex, navigationTrees, { branchId, indexerType }),
+    storeToRedis(pathIndex, navigationTrees, {
+      branchId,
+      indexerType,
+      sourceBranch,
+    }),
   ];
 
   if (shouldUploadToAlgolia) {

@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: alchemyplatform/aa-sdk
+          ref: ${{ github.event.client_payload.ref }}
           sparse-checkout: docs
           path: aa-sdk-docs
 
@@ -34,13 +35,21 @@ jobs:
           KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
           ALGOLIA_APP_ID: ${{ secrets.ALGOLIA_APP_ID }}
           ALGOLIA_ADMIN_API_KEY: ${{ secrets.ALGOLIA_ADMIN_API_KEY }}
+          SDK_SOURCE_BRANCH: ${{ github.event.client_payload.ref }}
 
       - name: Revalidate SDK index and wallets nav cache
         run: |
           echo "Revalidating SDK index and wallets nav cache..."
 
-          # SDK indexer only updates the wallets nav tree (hardcoded in indexer)
-          PAYLOAD='{"pathIndices": ["sdk"], "navTrees": ["wallets"]}'
+          # Determine path index key based on source branch
+          # v5.x.x writes to "sdk-v5", all others write to "sdk"
+          if [ "${{ github.event.client_payload.ref }}" = "refs/heads/v5.x.x" ]; then
+            SDK_INDEX_TYPE="sdk-v5"
+          else
+            SDK_INDEX_TYPE="sdk"
+          fi
+
+          PAYLOAD="{\"pathIndices\": [\"$SDK_INDEX_TYPE\"], \"navTrees\": [\"wallets\"]}"
 
           echo "Payload: $PAYLOAD"
 

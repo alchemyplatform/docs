@@ -25,6 +25,15 @@ const countItems = (items: NavigationTree): number => {
 export const PREVIEW_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 /**
+ * Maps aa-sdk source branch refs to their Redis index key suffix.
+ * Each long-lived branch gets its own path index key in Redis so they don't
+ * need to be merged. The docs-site reads each key independently.
+ */
+const SDK_BRANCH_INDEX_SUFFIX: Record<string, string> = {
+  "refs/heads/v5.x.x": "sdk-v5",
+};
+
+/**
  * Stores path index and navigation trees to Redis with branch scoping.
  *
  * @param pathIndex - The path index to store
@@ -40,6 +49,8 @@ export const storeToRedis = async (
     branchId: string;
     indexerType: IndexerType;
     quiet?: boolean;
+    /** The aa-sdk source branch ref (e.g., "refs/heads/v5.x.x"). Used by the SDK indexer to determine which path prefixes to clean during merge. */
+    sourceBranch?: string;
   },
 ): Promise<void> => {
   const { quiet = false } = options;
@@ -52,17 +63,22 @@ export const storeToRedis = async (
     : { ex: PREVIEW_TTL_SECONDS };
   const ttlInfo = isMainBranch ? "" : " (30-day TTL)";
 
-  // Store path index with branch scope
-  const pathIndexKey = `${options.branchId}:index:${options.indexerType}.json`;
-  const pathIndexPromise = redis
-    .set(pathIndexKey, stringify(pathIndex), setOptions)
-    .then(() => {
-      if (!quiet) {
-        console.info(
-          `✅ Path index saved to Redis (${Object.keys(pathIndex).length} routes) -> ${pathIndexKey}${ttlInfo}`,
-        );
-      }
-    });
+  // Store path index with branch scope.
+  // SDK branches may have their own index key suffix (e.g., "sdk-v5" for v5.x.x).
+  const indexKeySuffix =
+    options.indexerType === "sdk" && options.sourceBranch
+      ? SDK_BRANCH_INDEX_SUFFIX[options.sourceBranch] ?? options.indexerType
+      : options.indexerType;
+  const pathIndexKey = `${options.branchId}:index:${indexKeySuffix}.json`;
+
+  const pathIndexPromise = (async () => {
+    await redis.set(pathIndexKey, stringify(pathIndex), setOptions);
+    if (!quiet) {
+      console.info(
+        `✅ Path index saved to Redis (${Object.keys(pathIndex).length} routes) -> ${pathIndexKey}${ttlInfo}`,
+      );
+    }
+  })();
 
   // Handle navigation trees
   let navTreePromises: Promise<void>[] = [];
