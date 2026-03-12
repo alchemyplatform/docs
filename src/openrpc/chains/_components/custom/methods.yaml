@@ -1347,6 +1347,43 @@ components:
               logs: []
               status: "0x1"
 
+    realtime_sendRawTransaction:
+      name: realtime_sendRawTransaction
+      summary: Submits a transaction and returns the receipt in a single call.
+      description: |
+        Submits a signed transaction and returns the transaction receipt without polling. This method combines submission and receipt retrieval into one call, returning the receipt as soon as the transaction is executed in a mini block.
+
+        If the transaction is not executed within 10 seconds, the method returns a `realtime transaction expired` error.
+      params:
+        - name: Transaction
+          required: true
+          description: The signed transaction data, encoded as a hexadecimal string.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+      result:
+        name: Receipt information
+        description: The transaction receipt object containing various properties of the transaction receipt.
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "../evm/receipt.yaml#/components/schemas/ReceiptInfo"
+      examples:
+        - name: realtime_sendRawTransaction example
+          params:
+            - name: Transaction
+              value: "0xf869018203e882520894f17f52151ebef6c7334fad080c5704d77216b732881bc16d674ec80000801ba02da1c48b670996dcb1f447ef9ef00b33033c48a4fe938f420bec3e56bfd24071a062e0aa78a81bf0290afbc3a9d8e9a068e6d74caa66c5e0fa8a46deaae96b0833"
+          result:
+            name: Receipt information
+            value:
+              transactionHash: "0xe670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+              blockHash: "0xabcd1234..."
+              blockNumber: "0x10d4f"
+              cumulativeGasUsed: "0x5208"
+              gasUsed: "0x5208"
+              contractAddress: null
+              logs: []
+              status: "0x1"
+
     eth_callMany:
       name: eth_callMany
       description: >
