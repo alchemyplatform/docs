@@ -1,4 +1,4 @@
-<Info>Required SDK version: ^v4.70.0</Info>
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
 
 <Info>
   **Important**: Cross-chain swaps do not support `postCalls`. You cannot batch
@@ -13,8 +13,8 @@ You'll need the following env variables:
 
 <CodeBlocks>
   ```ts title="requestCrossChainQuote.ts"
-  import { swapActions } from "@account-kit/wallet-client/experimental";
-  import { client, signer } from "./client";
+  import { swapActions } from "@alchemy/wallet-apis/experimental";
+  import { client } from "./client";
 
   // Add the swap actions to the client
   const swapClient = client.extend(swapActions);
@@ -22,7 +22,6 @@ You'll need the following env variables:
   // Request the cross-chain swap quote
   // Note: toChainId specifies the destination chain for the swap
   const { quote, callId, ...calls } = await swapClient.requestQuoteV0({
-    from: await signer.getAddress(), // Your wallet address
     toChainId: "0x...", // Destination chain ID
     fromToken: "0x...",
     toToken: "0x...",
@@ -40,7 +39,7 @@ You'll need the following env variables:
     throw new Error("Expected user operation calls");
   }
 
-  // Sign the quote, getting back prepared and signed calls
+  // Sign the quote using the signer on the client
   // The callId is automatically included in the signed calls
   const signedCalls = await swapClient.signPreparedCalls(calls);
 
@@ -75,23 +74,18 @@ You'll need the following env variables:
   ```
 
   ```ts title="client.ts"
-  import "dotenv/config";
   import type { Hex } from "viem";
-  import { LocalAccountSigner } from "@aa-sdk/core";
-  import { alchemy, sepolia } from "@account-kit/infra";
-  import { createSmartWalletClient } from "@account-kit/wallet-client";
-
-  export const signer = LocalAccountSigner.privateKeyToAccountSigner(
-    process.env.PRIVATE_KEY! as Hex,
-  )
+  import { privateKeyToAccount } from "viem/accounts";
+  import { base } from "viem/chains";
+  import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
   export const client = createSmartWalletClient({
-    transport: alchemy({
-      apiKey: process.env.ALCHEMY_API_KEY!,
+    transport: alchemyWalletTransport({
+      apiKey: "YOUR_API_KEY",
     }),
-    chain: sepolia,
-    signer,
-    policyId: process.env.ALCHEMY_POLICY_ID!, // Optional: If you're using a gas manager policy
+    chain: base,
+    signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
+    paymaster: { policyId: "YOUR_POLICY_ID" }, // Optional: If you're using a gas manager policy
   });
 ```
 </CodeBlocks>

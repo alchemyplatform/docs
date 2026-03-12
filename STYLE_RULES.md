@@ -1,188 +1,362 @@
-# Alchemy docs style rules
+# Alchemy docs style guide
 
-These rules govern all written documentation in this repository — MDX pages,
-API spec descriptions, changelog entries, and code sample comments.
+This guide explains how we write docs in this repository. It covers MDX pages, API descriptions, changelog entries, and code sample comments.
 
-Both human contributors and AI agents follow these rules. Each rule is a
-pass/fail check. If a rule has an EXCEPTION, apply the exception only when
-the stated condition is true.
+Use it for editorial decisions: voice, structure, terminology, and examples. For MDX syntax and components, see [MDX_FEATURES.md](./MDX_FEATURES.md). For repo setup and contribution workflow, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-***
+## Agent quick rules
 
-## VOICE
+Use this section as the fast path when you are writing or editing docs with an AI agent.
 
-RULE: Use "we" when referring to Alchemy. Never write "Alchemy" as a third-person subject.
-✅ "We support 80+ chains"
-❌ "Alchemy supports 80+ chains"
-EXCEPTION: First sentence of a landing page or meta description may use "Alchemy" once for SEO, then switch to "we."
+Required:
 
-RULE: Use "you" when addressing the reader. Never use "the developer", "the user", "users", or "one."
-✅ "You can create an API key from the dashboard"
-❌ "The developer can create an API key from the dashboard"
-❌ "Users should deploy their contract"
+* Use `you` for the reader
+* Prefer `we` for Alchemy in prose
+* Use sentence case headings
+* Prefer the `Steps` and `Step` components for ordered MDX procedures
+* Use descriptive link text
+* Use the preferred terminology table exactly
+* Use JavaScript or TypeScript for authored examples unless the page has a stronger existing convention
+* Put changelog updates under product-area headings and place `Node` after more user-facing sections when both are present
+* For files under `content/wallets/`, follow `content/wallets/CONTRIBUTING.md` before this guide
+* In changelog, use `Updates` for launches, availability changes, deprecations, and behavior changes
+* In changelog, Use `Upgrades` for version bumps and maintenance entries
+* Do not hand-edit generated API reference output; update the source specs instead
 
-RULE: Use contractions. "you'll", "we've", "don't", "isn't."
-❌ "You will need to configure" → ✅ "You'll need to configure"
+Preferred:
 
-RULE: Never use "simply", "just", "easy", "easily", or "obviously."
-❌ "Simply call the endpoint"
-✅ "Call the endpoint"
+* Open with the reader outcome, not background context
+* Keep procedural steps action-oriented and move explanation into separate sections
+* Make examples copy-pasteable
+* Show expected output when success is not obvious
+* Use cURL when showing raw request structure or quick command-line testing
+* Keep changelog bullets to one distinct change each
 
-RULE: Cut filler phrases.
-❌ "In order to" → ✅ "To"
-❌ "It is important to note that" → DELETE
-❌ "As a matter of fact" → DELETE
-❌ "Basically" → DELETE
+Avoid:
 
-RULE: Do not over-explain general programming concepts (HTTP requests, loops, variables, JSON parsing). Do explain blockchain-specific and Alchemy-specific concepts.
+* Writing in terms of "the user", "users", or "the developer"
+* Promotional or filler-heavy phrasing
+* Vague headings such as `Overview`, `Usage`, or `Details`
+* Repeating the same link throughout a section without a reason
+* Overusing callouts
 
-***
+If a default conflicts with clarity, choose clarity and preserve the repo's existing patterns.
 
-## FORMATTING
+## What good docs do
 
-RULE: Headings use sentence case. Capitalize only the first word and proper nouns.
-✅ "Get started with the SDK"
-✅ "Send your first transaction"
-❌ "Get Started With The SDK"
-❌ "Send Your First Transaction"
+Good docs help a reader make progress without making them slow down to decode our writing. In practice, that means:
 
-RULE: No emojis in headings.
-❌ "📋 Steps to get started"
-✅ "Steps to get started"
+* They start with the outcome, not the background
+* They sound direct and competent, not promotional
+* They use product and protocol terms consistently
+* They show working examples, not idealized pseudocode
+* They make the next step obvious
 
-RULE: Headings describe what the reader will DO, not just label a topic.
-✅ "Send your first transaction"
-❌ "Transactions"
+## How to use this guide
 
-RULE: Never skip heading levels. H2 → H3 → H4. Never H2 → H4.
+Treat these as strong defaults, not blind rules.
 
-RULE: Numbered lists ONLY for sequential steps. Use bullet lists for non-ordered items.
+Interpret these labels consistently:
 
-RULE: All list items in a single list must have parallel structure. If one starts with a verb, all start with a verb.
-✅ "Create an app", "Configure the SDK", "Send a request"
-❌ "Create an app", "SDK configuration", "Sending a request"
+* `Required` means agents and contributors should follow the rule unless an existing repo constraint prevents it
+* `Preferred` means use this by default, but it can be overridden for clarity or local context
+* `Avoid` means do not do this unless there is a specific reason
 
-***
+Section-specific guides override this document when they are more specific. For example, Wallets documentation has its own contributing guide at `content/wallets/CONTRIBUTING.md`. In those docs, follow the Wallets-specific rules first and use this guide as the fallback for anything not covered there.
 
-## TERMINOLOGY
+Some choices in this repo are enforced by tooling such as Prettier, ESLint, and markdown linting. This guide should not duplicate those checks. It should cover the places where judgment matters: what to say, how to organize it, and how much to explain.
 
-These are the ONLY correct forms. Flag any deviation.
+When a rule hurts clarity, choose clarity. When you break a default, do it intentionally.
 
-| Correct | Incorrect (flag these) |
-|---------|----------------------|
-| API key | api key, API Key, apikey, Api Key |
+## Voice and tone
+
+Write like a capable teammate helping another developer ship.
+
+### Address the reader directly
+
+Use `you` for the reader.
+
+Prefer:
+
+* "You can create an API key in the Alchemy Dashboard."
+* "If you already have a contract deployed, skip this step."
+
+Avoid:
+
+* "The developer can create an API key..."
+* "Users should..."
+* "One can..."
+
+### Refer to Alchemy consistently
+
+Use `we` when speaking on behalf of Alchemy in explanatory prose.
+
+Prefer:
+
+* "We support 80+ chains."
+* "We recommend using webhooks when you need near real-time updates."
+
+Allow "Alchemy" as the subject when it improves scanning, branding, or SEO, especially in intros, titles, and overview copy. Do not force awkward rewrites to avoid the company name.
+
+### Keep the tone direct
+
+Prefer short, declarative sentences. Contractions are fine when they sound natural.
+
+Prefer:
+
+* "You'll need an API key before you can send requests."
+* "This endpoint returns token balances for an address."
+
+Avoid filler and softening language that reduces precision:
+
+* `simply`
+* `just`
+* `easy`
+* `easily`
+* `obviously`
+* `basically`
+* `it is important to note`
+* `in order to`
+
+### Explain the right things
+
+Explain what is specific to Alchemy, blockchain workflows, or the product surface the reader is using.
+
+Do not spend paragraphs reteaching general programming concepts unless the page is explicitly for beginners and the extra context is necessary to complete the task.
+
+## Structure pages around reader intent
+
+Organize content around what the reader is trying to do, not around how we think about the product internally.
+
+### Open with the outcome
+
+The first screen should answer at least one of these questions:
+
+* What will I do here?
+* What will I get when I finish?
+* Is this the right page for my problem?
+
+### Separate action from explanation
+
+Keep step-by-step instructions focused on actions. Put conceptual background in a separate section such as `How it works`, `Why this matters`, or `Before you begin`.
+
+This keeps procedural content scannable and makes conceptual sections easier to revisit later.
+
+### Write headings that help people scan
+
+Use sentence case.
+
+Prefer headings that describe an action, question, or concrete topic:
+
+* `Send your first request`
+* `Check whether the webhook was delivered`
+* `Choose a supported network`
+
+Avoid vague labels:
+
+* `Overview`
+* `Usage`
+* `Details`
+* `Miscellaneous`
+
+Do not skip heading levels.
+
+## Content patterns by page type
+
+### Tutorials and quickstarts
+
+Tutorials should help the reader reach a concrete outcome with minimal ambiguity.
+
+Default structure:
+
+1. What the reader will build, learn, or finish
+2. Prerequisites
+3. Ordered steps
+4. Verification
+5. Next steps
+
+Guidelines:
+
+* In MDX tutorials, prefer the `Steps` and `Step` components for ordered procedures
+* Make each step produce a visible result
+* Show expected output after commands when verification is not obvious
+* Keep conceptual detours out of the main path
+
+### Changelog entries
+
+Changelog entries should answer three questions quickly:
+
+* What changed?
+* Who does it matter to?
+* What should the reader do next, if anything?
+
+Lead with the change, then the impact.
+
+Default structure:
+
+* Group updates under product-area headings such as `Developer Experience`, `Wallets`, `Rollups`, `Data`, and `Node`
+* Skip sections that have no meaningful updates that week
+* Put `Node` after product-facing sections when both are present, so infrastructure upgrades do not bury more user-visible changes
+* Use short bolded subheads only when they improve scanability, such as `Docs`, `Dashboard`, `Updates`, and `Upgrades`
+
+Guidelines:
+
+* Keep one distinct change per bullet
+* Start each bullet with the shipped change, then add the impact or context
+* Use `Updates` for launches, availability changes, deprecations, or behavior changes
+* Use `Upgrades` for version bumps and network-level maintenance
+* In `Node` upgrade lists, use the pattern `Network: Component version, Component version`
+* Link the first relevant product, doc page, or release note when it helps the reader verify the change
+* Use a top-of-entry callout only for exceptional notices such as shutdowns, migrations, or time-sensitive deprecations
+* Keep the tone factual. Changelog entries should read like release notes, not marketing copy
+
+## Formatting defaults
+
+These are editorial defaults for readability. Tooling may already enforce some of them.
+
+### Lists
+
+In MDX pages, prefer the `Steps` and `Step` components for step-by-step procedures. Use numbered lists when a lighter-weight ordered sequence is enough.
+
+Use bullets for sets, options, and grouped facts.
+
+Keep list items parallel. If one item starts with a verb, the others should too.
+
+### Code formatting
+
+Use inline code for:
+
+* Method names
+* Parameter names
+* File names and paths
+* Commands
+* Config values
+* Technical identifiers
+
+Do not use inline code for normal prose or product names unless you are referring to a literal UI label or string value.
+
+### Links
+
+Write descriptive link text. The reader should know where a link goes before clicking it.
+
+Prefer:
+
+* "See the [Admin API overview](/docs/reference/admin-api/overview)."
+
+Avoid:
+
+* "Click [here](/docs/reference/admin-api/overview)."
+
+Link a repeated concept once per section unless the repeated link materially improves navigation.
+
+### Callouts
+
+Use callouts to highlight information the reader is likely to miss in body text.
+
+Preferred defaults:
+
+* `Note` for extra context
+* `Tip` for shortcuts or best practices
+* `Warning` for likely mistakes or surprising behavior
+* `Check` or `Success` for verification and completion states
+
+Use callouts sparingly. If a page needs a warning box every few paragraphs, the body copy probably needs to be clearer.
+
+## Terminology and naming
+
+Use consistent terms across docs, code comments, and examples.
+
+### Preferred forms
+
+| Preferred | Avoid |
+| --- | --- |
+| API key | api key, apikey, API Key |
 | Alchemy SDK | alchemy SDK, Alchemy sdk |
-| Alchemy Dashboard | dashboard (as product name), the Dashboard |
-| JSON-RPC | json-rpc, JSONRPC, Json-RPC |
-| webhook | Webhook (mid-sentence), web hook, web-hook |
-| smart contract | Smart Contract (mid-sentence) |
-| dApp | dapp, Dapp, DApp |
+| Alchemy Dashboard | dashboard, Dashboard |
+| JSON-RPC | JSONRPC, json-rpc |
+| webhook | Webhook in the middle of a sentence |
+| smart contract | Smart Contract in the middle of a sentence |
+| dApp | dapp, DApp |
 | onchain | on-chain, on chain |
 | offchain | off-chain, off chain |
-| mainnet | Mainnet (mid-sentence), main net, main-net |
-| testnet | Testnet (mid-sentence), test net, test-net |
-| WebSocket | Websocket, websocketb Socket |
-| ERC-20 | ERC20, erc-20 |
-| ERC-721 | ERC721, erc-721 |
-| ERC-4337 | ERC4337, erc-4337 |
-| gas fees | Gas Fees, Gas fees (mid-sentence) |
+| mainnet | Mainnet in the middle of a sentence |
+| testnet | Testnet in the middle of a sentence |
+| WebSocket | websocket, Websocket |
+| ERC-20 | ERC20 |
+| ERC-721 | ERC721 |
+| ERC-4337 | ERC4337 |
 
-RULE: Capitalize chain names always: Ethereum, Solana, Polygon, Arbitrum, Base, Optimism.
+Additional defaults:
 
-RULE: Use "endpoint" not "route" or "URL" for API endpoints.
+* Capitalize chain and network names such as `Ethereum`, `Polygon`, `Solana`, `Arbitrum`, `Base`, and `Optimism`
+* Use `parameter` in prose instead of `param`
+* Spell out an acronym on first use when the audience might not know it
 
-RULE: Use "request" and "response" not "call" and "return" in API context.
+## Code samples and examples
 
-RULE: Use "parameter" not "param" in prose. "param" is acceptable only in code.
+Examples should help the reader succeed on the first attempt.
 
-RULE: First use of any acronym must be spelled out: "Externally Owned Account (EOA)." After that, use the acronym only.
+### Make examples runnable
 
-***
+Prefer examples that work when the reader swaps in their own credentials or addresses.
 
-## CODE SAMPLES
+If a sample is illustrative rather than runnable, label it clearly.
 
-RULE: Every code sample must be runnable when the reader substitutes their own API key. No pseudocode in tutorials unless explicitly labeled "pseudocode."
+### Use realistic values
 
-RULE: Every code sample must include error handling (try/catch or equivalent).
-❌ Bare `fetch()` with no error handling
-✅ `fetch()` wrapped in try/catch with response status check
+Use values that resemble real usage. Avoid placeholder data that teaches bad habits or hides important structure.
 
-RULE: Use `{apiKey}` as the API key placeholder.
-❌ YOUR\_API\_KEY, \<api-your-api-key\>, API\_KEY
+Prefer:
 
-RULE: Use realistic values in examples. Real block numbers, real testnet addresses, real method names.
-❌ `0x0000000000000000000000000000000000000000`
+* Real method names
+* Plausible addresses and block numbers
+* Copy-pasteable commands
 
-RULE: Every request example must be followed by an example response.
+Be careful with secrets, costs, and destructive actions. In those cases, a placeholder is better than a misleading real value.
 
-RULE: Use fenced code blocks with language identifiers: \`\`\`javascript\`\`\`, \`\`\`bash\`\`\`, \`\`\`json\`\`\`, \`\`\`python\`\`\`, \`\`\`solidity\`\`\`.
+### Show failure paths when they matter
 
-RULE: Use inline code for: method names, parameter names, file names, terminal commands, values, technical chain references.
-✅ "Call `eth_getBlockByNumber`"
-✅ "Set the `network` parameter"
-❌ Do NOT use inline code for product names ("Alchemy SDK" not "`Alchemy SDK`")
+Include error handling in tutorials and SDK examples when failures are part of the normal integration path.
 
-RULE: Multi-language code sample order: JavaScript/TypeScript → Python → cURL. Always include cURL on API reference pages.
+Not every short reference snippet needs full defensive scaffolding. Favor the amount of error handling that teaches the reader what they are likely to need in practice.
 
-***
+### Choose language examples intentionally
 
-## LINKS
+Default to the language mix that matches the page type and audience.
 
-RULE: Link text must describe the destination.
-✅ "See the [quickstart guide](/docs/alchemy-quickstart-guide)"
-❌ "Click [here](/docs/alchemy-quickstart-guide)"
+In most cases:
 
-RULE: Internal docs links use relative paths: `/docs/...` not full URLs.
-RULE: Link a term only on its first mention per section. Do not repeat-link the same destination within the same section.
+* JavaScript or TypeScript works well for tutorials, SDK-led workflows, server-side examples, and data workflows
+* cURL is useful when showing raw request structure or quick command-line testing
 
-***
+Only include multiple languages when the extra examples add real value. Three shallow examples are often worse than one strong example.
 
-## API REFERENCE PAGE STRUCTURE
+## Repo-specific notes
 
-Every API endpoint page must contain these sections in this order:
+This repo contains more than long-form docs. The same editorial standards apply across formats, but the implementation details differ:
 
-1. Method name as title
-2. One-line description of what it does
-3. Parameters table (columns: Parameter, Type, Required, Description)
-4. Request example (cURL + SDK)
-5. Response example (full JSON, annotate non-obvious fields)
-6. Error codes (common errors and causes)
+* `content/` contains MDX pages
+* `src/openapi/` contains REST API definitions
+* `src/openrpc/` contains JSON-RPC definitions
 
-Missing any section = flag as incomplete.
+When writing MDX:
 
-***
+* Follow this guide for voice, structure, and examples
+* Use [MDX_FEATURES.md](./MDX_FEATURES.md) for component syntax and supported patterns
 
-## TUTORIAL STRUCTURE
+When writing API specs:
 
-Every tutorial must contain these sections in this order:
+* Keep descriptions concise and user-facing
+* Use consistent terminology with the docs
+* Avoid repeating the same explanation across every field when a higher-level description would be clearer
 
-1. What you'll build/learn (1 paragraph, set expectations)
-2. Prerequisites (tools, accounts, knowledge needed)
-3. Numbered steps (each step produces a verifiable result)
-4. Verify it works (concrete confirmation step)
-5. Next steps (links to related guides)
+## Review checklist
 
-RULE: Do not mix conceptual explanation into step-by-step instructions. Use a separate "How it works" section or a callout.
+Before publishing, check:
 
-RULE: Include expected output after every command or code execution step.
-
-***
-
-## CALLOUTS
-
-RULE: Use only these four callout types:
-
-* **Note** — additional context, not critical
-* **Tip** — shortcut or best practice
-* **Warning** — could cause errors or unexpected behavior
-* **Danger** — could cause data loss, security issues, or cost money
-
-RULE: Max 3 callouts per page. If you need more, the body text is missing information.
-
-***
-
-## DEPRECATION
-
-RULE: Never delete docs for deprecated features. Add a deprecation notice at the top with: date, what replaces it, and migration path.
-
-RULE: Changelog entries follow: **\[Product] — What changed — Why it matters to you.**
+* Can the reader tell what this page helps them do within the first few lines?
+* Are prerequisites explicit?
+* Do the headings scan well on their own?
+* Are examples copy-pasteable or clearly labeled when they are not?
+* Are product names, protocols, and terms consistent with house style?
+* Does the page show how to verify success or what to do next?

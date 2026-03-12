@@ -4,6 +4,8 @@ description: Control wallets programmatically using access keys
 slug: wallets/authentication/login-methods/server-wallets
 ---
 
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
+
 <Tip>
   Server wallets are in early access and we'd love to hear how you're using
   them! Contact us at wallets@alchemy.com - we'd love to help you get up and
@@ -111,33 +113,28 @@ We can now send transactions using the Smart Account Client:
 <CodeBlocks>
 
 ```ts twoslash evm.ts
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-import { alchemy, baseSepolia } from "@account-kit/infra";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+import { baseSepolia } from "viem/chains";
 
-// Create Smart Account Client using the signer from Step 2
+// Create Smart Wallet Client using the signer from Step 2
 const client = createSmartWalletClient({
-  transport: alchemy({
+  transport: alchemyWalletTransport({
     apiKey: "your-alchemy-api-key",
   }),
   chain: baseSepolia,
   signer,
-  policyId: "your-sponsor-gas-policy-id", // Make sure enabled on Base Sepolia
+  paymaster: { policyId: "your-sponsor-gas-policy-id" }, // Make sure enabled on Base Sepolia
 });
 
-// Retrieve account
-const account = await client.requestAccount();
-console.log("Smart account address:", account.address);
-
-// Send a transaction
+// Send a sponsored transaction
 const { id } = await client.sendCalls({
   calls: [
     {
       to: "0x1234567890123456789012345678901234567890",
-      value: "0x0",
+      value: BigInt(0),
       data: "0x",
     },
   ],
-  from: account.address,
 });
 console.log("Transaction sent:", id);
 ```

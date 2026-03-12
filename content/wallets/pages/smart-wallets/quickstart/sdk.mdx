@@ -1,115 +1,77 @@
----
-title: Wallets API Quickstart (SDK)
-subtitle: Learn to interact with Wallet APIs using the Wallet Client SDK
-url: https://www.alchemy.com/docs/wallets/smart-wallet-quickstart/sdk
-slug: wallets/smart-wallet-quickstart/sdk
----
+<Note>
+  [`@alchemy/wallet-apis`](https://github.com/alchemyplatform/aa-sdk/tree/v5.x.x/packages/wallet-apis) (v5.x.x) is the recommended SDK and is currently in beta. If you're still on v4.x.x, see the [migration guide](/docs/wallets/resources/migration-v5).
+</Note>
 
-### 1. Install Prerequisities
+### 1. Install
 
-You're going to need `@account-kit/wallet-client`, `@account-kit/infra`, optionally `@aa-sdk/core` if you use a `LocalAccountSigner`, and optionally `viem` if you want to verify a signed message.
+You're going to need `@alchemy/wallet-apis` and `viem`.
 
 <CodeGroup>
 ```shell npm
-npm install @account-kit/wallet-client @account-kit/infra @aa-sdk/core
+npm install @alchemy/wallet-apis viem
 ```
 
 ```shell bun
-bun add @account-kit/wallet-client @account-kit/infra @aa-sdk/core
+bun add @alchemy/wallet-apis viem
 ```
 
 ```shell yarn
-yarn add @account-kit/wallet-client @account-kit/infra @aa-sdk/core
+yarn add @alchemy/wallet-apis viem
+```
+
+```shell pnpm
+pnpm add @alchemy/wallet-apis viem
 ```
 
 </CodeGroup>
 
-### 2. Create A Smart Account Client
+### 2. Create a client
 
-Given a signer (e.g. a `LocalAccountSigner` imported from `@aa-sdk/core` or an [Alchemy Signer](/docs/wallets/signer/what-is-a-signer#alchemy-signer)), all you need to do is follow a few simple steps to start sending user ops with Wallet APIs!
+This quickstart uses a local private key signer as an example. You can use any [viem-compatible signer](/docs/wallets/third-party/signers/custom-integration), including providers like [Privy](/docs/wallets/third-party/signers/privy) and [Turnkey](/docs/wallets/third-party/signers/turnkey).
 
 ```ts
-import { createSmartWalletClient } from "@account-kit/wallet-client";
-import { alchemy, arbitrumSepolia } from "@account-kit/infra";
-import { LocalAccountSigner } from "@aa-sdk/core";
-
-const signer = LocalAccountSigner.privateKeyToAccountSigner(PRIVATE_KEY); // we use a private key signer as an example here
-
-const transport = alchemy({
-  apiKey: ALCHEMY_API_KEY, // use your Alchemy app api key here!
-});
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+import { arbitrumSepolia } from "viem/chains";
+import { privateKeyToAccount } from "viem/accounts";
 
 const client = createSmartWalletClient({
-  transport,
-  chain: arbitrumSepolia, // use any chain imported from @account-kit/infra here!
-  signer,
+  transport: alchemyWalletTransport({
+    apiKey: "YOUR_API_KEY",
+  }),
+  chain: arbitrumSepolia,
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
+  paymaster: {
+    policyId: "YOUR_POLICY_ID",
+  },
 });
 ```
 
-### 3. Send A UserOp
+### 3. Send a sponsored transaction
 
-Use your signer address directly as the `from` field to enable [EIP-7702](/docs/wallets/transactions/using-eip-7702) by default. This first transaction will delegate your account.
+The client defaults to [EIP-7702](/docs/wallets/transactions/using-eip-7702), so your EOA will be delegated to a smart account to enable gas sponsorship, batching, and more. The SDK handles delegation automatically on the first transaction.
 
 ```ts
 import { zeroAddress } from "viem";
 
-const signerAddress = await signer.getAddress();
-
-const preparedCalls = await client.prepareCalls({
-  calls: [{ to: zeroAddress, value: "0x0" }], // callData is optional in a "data" parameter
-  from: signerAddress,
-  // "capabilities" is a data structure that hold gas manager data (as seen below) or permission data
-  capabilities: {
-    paymasterService: {
-      policyId: GAS_MANAGER_POLICY_ID, // put your gas manager policy ID here
-    },
-  },
+const { id } = await client.sendCalls({
+  calls: [{ to: zeroAddress, value: BigInt(0) }],
 });
-
-// Sign the calls (handles both authorization and user operation if account isn't delegated yet)
-const signedCalls = await client.signPreparedCalls(preparedCalls);
-
-// Send the userOp
-const result = await client.sendPreparedCalls(signedCalls);
-
-// Check calls status.
-const status = await client.getCallsStatus(result.id);
 ```
 
-### 4. Sign A Message
-
-Once your account is delegated, you can sign messages.
+### 4. Wait for the transaction to be confirmed
 
 ```ts
-import { createPublicClient } from "viem";
-
-const signerAddress = await signer.getAddress();
-
-const message = "we are so back";
-
-const signature = await client.signMessage({ message, account: signerAddress });
-
-const publicClient = createPublicClient({
-  chain: arbitrumSepolia,
-  transport: transport,
-});
-
-const isValid = await publicClient.verifyMessage({
-  address: signerAddress,
-  message,
-  signature,
-});
+const status = await client.waitForCallsStatus({ id });
+const txHash = status.receipts?.[0]?.transactionHash;
+console.log(`Explorer: https://sepolia.arbiscan.io/tx/${txHash}`);
 ```
 
-### 5. Sign Typed Data
+<Markdown src="../../../shared/v4-accordion.mdx" />
 
-```ts
-// assuming you have a typedData variable
-const signature = await client.signTypedData({ typedData, account: signerAddress });
+### Next steps
 
-const isValid = await publicClient.verifyTypedData({
-  address: signerAddress,
-  ...typedData,
-  signature,
-});
-```
+* [Bring your own signer](/docs/wallets/third-party/signers/custom-integration)
+* [Refine your gas sponsorship rules](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules)
+* [Sign messages](/docs/wallets/transactions/signing/sign-messages)
+* [Sign typed data](/docs/wallets/transactions/signing/sign-typed-data)
+* [Batch transactions](/docs/wallets/transactions/send-batch-transactions)
