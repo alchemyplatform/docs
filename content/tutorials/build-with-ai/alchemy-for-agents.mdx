@@ -1,73 +1,33 @@
 ---
-title: Alchemy for Agents
-description: Give your AI agent access to Alchemy APIs with wallet-based authentication and x402 payments.
-subtitle: Give your AI agent access to Alchemy APIs with wallet-based authentication and x402 payments.
+title: x402 wallet authentication
+description: Authenticate your AI agent with a crypto wallet and pay for Alchemy API requests with USDC using the x402 protocol.
+subtitle: Authenticate your AI agent with a crypto wallet and pay for Alchemy API requests with USDC using the x402 protocol.
 slug: docs/alchemy-for-agents
 ---
 
-[Alchemy for Agents](https://agents.alchemy.com/) lets your AI agent access our full API platform without an API key. Your agent authenticates with a wallet using SIWE (Sign-In With Ethereum) and pays for compute with USDC via the x402 payment protocol, with no human in the loop.
+Authenticate your AI agent with a crypto wallet instead of an API key. Your agent pays per request with USDC via the [x402 payment protocol](https://www.x402.org/), with no human in the loop. We support EVM wallets (SIWE) and Solana wallets (SIWS).
 
 ## How it works
 
-Alchemy for Agents uses two open standards:
+x402 wallet authentication uses three open standards:
 
-- **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with its wallet. No username/password or API key required.
+- **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with an EVM wallet. Pays with USDC on Base.
+- **SIWS (Sign-In With Solana):** Adapted from EIP-4361 for Solana's ed25519 signatures. Your agent authenticates with a Solana wallet. Pays with USDC on Solana.
 - **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When a request requires payment, the server responds with HTTP 402, your agent pays with USDC, and retries the request. Zero protocol fees.
 
-The request flow:
+## The flow
 
-1. Your agent has a wallet funded with USDC on Base
-2. Your agent generates a SIWE token to authenticate
-3. Your agent sends API requests with the token in the `Authorization` header
-4. If the server returns HTTP 402, your agent pays and retries
+When your agent needs to access Alchemy APIs without an API key, it handles the full wallet authentication flow:
 
-## Get started
+1. **Wallet setup:** Your agent creates a new wallet or imports an existing one. You choose between an EVM wallet (pays USDC on Base) or a Solana wallet (pays USDC on Solana).
+2. **Authentication:** Your agent generates a signed auth token using SIWE (EVM) or SIWS (Solana) and includes it in every API request.
+3. **Payments:** If a request requires payment, the server responds with HTTP 402. Your agent pays with USDC and retries automatically.
 
-### 1. Set up a wallet
+Your wallet type only determines authentication and payment. Either wallet type can query any chain, including Ethereum, Solana, Base, Arbitrum, and 100+ others.
 
-Your agent needs an Ethereum wallet funded with USDC on Base (mainnet or Sepolia).
+## What your agent can access
 
-### 2. Generate a SIWE token
-
-```bash
-npx @alchemy/x402 sign-siwe --private-key ./wallet-key.txt
-```
-
-### 3. Send a request
-
-Include the token in the `Authorization` header:
-
-```bash
-curl https://x402.alchemy.com/eth-mainnet/v2 \
-  -H "Authorization: SIWE <your-token>" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
-```
-
-### 4. Handle payments
-
-If you receive an HTTP 402 response, run the payment command:
-
-```bash
-npx @alchemy/x402 pay
-```
-
-After payment completes, retry the request.
-
-## Gateway endpoints
-
-All endpoints use `x402.alchemy.com` as the base URL instead of the standard `g.alchemy.com`:
-
-| API | Endpoint |
-|---|---|
-| Node RPC | `https://x402.alchemy.com/{chainNetwork}/v2` |
-| NFT API | `https://x402.alchemy.com/{chainNetwork}/nft/v3/*` |
-| Prices API | `https://x402.alchemy.com/prices/v1/*` |
-| Portfolio API | `https://x402.alchemy.com/data/v1/*` |
-
-These endpoints support the same methods as our standard APIs. The only difference is the authentication and payment mechanism.
-
-## Supported APIs
+All standard Alchemy APIs are available through the x402 gateway:
 
 - **Node RPC:** Standard Ethereum JSON-RPC methods (`eth_*`) plus Alchemy-enhanced methods, across 100+ chains
 - **Token API:** Token balances, metadata, and allowances
@@ -77,28 +37,30 @@ These endpoints support the same methods as our standard APIs. The only differen
 - **Portfolio API:** Multi-chain balances and portfolio data
 - **Simulation API:** Transaction simulation and outcome prediction
 
-## Handle payments programmatically
+These are the same APIs available with a standard API key. The only difference is the authentication and payment mechanism.
 
-For Node.js, you can use the `@x402/fetch` or `@x402/axios` packages to handle the x402 payment flow automatically:
+## EVM vs Solana wallets
 
-```bash
-npm install @x402/fetch
-```
-
-These libraries intercept HTTP 402 responses and handle payment for you, so your agent doesn't need to retry requests manually.
+| | EVM wallet | Solana wallet |
+|---|---|---|
+| **Standard** | SIWE (EIP-4361) | SIWS |
+| **Signature** | secp256k1 | ed25519 |
+| **Payment** | USDC on Base | USDC on Solana |
+| **Queryable chains** | Any (100+) | Any (100+) |
 
 ## Install as an agent skill
 
-You can also install Alchemy for Agents as an [agent skill](docs/alchemy-agent-skills) so your AI coding agent knows how to use the gateway:
+Install the `agentic-gateway` [agent skill](docs/alchemy-agent-skills) so your AI coding agent learns this flow automatically:
 
 ```bash
 npx skills add alchemyplatform/skills --yes
 ```
 
-This installs the `agentic-gateway` skill, which teaches agents the full Alchemy for Agents authentication and payment flow.
+Your agent will walk you through wallet setup and handle authentication and payments from there.
 
 ## Next steps
 
 - [agents.alchemy.com](https://agents.alchemy.com/)
 - [x402.org](https://www.x402.org/)
 - [EIP-4361: SIWE](https://eips.ethereum.org/EIPS/eip-4361)
+- [Agent Skills](docs/alchemy-agent-skills)

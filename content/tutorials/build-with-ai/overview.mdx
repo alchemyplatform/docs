@@ -1,24 +1,13 @@
 ---
 title: Build with AI
-description: Use Alchemy's AI integrations to build onchain with agent skills, MCP and Alchemy for Agents.
-subtitle: Use Alchemy's AI integrations to build onchain with agent skills, MCP and Alchemy for Agents.
+description: Give your AI agent knowledge of Alchemy APIs with agent skills, query live onchain data through MCP, and authenticate autonomously with x402 wallet auth.
+subtitle: Give your AI agent knowledge of Alchemy APIs with agent skills, query live onchain data through MCP, and authenticate autonomously with x402 wallet auth.
 slug: docs/build-with-ai-overview
 ---
 
-Give your AI agent access to blockchain data, let your coding assistant scaffold dApps with Alchemy APIs, or build fully autonomous onchain workflows. We provide integrations for each use case.
+Give your AI agent everything it needs to build onchain with Alchemy: API knowledge through agent skills, live data access through MCP, and autonomous wallet-based authentication through x402.
 
 ## Pick the right tool
-
-### Alchemy for Agents
-
-[Alchemy for Agents](https://agents.alchemy.com/) lets AI agents access our full API platform **without an API key**. Agents authenticate with a wallet using [SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361) and pay for compute with USDC via the [x402 payment protocol](https://www.x402.org/).
-
-- No API key required, uses wallet-based authentication
-- Pay-per-use with USDC on Base
-- Node RPC, Token API, NFT API, Prices API, Portfolio API, and more
-- 100+ supported chains
-
-[Get started with Alchemy for Agents →](docs/alchemy-for-agents)
 
 ### Agent Skills
 
@@ -28,8 +17,8 @@ Give your AI agent access to blockchain data, let your coding assistant scaffold
 npx skills add alchemyplatform/skills --yes
 ```
 
-- Works with [Claude Code](https://www.anthropic.com/claude-code), [Codex](https://openai.com/index/codex/), [Cursor](https://cursor.com), [VS Code Copilot](https://code.visualstudio.com/docs/copilot/overview), [Windsurf](https://windsurf.com), and other agents that support the skills spec
-- Two skills included: `alchemy-api` (API key auth) and `agentic-gateway` (x402 wallet auth)
+- Two skills included: `alchemy-api` (API key auth) and `agentic-gateway` (wallet-based x402 auth when no API key is set)
+- Works with [Claude Code](https://www.anthropic.com/claude-code), [Codex](https://openai.com/index/codex/), [Cursor](https://cursor.com), [VS Code Copilot](https://code.visualstudio.com/docs/copilot/overview), and other agents that support the [skills spec](https://agentskills.io)
 
 [Get started with Agent Skills →](docs/alchemy-agent-skills)
 
@@ -43,24 +32,33 @@ The [Alchemy MCP Server](https://github.com/alchemyplatform/alchemy-mcp-server) 
 
 [Get started with the MCP Server →](docs/alchemy-mcp-server)
 
+### x402 wallet authentication
+
+Your agent can authenticate with a crypto wallet instead of an API key, paying per request with USDC via the [x402 payment protocol](https://www.x402.org/). This is what the `agentic-gateway` skill teaches your agent automatically.
+
+- Supports EVM wallets ([SIWE](https://eips.ethereum.org/EIPS/eip-4361), USDC on Base) and Solana wallets (SIWS, USDC on Solana)
+- No API key required
+- Wallet type is independent of which chain you query
+
+[Learn about x402 wallet authentication →](docs/alchemy-for-agents)
+
 ## Compare tools by use case
 
 | I want to... | Use |
 |---|---|
-| Build an autonomous agent that queries blockchain data with no human in the loop | [Alchemy for Agents](docs/alchemy-for-agents) |
 | Give my AI coding agent knowledge of all Alchemy APIs | [Agent Skills](docs/alchemy-agent-skills) |
-| Let my IDE copilot query live onchain data during a conversation | [MCP Server](docs/alchemy-mcp-server) |
+| Let my IDE copilot query live onchain data during a conversation | [MCP Server](docs/alchemy-mcp-server) or [Agent Skills](docs/alchemy-agent-skills) |
+| Build an autonomous agent that authenticates with a wallet and pays with USDC | [Agent Skills](docs/alchemy-agent-skills) + [x402 wallet auth](docs/alchemy-for-agents) |
 | Give my coding agent API knowledge *and* live data access | Agent Skills + MCP Server |
 
-These tools are complementary. For example, an agent using **Skills** to understand our API surface can also connect to the **MCP Server** to query live data, or use **Alchemy for Agents** to operate autonomously without a pre-provisioned API key.
+These tools are complementary. For example, an agent using **Skills** to understand our API surface can also connect to the **MCP Server** to query live data, or use the **`agentic-gateway` skill** to operate autonomously without a pre-provisioned API key.
 
 ## Supported AI tools
 
-| Tool | Skills | MCP Server | Alchemy for Agents |
+| Tool | Skills | MCP Server | x402 wallet auth |
 |---|---|---|---|
 | [Claude Code](https://www.anthropic.com/claude-code) | Yes | Yes | Yes |
 | [Cursor](https://cursor.com) | Yes | Yes | Yes |
 | [Codex](https://openai.com/index/codex/) | Yes | Yes | Yes |
 | [VS Code Copilot](https://code.visualstudio.com/docs/copilot/overview) | Yes | Yes | — |
-| [Windsurf](https://windsurf.com) | Yes | Yes | — |
-| [Claude Desktop](https://claude.ai/download) | — | Yes | — |
+| [Claude Desktop](https://claude.ai/download) | Yes | Yes | — |
