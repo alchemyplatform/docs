@@ -1,14 +1,14 @@
-The default smart account type is Modular Account V2 — the most cost-effective and advanced smart account option. You can specify other [account types](#account-type) with additional configuration.
+The default smart account type is Modular Account V2 -- the most cost-effective and advanced smart account option. Specify other [account types](#account-type) with additional configuration.
 
-Note: React hooks only support Alchemy Signer. If you want to use a 3rd party signer, see this [guide](/docs/wallets/third-party/signers/privy).
+Note: React hooks only support the built-in authentication. If you want to use a third-party authentication method, see this [guide](/docs/wallets/third-party/signers/privy).
 
-## Configuration Options
+## Configuration options
 
-You can customize your client by specifying additional parameters to change account type, add gas sponsorship, etc. These parameters are optional.
+Customize your client by specifying additional parameters to change account type, add gas sponsorship, etc. These parameters are optional.
 
-### Account Type
+### Account type
 
-We recommend using [ModularAccountV2](/docs/wallets/smart-contracts/modular-account-v2/overview) as it is the cheapest and most advanced Smart Account, but you can specify other smart contract account types as needed. Learn more about the different smart accounts [here](/docs/wallets/smart-contracts/choosing-a-smart-account).
+[ModularAccountV2](/docs/wallets/smart-contracts/modular-account-v2/overview) is the recommended smart account as it is the cheapest and most advanced option. You can specify other smart account types as needed. Learn more about the different smart accounts [here](/docs/wallets/smart-contracts/choosing-a-smart-account).
 
 * **`type`** (string) - Defines the smart account type. Options:
   * `"ModularAccountV2"` (recommended and default)
@@ -23,9 +23,9 @@ We recommend using [ModularAccountV2](/docs/wallets/smart-contracts/modular-acco
   [here](/docs/wallets/smart-contracts/other-accounts/modular-account/upgrading-to-modular-account).
 </Tip>
 
-### Gas Sponsorship
+### Gas sponsorship
 
-To improve transaction UX, we recommend sponsoring gas for users.
+To improve transaction UX, sponsor gas for your users.
 
 * **`policyId`** (string) - [Gas Manager Policy ID](https://dashboard.alchemy.com/gas-manager/policy/create/?a=ak-docs) that enables gas sponsorship within policy limits
 
@@ -40,7 +40,7 @@ See the [full guide](/docs/wallets/transactions/sponsor-gas) for gas sponsorship
   | Sponsor gas for users. Get your policy ID [here](https://dashboard.alchemy.com/gas-manager)                                                                                                   | `policyId`          | `string`                                                                                                                                                                                                                                                                                             |
   | Simulate user operations before sending (i.e. use [`alchemyUserOperationSimulator`](/docs/wallets/reference/account-kit/infra/functions/alchemyUserOperationSimulator))                            | `useSimulation`     | `boolean`                                                                                                                                                                                                                                                                                            |
   | Custom middleware to run before requesting sponsorship                                                                                                                                        | `customMiddleware`  | `ClientMiddlewareFn`                                                                                                                                                                                                                                                                                 |
-  | Override fee estimation middleware (if you are using our RPCs, it's important to use the default [`alchemyFeeEstimator`](/docs/wallets/reference/account-kit/infra/variables/alchemyFeeEstimator)) | `feeEstimator`      | `ClientMiddlewareFn`                                                                                                                                                                                                                                                                                 |
+  | Override fee estimation middleware (if you are using the Smart Wallets RPCs, use the default [`alchemyFeeEstimator`](/docs/wallets/reference/account-kit/infra/variables/alchemyFeeEstimator)) | `feeEstimator`      | `ClientMiddlewareFn`                                                                                                                                                                                                                                                                                 |
   | Override gas estimation middleware (the default middleware calls the underlying bundler RPC to `eth_estimateUserOperationGas`)                                                                | `gasEstimator`      | `ClientMiddlewareFn`                                                                                                                                                                                                                                                                                 |
   | Override middleware that signs user operation(s)                                                                                                                                              | `signUserOperation` | `ClientMiddlewareFn`                                                                                                                                                                                                                                                                                 |
   | Advanced account params                                                                                                                                                                       | `accountParams`     | `AccountConfig` with the following fields: <ul><li>`mode`: `"default"` | `"7702"`</li><li>`entryPoint`: `EntryPointDef`</li><li>`signerEntity`: `SignerEntity`</li><li>`salt`: `bigint`</li><li>`factoryAddress`: `Address`</li><li>`initCode`: `Hex`</li><li>`accountAddress`: `Address`</li></ul> |

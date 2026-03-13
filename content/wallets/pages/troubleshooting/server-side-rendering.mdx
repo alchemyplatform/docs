@@ -1,12 +1,12 @@
 ---
-title: Server-side Rendering
+title: Server-side rendering
 description: Learn how to use Smart Wallets with server-side rendering.
 slug: wallets/troubleshooting/ssr
 ---
 
 > ⚠️ **Common Issue**: If SSR is not set up correctly, you may see sessions resetting or users getting logged out unexpectedly. Make sure to follow this guide fully to preserve session state.
 
-When using Smart Wallets in a server-side rendered setting, you will see inconsistencies of the user state between the server and the client. This will lead to flashes of content when a user is logged in. To avoid this, the account state can be optimistically loaded on the server and passed to the client.
+When using Smart Wallets in a server-side rendered setting, you may see inconsistencies in account state between the server and the client. This leads to flashes of content when logged in. To avoid this, load the account state optimistically on the server and pass it to the client.
 
 ## Update your config
 
@@ -15,7 +15,7 @@ To enable server-side rendering support, you need to set `ssr: true` when creati
 <Tabs>
   <Tab title="React" language="react">
 
-When using React, you should also make the config a function so that you can call it once per request, which allows for request-based isolation of the account state.
+When using React, make the config a function so that you can call it once per request, which allows for request-based isolation of the account state.
 
 ```ts twoslash config.ts {9}
 import { createConfig } from "@account-kit/react";
@@ -32,11 +32,11 @@ export const config = () =>
 
 This setting will defer hydration of the account state to the client after the initial mount.
 
-## Persisting the Account State
+## Persisting the account state
 
-### Cookie Storage
+### Cookie storage
 
-To consistently pass the state between the server and the client, you can pass in a cookie storage to the `config` object created above. The cookie storage allows the client state to be written serialized to a cookie which can be passed along to the server on each request. This allows the server to have access to certain parts of the account state when rendering, ensuring a consistent render between client and server (eg. user's address displayed in the top nav). Instances which can only be created on the client will still not be available on the server, however. This includes the signer or smart contract account instances.
+To consistently pass the state between the server and the client, pass in a cookie storage to the `config` object created above. The cookie storage allows the client state to be serialized to a cookie which is passed to the server on each request. This gives the server access to certain parts of the account state when rendering, ensuring a consistent render between client and server (e.g. address displayed in the top nav). Instances that can only be created on the client are still not available on the server, however. This includes the authentication or smart account instances.
 
 ```ts twoslash config.ts {1,12-13}
 import { createConfig, cookieStorage } from "@account-kit/react";
@@ -59,7 +59,7 @@ Now, depending on your application, you can get the state from cookies and pass 
 
 ### Next.js App Directory
 
-If you are using NextJS App Directory, you can read the cookie state and pass it to the providers like so:
+If you are using Next.js App Directory, read the cookie state and pass it to the providers:
 
 <CodeBlocks>
 
@@ -175,11 +175,11 @@ export const config = createConfig({
 });
 ```
 
-This setting will defer hydration of the account kit state until you can call the `hydrate` method on mount.
+This setting defers hydration of the Smart Wallets state until you call the `hydrate` method on mount.
 
-## Hydrate the Account State
+## Hydrate the account state
 
-Now that you've set up your config for SSR, you will have to manually hydrate the state on the client. This can be done by calling the `hydrate` method exported by Smart Wallets core.
+Now that you've set up your config for SSR, manually hydrate the state on the client. Call the `hydrate` method exported by Smart Wallets core.
 
 <CodeBlocks>
 
@@ -210,9 +210,9 @@ export const config = createConfig({
 
 </CodeBlocks>
 
-## Persisting the Account State
+## Persisting the account state
 
-To consistently pass the state between the server and the client, you can pass in a cookie storage to the `config` object created above. The cookie storage allows the client state to be written serialized to a cookie which can be passed along to the server on each request. This allows the server to have access to certain parts of the account state when rendering, ensuring a consistent render between client and server (eg. user's address displayed in the top nav). Instances which can only be created on the client will still not be available on the server, however. This includes the signer or smart contract account instances.
+To consistently pass the state between the server and the client, pass in a cookie storage to the `config` object created above. The cookie storage allows the client state to be serialized to a cookie which is passed to the server on each request. This gives the server access to certain parts of the account state when rendering, ensuring a consistent render between client and server (e.g. address displayed in the top nav). Instances that can only be created on the client are still not available on the server, however. This includes the authentication or smart account instances.
 
 ```ts twoslash {7-8}
 import { createConfig, cookieStorage } from "@account-kit/core"; // Add cookieStorage import

@@ -1,33 +1,33 @@
 ---
 outline: deep
-title: Choosing a Signer
-description: Explore Smart Wallets integration guides for signers including Magic.Link, Privy, Web3Auth, EOAs, and many more!
+title: Choosing an authentication method
+description: Explore Smart Wallets integration guides for authentication including Magic.Link, Privy, Web3Auth, EOAs, and many more!
 slug: wallets/signer/what-is-a-signer
 ---
 
-A **Signer** is a service or application that manages a private key and signs operations. Most web3 users today use an [Externally Owned Account (EOA)](https://ethereum.org/en/developers/docs/accounts/#externally-owned-accounts-and-key-pairs) with a self-custodial Signer such as MetaMask to manage the private key.
+An **authentication owner** is a service or application that manages a private key and signs operations. Most web3 users today use an [Externally Owned Account (EOA)](https://ethereum.org/en/developers/docs/accounts/#externally-owned-accounts-and-key-pairs) with a self-custodial wallet such as MetaMask to manage the private key.
 
-With Smart Wallets, you will deploy a **smart account** for each user instead of an EOA wallet. This smart account stores the user's assets (e.g. tokens or NFTs).
+With Smart Wallets, deploy a **smart account** for each user instead of an EOA wallet. This smart account stores the user's assets (e.g. tokens or NFTs).
 
-The signer connected to the `SmartWalletClient` is used to sign messages, data including user operations and transactions. The signatures for the user operation will be only valid and execute if the signer is the owner or one of the owners of the account.
+The owner connected to the `SmartWalletClient` signs messages, data including transactions. The signatures are only valid and execute if the owner is one of the owners of the account.
 
-Using Smart Wallets, you can secure your user's account with an email, social login, or passkeys. You can also use a self-custodial wallet like MetaMask as the Signer. You can choose any Signer service or application to manage the Owner private key for the user.
+Using Smart Wallets, secure your user's account with an email, social login, or passkeys. You can also use a self-custodial wallet like MetaMask as the owner. Choose any authentication service or application to manage the owner private key for the user.
 
-This doc provides a basic introduction to signers, the criteria you should consider when choosing a Signer, and how signers integrate with the Smart Wallets SDK.
+This doc provides a basic introduction to authentication owners, the criteria to consider when choosing one, and how they integrate with the Smart Wallets SDK.
 
-## Role of a Signer
+## Role of an authentication owner
 
-The Signer plays a crucial role in your app because it controls the user's smart account. The Signer is responsible for:
+The authentication owner plays a crucial role in your app because it controls the user's smart account. The owner is responsible for:
 
 * Securely storing the user's private key which controls the user's assets
 * Authenticating the user
 * Protecting the user's account from phishing attacks
-* Signing user operations requested by the user, if and only if the user has authenticated
+* Signing transactions requested by the user, if and only if the user has authenticated
 * Optionally offering account recovery methods
 
 ## Criteria to consider
 
-Here are some important criteria to consider when choosing a Signer.
+Here are some important criteria to consider when choosing an authentication owner.
 
 * **Custody model:** Who has access to the private key?
   * Self-Custodial: the end user controls the private key and manually approves signature requests
@@ -38,13 +38,13 @@ Here are some important criteria to consider when choosing a Signer.
 
 * **Authentication methods:** What authentication method delivers the right balance of security, self-sovereignty, and ease-of-use for your target users?
 
-* **Availability:** If the Signer service provider goes down, will users be able to sign transactions?
+* **Availability:** If the authentication service provider goes down, will users be able to sign transactions?
 
-* **Key export:** Does the Signer allow the end user to export their private key? Can the user initiate an export even if the service provider has gone down? This is an important factor to ensure the user retains control of their assets no matter what happens to the service provider.
+* **Key export:** Does the provider allow the end user to export their private key? Can the user initiate an export even if the service provider has gone down? This is an important factor to ensure the user retains control of their assets no matter what happens to the service provider.
 
-* **Key recovery**: If the user forgets their password or loses their passkey, what recovery methods does the Signer provide? If the provider stores a backup copy of the private key or MPC key shares, where are those backups stored and who has access to them?
+* **Key recovery**: If the user forgets their password or loses their passkey, what recovery methods does the provider offer? If the provider stores a backup copy of the private key or MPC key shares, where are those backups stored and who has access to them?
 
-## Types of Signers
+## Types of authentication owners
 
 ### Non-custodial wallets
 
@@ -54,11 +54,11 @@ Non-custodial wallet providers store private keys such that they cannot access t
 
 ### MPC wallets (non-custodial)
 
-Multi-Party Computation (MPC) Signers split the Owner Account private key into key shares that are then distributed to a number of share holders. Share holders only know the value of their key share and transaction holders can sign transactions without revealing their key shares to other holders.
+Multi-Party Computation (MPC) providers split the owner account private key into key shares that are then distributed to a number of share holders. Share holders only know the value of their key share and transaction holders can sign transactions without revealing their key shares to other holders.
 
-Valid signatures do not always require all shares to sign a transaction. MPC Signers can set a threshold, requiring a certain number of shares for a signature to be valid. Common configurations are 2 of 2 shares or 2 of 3 shares. By requiring multiple shares, MPC models mitigate the risks associated with a single key being compromised.
+Valid signatures do not always require all shares to sign a transaction. MPC providers can set a threshold, requiring a certain number of shares for a signature to be valid. Common configurations are 2 of 2 shares or 2 of 3 shares. By requiring multiple shares, MPC models mitigate the risks associated with a single key being compromised.
 
-Some MPC signers provide recovery services in which key share(s) are backed up in the service provider’s cloud, on the end user’s device, or in the end user’s cloud (e.g. iCloud or Google Drive). When evaluating an MPC provider, it’s important to understand where each key share is stored.
+Some MPC providers offer recovery services in which key share(s) are backed up in the service provider’s cloud, on the end user’s device, or in the end user’s cloud (e.g. iCloud or Google Drive). When evaluating an MPC provider, understand where each key share is stored.
 
 **Example**: Privy, Fireblocks MPC, Portal, Capsule, WalletKit
 
@@ -94,14 +94,14 @@ Custodial wallet providers have full control over the user’s private key and s
 
 **Example**: Coinbase Custody, Bitgo
 
-## Signer interfaces
+## Authentication owner interfaces
 
-The `SmartWalletClient` accepts any signer that conforms to standard [viem](https://viem.sh/) account interfaces. The `signer` parameter of `createSmartWalletClient` accepts:
+The `SmartWalletClient` accepts any owner that conforms to standard [viem](https://viem.sh/) account interfaces. The `signer` parameter of `createSmartWalletClient` accepts:
 
 1. [**`LocalAccount`**](https://viem.sh/docs/accounts/local) — A viem local account, such as one created with [`privateKeyToAccount`](https://viem.sh/docs/accounts/local/privateKeyToAccount) or [`toAccount`](https://viem.sh/docs/accounts/local/toAccount). Useful for private key signers, hardware wallets, or custom account implementations.
 2. [**Viem `WalletClient`**](https://viem.sh/docs/clients/wallet) — A viem wallet client with a mounted account. Since a wallet client can wrap any [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) compliant provider, this is useful for connecting third-party embedded wallet providers or browser extension wallets.
 
-For [EIP-7702](/docs/wallets/transactions/using-eip-7702) delegation, the signer must support `signAuthorization`. See the [third-party signer integration guide](/docs/wallets/third-party/signers/custom-integration) for details on bringing your own signer.
+For [EIP-7702](/docs/wallets/transactions/using-eip-7702) delegation, the owner must support `signAuthorization`. See the [third-party authentication integration guide](/docs/wallets/third-party/signers/custom-integration) for details on bringing your own authentication provider.
 
 ***
 

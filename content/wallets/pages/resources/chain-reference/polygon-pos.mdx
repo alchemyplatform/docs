@@ -1,23 +1,23 @@
 ---
 title: Polygon PoS Smart Wallet Reference
-description: Polygon PoS support details for Alchemy Smart Wallets, including network restrictions, MEV protection, and mempool considerations.
+description: Polygon PoS support details for Smart Wallets, including network restrictions, MEV protection, and mempool considerations.
 ---
 
-Polygon PoS is supported in both our Wallet APIs and our Low-Level Infra APIs.
-It has access to our capabilities such as EIP-7702 support, gas sponsorship, transaction batching, and more.
+Polygon PoS is supported in both the Wallet APIs and the Low-Level Infra APIs.
+It has access to capabilities such as EIP-7702 support, gas sponsorship, transaction batching, and more.
 
-The Polygon PoS network lacks a reliable private mempool for our bundler to submit its transactions through. This leads
-to a few restrictions that we must enforce in order to protect our bundler and users from front-running attacks.
+The Polygon PoS network lacks a reliable private mempool for submitting transactions through. This leads
+to a few restrictions that are enforced to protect the transaction infrastructure and users from front-running attacks.
 
 ## Network Restrictions
 
-### MEV Protection
+### MEV protection
 
-Transactions are submitted to the Polygon Mainnet and Polygon Amoy public mempools. We do not offer any MEV protection for users on Polygon POS.
+Transactions are submitted to the Polygon mainnet and Polygon Amoy public mempools. No MEV protection is offered for users on Polygon PoS.
 
 ### Transactions
 
-On Polygon Mainnet transactions (user operations) submitted through either our Wallet APIs or our Low-Level Bundler API **must use the Alchemy Gas Manager**.
+On Polygon mainnet, transactions submitted through either the Wallet APIs or the Low-Level Bundler API **must use the Gas Manager**.
 
 <Info>
   We will begin enforcing this on 01/30/2026.
@@ -28,14 +28,14 @@ On Polygon Mainnet transactions (user operations) submitted through either our W
 
 This is done to ensure the following:
 
-1. The onchain account itself is not restricted in anyway. If the user wishes to upgrade/delegate their account or use their account with another provider, they can.
-2. All transactions submitted through our bundler are protected from front-running as our Gas Manager requires transactions to be submitted through trusted EOAs.
+1. The onchain account itself is not restricted in any way. If the user wishes to upgrade/delegate their account or use their account with another provider, they can.
+2. All transactions submitted through the transaction infrastructure are protected from front-running as the Gas Manager requires transactions to be submitted through trusted EOAs.
 
-### Gas Sponsorship
+### Gas sponsorship
 
-On Polygon Mainnet and Polygon Amoy transactions that are sponsored by our Gas Manager **must** be submitted through either our Wallet APIs or Low-Level Bundler API.
+On Polygon mainnet and Polygon Amoy, transactions that are sponsored by the Gas Manager **must** be submitted through either the Wallet APIs or Low-Level Bundler API.
 
-This is due to the new logic in our Gas Manager contracts that requires transactions to be submitted through trusted EOAs.
+This is due to the new logic in the Gas Manager contracts that requires transactions to be submitted through trusted EOAs.
 
 <Info>
   We will begin enforcing this on 01/30/2026.

@@ -6,7 +6,7 @@ slug: wallets/resources/types
 
 ## `BatchUserOperationCallData`
 
-An array of `UserOperationCallData`, representing a sequence of `UserOperations` to be executed in batch by calling the `executeBatch` function on the `SmartContractAccount` contract. Check out our guide on [How to submit batch transactions](/docs/wallets/transactions/send-batch-transactions) to learn more about batching multiple transactions into a single `UserOperation`.
+An array of `UserOperationCallData`, representing a sequence of `UserOperations` to be executed in batch by calling the `executeBatch` function on the `SmartContractAccount` contract. Check out the [batch transactions guide](/docs/wallets/transactions/send-batch-transactions) to learn more about batching multiple transactions into a single `UserOperation`.
 
 <Accordion title="BatchUserOperationCallData">
 
@@ -117,7 +117,7 @@ export type BundlerActions = {
 ## `BundlerClient`
 
 `BundlerClient` is a custom `viem` [`Client`](https://viem.sh/docs/clients/custom) that extends viem's [`PublicClient`](https://viem.sh/docs/clients/public) with bundler-specific actions for [EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) operations and [EIP-6900](https://eips.ethereum.org/EIPS/eip-6900) standards. The actions are defined in [`@aa-sdk/core`](/docs/wallets/reference/aa-sdk/core). It's account agnostic and only exposes methods for interacting directly with Bundler RPC and ETH RPC methods.
-`BundlerClient` also supports [`Public Actions`](https://viem.sh/docs/actions/public/introduction) for client applications to connect, query, and interact with the blockchain (i.e., sending transactions, smart contract executions, data retrieval, etc.). Additionally, it is EIP-1193 compliant, so can easily be swapped out in place of other web3 providers (eg. `window.ethereum`).
+`BundlerClient` also supports [`Public Actions`](https://viem.sh/docs/actions/public/introduction) for client applications to connect, query, and interact with the blockchain (i.e., sending transactions, smart contract executions, data retrieval, etc.). Additionally, it is EIP-1193 compliant, so it can be swapped out in place of other web3 providers (eg. `window.ethereum`).
 In the vast majority of cases, you will not use this client directly. Use the [`SmartAccountClient`](/docs/wallets/concepts/smart-account-client) instead, which wraps the Bundler Client and provides the same actions plus account-specific functionality.
 
 <Accordion title="BundlerClient">
@@ -407,8 +407,8 @@ export interface SmartAccountSigner<Inner = any> {
 Within Smart Wallets, implementations for Light Account and Modular Account are exported from `@account-kit/smart-contracts`. These implementations handle the logic for generating the deployment data, encoding
 single and batch UO execution, and signing of messages, typed data, and UOs.
 
-Smart Contract Accounts are rarely used on their own, and are typically passed in to [Smart Account Client](/docs/wallets/reference/aa-sdk/core/type-aliases/SmartAccountClient) implementations.
-When using either the [React](/docs/wallets/react/quickstart) or [Core](/docs/wallets/core/overview) libraries, the connection of an account and a client are handled for you.
+Wallets are rarely used on their own, and are typically passed in to [Smart Account Client](/docs/wallets/reference/aa-sdk/core/type-aliases/SmartAccountClient) implementations.
+When using either the [React](/docs/wallets/react/quickstart) or [Core](/docs/wallets/core/overview) libraries, the connection of an account and a client is handled for you.
 
 It's also possible to use a custom account when using the [Infra](/docs/wallets/reference/account-kit/infra) library.
 Within `@aa-sdk/core`, a method [`toSmartContractAccount`](/docs/wallets/reference/aa-sdk/core/functions/toSmartContractAccount) is provided so you can create an instance of your Smart Contract Account.
@@ -485,7 +485,7 @@ export type ToSmartContractAccountParams<
 
 ## `User`
 
-`User` is a type that defines the model for the details of a user's Embedded Account via an Alchemy Signer. It includes the user's `email`, `orgId`, `userId`, `userId`, `address` (the EOA signer address corresponding to the user credentials), and `credentialId`. You can use the [`useUser`](/docs/wallets/reference/account-kit/react/hooks/useUser) react hook to look up a user.
+`User` is a type that defines the model for the details of a user's embedded account. It includes the user's `email`, `orgId`, `userId`, `address` (the EOA address corresponding to the user credentials), and `credentialId`. You can use the [`useUser`](/docs/wallets/reference/account-kit/react/hooks/useUser) React hook to look up a user.
 
 <Accordion title="User">
 

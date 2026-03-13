@@ -6,15 +6,15 @@ slug: wallets/resources/terms
 
 ## Smart Wallets
 
-The Smart Wallets framework is designed to embed smart accounts in web3 applications. It includes a set of tools such as [Signer integrations](/docs/wallets/signer/what-is-a-signer), [Gas Manager](https://alchemy.com/docs/gas-manager-services) and [Bundler](/docs/reference/bundler-api-quickstart) utilities that unlock features such as [gas sponsorship](/docs/wallets/transactions/sponsor-gas), [batched transactions](/docs/wallets/transactions/send-batch-transactions) and email/social login. With its user-friendly suite of SDKs, known as [aa-sdk](https://github.com/alchemyplatform/aa-sdk), Smart Wallets makes it easy to deploy smart accounts, manage `UserOperation`s, and handle gas sponsorship, streamlining the entire process with minimal coding effort.
+The Smart Wallets framework is designed to embed smart accounts in web3 applications. It includes a set of tools such as [authentication integrations](/docs/wallets/signer/what-is-a-signer), [Gas Manager](https://alchemy.com/docs/gas-manager-services), and [transaction sending](/docs/reference/bundler-api-quickstart) utilities that unlock features such as [gas sponsorship](/docs/wallets/transactions/sponsor-gas), [batched transactions](/docs/wallets/transactions/send-batch-transactions), and email/social login. With [aa-sdk](https://github.com/alchemyplatform/aa-sdk), Smart Wallets makes it straightforward to deploy smart accounts, manage `UserOperation`s, and handle gas sponsorship with minimal coding effort.
 
 ## Bundler
 
-A network participant in the [ERC-4337](#erc-4337) standard that collects and submits `UserOperations` (UOs) to the blockchain, handling the associated gas fees, in exchange for payment during UO processing either directly from the user or from a [Paymaster](https://www.alchemy.com/overviews/what-is-a-paymaster). Alchemy’s implementation of a bundler is called [Rundler](https://github.com/alchemyplatform/rundler). It is written in Rust and designed to achieve high performance and reliability.
+A network participant in the [ERC-4337](#erc-4337) standard that collects and submits `UserOperations` (UOs) to the blockchain, handling the associated gas fees, in exchange for payment during UO processing either directly from the user or from a [Paymaster](https://www.alchemy.com/overviews/what-is-a-paymaster). The bundler implementation used by Smart Wallets is called [Rundler](https://github.com/alchemyplatform/rundler). It is written in Rust and designed to achieve high performance and reliability.
 
 ## Client
 
-Built on top of `viem`, we have built our own [`Client`](https://viem.sh/docs/clients/custom) extended with custom functionality as a [`BundlerClient`](/docs/wallets/resources/types#BundlerClient) and [`SmartAccountClient`](/docs/wallets/resources/types#SmartAccountClient) compliant to EIP-4337 and EIP-6900 standards. `Client`, in general, is an intermediary or connector that enables interactions between client applications and your `SmartAccount` (either `LightAccount` or `ModularAccount`) or the `Bundler`.
+Built on top of `viem`, the [`Client`](https://viem.sh/docs/clients/custom) is extended with custom functionality as a [`BundlerClient`](/docs/wallets/resources/types#BundlerClient) and [`SmartAccountClient`](/docs/wallets/resources/types#SmartAccountClient) compliant to EIP-4337 and EIP-6900 standards. `Client`, in general, is an intermediary or connector that enables interactions between client applications and your smart account (either `LightAccount` or `ModularAccount`) or the transaction sender.
 
 ## EntryPoint
 
@@ -34,11 +34,11 @@ A [standard for modular accounts](https://eips.ethereum.org/EIPS/eip-6900) autho
 
 ## Gas Manager
 
-[`Gas Manager`](https://alchemy.com/docs/gas-manager-services) is the Alchemy’s [Paymaster](#paymaster) service. With robust security and customizability, Alchemy Gas Manager allows you to easily and securely sponsor the gas fees for users of your applications. Gas Managers authenticate transactions and ensure payments are carried out only when specific conditions are fulfilled, significantly reducing the chances of fraud and errors. Additionally, Gas Managers allow you to set granular rules for sponsoring your user's gas fees, so you can determine precisely when and how the gas fees will be sponsored. Head over to [Gas Manager](https://alchemy.com/docs/gas-manager-services) documentation to learn more.
+[`Gas Manager`](https://alchemy.com/docs/gas-manager-services) is the [Paymaster](#paymaster) service for sponsoring gas. With robust security and customizability, Gas Manager allows you to securely sponsor the gas fees for users of your applications. Gas Managers authenticate transactions and ensure payments are carried out only when specific conditions are fulfilled, significantly reducing the chances of fraud and errors. Additionally, Gas Managers allow you to set granular rules for sponsoring your user’s gas fees, so you can determine precisely when and how the gas fees are sponsored. Head over to the [Gas Manager](https://alchemy.com/docs/gas-manager-services) documentation to learn more.
 
 ## Light Account
 
-[Light Account](/docs/wallets/smart-contracts/other-accounts/light-account/) is a collection of lightweight, production-ready [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) smart accounts developed by Alchemy. It builds on top of Ethereum Foundation's canonical [SimpleAccount](https://github.com/eth-infinitism/account-abstraction/blob/cc3893bcaf2272c163ce89d5eb9eadb8e6b52db7/contracts/accounts/SimpleAccount.sol#L22) to add key improvements such as ownership transfers, multiple owners, ERC-1271 signature support, and gas optimizations. It has been audited [multiple](https://github.com/alchemyplatform/light-account/blob/develop/audits/2024-01-09_quantstamp_aa8196b.pdf) [times](https://github.com/alchemyplatform/light-account/blob/develop/audits/2024-04-26_quantstamp_93f46a2.pdf) by Quantstamp.
+[Light Account](/docs/wallets/smart-contracts/other-accounts/light-account/) is a collection of lightweight, production-ready [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) smart accounts. It builds on top of Ethereum Foundation's canonical [SimpleAccount](https://github.com/eth-infinitism/account-abstraction/blob/cc3893bcaf2272c163ce89d5eb9eadb8e6b52db7/contracts/accounts/SimpleAccount.sol#L22) to add key improvements such as ownership transfers, multiple owners, ERC-1271 signature support, and gas optimizations. It has been audited [multiple](https://github.com/alchemyplatform/light-account/blob/develop/audits/2024-01-09_quantstamp_aa8196b.pdf) [times](https://github.com/alchemyplatform/light-account/blob/develop/audits/2024-04-26_quantstamp_93f46a2.pdf) by Quantstamp.
 
 ## Magic Link Authentication
 
@@ -56,24 +56,24 @@ Passkeys are a safer and easier alternative to passwords. With passkeys, users c
 
 ## Paymaster
 
-A [Paymaster](https://eips.ethereum.org/EIPS/eip-4337#paymasters) is an on-chain contract that allows an entity to sponsor the gas fees for another entity. It can be used by dapps or companies to abstract away the concept of gas from their users. This significantly enhances the UX of dApps and can help onboard the next wave of Web3 users.
+A [Paymaster](https://eips.ethereum.org/EIPS/eip-4337#paymasters) is an onchain contract that allows an entity to sponsor the gas fees for another entity. It can be used by dApps or companies to abstract away the concept of gas from their users. This significantly enhances the UX of dApps and can help onboard the next wave of Web3 users.
 
 ## Plugin
 
 A module for [ERC-6900](https://eips.ethereum.org/EIPS/eip-6900#terms) smart contract accounts, plugins are deployed smart contracts that host any amount of the EIP-6900 modular functions: execution functions, validation functions, or hooks. These plugins ensure modularity, upgradeability, and adherence to standardized interfaces.
 
-## Signer
+## Authentication and ownership
 
-A service or application that manages the private key and signs either arbitrary messages or structured data objects such as `UserOperations` or `Transactions` before sending to the network. Types of signers include:
+A service or application that manages the private key and signs either arbitrary messages or structured data objects such as `UserOperations` or `Transactions` before sending to the network. Types of authentication providers include:
 
 * **Custodial**: Managed by a third party, it holds and autonomously uses the private key for transactions, necessitating complete user trust.
 * **Non-custodial**: While a third party manages the private key, user involvement is required for signing transactions. Examples: Metamask.
 * **MPC (Multi-Party Computation)**: Partial or complete key shares are managed by third parties, but user participation is needed for transaction signatures. Examples: Privy, Portal, Fireblocks, Fordefi.
 * **Decentralized MPC**: Operated by a decentralized network, it manages key shares and requires node consensus for transaction signatures. Examples: Lit, Web3auth, 0xpass.
 
-## Smart Contract Account
+## Wallet
 
-A [Smart Contract Account (SCA)](/docs/wallets/resources/types#smartcontractaccount), or smart account in short, is an individual on-chain account located at a public address where an ERC-4337 compatible smart account [`contract`](https://ethereum.org/developers/docs/smart-contracts) is deployed to. This address is controlled by one or more owners of the smart contract account. The [aa-sdk](https://github.com/alchemyplatform/aa-sdk) supports different smart account implementations such as [Modular Account V2](/docs/wallets/smart-contracts/modular-account-v2/overview), [Light Account](/docs/wallets/smart-contracts/other-accounts/light-account/), or [Simple Account](https://github.com/eth-infinitism/account-abstraction/blob/cc3893bcaf2272c163ce89d5eb9eadb8e6b52db7/contracts/accounts/SimpleAccount.sol#L22).
+A [wallet](/docs/wallets/resources/types#smartcontractaccount), or smart account in short, is an individual onchain account located at a public address where an ERC-4337 compatible smart account [`contract`](https://ethereum.org/developers/docs/smart-contracts) is deployed to. This address is controlled by one or more owners of the wallet. The [aa-sdk](https://github.com/alchemyplatform/aa-sdk) supports different smart account implementations such as [Modular Account V2](/docs/wallets/smart-contracts/modular-account-v2/overview), [Light Account](/docs/wallets/smart-contracts/other-accounts/light-account/), or [Simple Account](https://github.com/eth-infinitism/account-abstraction/blob/cc3893bcaf2272c163ce89d5eb9eadb8e6b52db7/contracts/accounts/SimpleAccount.sol#L22).
 
 ## Transaction
 
@@ -81,11 +81,11 @@ A [Smart Contract Account (SCA)](/docs/wallets/resources/types#smartcontractacco
 
 ## Transaction Calldata
 
-Transaction `calldata` refers to the data passed along with a transaction that allows accounts to send messages to other entities or interact with smart contracts. When calling smart contracts on-chain (either from an `EOA` or another contract), the `calldata` is the encoded data within the `Transaction` containing the input parameters (or arguments) of the function being called on the contract.
+Transaction `calldata` refers to the data passed along with a transaction that allows accounts to send messages to other entities or interact with smart contracts. When calling smart contracts onchain (either from an `EOA` or another contract), the `calldata` is the encoded data within the `Transaction` containing the input parameters (or arguments) of the function being called on the contract.
 
 ## User Operation
 
-User Operations are pseudo-transaction objects introduced by the ERC-4337 standard that are issued to execute actions via a smart account. It encapsulates the intended actions or transactions of the user, which are executed on-chain by a [Bundler](#bundler) through an [`EntryPoint`](https://eips.ethereum.org/EIPS/eip-4337#definitions) contract on different EVM chains.
+User Operations are pseudo-transaction objects introduced by the ERC-4337 standard that are issued to execute actions via a smart account. It encapsulates the intended actions or transactions of the user, which are executed onchain by a [Bundler](#bundler) through an [`EntryPoint`](https://eips.ethereum.org/EIPS/eip-4337#definitions) contract on different EVM chains.
 
 ## Wallet
 
@@ -93,4 +93,4 @@ User Operations are pseudo-transaction objects introduced by the ERC-4337 standa
 
 ## Wallet-as-a-Service (WaaS)
 
-Also called a key management service (KMS). WaaS is an infrastructure-as-a-service provider that stores private key material. A WaaS provider would be classified under one of the [signer custody types](#signer).
+Also called a key management service (KMS). WaaS is an infrastructure-as-a-service provider that stores private key material. A WaaS provider would be classified under one of the [authentication custody types](#authentication-and-ownership).

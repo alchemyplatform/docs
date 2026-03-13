@@ -8,9 +8,9 @@ slug: reference/bundler-sponsored-operations
 
 ## What is Bundler Sponsorship?
 
-Bundler Sponsorship is a beta feature that allows the bundler to sponsor gas fees for user operations directly, eliminating the need for an onchain paymaster contract. This approach provides a streamlined way to abstract gas costs from your users while reducing the complexity and overhead associated with deploying and managing paymaster contracts.
+Bundler sponsorship is a beta feature that allows the bundler to sponsor gas fees for user operations directly, eliminating the need for an onchain paymaster contract. This approach provides a streamlined way to abstract gas costs from your users while reducing the complexity and overhead associated with deploying and managing paymaster contracts.
 
-## How It Differs from Paymaster Sponsorship
+## How it differs from paymaster sponsorship
 
 Traditional gas sponsorship in ERC-4337 relies on paymaster contracts deployed onchain. These contracts:
 
@@ -32,11 +32,11 @@ Bundler sponsorship, in contrast:
   For beta access, please reach out to [account-abstraction@alchemy.com](mailto:account-abstraction@alchemy.com).
 </Info>
 
-## Policy Setup
+## Policy setup
 
-To use bundler sponsorship, you must create a Gas Manager policy of type **Bundler Sponsored Operations** in your Alchemy dashboard.
+To use bundler sponsorship, create a Gas Manager policy of type **Bundler Sponsored Operations** in your dashboard.
 
-### Required Policy Configuration
+### Required policy configuration
 
 When creating a Bundler Sponsored Operations policy, you must configure:
 
@@ -45,7 +45,7 @@ When creating a Bundler Sponsored Operations policy, you must configure:
 
 This policy type differs from standard Gas Manager policies and is specifically designed for offchain bundler sponsorship.
 
-## Compute Unit Costs
+## Compute unit costs
 
 When using bundler sponsorship with `eth_sendUserOperation`:
 
@@ -56,17 +56,17 @@ When using bundler sponsorship with `eth_sendUserOperation`:
 
 For more details, see the [Compute Unit Costs documentation](/docs/reference/compute-unit-costs#gas-manager--bundler-apis).
 
-## How to Use Bundler Sponsorship
+## How to use bundler sponsorship
 
 To enable bundler sponsorship, you need to:
 
-1. **Create a Bundler Sponsored Operations policy** in your Alchemy dashboard with the required Max Spend Per UO configuration
+1. **Create a Bundler Sponsored Operations policy** in your dashboard with the required Max Spend Per UO configuration
 2. **Include the policy ID** in your requests via the `x-alchemy-policy-id` header
 3. **Set gas fees to zero** in your user operation overrides
 
-### Example Implementation
+### Example implementation
 
-Here's a complete example using Account Kit to send a sponsored user operation:
+Here's a complete example using Smart Wallets to send a sponsored user operation:
 
 ```typescript
 import { LocalAccountSigner } from "@aa-sdk/core";
@@ -125,7 +125,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 })();
 ```
 
-### Key Configuration Points
+### Key configuration points
 
 1. **Policy Type**: Ensure you've created a policy of type "Bundler Sponsored Operations" with Max Spend Per UO configured.
 
@@ -135,12 +135,12 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 
 ## Requirements
 
-* A valid Alchemy API key with Bundler API access
+* A valid API key with Bundler API access
 * A configured Gas Manager policy of type **Bundler Sponsored Operations** with Max Spend Per UO set
-* Account Kit SDK or equivalent setup for creating and signing user operations
+* Smart Wallets SDK or equivalent setup for creating and signing user operations
 
 <Warning>
-  Ensure your Bundler Sponsored Operations policy has sufficient balance and that the Max Spend Per UO limit is set appropriately. If the policy balance is insufficient or the operation exceeds the spending limit, the user operation will fail.
+  Ensure your Bundler Sponsored Operations policy has sufficient balance and that the Max Spend Per UO limit is set appropriately. If the policy balance is insufficient or the operation exceeds the spending limit, the user operation fails.
 </Warning>
 
 ## Benefits
@@ -149,20 +149,20 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 * **Lower Onchain Gas Costs**: Eliminates the gas overhead of paymaster verification and contract calls
 * **Reduced Latency**: Fewer network calls and onchain interactions result in faster user operation processing
 * **Easier Multi-Chain Support**: Use the same policy type across multiple chains
-* **Centralized Policy Management**: Control spending limits and rules from the Alchemy dashboard
+* **Centralized Policy Management**: Control spending limits and rules from the dashboard
 
-## Limitations (Beta)
+## Limitations (beta)
 
-As this feature is currently in beta, please be aware of:
+As this feature is currently in beta, be aware of:
 
 * Features and API surface may change based on feedback
 * Not all networks may support bundler sponsorship
 * Compute unit costs are subject to change
 * Requires a specific policy type with mandatory Max Spend Per UO configuration
 
-## Related Documentation
+## Related documentation
 
 * [Bundler API Quickstart](/docs/reference/bundler-api-quickstart)
 * [Gas Manager Admin API](/docs/wallets/api-reference/gas-manager-admin-api/admin-api-endpoints/get-policy)
 * [Compute Unit Costs](/docs/reference/compute-unit-costs)
-* [Account Kit Documentation](/docs/wallets)
+* [Smart Wallets documentation](/docs/wallets)

@@ -4,7 +4,7 @@ description: Stream Solana transactions in real-time with powerful filtering opt
 slug: reference/yellowstone-grpc-subscribe-transactions
 ---
 
-# Subscribe to Transactions
+# Subscribe to transactions
 
 Transaction subscriptions allow you to monitor Solana transactions in real-time. This is crucial for DEX integrations, wallet monitoring, program event tracking, and transaction-based analytics.
 
@@ -18,7 +18,7 @@ Transaction subscriptions provide real-time updates for transactions matching yo
 * Failed vs successful transactions
 * Complex account inclusion/exclusion rules
 
-## Filter Structure
+## Filter structure
 
 ```rust
 message SubscribeRequestFilterTransactions {
@@ -31,9 +31,9 @@ message SubscribeRequestFilterTransactions {
 }
 ```
 
-## Filter Options
+## Filter options
 
-### Vote Transactions
+### Vote transactions
 
 Control whether to include vote transactions (validator voting).
 
@@ -51,7 +51,7 @@ Control whether to include vote transactions (validator voting).
 * Set to `false` for most application use cases (excludes validator voting spam)
 * Set to `true` only for validator monitoring or consensus analytics
 
-### Failed Transactions
+### Failed transactions
 
 Control whether to include failed transactions.
 
@@ -70,7 +70,7 @@ Control whether to include failed transactions.
 * Set to `true` to analyze failure patterns
 * Leave unset to see all transaction attempts
 
-### Signature Filter
+### Signature filter
 
 Filter for a specific transaction signature.
 
@@ -88,7 +88,7 @@ Filter for a specific transaction signature.
 If you want to track the confirmation status of a transaction you are about to send (for example, a payment or program interaction),
 you can set up a subscription for the expected signature before submitting the transaction. This way, you will receive real-time updates as soon as the transaction is processed by the network.
 
-### Account Include
+### Account include
 
 Receive transactions involving any of these accounts.
 
@@ -103,7 +103,7 @@ Receive transactions involving any of these accounts.
 * Track transactions for a set of token accounts
 * Watch multiple DEX programs
 
-### Account Exclude
+### Account exclude
 
 Exclude transactions involving these accounts.
 
@@ -118,7 +118,7 @@ Exclude transactions involving these accounts.
 * Filter out unwanted program interactions
 * Remove specific token account activity
 
-### Account Required
+### Account required
 
 Require all of these accounts to be present.
 
@@ -133,7 +133,7 @@ Require all of these accounts to be present.
 * Find transactions involving multiple specific accounts
 * Narrow down to very specific transaction patterns
 
-## Combining Account Filters
+## Combining account filters
 
 Account filters work together:
 
@@ -154,7 +154,7 @@ if account_required is set:
     must match all
 ```
 
-## Response Structure
+## Response structure
 
 Transaction updates arrive as `SubscribeUpdateTransaction` messages:
 
@@ -173,7 +173,7 @@ message SubscribeUpdateTransactionInfo {
 }
 ```
 
-### Key Fields
+### Key fields
 
 **`signature`**: Transaction signature (unique identifier)\
 **`is_vote`**: Whether this is a vote transaction\

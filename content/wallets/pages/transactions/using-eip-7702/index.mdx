@@ -1,40 +1,40 @@
 ---
-title: How EIP-7702 Works
+title: How EIP-7702 works
 description: Understanding how Smart Wallets use EIP-7702
 slug: wallets/transactions/using-eip-7702
 ---
 
-Alchemy Smart Wallets use [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) by default to give users access to all Smart Wallet capabilities including gas sponsorship, batching, and more - while keeping the same address.
+Smart Wallets use [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) by default to give you access to all Smart Wallet capabilities including gas sponsorship, batching, and more - while keeping the same address.
 
 ## How it works
 
 EIP-7702 enables EOAs (Externally Owned Accounts) to delegate control to Smart Wallets that can execute code directly from their addresses. When using Transaction APIs:
 
-* You can use your signer address directly as the account address - no need to call `wallet_requestAccount` first
-* Transaction APIs automatically detect whether a user must first delegate via EIP-7702
+* Use your owner address directly as the account address - no need to call `wallet_requestAccount` first
+* Transaction APIs automatically detect whether delegation via EIP-7702 is needed
 * If delegation is required, Transaction APIs prepare the correct authorization payload
-* Your application prompts the user to sign when required
-* We combine the delegation and transaction into a single onchain submission
+* Your application prompts for signing when required
+* The delegation and transaction are combined into a single onchain submission
 
-Once delegated, the user's account behaves as a Smart Wallet while keeping the same address and assets. Subsequent transactions only require a single user operation signature.
+Once delegated, the account behaves as a Smart Wallet while keeping the same address and assets. Subsequent transactions require only a single signature.
 
 For implementation details, see the [Send Transactions](/docs/wallets/transactions/send-transactions) guide.
 
 ## How to use non-7702 mode
 
-If you need to use a traditional Smart Contract Account instead of EIP-7702, you can opt out of the default 7702 behavior by calling `wallet_requestAccount` first.
+If you need to use a traditional wallet instead of EIP-7702, opt out of the default 7702 behavior by calling `wallet_requestAccount` first.
 
-When you call `wallet_requestAccount` with a signer address, it creates a dedicated Smart Contract Account address. Using this SCA address (instead of your signer address) in subsequent API calls will bypass 7702 mode.
+When you call `wallet_requestAccount` with an owner address, it creates a dedicated wallet address. Using this address (instead of your owner address) in subsequent API calls bypasses 7702 mode.
 
 <Note>
-If you've already used a signer address in 7702 mode (e.g. by calling `wallet_prepareCalls` with the signer address), you'll need to specify `creationHint: { accountType: "sma-b" }` when calling `wallet_requestAccount` to create a separate Smart Contract Account for that signer.
+If you've already used an owner address in 7702 mode (e.g. by calling `wallet_prepareCalls` with the owner address), specify `creationHint: { accountType: "sma-b" }` when calling `wallet_requestAccount` to create a separate wallet for that owner.
 </Note>
 
-**When to use SCA mode:**
-* Backwards compatibility with existing Smart Contract Accounts
+**When to use non-7702 mode:**
+* Backwards compatibility with existing wallets
 * Using chains that don't yet support EIP-7702
-* Using a signer that doesn't support signing EIP-7702 authorizations
-* Specific requirements for smart contract account architecture
+* Using an owner that doesn't support signing EIP-7702 authorizations
+* Specific requirements for smart account architecture
 
 <Tabs>
   <Tab title="SDK">
@@ -97,18 +97,18 @@ If you've already used a signer address in 7702 mode (e.g. by calling `wallet_pr
 <Accordion title="How Wallet APIs handle delegation and signing">
   When interacting with Wallet APIs, delegation is handled automatically as part of transaction preparation.
 
-  If a user has not yet delegated on the target chain, the API response will include **multiple signature requests**:
+  If delegation has not yet occurred on the target chain, the API response includes **multiple signature requests**:
 
   1. An **EIP-7702 authorization signature** (for delegation)
-  2. An **ERC-4337 user operation signature** (for the transaction itself)
+  2. A **transaction signature** (for the transaction itself)
 
   Your application is responsible for:
 
-  * Prompting the user to sign each request
-  * Returning the signatures to Alchemy
+  * Prompting for each signature
+  * Returning the signatures
 
-  We combine these signatures into a single UserOperation and submits it to the bundler.
-  After delegation is completed, future requests only require a user operation signature.
+  These signatures are combined into a single transaction and submitted.
+  After delegation is completed, future requests require only a transaction signature.
 </Accordion>
 
 <Accordion title="EIP-7702 authorization signing">
@@ -121,9 +121,9 @@ If you've already used a signer address in 7702 mode (e.g. by calling `wallet_pr
   * The chain ID
   * A `signatureRequest` describing how the authorization must be signed
 
-  For quick testing purposes, you can simply use `eth_sign` to sign the `signatureRequest.rawPayload`.
+  For quick testing, use `eth_sign` to sign the `signatureRequest.rawPayload`.
 
-  For production usage, we recommend:
+  For production usage:
 
   * Verifying the delegation address is trusted
   * Using a dedicated EIP-7702 signing utility to compute the hash to sign
@@ -136,13 +136,13 @@ If you've already used a signer address in 7702 mode (e.g. by calling `wallet_pr
 <Accordion title="Delegation-only (smart account upgrade) flows">
   You do not need to send a dummy or no-op transaction to perform delegation.
 
-  If a user needs to upgrade to a Smart Wallet:
+  If an account needs to upgrade to a Smart Wallet:
 
   * Call `wallet_prepareCalls` with your intended calls (or an empty call set)
   * Wallet APIs detect that delegation is required
-  * The response includes the required authorization and user operation signature requests
+  * The response includes the required authorization and transaction signature requests
 
-  We handle combining delegation with the user operation automatically.
+  Combining delegation with the transaction is handled automatically.
 </Accordion>
 
 <Accordion title="Wallet compatibility considerations">
@@ -156,11 +156,11 @@ If you've already used a signer address in 7702 mode (e.g. by calling `wallet_pr
   For MetaMask users, you may need to rely on wallet-native features such as
   ERC-5792 batching instead of direct EIP-7702 delegation flows.
 
-  Ensure your users’ wallets support EIP-7702 authorization signing before enabling this flow.
+  Ensure the target wallets support EIP-7702 authorization signing before enabling this flow.
 </Accordion>
 
 <Accordion title="EIP-7702 delegations">
-  EIP-7702 delegation is now the default mode for Alchemy Smart Wallets. When you use your signer address directly with `wallet_prepareCalls` or other Transaction APIs, 7702 mode is automatically enabled.
+  EIP-7702 delegation is now the default mode for Smart Wallets. When you use your owner address directly with `wallet_prepareCalls` or other Transaction APIs, 7702 mode is automatically enabled.
 
   The `eip7702Auth` capability supports the interface defined in [ERC-7902](https://eips.ethereum.org/EIPS/eip-7902).
 
@@ -180,7 +180,7 @@ If you've already used a signer address in 7702 mode (e.g. by calling `wallet_pr
   To remove a delegation and return an account to a pure EOA, you must **re-delegate to the zero address**:
   `0x0000000000000000000000000000000000000000`.
 
-  **Bundlers cannot relay undelegations**, so you must submit this transaction directly from the account (with enough native gas token to cover fees). If you are re-delegating to another 4337 account, the bundler can relay the delegation.
+  Undelegations cannot be relayed, so you must submit this transaction directly from the account (with enough native gas token to cover fees). If you are re-delegating to another smart account, the transaction can be relayed.
 
   To undelegate:
 
@@ -188,7 +188,7 @@ If you've already used a signer address in 7702 mode (e.g. by calling `wallet_pr
   2. Sign an EIP-7702 authorization delegating to `address(0)` with `currentNonce + 1`.
   3. Send an empty transaction (using `currentNonce`) that includes the authorization.
 
-  We recommend using Viem to sign the EIP-7702 authorization (with `executor: self`):
+  Use Viem to sign the EIP-7702 authorization (with `executor: self`):
   [Viem signAuthorization](https://viem.sh/docs/eip7702/signAuthorization).
 </Accordion>
 

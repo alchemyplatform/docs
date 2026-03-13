@@ -1,10 +1,10 @@
 ---
-title: Adding Session Keys to your Modular Account V2
-description: Adding Session Keys to your Modular Account V2
+title: Adding session keys to your Modular Account V2
+description: Adding session keys to your Modular Account V2
 slug: wallets/smart-contracts/modular-account-v2/session-keys/adding-session-keys
 ---
 
-Adding a session key is simple with Smart Wallets! To add a session key, you need to 1) decide what permissions you want to grant the new key and 2) call the [`installValidation`](#install-validation-method) method on the account. This method will send a single user operation that will add the session key with scoped permission to your smart contract account on-chain. You can then use that session key to sign transactions for your account within the defined permissions!
+To add a session key, 1) decide what permissions you want to grant the new key and 2) call the [`installValidation`](#install-validation-method) method on the account. This method sends a single transaction that adds the session key with scoped permission to your smart account onchain. You can then use that session key to sign transactions for your account within the defined permissions.
 
 Adding scoped permissions to keys will happen via permission modules that you can pass as configuration parameters on the `installValidation` method. Permissions can be combined to fit your use case (e.g. you can limit a session key to only be able to spend 10 USDC within the next 24 hours on behalf of your account).
 
@@ -97,7 +97,7 @@ await client.installValidation({
 
 ### Time range
 
-Configuring a session key with a time range allows you to limit how long the session key is valid for (e.g. only allow this key to sign on my account for the next day). The Time Range Module is used to enforce time-based validation for User Operations (UOs) in the system. This example will show you how to add a session key that starts in a day and expires in two days.
+Configuring a session key with a time range allows you to limit how long the session key is valid for (e.g. only allow this key to sign on your account for the next day). The Time Range Module is used to enforce time-based validation for transactions. This example shows how to add a session key that starts in a day and expires in two days.
 
 Additional Notes
 
@@ -179,8 +179,8 @@ This module provides the ability to limit a session key to only be able to use a
 
 #### Additional Notes
 
-* you MUST specify a paymaster when using this module
-* if the paymaster that is registered with this module decides to no longer sponsor your user operations, the entity associated with this hook would no longer be able to send user operations.
+* you MUST specify a paymaster contract when using this module
+* if the paymaster contract that is registered with this module decides to no longer sponsor your transactions, the entity associated with this hook would no longer be able to send transactions.
 
 ```ts twoslash
 import { createModularAccountV2Client } from "@account-kit/smart-contracts";
@@ -248,7 +248,7 @@ await client.installValidation({
 
 ### Native token and/or gas limit
 
-This module provides native token spending limits for modular accounts. Below we will show an example of adding a session key that has a 1 eth native token spend limit. Functionally, this module is enabled by:
+This module provides native token spending limits for modular accounts. The example below shows how to add a session key with a 1 ETH native token spend limit. Functionally, this module is enabled by:
 
 * Tracking and limiting total native token spending across transactions
 * Monitoring both direct transfers and gas costs from UserOperations
@@ -467,7 +467,7 @@ await client.installValidation({
 
 ## Install validation method
 
-This method is used to add session keys to your account, with the following configurable parameters.
+Use this method to add session keys to your account, with the following configurable parameters.
 
 `validationConfig`: The validation configuration for the session key, containing the following fields:
 

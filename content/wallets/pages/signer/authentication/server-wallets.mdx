@@ -7,9 +7,8 @@ slug: wallets/authentication/login-methods/server-wallets
 <Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
 
 <Tip>
-  Server wallets are in early access and we'd love to hear how you're using
-  them! Contact us at wallets@alchemy.com - we'd love to help you get up and
-  running.
+  Server wallets are in early access. Contact wallets@alchemy.com for help
+  getting up and running.
 </Tip>
 
 Server wallets can be programmatically controlled using access keys. This enables backend applications to sign transactions and messages on behalf of users without requiring interactive authentication.
@@ -22,7 +21,7 @@ Get your **API key** by creating a new app in your [Alchemy Dashboard](https://d
 
 ## Step 1: Generate an Access Key
 
-Generate a secure access key for authentication. This key will never be sent to our servers - we'll derive a public key from it when interacting with Alchemy.
+Generate a secure access key for authentication. This key is never sent to the server -- a public key is derived from it when interacting with the API.
 
 <Warning>
 **Critical: Save your access key securely!**
@@ -45,9 +44,9 @@ console.log("Access key:", accessKey);
 
 </CodeBlocks>
 
-## Step 2: Create the Server Signer
+## Step 2: Create the server authentication provider
 
-Before we can send transactions we need a way to sign them. Let's create a server signer using the access key you just created to handle this:
+Before you can send transactions, you need a way to sign them. Create a server authentication provider using the access key from the previous step:
 
 <CodeBlocks>
 
@@ -69,12 +68,12 @@ console.log("Signer address:", await signer.getAddress());
 </CodeBlocks>
 
 <Tip>
-  Want to use the same access key to control multiple server signers? Check out
+  Want to use the same access key to control multiple server authentication providers? Check out
   the example below to learn how to use `auth.accountId` to create multiple
-  signers that you can control with the same access key.
+  providers that you can control with the same access key.
 </Tip>
 
-<Accordion title="Multiple signers per access key">
+<Accordion title="Multiple authentication providers per access key">
 
 ```ts twoslash
 import { createServerSigner } from "@account-kit/signer";
@@ -106,9 +105,9 @@ console.log("Personal address:", await personalSigner.getAddress());
 
 </Accordion>
 
-## Step 3: Send a Transaction
+## Step 3: Send a transaction
 
-We can now send transactions using the Smart Account Client:
+You can now send transactions using the Smart Account Client:
 
 <CodeBlocks>
 
@@ -141,9 +140,9 @@ console.log("Transaction sent:", id);
 
 </CodeBlocks>
 
-## Solana Support
+## Solana support
 
-Server wallet can also easily be used on Solana. To start sending sponsored transactions on Solana, set up a Solana sponsor gas policy in our [dashboard](https://dashboard.alchemy.com/gas-manager) and follow the guide below.
+Server wallets also work on Solana. To start sending sponsored transactions on Solana, set up a Solana sponsor gas policy in the [dashboard](https://dashboard.alchemy.com/gas-manager) and follow the guide below.
 
 <CodeBlocks>
 
