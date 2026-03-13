@@ -1,27 +1,27 @@
 ---
 title: Alchemy for Agents
-description: Authenticate your AI agent with a crypto wallet and pay for Alchemy API requests with USDC using the x402 protocol.
-subtitle: Authenticate your AI agent with a crypto wallet and pay for Alchemy API requests with USDC using the x402 protocol.
+description: Authenticate your AI agent with a crypto wallet and purchase Alchemy API credits with USDC using the x402 protocol.
+subtitle: Authenticate your AI agent with a crypto wallet and purchase Alchemy API credits with USDC using the x402 protocol.
 slug: docs/alchemy-for-agents
 ---
 
-Authenticate your AI agent with a crypto wallet instead of an API key. Your agent pays per request with USDC via the [x402 payment protocol](https://www.x402.org/), with no human in the loop. We support EVM wallets (SIWE) and Solana wallets (SIWS).
+Authenticate your AI agent with a crypto wallet instead of an API key. Your agent purchases credits with USDC via the [x402 payment protocol](https://www.x402.org/), with no human in the loop. We support authentication via SIWE (Sign-In With Ethereum) and SIWS (Sign-In With Solana), with payment via USDC on Base and Solana.
 
 ## How it works
 
 x402 wallet authentication uses three open standards:
 
-- **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with an EVM wallet. Pays with USDC on Base.
-- **SIWS (Sign-In With Solana):** Adapted from EIP-4361 for Solana's ed25519 signatures. Your agent authenticates with a Solana wallet. Pays with USDC on Solana.
-- **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When a request requires payment, the server responds with HTTP 402, your agent pays with USDC, and retries the request. Zero protocol fees.
+- **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with an EVM wallet.
+- **SIWS (Sign-In With Solana):** Adapted from EIP-4361 for Solana's ed25519 signatures. Your agent authenticates with a Solana wallet.
+- **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When your agent's credits run out, the server responds with HTTP 402, your agent purchases more credits with USDC, and retries the request. Zero protocol fees.
 
 ## The flow
 
 When your agent needs to access Alchemy APIs without an API key, it handles the full wallet authentication flow:
 
-1. **Wallet setup:** Your agent creates a new wallet or imports an existing one. You choose between an EVM wallet (pays USDC on Base) or a Solana wallet (pays USDC on Solana).
+1. **Wallet setup:** Your agent creates a new wallet or imports an existing one. You choose between an EVM wallet (USDC on Base) or a Solana wallet (USDC on Solana).
 2. **Authentication:** Your agent generates a signed auth token using SIWE (EVM) or SIWS (Solana) and includes it in every API request.
-3. **Payments:** If a request requires payment, the server responds with HTTP 402. Your agent pays with USDC and retries automatically.
+3. **Credits:** Your agent purchases credits with USDC from your wallet. When credits run out, the server responds with HTTP 402, and your agent purchases more automatically.
 
 Your wallet type only determines authentication and payment. Either wallet type can query any chain, including Ethereum, Solana, Base, Arbitrum, and 100+ others.
 
