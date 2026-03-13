@@ -5,14 +5,14 @@ subtitle: Authenticate your AI agent with a crypto wallet and purchase Alchemy A
 slug: docs/alchemy-for-agents
 ---
 
-Authenticate your AI agent with a crypto wallet instead of an API key. Your agent purchases credits with USDC via the [x402 payment protocol](https://www.x402.org/), with no human in the loop. We support authentication via SIWE (Sign-In With Ethereum) and SIWS (Sign-In With Solana), with payment via USDC on Base and Solana.
+Authenticate your AI agent with an EVM or Solana wallet instead of an API key using [SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361) and [SIWS (Sign-In With Solana)](https://phantom.com/learn/developers/sign-in-with-solana). Your agent purchases credits with USDC via the [x402 payment protocol](https://www.x402.org/), with no human in the loop.
 
 ## How it works
 
 x402 wallet authentication uses three open standards:
 
 - **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with an EVM wallet.
-- **SIWS (Sign-In With Solana):** Adapted from EIP-4361 for Solana's ed25519 signatures. Your agent authenticates with a Solana wallet.
+- **[SIWS (Sign-In With Solana)](https://phantom.com/learn/developers/sign-in-with-solana):** Adapted from EIP-4361 for Solana's ed25519 signatures. Your agent authenticates with a Solana wallet.
 - **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When your agent's credits run out, the server responds with HTTP 402, your agent purchases more credits with USDC, and retries the request. Zero protocol fees.
 
 ## The flow
@@ -23,7 +23,7 @@ When your agent needs to access Alchemy APIs without an API key, it handles the 
 2. **Authentication:** Your agent generates a signed auth token using SIWE (EVM) or SIWS (Solana) and includes it in every API request.
 3. **Credits:** Your agent purchases credits with USDC from your wallet. When credits run out, the server responds with HTTP 402, and your agent purchases more automatically.
 
-Your wallet type only determines authentication and payment. Either wallet type can query any chain, including Ethereum, Solana, Base, Arbitrum, and 100+ others.
+Your wallet type only determines authentication and payment. Either wallet type can query any chain across [all networks Alchemy supports](docs/reference/node-supported-chains).
 
 ## What your agent can access
 
@@ -46,7 +46,7 @@ These are the same APIs available with a standard API key. The only difference i
 | **Standard** | SIWE (EIP-4361) | SIWS |
 | **Signature** | secp256k1 | ed25519 |
 | **Payment** | USDC on Base | USDC on Solana |
-| **Queryable chains** | Any (100+) | Any (100+) |
+| **Queryable chains** | [All supported networks](docs/reference/node-supported-chains) | [All supported networks](docs/reference/node-supported-chains) |
 
 ## Install as an agent skill
 
