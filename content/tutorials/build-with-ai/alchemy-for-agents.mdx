@@ -1,0 +1,70 @@
+---
+title: Agent Authentication and Payment
+description: Authenticate your AI agent with an EVM or Solana wallet instead of an API key using SIWE and SIWS. Your agent purchases credits with USDC via the x402 payment protocol.
+subtitle: Authenticate your AI agent with an EVM or Solana wallet instead of an API key using SIWE and SIWS. Your agent purchases credits with USDC via the x402 payment protocol.
+slug: docs/alchemy-for-agents
+---
+
+## How it works
+
+x402 wallet authentication uses three open standards:
+
+* **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with an EVM wallet.
+* **[SIWS (Sign-In With Solana)](https://phantom.com/learn/developers/sign-in-with-solana):** Adapted from EIP-4361 for Solana's ed25519 signatures. Your agent authenticates with a Solana wallet.
+* **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When your agent's credits run out, the server responds with HTTP 402, your agent purchases more credits and retries the request. Zero protocol fees.
+
+## The flow
+
+When your agent needs to access Alchemy APIs without an API key, it handles the full wallet authentication flow:
+
+1. **Wallet setup:** Your agent creates a new wallet or imports an existing one. You choose between an EVM wallet (USDC on Base) or a Solana wallet (USDC on Solana).
+2. **Authentication:** Your agent generates a signed auth token using SIWE (EVM) or SIWS (Solana) and includes it in every API request.
+3. **Credits:** Your agent purchases 1 USDC worth of credits from your wallet. When credits run out, the server responds with HTTP 402, and your agent purchases another 1 USDC of credits automatically.
+
+Your wallet type only determines authentication and payment. Either wallet type can query any chain across [all networks Alchemy supports](docs/reference/node-supported-chains).
+
+## What your agent can access
+
+All standard Alchemy APIs are available through the x402 gateway:
+
+* **Node RPC:** Standard Ethereum JSON-RPC methods (`eth_*`) plus Alchemy-enhanced methods, across 100+ chains
+* **Token API:** Token balances, metadata, and allowances
+* **NFT API:** NFT ownership, metadata, sales, and spam detection
+* **Transfers API:** Asset transfer history with filtering
+* **Prices API:** Spot and historical token prices
+* **Portfolio API:** Multi-chain balances and portfolio data
+* **Simulation API:** Transaction simulation and outcome prediction
+
+These are the same APIs available with a standard API key. The only difference is the authentication and payment mechanism.
+
+## EVM vs Solana wallets
+
+| | EVM wallet | Solana wallet |
+|---|---|---|
+| **Standard** | SIWE (EIP-4361) | SIWS |
+| **Signature** | secp256k1 | ed25519 |
+| **Payment** | USDC on Base | USDC on Solana |
+| **Queryable chains** | [All supported networks](docs/reference/node-supported-chains) | [All supported networks](docs/reference/node-supported-chains) |
+
+## Install as an agent skill
+
+Install the `agentic-gateway` [agent skill](docs/alchemy-agent-skills) so your AI coding agent learns this flow automatically:
+
+```bash
+npx skills add alchemyplatform/skills --yes
+```
+
+Your agent will walk you through wallet setup and handle authentication and payments from there.
+
+## Watch it in action
+
+<div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden" }}>
+  <iframe style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }} src="https://player.cloudinary.com/embed/?cloud_name=alchemyapi&private_cdn=true&public_id=docs%2Ftutorials%2Fbuild-with-ai%2Fagent-video_vrudof&profile=cld-default" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen />
+</div>
+
+## Next steps
+
+* [agents.alchemy.com](https://agents.alchemy.com/)
+* [x402.org](https://www.x402.org/)
+* [EIP-4361: SIWE](https://eips.ethereum.org/EIPS/eip-4361)
+* [Agent Skills](docs/alchemy-agent-skills)

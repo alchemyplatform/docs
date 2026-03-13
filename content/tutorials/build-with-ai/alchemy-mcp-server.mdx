@@ -1,17 +1,15 @@
 ---
 title: Alchemy MCP Server
-description: Get started with the Alchemy Model Context Protocol (MCP) server.
-subtitle: Get started with the Alchemy Model Context Protocol (MCP) server.
+description: Query blockchain data from your AI tool with the Alchemy MCP server.
+subtitle: Query blockchain data from your AI tool with the Alchemy MCP server.
 slug: docs/alchemy-mcp-server
 ---
 
-The Model Context Protocol (MCP) is an open protocol designed to allow AI agents, IDEs, and automation tools to consume, query, and analyze structured data through context-aware APIs.
+The [Alchemy MCP Server](https://github.com/alchemyplatform/alchemy-mcp-server) gives your AI tools direct access to blockchain data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). Query token prices, NFT ownership, transaction history, and more as tool calls, with no code required.
 
-This server exposes Alchemy's APIs through the MCP protocol, allowing AI agents and tools to directly query and analyze blockchain data.
+## Add the server to your MCP config
 
-## Quick Setup
-
-To quickly set up the Alchemy MCP server, add this configuration to your MCP config file (typically found in Claude Desktop or Cursor settings):
+Add this configuration to your MCP config file:
 
 ```json
 {
@@ -30,34 +28,88 @@ To quickly set up the Alchemy MCP server, add this configuration to your MCP con
 }
 ```
 
-> The Alchemy MCP server currently only supports [STDIO transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#stdio) for local MCP client use. Remote connection to the MCP server via [Streamable-Http transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http) is currently in development.
+Get your API key at the [Alchemy Dashboard](https://dashboard.alchemy.com/).
 
-> Want to learn more about Alchemy's MCP Server? Visit the official repo [here](https://github.com/alchemyplatform/alchemy-mcp-server) or read more below!
+> The Alchemy MCP server currently only supports [STDIO transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#stdio) for local MCP client use. Remote connection via [Streamable-HTTP transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http) is in development.
 
-## Key Features of Alchemy MCP Server
+## Configure your client
 
-* Query token prices and price history (including flexible time frame queries)
-* Get NFT ownership information and contract data
-* View transaction history across multiple networks
-* Check token balances across multiple blockchain networks
-* Retrieve detailed asset transfers with filtering
+### Claude Desktop
 
-## How You Would Use The Alchemy MCP Server
+Add the configuration above to your Claude Desktop config file:
 
-AI agents like Claude, Cursor, and ChatGPT are “chat agents” by default. To work with MCP, they act as **MCP clients**.
+* **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+* **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-Within an MCP client like Cursor, you can define an `mcp.json` configuration file that specifies:
+Restart Claude Desktop after saving.
 
-* Which MCP servers the agent should connect to
-* What environment variables and arguments to pass so the server runs correctly
+### Cursor
 
-Once connected, the client instantly gains access to all the tools defined in the server, enabling the LLM to use them in real time.
+Add the configuration to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project-level).
 
-The main focus right now for Alchemy MCP is on:
+### Claude Code
 
-* Local developers using Claude Code or Cursor
-* Developers running AI agents locally that need access to blockchain data
+```bash
+claude mcp add-json "alchemy" '{"command":"npx","args":["-y","@alchemy/mcp-server"],"env":{"ALCHEMY_API_KEY":"YOUR_API_KEY"}}'
+```
 
-## Alchemy MCP Video Walkthrough
+### VS Code Copilot
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ZhR9O5mC_3Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+Add to `.vscode/mcp.json` in your project:
+
+```json
+{
+  "servers": {
+    "alchemy": {
+      "command": "npx",
+      "args": ["-y", "@alchemy/mcp-server"],
+      "env": {
+        "ALCHEMY_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+### Windsurf
+
+Add the configuration to your Windsurf MCP config file:
+
+* **macOS:** `~/.codeium/windsurf/mcp_config.json`
+* **Windows:** `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
+
+## Available tools
+
+The MCP server exposes the following tools:
+
+**Token prices**
+* `fetchTokenPriceBySymbol`: Get current token prices by symbol
+* `fetchTokenPriceByAddress`: Get current token prices by contract address
+* `fetchTokenPriceHistoryBySymbol`: Get historical price data over time
+* `fetchTokenPriceHistoryByTimeFrame`: Get historical price data using flexible time frames or natural language
+
+**Token balances**
+* `fetchTokensOwnedByMultichainAddresses`: Get token balances across multiple chains
+
+**Transactions and transfers**
+* `fetchAddressTransactionHistory`: Get single-address transaction history
+* `fetchTransfers`: Get token transfer data with filtering
+
+**NFTs**
+* `fetchNftsOwnedByMultichainAddresses`: Get NFT ownership across chains with spam filtering
+* `fetchNftContractDataByMultichainAddress`: Get NFT collection data
+
+## Supported chains
+
+We support 50+ blockchains including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, Starknet, and more.
+
+## Watch the walkthrough
+
+<div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden" }}>
+  <iframe style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }} src="https://www.youtube.com/embed/ZhR9O5mC_3Q" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
+</div>
+
+## Next steps
+
+* [GitHub: alchemyplatform/alchemy-mcp-server](https://github.com/alchemyplatform/alchemy-mcp-server)
+* [npm: @alchemy/mcp-server](https://www.npmjs.com/package/@alchemy/mcp-server)
