@@ -45,9 +45,10 @@ When writing or editing documentation for Alchemy Smart Wallets, follow these co
 
 * **Goal**: Hide Account Abstraction and blockchain complexity
 * **Focus**: Developer outcomes, not implementation details
-* **Example**:
+* **Example** (for high-level docs):
   * ❌ **Don't**: "Send a UserOperation to the bundler and use a paymaster"
   * ✅ **Do**: "Send gasless transactions"
+* **Note**: Low-level infra docs (`content/wallets/pages/low-level-infra/`) can and should use precise technical terms like "bundler" and "paymaster"
 
 ### Standardize
 
