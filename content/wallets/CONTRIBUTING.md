@@ -85,14 +85,37 @@ When writing or editing documentation for Alchemy Smart Wallets, follow these co
 | `"Account Abstraction"` or `"AA"`            | Avoid entirely                                | Only in advanced technical docs         |
 | `"ERC-4337"`                                 | Avoid entirely                                | Only when discussing protocol specifics |
 | `"user operation"` or `"user ops"`           | `"transactions"`                              | Never                                   |
-| `"bundler"`                                  | `"sending transactions"`                      | Never                                   |
+| `"bundler"`                                  | `"sending transactions"`                      | OK in low-level infra docs (`content/wallets/pages/low-level-infra/`) |
 | `"entrypoint"`                               | Avoid entirely                                | Implementation detail                   |
-| `"smart contract account"`                   | `"wallet"`                                    | Never                                   |
+| `"smart contract account"`                   | `"smart account"`                             | Never                                   |
 | `"Account Kit"`                              | `"Smart Wallets"`                             | Never                                   |
-| `"gas manager"`                              | `"sponsor gas"` or `"pay gas with any token"` | Except "Gas Manager API"                |
-| `"paymaster"`                                | Context-specific replacement                  | Except "paymaster contract"             |
-| `"Signer"`                                   | `"authentication"` or `"owner"`               | Never                                   |
-| `"modular account v2"`, `"light account v1"` | `"smart account"`                             | Never                                   |
+| `"gas manager"`                              | `"sponsor gas"` or `"pay gas with any token"` | OK in low-level infra docs and as "Gas Manager API" |
+| `"paymaster"`                                | Context-specific replacement                  | OK in low-level infra docs and as "paymaster contract" |
+| `"Signer"`                                   | `"authentication"` or `"owner"`               | Don't combine into "authentication owner" -- use one or the other based on context |
+| `"modular account v2"`, `"light account v1"` | `"smart account"`                             | Keep the specific name when describing features or capabilities unique to that account type (e.g., "Modular Account v2 includes a growing library of permission types") |
+
+### ⚠️ Important Terminology Exceptions
+
+**Use specific product/account names when describing their unique features**:
+
+When a feature or capability belongs to a specific account type (e.g., Modular Account v2), refer to it by name rather than the generic "smart account." The generic term is for when you're talking about smart accounts in general, not a specific implementation.
+
+* ❌ "Smart account includes a growing library of permission types"
+* ✅ "Modular Account v2 includes a growing library of permission types"
+
+**Low-level infrastructure docs can use technical terms**:
+
+Content under `content/wallets/pages/low-level-infra/` targets developers working directly with infrastructure. Terms like "bundler", "paymaster", and "gas manager" are appropriate and preferred in this context because they are technically precise.
+
+* ❌ (in low-level infra docs) "split traffic between the transaction sending and gas sponsorship RPC"
+* ✅ (in low-level infra docs) "split traffic between the Bundler and Paymaster RPC"
+
+**Don't use "Smart Wallets" as a technical actor**:
+
+"Smart Wallets" is the product name for marketing/branding. Don't use it as the subject performing technical actions -- it can sound inaccurate.
+
+* ❌ "Smart Wallets fronts the gas and adds it to your monthly bill"
+* ✅ "You don't need to hold any tokens -- gas is fronted and added to your monthly bill"
 
 ### 🏷️ Brand Reference Rules
 
