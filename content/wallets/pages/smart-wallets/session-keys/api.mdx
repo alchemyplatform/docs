@@ -11,7 +11,7 @@ slug: wallets/reference/wallet-apis-session-keys/api
 </Info>
 
 <Steps>
-  <Step title="Delegate Your Account">
+  <Step title="Delegate your account">
     EIP-7702 accounts must be delegated onchain before creating a session. If the account has already sent calls, it will already be delegated. If it hasn't sent any calls before, delegate it by sending an empty call as the owner. See [Send Transactions](/docs/wallets/transactions/send-transactions) for the complete flow.
 
     ```bash
@@ -40,13 +40,13 @@ slug: wallets/reference/wallet-apis-session-keys/api
     ```
   </Step>
 
-  <Step title="Create a Session With the Session Key Signer">
+  <Step title="Create a session with the session key">
     To create a session key:
 
-    * Get the public address of a key you want to use as a session key. This can be any key pair that has the ability to sign (aka a [signer](/docs/wallets/signer/what-is-a-signer) that is either a local [signer](/docs/wallets/reference/aa-sdk/core/classes/LocalAccountSigner) like an EOA or signer generated with a signer provider).
+    * Get the public address of a key you want to use as a session key. This can be any key pair that has the ability to sign (either a local [account](/docs/wallets/reference/aa-sdk/core/classes/LocalAccountSigner) like an EOA or a key generated with an authentication provider).
     * Create a session for that key, by passing it as the `publicKey` in a call to `wallet_createSession`. (Note that this must be the public key **address**, not the full public key.)
 
-    Use your signer address directly as the `account` field to enable [EIP-7702](/docs/wallets/transactions/using-eip-7702) by default.
+    Use your owner address directly as the `account` field to enable [EIP-7702](/docs/wallets/transactions/using-eip-7702) by default.
 
     Note that the expiry is in seconds and represents a UNIX timestamp (e.g. 1776657600 for April 20th, 2077).
 
@@ -102,7 +102,7 @@ slug: wallets/reference/wallet-apis-session-keys/api
     ```
   </Step>
 
-  <Step title="Sign the Session Key Authorization">
+  <Step title="Sign the session key authorization">
     Sign the signature request using the account owner's key, then store the resulting signature.
 
     The `signatureRequest.type` is `eth_signTypedData_v4`, indicating this is EIP-712 typed data. You can either:
@@ -120,8 +120,8 @@ slug: wallets/reference/wallet-apis-session-keys/api
     ```
   </Step>
 
-  <Step title="Prepare Calls With the Session Key">
-    With the session ID received in step 2 and the signature from step 3, we're now ready to prepare some calls!
+  <Step title="Prepare calls with the session key">
+    With the session ID received in step 2 and the signature from step 3, prepare some calls:
 
     ```bash
     curl --request POST \
@@ -157,7 +157,7 @@ slug: wallets/reference/wallet-apis-session-keys/api
     '
     ```
 
-    This will return the userop request (the `data` field) and a signature request, for example:
+    This returns the transaction request (the `data` field) and a signature request, for example:
 
     ```json
     {
@@ -175,10 +175,10 @@ slug: wallets/reference/wallet-apis-session-keys/api
     ```
   </Step>
 
-  <Step title="Sign the User Operation">
-    With the returned signature request, sign the userop hash using **the session key** (not the owner). This signature will be valid as long as it is within the permissions the session key has.
+  <Step title="Sign the transaction">
+    With the returned signature request, sign the transaction hash using **the session key** (not the owner). This signature is valid as long as it is within the permissions the session key has.
 
-    Note that the `type` field in the `signatureRequest` indicates the signature type needed. In this case, we need to `personal_sign` the hash.
+    Note that the `type` field in the `signatureRequest` indicates the signature type needed. In this case, `personal_sign` the hash.
 
     ```bash
     # Sign with the SESSION key (not owner!)
@@ -186,7 +186,7 @@ slug: wallets/reference/wallet-apis-session-keys/api
     ```
   </Step>
 
-  <Step title="Send the Prepared Calls">
+  <Step title="Send the prepared calls">
     With the signature from step 5 and the `useropRequest` from step 4, you're good to go to send the call!
 
     ```bash

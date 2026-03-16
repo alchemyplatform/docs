@@ -4,17 +4,17 @@ description: Essential tips and patterns for production Yellowstone gRPC applica
 slug: reference/yellowstone-grpc-best-practices
 ---
 
-# Best Practices
+# Best practices
 
 This guide covers essential patterns and best practices for building robust, production-ready applications with Yellowstone gRPC.
 
-## Getting Started
+## Getting started
 
-### Start Simple
+### Start simple
 
 Begin with slot subscriptions before moving to more complex filters. Slots are lightweight and help you understand the streaming model.
 
-### Use Filters Wisely
+### Use filters wisely
 
 Only subscribe to the data you need to reduce bandwidth and processing overhead.
 
@@ -28,13 +28,13 @@ SubscribeRequestFilterTransactions {
 }
 ```
 
-## Connection Management
+## Connection management
 
-### Implement Automatic Reconnection
+### Implement automatic reconnection
 
 Network issues happen - implement automatic reconnection logic to ensure your application stays resilient. Use exponential backoff to avoid hammering the server.
 
-### Handle Ping/Pong Messages
+### Handle ping/pong messages
 
 Yellowstone gRPC servers send ping messages to check if clients are alive. Always respond with pong, otherwise the server may close your connection.
 
@@ -47,7 +47,7 @@ if matches!(update.update_oneof, Some(UpdateOneof::Ping(_))) {
 }
 ```
 
-### Implement Gap Recovery
+### Implement gap recovery
 
 Use `from_slot` to recover from disconnections without missing data. This may result in duplicate updates, but ensures no data loss.
 
@@ -59,9 +59,9 @@ subscribe_request.from_slot = if tracked_slot > 0 {
 };
 ```
 
-## Architecture Patterns
+## Architecture patterns
 
-### Separate Ingress and Processing
+### Separate ingress and processing
 
 Use channels to decouple data ingestion from processing:
 
@@ -89,38 +89,38 @@ tokio::spawn(async move {
 * Enables parallel processing of updates
 * Provides natural backpressure mechanism
 
-### Use Bounded Channels with Backpressure
+### Use bounded channels with backpressure
 
 Choose channel capacity based on your processing speed and tolerance for data loss:
 
 * **Smaller capacity** (1K-10K): Lower memory usage, faster recovery from slow processing -- higher chance of dropping updates
 * **Larger capacity** (50K-100K): Better handling of processing spikes, more memory usage
 
-## Performance Optimization
+## Performance optimization
 
-### Monitor Processing Latency
+### Monitor processing latency
 
 Track the time between receiving updates and processing them. Log warnings if latency exceeds your thresholds.
 
-### Batch Database Writes
+### Batch database writes
 
 Instead of writing every update individually, batch them for better throughput. Flush when batch size reaches a threshold (e.g., 1000 updates) or after a time interval (e.g., 1 second).
 
-### Use Async Processing for I/O
+### Use async processing for I/O
 
 Leverage async/await for concurrent processing of updates when doing I/O operations.
 
-### Optimize Memory Usage
+### Optimize memory usage
 
 For high-throughput scenarios, reuse subscription requests instead of creating new hashmaps on every send.
 
-### Offload Compute Intensive Work
+### Offload compute-intensive work
 
 If processing task is too compute intensive, consider leveraging the async processing capabilities of the tokio runtime to offload the work to a separate / multiple threads.
 
-## Error Handling
+## Error handling
 
-### Distinguish Error Types
+### Distinguish error types
 
 Handle different error types appropriately:
 
@@ -128,37 +128,37 @@ Handle different error types appropriately:
 * **Processing errors**: Log and continue or implement dead letter queue
 * **Channel errors**: Handle full channels (drop or block) and closed channels (exit gracefully)
 
-### Implement Exponential Backoff
+### Implement exponential backoff
 
 Start with short delays (100ms) and double on each failure up to a maximum (e.g., 60 seconds). Reset backoff on successful connection.
 
-### Log Dropped Updates
+### Log dropped updates
 
 Monitor when updates are dropped due to slow processing. Track metrics to understand system health.
 
-## Data Management
+## Data management
 
-### Handle Duplicate Updates
+### Handle duplicate updates
 
 When using `from_slot` for gap recovery, you may receive duplicate updates. Use a time-bounded cache or database unique constraints to handle duplicates efficiently.
 
-### Choose Appropriate Commitment Levels
+### Choose appropriate commitment levels
 
 * **Processed**: Real-time dashboards, exploratory data analysis (fastest, may see rolled back data)
 * **Confirmed**: Most production applications, indexers (good balance of speed and finality)
 * **Finalized**: Financial applications requiring absolute certainty (slower, guaranteed finality)
 
-## Testing and Debugging
+## Testing and debugging
 
-### Test Reconnection Logic
+### Test reconnection logic
 
 Simulate connection failures to verify your reconnection logic works as expected. Test with different failure scenarios.
 
-### Add Structured Logging
+### Add structured logging
 
 Use structured logging (e.g., `tracing` crate) to debug subscription issues. Log key events like reconnections, slot tracking, and subscription updates.
 
-### Monitor Stream Health
+### Monitor stream health
 
 Track metrics like:
 
@@ -170,14 +170,14 @@ Track metrics like:
 
 Alert if the stream appears stalled (e.g., no updates for 30+ seconds).
 
-## Dynamic Subscription Management
+## Dynamic subscription management
 
 You can update subscriptions at runtime using the bidirectional stream without reconnecting. This is useful for:
 
 * Hot-swapping filters based on user actions
 * Progressive subscription expansion
 
-## Production Checklist
+## Production checklist
 
 Before deploying to production, ensure you have:
 
@@ -195,7 +195,7 @@ Before deploying to production, ensure you have:
 * ✅ Health check endpoints
 * ✅ Metrics and alerting
 
-## Additional Resources
+## Additional resources
 
 * [Quickstart Guide](/docs/reference/yellowstone-grpc-quickstart) - Get started quickly
 * [Code Examples](/docs/reference/yellowstone-grpc-examples) - See complete working examples including a full production-grade client

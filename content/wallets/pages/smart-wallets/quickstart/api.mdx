@@ -1,4 +1,4 @@
-We'll demonstrate how to use the [`wallet_prepareCalls`](/docs/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls), [`wallet_sendPreparedCalls`](/docs/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-send-prepared-calls), and [`wallet_getCallsStatus`](/docs/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-get-calls-status) endpoints.
+This guide demonstrates how to use the [`wallet_prepareCalls`](/docs/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls), [`wallet_sendPreparedCalls`](/docs/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-send-prepared-calls), and [`wallet_getCallsStatus`](/docs/wallets/api/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-get-calls-status) endpoints.
 
 <Info>
   For a complete working example with bash scripts using [jq](https://jqlang.org/) and [foundry](https://getfoundry.sh/) for signing, see [Send Transactions](/docs/wallets/transactions/send-transactions).
@@ -10,9 +10,9 @@ flowchart LR
     B --> C[getCallsStatus]
 ```
 
-### 1. Prepare Calls
+### 1. Prepare calls
 
-Use your signer address directly as the `from` field to enable [EIP-7702](/docs/wallets/transactions/using-eip-7702) by default. The signer can be any Ethereum wallet key.
+Use your authentication address directly as the `from` field to enable [EIP-7702](/docs/wallets/transactions/using-eip-7702) by default. The signer can be any Ethereum wallet key.
 
 ```bash
 curl --request POST \
@@ -44,7 +44,7 @@ curl --request POST \
 '
 ```
 
-If the account hasn't been delegated yet, the response type will be `array` containing both an EIP-7702 authorization and a user operation:
+If the account hasn't been delegated yet, the response type will be `array` containing both an EIP-7702 authorization and a transaction to sign:
 
 ```json
 {
@@ -75,7 +75,7 @@ If the account hasn't been delegated yet, the response type will be `array` cont
 }
 ```
 
-On subsequent transactions (after the account is delegated), the response will be a single user operation:
+On subsequent transactions (after the account is delegated), the response will be a single transaction to sign:
 
 ```json
 {
@@ -92,19 +92,19 @@ On subsequent transactions (after the account is delegated), the response will b
 }
 ```
 
-### 2. Sign the Signature Request(s)
+### 2. Sign the signature request(s)
 
 Sign the returned signature request(s) using your signer key.
 
-**If the account isn't delegated yet (array response):** Sign both the EIP-7702 authorization and the user operation. The authorization only needs to be signed once to delegate your account.
+**If the account isn't delegated yet (array response):** Sign both the EIP-7702 authorization and the transaction. The authorization only needs to be signed once to delegate your account.
 
-**Once delegated:** Sign only the user operation.
+**Once delegated:** Sign only the transaction.
 
-If using an Alchemy Signer, you can learn how to stamp the request on the frontend [here](/docs/reference/how-to-stamp-requests). When using the Alchemy Signer, it's easiest to sign the `signatureRequest.rawPayload` directly.
+If using a Smart Wallets authentication provider, learn how to stamp the request on the frontend [here](/docs/reference/how-to-stamp-requests). When using this authentication provider, sign the `signatureRequest.rawPayload` directly.
 
-If you are using a library such as Viem that supports the `personal_sign` method, you should use that to sign the user operation hash (since the `signatureRequest.type` is `"personal_sign"`).
+If you are using a library such as Viem that supports the `personal_sign` method, use that to sign the transaction hash (since the `signatureRequest.type` is `"personal_sign"`).
 
-### 3. Send the Prepared Calls!
+### 3. Send the prepared calls
 
 With the signature(s) from step 2 and the data from step 1, you're good to send the call!
 
@@ -178,9 +178,9 @@ curl --request POST \
 
 This will return the call ID!
 
-### 4. Check The Calls Status
+### 4. Check the calls status
 
-Now you can simply call `wallet_getCallsStatus` to check the status of the calls. A “pending” state (1xx status codes) is expected for some time before the transition to “confirmed,” so this endpoint should be polled while the status is pending. If the call does not progress, refer to the [retry guide](/docs/wallets/transactions/retry-transactions).
+Call `wallet_getCallsStatus` to check the status of the calls. A “pending” state (1xx status codes) is expected for some time before the transition to “confirmed,” so poll this endpoint while the status is pending. If the call does not progress, refer to the [retry guide](/docs/wallets/transactions/retry-transactions).
 
 ```bash
 curl --request POST \

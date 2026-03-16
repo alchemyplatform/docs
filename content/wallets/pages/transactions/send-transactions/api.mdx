@@ -21,7 +21,7 @@ SIGNER_PRIVATE_KEY=your-signer-private-key
 
 </Step>
 
-<Step title="Prepare Calls">
+<Step title="Prepare calls">
 
 Prepare the calls using your signer address as the `from` field to enable [EIP-7702](/docs/wallets/transactions/using-eip-7702) by default. You can use your signer address directly without first calling `wallet_requestAccount`.
 
@@ -52,11 +52,11 @@ PREPARE_CALLS_RESPONSE=$(curl --request POST \
 
 </Step>
 
-<Step title="Sign the Prepared Calls">
+<Step title="Sign the prepared calls">
 
 Sign the returned signature request. How you do this will vary depending on your environment.
 
-If the account hasn't been delegated yet, the response type will be `array` containing both an EIP-7702 authorization and a user operation that need to be signed. Once delegated (after the first successful transaction), subsequent calls will only return a user operation to sign.
+If the account hasn't been delegated yet, the response type will be `array` containing both an EIP-7702 authorization and a transaction that need to be signed. Once delegated (after the first successful transaction), subsequent calls will only return a transaction to sign.
 
 ```bash twoslash
 # Extract values from prepare calls response
@@ -92,7 +92,7 @@ fi
 
 </Step>
 
-<Step title="Send the Prepared Calls">
+<Step title="Send the prepared calls">
 
 Send the signed calls using `wallet_sendPreparedCalls`.
 
@@ -145,7 +145,7 @@ CALL_ID=$(echo $SEND_CALLS_RESPONSE | jq -r '.result.id')
 
 </Step>
 
-<Step title="Check the Calls Status">
+<Step title="Check the calls status">
 
 Finally, use `wallet_getCallsStatus` to check the status of the call. A "pending" state (1xx status codes) is expected for some time before the transition to "confirmed," so this endpoint should be polled while the status is pending. If the call does not progress, refer to the [retry guide](/docs/wallets/transactions/retry-transactions). The [API documentation](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-get-calls-status#response.body.status) provides details on each status code.
 

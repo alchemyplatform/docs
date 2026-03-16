@@ -7,7 +7,7 @@ slug: docs/solana/accounts-db-infra
 
 The most expensive Solana RPC requests involve account scans, such as `getProgramAccounts` and `getLargestTokenAccounts`. These methods are incredibly useful but non-performant methods since they induce a heavy RPC load on Solana validator nodes, often resulting in a 5XX response due to timeout or a response with high latency.
 
-Alchemy has built out core infrastructure that sits atop our Solana validator nodes to support these methods at scale, through what we call the AccountsDB Infrastructure. This infrastructure allows for **faster**, **scalable**, and more **reliable** responses to these methods by paginating the response with a `pageKey`. You could then loop through your that same request with at scan and aggregate the full response from our validator nodes.
+Alchemy has built core infrastructure that sits atop our Solana validator nodes to support these methods at scale, through what we call the AccountsDB Infrastructure. This infrastructure provides **faster**, **scalable**, and more **reliable** responses to these methods by paginating the response with a `pageKey`. You can then loop through the same request with a scan and aggregate the full response from our validator nodes.
 
 You can see `pageKey` is now an optional parameter in each account-scanning method in our Solana [docs](/docs/reference/getprogramaccounts), and you may also include an `order` optional parameter that would sort the accounts in the response by their `pubkey` field.
 

@@ -4,7 +4,7 @@ description: Step-by-step guide to let users send transactions on hyperliquid.
 slug: wallets/recipes/hyperliquid-wallets
 ---
 
-By the end of this tutorial, you’ll have an application integrated with Alchemy Wallets, enabling email and social login for user authentication, and the ability to sign and send transactions seamlessly.
+By the end of this tutorial, you’ll have an application integrated with Smart Wallets, enabling email and social login for user authentication, and the ability to sign and send transactions seamlessly.
 
 ***
 
@@ -62,25 +62,25 @@ export const config = createConfig(
 );
 ```
 
-## 2. Set Up Web2 Login with an Alchemy Signer
+## 2. Set up web2 login with authentication
 
 #### Working with React?
 
 Follow this [Quickstart](https://www.alchemy.com/docs/wallets/react/quickstart) guide to set up a new project.
 
-The most important step is getting your API Key (`NEXT_PUBLIC_ALCHEMY_API_KEY`) and ensuring your project is configured correctly on your dashboard. Make sure you have Hyperliquid enabled as a network on your app.
+The most important step is getting your API key (`NEXT_PUBLIC_ALCHEMY_API_KEY`) and ensuring your project is configured correctly on the dashboard. Make sure you have Hyperliquid enabled as a network on your app.
 
 <img src="https://alchemyapi-res.cloudinary.com/image/upload/v1764187310/docs/aa-sdk/images/hyperliquid-account-config.png" alt="Hyperliquid account config" />
 
 <img src="https://alchemyapi-res.cloudinary.com/image/upload/v1764187311/docs/aa-sdk/images/hyperliquid-dashboard-support.png" alt="Hyperliquid dashboard support" />
 
-Next, navigate to your `page.tsx`, and get the embedded EOA address using [useSigner()](https://www.alchemy.com/docs/wallets/reference/account-kit/react/hooks/useSigner). This new embedded EOA, also known as a signer, will be where users assets live and will sign transactions.
+Next, navigate to your `page.tsx`, and get the embedded EOA address using [useSigner()](https://www.alchemy.com/docs/wallets/reference/account-kit/react/hooks/useSigner). This new embedded EOA will be where user assets live and will sign transactions.
 
 ```tsx
 const signer = useSigner();
 ```
 
-Note: in order access your embedded EOA created by Alchemy Signer, you need to have finished authentication. To check your authentication status, you can check [useSignerStatus()](https://www.alchemy.com/docs/wallets/reference/account-kit/react/hooks/useSignerStatus). For example:
+Note: to access your embedded EOA, you need to have finished authentication. To check your authentication status, use [useSignerStatus()](https://www.alchemy.com/docs/wallets/reference/account-kit/react/hooks/useSignerStatus). For example:
 
 ```tsx
 ...
@@ -91,13 +91,13 @@ Note: in order access your embedded EOA created by Alchemy Signer, you need to h
  ...
 ```
 
-#### Not Working With React?
+#### Not working with React?
 
-That’s okay! We have lower level methods we can leverage here to access your signer!
+That’s okay! There are lower level methods available to access the authentication provider.
 
-You can follow this [Quickstart](https://www.alchemy.com/docs/wallets/signer/quickstart), to use our '@account-kit/signer' package directly to create and use our wallets.
+Follow this [Quickstart](https://www.alchemy.com/docs/wallets/signer/quickstart), to use the `@account-kit/signer` package directly to create and use wallets.
 
-#### Create a Signer Instance
+#### Create an authentication instance
 
 ```tsx
 import { AlchemyWebSigner } from "@account-kit/signer";
@@ -114,9 +114,9 @@ export const signer = new AlchemyWebSigner({
 });
 ```
 
-#### Authenticate a User
+#### Authenticate a user
 
-Next, you’ll need to authenticate your user before you can use the signer. In this example, we use email auth, but we support a number of other auth methods. Check out our [guides](https://www.alchemy.com/docs/wallets/react/react-hooks) to complete authentication.
+Next, authenticate your user before you can use the authentication provider. In this example, email auth is used, but a number of other auth methods are supported. Check out the [guides](https://www.alchemy.com/docs/wallets/react/react-hooks) to complete authentication.
 
 ```tsx
 import { signer } from "./signer";
@@ -128,17 +128,17 @@ const result = await signer.authenticate({
 ...
 ```
 
-Once you finish authenticating, you can access your signer!
+Once you finish authenticating, you can access the authentication provider!
 
 ## 3. Send Transactions
 
-Got your signer/embedded EOA address? Now you are ready to send transactions! Alchemy signer supports signing messages as raw hashes. You can use methods including `signMessage`, `signTypedData`, and `signTransaction`.
+Got your embedded EOA address? Now you are ready to send transactions! The authentication provider supports signing messages as raw hashes. Use methods including `signMessage`, `signTypedData`, and `signTransaction`.
 
 ```tsx
 const signedTx = await signer.signTransaction(txRequest);
 ```
 
-Then you can use a generic wallet client to send transactions! For example, if you are using viem, then you can use the `toViemAccount` method which will allow you to use the signer with a [WalletClient](https://viem.sh/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
+Then use a generic wallet client to send transactions. For example, if you are using viem, use the `toViemAccount` method which allows you to use the authentication provider with a [WalletClient](https://viem.sh/docs/clients/wallet#local-accounts-private-key-mnemonic-etc).
 
 ```tsx
 import { createWalletClient, http, custom, parseEther } from "viem";
@@ -162,11 +162,11 @@ const txHash = await walletClient.sendRawTransaction({
 });
 ```
 
-## 4. Sponsoring User Operations
+## 4. Sponsoring transactions
 
-Alchemy gas sponsorship lets your users send transactions on HyperEVM without holding the native token for gas. To start, make sure you have a gas policy ID configured in your app dashboard and pass it to your client initialization. Learn more in [Sponsor Gas](https://www.alchemy.com/docs/wallets/transactions/sponsor-gas).
+Gas sponsorship lets your users send transactions on HyperEVM without holding the native token for gas. To start, make sure you have a gas policy ID configured in your app dashboard and pass it to your client initialization. Learn more in [Sponsor Gas](https://www.alchemy.com/docs/wallets/transactions/sponsor-gas).
 
-As an example, we will be sponsoring a HyperEVM user operation opening a limit order, using the HyperCore Writer contract. Start by creating some helpers to encode the call.
+As an example, the following sponsors a HyperEVM transaction opening a limit order, using the HyperCore Writer contract. Start by creating some helpers to encode the call.
 
 ```ts
 // hyperliquidOrder.ts

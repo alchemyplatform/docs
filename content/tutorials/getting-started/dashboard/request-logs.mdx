@@ -1,28 +1,28 @@
 ---
 title: "Request Logs"
-subtitle: Guide on interacting with request logs on Alchemy's dashboard
+subtitle: Guide on interacting with request logs on the Alchemy Dashboard
 slug: docs/alchemy-request-logs
 ---
 
-This guide provides a comprehensive overview of how to use the Request Logs feature in the Alchemy Dashboard to monitor and debug JSON-RPC API requests.
+This guide covers how to use the Request Logs feature in the Alchemy Dashboard to monitor and debug JSON-RPC API requests.
 
-### Why It Matters
+### Why it matters
 
-The Request Logs feature in the Alchemy Dashboard is a powerful tool for developers building on different blockchains. It solves several critical problems:
+Request Logs in the Alchemy Dashboard helps you build on different blockchains by addressing several common problems:
 
-* **Debugging Made Easy**: Request Logs provides a user-friendly interface to search, filter, and analyze historical API requests, saving hours of manual debugging compared to raw log files or custom scripts.
-* **Transparency and Control**: Developers gain visibility into every JSON-RPC request sent through Alchemy's infrastructure, including successes, failures, and errors, helping identify bottlenecks or misconfigured requests.
-* **Performance Optimization**: By analyzing request durations, error rates, and method usage, developers can optimize dApp performance and ensure a seamless user experience.
+* **Debugging**: Request Logs provides an interface to search, filter, and analyze historical API requests, saving hours of manual debugging compared to raw log files or custom scripts.
+* **Transparency and control**: You gain visibility into every JSON-RPC request sent through Alchemy's infrastructure, including successes, failures, and errors, helping identify bottlenecks or misconfigured requests.
+* **Performance optimization**: By analyzing request durations, error rates, and method usage, you can optimize dApp performance and ensure a smooth experience for your users.
 
-Request Logs empowers developers to maintain reliable dApps, reduce downtime, and improve user satisfaction with actionable insights into API interactions.
+Request Logs helps you maintain reliable dApps, reduce downtime, and gain actionable insights into API interactions.
 
-### How to Use It
+### How to use it
 
 ![](https://alchemyapi-res.cloudinary.com/image/upload/v1749676270/Screenshot_2025-06-11_at_2.11.07_PM_g03ees.png)
 
-#### Overview of the Request Logs Feature
+#### Request Logs feature overview
 
-The Request Logs feature, accessible via the Alchemy Dashboard's Request Explorer, allows you to view and analyze all JSON-RPC requests made to Alchemy's API endpoints for your application. Key functionalities include:
+The Request Logs feature, accessible via the Alchemy Dashboard's Request Explorer, lets you view and analyze all JSON-RPC requests made to Alchemy's API endpoints for your application. Key functionalities include:
 
 **Search and Filter**: Filter requests by parameters such as:
 
@@ -47,15 +47,15 @@ To access Request Logs:
 
 1. Log in to the Alchemy Dashboard.
 2. Navigate to the tools section on the sidebar.
-3. Click request logs to enter the request logs dashboard.
+3. Click Request Logs to enter the request logs view.
 
 ![](https://alchemyapi-res.cloudinary.com/image/upload/v1749676289/Screenshot_2025-06-11_at_2.11.24_PM_rwldpd.png)
 
-#### Code Samples
+#### Code samples
 
 Below are code samples to help you interact with Alchemy's API and troubleshoot issues using insights from Request Logs.
 
-##### Sample 1: Fetching the Latest Nonce Before Sending a Transaction
+##### Sample 1: Fetching the latest nonce before sending a transaction
 
 If Request Logs show "nonce too low" errors for eth\_sendRawTransaction, use this code to fetch the latest nonce:
 
@@ -79,7 +79,7 @@ getLatestNonce("0xYourWalletAddress");
 
 **Usage**: Run this before sending a transaction to ensure the correct nonce. Check Request Logs to confirm eth\_getTransactionCount requests succeed (HTTP 200).
 
-##### Sample 2: Batching Requests to Avoid Rate Limits
+##### Sample 2: Batching requests to avoid rate limits
 
 If Request Logs show HTTP 429 (Too Many Requests) errors, batch requests using fetch API:
 
@@ -119,33 +119,33 @@ batchRequests();
 
 **Usage**: Batching reduces the number of requests, lowering the chance of hitting rate limits. Monitor Request Logs for fewer eth\_blockNumber and eth\_getBalance entries.
 
-### Best Practices
+### Best practices
 
-#### Pro Tips
+#### Pro tips
 
 * **Use Specific Filters**: Combine filters (e.g., method + error code) to quickly isolate issues in Request Explorer.
 * **Monitor Regularly**: Check Request Logs daily or use Alchemy's Notify API for real-time alerts on errors.
 * **Leverage Timestamps**: Filter by timestamp to focus on specific timeframes when debugging reported issues.
 
-#### Limits
+#### Limits and retention
 
 * **Data Retention**: Logs are available for up to 10 days. Export logs regularly for longer-term analysis.
 * **Rate Limits**: HTTP 429 errors indicate rate limit breaches. Optimize with batching or upgrade your plan.
 * **Block Range for eth\_getLogs**: Limit eth\_getLogs block ranges (e.g., 5,000 blocks) to avoid timeouts.
 
-#### Common Issues and Solutions
+#### Common issues and solutions
 
 * **Issue**: HTTP 429 (Too Many Requests) in logs.
   * **Solution**: Use batch requests (see Sample 2) or reduce request frequency.
 * **Issue**: "Nonce too low" errors in eth\_sendRawTransaction.
   * **Solution**: Fetch the latest nonce before each transaction (see Sample 1).
 * **Issue**: Empty or missing logs.
-  * **Solution**: Verify API key, app, and network filters. Check for dashboard delays during high network congestion.
+  * **Solution**: Verify API key, app, and network filters. Check for Alchemy Dashboard delays during high network congestion.
 
-#### Additional Notes
+#### Additional notes
 
 * **Security**: Avoid exposing API keys in client-side code. Use HTTP header-based authentication.
 * **Documentation**: See Alchemy's Error Reference for JSON-RPC error codes.
-* **Support**: Contact Alchemy Support via the dashboard or check the FAQ.
+* **Support**: Contact Alchemy Support via the Alchemy Dashboard or check the FAQ.
 
-By leveraging Request Logs and these practices, you can monitor, debug, and optimize your dApp's API interactions for a reliable user experience.
+With Request Logs and these practices, you can monitor, debug, and optimize your dApp's API interactions for a reliable experience.

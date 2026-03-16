@@ -1,26 +1,26 @@
 ---
-title: Session Keys
+title: Session keys
 subtitle: Learn how to use session keys with Wallet APIs
 url: https://alchemy.com/docs/wallets/reference/wallet-apis-session-keys
 slug: wallets/reference/wallet-apis-session-keys
 ---
 
-Session keys are a powerful feature of the Alchemy Wallets API that allow you to create a session for a user's smart account with specific permissions. This enables secure, permissioned access to the user's wallet, allowing your app's server to perform actions on behalf of the user without needing their private key. Session keys allow another account to operate on a user's smart account with given permissions. After creating a session, you will be able to sign transactions for the generated wallet within the defined permissions using that session key. See [here for a list of permissions!](#permission-types)
+Session keys are a powerful feature of the Wallets API that allow you to create a session for a user's smart wallet with specific permissions. This enables secure, permissioned access to the user's smart wallet, allowing your app's server to perform actions on behalf of the user without needing their private key. Session keys allow another account to operate on a user's smart wallet with given permissions. After creating a session, you can sign transactions for the smart wallet within the defined permissions using that session key. See [here for a list of permissions!](#permission-types)
 
 To use this guide, you'll need:
 
-* An account you can sign with (e.g. an [Alchemy Signer](/docs/wallets/signer/what-is-a-signer#alchemy-signer) or an EOA)
-* An Alchemy API key
+* An account you can sign with (e.g. an [authentication provider](/docs/wallets/signer/what-is-a-signer#alchemy-signer) or an EOA)
+* An API key
 * A [gas manager policy ID](/docs/wallets/transactions/sponsor-gas) if sponsoring gas
 
 <Tip title="Don't have an API key?" icon="star">
-  Start using the Alchemy Wallets API today! [Get started for
+  Start using the Wallets API today! [Get started for
   free](https://dashboard.alchemy.com/signup/?a=f8afc2202c).
 </Tip>
 
-### Create A Session With Permissions
+### Create a session with permissions
 
-We'll demonstrate how to create and use session keys [using the SDK client](/docs/reference/wallet-apis-session-keys/sdk) or by using platform-agnostic [JSON-RPC APIs](/docs/reference/wallet-apis-session-keys/api).
+The following guides demonstrate how to create and use session keys [using the SDK client](/docs/reference/wallet-apis-session-keys/sdk) or by using platform-agnostic [JSON-RPC APIs](/docs/reference/wallet-apis-session-keys/api).
 
 <CardGroup cols={2}>
   <Card title="Use the SDK" href="/docs/reference/wallet-apis-session-keys/sdk" icon="code">
@@ -32,7 +32,7 @@ We'll demonstrate how to create and use session keys [using the SDK client](/doc
   </Card>
 </CardGroup>
 
-## Permission Types
+## Permission types
 
 To specify permissions during a session key installation, include them in the `permissions` array when calling `client.grantPermission()` via the SDK or `wallet_createSession` via the API.
 
@@ -50,7 +50,7 @@ const permissions = await client.grantPermissions({
 });
 ```
 
-### Native Token Transfer
+### Native token transfer
 
 This permission allows transfer of native tokens (like Ether) from the account.
 
@@ -63,7 +63,7 @@ This permission allows transfer of native tokens (like Ether) from the account.
 }
 ```
 
-### ERC20 Token Transfer
+### ERC-20 token transfer
 
 This permission allows transfer or approval of ERC-20 tokens from the account. The specified allowance represents the total cumulative spend limit for all transfers and approvals (it is not a per-operation allowance).
 
@@ -77,9 +77,9 @@ This permission allows transfer or approval of ERC-20 tokens from the account. T
 }
 ```
 
-### Gas Limit
+### Gas limit
 
-This permission allows the session key to spend gas for user operations up to a specified limit.
+This permission allows the session key to spend gas for transactions up to a specified limit.
 
 ```ts
 {
@@ -90,7 +90,7 @@ This permission allows the session key to spend gas for user operations up to a 
 }
 ```
 
-### Contract Access
+### Contract access
 
 This permission grants access to **all** functions in a specific contract.
 
@@ -103,9 +103,9 @@ This permission grants access to **all** functions in a specific contract.
 }
 ```
 
-### Account Functions
+### Account functions
 
-This permission grants access to specific functions on the smart account itself.
+This permission grants access to specific functions on the smart wallet itself.
 
 ```ts
 {
@@ -116,7 +116,7 @@ This permission grants access to specific functions on the smart account itself.
 }
 ```
 
-### Functions On All Contracts
+### Functions on all contracts
 
 This permission grants access to a set of function selectors **across any** address.
 
@@ -129,7 +129,7 @@ This permission grants access to a set of function selectors **across any** addr
 }
 ```
 
-### Functions On Contract
+### Functions on contract
 
 This permission grants access to specific function selectors on **one** contract.
 
@@ -145,7 +145,7 @@ This permission grants access to specific function selectors on **one** contract
 
 ### Root
 
-This permission grants full access to everything. Needless to say, this is a very dangerous permission to grant.
+This permission grants full access to everything. This is a very dangerous permission to grant.
 
 ```ts
 {

@@ -10,8 +10,8 @@ slug: wallets/reference/gas-manager-faqs
 
 ### How much gas can I sponsor?
 
-You can sponsor as much gas as you want. We front the gas for you up to a base limit based on your tier, and add it to your monthly bill. Note that both gas sponsorship and ERC-20 gas payments contribute towards your limit.
-If you need more gas you can easily boost your limits by buying gas manager credits in USD via our [Gas Manager Dashboard](https://dashboard.alchemy.com/gas-manager). This is a one time purchase that will be applied to your bill at the end of the month and will roll over until it is used up.
+Sponsor as much gas as you want. Gas is fronted up to a base limit based on your tier, and added to your monthly bill. Note that both gas sponsorship and ERC-20 gas payments contribute towards your limit.
+If you need more gas, boost your limits by buying gas manager credits in USD via the [Gas Manager Dashboard](https://dashboard.alchemy.com/gas-manager). This is a one time purchase that is applied to your bill at the end of the month and rolls over until it is used up.
 
 | Tier       | Mainnet Base Limit                      | Testnet Limit              | Team Policy Creation Limit |
 | ---------- | --------------------------------------- | -------------------------- | -------------------------- |
@@ -21,15 +21,15 @@ If you need more gas you can easily boost your limits by buying gas manager cred
 
 ### Will I get alerted if I get close to my limit?
 
-Yes! To safeguard against hitting sponsorship limits, we've implemented alerts that notify the team's billing admins via email when gas manager usage reaches 50%, 75%, 90%, and 100% of the sponsorship limit.
+Yes. To safeguard against hitting sponsorship limits, alerts notify the team's billing admins via email when gas manager usage reaches 50%, 75%, 90%, and 100% of the sponsorship limit.
 
 ### Can the sponsored amount exceed my limits?
 
-Our Gas Manager is designed to handle a large number of sponsorship requests quickly and efficiently. However, because of the way it processes these requests in batches, there may be brief periods where the actual spending slightly exceeds the limits you've set. This is rare but possible, especially when the system is handling a high volume of requests. Rest assured, we're actively working to minimize these occurrences and if you have concerns, please file a support ticket via our [Discord server](https://discord.com/channels/735965332958871634/1115787488838033538).
+The Gas Manager is designed to handle a large number of sponsorship requests quickly and efficiently. However, because of the way it processes these requests in batches, there may be brief periods where the actual spending slightly exceeds the limits you've set. This is rare but possible, especially when the system is handling a high volume of requests. If you have concerns, file a support ticket via the [Discord server](https://discord.com/channels/735965332958871634/1115787488838033538).
 
 ## Fee Logic
 
-To provide its services, Alchemy's Gas Abstraction API charges fees on gas sponsorships and ERC-20 gas payments.
+The Gas Abstraction API charges fees on gas sponsorships and ERC-20 gas payments.
 
 | Tier       | Mainnet Fee            | Testnet Fee                |
 | ---------- | ---------------------- | -------------------------- |
@@ -41,15 +41,15 @@ To provide its services, Alchemy's Gas Abstraction API charges fees on gas spons
 
 ### Which ERC-20 tokens are supported by the Gas Manager?
 
-The ERC-20 Gas Manager supports any token supported by our [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address).
+The ERC-20 Gas Manager supports any token supported by the [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address).
 
-### Which ERC20 tokens can I enable via the Gas Manager dashboard?
+### Which ERC-20 tokens can I enable via the Gas Manager dashboard?
 
-Below is a list of the tokens you can currently enable in your policy via our Gas Manager dashboard:
+Below is a list of the tokens you can currently enable in your policy via the Gas Manager dashboard:
 
 <Info>
   **Want to support custom tokens?** You can either contact us at
-  wallets@alchemy.com or use our [Admin
+  wallets@alchemy.com or use the [Admin
   APIs](https://www.alchemy.com/docs/wallets/api/gas-manager-admin-api/admin-api-endpoints/create-policy)
   to enable more ERC-20 tokens.
 </Info>
@@ -138,29 +138,29 @@ Below is a list of the tokens you can currently enable in your policy via our Ga
 
 ### How is the exchange rate for an ERC-20 token calculated?
 
-We use our [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address) to determine the exchange rate for ERC-20 tokens. The exchange rate is locked in **at the moment the paymaster signs the userOp**, not when the userOp is mined on-chain.
+The [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address) determines the exchange rate for ERC-20 tokens. The exchange rate is locked in **at the moment the gas sponsorship signs the transaction**, not when the transaction is mined onchain.
 
-On testnets, since token prices are effectively $0, we use a reference token for pricing:
+On testnets, since token prices are effectively $0, a reference token is used for pricing:
 
-* **Native gas token**: We use the corresponding price of the token on mainnet.
-* **ERC-20 token supported on the dashboard**: We use the token’s mainnet price.
+* **Native gas token**: The corresponding price of the token on mainnet is used.
+* **ERC-20 token supported on the dashboard**: The token’s mainnet price is used.
 * **Custom ERC-20 token:** If you're enabling a custom token, you can choose which token to use as the pricing reference. Make sure to pick a price reference token that has the same decimals as the custom token.
 
-### What are the different ERC-20 transfer modes supported by the Paymaster?
+### What are the different ERC-20 transfer modes supported by the paymaster contract?
 
-To allow the paymaster contract to transfer ERC-20 tokens from the user’s wallet, the user must first approve (`approve()`) the paymaster to spend tokens on their behalf. This typically requires a separate transaction, either paid for by the user with the native gas token or sponsored by the app builder.
+To allow the paymaster contract to transfer ERC-20 tokens from the user’s smart account, the user must first approve (`approve()`) the paymaster contract to spend tokens on their behalf. This typically requires a separate transaction, either paid for by the user with the native gas token or sponsored by the app builder.
 
-To eliminate the need for a separate approval transaction and improve UX, the Paymaster supports two ERC-20 transfer modes, configurable at the policy level:
+To eliminate the need for a separate approval transaction and improve UX, the paymaster contract supports two ERC-20 transfer modes, configurable at the policy level:
 
-1. \[Recommended] Transfer ERC-20 tokens *after* userOp execution:
-   1. We front the gas using the native gas token and transfer ERC-20 tokens from the user’s wallet to your receiving address after the userOp execution.
-   2. No upfront allowance is required. You can batch the approval with the userOp, enabling the user to allow the paymaster to spend the ERC-20 token on their behalf (`approve()`) without a separate tx — greatly improving UX.
-   3. If the post-execution ERC-20 transfer fails, the userOp will revert, but you’ll remain liable for the gas costs.
-   4. You can run off-chain simulation to verify the approval is likely to succeed, but this does not guarantee on-chain success.
-2. Transfer ERC-20 tokens before userOp execution:
-   1. We front the gas using the native gas token and execute the ERC-20 token transfer during `validatePaymasterUserOp`, before the userOp execution.
-   2. This requires you (the developer) to ensure the paymaster already has sufficient allowance—either through a prior `approve()` transaction or a permit signature—*before* the UserOp is submitted. This approval must either be paid for by the user with the native gas token or sponsored by you.
-   3. If the required allowance isn't in place when the userOp is submitted, the userOp will be rejected.
+1. \[Recommended] Transfer ERC-20 tokens *after* transaction execution:
+   1. The gas is fronted using the native gas token and ERC-20 tokens are transferred from the user’s smart account to your receiving address after the transaction execution.
+   2. No upfront allowance is required. You can batch the approval with the transaction, enabling the user to allow the paymaster contract to spend the ERC-20 token on their behalf (`approve()`) without a separate tx -- greatly improving UX.
+   3. If the post-execution ERC-20 transfer fails, the transaction reverts, but you remain liable for the gas costs.
+   4. You can run offchain simulation to verify the approval is likely to succeed, but this does not guarantee onchain success.
+2. Transfer ERC-20 tokens before transaction execution:
+   1. The gas is fronted using the native gas token and the ERC-20 token transfer executes during `validatePaymasterUserOp`, before the transaction execution.
+   2. This requires you (the developer) to ensure the paymaster contract already has sufficient allowance -- either through a prior `approve()` transaction or a permit signature -- *before* the transaction is submitted. This approval must either be paid for by the user with the native gas token or sponsored by you.
+   3. If the required allowance isn’t in place when the transaction is submitted, the transaction is rejected.
    4. This flow adds friction to the UX and is generally more gas intensive than the post-execution mode.
 
 ### Where can I see userOps that used ERC-20 tokens for gas?
@@ -174,7 +174,7 @@ You can view past userOps by selecting your policy in the **Gas Manager dashboar
 * User address
 * Network
 
-You can also use our [Get Sponsorships API](https://www.alchemy.com/docs/node/gas-manager-admin-api/gas-manager-admin-api-endpoints/gas-manager-admin-api-endpoints/get-sponsorships) to fetch the full history programmatically.
+You can also use the [Get Sponsorships API](https://www.alchemy.com/docs/node/gas-manager-admin-api/gas-manager-admin-api-endpoints/gas-manager-admin-api-endpoints/get-sponsorships) to fetch the full history programmatically.
 
 ## What are the deployment addresses of the Gas Manager (Paymaster)?
 

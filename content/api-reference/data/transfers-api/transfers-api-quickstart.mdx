@@ -7,7 +7,7 @@ slug: reference/transfers-api-quickstart
 
 *To use the Transfers API you'll need to [create a free Alchemy account](https://alchemy.com/?r=affiliate:4cf7f72f-9238-45c4-a230-6840fcd048ae) first!*
 
-## Transfers API Chain Support
+## Transfers API chain support
 
 <Info>
   Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
@@ -17,35 +17,35 @@ slug: reference/transfers-api-quickstart
 
 *NOTE: see the table below for the [types of transfers](#types-of-transfers) supported by each network*
 
-## What are Transfers?
+## What are transfers?
 
-Transfers are a representation of value being exchanged between two accounts. Often times users wish to see the historical transactions associated with a specific account or address. This is currently an extremely challenging and inefficient task, requiring users to scan the entire blockchain and index everything to search for transactions associated with the desired address. However, with the Transfers API users can query all types of historical transactions for a given address in a single request.
+Transfers are a representation of value being exchanged between two accounts. You may want to see the historical transactions associated with a specific account or address. This is currently an extremely challenging and inefficient task, requiring you to scan the entire blockchain and index everything to search for transactions associated with the desired address. However, with the Transfers API you can query all types of historical transactions for a given address in a single request.
 
-## What's an Example Use Case for Transfers?
+## What's an example use case for transfers?
 
-An example use case for the requesting transfer events would be integrating historical transaction data into your dApp. For instructions on how to do this check out this tutorial on [Integrating Historical Transaction Data into your dApp](/docs/integrating-historical-transaction-data-into-your-dapp).
+An example use case for requesting transfer events would be integrating historical transaction data into your dApp. For instructions on how to do this, check out the tutorial on [integrating historical transaction data into your dApp](/docs/integrating-historical-transaction-data-into-your-dapp).
 
-## Types of Transfers
+## Types of transfers
 
 There are five main types of transfers that are captured when using this API. See below for the types of transfers:
 
-### 1. External Eth Transfers
+### 1. External ETH transfers
 
 These are top level transactions that occur with a from address being an external (user created) address. External addresses have private keys and are accessed by users.
 
-### 2. ERC20 Transfers
+### 2. ERC-20 transfers
 
-Event logs for ERC20 transfers.
+Event logs for ERC-20 transfers.
 
-### 3. ERC721 Transfers
+### 3. ERC-721 transfers
 
-Event logs for ERC721 transfers.
+Event logs for ERC-721 transfers.
 
-### 4. ERC1155 Transfers
+### 4. ERC-1155 transfers
 
-These are event logs for ERC1155 transfers.
+These are event logs for ERC-1155 transfers.
 
-### 5. Internal Eth Transfers
+### 5. Internal ETH transfers
 
 These are transfers that occur where the `fromAddress` is an internal (smart contract) address. (ex: a smart contract calling another smart contract or smart contract calling another external address). For a full deep dive into internal transfers check out this article on [What are Internal Transactions?](/docs/what-are-internal-transactions).
 
@@ -57,9 +57,9 @@ These are transfers that occur where the `fromAddress` is an internal (smart con
   We also do not include miner rewards as an internal transfer.
 </Info>
 
-### 6. Special NFT Transfers
+### 6. Special NFT transfers
 
-The special NFT endpoint allows users to query for NFTs that don't follow any ERC standards. The 2 included NFTs currently are CryptoPunks and CryptoKitties, which both predate current NFT standards.
+The special NFT endpoint lets you query for NFTs that don't follow any ERC standards. The two included NFTs currently are CryptoPunks and CryptoKitties, which both predate current NFT standards.
 
 ## Pagination
 
@@ -78,7 +78,7 @@ In the second case, you will also receive a value for `pageKey` in the response,
 
 ## How to get timestamps for a transaction?
 
-A transaction object will have a block number associated with it, the block number is the blockchain's measure of time, however, if you want a standard timestamp you can easily get that by specifying `withMetadata=true` in your `alchemy_getAssetTransfers` \*\*request, or make a second call to `eth_getBlockByNumber`, passing in the `blockNum` field from the `alchemy_getAssetTransfers` \*\*response payload.
+A transaction object will have a block number associated with it, the block number is the blockchain's measure of time, however, if you want a standard timestamp you can get that by specifying `withMetadata=true` in your `alchemy_getAssetTransfers` \*\*request, or make a second call to `eth_getBlockByNumber`, passing in the `blockNum` field from the `alchemy_getAssetTransfers` \*\*response payload.
 
 <Info>
   Surprisingly, a block's timestamp is actually the time that the **previous** **block** was mined not the block that the timestamp is contained within. So for Ethereum Mainnet, blocks tend to actually be mined around 14 seconds after their timestamps.
@@ -88,12 +88,12 @@ A transaction object will have a block number associated with it, the block numb
 
 By default the Transfers API returns transactions in ascending order so from oldest --> newest transactions. However if you wish to change the order to be from newest --> oldest transactions you can do so by specifying the `order` parameter to `desc`.
 
-## Why does my ERC721 transfer have 0 value?
+## Why does my ERC-721 transfer have 0 value?
 
 There are typically two transfers that happen with NFTs:
 
 1. The transfer of the token from the previous owner to the new owner
-2. The purchase or sale of the NFT token (the transfer of value between the new and previous owner) ERC721 token transfers only capture the first type of transfer (token) not the second type (sale). If you want to see the second type and the transaction was made in ETH you'll need to include `external` transfer types in your request. If the transaction was made in another erc20 token you should include `erc20` transfer types in your request.
+2. The purchase or sale of the NFT token (the transfer of value between the new and previous owner) ERC-721 token transfers only capture the first type of transfer (token) not the second type (sale). If you want to see the second type and the transaction was made in ETH you'll need to include `external` transfer types in your request. If the transaction was made in another erc20 token you should include `erc20` transfer types in your request.
 
 ## What are the different types of block tags?
 

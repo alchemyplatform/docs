@@ -21,9 +21,9 @@ Throughput is defined in terms of CU/s (Compute Units Per Second). Some key aspe
 
 ***
 
-## Error Response
+## Error response
 
-When you exceed your capacity, you will receive an error response. This response will be different depending on whether you are connecting to Alchemy using HTTP or [WebSockets](/docs/reference/subscription-api).
+When you exceed your capacity, you receive an error response. This response differs depending on whether you're connecting to Alchemy using HTTP or [WebSockets](/docs/reference/subscription-api).
 
 <Info>
   If you would like to test receiving a 429 response, send a POST request to [https://httpstat.us/429](https://httpstat.us/429).
@@ -35,7 +35,7 @@ You will receive an HTTP 429 (Too Many Requests) response status code.
 
 ### WebSockets
 
-You will receive a JSON-RPC error response with error code 429. For example, the response might be:
+You receive a JSON-RPC error response with error code 429. For example, the response might be:
 
 <CodeGroup>
   ```json json
@@ -55,21 +55,21 @@ You will receive a JSON-RPC error response with error code 429. For example, the
 
 There are several options for implementing retries. For a deep dive into each option, check out **[How to Implement Retries](/docs/reference/how-to-implement-retries)**.
 
-All you need to do to easily handle 429 errors is to retry the request. This will ensure a great user experiences with any API even if you aren't hitting rate limits. Once you've implemented retries, [test out the behavior](/docs/reference/throughput#test-rate-limits-retries) to make sure they work as expected.
+To handle 429 errors, retry the request. This ensures a great experience with any API even if you aren't hitting rate limits. Once you've implemented retries, [test out the behavior](/docs/reference/throughput#test-rate-limits-retries) to make sure they work as expected.
 
 ### Option 1: `Retry-After`
 
 If you are using HTTP and not WebSockets you may receive a `Retry-After` header in the HTTP response. This indicates how long you should wait before making a follow-up request. We still recommend using [exponential backoff ](/docs/reference/throughput#option-4-exponential-backoff)since `Retry-After` only accepts an integer number of seconds.
 
-### Option 2: Simple Retries
+### Option 2: Simple retries
 
 If [exponential backoff](/docs/reference/throughput#option-3-exponential-backoff) poses an challenge to you, a simple retry solution is to wait a random interval between 1000 and 1250 milliseconds after receiving a `429` response, and sending the request again, up to some maximum number of attempts you are willing to wait.
 
-### Option 3: Exponential Backoff
+### Option 3: Exponential backoff
 
-Exponential backoff is a standard error-handling strategy for network applications. It is a similar solution to retries, however, instead of waiting random intervals, an exponential backoff algorithm retries requests exponentially, increasing the waiting time between retries up to a maximum backoff time.
+Exponential backoff is a standard error-handling strategy for network applications. It's similar to retries, but instead of waiting random intervals, an exponential backoff algorithm retries requests exponentially, increasing the waiting time between retries up to a maximum backoff time.
 
-#### Example Algorithm:
+#### Example algorithm:
 
 1. Make a request.
 2. If the request fails, wait 1 + `random_number_milliseconds` seconds and retry the request.
@@ -88,11 +88,11 @@ The client can continue retrying after it has reached the `maximum_backoff` time
 
 ***
 
-## Test Throughput & Retries
+## Test throughput and retries
 
 To test out your implementation of retries, we created a test app on each network with a low throughput of 50 Compute Units/Second. The same key can be used across all the blockchains we support. Feel free to make requests to this test app on any of the networks using the following API keys:
 
-### Ethereum Mainnet, Polygon Mainnet (and other mainnets)
+### Ethereum mainnet, Polygon mainnet (and other mainnets)
 
 #### HTTP
 
@@ -114,6 +114,6 @@ To test out your implementation of retries, we created a test app on each networ
 
 ***
 
-## Any Other Questions?
+## Any other questions?
 
-Reach out to support@alchemy.com with any questions!
+Reach out to support@alchemy.com with any questions.

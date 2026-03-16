@@ -1,61 +1,61 @@
 ---
-title: Frequently Asked Questions
-description: Learn how to get started with Alchemy's Smart Wallets, a vertically
+title: Frequently asked questions
+description: Learn how to get started with Smart Wallets, a vertically
 slug: wallets/resources/faqs
 ---
 
 <Warning>
-  We recommend you check out our [github
+  Check out [GitHub
   discussions](https://github.com/alchemyplatform/aa-sdk/discussions) for more
   commonly asked questions and support.
 </Warning>
 
-## Smart Accounts - Light Account
+## Smart wallets - Light Account
 
 ### Do accounts have the same address across all chains?
 
 <Accordion title="Answer">
-  In almost all cases, yes, you will get the same address on all chains as long as the connecting signer address is the same! The deployment address is a function of the address of owner/signer address, the account implementation (e.g. latest version of Light Account), and the salt (you can optionally specify this). If all three of those remain the same, then you deploy the smart account at the same contract address.
+  In almost all cases, yes, you get the same address on all chains as long as the connecting owner address is the same. The deployment address is a function of the owner address, the account implementation (e.g. latest version of Light Account), and the salt (you can optionally specify this). If all three remain the same, the smart wallet deploys at the same contract address.
 
   There are two scenarios where you would get a different contract address:
 
-  1. If you deploy one smart account, then change the signer, then deploy the second account.
-  2. If you upgrade the smart account (e.g. to a new version of Light Account). It is unlikely that we will make many updates to this contract so the address will not change frequently.
+  1. If you deploy one smart wallet, then change the owner, then deploy the second account.
+  2. If you upgrade the smart wallet (e.g. to a new version of Light Account). Updates to this contract are infrequent, so the address will not change often.
 </Accordion>
 
-### How does a smart account get deployed?
+### How does a smart wallet get deployed?
 
 <Accordion title="Answer">
-  Your smart account will be deployed when the first `UserOperation` (UO) is
+  Your smart wallet deploys when the first `UserOperation` (UO) is
   sent from the account. The first UO must be sent with a non-zero `initCode`.
-  aa-sdk will handle generation of this `initCode` for you using
+  aa-sdk handles generation of this `initCode` for you using
   [`getAccountInitCode`](/docs/wallets/reference/aa-sdk/core/functions/toSmartContractAccount).
 </Accordion>
 
-### How can I upgrade a Light Account?
+### How do I upgrade a Light Account?
 
 <Accordion title="Answer">
-  It is unlikely you will need to frequently update the Light Account contract
+  You are unlikely to need to frequently update the Light Account contract
   itself, however it is possible if needed. Light Account has
   [`UUPSUpgradeable`](https://github.com/alchemyplatform/light-account/blob/main/src/LightAccount.sol#L50)
-  which adds upgrade methods on the account itself. To upgrade an account you
-  will need to send a `UserOperation` using the method `upgradeTo` or
+  which adds upgrade methods on the account itself. To upgrade an account,
+  send a `UserOperation` using the method `upgradeTo` or
   `upgradeToAndCall`, depending on whether or not you need to initialize the new
   implementation.
 </Accordion>
 
-### Can I have multiple accounts for the same signer address? / How do I set the value of the salt for Light Account?
+### Can I have multiple accounts for the same owner address? / How do I set the value of the salt for Light Account?
 
 <Accordion title="Answer">
   Yes! The optional salt value on Light Account enables the ability to have
-  multiple accounts under a single signer. This value defaults to 0. You can set
+  multiple accounts under a single owner. This value defaults to 0. You can set
   it when you create a Light Account.
 </Accordion>
 
-### How can I upgrade from Simple Account to Light Account?
+### How do I upgrade from Simple Account to Light Account?
 
 <Accordion title="Answer">
-  [Simple Account's](https://github.com/eth-infinitism/account-abstraction/blob/cc3893bcaf2272c163ce89d5eb9eadb8e6b52db7/contracts/accounts/SimpleAccount.sol#L22) support [`upgradeToAndCall`](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4e7e6e54daedf091d91f2f2df024cbb8f253e2ef/contracts/proxy/utils/UUPSUpgradeable.sol#L86) implemented by openzeppelin [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable) contract. This allows you to upgrade from Simple Account to Light Account without changing the smart contract account address. Using `upgradeToAndCall` will update the underlying implementation contract on the account while the account address and assets will stay the same.
+  [Simple Account's](https://github.com/eth-infinitism/account-abstraction/blob/cc3893bcaf2272c163ce89d5eb9eadb8e6b52db7/contracts/accounts/SimpleAccount.sol#L22) support [`upgradeToAndCall`](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/4e7e6e54daedf091d91f2f2df024cbb8f253e2ef/contracts/proxy/utils/UUPSUpgradeable.sol#L86) implemented by OpenZeppelin [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable) contract. This allows you to upgrade from Simple Account to Light Account without changing the wallet address. Using `upgradeToAndCall` updates the underlying implementation contract on the account while the account address and assets stay the same.
 
   You can call `upgradeToAndCall` on the Simple Account with these params:
 
@@ -64,25 +64,24 @@ slug: wallets/resources/faqs
   * `data`: encoded version of the `initialize` function with `anOwner` parameter set to the owner on the account, usually the same owner as what the account used as Simple Account.
     * In solidity (foundry) you can use abi.encodeCall and in viem you can use [encodeFunctionData](https://github.com/alchemyplatform/light-account/tree/develop/deployments)
 
-  It is very important that the `initialize` step is encoded correctly to ensure the account does not get into a risky state where someone else could call initialize on it with one's signer and take control of your account. You can call `owner()` on the account after the upgrade to ensure it is assigned correctly.
+  Encode the `initialize` step correctly to ensure the account does not get into a risky state where someone else could call initialize on it with their own key and take control of your account. Call `owner()` on the account after the upgrade to verify it is assigned correctly.
 
-  This can be called on the existing smart contract account by sending a user operation that calls `execute` (or `executeBatch`) and has that call `upgradeToAndCall` (the same way you would make the account send calls to other addresses).
+  This can be called on the existing smart wallet by sending a user operation that calls `execute` (or `executeBatch`) and has that call `upgradeToAndCall` (the same way you would make the account send calls to other addresses).
 </Accordion>
 
-## Submitting `UserOperation`s
+## Submitting transactions
 
 ### How does the speed of `UserOperation`s compare to normal transactions?
 
 <Accordion title="Answer">
   If the `UserOperation` (meta-transaction for 4337 accounts) is correctly
-  priced and submitted a few hundred milliseconds prior to a new block getting
-  created, it will typically get placed in the next block. This is because the
-  Bundler needs time to create/propagate its transaction. You can think of it as
-  1 extra block time worth of latency, but we are working towards improving this
-  latency.
+  priced and submitted a few hundred milliseconds before a new block gets
+  created, it will typically land in the next block. The transaction sender
+  needs time to create/propagate its transaction. You can think of it as
+  1 extra block time worth of latency.
 </Accordion>
 
-### Why am I seeing a delay in landing `UserOperation`s on-chain?
+### Why am I seeing a delay in landing `UserOperation`s onchain?
 
 <Accordion title="Answer">
   This can happen when `UserOperation`s (UOs) become underpriced, frequently due to fee market movement between when gas and fees are estimations and when the UO is actually submitted.
@@ -96,41 +95,40 @@ slug: wallets/resources/faqs
 
 <Accordion title="Answer">
   Right now, `UserOperation`s are sent to a private mempool for all networks
-  other than Polygon, where there is no way to do this. We are actively involved
-  in proposals for a peer-to-peer mempool standard.
+  other than Polygon, where there is no way to do this.
 </Accordion>
 
-## Gas Estimation
+## Gas estimation
 
-### How does gas estimation for 4337 smart contract accounts work?
+### How does gas estimation for 4337 smart wallets work?
 
 <Accordion title="Answer">
-  Our bundler estimates gas and submits `UserOperation`s (UOs) under the hood of the aa-sdk. Our gas estimations are just that, estimations that optimize for UOs landing on chain, and you may need to adjust gas limits based on your needs using [overrides](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/types.ts#L97).
+  The transaction sender estimates gas and submits `UserOperation`s (UOs) under the hood of the aa-sdk. Gas estimations optimize for UOs landing onchain, and you may need to adjust gas limits based on your needs using [overrides](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/types.ts#L97).
 
-  Learn more about gas estimation and how it is implemented in our [Bundler](https://www.alchemy.com/blog/erc-4337-gas-estimation).
+  Learn more about gas estimation and how it is implemented in the [transaction sender blog post](https://www.alchemy.com/blog/erc-4337-gas-estimation).
 
-  There are many nuances and edge cases that our bundler considers especially for L2’s. Learn more [here](https://www.alchemy.com/blog/l2-gas-and-signature-aggregators).
+  There are many nuances and edge cases that the transaction sender considers especially for L2s. Learn more in the [L2 gas and signature aggregators blog post](https://www.alchemy.com/blog/l2-gas-and-signature-aggregators).
 
-  We recommend adding error handling when sending a UO to handle potential gas and fee changes due to market movement. Learn more about [frequent errors](#common-errors).
+  Add error handling when sending a UO to handle potential gas and fee changes due to market movement. Learn more about [frequent errors](#common-errors).
 </Accordion>
 
-## Gas Manager
+## Gas sponsorship
 
 ### What tiers support gas sponsorship?
 
 <Accordion title="Answer">
   Gas sponsorship is available on testnet for all tiers. For support on mainnet,
   you must be on a paying tier (i.e. Growth tier and above). Learn more about
-  our different pricing tiers
+  the different pricing tiers
   [here](https://alchemy.com/docs/reference/gas-manager-coverage-api-pricing#fee-logic).
 </Accordion>
 
 ### How is gas sponsored? Do I need to fund the Gas Manager?
 
 <Accordion title="Answer">
-  We front the gas for your application and put the USD equivalent on your bill
+  Gas is fronted for your application and the USD equivalent appears on your bill
   at the end of the month. No need to worry about pre-funding the Gas Manager or
-  conversions, we’ve got you covered! You can follow [this guide](/docs/wallets/transactions/sponsor-gas) for
+  conversions. Follow [the gas sponsorship guide](/docs/wallets/transactions/sponsor-gas) for
   more details on how to sponsor `UserOperation`s.
 </Accordion>
 
@@ -141,15 +139,15 @@ slug: wallets/resources/faqs
   [here](https://alchemy.com/docs/reference/gas-manager-coverage-api-pricing#fee-logic).
 </Accordion>
 
-### Do you support ERC-20 or stablecoin paymasters?
+### Is paying gas with ERC-20 tokens or stablecoins supported?
 
 <Accordion title="Answer">
-  Yes. Gas Manager includes an ERC-20 paymaster so your users can pay fees with
+  Yes. Gas Manager includes an ERC-20 paymaster contract so your users can pay fees with
   tokens like USDC. See [How to pay gas with any
   token](/docs/reference/how-to-pay-gas-with-any-token) for details.
 </Accordion>
 
-### How is the Gas Manager protected from DDOS attacks?
+### How is the Gas Manager protected from DDoS attacks?
 
 <Accordion title="Answer">
   In your Gas Manager policy, you can configure spending rules per address, per
@@ -157,7 +155,7 @@ slug: wallets/resources/faqs
   [here](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules).
 </Accordion>
 
-### How to Authenticate Users and Verify User Sessions on the Backend?
+### How to authenticate users and verify user sessions on the backend
 
 <Accordion title="Answer">
   After a user logs in with Smart Wallets on the frontend, you might want to verify their identity on your backend to authorize actions or access.
@@ -168,10 +166,10 @@ slug: wallets/resources/faqs
 
   ### Option 1: SIWE [Sign-In With Ethereum](https://eips.ethereum.org/EIPS/eip-4361)
 
-  Use this flow when you just need to verify user sessions created by EOAs and Smart Contract Accounts (SCAs) via Smart Wallets.
+  Use this flow to verify user sessions created by EOAs and smart wallets via Smart Wallets.
 
-  For EOAs, Smart Wallets doesn’t create a session on the client side and `stampWhoAmI` isn’t available, so we can use SIWE. This can be used for verifying EOA and SCA flows.
-  You can create a [SIWE message](https://docs.login.xyz/sign-in-with-ethereum/quickstart-guide/creating-siwe-messages) with all the necessary info to get server side (address, chainId, etc).
+  For EOAs, Smart Wallets doesn’t create a session on the client side and `stampWhoAmI` isn’t available, so use SIWE instead. This works for verifying both EOA and SCA flows.
+  Create a [SIWE message](https://docs.login.xyz/sign-in-with-ethereum/quickstart-guide/creating-siwe-messages) with all the necessary info to get server side (address, chainId, etc).
 
   1. The backend provides a nonce to the frontend.
   2. The user signs a SIWE message with their wallet (EOA or SCA).
@@ -190,30 +188,30 @@ slug: wallets/resources/faqs
 
   ***
 
-  ### Option 2: `stampWhoAmI` + `whoami` (Only when using Alchemy signer)
+  ### Option 2: `stampWhoAmI` + `whoami` (only when using the authentication service)
 
-  Use this flow when you just need to verify user sessions created by SCAs via Smart Wallets.
+  Use this flow when you need to verify user sessions created by SCAs via Smart Wallets.
 
   1. The frontend generates a stamped request using [signer.inner.stampWhoAmI](https://www.alchemy.com/docs/wallets/reference/account-kit/signer/classes/BaseSignerClient#stampwhoami).
   2. It sends the stamp to your backend.
-  3. The backend calls Alchemy's [/signer/v1/whoami](https://www.alchemy.com/docs/node/smart-wallets/signer-api-endpoints/signer-api-endpoints/auth-user) endpoint to verify the identity.
-  4. If you need to make subsequent requests, you can also avoid calling the whoami endpoint on every request. To do so, after verifying the `whoami`, the backend can issue its own session token (e.g. an HTTP-only cookie or access token). If the token is present, you can safely skip the `whoami` check.
+  3. The backend calls the [/signer/v1/whoami](https://www.alchemy.com/docs/node/smart-wallets/signer-api-endpoints/signer-api-endpoints/auth-user) endpoint to verify the identity.
+  4. If you need to make subsequent requests, you can avoid calling the whoami endpoint on every request. After verifying the `whoami`, the backend can issue its own session token (e.g. an HTTP-only cookie or access token). If the token is present, you can safely skip the `whoami` check.
 
   **Why this approach?**
 
   * No user signature required
   * **Cheaper** than flows requiring a signed message
-  * Easily retrieve user's login info, such email and address if available
+  * Retrieve user's login info, such as email and address if available
 </Accordion>
 
-## Common Errors
+## Common errors
 
 ### Replacement underpriced: `"code":-32602,"message":"replacement underpriced","data"...`
 
 <Accordion title="Answer">
   Replacement underpriced errors occur when you attempt to send another user
   operation (UO) from the same sender before the pending user operation has been
-  confirmed on-chain. Please follow recommendations
+  confirmed onchain. Please follow recommendations
   [here](https://www.alchemy.com/support/how-to-fix-replacement-underpriced-errors).
 </Accordion>
 
@@ -222,33 +220,31 @@ slug: wallets/resources/faqs
 <Accordion title="Answer">
   Please follow [this](https://www.alchemy.com/support/best-practice-guide-on-how-to-implement-user-operation-retries) guide for best practices on implementing waiting and retries.
 
-  This error indicates that your User Operation has not yet landed on chain (assuming it was accepted by the bundler). We recommend you 1) continue waiting or 2) drop and replace and 3) add multiplier to gas esitmates to increase the priority of your transaction.
+  This error indicates that your User Operation has not yet landed onchain (assuming it was accepted by the transaction sender). 1) Continue waiting or 2) drop and replace and 3) add a multiplier to gas estimates to increase the priority of your transaction.
 </Accordion>
 
 ### Invalid policy ID: `{ code: -32602, message: 'Invalid Policy ID' }`
 
 <Accordion title="Answer">
   Gas Manager policies can only be tied to one app. Make sure you are using the
-  API Key that is associated with the app the Gas Manager policy is configured
+  API key that is associated with the app the Gas Manager policy is configured
   for, or create a new policy for the app you are using.
 </Accordion>
 
 ### Precheck failed: `{ code: -3200, message: 'precheck failed: ...' }`
 
 <Accordion title="Answer">
-  Precheck failed errors are often related to gas and/or fees. Our Bundler follows standard [ERC 4337](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4337.md#client-behavior-upon-receiving-a-useroperation) implementation for gas and fee checks in order to 1) ensure your `UserOperation`s (UOs) land on chain and to 2) protect the Bundler from potential attacks in order to support scalability.
+  Precheck failed errors are often related to gas and/or fees. The transaction sender follows the standard [ERC-4337](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-4337.md#client-behavior-upon-receiving-a-useroperation) implementation for gas and fee checks to 1) ensure your `UserOperation`s (UOs) land onchain and 2) protect the transaction sender from potential attacks to support scalability.
 
-  These errors are often related to market movement between the time when gas and fees are estimated and the time when UOs are submitted to the bundler. This fluctuation in the market is especially variant on testnet. To ensure your UO is included in a block, we currently reject sending any UOs that are underpriced compared to the network rate .
+  These errors are often related to market movement between the time when gas and fees are estimated and the time when UOs are submitted to the transaction sender. This fluctuation in the market is especially variant on testnet. To ensure your UO is included in a block, any UOs that are underpriced compared to the network rate are rejected.
 
-  To handle these errors, we recommend you use our [override fields](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/types.ts#L97) to increase buffers on top of our estimates and implement retry mechanisms as needed.
-
-  Our gas and fee estimations are just that, estimations, but we are always working to improve these estimates!
+  To handle these errors, use the [override fields](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/types.ts#L97) to increase buffers on top of the estimates and implement retry mechanisms as needed.
 </Accordion>
 
 ### Total execution gas limit exceeded: `{ code: -3202, message: 'precheck failed: total execution gas is X but must be at most 10000000}`
 
 <Accordion title="Answer">
-  Currently our Bundler allows max 10M gas in aggregate between
+  Currently the transaction sender allows max 10M gas in aggregate between
   `preVerificationGas`, `verificationGasLimit`, and `callGasLimit`. To reduce
   the gas needed, try reducing the size of your call data and/or sending your
   call data in multiple `UserOperation`s rather than one.
@@ -268,7 +264,7 @@ slug: wallets/resources/faqs
 
 <Accordion title="Answer">
   This revert warning message is expected when using Modular Account v1. In
-  MAv1, we have a checker that enforces that calls made using the account (from
+  MAv1, a checker enforces that calls made using the account (from
   `execute` or `executeBatch`) don't target plugin contracts. When the contract
   being called to isn't a plugin (which is usually the case), the checker
   reverts, and it shows this message in explorers.
@@ -277,20 +273,19 @@ slug: wallets/resources/faqs
 ### `ERR_BLOCKED_BY_CLIENT` when loading the page
 
 <Accordion title="Answer">
-  This message is usually triggered by browser ad‑blocking tools that stop our
+  This message is usually triggered by browser ad-blocking tools that stop
   analytics scripts from running. Analytics collection will be blocked, but the
-  Smart Wallet functionality will continue to work normally.
+  Smart Wallet functionality continues to work normally.
 </Accordion>
 
 ### `User operation must include a paymaster for sponsorship` / `This network requires sponsored operations`
 
 <Accordion title="Answer">
   These errors show up when you submit `UserOperation`s on Polygon PoS using the
-  bundler without a paymaster, or with a non-Alchemy paymaster address. Polygon
-  PoS now requires sponsored operations through an Alchemy paymaster. This is a
-  new requirement, so double-check that your request includes an Alchemy
-  paymaster address and that your bundler config is pointing at Alchemy's
-  paymaster.
+  transaction sender without a paymaster contract, or with a non-compatible paymaster contract address. Polygon
+  PoS now requires sponsored operations through a compatible paymaster contract. Double-check that your request includes the correct
+  paymaster contract address and that your config points to the right
+  paymaster contract.
 
   You can confirm the requirement and see the latest details in the Polygon PoS
   chain reference:
@@ -300,28 +295,29 @@ slug: wallets/resources/faqs
   [support@alchemy.com](mailto:support@alchemy.com).
 </Accordion>
 
-## Other Support
+## Other support
 
 ### Does the aa-sdk repo support React Native?
 
-No, the `aa-sdk` repo does not offically support React Native. **It is on our radar!**
+No, the `aa-sdk` repo does not officially support React Native.
 
-Currently we have a strong dependency on Viem, which requires several global features, such as `TextEncoder` and `crypto`, that are absent in React Native's environment. See more about [Viem's capability here](https://viem.sh/docs/compatibility).
+Currently there is a strong dependency on Viem, which requires several global features, such as `TextEncoder` and `crypto`, that are absent in React Native’s environment. See more about [Viem’s capability](https://viem.sh/docs/compatibility).
 
-However, we have created a small PoC using Expo that you can find [here](https://github.com/alchemyplatform/aa-sdk-rn-expo/tree/main). For more information on how to use Smart Wallets within a React Native application see [the guide](/docs/wallets/react-native/overview).
+However, a small PoC using Expo is available [here](https://github.com/alchemyplatform/aa-sdk-rn-expo/tree/main). For more information on how to use Smart Wallets within a React Native application see [the guide](/docs/wallets/react-native/overview).
 
-### How should I protect my api key and policy id in the frontend?
+### How do I protect my API key and policy id in the frontend?
 
-**Why is it important to protect my API key and Policy ID?**
+**Why is it important to protect your API key and Policy ID?**
 
-To prevent unauthorized use or abuse of your API key and Policy ID, it’s critical to avoid exposing them on the frontend. If these credentials are exposed, they could be misused, leading to unintended usage or sponsorship.
+To prevent unauthorized use or abuse of your API key and Policy ID, avoid exposing them on the frontend. If these credentials are exposed, they could be misused, leading to unintended usage or sponsorship.
 
-Gas sponsorship requests will only succeed if both the Policy ID and the corresponding API key are used together. While protecting your API key alone renders the Policy ID useless to malicious actors, the best security practice is to protect both.
+Gas sponsorship requests only succeed if both the Policy ID and the corresponding API key are used together. While protecting your API key alone renders the Policy ID useless to malicious actors, the best security practice is to protect both.
 
-**How can I protect my API Key?**
-We recommend moving your API key to the backend by routing to a proxy. You can see an [example](https://github.com/alchemyplatform/aa-sdk/blob/ef7303333830df53a9106ba37ce015675a276cd9/examples/ui-demo/src/app/config.tsx#L74) of setting up a transport to a backend rpcUrl in our demo app.
+**How to protect your API key**
 
-For more information on how to secure your API key, refer to [this guide](https://alchemy.com/docs/best-practices-for-key-security-and-management).
+Move your API key to the backend by routing to a proxy. See an [example](https://github.com/alchemyplatform/aa-sdk/blob/ef7303333830df53a9106ba37ce015675a276cd9/examples/ui-demo/src/app/config.tsx#L74) of setting up a transport to a backend rpcUrl in the demo app.
+
+For more information on how to secure your API key, refer to the [key security and management guide](https://alchemy.com/docs/best-practices-for-key-security-and-management).
 
 <Warning>
   If you have logic in your proxy that restricts certain paths, ensure that the
@@ -333,11 +329,11 @@ For more information on how to secure your API key, refer to [this guide](https:
   are preserved when forwarding.
 </Warning>
 
-**How can I protect my Policy ID?**
+**How to protect your Policy ID**
 
-Protecting your Policy ID requires some custom work, but it’s similar to safeguarding any key on the backend. One solution is to use a proxy server that holds both the API key and Policy ID. In the frontend, when creating an Alchemy client, pass the proxy server URL as the RPC URL instead of a public Alchemy URL.
+Protecting your Policy ID requires some custom work, but it’s similar to safeguarding any key on the backend. One solution is to use a proxy server that holds both the API key and Policy ID. In the frontend, when creating a client, pass the proxy server URL as the RPC URL instead of a public URL.
 
-Additionally, you'll need to implement custom code on your proxy server to limit gas sponsorship requests. This could include rules that make sense for your app, such as limiting gas fees, restricting certain contract or method calls, or implementing limits based on IP addresses or CAPTCHA verification.
+Additionally, implement custom code on your proxy server to limit gas sponsorship requests. This could include rules that make sense for your app, such as limiting gas fees, restricting certain contract or method calls, or implementing limits based on IP addresses or CAPTCHA verification.
 
 ### Why are my users getting logged out unexpectedly?
 
@@ -349,7 +345,7 @@ By default, authenticated sessions using `AlchemyWebSigner` are stored in `local
 
 ***
 
-#### ✅ Solution: Extend or configure session duration
+#### Solution: extend or configure session duration
 
 You can customize the session timeout by passing a `sessionConfig` object to the `createConfig` method:
 
@@ -362,15 +358,15 @@ createConfig({
 })
 ```
 
-👉 [Reference: createConfig](https://www.alchemy.com/docs/wallets/reference/account-kit/react/functions/createConfig)
+[Reference: createConfig](https://www.alchemy.com/docs/wallets/reference/account-kit/react/functions/createConfig)
 
 ***
 
-#### 🧪 Other common causes of session ending:
+#### Other common causes of session ending
 
 * **Server-Side Rendering (SSR) misconfigured**
   If you're using SSR and haven't configured the provider correctly, session state can reset on the client.
-  👉 [Enable SSR and pass initial params →](https://www.alchemy.com/docs/wallets/troubleshooting/ssr)
+  [Enable SSR and pass initial params](https://www.alchemy.com/docs/wallets/troubleshooting/ssr)
 
 * **Ad blockers**
   Some ad blockers (especially those with aggressive cookie or storage policies) can interfere with localStorage or SDK requests, causing unexpected logouts.
@@ -380,7 +376,7 @@ createConfig({
 
 ***
 
-#### 🔁 Debugging Checklist
+#### Debugging checklist
 
 If you're seeing repeated or sporadic logouts in production, test the behavior across:
 

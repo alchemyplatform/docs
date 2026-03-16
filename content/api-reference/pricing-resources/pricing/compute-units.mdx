@@ -9,20 +9,20 @@ slug: reference/compute-units
 
 # What are Compute Units?
 
-Compute units are a measure of the total computational resources your apps are using on Alchemy. You can think of this as how you would pay Amazon for compute usage on AWS. Some queries are lightweight and fast to run (e.g., eth\_blockNumber) and others can be more intense (e.g., large eth\_getLogs queries). Each method is assigned a quantity of compute units, derived from global average durations of each method.
+Compute units measure the total computational resources your apps use on Alchemy. Think of this as how you'd pay Amazon for compute usage on AWS. Some queries are lightweight and fast to run (e.g., eth\_blockNumber) and others can be more intense (e.g., large eth\_getLogs queries). Each method is assigned a quantity of compute units, derived from global average durations of each method.
 
-# Why use Compute Units?
+# Why use compute units?
 
-We're obsessed with providing the most developer-friendly experience across our platform, and this doesn't stop at pricing. Pricing on compute units allows us to provide developers with the most fair and transparent pricing possible. No more over-paying for simple requests, you only pay for what you use, period.
+We're committed to providing the most developer-friendly experience across our platform, and this doesn't stop at pricing. Pricing on compute units lets us provide the most fair and transparent pricing possible. No more overpaying for simple requests -- you only pay for what you use.
 
-# What are CUPS (Compute Units Per Second)?
+# What are CUPS (compute units per second)?
 
-Each application has reserved dedicated [Throughput](/docs/reference/throughput), measured in Compute Units per Second. Applications can greatly exceed their dedicated throughputs based off of elastic demand in our system.
+Each application has reserved dedicated [Throughput](/docs/reference/throughput), measured in Compute Units per Second. Applications can greatly exceed their dedicated throughputs based on elastic demand in our system.
 
 Since each request is weighted differently, we base this on the total compute units used rather than the number of requests. For example, if you send one eth\_blockNumber (10 CUs), two eth\_getLogs (75 CUs), and two eth\_call(26 CUs) requests in the same second, you will have a total of 212 CUPS. Note that even if your application limit is 200 CUPS, this throughput will likely be allowed still by the system.
 
 If you are experiencing throughput errors, or want create a more robust and reliable experience for your users, we recommend [implementing retries](/docs/reference/throughput).
 
-# What are Throughput Compute Units?
+# What are throughput compute units?
 
 Throughput Compute Units define how often you can run the request within your throughput limits. For example, a 500 CU per second limit would be able to run 50 requests per second that cost 10 throughput CUs. The actual cost of the method is still reflected by the CU amount while the threshold CU allows you to increase the number of requests before you hit your rate limit. If there is no throughput CU listed, it defaults to the actual CU cost.

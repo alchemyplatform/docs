@@ -1,19 +1,19 @@
 ---
 title: Cross-chain swaps (Alpha)
 slug: wallets/transactions/cross-chain-swap-tokens
-description: Convert tokens across different blockchain networks in a single transaction using Alchemy Smart Wallets, with gas sponsorship support.
+description: Convert tokens across different blockchain networks in a single transaction using Smart Wallets, with gas sponsorship support.
 ---
 
 Cross-chain swaps let you convert tokens across different blockchain networks in a single transaction. They're built natively into Smart Wallets and you can integrate in minutes.
 
-Cross-chain swaps work just like any other Smart Wallet transaction, so you can sponsor gas to do gasless swaps, or pay for gas in an ERC-20 token.
+Cross-chain swaps work like any other Smart Wallet transaction, so you can sponsor gas to do gasless swaps, or pay for gas in an ERC-20 token.
 
 <Tip>
-  Cross-chain swaps are in alpha. Note that there may be changes in the future
-  to simplify the endpoint/sdk. We will let you know if/when that happens.
+  Cross-chain swaps are in alpha. There may be changes in the future
+  to simplify the endpoint/sdk. Updates will be communicated if/when that happens.
 </Tip>
 
-# The Cross-chain Swap flow
+# The cross-chain swap flow
 
 ## **Flow**
 
@@ -49,7 +49,7 @@ When requesting a cross-chain swap quote, you can specify either a `fromAmount` 
 
 Before you begin, ensure you have:
 
-* An [Alchemy API Key](https://dashboard.alchemy.com/apps)
+* An [Alchemy API key](https://dashboard.alchemy.com/apps)
 * If you're sponsoring gas, then a [Gas Manager](https://dashboard.alchemy.com/gas-manager/policy/create) policy
 * A small amount of tokens for testing (~$1 worth is enough!)
   * **Important**: You'll need to send these tokens to your smart wallet address to be able to swap!
@@ -83,7 +83,7 @@ Cross-chain swaps typically take longer than single-chain swaps due to the need 
 
 ## How do you encode values?
 
-Values are simply passed as hexadecimal strings. The Swap API doesn't add complexity to consider decimals, so 0x01 is always the smallest amount of a given asset.
+Values are passed as hexadecimal strings. The Swap API doesn't add complexity to consider decimals, so 0x01 is always the smallest amount of a given asset.
 1 ETH, or DAI (18 decimals) is `0xDE0B6B3A7640000`
 1 USDC (6 decimals) is `0xF4240`
 This removes any ambiguity— if it's numerical, it's a hex.
@@ -99,6 +99,6 @@ Cross-chain swaps may have additional status codes beyond standard transaction s
 * 120: Cross-chain in progress
 * 410: Cross-chain refund
 
-## When is a CallId returned from `wallet_requestQuote_v0`?
+## When is a callId returned from `wallet_requestQuote_v0`?
 
-Any time you’re requesting a cross-chain quote via `wallet_requestQuote_v0` , a `callId` is returned. This `callId` includes important data for cross-chain tracking. You can use this just like any other `callId` in `wallet_getCallsStatus`!
+Any time you request a cross-chain quote via `wallet_requestQuote_v0`, a `callId` is returned. This `callId` includes important data for cross-chain tracking. Use this like any other `callId` in `wallet_getCallsStatus`.
