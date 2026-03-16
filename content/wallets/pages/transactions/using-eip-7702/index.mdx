@@ -4,11 +4,11 @@ description: Understanding how Smart Wallets use EIP-7702
 slug: wallets/transactions/using-eip-7702
 ---
 
-Smart Wallets use [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) by default to give you access to all Smart Wallet capabilities including gas sponsorship, batching, and more - while keeping the same address.
+[EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) is enabled by default, giving you access to all Smart Wallet capabilities including gas sponsorship, batching, and more - while keeping the same address.
 
 ## How it works
 
-EIP-7702 enables EOAs (Externally Owned Accounts) to delegate control to Smart Wallets that can execute code directly from their addresses. When using Transaction APIs:
+EIP-7702 enables EOAs (Externally Owned Accounts) to delegate to a smart account that can execute code directly from their addresses. When using Transaction APIs:
 
 * Use your owner address directly as the account address - no need to call `wallet_requestAccount` first
 * Transaction APIs automatically detect whether delegation via EIP-7702 is needed
@@ -24,10 +24,10 @@ For implementation details, see the [Send Transactions](/docs/wallets/transactio
 
 If you need to use a traditional wallet instead of EIP-7702, opt out of the default 7702 behavior by calling `wallet_requestAccount` first.
 
-When you call `wallet_requestAccount` with an owner address, it creates a dedicated wallet address. Using this address (instead of your owner address) in subsequent API calls bypasses 7702 mode.
+When you call `wallet_requestAccount` with an owner address, it creates a dedicated smart account address. Using this address (instead of your owner address) in subsequent API calls bypasses 7702 mode.
 
 <Note>
-If you've already used an owner address in 7702 mode (e.g. by calling `wallet_prepareCalls` with the owner address), specify `creationHint: { accountType: "sma-b" }` when calling `wallet_requestAccount` to create a separate wallet for that owner.
+If you've already used an owner address in 7702 mode (e.g. by calling `wallet_prepareCalls` with the owner address), specify `creationHint: { accountType: "sma-b" }` when calling `wallet_requestAccount` to create a separate smart account for that owner.
 </Note>
 
 **When to use non-7702 mode:**
@@ -136,7 +136,7 @@ If you've already used an owner address in 7702 mode (e.g. by calling `wallet_pr
 <Accordion title="Delegation-only (smart account upgrade) flows">
   You do not need to send a dummy or no-op transaction to perform delegation.
 
-  If an account needs to upgrade to a Smart Wallet:
+  If an account needs to upgrade to a smart account:
 
   * Call `wallet_prepareCalls` with your intended calls (or an empty call set)
   * Wallet APIs detect that delegation is required

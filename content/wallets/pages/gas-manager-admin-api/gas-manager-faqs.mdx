@@ -148,12 +148,12 @@ On testnets, since token prices are effectively $0, a reference token is used fo
 
 ### What are the different ERC-20 transfer modes supported by the paymaster contract?
 
-To allow the paymaster contract to transfer ERC-20 tokens from the user’s wallet, the user must first approve (`approve()`) the paymaster contract to spend tokens on their behalf. This typically requires a separate transaction, either paid for by the user with the native gas token or sponsored by the app builder.
+To allow the paymaster contract to transfer ERC-20 tokens from the user’s smart account, the user must first approve (`approve()`) the paymaster contract to spend tokens on their behalf. This typically requires a separate transaction, either paid for by the user with the native gas token or sponsored by the app builder.
 
 To eliminate the need for a separate approval transaction and improve UX, the paymaster contract supports two ERC-20 transfer modes, configurable at the policy level:
 
 1. \[Recommended] Transfer ERC-20 tokens *after* transaction execution:
-   1. The gas is fronted using the native gas token and ERC-20 tokens are transferred from the user’s wallet to your receiving address after the transaction execution.
+   1. The gas is fronted using the native gas token and ERC-20 tokens are transferred from the user’s smart account to your receiving address after the transaction execution.
    2. No upfront allowance is required. You can batch the approval with the transaction, enabling the user to allow the paymaster contract to spend the ERC-20 token on their behalf (`approve()`) without a separate tx -- greatly improving UX.
    3. If the post-execution ERC-20 transfer fails, the transaction reverts, but you remain liable for the gas costs.
    4. You can run offchain simulation to verify the approval is likely to succeed, but this does not guarantee onchain success.
