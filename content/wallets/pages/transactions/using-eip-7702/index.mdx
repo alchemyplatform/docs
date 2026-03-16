@@ -8,7 +8,7 @@ slug: wallets/transactions/using-eip-7702
 
 ## How it works
 
-EIP-7702 enables EOAs (Externally Owned Accounts) to delegate to a smart account that can execute code directly from their addresses. When using Transaction APIs:
+EIP-7702 enables EOAs (Externally Owned Accounts) to delegate to a smart wallet that can execute code directly from their addresses. When using Transaction APIs:
 
 * Use your owner address directly as the account address - no need to call `wallet_requestAccount` first
 * Transaction APIs automatically detect whether delegation via EIP-7702 is needed
@@ -24,17 +24,17 @@ For implementation details, see the [Send Transactions](/docs/wallets/transactio
 
 If you need to use a traditional wallet instead of EIP-7702, opt out of the default 7702 behavior by calling `wallet_requestAccount` first.
 
-When you call `wallet_requestAccount` with an owner address, it creates a dedicated smart account address. Using this address (instead of your owner address) in subsequent API calls bypasses 7702 mode.
+When you call `wallet_requestAccount` with an owner address, it creates a dedicated smart wallet address. Using this address (instead of your owner address) in subsequent API calls bypasses 7702 mode.
 
 <Note>
-If you've already used an owner address in 7702 mode (e.g. by calling `wallet_prepareCalls` with the owner address), specify `creationHint: { accountType: "sma-b" }` when calling `wallet_requestAccount` to create a separate smart account for that owner.
+If you've already used an owner address in 7702 mode (e.g. by calling `wallet_prepareCalls` with the owner address), specify `creationHint: { accountType: "sma-b" }` when calling `wallet_requestAccount` to create a separate smart wallet for that owner.
 </Note>
 
 **When to use non-7702 mode:**
 * Backwards compatibility with existing wallets
 * Using chains that don't yet support EIP-7702
 * Using an owner that doesn't support signing EIP-7702 authorizations
-* Specific requirements for smart account architecture
+* Specific requirements for smart wallet architecture
 
 <Tabs>
   <Tab title="SDK">
@@ -133,10 +133,10 @@ If you've already used an owner address in 7702 mode (e.g. by calling `wallet_pr
   * [Viem](https://viem.sh/docs/eip7702/signAuthorization)
 </Accordion>
 
-<Accordion title="Delegation-only (smart account upgrade) flows">
+<Accordion title="Delegation-only (smart wallet upgrade) flows">
   You do not need to send a dummy or no-op transaction to perform delegation.
 
-  If an account needs to upgrade to a smart account:
+  If an account needs to upgrade to a smart wallet:
 
   * Call `wallet_prepareCalls` with your intended calls (or an empty call set)
   * Wallet APIs detect that delegation is required
@@ -180,7 +180,7 @@ If you've already used an owner address in 7702 mode (e.g. by calling `wallet_pr
   To remove a delegation and return an account to a pure EOA, you must **re-delegate to the zero address**:
   `0x0000000000000000000000000000000000000000`.
 
-  Undelegations cannot be relayed, so you must submit this transaction directly from the account (with enough native gas token to cover fees). If you are re-delegating to another smart account, the transaction can be relayed.
+  Undelegations cannot be relayed, so you must submit this transaction directly from the account (with enough native gas token to cover fees). If you are re-delegating to another smart wallet, the transaction can be relayed.
 
   To undelegate:
 

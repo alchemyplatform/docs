@@ -19,7 +19,7 @@ All of the v3 packages have been renamed or removed. The new packages are as fol
 * `@alchemy/aa-accounts` -> `@account-kit/smart-contracts`
 * `@alchemy/aa-signers` -> removed
 
-### Smart account authentication
+### Smart wallet authentication
 
 The `@alchemy/aa-signers` package has been deprecated. The authentication providers in that package are still compatible with v4, but they will not receive future support and the interfaces are not guaranteed to work with future versions of the SDK.
 If you want to integrate a 3rd party authentication provider, it is straightforward if the provider exposes an EIP-1193 interface. See [this guide](/docs/wallets/third-party/signers/privy).
@@ -27,7 +27,7 @@ If you want to integrate a 3rd party authentication provider, it is straightforw
 <Warning>
   All authentication providers in the SDK are still supported!
 
-  `@account-kit/core` and `@account-kit/react` are the only packages that are opinionated about which authentication provider you can attach to a smart account. However, if you use `@aa-sdk/*` or `@account-kit/infra` with `@account-kit/smart-contracts`, you can
+  `@account-kit/core` and `@account-kit/react` are the only packages that are opinionated about which authentication provider you can attach to a smart wallet. However, if you use `@aa-sdk/*` or `@account-kit/infra` with `@account-kit/smart-contracts`, you can
   use the guide above to integrate with any authentication provider of your choice.
 </Warning>
 
@@ -39,7 +39,7 @@ For Smart Account Clients, the `create*AlchemyClient` methods have been updated 
 
 The `alchemyFeeEstimator` and `alchemyUserOperationSimulator` middleware methods now no longer take in a `ClientWithAlchemyMethods` (returned by `createAlchemyPublicRpcClient`) and instead take in an `AlchemyTransport` as well.
 
-The `AlchemyTransport` is a type of `viem` transport that makes it easier to configure your communication with Alchemy RPC. It supports splitting traffic between Alchemy's smart account infra and other Node providers (if needed). The `AlchemyTransport` has been added to `@account-kit/infra` and is exported as `alchemy`.
+The `AlchemyTransport` is a type of `viem` transport that makes it easier to configure your communication with Alchemy RPC. It supports splitting traffic between Alchemy's smart wallet infra and other Node providers (if needed). The `AlchemyTransport` has been added to `@account-kit/infra` and is exported as `alchemy`.
 
 Creating a config with `@account-kit/core` or `@account-kit/react` has been updated to accept an `AlchemyTransport` and the parameters of `createConfig` have been simplified as a result. You will now need to replace your `rpcUrl` or `apiKey` params with `transport: alchemy({...})`.
 

@@ -10,23 +10,23 @@ slug: wallets/resources/faqs
   commonly asked questions and support.
 </Warning>
 
-## Smart accounts - Light Account
+## Smart wallets - Light Account
 
 ### Do accounts have the same address across all chains?
 
 <Accordion title="Answer">
-  In almost all cases, yes, you get the same address on all chains as long as the connecting owner address is the same. The deployment address is a function of the owner address, the account implementation (e.g. latest version of Light Account), and the salt (you can optionally specify this). If all three remain the same, the smart account deploys at the same contract address.
+  In almost all cases, yes, you get the same address on all chains as long as the connecting owner address is the same. The deployment address is a function of the owner address, the account implementation (e.g. latest version of Light Account), and the salt (you can optionally specify this). If all three remain the same, the smart wallet deploys at the same contract address.
 
   There are two scenarios where you would get a different contract address:
 
-  1. If you deploy one smart account, then change the owner, then deploy the second account.
-  2. If you upgrade the smart account (e.g. to a new version of Light Account). Updates to this contract are infrequent, so the address will not change often.
+  1. If you deploy one smart wallet, then change the owner, then deploy the second account.
+  2. If you upgrade the smart wallet (e.g. to a new version of Light Account). Updates to this contract are infrequent, so the address will not change often.
 </Accordion>
 
-### How does a smart account get deployed?
+### How does a smart wallet get deployed?
 
 <Accordion title="Answer">
-  Your smart account deploys when the first `UserOperation` (UO) is
+  Your smart wallet deploys when the first `UserOperation` (UO) is
   sent from the account. The first UO must be sent with a non-zero `initCode`.
   aa-sdk handles generation of this `initCode` for you using
   [`getAccountInitCode`](/docs/wallets/reference/aa-sdk/core/functions/toSmartContractAccount).
@@ -66,7 +66,7 @@ slug: wallets/resources/faqs
 
   Encode the `initialize` step correctly to ensure the account does not get into a risky state where someone else could call initialize on it with their own key and take control of your account. Call `owner()` on the account after the upgrade to verify it is assigned correctly.
 
-  This can be called on the existing smart contract account by sending a user operation that calls `execute` (or `executeBatch`) and has that call `upgradeToAndCall` (the same way you would make the account send calls to other addresses).
+  This can be called on the existing smart wallet by sending a user operation that calls `execute` (or `executeBatch`) and has that call `upgradeToAndCall` (the same way you would make the account send calls to other addresses).
 </Accordion>
 
 ## Submitting transactions
@@ -100,7 +100,7 @@ slug: wallets/resources/faqs
 
 ## Gas estimation
 
-### How does gas estimation for 4337 smart accounts work?
+### How does gas estimation for 4337 smart wallets work?
 
 <Accordion title="Answer">
   The transaction sender estimates gas and submits `UserOperation`s (UOs) under the hood of the aa-sdk. Gas estimations optimize for UOs landing onchain, and you may need to adjust gas limits based on your needs using [overrides](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/types.ts#L97).
@@ -166,7 +166,7 @@ slug: wallets/resources/faqs
 
   ### Option 1: SIWE [Sign-In With Ethereum](https://eips.ethereum.org/EIPS/eip-4361)
 
-  Use this flow to verify user sessions created by EOAs and Smart Contract Accounts (SCAs) via Smart Wallets.
+  Use this flow to verify user sessions created by EOAs and smart wallets via Smart Wallets.
 
   For EOAs, Smart Wallets doesn’t create a session on the client side and `stampWhoAmI` isn’t available, so use SIWE instead. This works for verifying both EOA and SCA flows.
   Create a [SIWE message](https://docs.login.xyz/sign-in-with-ethereum/quickstart-guide/creating-siwe-messages) with all the necessary info to get server side (address, chainId, etc).
