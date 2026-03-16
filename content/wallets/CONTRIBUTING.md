@@ -68,8 +68,9 @@ When writing or editing documentation for Alchemy Smart Wallets, follow these co
 
 | Term                       | Usage                 | Context                                  |
 | -------------------------- | --------------------- | ---------------------------------------- |
-| `"Smart Wallets"`          | Primary product term  | Capitalize when referring to the product |
-| `"smart account"`          | Technical term        | Lowercase in general text                |
+| `"Smart Wallets"`          | Primary product term  | Capitalize when referring to the product (e.g., "Smart Wallets supports...") |
+| `"smart wallet"`           | Default term          | Use in high-level docs when referring to the wallet a user creates/owns (e.g., "create a smart wallet", "your smart wallet") |
+| `"smart account"`          | Technical term        | Use only in low-level infra docs or when discussing the onchain account specifically |
 | `"aa-sdk"`                 | Code references only  | Never in prose, only in code blocks      |
 | `"gasless"`                | Payment model         | Not "gas-less"                           |
 | `"onchain"`                | Blockchain reference  | Not "on-chain"                           |
@@ -88,7 +89,7 @@ When writing or editing documentation for Alchemy Smart Wallets, follow these co
 | `"user operation"` or `"user ops"`           | `"transactions"`                              | Never                                   |
 | `"bundler"`                                  | `"sending transactions"`                      | OK in low-level infra docs (`content/wallets/pages/low-level-infra/`) |
 | `"entrypoint"`                               | Avoid entirely                                | Implementation detail                   |
-| `"smart contract account"`                   | `"smart account"`                             | Never                                   |
+| `"smart contract account"`                   | `"smart wallet"`                              | Never                                   |
 | `"Account Kit"`                              | `"Smart Wallets"`                             | Never                                   |
 | `"gas manager"`                              | `"sponsor gas"` or `"pay gas with any token"` | OK in low-level infra docs and as "Gas Manager API" |
 | `"paymaster"`                                | Context-specific replacement                  | OK in low-level infra docs and as "paymaster contract" |
@@ -97,11 +98,19 @@ When writing or editing documentation for Alchemy Smart Wallets, follow these co
 
 ### ⚠️ Important Terminology Exceptions
 
+**"smart wallet" is the default term in high-level docs, "smart account" is for low-level/technical contexts**:
+
+In high-level docs (concepts, guides, quickstarts), use "smart wallet" when referring to the wallet a user creates or interacts with. Reserve "smart account" for low-level infra docs or when discussing the onchain account contract specifically.
+
+* ❌ (in high-level docs) "Create a smart account"
+* ✅ (in high-level docs) "Create a smart wallet"
+* ✅ (in low-level infra docs) "Deploy a smart account to the chain"
+
 **Use specific product/account names when describing their unique features**:
 
-When a feature or capability belongs to a specific account type (e.g., Modular Account v2), refer to it by name rather than the generic "smart account." The generic term is for when you're talking about smart accounts in general, not a specific implementation.
+When a feature or capability belongs to a specific account type (e.g., Modular Account v2), refer to it by name rather than a generic term. The generic term is for when you're talking about smart wallets/accounts in general, not a specific implementation.
 
-* ❌ "Smart account includes a growing library of permission types"
+* ❌ "Your smart wallet includes a growing library of permission types"
 * ✅ "Modular Account v2 includes a growing library of permission types"
 
 **Low-level infrastructure docs can use technical terms**:
