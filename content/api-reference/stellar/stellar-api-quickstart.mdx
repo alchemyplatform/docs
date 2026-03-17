@@ -13,80 +13,48 @@ Stellar is an open-source, decentralized blockchain network designed for fast, l
 
 ## What is the Stellar API?
 
-The Stellar API lets you interact with the Stellar network through a set of JSON-RPC methods. If you've worked with Ethereum's JSON-RPC APIs, the interface will be familiar.
+The Stellar API gives you access to Stellar RPC over JSON-RPC 2.0 through Alchemy. The transport is familiar if you have used JSON-RPC before, but the methods and response shapes are Stellar-specific rather than Ethereum-specific.
 
 ## Get started
 
-### 1. Choose a package manager (npm or yarn)
+### 1. Create a project directory
 
-Pick a package manager for your project's dependencies.
-
-<CodeGroup>
-  ```shell npm
-  # Begin with npm by following the npm documentation
-  # https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
-  ```
-
-  ```shell yarn
-  # For yarn, refer to yarn's installation guide
-  # https://classic.yarnpkg.com/lang/en/docs/install
-  ```
-</CodeGroup>
-
-### 2. Set up your project
-
-Run the following commands to create and initialize your project:
+Create a new directory for your example script:
 
 <CodeGroup>
-  ```shell npm
+  ```shell shell
   mkdir stellar-api-quickstart
   cd stellar-api-quickstart
-  npm init --yes
-  ```
-
-  ```shell yarn
-  mkdir stellar-api-quickstart
-  cd stellar-api-quickstart
-  yarn init --yes
   ```
 </CodeGroup>
 
-This creates a new directory named `stellar-api-quickstart` and initializes a Node.js project within it.
+### 2. Make your first request
 
-### 3. Make your first request
-
-Install Axios to make API requests:
-
-<CodeGroup>
-  ```shell npm
-  npm install axios
-  ```
-
-  ```shell yarn
-  yarn add axios
-  ```
-</CodeGroup>
-
-Create an `index.js` file in your project directory and paste the following code:
+Create an `index.js` file in your project directory and paste the following code. This example uses Node.js's built-in `fetch` API.
 
 <CodeGroup>
   ```javascript index.js
-  const axios = require('axios');
-
-  const url = 'https://stellar-mainnet.g.alchemy.com/v2/${your-api-key}';
+  const apiKey = "your-api-key";
+  const url = `https://stellar-mainnet.g.alchemy.com/v2/${apiKey}`;
 
   const payload = {
-    jsonrpc: '2.0',
+    jsonrpc: "2.0",
     id: 1,
-    method: 'eth_blockNumber',
-    params: []
+    method: "getNetwork",
   };
 
-  axios.post(url, payload)
-    .then(response => {
-      console.log('Latest Block:', response.data.result);
+  fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(JSON.stringify(data, null, 2));
     })
-    .catch(error => {
+    .catch((error) => {
       console.error(error);
     });
   ```
@@ -94,7 +62,9 @@ Create an `index.js` file in your project directory and paste the following code
 
 Replace `your-api-key` with your actual Alchemy API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/signup).
 
-### 4. Run your script
+This request calls `getNetwork`, a Stellar RPC method that returns information such as the network passphrase and protocol version.
+
+### 3. Run your script
 
 Run your script to make a request to the Stellar network:
 
@@ -104,14 +74,14 @@ Run your script to make a request to the Stellar network:
   ```
 </CodeGroup>
 
-You should see the latest block number from Stellar in your console:
-
-<CodeGroup>
-  ```shell shell
-  Latest Block: 0x...
-  ```
-</CodeGroup>
+You should see a JSON-RPC response with a `result` object containing network details such as `passphrase` and `protocolVersion`.
 
 ## Next steps
 
-You've made your first request to the Stellar network. Explore the JSON-RPC methods available on Stellar and start building your dApps.
+You've made your first request to the Stellar network. Next, you can:
+
+- Call `getLatestLedger` to inspect the latest ledger metadata.
+- Call `getLedgerEntries` to read live ledger state such as contract data and other ledger entries.
+- Use the official `stellar-sdk` package when you're ready to build a larger JavaScript application against Stellar RPC and Horizon.
+
+When you move beyond zero-parameter methods like `getNetwork`, keep in mind that Stellar RPC methods use named parameters for requests instead of Ethereum-style positional arrays.
