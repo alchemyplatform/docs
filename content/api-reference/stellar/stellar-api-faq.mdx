@@ -12,22 +12,22 @@ Stellar is an open-source, decentralized blockchain network designed for fast, l
 See the [Stellar API quickstart guide](./stellar-api-quickstart) to start building on Stellar.
 
 ## What is the Stellar API?
-The Stellar API lets you interact with the Stellar mainnet. You can execute transactions, query onchain data, and interact with the Stellar network using the JSON-RPC standard.
+The Stellar API lets you send JSON-RPC 2.0 requests to Alchemy's Stellar RPC endpoint. You can use it to inspect network configuration, read ledger state, fetch transactions, and work with Stellar-specific onchain data.
 
 ## Is Stellar EVM compatible?
-Yes, Stellar is EVM compatible.
+No. Stellar is not an EVM chain. Soroban smart contracts on Stellar are deployed as WebAssembly (Wasm), and Stellar's native smart contract tooling is built around Soroban rather than the EVM.
 
 ## What API does Stellar use?
-Stellar uses the JSON-RPC API standard. This API enables blockchain interaction on the Stellar network, letting you read block and transaction data, query chain information, execute smart contracts, and store data onchain.
+Stellar uses Stellar RPC over JSON-RPC 2.0. The request format is JSON-RPC, but the methods and data structures are Stellar-specific. For methods that accept parameters, Stellar RPC expects named parameter objects rather than positional arrays.
 
 ## What methods are supported on Stellar?
-Stellar supports standard Ethereum JSON-RPC methods. Some chain-specific methods may vary. Check the Stellar API endpoints documentation for a complete list.
+Alchemy's Stellar API exposes Stellar RPC methods rather than Ethereum JSON-RPC methods. Examples include `getNetwork`, `getLatestLedger`, `getLedgerEntries`, `getLedgers`, `getTransactions`, `getEvents`, `getFeeStats`, and `getVersionInfo`.
 
 ## What is a Stellar API key?
-When you access the Stellar network through a node provider like Alchemy, you use an API key to send transactions and retrieve data. We recommend you [sign up for a free API key](https://dashboard.alchemy.com/signup).
+When you access the Stellar network through a node provider like Alchemy, you use an API key to send requests and retrieve data. We recommend you [sign up for a free API key](https://dashboard.alchemy.com/signup).
 
 ## Which libraries support Stellar?
-Common Ethereum libraries like [ethers.js](https://docs.ethers.org/v5/) are compatible with Stellar, given its EVM nature.
+For JavaScript applications, use the official [`stellar-sdk`](https://www.npmjs.com/package/stellar-sdk), which supports both Stellar RPC and Horizon. Stellar also has SDKs and client libraries for other languages in the wider ecosystem.
 
 ## Where can I get more help?
 If you have questions or feedback, contact us at support@alchemy.com or open a ticket in the [Alchemy Dashboard](https://dashboard.alchemy.com).
