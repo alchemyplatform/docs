@@ -1,0 +1,117 @@
+---
+title: Jovay API Quickstart
+description: How to get started building on Jovay and using the JSON-RPC API
+subtitle: How to get started building on Jovay and using the JSON-RPC API
+slug: reference/jovay-api-quickstart
+---
+
+*To use the Jovay API, you need an Alchemy account. [Create a free account](https://dashboard.alchemy.com/signup) to get started.*
+
+## What is Jovay?
+
+Jovay is a high-performance Ethereum Layer 2 blockchain built by Ant Digital Technologies, designed for real-world asset (RWA) tokenization. It uses a dual-prover architecture combining Trusted Execution Environments (TEE) and Zero-Knowledge Proofs (ZKP) for cross-verified security, achieving sub-second response times and throughput of up to 22,000 TPS.
+
+## What is the Jovay API?
+
+The Jovay API lets you interact with the Jovay network through a set of JSON-RPC methods. If you've worked with Ethereum's JSON-RPC APIs, the interface will be familiar.
+
+## Get started
+
+### 1. Choose a package manager (npm or yarn)
+
+Pick a package manager for your project's dependencies.
+
+<CodeGroup>
+  ```shell npm
+  # Begin with npm by following the npm documentation
+  # https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
+  ```
+
+  ```shell yarn
+  # For yarn, refer to yarn's installation guide
+  # https://classic.yarnpkg.com/lang/en/docs/install
+  ```
+</CodeGroup>
+
+### 2. Set up your project
+
+Run the following commands to create and initialize your project:
+
+<CodeGroup>
+  ```shell npm
+  mkdir jovay-api-quickstart
+  cd jovay-api-quickstart
+  npm init --yes
+  ```
+
+  ```shell yarn
+  mkdir jovay-api-quickstart
+  cd jovay-api-quickstart
+  yarn init --yes
+  ```
+</CodeGroup>
+
+This creates a new directory named `jovay-api-quickstart` and initializes a Node.js project within it.
+
+### 3. Make your first request
+
+Install Axios to make API requests:
+
+<CodeGroup>
+  ```shell npm
+  npm install axios
+  ```
+
+  ```shell yarn
+  yarn add axios
+  ```
+</CodeGroup>
+
+Create an `index.js` file in your project directory and paste the following code:
+
+<CodeGroup>
+  ```javascript index.js
+  const axios = require('axios');
+
+  const url = 'https://jovay-mainnet.g.alchemy.com/v2/${your-api-key}';
+
+  const payload = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'eth_blockNumber',
+    params: []
+  };
+
+  axios.post(url, payload)
+    .then(response => {
+      console.log('Latest Block:', response.data.result);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  ```
+</CodeGroup>
+
+Replace `your-api-key` with your actual Alchemy API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/signup).
+
+### 4. Run your script
+
+Run your script to make a request to the Jovay network:
+
+<CodeGroup>
+  ```shell shell
+  node index.js
+  ```
+</CodeGroup>
+
+You should see the latest block number from Jovay in your console:
+
+<CodeGroup>
+  ```shell shell
+  Latest Block: 0x...
+  ```
+</CodeGroup>
+
+## Next steps
+
+You've made your first request to the Jovay network. Explore the JSON-RPC methods available on Jovay and start building your dApps.
