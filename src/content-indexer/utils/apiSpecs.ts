@@ -13,6 +13,7 @@ const API_NAME_TO_FILENAME: Record<string, string> = {
   avalanche: "avax",
   arbitrum: "arb",
   "polygon-zkevm": "polygonzkevm",
+  "x-layer": "xlayer",
 };
 
 /** Subdirectories within api-specs that contain actual spec files. */

@@ -1,0 +1,670 @@
+---
+components:
+  methods:
+    getEvents:
+      name: getEvents
+      summary: returns contract events
+      description: |-
+        Clients can request a filtered list of events emitted by a given ledger range.
+
+        Stellar-RPC will support querying within a maximum 7 days of recent ledgers.
+
+        Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events. It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
+
+        If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
+
+        By default stellar-rpc retains the most recent 24 hours of events.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getEvents
+      paramStructure: by-name
+      params:
+        - name: startLedger
+          summary: ledger to begin searching from
+          description: Ledger sequence number to start fetching responses from (inclusive). This method will return an error if `startLedger` is less than the oldest ledger stored in this node, or greater than the latest ledger seen by this node. If a cursor is included in the request, `startLedger` must be omitted.
+          required: false
+          schema:
+            title: ledgerSequence
+            description: Sequence number of the ledger.
+            type: number
+        - name: endLedger
+          summary: ledger represents the end of search window
+          description: Ledger sequence number represents the end of search window (exclusive). If a cursor is included in the request, `endLedger` must be omitted.
+          required: false
+          schema:
+            title: ledgerSequence
+            description: Sequence number of the ledger.
+            type: number
+        - name: filters
+          summary: filters to narrow events search
+          description: List of filters for the returned events. Events matching any of the filters are included. To match a filter, an event must match both a contractId and a topic. Maximum 5 filters are allowed per request.
+          schema:
+            type: array
+            maxItems: 5
+            items:
+              type: object
+              required: []
+              properties:
+                type:
+                  title: type
+                  type: string
+                  description: Filter events by type. If omitted, all event types are included.
+                  enum:
+                    - system
+                    - contract
+                contractIds:
+                  title: contractIds
+                  type: array
+                  description: List of contract IDs to query for events. If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
+                  maxItems: 5
+                  items:
+                    title: contractId
+                    description: A StrKey representation of a contract address (`C...`). ([SEP-23](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md#specification)).
+                    type: string
+                topics:
+                  title: topics
+                  type: array
+                  description: A list of topic filters. Each filter is itself an array of one to four `SegmentMatcher` elements (see below). If omitted, query for all events. If multiple filters are specified, events will be included if they match any of the filters.
+                  maxItems: 5
+                  items:
+                    type: array
+                    description: |-
+                      A `TopicFilter` is `SegmentMatcher[]`
+
+                      - The list can be 1-4 `SegmentMatchers` long.
+                    minItems: 1
+                    maxItems: 4
+                    items:
+                      title: SegmentMatcher
+                      type: string
+                      description: |+
+                        A `SegmentMatcher` is one of the following:
+
+                        - For an exact segment match, a string containing a base64-encoded ScVal
+
+                        - The string "*" functions as a wildcard that matches exactly one segment.
+
+                        - The string "**" matches zero or more segments and is used to match events with variable topic lengths. It can only appear as the final segment and does not count towards the 4-segment limit.
+
+          required: false
+        - name: pagination
+          summary: pagination options
+          description: Pagination in stellar-rpc is similar to pagination in Horizon. See [Pagination](https://developers.stellar.org/docs/data/rpc/api-reference/structure/pagination).
+          required: false
+          schema:
+            type: object
+            required: []
+            properties:
+              cursor:
+                type: string
+                description: An opaque string which acts as a paging token. To obtain the next page of results occurring after a given response set this value to the `cursor` field of the response.
+              limit:
+                type: number
+                description: The maximum number of records returned. The limit for getEvents can range from 1 to 10000 - an upper limit that is hardcoded in Stellar-RPC for performance reasons. If this argument isn't designated, it defaults to 100.
+        - name: xdrFormat
+          summary: "chooses a response format for XDR fields: 'json' or 'base64'"
+          required: false
+          description: Lets the user choose the format in which the response should be returned - either as unpacked JSON or as base64-encoded XDR strings. Note that you should not rely on any schema for the JSON, as it will change when the underlying XDR changes.
+          schema:
+            title: xdrFormat
+            type: string
+            description: Specifies whether XDR should be encoded as Base64 (default or 'base64') or JSON ('json').
+      result:
+        name: getEventsResult
+        schema:
+          type: object
+          properties:
+            latestLedger:
+              title: latestLedger
+              description: The sequence number of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+            events:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    title: type
+                    description: The type of event emission.
+                    type: string
+                    enum:
+                      - contract
+                      - system
+                  ledger:
+                    title: ledgerSequence
+                    description: Sequence number of the ledger in which this event was emitted.
+                    type: number
+                  ledgerClosedAt:
+                    type: string
+                    description: "[ISO-8601](https://www.iso.org/iso-8601-date-and-time-format.html) timestamp of the ledger closing time"
+                  contractId:
+                    title: contractId
+                    description: StrKey representation of the contract address that emitted this event.
+                    type: string
+                  id:
+                    description: "Unique identifier for this event, based on the [TOID](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0035.md#specification) format. It combines a 19-character TOID and a 10-character, zero-padded event index, separated by a hyphen. \n\n- For example: `0000000000000123456-0000000001`"
+                    type: string
+                  transactionIndex:
+                    description: The index of the transaction within the ledger this event occurred in.
+                    type: number
+                  operationIndex:
+                    description: The index of the operation within the transaction this event occurred in.
+                    type: number
+                  inSuccessfulContractCall:
+                    description: If true the event was emitted during a successful contract call.
+                    deprecated: true
+                    type: boolean
+                  topic:
+                    type: array
+                    description: The [ScVal](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-contract.x#L214)s containing the topics this event was emitted with (as a base64 string).
+                    minItems: 1
+                    maxItems: 4
+                    items:
+                      title: SegmentMatcher
+                      type: string
+                      description: |+
+                        A `SegmentMatcher` is one of the following:
+
+                        - For an exact segment match, a string containing a base64-encoded ScVal
+
+                        - The string "*" functions as a wildcard that matches exactly one segment.
+
+                        - The string "**" matches zero or more segments and is used to match events with variable topic lengths. It can only appear as the final segment and does not count towards the 4-segment limit.
+
+                  value:
+                    description: The data emitted by the event (an [ScVal](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-contract.x#L214), serialized as a base64 string).
+                    type: string
+                  txHash:
+                    title: hash
+                    type: string
+                    minLength: 64
+                    maxLength: 64
+                    pattern: "^[a-f\\d]{64}$"
+                    description: The transaction which triggered this event.
+            cursor:
+              title: cursor
+              type: string
+              description: A token which can be included in a subsequent request to obtain the next page of results.
+    getFeeStats:
+      name: getFeeStats
+      summary: returns statistics about charged inclusion fees
+      description: Statistics for charged inclusion fees. The inclusion fee statistics are calculated from the inclusion fees that were paid for the transactions to be included onto the ledger. For Soroban transactions and Stellar transactions, they each have their own inclusion fees and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions during network traffic surge.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getFeeStats
+      paramStructure: by-name
+      params: []
+      result:
+        name: getFeeStatsResult
+        schema:
+          type: object
+          properties:
+            sorobanInclusionFee:
+              type: object
+              description: Inclusion fee distribution statistics for Soroban transactions
+              properties:
+                max:
+                  description: Maximum fee
+                  type: string
+                min:
+                  description: Minimum fee
+                  type: string
+                mode:
+                  description: Fee value which occurs the most often
+                  type: string
+                p10:
+                  description: 10th nearest-rank fee percentile
+                  type: string
+                p20:
+                  description: 20th nearest-rank fee percentile
+                  type: string
+                p30:
+                  description: 30th nearest-rank fee percentile
+                  type: string
+                p40:
+                  description: 40th nearest-rank fee percentile
+                  type: string
+                p50:
+                  description: 50th nearest-rank fee percentile
+                  type: string
+                p60:
+                  description: 60th nearest-rank fee percentile
+                  type: string
+                p70:
+                  description: 70th nearest-rank fee percentile
+                  type: string
+                p80:
+                  description: 80th nearest-rank fee percentile
+                  type: string
+                p90:
+                  description: 90th nearest-rank fee percentile.
+                  type: string
+                p95:
+                  description: 95th nearest-rank fee percentile.
+                  type: string
+                p99:
+                  description: 99th nearest-rank fee percentile
+                  type: string
+                transactionCount:
+                  description: How many transactions are part of the distribution
+                  type: number
+                ledgerCount:
+                  description: How many consecutive ledgers form the distribution
+                  type: number
+            inclusionFee:
+              type: object
+              description: Fee distribution statistics for Stellar (i.e. non-Soroban) transactions. Statistics are normalized per operation.
+              properties:
+                max:
+                  description: Maximum fee
+                  type: string
+                min:
+                  description: Minimum fee
+                  type: string
+                mode:
+                  description: Fee value which occurs the most often
+                  type: string
+                p10:
+                  description: 10th nearest-rank fee percentile
+                  type: string
+                p20:
+                  description: 20th nearest-rank fee percentile
+                  type: string
+                p30:
+                  description: 30th nearest-rank fee percentile
+                  type: string
+                p40:
+                  description: 40th nearest-rank fee percentile
+                  type: string
+                p50:
+                  description: 50th nearest-rank fee percentile
+                  type: string
+                p60:
+                  description: 60th nearest-rank fee percentile
+                  type: string
+                p70:
+                  description: 70th nearest-rank fee percentile
+                  type: string
+                p80:
+                  description: 80th nearest-rank fee percentile
+                  type: string
+                p90:
+                  description: 90th nearest-rank fee percentile.
+                  type: string
+                p95:
+                  description: 95th nearest-rank fee percentile.
+                  type: string
+                p99:
+                  description: 99th nearest-rank fee percentile
+                  type: string
+                transactionCount:
+                  description: How many transactions are part of the distribution
+                  type: number
+                ledgerCount:
+                  description: How many consecutive ledgers form the distribution
+                  type: number
+            latestLedger:
+              title: latestLedger
+              description: The sequence number of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+    getLatestLedger:
+      name: getLatestLedger
+      summary: returns latest known ledger
+      description: For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getLatestLedger
+      paramStructure: by-name
+      params: []
+      result:
+        name: getLatestLedgerResponse
+        schema:
+          type: object
+          properties:
+            id:
+              title: id
+              type: string
+              minLength: 64
+              maxLength: 64
+              pattern: "^[a-f\\d]{64}$"
+              description: Hash identifier of the latest ledger (as a hex-encoded string) known to Stellar RPC at the time it handled the request.
+            sequence:
+              title: latestLedger
+              description: The sequence number of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+            closeTime:
+              title: closeTime
+              description: The timestamp at which the latest ledger was closed.
+              type: string
+            headerXdr:
+              title: headerXdr
+              type: string
+              description: The [LedgerHeader](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger.x#L74) structure for this ledger (base64-encoded string).
+            metadataXdr:
+              title: metadataXdr
+              type: string
+              description: The [LedgerCloseMeta](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger.x#L539) union for this ledger (base64-encoded string).
+    getLedgerEntries:
+      name: getLedgerEntries
+      summary: returns ledger entries
+      description: |-
+        For reading the current value of ledger entries directly.
+
+        This method enables querying live ledger state: accounts, trustlines, offers, data, claimable balances, and liquidity pools. It also provides direct access to inspect a contract's current state, its code, or any other ledger entry. This serves as a primary method to access your contract data which may not be available via events or `simulateTransaction`.
+
+        To fetch contract wasm byte-code, use the ContractCode ledger entry key.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getLedgerEntries
+      paramStructure: by-name
+      params:
+        - name: keys
+          summary: array of ledger keys
+          description: Array containing the keys of the ledger entries you wish to retrieve. (an array of serialized base64 strings)
+          required: true
+          schema:
+            description: An array of LedgerKeys. The maximum number of ledger keys accepted is 200.
+            type: array
+            items:
+              type: string
+              description: The [LedgerKey](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger-entries.x#L600) union corresponding to an existing ledger entry you want to retrieve (base64-encoded string).
+        - name: xdrFormat
+          summary: "chooses a response format for XDR fields: 'json' or 'base64'"
+          required: false
+          description: Lets the user choose the format in which the response should be returned - either as unpacked JSON or as base64-encoded XDR strings. Note that you should not rely on any schema for the JSON, as it will change when the underlying XDR changes.
+          schema:
+            title: xdrFormat
+            type: string
+            description: Specifies whether XDR should be encoded as Base64 (default or 'base64') or JSON ('json').
+      result:
+        name: getLedgerEntriesResult
+        schema:
+          type: object
+          required:
+            - latestLedger
+          properties:
+            latestLedger:
+              title: latestLedger
+              description: The sequence number of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+            entries:
+              type: array
+              description: Array of objects containing all found ledger entries
+              items:
+                type: object
+                description: Object containing information about an existing ledger entry.
+                properties:
+                  key:
+                    type: string
+                    description: The [LedgerKey](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger-entries.x#L600) corresponding to the ledger entry (base64 string).
+                  xdr:
+                    type: string
+                    description: The key's current [LedgerEntryData](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger-entries.x#L564) value (base64 string).
+                  lastModifiedLedgerSeq:
+                    title: ledgerSequence
+                    description: The ledger sequence number of the last time this entry was updated.
+                    type: number
+                  liveUntilLedgerSeq:
+                    title: ledgerSequence
+                    description: The ledger sequence number of the ledger that the entry will be live until. May be zero if the entry is no longer live.
+                    type: number
+    getLedgers:
+      name: getLedgers
+      summary: returns a list of ledgers with their details
+      description: The `getLedgers` method returns a detailed list of ledgers starting from the user specified starting point that you can paginate as long as the pages fall within the history retention of their corresponding RPC provider.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getLedgers
+      paramStructure: by-name
+      params:
+        - name: startLedger
+          summary: ledger to begin searching from
+          description: Ledger sequence number to start fetching responses from (inclusive). This method will return an error if `startLedger` is less than the oldest ledger stored in this node, or greater than the latest ledger seen by this node. If a cursor is included in the request, `startLedger` must be omitted.
+          required: false
+          schema:
+            title: ledgerSequence
+            description: Sequence number of the ledger.
+            type: number
+        - name: pagination
+          summary: pagination options
+          description: Pagination in stellar-rpc is similar to pagination in Horizon. See [Pagination](https://developers.stellar.org/docs/data/rpc/api-reference/structure/pagination).
+          required: false
+          schema:
+            type: object
+            required: []
+            properties:
+              cursor:
+                type: string
+                description: An opaque string which acts as a paging token. To obtain the next page of results occurring after a given response set this value to the `cursor` field of the response.
+              limit:
+                type: number
+                description: The maximum number of records returned. The limit for getEvents can range from 1 to 10000 - an upper limit that is hardcoded in Stellar-RPC for performance reasons. If this argument isn't designated, it defaults to 100.
+        - name: xdrFormat
+          summary: "chooses a response format for XDR fields: 'json' or 'base64'"
+          required: false
+          description: Lets the user choose the format in which the response should be returned - either as unpacked JSON or as base64-encoded XDR strings. Note that you should not rely on any schema for the JSON, as it will change when the underlying XDR changes.
+          schema:
+            title: xdrFormat
+            type: string
+            description: Specifies whether XDR should be encoded as Base64 (default or 'base64') or JSON ('json').
+      result:
+        name: getLedgersResult
+        schema:
+          type: object
+          properties:
+            ledgers:
+              type: array
+              items:
+                type: object
+                properties:
+                  hash:
+                    type: string
+                    description: The hash of the ledger header which was included in the chain
+                  sequence:
+                    title: ledgerSequence
+                    description: The sequence number of the ledger (sometimes called the 'block height').
+                    type: number
+                  ledgerCloseTime:
+                    title: ledgerCloseTime
+                    description: The timestamp at which the ledger was closed.
+                    type: string
+                  headerXdr:
+                    type: string
+                    description: The [LedgerHeader](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger.x#L74) structure for this ledger (base64-encoded string).
+                  metadataXdr:
+                    type: string
+                    description: The [LedgerCloseMeta](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger.x#L539) union for this ledger (base64-encoded string).
+            latestLedger:
+              title: latestLedger
+              description: The sequence number of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+            latestLedgerCloseTime:
+              title: latestLedgerCloseTime
+              description: The unix timestamp of the close time of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+            oldestLedger:
+              title: oldestLedger
+              description: The sequence number of the oldest ledger ingested by Stellar RPC at the time it handled the request.
+              type: number
+            oldestLedgerCloseTime:
+              title: oldestLedgerCloseTime
+              description: The unix timestamp of the close time of the oldest ledger ingested by Stellar RPC at the time it handled the request.
+              type: number
+            cursor:
+              title: cursor
+              type: string
+              description: A token which can be included in a subsequent request to obtain the next page of results.
+    getNetwork:
+      name: getNetwork
+      summary: returns network config
+      description: General information about the currently configured network. This response will contain all the information needed to successfully submit transactions to the network this node serves.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getNetwork
+      paramStructure: by-name
+      params: []
+      result:
+        name: getNetworkResult
+        schema:
+          type: object
+          required:
+            - passphrase
+            - protocolVersion
+          properties:
+            passphrase:
+              title: networkPassphrase
+              description: Network passphrase configured for this Stellar RPC node.
+              type: string
+            protocolVersion:
+              title: protocolVersion
+              description: Stellar Core protocol version associated with the latest ledger.
+              type: number
+            friendbotUrl:
+              type: string
+              description: (optional) The URL of this network's "friendbot" faucet
+    getTransactions:
+      name: getTransactions
+      summary: returns a list of transactions with their details
+      description: The `getTransactions` method return a detailed list of transactions starting from the user specified starting point that you can paginate as long as the pages fall within the history retention of their corresponding RPC provider.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getTransactions
+      paramStructure: by-name
+      params:
+        - name: startLedger
+          summary: ledger to begin searching from
+          description: Ledger sequence number to start fetching responses from (inclusive). This method will return an error if `startLedger` is less than the oldest ledger stored in this node, or greater than the latest ledger seen by this node. If a cursor is included in the request, `startLedger` must be omitted.
+          required: false
+          schema:
+            title: ledgerSequence
+            description: Sequence number of the ledger.
+            type: number
+        - name: pagination
+          summary: pagination options
+          description: Pagination in stellar-rpc is similar to pagination in Horizon. See [Pagination](https://developers.stellar.org/docs/data/rpc/api-reference/structure/pagination).
+          required: false
+          schema:
+            type: object
+            required: []
+            properties:
+              cursor:
+                type: string
+                description: An opaque string which acts as a paging token. To obtain the next page of results occurring after a given response set this value to the `cursor` field of the response.
+              limit:
+                type: number
+                description: The maximum number of records returned. The limit for getEvents can range from 1 to 10000 - an upper limit that is hardcoded in Stellar-RPC for performance reasons. If this argument isn't designated, it defaults to 100.
+        - name: xdrFormat
+          summary: "chooses a response format for XDR fields: 'json' or 'base64'"
+          required: false
+          description: Lets the user choose the format in which the response should be returned - either as unpacked JSON or as base64-encoded XDR strings. Note that you should not rely on any schema for the JSON, as it will change when the underlying XDR changes.
+          schema:
+            title: xdrFormat
+            type: string
+            description: Specifies whether XDR should be encoded as Base64 (default or 'base64') or JSON ('json').
+      result:
+        name: getTransactionsResult
+        schema:
+          type: object
+          properties:
+            transactions:
+              type: array
+              items:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Indicates whether the transaction was successful or not.
+                  applicationOrder:
+                    type: number
+                    description: The 1-based index of the transaction among all transactions included in the ledger.
+                  feeBump:
+                    type: boolean
+                    description: Indicates whether the transaction was fee bumped.
+                  envelopeXdr:
+                    type: string
+                    description: The [TransactionEnvelope](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-transaction.x#L1009) structure for this transaction (base64-encoded string).
+                  resultXdr:
+                    type: string
+                    description: The [TransactionResult](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-transaction.x#L2088) structure for this transaction (base64-encoded string).
+                  resultMetaXdr:
+                    type: string
+                    description: The [TransactionResultMeta](https://github.com/stellar/stellar-xdr/blob/v22.0/Stellar-ledger.x#L461) structure for this transaction (base64-encoded string).
+                  diagnosticEventsXdr:
+                    type: array
+                    description: "(optional) A base64 encoded slice of xdr.DiagnosticEvent. This is only present if the `ENABLE_SOROBAN_DIAGNOSTIC_EVENTS` has been enabled on the RPC server."
+                    items:
+                      type: string
+                  events:
+                    type: object
+                    description: |-
+                      Contains all events emitted during transaction execution.
+
+                      _Note: Available only on RPC v23.x (currently testnet only)._
+                    properties:
+                      transactionEventsXdr:
+                        type: array
+                        description: An array of base64-encoded [xdr.TransactionEvent](https://github.com/stellar/stellar-xdr/blob/v23.0/Stellar-ledger.x#L503-L506). These include events such as fees being charged or refunded.
+                        items:
+                          type: string
+                      contractEventsXdr:
+                        type: array
+                        description: A nested array of base64-encoded [xdr.ContractEvent](https://github.com/stellar/stellar-xdr/blob/v23.0/Stellar-ledger.x#L371-L390). Each inner array represents the contract events emitted by a single operation within the transaction.
+                        items:
+                          type: array
+                          description: Base64-encoded [xdr.ContractEvent](https://github.com/stellar/stellar-xdr/blob/v23.0/Stellar-ledger.x#L371-L390) emitted by a single operation within the transaction.
+                          items:
+                            type: string
+                  ledger:
+                    title: ledger
+                    description: The sequence number of the ledger which included the transaction.
+                    type: number
+                  createdAt:
+                    title: createdAt
+                    description: The unix timestamp of when the transaction was included in the ledger.
+                    type: number
+            latestLedger:
+              title: latestLedger
+              description: The sequence number of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+            latestLedgerCloseTimestamp:
+              title: latestLedgerCloseTime
+              description: The unix timestamp of the close time of the latest ledger known to Stellar RPC at the time it handled the request.
+              type: number
+            oldestLedger:
+              title: oldestLedger
+              description: The sequence number of the oldest ledger ingested by Stellar RPC at the time it handled the request.
+              type: number
+            oldestLedgerCloseTimestamp:
+              title: oldestLedgerCloseTime
+              description: The unix timestamp of the close time of the oldest ledger ingested by Stellar RPC at the time it handled the request.
+              type: number
+            cursor:
+              title: cursor
+              type: string
+              description: A token which can be included in a subsequent request to obtain the next page of results.
+    getVersionInfo:
+      name: getVersionInfo
+      summary: returns version information of RPC and Captive Core
+      description: Version information about the RPC and Captive core. RPC manages its own, pared-down version of Stellar Core optimized for its own subset of needs. we'll refer to this as a "Captive Core" instance.
+      externalDocs:
+        url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getVersionInfo
+      paramStructure: by-name
+      params: []
+      result:
+        name: getVersionInfoResult
+        schema:
+          type: object
+          properties:
+            version:
+              type: string
+              description: The version of the RPC server.
+              example: 23.0.1
+            commitHash:
+              type: string
+              description: The commit hash of the RPC server.
+              example: fcd2f0523f04279bae4502f3e3fa00ca627e6f6a
+            buildTimestamp:
+              type: string
+              description: The build timestamp of the RPC server.
+              example: "2025-05-10T11:18:38"
+            captiveCoreVersion:
+              type: string
+              description: The version of the Captive Core.
+              example: stellar-core 23.0.1 (050eacf11a15afb2e95560dfb5723dfdcf78070f)
+            protocolVersion:
+              type: integer
+              description: The protocol version.
+              example: 23
