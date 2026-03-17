@@ -1,23 +1,23 @@
 ---
 title: Same-chain swaps (Alpha)
 slug: wallets/transactions/swap-tokens
-description: Convert any token to any other token onchain using Alchemy Smart Wallets, with gas sponsorship and post-swap action support.
+description: Convert any token to any other token onchain using Smart Wallets, with gas sponsorship and post-swap action support.
 ---
 
 Swaps let you convert any token to any other token onchain. They're built natively into Smart Wallets and you can integrate in minutes.
 
-Smart Wallets also allow you to add actions after the swap completes. For example, you can deposit your newly swapped tokens into a DeFi protocol.
+You can also add actions after the swap completes. For example, you can deposit your newly swapped tokens into a DeFi protocol.
 
-Swaps work just like any other Smart Wallet transaction, so you can sponsor gas to do gasless swaps, or pay for gas in an ERC-20 token.
+Swaps work like any other Smart Wallet transaction, so you can sponsor gas for gasless swaps, or pay for gas in an ERC-20 token.
 
 [Cross-chain swaps are live! Send your first cross-chain swap now!](/docs/wallets/transactions/cross-chain-swap-tokens)
 
 <Tip>
-  Swaps are in alpha. Note that there may be changes in the future to simplify
-  the endpoint/sdk. We will let you know if/when that happens.
+  Swaps are in alpha. There may be changes in the future to simplify
+  the endpoint/SDK.
 </Tip>
 
-# The Swap flow
+# The swap flow
 
 ## **Flow**
 
@@ -28,7 +28,7 @@ Swaps work just like any other Smart Wallet transaction, so you can sponsor gas 
 
 ## **Swap options**
 
-When requesting a swap quote, you can specify either an amount in, or a minimum amount out.
+When requesting a swap quote, specify either an amount in, or a minimum amount out.
 
 ```tsx
 // Mode 1: Swap exact input amount
@@ -46,11 +46,11 @@ When requesting a swap quote, you can specify either an amount in, or a minimum 
 
 Before you begin, ensure you have:
 
-* An [Alchemy API Key](https://dashboard.alchemy.com/apps)
-* If you're sponsoring gas, then a [Gas Manager](https://dashboard.alchemy.com/gas-manager/policy/create) policy
-* A small amount of USDC for testing (~$1 worth is enough!)
-  * **Important**: You'll need to send these tokens to your smart wallet address to be able to swap!
-* A signer to own the account and sign messages
+* An [API key](https://dashboard.alchemy.com/apps)
+* If you're sponsoring gas, a [Gas Manager](https://dashboard.alchemy.com/gas-manager/policy/create) policy
+* A small amount of USDC for testing (~$1 worth is enough)
+  * **Important**: Send these tokens to your smart wallet address before swapping.
+* An owner to sign messages
 
 <Tabs>
   <Tab title="JavaScript" language="typescript">
@@ -76,7 +76,7 @@ Currently, the Swap API supports only single-chain swaps. Cross-chain swaps are 
 
 ## How do you encode values?
 
-Values are simply passed as hexadecimal strings. The Swap API doesn't add complexity to consider decimals, so 0x01 is always the smallest amount of a given asset.
+Values are passed as hexadecimal strings. The Swap API does not add complexity to consider decimals, so 0x01 is always the smallest amount of a given asset.
 1 ETH, or DAI (18 decimals) is `0xDE0B6B3A7640000`
 1 USDC (6 decimals) is `0xF4240`
 This removes any ambiguity— if it’s numerical, it’s a hex.

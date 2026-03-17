@@ -1,10 +1,10 @@
 ---
 title: Bring Your Own Authentication
-description: Integrate your existing authentication system with Alchemy Smart Wallets using JWT tokens
+description: Integrate your existing authentication system with Smart Wallets using JWT tokens
 slug: wallets/authentication/login-methods/bring-your-own-auth
 ---
 
-Integrate your existing authentication provider and add smart wallet functionality to your app without changing your users' login experience. We support JWT-based and OIDC-compliant authentication providers.
+Integrate your existing authentication provider and add smart wallet functionality to your app without changing your users' login experience. Smart Wallets supports JWT-based and OIDC-compliant authentication providers.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ The response must include these required fields from the [**OpenID spec**](https
 **Field explanations:**
 
 * `issuer`: Your API domain (must match the `iss` claim in your JWTs)
-* `jwks_uri`: Endpoint URL where Alchemy can retrieve the JWT public key for verification
+* `jwks_uri`: Endpoint URL where the JWT public key can be retrieved for verification
 * `id_token_signing_alg_values_supported`: Must include "RS256" algorithm
 
 ### 3. JWT Structure Requirements
@@ -67,8 +67,8 @@ Your JWTs must contain these claims:
 **Important**: The `nonce` claim must be `toHex(sha256(targetPublicKey))` **without** the leading `0x`.
 
 <Note>
-  You can generate the `targetPublicKey` from the [Alchemy Signer
-  SDK](/docs/wallets/reference/account-kit/signer/classes/AlchemySignerWebClient/targetPublicKey)
+  Generate the `targetPublicKey` from the [authentication
+  SDK](/docs/wallets/reference/account-kit/signer/classes/AlchemySignerWebClient/targetPublicKey).
 </Note>
 
 <Tip>
@@ -83,7 +83,7 @@ Your JWTs must contain these claims:
 
 ### 4. Audience Claim
 
-The `aud` claim must be set to your Alchemy-provided audience ID. You can obtain the audience claim from your Smart Wallet settings in the [Alchemy Dashboard](https://dashboard.alchemy.com/apps/latest/services/smart-wallets).
+The `aud` claim must be set to the audience ID provided in your Smart Wallet settings. Obtain the audience claim from the [dashboard](https://dashboard.alchemy.com/apps/latest/services/smart-wallets).
 
 <img src="https://alchemyapi-res.cloudinary.com/image/upload/v1764187289/docs/aa-sdk/images/bring-your-own-auth.png" alt="Audience Claim" />
 
@@ -221,11 +221,11 @@ The `aud` claim must be set to your Alchemy-provided audience ID. You can obtain
     ```
 
     <Info>
-      The `address` returned is the EOA signer address. To get the actual smart contract wallet address, call the `getAddress()` method on your smart account implementation using this signer address.
+      The `address` returned is the EOA authentication address. To get the actual wallet address, call the `getAddress()` method on your smart wallet implementation using this address.
     </Info>
 
     <Tip>
-      For setting up an account config, see the [Signer Quickstart](/docs/wallets/signer/quickstart).
+      For setting up an account config, see the [authentication quickstart](/docs/wallets/signer/quickstart).
     </Tip>
   </Tab>
 </Tabs>
@@ -236,8 +236,8 @@ The JWT authentication flow works as follows:
 
 1. **User Authentication**: User logs into your existing auth system
 2. **JWT Generation**: Your backend generates a JWT with required claims
-3. **Submit to Alchemy**: Frontend submits JWT to Alchemy's auth endpoint
-4. **Verification**: Alchemy verifies JWT using your JWKS endpoint
+3. **Submit JWT**: Frontend submits JWT to the auth endpoint
+4. **Verification**: The JWT is verified using your JWKS endpoint
 5. **Wallet Access**: User gains access to their smart wallet
 
 ```mermaid
@@ -278,10 +278,10 @@ Use [jwt.io](https://jwt.io/) to decode and validate your JWT structure before i
 
 ## Next Steps
 
-### Sending a User Operation
+### Sending transactions
 
-Once your users have been authenticated, you can start [sending transactions](/docs/wallets/transactions/send-transactions).
+Once your users have been authenticated, start [sending transactions](/docs/wallets/transactions/send-transactions).
 
-### Sponsor Gas for a User Operation
+### Sponsor gas for transactions
 
 Start [sponsoring gas fees](/docs/wallets/transactions/sponsor-gas) for transactions via the Gas Manager.

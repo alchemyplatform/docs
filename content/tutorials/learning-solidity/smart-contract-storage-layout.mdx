@@ -5,9 +5,9 @@ subtitle: Contract storage layout refers to the rules governing how contracts’
 slug: docs/smart-contract-storage-layout
 ---
 
-This guide will explain how data stored on smart contracts. Contract storage layout refers to the rules governing how contracts’ storage variables are laid out in long-term memory.
+This guide explains how data is stored on smart contracts. Contract storage layout refers to the rules governing how contracts’ storage variables are laid out in long-term memory.
 
-## Reader’s Prerequisite Knowledge
+## Prerequisites
 
 The following general prerequisites are helpful for understanding this article:
 
@@ -41,7 +41,7 @@ Smart contract developer’s do not have direct control over this aspect of thei
 
 Smart contracts are computer programs that run on blockchains. Programs consist of functions and data (also known as variables or parameters) that functions operate on. The data that functions use need to be stored somewhere in the computer’s memory. In this case the computer is the EVM.
 
-### Solidity Memory Types
+### Solidity memory types
 
 There are 3 different types of memory in Solidity that developers can use to instruct the EVM where to store their variables: memory, calldata, and storage.
 
@@ -97,7 +97,7 @@ Diagram of how state variables are mapped to storage slots.
 
 Here we can see how variables a, b and c get mapped from their declaration order to their storage slots. To see how the storage variables actually get encoded and stored in the slots at the binary level we need to dig a little deeper and understand the concepts of endian-ness, byte-packing and byte-padding.
 
-## What is Endian-ness?
+## What is endian-ness?
 
 **Endian-ness refers to how computers store multi-byte values in memory (eg: uint256, bytes32, address), and there are two types of endian-ness: big-endian and little-endian.**
 
@@ -109,7 +109,7 @@ For example take the hexadecimal number 0x01e8f7a1, a hexadecimal representation
 
 Diagram of how computers store multi-byte values in memory.
 
-### How is Endian-ness used in Ethereum?
+### How is endian-ness used in Ethereum?
 
 **Ethereum uses both endian-ness formats, and the format used depends on the variable type.**
 
@@ -131,7 +131,7 @@ Due to EVM padding, developer’s can directly address the state variables a and
 
 If we think carefully about the sizes of our contracts’ state variables and their declaration order, the EVM will pack the variables into storage slots to reduce the amount of storage memory that is used. Taking the PaddedContract example above we can reorder the declaration of the state variables to get the EVM to tightly pack the variables into storage slots.
 
-An example of this is shown in the **PackedContract** below which is just a reordering of the variables in the **PaddedContract** example:
+An example of this is shown in the **PackedContract** below, which is a reordering of the variables in the **PaddedContract** example:
 
 ![1999](https://alchemyapi-res.cloudinary.com/image/upload/v1764192934/docs/tutorials/learning-solidity/058295a-diagram-of-a-packed-contract-example-where-variables-are-packed-into-storage-slots-to-reduce-storage-memory.jpg "diagram-of-a-packed-contract-example-where-variables-are-packed-into-storage-slots-to-reduce-storage-memory.jpeg")
 
@@ -189,7 +189,7 @@ For [mappings](https://www.alchemy.com/overviews/solidity-mapping), the marker s
 * p is the state variable’s declaration position in the smart contract
 * h()is a function that is applied to the key depending on the key’s type
 * for value types, h() returns the padded the value to 32 bytes
-* for strings and byte arrays, h() just returns the unpadded data
+* for strings and byte arrays, h() returns the unpadded data
 
 Here is an diagram depicting how mappings are stored in memory:
 

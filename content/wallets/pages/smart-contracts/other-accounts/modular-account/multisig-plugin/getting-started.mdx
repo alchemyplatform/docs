@@ -4,7 +4,7 @@ description: Getting started with the Modular Account with Multisig Plugin in Sm
 slug: wallets/smart-contracts/other-accounts/modular-account/multisig-plugin/getting-started
 ---
 
-## 1. Create a Multisig Account Client
+## 1. Create a multisig account client
 
 Initialize a Multisig Modular Account client and set the `n` accounts as signers.
 
@@ -14,9 +14,9 @@ It is recommended to use the `createMultisigAccountAlchemyClient` directly to cr
 
 <Markdown src="../../../../../shared/smart-contracts/multisig-client.mdx" />
 
-## 3. Propose a User Operation
+## 3. Propose a transaction
 
-To propose a new user operation for review by the multisig signers, you will use the `proposeUserOperation` method. This estimates gas, constructs the user operation struct, and if `gasManagerConfig` is used then it attempts to use a paymaster. Lastly, a signature is generated with the pre-provided signer.
+To propose a new transaction for review by the multisig owners, use the `proposeUserOperation` method. This estimates gas, constructs the user operation struct, and if `gasManagerConfig` is used then it attempts to use a paymaster contract. Lastly, a signature is generated with the pre-provided owner.
 
 <CodeBlocks>
 
@@ -42,7 +42,7 @@ const {
 
 ## 4. Get the threshold signatures
 
-Next, you have to collect the next k-2 signatures, excluding the first signature which you already provided and the last signature which we'll deal with in step 5 when we send the user operation. Each member of the multisig can sign with the `signMultisigUserOperation` method.
+Next, collect the next k-2 signatures, excluding the first signature which you already provided and the last signature which is handled in step 5 when sending the transaction. Each member of the multisig can sign with the `signMultisigUserOperation` method.
 
 <CodeBlocks>
 
@@ -71,9 +71,9 @@ const { aggregatedSignature, signatureObj: secondSig } =
 
 </CodeBlocks>
 
-## 5. Send the User Operation
+## 5. Send the transaction
 
-After collecting k-1 signatures, you're ready to collect the last signature and send the user operation. This is done with the `sendUserOperation` method. `sendUserOperation` also formats this aggregated signature, sorting its parts in ascending order by owner address as expected by the Multisig Plugin smart contract.
+After collecting k-1 signatures, you're ready to collect the last signature and send the transaction. This is done with the `sendUserOperation` method. `sendUserOperation` also formats this aggregated signature, sorting its parts in ascending order by owner address as expected by the Multisig Plugin smart contract.
 
 <CodeBlocks>
 
@@ -134,4 +134,4 @@ const result = await multisigAccountClient.sendUserOperation({
 
 ## Conclusion
 
-That's it! You've initialized a modular account with three multisig members, proposed a user operation, collected the necessary signatures, and sent the user operation to the bundler.
+That's it! You've initialized a modular account with three multisig members, proposed a transaction, collected the necessary signatures, and sent the transaction.

@@ -10,7 +10,7 @@ With Smart Wallets, you can allow users to pay for gas with any token, streamlin
 ## How it works
 
 When a user pays for gas with a token, the gas is fronted using the network's native gas token and the payment tokens are transferred from the user's wallet to a wallet you configure in the policy.
-The equivalent USD amount and the admin fee are then added to your's monthly invoice.
+The equivalent USD amount and the admin fee are then added to your monthly invoice.
 
 Post-operation mode is recommended. This mode requires users to hold enough of the gas token in their wallet after their operation completes to pay the gas fee. If the balance is insufficient, the transaction reverts and you sponsor any gas used without token payment. If this doesn't work for your use case, see the [Token gas payment modes](#token-gas-payment-modes) section below for more options.
 
@@ -56,23 +56,23 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
   **\[Recommended] Post-Operation**
 
   * No upfront allowance is required.
-  * The user signs an approval inside the same calls batch, and the paymaster pulls the token after the operation has executed.
+  * The user signs an approval inside the same calls batch, and the paymaster contract pulls the token after the operation has executed.
   * If that post-operation transfer fails, the entire batch is reverted and you (the developer) pay the gas fee.
 
   **Pre-Operation:**
 
-  * The paymaster must have an allowance prior to the operation.
+  * The paymaster contract must have an allowance prior to the operation.
   * This can be done either through a prior call to `approve()` or by using an [ERC-7597 Permit](https://eips.ethereum.org/EIPS/eip-7597) signature.
-  * If the required allowance isn't in place when the user operation is submitted, it will be rejected.
+  * If the required allowance isn't in place when the transaction is submitted, it will be rejected.
 
   Post-operation mode is recommended for most use cases. This mode:
 
-  * Is the most gas efficient as it only requires a single transfer.
+  * Is the most gas efficient as it requires a single transfer.
   * Works with all ERC-20 tokens.
-  * Only ever requires a single signature from the user.
+  * Requires a single signature from the user.
 
   However, because tokens are deducted after execution, you may be required to pay for gas without receiving sufficient token payment.
-  You should ensure that users have enough token left over to pay for gas after the operation, otherwise they won't receive payment from users for gas and the operation will revert.
+  Ensure that users have enough token left over to pay for gas after the operation, otherwise they won’t receive payment from users for gas and the operation will revert.
   If the operation results in a static amount of the user’s token balance after execution and you can account for this before submitting the operation, use PostOp mode.
 
   Examples of static amounts:
@@ -106,7 +106,7 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
     }
   ```
 
-  Calling `prepareCalls` using the token paymaster capability counts against your policy's pending total. If you intend on making many
+  Calling `prepareCalls` using the token gas payment capability counts against your policy's pending total. If you intend on making many
   calls to surface the best price, set the `onlyEstimation` parameter for estimation, and then remove only when the user intends to sign the result.
 
   <Warning>
@@ -124,7 +124,7 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
 
   The precise token amount needed is calculated after gas estimation and approved exactly — no more, no less. If the account already has sufficient allowance, no approval is added.
 
-  This is ideal when you want minimal token exposure to the paymaster, don't want to estimate gas and figure out approval amounts yourself, or when users send infrequent transactions.
+  This is ideal when you want minimal token exposure to the paymaster contract, don't want to estimate gas and figure out approval amounts yourself, or when users send infrequent transactions.
 
   **Threshold mode (`autoApprove: { below, amount }`)**
 
@@ -144,12 +144,12 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
   When `autoApprove: true` is set, the following steps are performed during request preparation:
 
   1. **Injects a sentinel approval** — A temporary `approve(paymaster, maxUint256)` call is prepended to your calls so gas estimation accounts for the approval's execution cost.
-  2. **Estimates gas** — The full user operation (including the sentinel) is sent through gas estimation.
-  3. **Quotes the token cost** — The paymaster returns an exchange rate, and the server calculates the exact token amount: `(maxNativeGasCost × exchangeRate) / scaler`.
+  2. **Estimates gas** — The full transaction (including the sentinel) is sent through gas estimation.
+  3. **Quotes the token cost** — The paymaster contract returns an exchange rate, and the server calculates the exact token amount: `(maxNativeGasCost × exchangeRate) / scaler`.
   4. **Checks current allowance** — If the account's existing allowance already covers the quoted amount, the approval is stripped entirely. Otherwise, it's updated to approve only the exact amount.
-  5. **Returns the final user operation** — The `callData` is re-encoded with the finalized calls.
+  5. **Returns the final transaction** — The `callData` is re-encoded with the finalized calls.
 
-  When an approval is needed, it is prepended to the calls array and executed atomically in the same user operation. The approved amount is the exact token cost quoted by the paymaster — not a fixed or maximum value.
+  When an approval is needed, it is prepended to the calls array and executed atomically in the same transaction. The approved amount is the exact token cost quoted by the paymaster contract, not a fixed or maximum value.
 </Accordion>
 
 <Accordion title="Auto-injected permits (pre-operation mode)">

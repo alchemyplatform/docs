@@ -56,21 +56,21 @@ subtitle: How to get started building on ${displayName} and using the JSON-RPC A
 slug: reference/${chainName}-api-quickstart
 ---
 
-*To use the ${displayName} API you'll need to [create a free Alchemy account](https://dashboard.alchemy.com/signup) first!*
+*To use the ${displayName} API, you need an Alchemy account. [Create a free account](https://dashboard.alchemy.com/signup) to get started.*
 
-## Introduction
+## What is ${displayName}?
 
 ${introText}
 
 ## What is the ${displayName} API?
 
-The ${displayName} API allows interaction with the ${displayName} network through a set of JSON-RPC methods. Its design is familiar to developers who have worked with Ethereum's JSON-RPC APIs, making it intuitive and straightforward to use.
+The ${displayName} API lets you interact with the ${displayName} network through a set of JSON-RPC methods. If you've worked with Ethereum's JSON-RPC APIs, the interface will be familiar.
 
-## Getting Started Instructions
+## Get started
 
-### 1. Choose a Package Manager (npm or yarn)
+### 1. Choose a package manager (npm or yarn)
 
-Select a package manager to manage your project's dependencies. Choose between \`npm\` and \`yarn\` based on your preference or project requirements.
+Pick a package manager for your project's dependencies.
 
 <CodeGroup>
   \`\`\`shell npm
@@ -84,9 +84,9 @@ Select a package manager to manage your project's dependencies. Choose between \
   \`\`\`
 </CodeGroup>
 
-### 2. Set Up Your Project
+### 2. Set up your project
 
-Open your terminal and execute the following commands to create and initialize your project:
+Run the following commands to create and initialize your project:
 
 <CodeGroup>
   \`\`\`shell npm
@@ -104,9 +104,9 @@ Open your terminal and execute the following commands to create and initialize y
 
 This creates a new directory named \`${chainName}-api-quickstart\` and initializes a Node.js project within it.
 
-### 3. Make Your First Request
+### 3. Make your first request
 
-Install Axios, a popular HTTP client, to make API requests:
+Install Axios to make API requests:
 
 <CodeGroup>
   \`\`\`shell npm
@@ -143,11 +143,11 @@ Create an \`index.js\` file in your project directory and paste the following co
   \`\`\`
 </CodeGroup>
 
-Remember to replace \`your-api-key\` with your actual Alchemy API key that you can get from your [Alchemy dashboard](https://dashboard.alchemy.com/signup).
+Replace \`your-api-key\` with your actual Alchemy API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/signup).
 
-### 4. Run Your Script
+### 4. Run your script
 
-Execute your script to make a request to the ${displayName} network:
+Run your script to make a request to the ${displayName} network:
 
 <CodeGroup>
   \`\`\`shell shell
@@ -155,7 +155,7 @@ Execute your script to make a request to the ${displayName} network:
   \`\`\`
 </CodeGroup>
 
-You should see the latest block information from ${displayName}'s network outputted to your console:
+You should see the latest block number from ${displayName} in your console:
 
 <CodeGroup>
   \`\`\`shell shell
@@ -163,9 +163,9 @@ You should see the latest block information from ${displayName}'s network output
   \`\`\`
 </CodeGroup>
 
-## Next Steps
+## Next steps
 
-Congratulations! You've made your first request to the ${displayName} network. You can now explore the various JSON-RPC methods available on ${displayName} and start building your dApps on this innovative platform.
+You've made your first request to the ${displayName} network. Explore the JSON-RPC methods available on ${displayName} and start building your dApps.
 `;
 }
 
@@ -185,28 +185,28 @@ slug: reference/${chainName}-api-faq
 ${introText}
 
 ## How do I get started with ${displayName}?
-Check out our [${displayName} API Quickstart guide](./${chainName}-api-quickstart) to get started building on ${displayName}.
+See the [${displayName} API quickstart guide](./${chainName}-api-quickstart) to start building on ${displayName}.
 
 ## What is the ${displayName} API?
-The ${displayName} API allows developers to interface with the ${displayName} mainnet. With this API, developers can execute transactions, query on-chain data, and interact with the ${displayName} network, relying on a JSON-RPC standard.
+The ${displayName} API lets you interact with the ${displayName} mainnet. You can execute transactions, query onchain data, and interact with the ${displayName} network using the JSON-RPC standard.
 
 ## Is ${displayName} EVM compatible?
 Yes, ${displayName} is EVM compatible.
 
 ## What API does ${displayName} use?
-${displayName} uses the JSON-RPC API standard. This API is crucial for any blockchain interaction on the ${displayName} network, allowing users to read block/transaction data, query chain information, execute smart contracts, and store data on-chain.
+${displayName} uses the JSON-RPC API standard. This API enables blockchain interaction on the ${displayName} network, letting you read block and transaction data, query chain information, execute smart contracts, and store data onchain.
 
 ## What methods are supported on ${displayName}?
-${displayName} supports standard Ethereum JSON-RPC methods. Some chain-specific methods may vary. Please check the ${displayName} API endpoints documentation for a complete list.
+${displayName} supports standard Ethereum JSON-RPC methods. Some chain-specific methods may vary. Check the ${displayName} API endpoints documentation for a complete list.
 
 ## What is a ${displayName} API key?
-When accessing the ${displayName} network via a node provider like Alchemy, ${displayName} developers use an API key to send transactions and retrieve data from the network. For the best development experience, we recommend that you [sign up for a free API key](https://dashboard.alchemy.com/signup)!
+When you access the ${displayName} network through a node provider like Alchemy, you use an API key to send transactions and retrieve data. We recommend you [sign up for a free API key](https://dashboard.alchemy.com/signup).
 
 ## Which libraries support ${displayName}?
-Common Ethereum libraries like [ethers.js](https://docs.ethers.org/v5/) should be compatible with ${displayName}, given its EVM nature.
+Common Ethereum libraries like [ethers.js](https://docs.ethers.org/v5/) are compatible with ${displayName}, given its EVM nature.
 
-## My question isn’t here, where can I get help?
-If you have any questions or feedback, please contact us at support@alchemy.com or open a ticket in the dashboard.
+## Where can I get more help?
+If you have questions or feedback, contact us at support@alchemy.com or open a ticket in the [Alchemy Dashboard](https://dashboard.alchemy.com).
 `;
 }
 
@@ -351,7 +351,7 @@ export function updateChainApisOverview(
 
   const newSection = `## ${displayName} APIs
 
-📙 Get started with our [${displayName} API Quickstart](https://www.alchemy.com/docs/reference/${chainName}-api-quickstart)
+Get started with the [${displayName} API quickstart](https://www.alchemy.com/docs/reference/${chainName}-api-quickstart).
 
 | Method | Method |
 | ------ | ------ |

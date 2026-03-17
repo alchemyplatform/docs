@@ -7,11 +7,11 @@ slug: wallets/transactions/solana/sponsor-gas
 Fees and rent are a significant barrier to entry for new users of your app. Sponsor fees and rent to enable users to transact without holding SOL.
 
 * Works with any Solana wallet. [Check out Solana Smart Wallets](/docs/wallets/react/solana-wallets/get-started)
-* No need to manage SOL, we sponsor fees & rent and put it on your bill
+* No need to manage SOL. Fees and rent are sponsored and added to your bill.
 
 ## How it works
 
-When you request gas sponsorship for a transaction using a configured policy, the policy engine will determine if that transaction is eligible for sponsorship. If eligible, Gas Manager will pay for the fees and rent upfront when the user sends the transaction. Gas Manager will make a note of the sponsored cost and add it to your monthly bill.
+When you request gas sponsorship for a transaction using a configured policy, the policy engine determines if that transaction is eligible for sponsorship. If eligible, the Gas Manager pays for the fees and rent upfront when the transaction is sent. The Gas Manager records the sponsored cost and adds it to your monthly bill.
 
 * Fees: the cost of executing transactions
 * Rent: the minimum payment to store data onchain
@@ -27,23 +27,23 @@ When you request gas sponsorship for a transaction using a configured policy, th
 
 <Tabs>
   <Tab title="JavaScript" language="typescript">
-    ### Prepare a Serialized Solana Transaction
+    ### Prepare a serialized Solana transaction
 
-    Here’s an example of creating a serialized transfer transaction using javascript:
+    Here’s an example of creating a serialized transfer transaction using JavaScript:
 
     <Markdown src="api-prepare.mdx" />
 
-    ### Request sponsorship for the Serialized Transaction
+    ### Request sponsorship for the serialized transaction
 
-    To sponsor fees and rent on Solana, 1) the `payerKey` field of the transaction needs to be set to the feePayer wallet that will pay for the gas, 2) the feePayer wallet needs to sign the transaction.
+    To sponsor fees and rent on Solana, 1) set the `payerKey` field of the transaction to the feePayer wallet that pays for the gas, and 2) the feePayer wallet must sign the transaction.
 
-    You can get the `feePayer` address and the feePayer signature through [`alchemy_requestFeePayer`](/docs/reference/alchemy-requestfeepayer) using your gas policy id and the serialized transaction. Gas Manager will update the `feePayer` and add the signature to the `serializedTransaction` if and only the transaction satisfies the rules defined in your policy.
+    Get the `feePayer` address and the feePayer signature through [`alchemy_requestFeePayer`](/docs/reference/alchemy-requestfeepayer) using your gas policy ID and the serialized transaction. The Gas Manager updates the `feePayer` and adds the signature to the `serializedTransaction` if and only if the transaction satisfies the rules defined in your policy.
 
     <Markdown src="api-request.mdx" />
 
-    ### Sign and broadcast the Transaction
+    ### Sign and broadcast the transaction
 
-    Here is an example of signing and broadcasting a transaction using javascript:
+    Here is an example of signing and broadcasting a transaction using JavaScript:
 
     <Markdown src="api-sign.mdx" />
   </Tab>

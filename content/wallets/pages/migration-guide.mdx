@@ -19,16 +19,16 @@ All of the v3 packages have been renamed or removed. The new packages are as fol
 * `@alchemy/aa-accounts` -> `@account-kit/smart-contracts`
 * `@alchemy/aa-signers` -> removed
 
-### Smart Account Signers
+### Smart wallet authentication
 
-The `@alchemy/aa-signers` package has been deprecated. The signers in that package are still compatible with v4, but they will not be receiving future support and the interfaces are not guaranteed to work with future versions of the SDK.
-If you want to integrate a 3rd party signer, it's still very easy if the signer exposes an EIP-1193 interface. See [this guide](/docs/wallets/third-party/signers/privy).
+The `@alchemy/aa-signers` package has been deprecated. The authentication providers in that package are still compatible with v4, but they will not receive future support and the interfaces are not guaranteed to work with future versions of the SDK.
+If you want to integrate a 3rd party authentication provider, it is straightforward if the provider exposes an EIP-1193 interface. See [this guide](/docs/wallets/third-party/signers/privy).
 
 <Warning>
-  We still support all Signers in the SDK!
+  All authentication providers in the SDK are still supported!
 
-  `@account-kit/core` and `@account-kit/react` are the only packages that are opinionated on which signer you can attach to a smart account. However, if you're using `@aa-sdk/*` or `@account-kit/infra` with `@account-kit/smart-contracts`, you can
-  use the guide above to integrate with any signer of your choice.
+  `@account-kit/core` and `@account-kit/react` are the only packages that are opinionated about which authentication provider you can attach to a smart wallet. However, if you use `@aa-sdk/*` or `@account-kit/infra` with `@account-kit/smart-contracts`, you can
+  use the guide above to integrate with any authentication provider of your choice.
 </Warning>
 
 ### Alchemy Transport
@@ -39,11 +39,11 @@ For Smart Account Clients, the `create*AlchemyClient` methods have been updated 
 
 The `alchemyFeeEstimator` and `alchemyUserOperationSimulator` middleware methods now no longer take in a `ClientWithAlchemyMethods` (returned by `createAlchemyPublicRpcClient`) and instead take in an `AlchemyTransport` as well.
 
-The `AlchemyTransport` is a type of `viem` transport that makes it easier to configure your communication with Alchemy RPC. It supports splitting traffic between Alchemy's smart account infra and other Node providers (if needed). The `AlchemyTransport` has been added to `@account-kit/infra` and is exported as `alchemy`.
+The `AlchemyTransport` is a type of `viem` transport that makes it easier to configure your communication with Alchemy RPC. It supports splitting traffic between Alchemy's smart wallet infra and other Node providers (if needed). The `AlchemyTransport` has been added to `@account-kit/infra` and is exported as `alchemy`.
 
 Creating a config with `@account-kit/core` or `@account-kit/react` has been updated to accept an `AlchemyTransport` and the parameters of `createConfig` have been simplified as a result. You will now need to replace your `rpcUrl` or `apiKey` params with `transport: alchemy({...})`.
 
-For more detailed examples, see the relevant Quickstart guides, depending on which package you are using. If you don't know where to start, checkout the [React Quickstart](/docs/wallets/react/quickstart).
+For more detailed examples, see the relevant Quickstart guides, depending on which package you are using. If you don't know where to start, check out the [React Quickstart](/docs/wallets/react/quickstart).
 
 ### Hooks: `useSendTransaction` and `useSendTransactions` removed
 
@@ -60,7 +60,7 @@ This method is no longer used internally and has been removed. The reference imp
 
 ### Utils: `getChain` removed
 
-This method was not super efficient and maintainable because it was importing all the chains from viem. That meant that if you used this method, it risked increasing your bundle size massively. Now all methods require a `Chain` instead of `chainId` in some places.
+This method was not efficient or maintainable because it imported all chains from viem. If you used this method, it risked increasing your bundle size massively. Now all methods require a `Chain` instead of `chainId` in some places.
 
 ### Ethers: `Chain` required param
 
@@ -93,16 +93,16 @@ The version of viem has been updated to `2.20.0` and been added as a peer depend
 
 ### Dropped CJS Support
 
-Due to our dependency on `wagmi` in the `core` and `react` packages, those packages no longer support `cjs` builds. To keep things consistent across all of our packages, we've dropped CJS support in all the packages in this repo. See [this](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) guide on how to migrate from CJS to ESM.
+Due to the dependency on `wagmi` in the `core` and `react` packages, those packages no longer support `cjs` builds. To keep things consistent across all packages, CJS support has been dropped in all packages in this repo. See [this](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) guide on how to migrate from CJS to ESM.
 
 ## Migrating to Version 3.X.X
 
-This version update brings a lot of breaking changes. As we began to support Modular Accounts and their interfaces, we realized that the previous version of the SDK was not as flexible as it could have been to handle the modularity of the new account interfaces.
+This version update brings a lot of breaking changes. As support for Modular Accounts and their interfaces grew, the previous version of the SDK was not flexible enough to handle the modularity of the new account interfaces.
 To address this, version 3.x.x of the SDK switches to an approach more idiomatic to `viem`.
 
 ### Viem Version
 
-We have updated our dependency to viem v2.x.x. This means you will need to update your project to use >= v2.5.0 of viem.
+The dependency has been updated to viem v2.x.x. This means you need to update your project to use >= v2.5.0 of viem.
 
 ### Client: `SmartAccountProvider` → `SmartAccountClient`
 
@@ -241,7 +241,7 @@ const { hash } = await smartAccountClient.sendUserOperation({
 
 #### Option 2: Hoisting the Account
 
-Hoisting the account is similar to using `.connect` in previous versions. You simply create your client with an account passed in to it.
+Hoisting the account is similar to using `.connect` in previous versions. Create your client with an account passed in to it.
 
 ```ts
 import { createLightAccount } from "@account-kit/smart-contracts";
@@ -333,16 +333,16 @@ The `signTypedData` method found on `SmartAccountSigner` has been updated to mat
 ) => Promise<Hex>;
 ```
 
-### Ethers: Removed Methods
+### Ethers: Removed methods
 
-The `with*` methods have been removed from the Provider and Signer classes.
-The `connect` methods has been removed in favor of immutable properties on the Provider and Signer classes. See updated AccountSigner constructor below.
+The `with*` methods have been removed from the Provider and authentication classes.
+The `connect` methods have been removed in favor of immutable properties on the Provider and authentication classes. See updated AccountSigner constructor below.
 
 ### Ethers: `getPublicErc4337Client` → `getBundlerClient`
 
 The `getPublicErc4337Client` method has been renamed to `getBundlerClient` to match the naming found in `aa-core`.
 
-### Ethers: Updated Signer Adapter constructor
+### Ethers: Updated authentication adapter constructor
 
 The `AccountSigner` now takes in a `SmartContractAccount` as a param in its constructor.
 
