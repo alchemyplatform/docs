@@ -17,25 +17,25 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
   <Tab title="React" language="react">
     ## Setup
 
-    Follow these steps to use Openfort signers with the Wallet Client SDK.
+    Follow these steps to use Openfort signers with the Wallet Client SDK using the `@openfort/react` SDK.
 
     ### Installation
 
     <CodeGroup>
     ```shell npm
-    npm install @alchemy/wallet-apis @openfort/openfort-js viem
+    npm install @alchemy/wallet-apis @openfort/react wagmi viem @tanstack/react-query
     ```
 
     ```shell bun
-    bun add @alchemy/wallet-apis @openfort/openfort-js viem
+    bun add @alchemy/wallet-apis @openfort/react wagmi viem @tanstack/react-query
     ```
 
     ```shell yarn
-    yarn add @alchemy/wallet-apis @openfort/openfort-js viem
+    yarn add @alchemy/wallet-apis @openfort/react wagmi viem @tanstack/react-query
     ```
 
     ```shell pnpm
-    pnpm add @alchemy/wallet-apis @openfort/openfort-js viem
+    pnpm add @alchemy/wallet-apis @openfort/react wagmi viem @tanstack/react-query
     ```
     </CodeGroup>
 
@@ -56,130 +56,81 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
       The gas sponsorship policy must be linked to the application behind your Alchemy API key for sponsorship to work.
     </Warning>
 
-    ### 1. Initialize Openfort and create a provider
+    ### 1. Configure OpenfortProvider
 
-    Create an Openfort instance and a React context to share it across your app:
+    Wrap your app with `OpenfortProvider` from `@openfort/react`, along with wagmi and React Query providers:
 
     ```tsx
-    import Openfort, { EmbeddedState } from "@openfort/openfort-js";
-    import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+    import { OpenfortProvider, getDefaultConfig } from "@openfort/react";
+    import { WagmiProvider, createConfig } from "wagmi";
+    import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+    import { arbitrumSepolia } from "viem/chains";
 
-    const openfort = new Openfort({
-      baseConfiguration: {
-        publishableKey: "your-openfort-publishable-key",
-      },
-      shieldConfiguration: {
-        shieldPublishableKey: "your-shield-publishable-key",
-      },
-    });
+    const config = createConfig(
+      getDefaultConfig({
+        appName: "My App",
+        chains: [arbitrumSepolia],
+      })
+    );
 
-    const OpenfortContext = createContext<{
-      openfort: Openfort;
-      state: EmbeddedState;
-    } | null>(null);
+    const queryClient = new QueryClient();
 
-    export function OpenfortProvider({ children }: { children: React.ReactNode }) {
-      const [state, setState] = useState<EmbeddedState>(EmbeddedState.NONE);
-
-      useEffect(() => {
-        const unwatch = openfort.embeddedWallet.watchEmbeddedState({
-          onChange: (currentState: EmbeddedState) => setState(currentState),
-          onError: (err: Error) => console.error("Error watching embedded state:", err),
-          pollingInterval: 300,
-        });
-        return unwatch;
-      }, []);
-
-      const value = useMemo(() => ({ openfort, state }), [state]);
-
+    export function App() {
       return (
-        <OpenfortContext.Provider value={value}>
-          {children}
-        </OpenfortContext.Provider>
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            <OpenfortProvider
+              publishableKey="your-openfort-publishable-key"
+              walletConfig={{
+                shieldPublishableKey: "your-shield-publishable-key",
+              }}
+            >
+              <YourApp />
+            </OpenfortProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
       );
-    }
-
-    export function useOpenfort() {
-      const context = useContext(OpenfortContext);
-      if (!context) {
-        throw new Error("useOpenfort must be used inside OpenfortProvider");
-      }
-      return context;
     }
     ```
 
     ### 2. Get a signer from Openfort
 
-    Use Openfort's EIP-1193 provider to create a viem `WalletClient` that works as a signer:
+    Use wagmi's `useWalletClient` hook to get a viem `WalletClient` from the Openfort embedded wallet:
 
     ```tsx
-    import { createWalletClient, custom } from "viem";
-    import { arbitrumSepolia } from "viem/chains";
-    import { useEffect, useState } from "react";
+    import { useWalletClient } from "wagmi";
     import type { WalletClient } from "viem";
 
-    const useOpenfortSigner = () => {
-      const { openfort } = useOpenfort();
-      const [signer, setSigner] = useState<WalletClient>();
-
-      useEffect(() => {
-        if (signer) return;
-
-        const getSigner = async () => {
-          const provider = await openfort.embeddedWallet.getEthereumProvider();
-          if (!provider) return;
-
-          const [address] = await provider.request({ method: "eth_requestAccounts" });
-
-          const walletClient = createWalletClient({
-            account: address,
-            chain: arbitrumSepolia,
-            transport: custom(provider),
-          });
-
-          setSigner(walletClient);
-        };
-
-        getSigner();
-      }, [openfort, signer]);
-
-      return signer;
+    const useOpenfortSigner = (): WalletClient | undefined => {
+      const { data: walletClient } = useWalletClient();
+      return walletClient;
     };
     ```
 
     ### 3. Handle login
 
-    Use Openfort's authentication to manage user state and conditionally render your wallet UI:
+    Use Openfort's React hooks to manage authentication state and conditionally render your wallet UI:
 
     ```tsx
-    import { EmbeddedState } from "@openfort/openfort-js";
+    import { useUser, useUI, useSignOut } from "@openfort/react";
 
     function OpenfortWallet() {
-      const { openfort, state } = useOpenfort();
+      const { user, isAuthenticated } = useUser();
+      const { setOpen } = useUI();
+      const { signOut } = useSignOut();
       const signer = useOpenfortSigner();
 
-      const handleLogin = async () => {
-        // Request an OTP code to the user's email
-        await openfort.auth.requestEmailOTP({ email: "user@example.com" });
-        // Then verify the OTP code entered by the user
-        // await openfort.auth.verifyEmailOTP({ email, code });
-      };
-
-      const handleLogout = async () => {
-        await openfort.auth.logout();
-      };
-
-      if (state === EmbeddedState.NONE) {
+      if (!user) {
         return <p>Loading...</p>;
       }
 
-      if (state !== EmbeddedState.READY) {
-        return <button onClick={handleLogin}>Login with Openfort</button>;
+      if (!isAuthenticated) {
+        return <button onClick={() => setOpen(true)}>Login with Openfort</button>;
       }
 
       return (
         <div>
-          <button onClick={handleLogout}>Logout</button>
+          <button onClick={() => signOut()}>Logout</button>
           {signer ? <SendTransaction signer={signer} /> : <p>Loading signer...</p>}
         </div>
       );
@@ -230,9 +181,9 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
 
     ### Notes
 
-    * Openfort provides an EIP-1193 provider, so the signer is passed as a `WalletClient`. For EIP-7702 delegation, which requires a `LocalAccount` with `signAuthorization`, you may need to use [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode). See the [EIP-7702 guide](/wallets/transactions/using-eip-7702) for details.
+    * The `@openfort/react` SDK integrates with [wagmi](https://wagmi.sh/), so the signer is obtained via wagmi's `useWalletClient` hook. Since Openfort provides a `WalletClient` (not a `LocalAccount`), for EIP-7702 delegation you may need to use [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode). See the [EIP-7702 guide](/wallets/transactions/using-eip-7702) for details.
     * See the [Sponsor gas](/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
-    * Learn more about Openfort's embedded wallets in the [Openfort documentation](https://www.openfort.io/docs).
+    * Learn more about Openfort's React SDK in the [Openfort documentation](https://www.openfort.io/docs/products/embedded-wallet/react/quickstart).
   </Tab>
 
   <Tab title="JavaScript" language="typescript">
