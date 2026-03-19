@@ -47,7 +47,8 @@ export const uploadChangelogFile = async (
   console.info(`  📄 ${filename} -> ${redisKey}`);
 
   // New files need reindex (to add the route to the index); content-only edits don't
-  // because the changelog index only stores date + filePath, not content.
+  // trigger a reindex. Note: the index also stores a description derived from H2 headings,
+  // so heading changes in preview will leave the description stale until a full reindex.
   return { reindexNeeded: isNew };
 };
 
