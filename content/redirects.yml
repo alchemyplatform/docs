@@ -2346,20 +2346,12 @@ redirects:
 
   # ============================= Deprecated Wallet / Account Kit 404 Redirects ==============================
 
-  # Reference function pages - wildcard redirects
-  # These are SDK-indexed pages that no longer exist; redirect to wallets root
-  - source: /docs/wallets/reference/account-kit/react/functions/:path*
-    destination: /docs/wallets
-    permanent: true
-  - source: /docs/wallets/reference/account-kit/react-native/functions/:path*
-    destination: /docs/wallets
-    permanent: true
-  - source: /docs/wallets/reference/account-kit/infra/functions/:path*
-    destination: /docs/wallets
-    permanent: true
-  - source: /docs/wallets/reference/account-kit/signer/:path*
-    destination: /docs/wallets
-    permanent: true
+  # NOTE: Do NOT add wildcard redirects for /docs/wallets/reference/account-kit/ paths.
+  # These are served from the SDK index (separate from the docs index) and redirects
+  # in next.config.ts run before page routes, so wildcards here would intercept live
+  # SDK reference pages. The Semrush 404s for these paths are stale crawl data.
+
+  # Only redirect the one non-SDK reference path
   - source: /docs/wallets/reference/signer/:path*
     destination: /docs/wallets
     permanent: true
@@ -2371,7 +2363,7 @@ redirects:
 
   # Content pages - Authentication and login
   - source: /docs/wallets/authentication/email-magic-link
-    destination: /docs/wallets/authentication/login-methods/email-otp
+    destination: /docs/wallets/authentication/login-methods/email-magic-link
     permanent: true
   - source: /docs/wallets/signer/authentication/social-login
     destination: /docs/wallets/authentication/login-methods/social-login
