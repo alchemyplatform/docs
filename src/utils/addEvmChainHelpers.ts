@@ -185,7 +185,7 @@ slug: reference/${chainName}-api-faq
 ${introText}
 
 ## How do I get started with ${displayName}?
-See the [${displayName} API quickstart guide](./${chainName}-api-quickstart) to start building on ${displayName}.
+See the [${displayName} API quickstart guide](/docs/reference/${chainName}-api-quickstart) to start building on ${displayName}.
 
 ## What is the ${displayName} API?
 The ${displayName} API lets you interact with the ${displayName} mainnet. You can execute transactions, query onchain data, and interact with the ${displayName} network using the JSON-RPC standard.
