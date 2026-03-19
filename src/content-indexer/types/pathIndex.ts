@@ -25,7 +25,6 @@ export interface ChangelogPathIndexEntry {
   type: "changelog";
   date: string; // ISO date string like "2025-12-11"
   filePath: string; // Filename like "2025-12-11.md"
-  description?: string; // Auto-generated from H2 headings
 }
 
 export type PathIndexEntry =

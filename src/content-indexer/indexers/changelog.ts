@@ -16,52 +16,6 @@ export interface ChangelogIndexerConfig {
   branchId: string;
 }
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-/**
- * Extract H2 headings from markdown content and build a description string.
- * Example output: "Week of January 8, 2026: updates to Developer Experience and Node."
- */
-const buildChangelogDescription = (
-  content: string,
-  date: string,
-  month: string,
-  day: string,
-  year: string,
-): string => {
-  const headings = Array.from(content.matchAll(/^## (.+)$/gm)).map(
-    (m) => m[1].trim(),
-  );
-
-  const monthName = MONTH_NAMES[Number(month) - 1];
-  const dayNum = Number(day);
-  const prefix = `Week of ${monthName} ${dayNum}, ${year}`;
-
-  if (headings.length === 0) {
-    return `${prefix}: changelog updates.`;
-  }
-
-  const joined =
-    headings.length === 1
-      ? headings[0]
-      : `${headings.slice(0, -1).join(", ")} and ${headings[headings.length - 1]}`;
-
-  return `${prefix}: updates to ${joined}.`;
-};
-
 /**
  * Parse a changelog filename (e.g., "2025-11-20.md") into date components
  */
@@ -135,21 +89,11 @@ export const buildChangelogIndex = async (
       const route = `${year}/${Number(month)}/${Number(day)}`;
       const fullPath = `changelog/${route}`;
 
-      // Generate a unique description from H2 headings
-      const description = buildChangelogDescription(
-        content,
-        date,
-        month,
-        day,
-        year,
-      );
-
       // Create path index entry
       const pathIndexEntry: ChangelogPathIndexEntry = {
         type: "changelog",
         date, // ISO date string like "2025-12-11"
         filePath: filename, // Filename like "2025-12-11.md"
-        description,
       };
 
       // Generate hash-based objectID from path (consistent with docs/SDK)
@@ -163,7 +107,6 @@ export const buildChangelogIndex = async (
         objectID,
         indexerType: "changelog",
         title: `Changelog - ${date}`,
-        description,
         content, // Raw markdown - truncateRecord will clean it
         path: fullPath,
         pageType: "Changelog" as const,
