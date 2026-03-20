@@ -16,39 +16,35 @@ export interface ChangelogIndexerConfig {
   branchId: string;
 }
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const MAX_HEADINGS = 3;
+
+/**
+ * Format a date string (YYYY-MM-DD) to long date format (e.g., "January 8, 2026")
+ */
+const formatLongDate = (dateString: string): string => {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 /**
  * Extract H2 headings from markdown content and build a description string.
+ * Caps at MAX_HEADINGS to stay within the ~155 character meta description limit.
  * Example output: "Week of January 8, 2026: updates to Developer Experience and Node."
  */
 const buildChangelogDescription = (
   content: string,
   date: string,
-  month: string,
-  day: string,
-  year: string,
 ): string => {
-  const headings = Array.from(content.matchAll(/^## (.+)$/gm)).map(
-    (m) => m[1].trim(),
-  );
+  const headings = Array.from(content.matchAll(/^## (.+)$/gm))
+    .map((m) => m[1].trim())
+    .slice(0, MAX_HEADINGS);
 
-  const monthName = MONTH_NAMES[Number(month) - 1];
-  const dayNum = Number(day);
-  const prefix = `Week of ${monthName} ${dayNum}, ${year}`;
+  const prefix = `Week of ${formatLongDate(date)}`;
 
   if (headings.length === 0) {
     return `${prefix}: changelog updates.`;
@@ -136,13 +132,7 @@ export const buildChangelogIndex = async (
       const fullPath = `changelog/${route}`;
 
       // Generate a unique description from H2 headings
-      const description = buildChangelogDescription(
-        content,
-        date,
-        month,
-        day,
-        year,
-      );
+      const description = buildChangelogDescription(content, date);
 
       // Create path index entry
       const pathIndexEntry: ChangelogPathIndexEntry = {
