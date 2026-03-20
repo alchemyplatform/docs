@@ -6,7 +6,7 @@ slug: wallets/third-party/signers/openfort
 
 <Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
 
-Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless transactions, batching, and more. Keep Openfort for authentication and wallet management, no wallet migration needed. Add battle-tested transaction infrastructure using EIP-7702 to upgrade your wallets to Smart Wallets:
+Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless transactions, batching, and more in under 10 minutes. Keep Openfort for authentication, no wallet migration needed. Add battle-tested transaction infrastructure using EIP-7702 to upgrade your wallets to Smart Wallets:
 
 * [#1 gas abstraction infrastructure](https://www.bundlebear.com/erc4337-bundlers/all) on the market
 * [370M+](https://www.bundlebear.com/erc4337-paymasters/all) sponsored transactions
@@ -17,7 +17,7 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
   <Tab title="React" language="react">
     ## Setup
 
-    Follow these steps to use Openfort signers with the Wallet Client SDK using the `@openfort/react` SDK.
+    Follow these steps to use Openfort signers with the Wallet Client SDK.
 
     ### Installation
 
@@ -115,12 +115,12 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
     import { useUser, useUI, useSignOut } from "@openfort/react";
 
     function OpenfortWallet() {
-      const { user, isAuthenticated } = useUser();
+      const { isLoading, isAuthenticated } = useUser();
       const { setOpen } = useUI();
       const { signOut } = useSignOut();
       const signer = useOpenfortSigner();
 
-      if (!user) {
+      if (isLoading) {
         return <p>Loading...</p>;
       }
 
@@ -137,9 +137,9 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
     }
     ```
 
-    ### 4. Create the client and send a transaction
+    ### 4. Request an account and send a transaction
 
-    Pass the Openfort signer to `createSmartWalletClient` and use it to send transactions:
+    Openfort provides a `WalletClient` signer, which does not support EIP-7702 authorization signing. Use [`requestAccount`](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) to create a smart wallet, then pass the account address to `sendCalls`:
 
     ```tsx
     import { useMemo, useCallback } from "react";
@@ -165,8 +165,14 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
       );
 
       const handleSend = useCallback(async () => {
-        // Send the transaction
+        // Request a smart wallet (required for WalletClient signers)
+        const { address } = await client.requestAccount({
+          creationHint: { accountType: "sma-b" },
+        });
+
+        // Send the transaction using the smart wallet address
         const { id } = await client.sendCalls({
+          account: address,
           calls: [{ to: zeroAddress, value: BigInt(0), data: "0x" }],
         });
 
@@ -181,7 +187,6 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
 
     ### Notes
 
-    * The `@openfort/react` SDK integrates with [wagmi](https://wagmi.sh/), so the signer is obtained via wagmi's `useWalletClient` hook. Since Openfort provides a `WalletClient` (not a `LocalAccount`), for EIP-7702 delegation you may need to use [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode). See the [EIP-7702 guide](/wallets/transactions/using-eip-7702) for details.
     * See the [Sponsor gas](/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
     * Learn more about Openfort's React SDK in the [Openfort documentation](https://www.openfort.io/docs/products/embedded-wallet/react/quickstart).
   </Tab>
@@ -189,7 +194,7 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
   <Tab title="JavaScript" language="typescript">
     ## Setup
 
-    Use the `@openfort/openfort-js` package with the Wallet Client SDK in a server or Node.js environment.
+    Use the `@openfort/openfort-js` package with the Wallet Client SDK in a browser environment.
 
     ### Installation
 
@@ -225,8 +230,7 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
       * In the [Openfort Dashboard](https://dashboard.openfort.xyz/), navigate to Shield settings and copy the Shield Publishable Key
 
     <Warning>
-      Both the Smart Wallets configuration and the gas sponsorship policy must be
-      linked to the application behind your Alchemy API key for sponsorship to work.
+      The gas sponsorship policy must be linked to the application behind your Alchemy API key for sponsorship to work.
     </Warning>
 
     ### Send a transaction
@@ -247,9 +251,9 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
       },
     });
 
-    // Authenticate the user (e.g., via email OTP)
+    // Authenticate the user — verification is required before using the wallet
     await openfort.auth.requestEmailOTP({ email: "user@example.com" });
-    // await openfort.auth.verifyEmailOTP({ email, code });
+    await openfort.auth.verifyEmailOTP({ email: "user@example.com", code: "123456" });
 
     // Get the EIP-1193 provider from Openfort
     const provider = await openfort.embeddedWallet.getEthereumProvider();
@@ -270,8 +274,14 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
       paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
     });
 
-    // Send the transaction
+    // Request a Smart Contract Account (required for WalletClient signers)
+    const { address: accountAddress } = await client.requestAccount({
+      creationHint: { accountType: "sma-b" },
+    });
+
+    // Send the transaction using the SCA address
     const { id } = await client.sendCalls({
+      account: accountAddress,
       calls: [
         {
           to: "0x0000000000000000000000000000000000000000",
@@ -288,8 +298,8 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
 
     ### Notes
 
-    * Openfort provides an EIP-1193 provider, so the signer is created as a `WalletClient`. For EIP-7702, which requires `signAuthorization` on a `LocalAccount`, you may need to use [non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode). See the [EIP-7702 guide](/wallets/transactions/using-eip-7702) for details.
     * See the [Sponsor gas](/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
+    * This example uses Openfort's `@openfort/openfort-js` client-side package. `@alchemy/wallet-apis` can be used in any JavaScript environment.
     * Learn more about Openfort's embedded wallets in the [Openfort documentation](https://www.openfort.io/docs).
   </Tab>
 </Tabs>
