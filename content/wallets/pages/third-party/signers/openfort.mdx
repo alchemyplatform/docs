@@ -139,7 +139,7 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
 
     ### 4. Request an account and send a transaction
 
-    Openfort provides a `WalletClient` signer, which does not support EIP-7702 authorization signing. Use [`requestAccount`](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) to create a smart wallet, then pass the account address to `sendCalls`:
+    Openfort provides a `WalletClient` signer, which does not support EIP-7702 authorization signing. Use [`requestAccount`](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) to create a smart wallet, then pass the account address to `sendCalls`. The returned address is stable for a given signer and can be stored — you don't need to call `requestAccount` before every transaction:
 
     ```tsx
     import { useMemo, useCallback } from "react";
@@ -274,12 +274,13 @@ Upgrade existing Openfort embedded wallets to Smart Wallets to enable gasless tr
       paymaster: { policyId: process.env.ALCHEMY_POLICY_ID! },
     });
 
-    // Request a Smart Contract Account (required for WalletClient signers)
+    // Request a smart wallet (required for WalletClient signers)
+    // The returned address is stable for a given signer and can be stored for later use
     const { address: accountAddress } = await client.requestAccount({
       creationHint: { accountType: "sma-b" },
     });
 
-    // Send the transaction using the SCA address
+    // Send the transaction using the smart wallet address
     const { id } = await client.sendCalls({
       account: accountAddress,
       calls: [
