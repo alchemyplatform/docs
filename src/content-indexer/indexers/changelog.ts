@@ -16,6 +16,48 @@ export interface ChangelogIndexerConfig {
   branchId: string;
 }
 
+const MAX_HEADINGS = 3;
+
+/**
+ * Format a date string (YYYY-MM-DD) to long date format (e.g., "January 8, 2026")
+ */
+const formatLongDate = (dateString: string): string => {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+/**
+ * Extract H2 headings from markdown content and build a description string.
+ * Caps at MAX_HEADINGS to stay within the ~155 character meta description limit.
+ * Example output: "Week of January 8, 2026: updates to Developer Experience and Node."
+ */
+const buildChangelogDescription = (
+  content: string,
+  date: string,
+): string => {
+  const headings = Array.from(content.matchAll(/^## (.+)$/gm))
+    .map((m) => m[1].trim())
+    .slice(0, MAX_HEADINGS);
+
+  const prefix = `Week of ${formatLongDate(date)}`;
+
+  if (headings.length === 0) {
+    return `${prefix}: changelog updates.`;
+  }
+
+  const joined =
+    headings.length === 1
+      ? headings[0]
+      : `${headings.slice(0, -1).join(", ")} and ${headings[headings.length - 1]}`;
+
+  return `${prefix}: updates to ${joined}.`;
+};
+
 /**
  * Parse a changelog filename (e.g., "2025-11-20.md") into date components
  */
@@ -89,11 +131,15 @@ export const buildChangelogIndex = async (
       const route = `${year}/${Number(month)}/${Number(day)}`;
       const fullPath = `changelog/${route}`;
 
+      // Generate a unique description from H2 headings
+      const description = buildChangelogDescription(content, date);
+
       // Create path index entry
       const pathIndexEntry: ChangelogPathIndexEntry = {
         type: "changelog",
         date, // ISO date string like "2025-12-11"
         filePath: filename, // Filename like "2025-12-11.md"
+        description,
       };
 
       // Generate hash-based objectID from path (consistent with docs/SDK)
@@ -107,6 +153,7 @@ export const buildChangelogIndex = async (
         objectID,
         indexerType: "changelog",
         title: `Changelog - ${date}`,
+        description,
         content, // Raw markdown - truncateRecord will clean it
         path: fullPath,
         pageType: "Changelog" as const,
