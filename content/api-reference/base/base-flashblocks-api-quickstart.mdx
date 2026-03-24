@@ -215,43 +215,113 @@ curl https://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY> -X POST -H "Content-Ty
 }
 ```
 
-
 ### `eth_subscribe` (WebSocket subscriptions)
 
-Flashblocks-enabled WebSocket subscriptions are also supported via `eth_subscribe`.
+Flashblocks-enabled WebSocket subscriptions stream preconfirmed data at approximately 200ms intervals via `eth_subscribe`. Standard subscription types (`newHeads`, `logs`, `newPendingTransactions`) are also supported.
 
-Use your Base WebSocket endpoint:
+Connect using your Base WebSocket endpoint:
 
-- `wss://base-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>`
-- `wss://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>`
+* `wss://base-mainnet.g.alchemy.com/v2/<YOUR_API_KEY>`
+* `wss://base-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>`
 
-To create a subscription, open a WebSocket connection and send an `eth_subscribe` request.
+#### Flashblocks subscription types
+
+##### `newFlashblockTransactions`
+
+Receive each transaction as it becomes preconfirmed into a Flashblock. Pass `true` as the second parameter to include full transaction objects and associated logs.
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 1,
   "method": "eth_subscribe",
-  "params": ["newHeads"]
+  "params": ["newFlashblockTransactions"]
 }
 ```
 
-After subscribing, events are delivered through `eth_subscription` notifications.
+With full transaction data:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "eth_subscribe",
+  "params": ["newFlashblockTransactions", true]
+}
+```
+
+##### `pendingLogs`
+
+Monitor contract events from preconfirmed transactions with sub-block latency. You can optionally filter by contract address and topics.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "eth_subscribe",
+  "params": [
+    "pendingLogs",
+    {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "topics": [
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+      ]
+    }
+  ]
+}
+```
+
+The `address` field accepts a single address or an array of addresses, and `topics` follows the same format as `eth_getLogs`.
+
+##### `newFlashblocks`
+
+Receive full block state updates as each Flashblock is constructed, with accumulated preconfirmed state for the block in progress.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "eth_subscribe",
+  "params": ["newFlashblocks"]
+}
+```
+
+#### Subscription response
+
+After subscribing, you receive a subscription ID:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x1887ec8b9589ccad00000000000532da"
+}
+```
+
+Events are then delivered through `eth_subscription` notifications:
 
 ```json
 {
   "jsonrpc": "2.0",
   "method": "eth_subscription",
   "params": {
-    "subscription": "0x...",
-    "result": {
-      "number": "0x...",
-      "hash": "0x..."
-    }
+    "subscription": "0x1887ec8b9589ccad00000000000532da",
+    "result": { ... }
   }
 }
 ```
 
-For the full list of Flashblocks subscription types and payloads, see [Flashblocks subscription types](https://docs.base.org/base-chain/flashblocks/api-reference#flashblocks-subscription-types).
+#### `eth_unsubscribe`
 
-For more details, see the [Official Base Flashblocks Docs](https://docs.base.org/base-chain/flashblocks/apps).
+Cancel any active subscription using the subscription ID:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "eth_unsubscribe",
+  "params": ["0x1887ec8b9589ccad00000000000532da"]
+}
+```
+
+For more details, see the [Base Flashblocks API reference](https://docs.base.org/base-chain/flashblocks/api-reference) and the [Base Flashblocks documentation](https://docs.base.org/base-chain/flashblocks/apps).
