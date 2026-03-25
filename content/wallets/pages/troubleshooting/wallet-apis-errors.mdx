@@ -141,3 +141,147 @@ When working with Wallet APIs, you may encounter various errors. Here are some c
   docs](https://www.alchemy.com/docs/wallets/transactions/sponsor-gas) for more
   info.
 </Info>
+
+### EIP-7702 not enabled
+
+```json
+{
+  "code": -32602,
+  "message": "EIP-7702 is not enabled on {chainName}. You must call wallet_requestAccount to create a smart contract account address to use on this network.",
+  ...
+}
+```
+
+<Info>
+  This chain does not support EIP-7702. Call [`wallet_requestAccount`](/docs/wallets/transactions/using-eip-7702) to create a smart contract account address to use on this network. Reach out to Alchemy support if you need to inquire about EIP-7702 support on a specific chain.
+</Info>
+
+### maxFeePerGas too low
+
+```json
+{
+  "code": -32000,
+  "message": "An error occurred while executing user operation: precheck failed: maxFeePerGas is {actual} but must be at least {min}",
+  ...
+}
+```
+
+<Info>
+  This error occurs when the base fee on the chain fluctuates between the time you prepare a call and the time you send it. To resolve:
+
+  * Re-prepare the call immediately before sending to get up-to-date fee estimates.
+  * Minimize any delay between preparing and sending. Don't wait between the two steps.
+  * If needed, you can use the [`gasParamsOverride` capability](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls#params0.capabilities.gasparamsoverride) to set a higher `maxFeePerGas` buffer, but this is an advanced override and shouldn't typically be required.
+</Info>
+
+### maxPriorityFeePerGas too low
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: maxPriorityFeePerGas is {actual} but must be at least {min}",
+  ...
+}
+```
+
+<Info>
+  This error occurs when the priority fee on the chain changes between the time you prepare a call and the time you send it. Re-prepare the call immediately before sending to get up-to-date fee estimates, and minimize any delay between the two steps.
+</Info>
+
+### preVerificationGas too low
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: preVerificationGas is {actual} but must be at least {min}",
+  ...
+}
+```
+
+<Info>
+  The `preVerificationGas` value doesn't cover the intrinsic overhead of the user operation. Re-prepare the call to get an updated gas estimate. This can happen when the operation's calldata size or the chain's L1 fee conditions have changed.
+</Info>
+
+### Total gas limit too high
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: total gas limit is {actual} but must be at most {max}",
+  ...
+}
+```
+
+<Info>
+  The combined gas limits on the user operation exceed the maximum allowed. Reduce the complexity of your calls or split them into multiple operations.
+</Info>
+
+### callGasLimit too low
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: callGasLimit is {actual} but must be at least {min}",
+  ...
+}
+```
+
+<Info>
+  The `callGasLimit` is below the required minimum. Re-prepare the call to get an accurate gas estimate, or use gas overrides to increase the limit.
+</Info>
+
+### verificationGasLimit too high
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: verificationGasLimit is {actual} but must be at most {max}",
+  ...
+}
+```
+
+<Info>
+  The `verificationGasLimit` exceeds the maximum allowed. This can happen if gas estimation returned an unusually high value. Re-prepare the call or reduce overrides if you've set them manually.
+</Info>
+
+### EIP-7702 invalid signature
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: EIP-7702 authorization signature is invalid",
+  ...
+}
+```
+
+<Info>
+  The EIP-7702 authorization signature is malformed or was signed by the wrong key. Ensure you are correctly signing the authorization with the account's owner key.
+</Info>
+
+### EIP-7702 nonce mismatch
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: EIP-7702 nonce mismatch. Expected: {expected}, Actual: {actual}",
+  ...
+}
+```
+
+<Info>
+  The EIP-7702 authorization nonce does not match the expected value on-chain. This can happen if you sent another transaction from the same account between preparing and sending the delegation. Ensure no other transactions are submitted from the account while the delegation is in flight.
+</Info>
+
+### EIP-7702 too many pending transactions
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: EIP-7702 auth sender has too many pending transactions: {count}. Max allowed: 1",
+  ...
+}
+```
+
+<Info>
+  The authorization sender already has a pending transaction. Only one pending transaction is allowed at a time. Wait for the current transaction to confirm before sending another.
+</Info>
