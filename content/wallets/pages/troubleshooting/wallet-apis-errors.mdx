@@ -144,14 +144,14 @@ When working with Wallet APIs, you may encounter various errors. Here are some c
 
 ## Rundler precheck errors
 
-The following errors originate from Rundler's precheck validation and surface through Wallet APIs with error code `-32000`. They indicate that a user operation failed validation before being submitted to the mempool.
+The following errors surface through Wallet APIs with error code `-32000`. The error message is prefixed with `An error occurred while executing user operation:` followed by the specific precheck failure.
 
 ### maxFeePerGas too low
 
 ```json
 {
   "code": -32000,
-  "message": "precheck failed: maxFeePerGas is {actual} but must be at least {min}",
+  "message": "An error occurred while executing user operation: precheck failed: maxFeePerGas is {actual} but must be at least {min}",
   ...
 }
 ```
@@ -160,8 +160,8 @@ The following errors originate from Rundler's precheck validation and surface th
   This error occurs when the base fee on the chain fluctuates between the time you prepare a call and the time you send it. To resolve:
 
   * Re-prepare the call immediately before sending to get up-to-date fee estimates.
-  * Minimize any delay between preparing and sending — don't wait around between the two steps.
-  * Optionally, use [fee overrides](/docs/wallets/reference/alchemy-sendpreparedcalls#fee-overrides) to set a higher `maxFeePerGas` buffer.
+  * Minimize any delay between preparing and sending. Don't wait between the two steps.
+  * If needed, you can use [fee overrides](/docs/wallets/reference/alchemy-sendpreparedcalls#fee-overrides) to set a higher `maxFeePerGas` buffer, but this is an advanced override and shouldn't typically be required.
 </Info>
 
 ### maxPriorityFeePerGas too low
@@ -175,7 +175,7 @@ The following errors originate from Rundler's precheck validation and surface th
 ```
 
 <Info>
-  Same cause as `maxFeePerGas too low` — fee market conditions changed between preparation and submission. Re-prepare the call and send promptly, or use fee overrides to add a buffer.
+  This error occurs when the priority fee on the chain changes between the time you prepare a call and the time you send it. Re-prepare the call immediately before sending to get up-to-date fee estimates, and minimize any delay between the two steps.
 </Info>
 
 ### preVerificationGas too low
@@ -206,76 +206,6 @@ The following errors originate from Rundler's precheck validation and surface th
   The combined gas limits on the user operation exceed the maximum allowed. Reduce the complexity of your calls or split them into multiple operations.
 </Info>
 
-### Sender is not a contract and no initCode
-
-```json
-{
-  "code": -32000,
-  "message": "precheck failed: sender {addr} is not a contract and initCode is empty",
-  ...
-}
-```
-
-<Info>
-  The sender address has no deployed contract code, and no `initCode` was provided to deploy one. This usually means the smart account hasn't been deployed yet. Ensure you include the correct `initCode` (or `factory`/`factoryData` for EntryPoint v0.7) so the account is created as part of the first user operation.
-</Info>
-
-### Existing sender with initCode
-
-```json
-{
-  "code": -32000,
-  "message": "precheck failed: sender {addr} is an existing contract, but initCode is nonempty",
-  ...
-}
-```
-
-<Info>
-  The sender account is already deployed, but the user operation still includes `initCode`. Remove the `initCode` (or `factory`/`factoryData`) field — it's only needed for the first operation that deploys the account.
-</Info>
-
-### Factory is not a contract
-
-```json
-{
-  "code": -32000,
-  "message": "precheck failed: initCode indicates factory with no code: {addr}",
-  ...
-}
-```
-
-<Info>
-  The factory address specified in `initCode` has no deployed code. Verify you're using the correct factory address for the chain you're operating on.
-</Info>
-
-### Paymaster deposit too low
-
-```json
-{
-  "code": -32000,
-  "message": "precheck failed: paymaster deposit is {actual} but must be at least {required} to pay for this operation",
-  ...
-}
-```
-
-<Info>
-  The paymaster doesn't have enough deposited in the EntryPoint to cover this operation's gas costs. If you're using a [gas sponsorship policy](/docs/wallets/transactions/sponsor-gas), ensure the policy is funded. If you're using a custom paymaster, top up its EntryPoint deposit.
-</Info>
-
-### Paymaster is not a contract
-
-```json
-{
-  "code": -32000,
-  "message": "precheck failed: paymasterAndData indicates paymaster with no code: {addr}",
-  ...
-}
-```
-
-<Info>
-  The paymaster address has no deployed code on this chain. Double check the paymaster address and that you're on the correct network.
-</Info>
-
 ### callGasLimit too low
 
 ```json
@@ -304,24 +234,58 @@ The following errors originate from Rundler's precheck validation and surface th
   The `verificationGasLimit` exceeds the maximum allowed. This can happen if gas estimation returned an unusually high value. Re-prepare the call or reduce overrides if you've set them manually.
 </Info>
 
-### EIP-7702 errors
+### EIP-7702 not supported
 
 ```json
 {
   "code": -32000,
-  "message": "precheck failed: EIP-7702 ...",
+  "message": "precheck failed: EIP-7702 is not supported ...",
   ...
 }
 ```
 
 <Info>
-  EIP-7702 precheck errors can occur for several reasons:
+  This chain does not support EIP-7702. You can use non-7702 mode by creating your account with [`wallet_requestAccount`](/docs/wallets/transactions/using-eip-7702). Reach out to Alchemy support if you need to inquire about EIP-7702 support on a specific chain.
+</Info>
 
-  * **Not supported / disabled** — EIP-7702 is not available on this EntryPoint or has been disabled on this chain.
-  * **Chain ID mismatch** — The authorization's `chainId` doesn't match the target chain. Ensure you're signing for the correct network.
-  * **Invalid signature** — The EIP-7702 authorization signature is malformed or was signed by the wrong key.
-  * **Sender/authority mismatch** — The recovered signer from the authorization doesn't match the expected sender.
-  * **Nonce mismatch** — The authorization nonce doesn't match the expected value on-chain.
-  * **Invalid factory** — The factory specified in the EIP-7702 authorization is not valid.
-  * **Too many pending transactions** — The authorization sender already has a pending transaction. Wait for it to confirm before sending another.
+### EIP-7702 invalid signature
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: EIP-7702 authorization signature is invalid",
+  ...
+}
+```
+
+<Info>
+  The EIP-7702 authorization signature is malformed or was signed by the wrong key. Ensure you are correctly signing the authorization with the account's owner key.
+</Info>
+
+### EIP-7702 nonce mismatch
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: EIP-7702 nonce mismatch. Expected: {expected}, Actual: {actual}",
+  ...
+}
+```
+
+<Info>
+  The EIP-7702 authorization nonce does not match the expected value on-chain. This can happen if you sent another transaction from the same account between preparing and sending the delegation. Ensure no other transactions are submitted from the account while the delegation is in flight.
+</Info>
+
+### EIP-7702 too many pending transactions
+
+```json
+{
+  "code": -32000,
+  "message": "precheck failed: EIP-7702 auth sender has too many pending transactions: {count}. Max allowed: 1",
+  ...
+}
+```
+
+<Info>
+  The authorization sender already has a pending transaction. Only one pending transaction is allowed at a time. Wait for the current transaction to confirm before sending another.
 </Info>
