@@ -142,6 +142,20 @@ When working with Wallet APIs, you may encounter various errors. Here are some c
   info.
 </Info>
 
+### EIP-7702 not enabled
+
+```json
+{
+  "code": -32602,
+  "message": "EIP-7702 is not enabled on {chainName}. You must call wallet_requestAccount to create a smart contract account address to use on this network.",
+  ...
+}
+```
+
+<Info>
+  This chain does not support EIP-7702. Call [`wallet_requestAccount`](/docs/wallets/transactions/using-eip-7702) to create a smart contract account address to use on this network. Reach out to Alchemy support if you need to inquire about EIP-7702 support on a specific chain.
+</Info>
+
 ## Rundler precheck errors
 
 The following errors surface through Wallet APIs with error code `-32000`. The error message is prefixed with `An error occurred while executing user operation:` followed by the specific precheck failure.
@@ -232,20 +246,6 @@ The following errors surface through Wallet APIs with error code `-32000`. The e
 
 <Info>
   The `verificationGasLimit` exceeds the maximum allowed. This can happen if gas estimation returned an unusually high value. Re-prepare the call or reduce overrides if you've set them manually.
-</Info>
-
-### EIP-7702 not supported
-
-```json
-{
-  "code": -32000,
-  "message": "precheck failed: EIP-7702 is not supported ...",
-  ...
-}
-```
-
-<Info>
-  This chain does not support EIP-7702. You can use non-7702 mode by creating your account with [`wallet_requestAccount`](/docs/wallets/transactions/using-eip-7702). Reach out to Alchemy support if you need to inquire about EIP-7702 support on a specific chain.
 </Info>
 
 ### EIP-7702 invalid signature
