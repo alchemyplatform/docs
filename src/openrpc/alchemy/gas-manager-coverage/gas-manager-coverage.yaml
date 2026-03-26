@@ -315,7 +315,7 @@ methods:
             value:
               webhookData: "example webhook data"
               policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
-              entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+              entryPoint: "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
               dummySignature: "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c"
               userOperation:
                 sender: "0x1234567890123456789012345678901234567890"
@@ -329,12 +329,15 @@ methods:
         result:
           name: "alchemy_requestGasAndPaymasterAndData response"
           value:
-            entrypointV06Response:
-              paymasterAndData: "0xabcde"
-            entrypointV07Response:
-              paymasterData: "0x67890"
-              paymasterVerificationGasLimit: "0x5208"
-              paymasterPostOpGasLimit: "0x5208"
+            paymaster: "0xabcde"
+            paymasterData: "0x67890"
+            callGasLimit: "0x5208"
+            verificationGasLimit: "0x5208"
+            preVerificationGas: "0x5208"
+            maxFeePerGas: "0x1"
+            maxPriorityFeePerGas: "0x1"
+            paymasterVerificationGasLimit: "0x5208"
+            paymasterPostOpGasLimit: "0x5208"
 
   - name: "alchemy_requestPaymasterAndData"
     description: |
@@ -418,11 +421,10 @@ methods:
             value:
               webhookData: "example webhook data"
               policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
-              entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+              entryPoint: "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
               userOperation:
                 sender: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
                 nonce: "0x2"
-                initCode: "0x"
                 callData: "0xdeadbeef"
                 callGasLimit: "0x5208"
                 verificationGasLimit: "0x5208"
@@ -432,23 +434,10 @@ methods:
         result:
           name: "alchemy_requestPaymasterAndData response"
           value:
-            entrypointV06Response:
-              paymasterAndData: "0xdead"
-              callGasLimit: "0x5208"
-              verificationGasLimit: "0x5208"
-              preVerificationGas: "0x5208"
-              maxFeePerGas: "0x1"
-              maxPriorityFeePerGas: "0x1"
-            entrypointV07Response:
-              paymaster: "0xfeed"
-              paymasterData: "0xfeed"
-              paymasterVerificationGasLimit: "0x5208"
-              paymasterPostOpGasLimit: "0x5208"
-              callGasLimit: "0x5208"
-              verificationGasLimit: "0x5208"
-              preVerificationGas: "0x5208"
-              maxFeePerGas: "0x1"
-              maxPriorityFeePerGas: "0x1"
+            paymaster: "0xfeed"
+            paymasterData: "0xfeed"
+            paymasterVerificationGasLimit: "0x5208"
+            paymasterPostOpGasLimit: "0x5208"
 
   - name: "pm_getPaymasterData"
     description: Returns values to be used in paymaster-related fields of a signed userOperation. These values are not stubs and will be included in a signed userOperation as part of an `eth_sendUserOperation` call.
