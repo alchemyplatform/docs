@@ -259,6 +259,7 @@ methods:
         oneOf:
           - title: "Entrypoint v0.6 Response"
             type: "object"
+            required: ["paymasterAndData"]
             properties:
               paymasterAndData:
                 $ref: "../_shared_wallets/components.yaml#/components/schemas/bytes"
@@ -280,6 +281,7 @@ methods:
                 description: "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)."
           - title: "Entrypoint v0.7 Response"
             type: "object"
+            required: ["paymaster", "paymasterData"]
             properties:
               paymaster:
                 $ref: "../_shared_wallets/components.yaml#/components/schemas/address"
@@ -329,8 +331,8 @@ methods:
         result:
           name: "alchemy_requestGasAndPaymasterAndData response"
           value:
-            paymaster: "0xabcde"
-            paymasterData: "0x67890"
+            paymaster: "0x4685d4c74BaC297e23D5C7D1a2bFc1b4581e6704"
+            paymasterData: "0x00000067890abcdef1234567890abcdef1234567890abcdef"
             callGasLimit: "0x5208"
             verificationGasLimit: "0x5208"
             preVerificationGas: "0x5208"
@@ -395,12 +397,14 @@ methods:
         oneOf:
           - title: "Entrypoint v0.6 Response"
             type: "object"
+            required: ["paymasterAndData"]
             properties:
               paymasterAndData:
                 type: "string"
                 description: "The 0x-prefixed hex string for the user to put into the UO's paymasterAndData field. Contains gas manager `address`, `sigTimeRange`, and secp256k1 `signature`."
           - title: "Entrypoint v0.7 Response"
             type: "object"
+            required: ["paymaster", "paymasterData"]
             properties:
               paymaster:
                 type: "string"
@@ -434,8 +438,8 @@ methods:
         result:
           name: "alchemy_requestPaymasterAndData response"
           value:
-            paymaster: "0xfeed"
-            paymasterData: "0xfeed"
+            paymaster: "0x4685d4c74BaC297e23D5C7D1a2bFc1b4581e6704"
+            paymasterData: "0x00000067890abcdef1234567890abcdef1234567890abcdef"
             paymasterVerificationGasLimit: "0x5208"
             paymasterPostOpGasLimit: "0x5208"
 
@@ -493,12 +497,14 @@ methods:
         oneOf:
           - title: "EntryPoint v0.6 Response"
             type: "object"
+            required: ["paymasterAndData"]
             properties:
               paymasterAndData:
                 type: "string"
                 description: "The 0x‑prefixed hex string for the user to put into the UO's paymasterAndData field."
           - title: "EntryPoint v0.7 Response"
             type: "object"
+            required: ["paymaster", "paymasterData"]
             properties:
               paymaster:
                 type: "string"
@@ -529,11 +535,7 @@ methods:
         result:
           name: "pm_getPaymasterData response"
           value:
-            entrypointV06Response:
-              paymasterAndData: "0xabc123"
-            entrypointV07Response:
-              paymaster: "0xfeed"
-              paymasterData: "0x789abc"
+            paymasterAndData: "0xabc123"
 
   - name: "pm_getPaymasterStubData"
     description: "Returns stub values to be used in paymaster-related fields of an unsigned userOperation for gas estimation."
@@ -586,6 +588,7 @@ methods:
         oneOf:
           - title: "EntryPoint v0.6 Stub Response"
             type: "object"
+            required: ["paymasterAndData"]
             properties:
               paymasterAndData:
                 type: "string"
@@ -599,6 +602,7 @@ methods:
                     description: "The name of the entity sponsoring the userOperation."
           - title: "EntryPoint v0.7 Stub Response"
             type: "object"
+            required: ["paymaster", "paymasterData"]
             properties:
               paymaster:
                 type: "string"
@@ -636,14 +640,9 @@ methods:
         result:
           name: "pm_getPaymasterDataStub response"
           value:
-            entrypointV06Response:
-              paymasterAndData: "0xabc123"
-              sponsor:
-                name: "SponsorName"
-            entrypointV07Response:
-              paymasterData: "0x789abc"
-              sponsor:
-                name: "SponsorName"
+            paymasterAndData: "0xabc123"
+            sponsor:
+              name: "SponsorName"
 
   - name: "alchemy_requestFeePayer"
     description: |
