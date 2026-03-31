@@ -19,7 +19,7 @@ To understand the status of a userOp you can use the `eth_getUserOperationByHash
 
 For EIP-1559 fee markets, the base fee is fixed per block. To prioritize the inclusion of your userOp and get it unstuck from the mempool, you need to increase the `maxPriorityFeePerGas`. This can be achieved by dropping and replacing the userOp with a new one that has a higher `maxPriorityFeePerGas`.
 
-### Can a userOp be accepted by the bundler and then dropped while it’s in the mempool?
+### Can accepted userOps be dropped?
 
 This is a possible but rare scenario and can occur due to several reasons:
 
@@ -28,7 +28,7 @@ This is a possible but rare scenario and can occur due to several reasons:
 * The validation function of the userOp fails when it is being bundled into a transaction for onchain submission.
 * The mempool runs out of memory, causing the bundler to drop userOps with the lowest fees.
 
-### Can I retrieve the hash of the bundle transaction right after calling `eth_sendUserOperation` without waiting for the transaction to get mined?
+### Get bundle hash before mining
 
 The transaction hash is not included in the response of `eth_sendUserOperation` for the following reasons:
 
@@ -48,7 +48,7 @@ To handle these errors, you should:
 * add buffers on top of the gas estimates to account for market fluctuations
 * implement retry mechanisms.
 
-### What is a `Replacement Underpriced` error and how can I resolve it?
+### Resolve `Replacement Underpriced` errors
 
 You might get a `"Replacement Underpriced Error"` when using `eth_sendUserOperation`. This error occurs when a user already has an existing userOp in the mempool. userOps can become "stuck" in the mempool if their gas fee limits are too low to be included in a bundle.
 
@@ -66,7 +66,7 @@ To do so, follow the next steps:
 
 After calculating the new values, send your `userOp` again with the updated fees and it should go through successfully.
 
-### What are `-32521: Execution reverted` errors and how can I debug them?
+### Debug `-32521: Execution reverted` errors
 
 These occur when the `userOp` reverts during execution. These errors typically contain `revertData`, which are optional bytes with additional information about the revert.
 
@@ -88,7 +88,7 @@ To debug these errors, you should:
 
 ### What is the maximum number of supported parallel nonces?
 
-The bundler supports up to 4 parallel nonces (default value from ERC-7562) for unstaked senders and unlimited parallel nonces for staked senders. See [below](/docs/reference/bundler-faqs#what-is-the-minimum-amount-that-must-be-staked-with-the-entrypoint) for stake requirements.
+The bundler supports up to 4 parallel nonces (default value from ERC-7562) for unstaked senders and unlimited parallel nonces for staked senders. See [below](/docs/reference/bundler-faqs#minimum-entrypoint-stake-amount) for stake requirements.
 
 Unstaked accounts that attempt to exceed this limit will receive the error `Max operations (4) reached for account`. Staking the account removes the restriction. Accounts can be staked by calling `addStake(uint32 unstakeDelaySec)` on the EntryPoint contract, and later `unlockStake()` followed by `withdrawStake(address payable)` to recover the stake.
 
@@ -96,7 +96,7 @@ Staked senders are subject to ERC-7562 reputation rules. If a sender submits a l
 
 ### Can I include multiple parallel nonces in a single bundle?
 
-To include multiple parallel nonces in the same bundle, the account must stake the [minimum stake amount](/docs/reference/bundler-faqs#what-is-the-minimum-amount-that-must-be-staked-with-the-entrypoint) with the EntryPoint.
+To include multiple parallel nonces in the same bundle, the account must stake the [minimum stake amount](/docs/reference/bundler-faqs#minimum-entrypoint-stake-amount) with the EntryPoint.
 
 ## Signatures
 
@@ -152,7 +152,7 @@ Recommended Actions for Calculating `maxFeePerGas`:
   estimating userOp gas fees.
 </Info>
 
-### How are fee values determined to give your userOp the best chance of landing onchain?
+### How fee values are determined
 
 * [alchemy\_requestGasAndPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) is an opinionated endpoint that tries to set fee values that give your userOps a high chance of landing onchain. The estimates may be slightly high, but this is intentional to land your UOs faster.
 
@@ -177,7 +177,7 @@ The appropriate version to use is determined by the smart account for which you 
 
 For more information about the differences between the versions, refer to the specifications for [ERC-4337 v0.6.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/eip/EIPS/eip-4337.md) and [ERC-4337 v0.7.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.7.0/erc/ERCS/erc-4337.md), particularly the description of the user operation fields.
 
-### At which addresses are the EntryPoint contracts for v0.6 and v0.7 deployed?
+### EntryPoint contract addresses (v0.6, v0.7)
 
 The EntryPoint contracts for v0.6 and v0.7 are deployed at the following addresses across all chains supported by Alchemy:
 
@@ -190,7 +190,7 @@ There is not currently a date set to deprecate support for EntryPoint v0.6 but d
 
 ## Entity Staking Requirements
 
-### What is the minimum amount that must be staked with the EntryPoint?
+### Minimum EntryPoint stake amount
 
 Mainnets:
 

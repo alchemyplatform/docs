@@ -31,7 +31,7 @@ Together, these best practices help developers avoid client-side timeouts and un
 
 ***
 
-## Compressing RPC Responses to Speed Up Blockchain Node Requests
+## Compress RPC responses for faster requests
 
 At Alchemy, many of our developers have brought up slow response times as a major blocker to providing their customers with a good web3 user experience.
 
@@ -41,7 +41,7 @@ Gzip compression offers up to a 95% decrease in the size of files sent over a st
 
 In practice, we’ve seen roughly a **75% improvement in the total latency of typical JSON-RPC `replayTransaction` calls.**
 
-### Can JSON-RPC responses be compressed on Optimism, Arbitrum, Polygon, Starknet, or Solana?
+### Compression support by chain
 
 Beyond support for gZip compression for Ethereum, this method of compressing JSON-RPC requests works on all the above blockchains. To implement this latency optimization, simply enable Gzip compression using your Alchemy endpoint
 
@@ -95,7 +95,7 @@ When making a curl request in the terminal, your request with gzip might look li
 
 ***
 
-## Test the JSON-RPC Response Latency Decrease using Gzip Compression
+## Test latency with gzip compression
 
 To compare the latency improvements you’ll get using gzip on a single request, we’ll set up a script to record the total time a [`trace_replayTransaction`](/docs/node/trace-api/trace-api-endpoints/trace-replay-transaction) request takes, and then run the same request with gzip compression and without gzip compression
 
@@ -116,7 +116,7 @@ Create a new file named `curl-format.txt` and add the following lines:
   ```
 </CodeGroup>
 
-### Step 2: Run a test JSON-RPC request script without gzip compression
+### Step 2: Test a request without gzip
 
 Next, run the following script without gzip compression on an arbitrary node request:
 
@@ -144,7 +144,7 @@ On our pass, **we got the following output with approximately a 4-second respons
   ```
 </CodeGroup>
 
-### Step 3: Run a test JSON-RPC request with gzip compression enabled
+### Step 3: Test a request with gzip
 
 Run the same script, but this time with gzip compression enabled on the same node request:
 

@@ -81,11 +81,11 @@ Each contract’s storage area has more slots than all the stars in the universe
 
 Because of the immense storage size a contract’s storage can be considered virtual. What that means is, that if you were to read a random slot, it will most likely be empty/uninitialized. Reading such a slot will return a value of 0. The EVM is not actually storing all these 0s, but it keeps track of which slots are in use and which are not. When you access an unused slot the EVM knows that and will return 0.
 
-### Why did the designers of the EVM give contracts such a large storage area?
+### Why contracts have such large storage
 
 **The reason the contract storage area is so large has to do with state variables of dynamic size and how hashes are used to calculate state variables’ storage slots.**
 
-## How are state variables stored in smart contract storage slots?
+## State variable storage in slots
 
 **Solidity will automatically map every defined state variable of your contract to a slot in storage in the order the state variables are declared, starting at slot 0.**
 
@@ -117,7 +117,7 @@ Diagram of how computers store multi-byte values in memory.
 
 * Little-endian is used for **every other type of variable**. Some examples are: uint8, uint32, uint256, int8, boolean, address, etc…
 
-## How are state variables padded and packed in smart contract storage slots?
+## State variable padding and packing
 
 **To store variables that require less than 32 bytes of memory in storage, the EVM will pad the values with 0s until all 32 bytes of the slot are used and then store the padded value.**
 
@@ -143,7 +143,7 @@ In contrast to padding variables, packing minimizes the amount of storage used a
 
 The storage gas savings of tightly packing variables can significantly increase the cost of reading/writing them if the packed variables are not usually used together. For example, if we need to read c very often without reading a it might be best to not tightly pack the variables. This is a design consideration developers must take into account when writing contracts.
 
-## How are user-defined types (structs) stored in contract memory?
+## Struct storage in contract memory
 
 In scenarios where we have a group of variables that logically belong together and are often read and written as unit, we can define a [user-defined type](https://www.alchemy.com/overviews/solidity-struct) via Solidity’s struct keyword and apply the above knowledge of byte-packing to get the most efficient gas-usage regarding storage usage and reading and writing of storage variables.
 
@@ -163,7 +163,7 @@ For example, the storage layout of the state variables in the following contract
 
 Diagram of how statically-sized state variables are stored in storage slots.
 
-## How are dynamically-sized state variables stored in smart contract memory?
+## Dynamic variable storage in memory
 
 **Dynamically-sized state variables are assigned slots in the same way as statically-sized state variables, but the slots assigned to dynamic state variables are only marker slots.** That is, the slots mark the fact that a dynamic array or mapping exists, but the slot doesn’t store the variable’s data.
 
