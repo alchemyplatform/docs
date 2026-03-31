@@ -38,7 +38,7 @@ We send you notifications every time we run your GraphQL queries regardless of w
   If you want to turn this off and only receive webhooks for non-empty queries, check out instructions in the [next FAQ question](/docs/reference/custom-webhooks-faq#how-do-i-receive-webhooks-for-only-non-empty-results-ie-turn-off-the-heartbeat-mechanism-described-abovedont-receive-a-webhook-for-every-block)!
 </Info>
 
-## How do I receive webhooks for only non-empty results (i.e. turn off the heartbeat mechanism described above/don't receive a webhook for every block)?
+## Receive webhooks only for non-empty results
 
 To turn off the "heartbeat" mechanism for your webhook query (aka. only receive a webhook if the query on a block is not empty), you can change the `graphql_query` from a string to `{ query: string, skip_empty_messages: boolean }` and set the `skip_empty_messages` param to True. For example:
 
@@ -73,7 +73,7 @@ There is currently a limit of 100 GraphQL queries within each team account.
 
 If you're seeing 5xx error codes when creating webhooks, please ensure that you do not have *transactions.inputData* included as a parameter in your GraphQL query. We are heads-down working on ensuring reliable access across our entire API surface area!
 
-## Are there any constraints to the GraphQL interface in Custom Webhooks?
+## Custom Webhooks GraphQL constraints
 
 While logs and transactions can be self-referential entities, we only allow for a single-layer nested data structure to bound GraphQL queries. This helps us to to maintain a tidy API surface area.
 
