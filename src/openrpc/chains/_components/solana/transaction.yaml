@@ -534,6 +534,127 @@ components:
             - type: number
           nullable: true
           description: Transaction version.
+    GetTransactionsForAddressConfig:
+      title: GetTransactionsForAddress Configuration
+      type: object
+      properties:
+        transactionDetails:
+          type: string
+          description: >-
+            Level of transaction detail to return. `signatures` returns only
+            signature objects; `full` returns complete transaction data.
+          enum:
+            - signatures
+            - full
+          default: signatures
+        sortOrder:
+          type: string
+          description: Order in which to return transactions. `desc` returns newest first; `asc` returns oldest first.
+          enum:
+            - desc
+            - asc
+          default: desc
+        limit:
+          type: integer
+          description: >-
+            Maximum number of results to return. Maximum is 1,000 for
+            `signatures` mode and 100 for `full` mode.
+          default: 1000
+        paginationToken:
+          type: string
+          description: >-
+            Opaque token returned by a previous response. When provided,
+            the response begins after the transaction identified by this token,
+            overriding any `before` parameter.
+        before:
+          type: string
+          description: >-
+            Return transactions older than this transaction signature (exclusive).
+            Ignored when `paginationToken` is provided.
+        until:
+          type: string
+          description: >-
+            Stop searching at this transaction signature (exclusive). Results will
+            not include the transaction identified by this signature.
+        encoding:
+          type: string
+          description: Encoding format for transaction data. Only applies when `transactionDetails` is `full`.
+          enum:
+            - json
+            - jsonParsed
+            - base64
+            - base58
+          default: json
+        maxSupportedTransactionVersion:
+          type: integer
+          description: >-
+            The maximum transaction version to return. Only applies when
+            `transactionDetails` is `full`.
+        filters:
+          $ref: "#/components/schemas/GetTransactionsForAddressFilters"
+    GetTransactionsForAddressFilters:
+      title: GetTransactionsForAddress Filters
+      type: object
+      properties:
+        status:
+          type: string
+          description: Filter by transaction outcome.
+          enum:
+            - any
+            - succeeded
+            - failed
+          default: any
+        blockTime:
+          $ref: "#/components/schemas/RangeFilter"
+          description: >-
+            Restrict results to transactions whose `blockTime` falls within
+            this range (Unix timestamps). Converted internally to an
+            approximate slot range.
+        slot:
+          $ref: "#/components/schemas/RangeFilter"
+          description: Restrict results to transactions within this slot range.
+        tokenAccounts:
+          type: string
+          description: >-
+            Filter by token account activity. `all` returns only transactions
+            that include token balances; `balanceChanged` returns only
+            transactions where at least one pre/post token balance differs;
+            `none` applies no token-account filter.
+          enum:
+            - none
+            - all
+            - balanceChanged
+          default: none
+    RangeFilter:
+      title: Range Filter
+      type: object
+      properties:
+        gte:
+          type: integer
+          description: Inclusive lower bound of the range.
+        lte:
+          type: integer
+          description: Inclusive upper bound of the range.
+    GetTransactionsForAddressResult:
+      title: GetTransactionsForAddress Result
+      type: object
+      properties:
+        data:
+          type: array
+          description: >-
+            Array of transaction results. Each item is a signature object when
+            `transactionDetails` is `signatures`, or a full transaction object
+            when `transactionDetails` is `full`.
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/SignatureInfo"
+              - $ref: "#/components/schemas/TransactionDetails"
+        paginationToken:
+          type: string
+          nullable: true
+          description: >-
+            Token to pass as `paginationToken` in the next request to retrieve
+            the following page of results. `null` when there are no more results.
     SlotConfig:
       title: Slot Configuration
       type: object
