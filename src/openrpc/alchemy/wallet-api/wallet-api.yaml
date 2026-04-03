@@ -760,6 +760,7 @@ methods:
 
     result:
       name: prepareCallsResponse
+      description: "The response type depends on your account type and request configuration. Check the `type` field to determine which variant you received."
       schema:
         allOf:
           - anyOf:
@@ -1212,7 +1213,7 @@ methods:
                                   errorMessage: "Must be a valid hex string starting with '0x'"
                                   description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                           description: "Prepared EIP-7702 Authorization"
-                description: "Array of prepared calls"
+                description: "Returned when the request requires multiple signatures — most commonly on the first transaction for an EIP-7702 account that hasn't been delegated yet. The array contains an `authorization` item (EIP-7702 delegation) and a `user-operation-v070` item, each with its own `signatureRequest`. Sign every item in the array and pass the full array to `wallet_sendPreparedCalls`. After the initial delegation, subsequent requests return a single user operation instead."
               - type: "object"
                 required:
                   - "type"
@@ -1406,7 +1407,7 @@ methods:
                         type: "string"
                         pattern: "^0x.*$"
                         errorMessage: "Must be a valid hex string starting with '0x'"
-                description: "Prepared User Operation (Entrypoint v0.6.0)"
+                description: "Returned for smart contract accounts (created via `wallet_requestAccount`) that use Entrypoint v0.6.0. Contains a single unsigned user operation. Sign the `signatureRequest` and pass the result to `wallet_sendPreparedCalls`."
               - type: "object"
                 required:
                   - "type"
@@ -1602,7 +1603,7 @@ methods:
                         type: "string"
                         pattern: "^0x.*$"
                         errorMessage: "Must be a valid hex string starting with '0x'"
-                description: "Prepared User Operation (Entrypoint v0.7.0)"
+                description: "The most common response variant. Returned for EIP-7702 accounts that have already been delegated, or for smart contract accounts (created via `wallet_requestAccount`) that use Entrypoint v0.7.0 (the default for new accounts). Contains a single unsigned user operation. Sign the `signatureRequest` and pass the result to `wallet_sendPreparedCalls`."
               - type: "object"
                 required:
                   - "type"
@@ -2264,7 +2265,7 @@ methods:
                         errorMessage: "Must be a valid hex string starting with '0x'"
                         description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                     description: "Typed data"
-                description: "Prepared ERC-7597 Permit Signature Request for the paymaster"
+                description: "Returned when using ERC-20 gas payment and the token allowance is below the threshold specified in `paymasterService.erc20.preOpSettings.autoPermit.below`. The user must first sign the ERC-7597 Permit in `signatureRequest`, then resubmit the included `modifiedRequest` to `wallet_prepareCalls`. The second call will return a standard user operation variant with the permit signature baked in."
           - type: "object"
             properties:
               details:
