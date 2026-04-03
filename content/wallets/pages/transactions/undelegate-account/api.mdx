@@ -116,7 +116,7 @@ CALL_ID=$(echo $SEND_RESPONSE | jq -r '.result.id')
 
 <Step title="Poll for status">
 
-Use `wallet_getCallsStatus` to check when the undelegation is confirmed. Poll while the status is `"pending"`.
+Use `wallet_getCallsStatus` to check when the undelegation is confirmed. A pending state (1xx status codes) is expected for some time before the transition to confirmed. Poll while the status is pending. The [API documentation](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-get-calls-status#response.body.status) provides details on each status code.
 
 ```bash twoslash
 curl --request POST \
@@ -133,11 +133,11 @@ curl --request POST \
 }'
 ```
 
-| Status | Meaning |
+| Status code | Meaning |
 |---|---|
-| `"pending"` | Submitted, waiting to be mined |
-| `"confirmed"` | Mined successfully — account is undelegated |
-| `"chain-rules-failure"` | Transaction reverted onchain |
+| `100` | Pending — submitted, waiting to be mined |
+| `200` | Confirmed — account is undelegated |
+| `400` | Chain rules failure — transaction reverted onchain |
 
 When confirmed, the response includes the transaction hash:
 
@@ -146,7 +146,7 @@ When confirmed, the response includes the transaction hash:
   "id": "CALL_ID",
   "chainId": "0x14a34",
   "atomic": true,
-  "status": "confirmed",
+  "status": 200,
   "receipts": [{ }],
   "details": {
     "type": "delegation",
@@ -158,3 +158,47 @@ When confirmed, the response includes the transaction hash:
 </Step>
 
 </Steps>
+
+<Accordion title="Preparing the EIP-7702 authorization yourself with Foundry">
+  If you need full control over the authorization step, you can sign the EIP-7702 authorization yourself using Foundry's `cast` and submit it directly via `wallet_sendPreparedCalls` — skipping the `wallet_prepareCalls` step.
+
+  ```bash
+  # 1. Get the current nonce for the account
+  NONCE=$(cast nonce $SIGNER_ADDRESS --rpc-url https://base-sepolia.g.alchemy.com/v2/$ALCHEMY_API_KEY)
+
+  # 2. Sign the EIP-7702 authorization to delegate to address(0)
+  AUTH_SIGNATURE=$(cast wallet sign-auth \
+    --private-key $SIGNER_PRIVATE_KEY \
+    --nonce $NONCE \
+    --chain 84532 \
+    --address 0x0000000000000000000000000000000000000000)
+
+  # 3. Submit via wallet_sendPreparedCalls
+  curl --request POST \
+    --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "wallet_sendPreparedCalls",
+      "params": [{
+        "type": "authorization",
+        "chainId": "0x14a34",
+        "data": {
+          "address": "0x0000000000000000000000000000000000000000",
+          "nonce": "'$NONCE'"
+        },
+        "signature": "'$AUTH_SIGNATURE'",
+        "capabilities": {
+          "paymasterService": {
+            "policyId": "'$BSO_POLICY_ID'"
+          }
+        }
+      }]
+    }'
+  ```
+
+  <Warning>
+    Ensure the nonce you use matches the account's current nonce onchain. An incorrect nonce will cause the authorization to be rejected.
+  </Warning>
+</Accordion>
