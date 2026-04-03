@@ -1,0 +1,160 @@
+<Info>
+  The examples provided use [jq](https://jqlang.org/) to parse json and
+  [foundry](https://getfoundry.sh/) to sign a raw payload.
+</Info>
+
+See the [`wallet_prepareCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls),
+[`wallet_sendPreparedCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-send-prepared-calls),
+and [`wallet_getCallsStatus`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-get-calls-status)
+API reference for full descriptions of the parameters used in the following example.
+
+<Steps>
+
+<Step title="Declare your secrets">
+
+```bash twoslash
+ALCHEMY_API_KEY=your-alchemy-api-key
+CHAIN_ID=0x14a34 # Base Sepolia (or your desired chain ID as hex)
+SIGNER_ADDRESS=your-signer-address
+SIGNER_PRIVATE_KEY=your-signer-private-key
+BSO_POLICY_ID=your-bso-policy-id
+```
+
+</Step>
+
+<Step title="Prepare the undelegation">
+
+Call `wallet_prepareCalls` with the `eip7702Auth` capability set to delegate to the zero address. Do **not** include a `calls` field — undelegation requests must omit it entirely.
+
+```bash twoslash
+PREPARE_RESPONSE=$(curl --request POST \
+  --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+  --header 'accept: application/json' \
+  --data '
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "wallet_prepareCalls",
+  "params": [{
+    "from": "'$SIGNER_ADDRESS'",
+    "chainId": "'$CHAIN_ID'",
+    "capabilities": {
+      "paymasterService": {
+        "policyId": "'$BSO_POLICY_ID'"
+      },
+      "eip7702Auth": {
+        "delegation": "0x0000000000000000000000000000000000000000"
+      }
+    }
+  }]
+}')
+```
+
+The response type is `authorization`:
+
+```json
+{
+  "type": "authorization",
+  "chainId": "0x14a34",
+  "data": {
+    "address": "0x0000000000000000000000000000000000000000",
+    "nonce": "0x5"
+  }
+}
+```
+
+</Step>
+
+<Step title="Sign the authorization">
+
+Sign the EIP-7702 authorization payload returned by the prepare step. The `signatureRequest.rawPayload` contains the hash to sign.
+
+```bash twoslash
+AUTH_PAYLOAD=$(echo $PREPARE_RESPONSE | jq -r '.result.signatureRequest.rawPayload')
+AUTH_SIGNATURE=$(cast wallet sign --no-hash --private-key "$SIGNER_PRIVATE_KEY" "$AUTH_PAYLOAD")
+```
+
+<Warning>
+  Using `cast wallet sign --no-hash` for the authorization payload is acceptable for testing but not recommended for production. See [Using EIP-7702](/docs/wallets/transactions/using-eip-7702) for production signing recommendations.
+</Warning>
+
+</Step>
+
+<Step title="Send the signed undelegation">
+
+Send the signed authorization via `wallet_sendPreparedCalls`. Include the BSO policy in the capabilities.
+
+```bash twoslash
+SEND_RESPONSE=$(curl --request POST \
+  --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+  --header 'accept: application/json' \
+  --data '
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "wallet_sendPreparedCalls",
+  "params": [{
+    "type": "authorization",
+    "chainId": "'$CHAIN_ID'",
+    "signature": "'$AUTH_SIGNATURE'",
+    "data": {
+      "address": "0x0000000000000000000000000000000000000000",
+      "nonce": "'$(echo $PREPARE_RESPONSE | jq -r '.result.data.nonce')'"
+    },
+    "capabilities": {
+      "paymasterService": {
+        "policyId": "'$BSO_POLICY_ID'"
+      }
+    }
+  }]
+}')
+
+CALL_ID=$(echo $SEND_RESPONSE | jq -r '.result.id')
+```
+
+</Step>
+
+<Step title="Poll for status">
+
+Use `wallet_getCallsStatus` to check when the undelegation is confirmed. Poll while the status is `"pending"`.
+
+```bash twoslash
+curl --request POST \
+  --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+  --header 'accept: application/json' \
+  --data '
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "wallet_getCallsStatus",
+  "params": [
+    "'$CALL_ID'"
+  ]
+}'
+```
+
+| Status | Meaning |
+|---|---|
+| `"pending"` | Submitted, waiting to be mined |
+| `"confirmed"` | Mined successfully — account is undelegated |
+| `"chain-rules-failure"` | Transaction reverted onchain |
+
+When confirmed, the response includes the transaction hash:
+
+```json
+{
+  "id": "CALL_ID",
+  "chainId": "0x14a34",
+  "atomic": true,
+  "status": "confirmed",
+  "receipts": [{ }],
+  "details": {
+    "type": "delegation",
+    "txHash": "0xABCDEF..."
+  }
+}
+```
+
+</Step>
+
+</Steps>

@@ -1,0 +1,158 @@
+---
+title: Undelegate 7702 account
+description: Remove EIP-7702 delegation and restore an account to a plain EOA
+slug: wallets/transactions/undelegate-account
+---
+
+Undelegation removes the smart contract delegation from an [EIP-7702](/docs/wallets/transactions/using-eip-7702) account by delegating to the zero address (`0x0000...0000`). This restores the account to a plain EOA.
+
+## How it works
+
+When you undelegate an account, the Wallet API submits an EIP-7702 authorization that delegates the account to `address(0)`. Because the delegation target is the zero address, the EVM clears the account's code delegation and the account reverts to a standard externally-owned account.
+
+Gas for the undelegation is sponsored through a BSO (Bundler Sponsorship) policy, so the account does not need to hold native tokens.
+
+## Prerequisites
+
+* API key from your [dashboard](https://dashboard.alchemy.com/apps)
+* Enterprise plan tier — sponsored undelegation is gated to enterprise customers
+* A BSO (Bundler Sponsorship) policy ID
+* An account that is currently delegated via EIP-7702
+
+## Implementation
+
+<Tabs>
+  <Tab title="JavaScript" language="typescript">
+    <Markdown src="client.mdx" />
+  </Tab>
+
+  <Tab title="API" language="bash">
+    <Markdown src="api.mdx" />
+  </Tab>
+</Tabs>
+
+<Markdown src="../../../shared/v4-accordion.mdx" />
+
+## Advanced
+
+<Accordion title="Preparing the EIP-7702 authorization yourself">
+  If you need full control over the authorization step — for example, when signing in a different environment or using a hardware wallet — you can prepare and sign the EIP-7702 authorization yourself, then submit it via `wallet_sendPreparedCalls`.
+
+  <Tabs>
+    <Tab title="Viem" language="typescript">
+      ```ts
+      import { createWalletClient, http } from "viem";
+      import { privateKeyToAccount } from "viem/accounts";
+      import { baseSepolia } from "viem/chains";
+
+      const account = privateKeyToAccount("0xYOUR_PRIVATE_KEY");
+
+      const walletClient = createWalletClient({
+        account,
+        chain: baseSepolia,
+        transport: http(),
+      });
+
+      // Sign an EIP-7702 authorization delegating to the zero address
+      const authorization = await walletClient.signAuthorization({
+        contractAddress: "0x0000000000000000000000000000000000000000",
+      });
+
+      // Submit via wallet_sendPreparedCalls
+      const response = await fetch(
+        `https://api.g.alchemy.com/v2/YOUR_API_KEY`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: 1,
+            jsonrpc: "2.0",
+            method: "wallet_sendPreparedCalls",
+            params: [
+              {
+                type: "authorization",
+                chainId: "0x14a34", // Base Sepolia
+                data: {
+                  address:
+                    "0x0000000000000000000000000000000000000000",
+                  nonce: authorization.nonce,
+                },
+                signature: authorization.signature,
+                capabilities: {
+                  paymasterService: {
+                    policyId: "YOUR_BSO_POLICY_ID",
+                  },
+                },
+              },
+            ],
+          }),
+        }
+      );
+
+      const result = await response.json();
+      console.log(result);
+      ```
+    </Tab>
+
+    <Tab title="Foundry" language="bash">
+      ```bash
+      # 1. Get the current nonce for the account
+      NONCE=$(cast nonce $SIGNER_ADDRESS --rpc-url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY)
+
+      # 2. Sign the EIP-7702 authorization to delegate to address(0)
+      #    This produces the authorization tuple fields (v, r, s)
+      AUTH_SIGNATURE=$(cast wallet sign-auth \
+        --private-key $SIGNER_PRIVATE_KEY \
+        --nonce $NONCE \
+        --chain 84532 \
+        --address 0x0000000000000000000000000000000000000000)
+
+      # 3. Submit via wallet_sendPreparedCalls
+      curl --request POST \
+        --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "id": 1,
+          "jsonrpc": "2.0",
+          "method": "wallet_sendPreparedCalls",
+          "params": [{
+            "type": "authorization",
+            "chainId": "0x14a34",
+            "data": {
+              "address": "0x0000000000000000000000000000000000000000",
+              "nonce": "'$NONCE'"
+            },
+            "signature": "'$AUTH_SIGNATURE'",
+            "capabilities": {
+              "paymasterService": {
+                "policyId": "'$ALCHEMY_BSO_POLICY_ID'"
+              }
+            }
+          }]
+        }'
+      ```
+    </Tab>
+  </Tabs>
+
+  <Warning>
+    Ensure the nonce you use matches the account's current nonce onchain. An incorrect nonce will cause the authorization to be rejected.
+  </Warning>
+</Accordion>
+
+<Accordion title="Checking delegation status">
+  After undelegation is confirmed, you can verify the account is no longer delegated by checking its code. A plain EOA has no code:
+
+  ```bash
+  cast code $ACCOUNT_ADDRESS --rpc-url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY
+  # Returns 0x for a plain EOA
+  ```
+
+  If the account is still delegated, the response will contain the EIP-7702 delegation designator prefix (`0xef0100`).
+</Accordion>
+
+## Next steps
+
+Build more:
+
+* [How EIP-7702 works](/docs/wallets/transactions/using-eip-7702)
+* [Sponsor gas](/docs/wallets/transactions/sponsor-gas)
