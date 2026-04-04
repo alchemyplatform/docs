@@ -218,7 +218,6 @@ methods:
         schema:
           type: "object"
           required:
-            - "calls"
             - "from"
             - "chainId"
           properties:
@@ -565,6 +564,7 @@ methods:
                                 - "ModularAccountV2"
                             - enum:
                                 - "0x69007702764179f14F51cdce752f4f775d74E139"
+                                - "0x0000000000000000000000000000000000000000"
                       description: "Specify EIP-7702 delegation"
                     - type: "boolean"
                       description: "Use default EIP-7702 delegation (Note: EIP-7702 is enabled by default unless you first call `wallet_requestAccount` to get a smart contract address.)"
@@ -1606,6 +1606,52 @@ methods:
               - type: "object"
                 required:
                   - "type"
+                  - "data"
+                  - "chainId"
+                  - "signatureRequest"
+                properties:
+                  type:
+                    type: "string"
+                    description: "EIP-7702 Authorization Request"
+                    enum:
+                      - "authorization"
+                  data:
+                    type: "object"
+                    required:
+                      - "address"
+                      - "nonce"
+                    properties:
+                      address:
+                        type: "string"
+                        pattern: "^0x.*$"
+                        errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
+                      nonce:
+                        type: "string"
+                        pattern: "^0x.*$"
+                        errorMessage: "Must be a valid hex string starting with '0x'"
+                  chainId:
+                    type: "string"
+                    pattern: "^0x.*$"
+                    errorMessage: "Must be a valid hex string starting with '0x'"
+                  signatureRequest:
+                    type: "object"
+                    required:
+                      - "type"
+                      - "rawPayload"
+                    properties:
+                      type:
+                        type: "string"
+                        enum:
+                          - "eip7702Auth"
+                      rawPayload:
+                        type: "string"
+                        pattern: "^0x.*$"
+                        errorMessage: "Must be a valid hex string starting with '0x'"
+                        description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
+                description: "Prepared EIP-7702 Authorization"
+              - type: "object"
+                required:
+                  - "type"
                   - "modifiedRequest"
                   - "data"
                   - "signatureRequest"
@@ -1618,7 +1664,6 @@ methods:
                   modifiedRequest:
                     type: "object"
                     required:
-                      - "calls"
                       - "from"
                       - "chainId"
                     properties:
@@ -1965,6 +2010,7 @@ methods:
                                           - "ModularAccountV2"
                                       - enum:
                                           - "0x69007702764179f14F51cdce752f4f775d74E139"
+                                          - "0x0000000000000000000000000000000000000000"
                                 description: "Specify EIP-7702 delegation"
                               - type: "boolean"
                                 description: "Use default EIP-7702 delegation (Note: EIP-7702 is enabled by default unless you first call `wallet_requestAccount` to get a smart contract address.)"
@@ -3318,6 +3364,151 @@ methods:
                                       description: "r, s, v"
                               description: "ECDSA signature (alias for secp256k1)"
                   description: "Prepared User Operation (Entrypoint v0.7.0) with signature"
+                - allOf:
+                    - type: "object"
+                      required:
+                        - "type"
+                        - "data"
+                        - "chainId"
+                      properties:
+                        type:
+                          type: "string"
+                          description: "EIP-7702 Authorization Request"
+                          enum:
+                            - "authorization"
+                        data:
+                          type: "object"
+                          required:
+                            - "address"
+                            - "nonce"
+                          properties:
+                            address:
+                              type: "string"
+                              pattern: "^0x.*$"
+                              errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
+                            nonce:
+                              type: "string"
+                              pattern: "^0x.*$"
+                              errorMessage: "Must be a valid hex string starting with '0x'"
+                        chainId:
+                          type: "string"
+                          pattern: "^0x.*$"
+                          errorMessage: "Must be a valid hex string starting with '0x'"
+                    - type: "object"
+                      required:
+                        - "signature"
+                      properties:
+                        signature:
+                          anyOf:
+                            - type: "object"
+                              required:
+                                - "type"
+                                - "data"
+                              properties:
+                                type:
+                                  type: "string"
+                                  enum:
+                                    - "secp256k1"
+                                data:
+                                  anyOf:
+                                    - type: "string"
+                                      pattern: "^0x.*$"
+                                      errorMessage: "Must be a valid hex string starting with '0x'"
+                                      description: "Hex-encoded signature"
+                                    - type: "object"
+                                      required:
+                                        - "r"
+                                        - "s"
+                                        - "yParity"
+                                      properties:
+                                        r:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        s:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        yParity:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                      description: "r, s, yParity"
+                                    - type: "object"
+                                      required:
+                                        - "r"
+                                        - "s"
+                                        - "v"
+                                      properties:
+                                        r:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        s:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        v:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                      description: "r, s, v"
+                              description: "Secp256k1 signature"
+                            - type: "object"
+                              required:
+                                - "type"
+                                - "data"
+                              properties:
+                                type:
+                                  type: "string"
+                                  enum:
+                                    - "ecdsa"
+                                data:
+                                  anyOf:
+                                    - type: "string"
+                                      pattern: "^0x.*$"
+                                      errorMessage: "Must be a valid hex string starting with '0x'"
+                                      description: "Hex-encoded signature"
+                                    - type: "object"
+                                      required:
+                                        - "r"
+                                        - "s"
+                                        - "yParity"
+                                      properties:
+                                        r:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        s:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        yParity:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                      description: "r, s, yParity"
+                                    - type: "object"
+                                      required:
+                                        - "r"
+                                        - "s"
+                                        - "v"
+                                      properties:
+                                        r:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        s:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                        v:
+                                          type: "string"
+                                          pattern: "^0x.*$"
+                                          errorMessage: "Must be a valid hex string starting with '0x'"
+                                      description: "r, s, v"
+                              description: "ECDSA signature (alias for secp256k1)"
+                  description: "Prepared EIP-7702 Authorization with signature"
             - type: "object"
               properties:
                 capabilities:
@@ -3402,43 +3593,52 @@ methods:
               errorMessage: "Must be a valid hex string starting with '0x'"
             description: "To be deprecated. Please use `id` instead."
           details:
-            type: "object"
-            required:
-              - "type"
-              - "data"
-            properties:
-              type:
-                type: "string"
-                enum:
-                  - "user-operation"
-              data:
-                type: "object"
+            anyOf:
+              - type: "object"
                 required:
-                  - "hash"
+                  - "type"
+                  - "data"
                 properties:
-                  hash:
+                  type:
                     type: "string"
-                    pattern: "^0x.*$"
-                    errorMessage: "Must be a valid hex string starting with '0x'"
-                  calls:
-                    type: "array"
-                    items:
-                      type: "object"
-                      required:
-                        - "to"
-                      properties:
-                        to:
-                          type: "string"
-                          pattern: "^0x.*$"
-                          errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
-                        data:
-                          type: "string"
-                          pattern: "^0x.*$"
-                          errorMessage: "Must be a valid hex string starting with '0x'"
-                        value:
-                          type: "string"
-                          pattern: "^0x.*$"
-                          errorMessage: "Must be a valid hex string starting with '0x'"
+                    enum:
+                      - "user-operation"
+                  data:
+                    type: "object"
+                    required:
+                      - "hash"
+                    properties:
+                      hash:
+                        type: "string"
+                        pattern: "^0x.*$"
+                        errorMessage: "Must be a valid hex string starting with '0x'"
+                      calls:
+                        type: "array"
+                        items:
+                          type: "object"
+                          required:
+                            - "to"
+                          properties:
+                            to:
+                              type: "string"
+                              pattern: "^0x.*$"
+                              errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
+                            data:
+                              type: "string"
+                              pattern: "^0x.*$"
+                              errorMessage: "Must be a valid hex string starting with '0x'"
+                            value:
+                              type: "string"
+                              pattern: "^0x.*$"
+                              errorMessage: "Must be a valid hex string starting with '0x'"
+              - type: "object"
+                required:
+                  - "type"
+                properties:
+                  type:
+                    type: "string"
+                    enum:
+                      - "delegation"
 
     examples:
       - name: "wallet_sendPreparedCalls example"
@@ -4156,21 +4356,70 @@ methods:
                   pattern: "^0x.*$"
                   errorMessage: "Must be a valid hex string starting with '0x'"
           details:
-            type: "object"
-            required:
-              - "type"
-              - "data"
-            properties:
-              type:
-                type: "string"
-                enum:
-                  - "user-operation"
-              data:
-                type: "object"
+            anyOf:
+              - type: "object"
                 required:
-                  - "hash"
+                  - "type"
+                  - "data"
                 properties:
-                  hash:
+                  type:
+                    type: "string"
+                    enum:
+                      - "user-operation"
+                  data:
+                    allOf:
+                      - type: "object"
+                        required:
+                          - "hash"
+                        properties:
+                          hash:
+                            type: "string"
+                            pattern: "^0x.*$"
+                            errorMessage: "Must be a valid hex string starting with '0x'"
+                          calls:
+                            type: "array"
+                            items:
+                              type: "object"
+                              required:
+                                - "to"
+                              properties:
+                                to:
+                                  type: "string"
+                                  pattern: "^0x.*$"
+                                  errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
+                                data:
+                                  type: "string"
+                                  pattern: "^0x.*$"
+                                  errorMessage: "Must be a valid hex string starting with '0x'"
+                                value:
+                                  type: "string"
+                                  pattern: "^0x.*$"
+                                  errorMessage: "Must be a valid hex string starting with '0x'"
+                      - type: "object"
+                        properties:
+                          pendingBundle:
+                            type: "object"
+                            required:
+                              - "txHash"
+                              - "sentAtBlock"
+                            properties:
+                              txHash:
+                                type: "string"
+                                pattern: "^0x.*$"
+                                errorMessage: "Must be a valid hex string starting with '0x'"
+                              sentAtBlock:
+                                type: "string"
+                                pattern: "^0x.*$"
+                                errorMessage: "Must be a valid hex string starting with '0x'"
+              - type: "object"
+                required:
+                  - "type"
+                properties:
+                  type:
+                    type: "string"
+                    enum:
+                      - "delegation"
+                  txHash:
                     type: "string"
                     pattern: "^0x.*$"
                     errorMessage: "Must be a valid hex string starting with '0x'"
@@ -4191,6 +4440,9 @@ methods:
               type: "user-operation"
               data:
                 hash: "0x1057eff9529142aa3b74adcaacfce5b99a09d80c9f2e38e35ea1f27535e61477"
+                calls:
+                  - to: "0x1234567890123456789012345678901234567890"
+                    data: "0x"
             receipts:
               - status: "0x1"
                 blockHash: "0x7c6f2f548c0ad4434dfb64f49a810bc795dadcd4cbec948bf8d4ae81a10fed5e"
@@ -5515,6 +5767,7 @@ methods:
                                                 - "ModularAccountV2"
                                             - enum:
                                                 - "0x69007702764179f14F51cdce752f4f775d74E139"
+                                                - "0x0000000000000000000000000000000000000000"
                                       description: "Specify EIP-7702 delegation"
                                     - type: "boolean"
                                       description: "Use default EIP-7702 delegation (Note: EIP-7702 is enabled by default unless you first call `wallet_requestAccount` to get a smart contract address.)"
@@ -5976,6 +6229,7 @@ methods:
                                                 - "ModularAccountV2"
                                             - enum:
                                                 - "0x69007702764179f14F51cdce752f4f775d74E139"
+                                                - "0x0000000000000000000000000000000000000000"
                                       description: "Specify EIP-7702 delegation"
                                     - type: "boolean"
                                       description: "Use default EIP-7702 delegation (Note: EIP-7702 is enabled by default unless you first call `wallet_requestAccount` to get a smart contract address.)"
@@ -6560,6 +6814,7 @@ methods:
                                                 - "ModularAccountV2"
                                             - enum:
                                                 - "0x69007702764179f14F51cdce752f4f775d74E139"
+                                                - "0x0000000000000000000000000000000000000000"
                                       description: "Specify EIP-7702 delegation"
                                     - type: "boolean"
                                       description: "Use default EIP-7702 delegation (Note: EIP-7702 is enabled by default unless you first call `wallet_requestAccount` to get a smart contract address.)"
@@ -7008,6 +7263,7 @@ methods:
                                                 - "ModularAccountV2"
                                             - enum:
                                                 - "0x69007702764179f14F51cdce752f4f775d74E139"
+                                                - "0x0000000000000000000000000000000000000000"
                                       description: "Specify EIP-7702 delegation"
                                     - type: "boolean"
                                       description: "Use default EIP-7702 delegation (Note: EIP-7702 is enabled by default unless you first call `wallet_requestAccount` to get a smart contract address.)"
@@ -7710,7 +7966,6 @@ methods:
                             required:
                               - "type"
                               - "data"
-                              - "chainId"
                               - "feePayment"
                             properties:
                               type:
@@ -7785,10 +8040,6 @@ methods:
                                         enum:
                                           - "0x"
                                 description: "Unsigned User Operation (Entrypoint v0.6.0)"
-                              chainId:
-                                type: "string"
-                                pattern: "^0x.*$"
-                                errorMessage: "Must be a valid hex string starting with '0x'"
                               signatureRequest:
                                 anyOf:
                                   - type: "object"
@@ -7904,7 +8155,6 @@ methods:
                             required:
                               - "type"
                               - "data"
-                              - "chainId"
                               - "feePayment"
                             properties:
                               type:
@@ -7981,10 +8231,6 @@ methods:
                                     pattern: "^0x.*$"
                                     errorMessage: "Must be a valid hex string starting with '0x'"
                                 description: "Unsigned User Operation (Entrypoint v0.7.0)"
-                              chainId:
-                                type: "string"
-                                pattern: "^0x.*$"
-                                errorMessage: "Must be a valid hex string starting with '0x'"
                               signatureRequest:
                                 anyOf:
                                   - type: "object"
@@ -8099,6 +8345,47 @@ methods:
                           - type: "object"
                             required:
                               - "type"
+                              - "data"
+                              - "signatureRequest"
+                            properties:
+                              type:
+                                type: "string"
+                                description: "EIP-7702 Authorization Request"
+                                enum:
+                                  - "authorization"
+                              data:
+                                type: "object"
+                                required:
+                                  - "address"
+                                  - "nonce"
+                                properties:
+                                  address:
+                                    type: "string"
+                                    pattern: "^0x.*$"
+                                    errorMessage: "Must be a valid Ethereum address starting with '0x' (e.g., '0xa363219d7C0b8673df17529D469Db9eFF0f35D2A')"
+                                  nonce:
+                                    type: "string"
+                                    pattern: "^0x.*$"
+                                    errorMessage: "Must be a valid hex string starting with '0x'"
+                              signatureRequest:
+                                type: "object"
+                                required:
+                                  - "type"
+                                  - "rawPayload"
+                                properties:
+                                  type:
+                                    type: "string"
+                                    enum:
+                                      - "eip7702Auth"
+                                  rawPayload:
+                                    type: "string"
+                                    pattern: "^0x.*$"
+                                    errorMessage: "Must be a valid hex string starting with '0x'"
+                                    description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
+                            description: "Prepared EIP-7702 Authorization"
+                          - type: "object"
+                            required:
+                              - "type"
                               - "modifiedRequest"
                               - "data"
                               - "signatureRequest"
@@ -8111,7 +8398,6 @@ methods:
                               modifiedRequest:
                                 type: "object"
                                 required:
-                                  - "calls"
                                   - "from"
                                   - "chainId"
                                 properties:
@@ -8458,6 +8744,7 @@ methods:
                                                       - "ModularAccountV2"
                                                   - enum:
                                                       - "0x69007702764179f14F51cdce752f4f775d74E139"
+                                                      - "0x0000000000000000000000000000000000000000"
                                             description: "Specify EIP-7702 delegation"
                                           - type: "boolean"
                                             description: "Use default EIP-7702 delegation (Note: EIP-7702 is enabled by default unless you first call `wallet_requestAccount` to get a smart contract address.)"
