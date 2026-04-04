@@ -96,7 +96,10 @@ SEND_RESPONSE=$(curl --request POST \
   "params": [{
     "type": "authorization",
     "chainId": "'$CHAIN_ID'",
-    "signature": "'$AUTH_SIGNATURE'",
+    "signature": {
+      "type": "secp256k1",
+      "data": "'$AUTH_SIGNATURE'"
+    },
     "data": {
       "address": "0x0000000000000000000000000000000000000000",
       "nonce": "'$(echo $PREPARE_RESPONSE | jq -r '.result.data.nonce')'"
@@ -188,7 +191,10 @@ When confirmed, the response includes the transaction hash:
           "address": "0x0000000000000000000000000000000000000000",
           "nonce": "'$NONCE'"
         },
-        "signature": "'$AUTH_SIGNATURE'",
+        "signature": {
+          "type": "secp256k1",
+          "data": "'$AUTH_SIGNATURE'"
+        },
         "capabilities": {
           "paymasterService": {
             "policyId": "'$BSO_POLICY_ID'"
