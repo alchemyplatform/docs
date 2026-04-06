@@ -1,0 +1,165 @@
+---
+title: Debug with Tenderly
+description: Use the Tenderly integration to debug onchain reverts and simulate offchain user operation failures directly from the Transaction Lifecycle Dashboard
+slug: wallets/transactions/debug-transactions/debug-with-tenderly
+---
+
+<Info>
+  The Tenderly integration is available for customers on paying tiers (e.g. PAYG or Enterprise).
+</Info>
+
+The Transaction Lifecycle Dashboard integrates with [Tenderly](https://tenderly.co/) to give you EVM-level visibility into failed Wallet API transactions. You can debug onchain reverts by opening the Tenderly [debugger](https://docs.tenderly.co/debugger), or simulate offchain failures using Tenderly's [simulation engine](https://docs.tenderly.co/simulations) to replay the user operation and inspect the execution trace.
+
+Two buttons appear in the transaction detail panel depending on the type of failure:
+
+- **Debug** -- Opens the Tenderly transaction debugger for onchain failures that already have a transaction hash
+- **Simulate** -- Runs a Tenderly simulation for offchain failures where the user operation was rejected before reaching the network
+
+{/* TODO: Screenshot showing both Debug and Simulate buttons in the transaction detail panel */}
+
+## Prerequisites
+
+- An Alchemy account on a paying tier (PAYG or Enterprise)
+- A transaction that failed through the Wallet API on a [supported network](#supported-networks)
+- A free [Tenderly account](https://dashboard.tenderly.co/register) to access the full debugger interface (the simulation link is public, but the full debugger requires a Tenderly login)
+
+## Debug onchain failures
+
+When a transaction is included onchain but reverts (status: **Onchain Failure** or **Partial Failure**), the **Debug** button appears in the detail panel. This applies to transactions where the bundler submitted the user operation, it was mined, but execution reverted during the inner call.
+
+<Steps>
+
+<Step title="Find the failed transaction">
+
+Open the [Transaction Lifecycle Dashboard](https://dashboard.alchemy.com/logs/wallet-api) and filter by **Onchain Failure** or **Partial Failure** status. Select the failed transaction to open the detail panel.
+
+{/* TODO: Screenshot of the log table filtered to onchain failures */}
+
+</Step>
+
+<Step title="Click Debug">
+
+In the detail panel, locate the **Debug** button next to the failed step. The button only appears when the event has a transaction hash on a supported Tenderly network.
+
+{/* TODO: Screenshot of the Debug button in the detail panel */}
+
+</Step>
+
+<Step title="Inspect the execution trace in Tenderly">
+
+Clicking **Debug** opens the [Tenderly Debugger](https://docs.tenderly.co/debugger) for that transaction in a new tab. From there you can:
+
+- Walk through the **execution trace** to see every call made during the transaction
+- Inspect **state changes** to see how storage slots were modified
+- View the **decoded call information** (function name, inputs, outputs, gas usage) for each step
+- Identify the exact line of Solidity code where the revert occurred
+
+{/* TODO: Screenshot of the Tenderly debugger showing an execution trace */}
+
+See the [Tenderly Debugger documentation](https://docs.tenderly.co/debugger) for a full guide on navigating the execution trace and evaluating expressions.
+
+</Step>
+
+</Steps>
+
+## Debug offchain failures
+
+When a `wallet_sendPreparedCalls` call fails before reaching the network (the bundler or EntryPoint rejects the user operation), the **Simulate** button appears instead. This covers cases where the error is a `UserOperationExecutionError` and no transaction hash exists.
+
+The simulation reconstructs the `handleOps` call that would have been submitted to the EntryPoint and runs it through Tenderly's simulation engine. This produces a full execution trace as if the transaction had been mined, allowing you to inspect what would have happened onchain.
+
+<Steps>
+
+<Step title="Find the failed transaction">
+
+Open the [Transaction Lifecycle Dashboard](https://dashboard.alchemy.com/logs/wallet-api) and filter by **Offchain Failure** status. Select the failed transaction to open the detail panel.
+
+{/* TODO: Screenshot of the log table filtered to offchain failures */}
+
+</Step>
+
+<Step title="Click Simulate">
+
+In the detail panel, locate the **Simulate** button. The button appears on `wallet_sendPreparedCalls` events with a `UserOperationExecutionError` on a supported Tenderly network.
+
+{/* TODO: Screenshot of the Simulate button in the detail panel */}
+
+</Step>
+
+<Step title="Wait for the simulation to complete">
+
+After clicking **Simulate**, a new browser tab opens and the button text changes to **Simulating...** while the simulation runs. The simulation typically completes within a few seconds. If the simulation fails or encounters an error, the tab closes automatically and an error message appears below the button.
+
+</Step>
+
+<Step title="Inspect the simulation trace in Tenderly">
+
+Once the simulation completes, the new tab redirects to a shared Tenderly [simulation page](https://docs.tenderly.co/simulations). From there you can:
+
+- View the **execution trace** showing every internal call, delegate call, and revert
+- Check **decoded inputs and outputs** for each call frame
+- Examine **state changes** to see what storage writes the transaction would have made
+- Review the **gas breakdown** to understand where gas was consumed
+
+{/* TODO: Screenshot of a Tenderly simulation result page */}
+
+See the [Tenderly Simulations documentation](https://docs.tenderly.co/simulations) for a full guide on interpreting simulation results.
+
+</Step>
+
+</Steps>
+
+## Supported networks
+
+The Debug and Simulate buttons are available on networks supported by both Alchemy and Tenderly. If the transaction occurred on an unsupported network, the buttons do not appear.
+
+| Network | Mainnet | Testnet |
+| --- | --- | --- |
+| Ethereum | Ethereum Mainnet | Sepolia |
+| Polygon | Polygon PoS | Amoy |
+| Arbitrum | Arbitrum One | Arbitrum Sepolia |
+| Optimism | OP Mainnet | OP Sepolia |
+| Base | Base | Base Sepolia |
+| Avalanche | Avalanche C-Chain | Fuji |
+| BNB Chain | BNB Smart Chain | BNB Testnet |
+| Gnosis | Gnosis Chain | -- |
+| Linea | Linea Mainnet | Linea Sepolia |
+| Scroll | Scroll | Scroll Sepolia |
+| Blast | Blast | Blast Sepolia |
+| zkSync | zkSync Era | zkSync Sepolia |
+| Fantom | Fantom Opera | -- |
+| Polygon zkEVM | Polygon zkEVM | -- |
+
+## Rate limits
+
+Offchain simulation (the **Simulate** button) is rate-limited to **10 simulations per team per hour**. This limit applies across all team members and apps. Simulation results are cached for 24 hours, so clicking **Simulate** again for the same event reuses the cached result without counting toward the limit.
+
+If you hit the rate limit, the button displays a "Simulation rate limit reached. Try again later." message. Wait for the hourly window to reset before running more simulations.
+
+The **Debug** button for onchain failures is not rate-limited because it links directly to Tenderly without making an API call.
+
+## Troubleshooting
+
+<Accordion title="The Debug or Simulate button does not appear">
+  The buttons require: (1) a supported Tenderly network, (2) the correct failure type (onchain revert for Debug, offchain `UserOperationExecutionError` for Simulate), and (3) an active Alchemy paying tier. If the transaction is on an unsupported network or the failure type does not match, the buttons are hidden. Check the [supported networks table](#supported-networks) and verify the transaction status in the detail panel.
+</Accordion>
+
+<Accordion title="Simulation rate limit reached">
+  Each team is limited to 10 simulations per hour. Cached simulations (same call ID and event timestamp) do not count toward the limit. Wait for the hourly window to reset, or check if the same simulation was already run by another team member.
+</Accordion>
+
+<Accordion title="Simulation failed with an error">
+  If the simulation encounters an unexpected error (e.g., the user operation could not be decoded or the Tenderly API returned an error), a "Simulation failed. Try again." message appears below the button. Try clicking **Simulate** again. If the error persists, check that the request payload in the transaction detail panel contains a valid user operation.
+</Accordion>
+
+<Accordion title="Tenderly debugger requires login">
+  The shared simulation link is publicly accessible without a Tenderly account. The full Tenderly transaction debugger (used by the Debug button for onchain failures) requires a free Tenderly account. Sign up at [dashboard.tenderly.co/register](https://dashboard.tenderly.co/register).
+</Accordion>
+
+## Next steps
+
+- [Debug transactions](/docs/wallets/transactions/debug-transactions) -- Overview of the Transaction Lifecycle Dashboard and AI error explanations
+- [Send transactions](/docs/wallets/transactions/send-transactions) -- How to send Wallet API transactions
+- [Common errors](/docs/wallets/resources/faqs#common-errors) -- Reference for frequently encountered issues
+- [Tenderly Debugger documentation](https://docs.tenderly.co/debugger) -- Full guide on using the Tenderly transaction debugger
+- [Tenderly Simulations documentation](https://docs.tenderly.co/simulations) -- Full guide on running and interpreting transaction simulations
