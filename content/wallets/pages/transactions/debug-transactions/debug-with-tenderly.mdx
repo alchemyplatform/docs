@@ -12,54 +12,46 @@ The Transaction Lifecycle Dashboard integrates with [Tenderly](https://tenderly.
 
 Two buttons appear in the transaction detail panel depending on the type of failure:
 
-- **Debug** -- Opens the Tenderly transaction debugger for onchain failures that already have a transaction hash
-- **Simulate** -- Runs a Tenderly simulation for offchain failures where the user operation was rejected before reaching the network
+* **Debug**: Opens the Tenderly transaction debugger for onchain failures that already have a transaction hash
+* **Simulate**: Runs a Tenderly simulation for offchain failures where the user operation was rejected before reaching the network
 
 {/* TODO: Screenshot showing both Debug and Simulate buttons in the transaction detail panel */}
 
 ## Prerequisites
 
-- An Alchemy account on a paying tier (PAYG or Enterprise)
-- A transaction that failed through the Wallet API on a [supported network](#supported-networks)
-- A free [Tenderly account](https://dashboard.tenderly.co/register) to access the full debugger interface (the simulation link is public, but the full debugger requires a Tenderly login)
+* An Alchemy account on a paying tier (PAYG or Enterprise)
+* A transaction that failed through the Wallet API on a [supported network](#supported-networks)
+* A free [Tenderly account](https://dashboard.tenderly.co/register) to access the full debugger interface (the simulation link is public, but the full debugger requires a Tenderly login)
 
 ## Debug onchain failures
 
 When a transaction is included onchain but reverts (status: **Onchain Failure** or **Partial Failure**), the **Debug** button appears in the detail panel. This applies to transactions where the bundler submitted the user operation, it was mined, but execution reverted during the inner call.
 
 <Steps>
+  <Step title="Find the failed transaction">
+    Open the [Transaction Lifecycle Dashboard](https://dashboard.alchemy.com/logs/wallet-api) and filter by **Onchain Failure** or **Partial Failure** status. Select the failed transaction to open the detail panel.
 
-<Step title="Find the failed transaction">
+    {/* TODO: Screenshot of the log table filtered to onchain failures */}
+  </Step>
 
-Open the [Transaction Lifecycle Dashboard](https://dashboard.alchemy.com/logs/wallet-api) and filter by **Onchain Failure** or **Partial Failure** status. Select the failed transaction to open the detail panel.
+  <Step title="Click Debug">
+    In the detail panel, locate the **Debug** button next to the failed step. The button only appears when the event has a transaction hash on a supported Tenderly network.
 
-{/* TODO: Screenshot of the log table filtered to onchain failures */}
+    {/* TODO: Screenshot of the Debug button in the detail panel */}
+  </Step>
 
-</Step>
+  <Step title="Inspect the execution trace in Tenderly">
+    Clicking **Debug** opens the [Tenderly Debugger](https://docs.tenderly.co/debugger) for that transaction in a new tab. From there you can:
 
-<Step title="Click Debug">
+    * Walk through the **execution trace** to see every call made during the transaction
+    * Inspect **state changes** to see how storage slots were modified
+    * View the **decoded call information** (function name, inputs, outputs, gas usage) for each step
+    * Identify the exact line of Solidity code where the revert occurred
 
-In the detail panel, locate the **Debug** button next to the failed step. The button only appears when the event has a transaction hash on a supported Tenderly network.
+    {/* TODO: Screenshot of the Tenderly debugger showing an execution trace */}
 
-{/* TODO: Screenshot of the Debug button in the detail panel */}
-
-</Step>
-
-<Step title="Inspect the execution trace in Tenderly">
-
-Clicking **Debug** opens the [Tenderly Debugger](https://docs.tenderly.co/debugger) for that transaction in a new tab. From there you can:
-
-- Walk through the **execution trace** to see every call made during the transaction
-- Inspect **state changes** to see how storage slots were modified
-- View the **decoded call information** (function name, inputs, outputs, gas usage) for each step
-- Identify the exact line of Solidity code where the revert occurred
-
-{/* TODO: Screenshot of the Tenderly debugger showing an execution trace */}
-
-See the [Tenderly Debugger documentation](https://docs.tenderly.co/debugger) for a full guide on navigating the execution trace and evaluating expressions.
-
-</Step>
-
+    See the [Tenderly Debugger documentation](https://docs.tenderly.co/debugger) for a full guide on navigating the execution trace and evaluating expressions.
+  </Step>
 </Steps>
 
 ## Debug offchain failures
@@ -69,44 +61,34 @@ When a `wallet_sendPreparedCalls` call fails before reaching the network (the bu
 The simulation reconstructs the `handleOps` call that would have been submitted to the EntryPoint and runs it through Tenderly's simulation engine. This produces a full execution trace as if the transaction had been mined, allowing you to inspect what would have happened onchain.
 
 <Steps>
+  <Step title="Find the failed transaction">
+    Open the [Transaction Lifecycle Dashboard](https://dashboard.alchemy.com/logs/wallet-api) and filter by **Offchain Failure** status. Select the failed transaction to open the detail panel.
 
-<Step title="Find the failed transaction">
+    {/* TODO: Screenshot of the log table filtered to offchain failures */}
+  </Step>
 
-Open the [Transaction Lifecycle Dashboard](https://dashboard.alchemy.com/logs/wallet-api) and filter by **Offchain Failure** status. Select the failed transaction to open the detail panel.
+  <Step title="Click Simulate">
+    In the detail panel, locate the **Simulate** button. The button appears on `wallet_sendPreparedCalls` events with a `UserOperationExecutionError` on a supported Tenderly network.
 
-{/* TODO: Screenshot of the log table filtered to offchain failures */}
+    {/* TODO: Screenshot of the Simulate button in the detail panel */}
+  </Step>
 
-</Step>
+  <Step title="Wait for the simulation to complete">
+    After clicking **Simulate**, a new browser tab opens and the button text changes to **Simulating...** while the simulation runs. The simulation typically completes within a few seconds. If the simulation fails or encounters an error, the tab closes automatically and an error message appears below the button.
+  </Step>
 
-<Step title="Click Simulate">
+  <Step title="Inspect the simulation trace in Tenderly">
+    Once the simulation completes, the new tab redirects to a shared Tenderly [simulation page](https://docs.tenderly.co/simulator-ui). From there you can:
 
-In the detail panel, locate the **Simulate** button. The button appears on `wallet_sendPreparedCalls` events with a `UserOperationExecutionError` on a supported Tenderly network.
+    * View the **execution trace** showing every internal call, delegate call, and revert
+    * Check **decoded inputs and outputs** for each call frame
+    * Examine **state changes** to see what storage writes the transaction would have made
+    * Review the **gas breakdown** to understand where gas was consumed
 
-{/* TODO: Screenshot of the Simulate button in the detail panel */}
+    {/* TODO: Screenshot of a Tenderly simulation result page */}
 
-</Step>
-
-<Step title="Wait for the simulation to complete">
-
-After clicking **Simulate**, a new browser tab opens and the button text changes to **Simulating...** while the simulation runs. The simulation typically completes within a few seconds. If the simulation fails or encounters an error, the tab closes automatically and an error message appears below the button.
-
-</Step>
-
-<Step title="Inspect the simulation trace in Tenderly">
-
-Once the simulation completes, the new tab redirects to a shared Tenderly [simulation page](https://docs.tenderly.co/simulator-ui). From there you can:
-
-- View the **execution trace** showing every internal call, delegate call, and revert
-- Check **decoded inputs and outputs** for each call frame
-- Examine **state changes** to see what storage writes the transaction would have made
-- Review the **gas breakdown** to understand where gas was consumed
-
-{/* TODO: Screenshot of a Tenderly simulation result page */}
-
-See the [Tenderly Simulator UI documentation](https://docs.tenderly.co/simulator-ui) for a full guide on interpreting simulation results.
-
-</Step>
-
+    See the [Tenderly Simulator UI documentation](https://docs.tenderly.co/simulator-ui) for a full guide on interpreting simulation results.
+  </Step>
 </Steps>
 
 ## Supported networks
@@ -122,13 +104,13 @@ The Debug and Simulate buttons are available on networks supported by both Alche
 | Base | Base | Base Sepolia |
 | Avalanche | Avalanche C-Chain | Fuji |
 | BNB Chain | BNB Smart Chain | BNB Testnet |
-| Gnosis | Gnosis Chain | -- |
+| Gnosis | Gnosis Chain | - |
 | Linea | Linea Mainnet | Linea Sepolia |
 | Scroll | Scroll | Scroll Sepolia |
 | Blast | Blast | Blast Sepolia |
 | zkSync | zkSync Era | zkSync Sepolia |
-| Fantom | Fantom Opera | -- |
-| Polygon zkEVM | Polygon zkEVM | -- |
+| Fantom | Fantom Opera | - |
+| Polygon zkEVM | Polygon zkEVM | - |
 
 ## Troubleshooting
 
@@ -150,8 +132,8 @@ The Debug and Simulate buttons are available on networks supported by both Alche
 
 ## Next steps
 
-- [Debug transactions](/docs/wallets/transactions/debug-transactions) -- Overview of the Transaction Lifecycle Dashboard and AI error explanations
-- [Send transactions](/docs/wallets/transactions/send-transactions) -- How to send Wallet API transactions
-- [Common errors](/docs/wallets/resources/faqs#common-errors) -- Reference for frequently encountered issues
-- [Tenderly Debugger documentation](https://docs.tenderly.co/debugger) -- Full guide on using the Tenderly transaction debugger
-- [Tenderly Simulator UI documentation](https://docs.tenderly.co/simulator-ui) -- Full guide on running and interpreting transaction simulations
+* [Debug transactions](/docs/wallets/transactions/debug-transactions): Overview of the Transaction Lifecycle Dashboard and AI error explanations
+* [Send transactions](/docs/wallets/transactions/send-transactions): How to send Wallet API transactions
+* [Common errors](/docs/wallets/resources/faqs#common-errors): Reference for frequently encountered issues
+* [Tenderly Debugger documentation](https://docs.tenderly.co/debugger): Full guide on using the Tenderly transaction debugger
+* [Tenderly Simulator UI documentation](https://docs.tenderly.co/simulator-ui): Full guide on running and interpreting transaction simulations
