@@ -37,43 +37,46 @@ Gas for the undelegation is sponsored through a BSO (Bundler Sponsorship) policy
   If you need full control over the authorization step — for example, when signing in a different environment or using a hardware wallet — you can prepare and sign the EIP-7702 authorization yourself, then submit it via `wallet_sendPreparedCalls`.
 
   ```ts
-  import { createWalletClient, http } from "viem";
   import { privateKeyToAccount } from "viem/accounts";
   import { baseSepolia } from "viem/chains";
   import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
   const account = privateKeyToAccount("0xYOUR_PRIVATE_KEY");
 
-  // Viem client for signing the authorization
-  const walletClient = createWalletClient({
-    account,
-    chain: baseSepolia,
-    transport: http("https://base-sepolia.g.alchemy.com/v2/YOUR_API_KEY"),
-  });
-
-  // Smart wallet client for submitting the prepared calls
+  // Smart wallet client for preparing and submitting calls
   const smartWalletClient = createSmartWalletClient({
     transport: alchemyWalletTransport({ apiKey: "YOUR_API_KEY" }),
     chain: baseSepolia,
     signer: account,
   });
 
-  // Sign an EIP-7702 authorization delegating to the zero address
-  const authorization = await walletClient.signAuthorization({
-    contractAddress: "0x0000000000000000000000000000000000000000",
+  // Prepare the undelegation to get the authorization data
+  const prepared = await smartWalletClient.prepareCalls({
+    from: account.address,
+    chainId: "0x14a34",
+    capabilities: {
+      paymasterService: { policyId: "YOUR_BSO_POLICY_ID" },
+      eip7702Auth: {
+        delegation: "0x0000000000000000000000000000000000000000",
+      },
+    },
+  });
+
+  // Sign the EIP-7702 authorization using the values from the prepare step
+  const { r, s, yParity } = await account.signAuthorization({
+    contractAddress: prepared.data.address,
+    chainId: parseInt(prepared.chainId, 16),
+    nonce: parseInt(prepared.data.nonce, 16),
   });
 
   // Submit via sendPreparedCalls
   const result = await smartWalletClient.sendPreparedCalls({
     type: "authorization",
     chainId: "0x14a34",
-    data: {
-      address: "0x0000000000000000000000000000000000000000",
-      nonce: authorization.nonce,
-    },
+    data: prepared.data,
     signature: {
       type: "secp256k1",
-      data: authorization.signature,
+      data: { r, s, yParity: `0x${yParity}` },
     },
     capabilities: {
       paymasterService: {
