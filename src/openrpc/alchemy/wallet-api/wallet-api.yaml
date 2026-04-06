@@ -969,7 +969,7 @@ methods:
                                   type: "string"
                                   pattern: "^0x.*$"
                                   errorMessage: "Must be a valid hex string starting with '0x'"
-                          description: "Prepared User Operation (Entrypoint v0.6.0)"
+                          description: "Prepared User Operation (Entrypoint v0.6.0). Returned for legacy Light Account v1.x accounts."
                         - type: "object"
                           required:
                             - "type"
@@ -1165,7 +1165,7 @@ methods:
                                   type: "string"
                                   pattern: "^0x.*$"
                                   errorMessage: "Must be a valid hex string starting with '0x'"
-                          description: "Prepared User Operation (Entrypoint v0.7.0)"
+                          description: "Prepared User Operation (Entrypoint v0.7.0). Returned for modern account types including Modular Account (sma-b), Light Account v2, and 7702 accounts."
                         - type: "object"
                           required:
                             - "type"
@@ -1211,8 +1211,8 @@ methods:
                                   pattern: "^0x.*$"
                                   errorMessage: "Must be a valid hex string starting with '0x'"
                                   description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
-                          description: "Prepared EIP-7702 Authorization"
-                description: "Array of prepared calls"
+                          description: "Prepared EIP-7702 Authorization. Returned as part of an array response for 7702 accounts requiring delegation, or at the top level for BSO-sponsored undelegation."
+                description: "Returned for EIP-7702 accounts that require both an authorization signature and a user operation."
               - type: "object"
                 required:
                   - "type"
@@ -1406,7 +1406,7 @@ methods:
                         type: "string"
                         pattern: "^0x.*$"
                         errorMessage: "Must be a valid hex string starting with '0x'"
-                description: "Prepared User Operation (Entrypoint v0.6.0)"
+                description: "Prepared User Operation (Entrypoint v0.6.0). Returned for legacy Light Account v1.x accounts."
               - type: "object"
                 required:
                   - "type"
@@ -1602,7 +1602,7 @@ methods:
                         type: "string"
                         pattern: "^0x.*$"
                         errorMessage: "Must be a valid hex string starting with '0x'"
-                description: "Prepared User Operation (Entrypoint v0.7.0)"
+                description: "Prepared User Operation (Entrypoint v0.7.0). Returned for modern account types including Modular Account (sma-b), Light Account v2, and 7702 accounts."
               - type: "object"
                 required:
                   - "type"
@@ -1648,7 +1648,7 @@ methods:
                         pattern: "^0x.*$"
                         errorMessage: "Must be a valid hex string starting with '0x'"
                         description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
-                description: "Prepared EIP-7702 Authorization"
+                description: "Prepared EIP-7702 Authorization. Returned as part of an array response for 7702 accounts requiring delegation, or at the top level for BSO-sponsored undelegation."
               - type: "object"
                 required:
                   - "type"
@@ -2310,7 +2310,7 @@ methods:
                         errorMessage: "Must be a valid hex string starting with '0x'"
                         description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                     description: "Typed data"
-                description: "Prepared ERC-7597 Permit Signature Request for the paymaster"
+                description: "Returned when the account's paymaster policy requires an ERC-20 token permit signature. The client must sign the permit and resubmit the request with the permit signature before the user operation can be prepared."
           - type: "object"
             properties:
               details:
@@ -7718,7 +7718,7 @@ methods:
                                               type: "string"
                                               pattern: "^0x.*$"
                                               errorMessage: "Must be a valid hex string starting with '0x'"
-                                      description: "Prepared User Operation (Entrypoint v0.6.0)"
+                                      description: "Prepared User Operation (Entrypoint v0.6.0). Returned for legacy Light Account v1.x accounts."
                                     - type: "object"
                                       required:
                                         - "type"
@@ -7914,7 +7914,7 @@ methods:
                                               type: "string"
                                               pattern: "^0x.*$"
                                               errorMessage: "Must be a valid hex string starting with '0x'"
-                                      description: "Prepared User Operation (Entrypoint v0.7.0)"
+                                      description: "Prepared User Operation (Entrypoint v0.7.0). Returned for modern account types including Modular Account (sma-b), Light Account v2, and 7702 accounts."
                                     - type: "object"
                                       required:
                                         - "type"
@@ -7960,8 +7960,8 @@ methods:
                                               pattern: "^0x.*$"
                                               errorMessage: "Must be a valid hex string starting with '0x'"
                                               description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
-                                      description: "Prepared EIP-7702 Authorization"
-                            description: "Array of prepared calls"
+                                      description: "Prepared EIP-7702 Authorization. Returned as part of an array response for 7702 accounts requiring delegation, or at the top level for BSO-sponsored undelegation."
+                            description: "Returned for EIP-7702 accounts that require both an authorization signature and a user operation."
                           - type: "object"
                             required:
                               - "type"
@@ -8150,7 +8150,7 @@ methods:
                                     type: "string"
                                     pattern: "^0x.*$"
                                     errorMessage: "Must be a valid hex string starting with '0x'"
-                            description: "Prepared User Operation (Entrypoint v0.6.0)"
+                            description: "Prepared User Operation (Entrypoint v0.6.0). Returned for legacy Light Account v1.x accounts."
                           - type: "object"
                             required:
                               - "type"
@@ -8341,7 +8341,7 @@ methods:
                                     type: "string"
                                     pattern: "^0x.*$"
                                     errorMessage: "Must be a valid hex string starting with '0x'"
-                            description: "Prepared User Operation (Entrypoint v0.7.0)"
+                            description: "Prepared User Operation (Entrypoint v0.7.0). Returned for modern account types including Modular Account (sma-b), Light Account v2, and 7702 accounts."
                           - type: "object"
                             required:
                               - "type"
@@ -8382,7 +8382,7 @@ methods:
                                     pattern: "^0x.*$"
                                     errorMessage: "Must be a valid hex string starting with '0x'"
                                     description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
-                            description: "Prepared EIP-7702 Authorization"
+                            description: "Prepared EIP-7702 Authorization. Returned as part of an array response for 7702 accounts requiring delegation, or at the top level for BSO-sponsored undelegation."
                           - type: "object"
                             required:
                               - "type"
@@ -9044,7 +9044,7 @@ methods:
                                     errorMessage: "Must be a valid hex string starting with '0x'"
                                     description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                                 description: "Typed data"
-                            description: "Prepared ERC-7597 Permit Signature Request for the paymaster"
+                            description: "Returned when the account's paymaster policy requires an ERC-20 token permit signature. The client must sign the permit and resubmit the request with the permit signature before the user operation can be prepared."
                       - type: "object"
                         properties:
                           details:
