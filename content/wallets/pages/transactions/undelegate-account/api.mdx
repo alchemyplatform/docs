@@ -167,16 +167,24 @@ When confirmed, the response includes the transaction hash:
 
   ```bash
   # 1. Get the current nonce for the account
-  NONCE=$(cast nonce $SIGNER_ADDRESS --rpc-url https://base-sepolia.g.alchemy.com/v2/$ALCHEMY_API_KEY)
+  NONCE_DEC=$(cast nonce $SIGNER_ADDRESS --rpc-url https://base-sepolia.g.alchemy.com/v2/$ALCHEMY_API_KEY)
+NONCE_HEX=$(printf "0x%x" $NONCE_DEC)
 
   # 2. Sign the EIP-7702 authorization to delegate to address(0)
-  AUTH_SIGNATURE=$(cast wallet sign-auth \
+  #    cast wallet sign-auth returns RLP-encoded [chainId, address, nonce, yParity, r, s]
+  SIGNED_AUTH=$(cast wallet sign-auth \
     --private-key $SIGNER_PRIVATE_KEY \
-    --nonce $NONCE \
+    --nonce $NONCE_DEC \
     --chain 84532 \
-    --address 0x0000000000000000000000000000000000000000)
+    0x0000000000000000000000000000000000000000)
 
-  # 3. Submit via wallet_sendPreparedCalls
+  # 3. Extract yParity, r, s from the RLP-decoded authorization
+  DECODED=$(cast from-rlp $SIGNED_AUTH)
+  YPARITY=$(echo $DECODED | jq -r '.[3]')
+  R=$(echo $DECODED | jq -r '.[4]')
+  S=$(echo $DECODED | jq -r '.[5]')
+
+  # 4. Submit via wallet_sendPreparedCalls
   curl --request POST \
     --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
     --header 'Content-Type: application/json' \
@@ -189,11 +197,15 @@ When confirmed, the response includes the transaction hash:
         "chainId": "0x14a34",
         "data": {
           "address": "0x0000000000000000000000000000000000000000",
-          "nonce": "'$NONCE'"
+          "nonce": "'$NONCE_HEX'"
         },
         "signature": {
           "type": "secp256k1",
-          "data": "'$AUTH_SIGNATURE'"
+          "data": {
+            "r": "'$R'",
+            "s": "'$S'",
+            "yParity": "'$YPARITY'"
+          }
         },
         "capabilities": {
           "paymasterService": {
