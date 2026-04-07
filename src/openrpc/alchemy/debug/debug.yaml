@@ -390,7 +390,9 @@ methods:
           type: object
           properties:
             tracer:
-              $ref: "../_shared/components.yaml#/components/schemas/tracer"
+              type: string
+              enum: ["callTracer", "prestateTracer"]
+              description: The type of tracer to use.
             stateOverrides:
               type: object
               description: Address-to-state mapping that allows overriding account state.
@@ -417,7 +419,33 @@ methods:
         items:
           type: array
           items:
-            $ref: "../_shared/components.yaml#/components/schemas/tracerResult"
+            type: object
+            description: A call trace object for a single transaction.
+            properties:
+              type:
+                type: string
+                description: The type of call (e.g., CALL, CREATE, DELEGATECALL).
+              from:
+                type: string
+                description: 20-byte address of the caller.
+              to:
+                type: string
+                description: 20-byte address of the recipient. Null for contract creation transactions.
+              value:
+                type: string
+                description: Amount of value included in the transfer (in hex).
+              gas:
+                type: string
+                description: Amount of gas provided for the call (in hex).
+              gasUsed:
+                type: string
+                description: Amount of gas used during the call (in hex).
+              input:
+                type: string
+                description: Call data.
+              output:
+                type: string
+                description: Return data.
     examples:
       - name: debug_traceCallMany example
         params:
