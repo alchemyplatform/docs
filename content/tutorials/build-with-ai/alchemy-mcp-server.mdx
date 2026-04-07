@@ -7,18 +7,9 @@ slug: docs/alchemy-mcp-server
 
 The [Alchemy MCP Server](https://github.com/alchemyplatform/alchemy-mcp-server) connects your AI tools to blockchain data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It exposes **148 tools** across token prices, NFT metadata, transaction history, smart contract simulation, tracing, account abstraction, Solana DAS, and more — covering **70+ networks** including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, and Starknet.
 
-There are two ways to connect:
+## Connect your client
 
-| | Remote server | Local (STDIO) |
-|---|---|---|
-| **Transport** | [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http) | [STDIO](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#stdio) |
-| **Auth** | OAuth 2.1 (browser sign-in) | API key via env var |
-| **Setup** | URL only — no install needed | `npx @alchemy/mcp-server` |
-| **Best for** | Most users | CI / headless environments |
-
-## Remote server (recommended)
-
-The remote server runs at `https://mcp.alchemy.com/mcp` and authenticates via OAuth — just sign in with your Alchemy account when prompted. No API key or local install required.
+The server runs at `https://mcp.alchemy.com/mcp` and authenticates via OAuth — just sign in with your Alchemy account when prompted. No API key or local install required.
 
 ### Claude Code
 
@@ -138,116 +129,13 @@ https://mcp.alchemy.com/mcp
 
 The server supports OAuth 2.1 with PKCE. Your client will handle the authorization flow automatically.
 
-## Local server (STDIO)
-
-If you prefer to run the server locally — or need it for CI, scripts, or headless environments — use the npm package with an API key.
-
-Get your API key at the [Alchemy Dashboard](https://dashboard.alchemy.com/).
-
-<Tabs>
-  <Tab title="Claude Code">
-
-```bash
-claude mcp add-json "alchemy" '{"command":"npx","args":["-y","@alchemy/mcp-server"],"env":{"ALCHEMY_API_KEY":"YOUR_API_KEY"}}'
-```
-
-  </Tab>
-  <Tab title="Claude Desktop">
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
-
-```json
-{
-  "mcpServers": {
-    "alchemy": {
-      "command": "npx",
-      "args": ["-y", "@alchemy/mcp-server"],
-      "env": {
-        "ALCHEMY_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
-
-  </Tab>
-  <Tab title="Cursor">
-
-Add to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project-level):
-
-```json
-{
-  "mcpServers": {
-    "alchemy": {
-      "command": "npx",
-      "args": ["-y", "@alchemy/mcp-server"],
-      "env": {
-        "ALCHEMY_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
-
-  </Tab>
-  <Tab title="VS Code Copilot">
-
-Add to `.vscode/mcp.json` in your project:
-
-```json
-{
-  "servers": {
-    "alchemy": {
-      "command": "npx",
-      "args": ["-y", "@alchemy/mcp-server"],
-      "env": {
-        "ALCHEMY_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
-
-  </Tab>
-  <Tab title="Windsurf">
-
-Add to `~/.codeium/windsurf/mcp_config.json` (macOS) or `%USERPROFILE%\.codeium\windsurf\mcp_config.json` (Windows):
-
-```json
-{
-  "mcpServers": {
-    "alchemy": {
-      "command": "npx",
-      "args": ["-y", "@alchemy/mcp-server"],
-      "env": {
-        "ALCHEMY_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
-
-  </Tab>
-  <Tab title="Codex">
-
-```bash
-ALCHEMY_API_KEY=YOUR_API_KEY codex --mcp-server "npx -y @alchemy/mcp-server"
-```
-
-  </Tab>
-</Tabs>
-
 ## Getting started
 
-Once connected, the typical workflow is:
+Once connected, sign in with your Alchemy account when prompted. Then the typical workflow is:
 
 1. **`alchemy_list_apps`** — see your Alchemy apps
 2. **`alchemy_select_app`** — pick an app to use (caches the API key for subsequent calls)
 3. **Use any tool** — call `alchemy_rpc_*` or `alchemy_data_*` tools
-
-<Tip>
-When using the remote server, steps 1-2 happen automatically after OAuth sign-in. With the local server, the API key from your environment is used directly.
-</Tip>
 
 ## Available tools
 
