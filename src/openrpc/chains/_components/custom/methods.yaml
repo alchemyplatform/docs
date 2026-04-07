@@ -833,23 +833,136 @@ components:
 
     eth_getFinalizedHeader:
       name: eth_getFinalizedHeader
-      description: Returns the latest finalized execution payload header.
-      params: []
+      description: >-
+        Returns the latest finalized execution payload header. The finality
+        threshold is selected via `verifiedValidatorNum`; negative values are
+        shortcuts: `-1` (≥ 1/2 validators), `-2` (≥ 2/3 validators), `-3`
+        (all validators). The method returns the block header at the height
+        equal to `max(fastFinalizedHeight, probabilisticFinalizedHeight)`.
+      params:
+        - name: verifiedValidatorNum
+          required: true
+          description: >-
+            Number of validators required to verify the block for probabilistic
+            finality. Must be in `[1, len(currentValidators)]` or one of the
+            shortcut values: `-1` (≥ 1/2 validators), `-2` (≥ 2/3 validators),
+            `-3` (all validators).
+          schema:
+            type: integer
       result:
         name: Finalized Header
         description: The finalized execution block header.
         schema:
           type: object
-          additionalProperties: true
+          properties:
+            baseFeePerGas:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Base fee per gas in hex.
+            blobGasUsed:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Blob gas used in the block.
+            difficulty:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block difficulty.
+            excessBlobGas:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Excess blob gas.
+            extraData:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+              description: Extra data field.
+            gasLimit:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block gas limit.
+            gasUsed:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Total gas used in the block.
+            hash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Block hash.
+            logsBloom:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes256"
+              description: Bloom filter for logs.
+            milliTimestamp:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block timestamp in milliseconds since Unix epoch.
+            miner:
+              $ref: "../evm/base-types.yaml#/components/schemas/address"
+              description: Beneficiary/miner address.
+            mixHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Mix hash.
+            nonce:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes8"
+              description: Block nonce.
+            number:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block number.
+            parentBeaconBlockRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Parent beacon block root.
+            parentHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Parent block hash.
+            receiptsRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Receipts trie root.
+            requestsHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Requests hash.
+            sha3Uncles:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Uncles/ommers hash.
+            size:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block size in bytes.
+            stateRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: State trie root.
+            timestamp:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block timestamp in seconds since Unix epoch.
+            totalDifficulty:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Total difficulty up to this block.
+            transactionsRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Transactions trie root.
+            withdrawalsRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Withdrawals trie root.
       examples:
         - name: eth_getFinalizedHeader example
-          params: []
+          params:
+            - name: verifiedValidatorNum
+              value: -3
           result:
             name: Finalized Header
             value:
-              parentHash: "0xabc123..."
-              number: "0x123456"
-              stateRoot: "0xdef456..."
+              baseFeePerGas: "0x0"
+              blobGasUsed: "0x0"
+              difficulty: "0x2"
+              excessBlobGas: "0x0"
+              extraData: "0xda8301060788643233646130343588676f312e32342e30836c696e004d518ce1f8b5831dffffb860b8c7390a8a9be245067620f30a4abd6f53290868da89fa6dbec51cf4168e03e1cd468da4302a7f45ce6492654c3f9ad3105a94e74f17e804ca6552306a314faca45222569612e7078c599e44a39eb93b6da80a903951b0cb4823bf5bd7732f46f84c84056f9bc5a04bc9b5101c179acd90c83a2ac1ff4685ed2b3576ccf24f2e8fd3870b1724efe784056f9bc6a028942e7a678e3f57ca057f6e58a69d0809247ae1bbf1d20b23eb8c72b6abdfa080b28358139305554bd08572388924d7249814fec1931c2ba25e646e3aab6e4a3935ae814c324138005140b593ef0c010f77e576d37c48389e78c282e7cabce75b01"
+              gasLimit: "0x3473bc0"
+              gasUsed: "0xb498a1"
+              hash: "0xdef001fe94c26896c92b875b97558a674824d0a643409edc616a845833578f2c"
+              logsBloom: "0xbe791bc23204004153e2505dc28ca82d012a9ea080584296c53824821112010fb48e148959285e0a7820f0802f020085179f30102654b5a02eb00236d52f08884510b613c5689d8d859818398001602338539d5090c4093b001c081730533d082f2800680a8a44b098c062ad0656482429405a4060068fc96d208ed18d7e244046a1d2acf82a0d6091852902240807f699749fc7804ed00a810453408013c564420ca1690112103339558996076d8c40d3044a2c4a808b693563182c6c27400de1b8b102ea16a019144300a12040d8012f24e500809e7a187c3043bf4478e0fae9506b2a900749004d607e14807101a10c00e4111d821c4cc78b0c80028c0a44"
+              milliTimestamp: "0x19d696b712a"
+              miner: "0xca503a7ed99eca485da2e875aedf7758472c378c"
+              mixHash: "0x00000000000000000000000000000000000000000000000000000000000000fa"
+              nonce: "0x0000000000000000"
+              number: "0x56f9bc7"
+              parentBeaconBlockRoot: "0x0000000000000000000000000000000000000000000000000000000000000000"
+              parentHash: "0x28942e7a678e3f57ca057f6e58a69d0809247ae1bbf1d20b23eb8c72b6abdfa0"
+              receiptsRoot: "0x59dac4d7b272eabe4a755f869c3ec87033d993ee392f8a70067fed733c7f8f4f"
+              requestsHash: "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+              size: "0x67d2"
+              stateRoot: "0xbfb9084e605d265d79844e82109f0fc3395c0ee09b46beef8523a5dea36afe17"
+              timestamp: "0x69d55afe"
+              totalDifficulty: "0xad64c73"
+              transactionsRoot: "0xb19dc98f4f0c28f6f40abc86b3de6b5299784e78dbcc1c6cf6f1e285e48edcf2"
+              withdrawalsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 
     eth_getTransactionReceiptsByBlock:
       name: eth_getTransactionReceiptsByBlock
