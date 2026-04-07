@@ -22,8 +22,10 @@ components:
           description: The input data sent with the call.
         to:
           title: To address
-          $ref: "../evm/base-types.yaml#/components/schemas/address"
           description: The address of the receiver. Null for contract creation.
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/address"
+            - type: "null"
         value:
           title: Value
           $ref: "../evm/base-types.yaml#/components/schemas/uint"
@@ -331,12 +333,10 @@ components:
             type: array
             items:
               type: array
-              items: false
-              prefixItems:
+              items:
                 - $ref: "#/components/schemas/TransactionCallObject"
                 - $ref: "#/components/schemas/TraceTypeArray"
-              minItems: 2
-              maxItems: 2
+              additionalItems: false
         - name: Block number
           required: true
           description: >
