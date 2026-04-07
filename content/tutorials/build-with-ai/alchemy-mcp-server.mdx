@@ -1,25 +1,167 @@
 ---
 title: Alchemy MCP Server
-description: Query blockchain data from your AI tool with the Alchemy MCP server.
-subtitle: Query blockchain data from your AI tool with the Alchemy MCP server.
+description: Give your AI coding agent direct access to 70+ blockchains with 148 tools through the Model Context Protocol.
+subtitle: Give your AI coding agent direct access to 70+ blockchains with 148 tools through the Model Context Protocol.
 slug: docs/alchemy-mcp-server
 ---
 
-The [Alchemy MCP Server](https://github.com/alchemyplatform/alchemy-mcp-server) gives your AI tools direct access to blockchain data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). Query token prices, NFT ownership, transaction history, and more as tool calls, with no code required.
+The [Alchemy MCP Server](https://github.com/alchemyplatform/alchemy-mcp-server) connects your AI tools to blockchain data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It exposes **148 tools** across token prices, NFT metadata, transaction history, smart contract simulation, tracing, account abstraction, Solana DAS, and more — covering **70+ networks** including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, and Starknet.
 
-## Add the server to your MCP config
+There are two ways to connect:
 
-Add this configuration to your MCP config file:
+| | Remote server | Local (STDIO) |
+|---|---|---|
+| **Transport** | [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http) | [STDIO](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#stdio) |
+| **Auth** | OAuth 2.1 (browser sign-in) | API key via env var |
+| **Setup** | URL only — no install needed | `npx @alchemy/mcp-server` |
+| **Best for** | Most users | CI / headless environments |
+
+## Remote server (recommended)
+
+The remote server runs at `https://mcp.alchemy.com/mcp` and authenticates via OAuth — just sign in with your Alchemy account when prompted. No API key or local install required.
+
+### Claude Code
+
+```bash
+claude mcp add alchemy --transport http https://mcp.alchemy.com/mcp
+```
+
+### Claude Desktop
+
+Add to your Claude Desktop config file:
+
+* **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+* **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "alchemy": {
+      "type": "streamable-http",
+      "url": "https://mcp.alchemy.com/mcp"
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving.
+
+### Cursor
+
+Add to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project-level):
+
+```json
+{
+  "mcpServers": {
+    "alchemy": {
+      "type": "streamable-http",
+      "url": "https://mcp.alchemy.com/mcp"
+    }
+  }
+}
+```
+
+### VS Code Copilot
+
+Add to `.vscode/mcp.json` in your project:
+
+```json
+{
+  "servers": {
+    "alchemy": {
+      "type": "streamable-http",
+      "url": "https://mcp.alchemy.com/mcp"
+    }
+  }
+}
+```
+
+### Windsurf
+
+Add to your Windsurf MCP config file:
+
+* **macOS:** `~/.codeium/windsurf/mcp_config.json`
+* **Windows:** `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
+
+```json
+{
+  "mcpServers": {
+    "alchemy": {
+      "type": "streamable-http",
+      "url": "https://mcp.alchemy.com/mcp"
+    }
+  }
+}
+```
+
+### OpenAI Codex
+
+```bash
+codex --mcp-server-url https://mcp.alchemy.com/mcp
+```
+
+Or add to your Codex config:
+
+```json
+{
+  "mcpServers": {
+    "alchemy": {
+      "type": "streamable-http",
+      "url": "https://mcp.alchemy.com/mcp"
+    }
+  }
+}
+```
+
+### Cline
+
+Open Cline's MCP settings in VS Code (`Cline: MCP Servers` in the command palette) and add:
+
+```json
+{
+  "mcpServers": {
+    "alchemy": {
+      "type": "streamable-http",
+      "url": "https://mcp.alchemy.com/mcp"
+    }
+  }
+}
+```
+
+### Any MCP-compatible client
+
+Point your client at the following endpoint using Streamable HTTP transport:
+
+```
+https://mcp.alchemy.com/mcp
+```
+
+The server supports OAuth 2.1 with PKCE. Your client will handle the authorization flow automatically.
+
+## Local server (STDIO)
+
+If you prefer to run the server locally — or need it for CI, scripts, or headless environments — use the npm package with an API key.
+
+Get your API key at the [Alchemy Dashboard](https://dashboard.alchemy.com/).
+
+<Tabs>
+  <Tab title="Claude Code">
+
+```bash
+claude mcp add-json "alchemy" '{"command":"npx","args":["-y","@alchemy/mcp-server"],"env":{"ALCHEMY_API_KEY":"YOUR_API_KEY"}}'
+```
+
+  </Tab>
+  <Tab title="Claude Desktop">
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
     "alchemy": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@alchemy/mcp-server"
-      ],
+      "args": ["-y", "@alchemy/mcp-server"],
       "env": {
         "ALCHEMY_API_KEY": "YOUR_API_KEY"
       }
@@ -28,32 +170,27 @@ Add this configuration to your MCP config file:
 }
 ```
 
-Get your API key at the [Alchemy Dashboard](https://dashboard.alchemy.com/).
+  </Tab>
+  <Tab title="Cursor">
 
-> The Alchemy MCP server currently only supports [STDIO transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#stdio) for local MCP client use. Remote connection via [Streamable-HTTP transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http) is in development.
+Add to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project-level):
 
-## Configure your client
-
-### Claude Desktop
-
-Add the configuration above to your Claude Desktop config file:
-
-* **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-* **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-Restart Claude Desktop after saving.
-
-### Cursor
-
-Add the configuration to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project-level).
-
-### Claude Code
-
-```bash
-claude mcp add-json "alchemy" '{"command":"npx","args":["-y","@alchemy/mcp-server"],"env":{"ALCHEMY_API_KEY":"YOUR_API_KEY"}}'
+```json
+{
+  "mcpServers": {
+    "alchemy": {
+      "command": "npx",
+      "args": ["-y", "@alchemy/mcp-server"],
+      "env": {
+        "ALCHEMY_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
 ```
 
-### VS Code Copilot
+  </Tab>
+  <Tab title="VS Code Copilot">
 
 Add to `.vscode/mcp.json` in your project:
 
@@ -71,37 +208,315 @@ Add to `.vscode/mcp.json` in your project:
 }
 ```
 
-### Windsurf
+  </Tab>
+  <Tab title="Windsurf">
 
-Add the configuration to your Windsurf MCP config file:
+Add to `~/.codeium/windsurf/mcp_config.json` (macOS) or `%USERPROFILE%\.codeium\windsurf\mcp_config.json` (Windows):
 
-* **macOS:** `~/.codeium/windsurf/mcp_config.json`
-* **Windows:** `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
+```json
+{
+  "mcpServers": {
+    "alchemy": {
+      "command": "npx",
+      "args": ["-y", "@alchemy/mcp-server"],
+      "env": {
+        "ALCHEMY_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+  </Tab>
+  <Tab title="Codex">
+
+```bash
+ALCHEMY_API_KEY=YOUR_API_KEY codex --mcp-server "npx -y @alchemy/mcp-server"
+```
+
+  </Tab>
+</Tabs>
+
+## Getting started
+
+Once connected, the typical workflow is:
+
+1. **`alchemy_list_apps`** — see your Alchemy apps
+2. **`alchemy_select_app`** — pick an app to use (caches the API key for subsequent calls)
+3. **Use any tool** — call `alchemy_rpc_*` or `alchemy_data_*` tools
+
+<Tip>
+When using the remote server, steps 1-2 happen automatically after OAuth sign-in. With the local server, the API key from your environment is used directly.
+</Tip>
 
 ## Available tools
 
-The MCP server exposes the following tools:
+The server exposes **148 tools** in three categories:
 
-**Token prices**
-* `fetchTokenPriceBySymbol`: Get current token prices by symbol
-* `fetchTokenPriceByAddress`: Get current token prices by contract address
-* `fetchTokenPriceHistoryBySymbol`: Get historical price data over time
-* `fetchTokenPriceHistoryByTimeFrame`: Get historical price data using flexible time frames or natural language
+### Admin — Account & App Management (9 tools)
 
-**Token balances**
-* `fetchTokensOwnedByMultichainAddresses`: Get token balances across multiple chains
+Manage your Alchemy account and apps. These tools do not interact with the blockchain.
 
-**Transactions and transfers**
-* `fetchAddressTransactionHistory`: Get single-address transaction history
-* `fetchTransfers`: Get token transfer data with filtering
+| Tool | Description |
+|------|-------------|
+| `alchemy_ping` | Health check |
+| `alchemy_list_apps` | List your Alchemy apps |
+| `alchemy_get_app` | Get app details |
+| `alchemy_select_app` | Select an app and cache its API key for RPC/Data tools |
+| `alchemy_create_app` | Create a new app |
+| `alchemy_update_app` | Update app name or description |
+| `alchemy_delete_app` | Delete an app |
+| `alchemy_list_chains` | List all 70+ supported networks |
+| `alchemy_update_allowlist` | Update app allowlists (network, address, origin, IP) |
 
-**NFTs**
-* `fetchNftsOwnedByMultichainAddresses`: Get NFT ownership across chains with spam filtering
-* `fetchNftContractDataByMultichainAddress`: Get NFT collection data
+### RPC — On-Chain JSON-RPC (108 tools)
+
+Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
+
+<Accordion title="Generic RPC">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_call` | Make any JSON-RPC call to any network |
+
+</Accordion>
+
+<Accordion title="Core EVM (5 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_ethCall` | Execute a read-only smart contract call |
+| `alchemy_rpc_ethGetBlockReceipts` | Get all receipts for a block |
+| `alchemy_rpc_ethGetProof` | Get Merkle proof for account storage |
+| `alchemy_rpc_ethCreateAccessList` | Generate EIP-2930 access list |
+| `alchemy_rpc_ethBlobBaseFee` | Get EIP-4844 blob base fee |
+
+</Accordion>
+
+<Accordion title="Token API (3 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_getTokenBalances` | Get ERC-20 token balances for an address |
+| `alchemy_rpc_getTokenMetadata` | Get token name, symbol, decimals, logo |
+| `alchemy_rpc_getTokenAllowance` | Get ERC-20 allowance for a spender |
+
+</Accordion>
+
+<Accordion title="Transfers & Receipts (2 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_getAssetTransfers` | Get historical asset transfers (ERC-20, ERC-721, native, internal) |
+| `alchemy_rpc_getTransactionReceipts` | Get all transaction receipts for a block |
+
+</Accordion>
+
+<Accordion title="Transaction Simulation (5 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_simulateAssetChanges` | Simulate a transaction's asset changes |
+| `alchemy_rpc_simulateExecution` | Simulate a transaction's execution trace |
+| `alchemy_rpc_simulateAssetChangesBundle` | Simulate a bundle of transactions' asset changes |
+| `alchemy_rpc_simulateExecutionBundle` | Simulate a bundle of transactions' execution traces |
+| `alchemy_rpc_simulateUserOperationAssetChanges` | Simulate a UserOperation's asset changes |
+
+</Accordion>
+
+<Accordion title="Trace API (6 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_traceCall` | Trace a call without creating a transaction |
+| `alchemy_rpc_traceTransaction` | Trace a mined transaction |
+| `alchemy_rpc_traceBlock` | Trace all transactions in a block |
+| `alchemy_rpc_traceFilter` | Filter traces by address and block range |
+| `alchemy_rpc_traceReplayTransaction` | Replay a transaction with traces |
+| `alchemy_rpc_traceReplayBlockTransactions` | Replay all transactions in a block |
+
+</Accordion>
+
+<Accordion title="Debug API (6 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_debugTraceTransaction` | Debug trace a transaction |
+| `alchemy_rpc_debugTraceCall` | Debug trace a call |
+| `alchemy_rpc_debugTraceBlockByNumber` | Debug trace a block by number |
+| `alchemy_rpc_debugTraceBlockByHash` | Debug trace a block by hash |
+| `alchemy_rpc_debugGetRawBlock` | Get raw RLP-encoded block data |
+| `alchemy_rpc_debugGetRawReceipts` | Get raw transaction receipts for a block |
+
+</Accordion>
+
+<Accordion title="ERC-4337 Account Abstraction (8 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_sendUserOperation` | Submit a UserOperation to the bundler |
+| `alchemy_rpc_estimateUserOperationGas` | Estimate gas for a UserOperation |
+| `alchemy_rpc_getUserOperationReceipt` | Get a UserOperation receipt |
+| `alchemy_rpc_getUserOperationByHash` | Get a UserOperation by hash |
+| `alchemy_rpc_supportedEntryPoints` | List supported EntryPoint addresses |
+| `alchemy_rpc_rundlerMaxPriorityFeePerGas` | Get bundler's max priority fee per gas |
+| `alchemy_rpc_requestGasAndPaymasterAndData` | Request gas sponsorship + paymaster data |
+| `alchemy_rpc_requestPaymasterAndData` | Request paymaster data only |
+
+</Accordion>
+
+<Accordion title="Smart Wallet API (9 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_walletRequestAccount` | Get or create a smart account |
+| `alchemy_rpc_walletPrepareCalls` | Prepare a user operation for signing |
+| `alchemy_rpc_walletSendPreparedCalls` | Submit a signed user operation |
+| `alchemy_rpc_walletGetCallsStatus` | Check status of submitted calls |
+| `alchemy_rpc_walletGetCapabilities` | Get wallet capabilities by chain |
+| `alchemy_rpc_walletListAccounts` | List smart accounts for a signer |
+| `alchemy_rpc_walletCreateSession` | Create a scoped session with permissions |
+| `alchemy_rpc_walletGetCrossChainStatus` | Get cross-chain transaction status |
+| `alchemy_rpc_walletRequestQuote` | Request a token swap quote |
+
+</Accordion>
+
+<Accordion title="Solana Standard RPC (50 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_solana_getBalance` | Get SOL balance in lamports |
+| `alchemy_rpc_solana_getAccountInfo` | Get account data (owner, lamports, data) |
+| `alchemy_rpc_solana_getMultipleAccounts` | Get data for multiple accounts |
+| `alchemy_rpc_solana_getTransaction` | Get a confirmed transaction by signature |
+| `alchemy_rpc_solana_getSignaturesForAddress` | Get transaction signatures for an address |
+| `alchemy_rpc_solana_getSignatureStatuses` | Get statuses of transaction signatures |
+| `alchemy_rpc_solana_simulateTransaction` | Simulate a transaction without submitting |
+| `alchemy_rpc_solana_getTokenAccountBalance` | Get SPL Token account balance |
+| `alchemy_rpc_solana_getTokenAccountsByOwner` | Get all token accounts for a wallet |
+| `alchemy_rpc_solana_getTokenAccountsByDelegate` | Get delegated token accounts |
+| `alchemy_rpc_solana_getTokenSupply` | Get total supply of an SPL Token |
+| `alchemy_rpc_solana_getTokenLargestAccounts` | Get top 20 holders of a token |
+| `alchemy_rpc_solana_getBlock` | Get a confirmed block by slot |
+| `alchemy_rpc_solana_getBlockHeight` | Get current block height |
+| `alchemy_rpc_solana_getBlockTime` | Get Unix timestamp for a slot |
+| `alchemy_rpc_solana_getBlocks` | Get confirmed blocks in a range |
+| `alchemy_rpc_solana_getBlocksWithLimit` | Get confirmed blocks from a slot with limit |
+| `alchemy_rpc_solana_getBlockCommitment` | Get vote commitment for a block |
+| `alchemy_rpc_solana_getBlockProduction` | Get block production stats |
+| `alchemy_rpc_solana_getSlot` | Get current slot |
+| `alchemy_rpc_solana_getSlotLeader` | Get current slot leader |
+| `alchemy_rpc_solana_getSlotLeaders` | Get slot leaders for a range |
+| `alchemy_rpc_solana_getLatestBlockhash` | Get latest blockhash |
+| `alchemy_rpc_solana_isBlockhashValid` | Check blockhash validity |
+| `alchemy_rpc_solana_getProgramAccounts` | Get all accounts owned by a program |
+| `alchemy_rpc_solana_getEpochInfo` | Get current epoch info |
+| `alchemy_rpc_solana_getEpochSchedule` | Get epoch schedule |
+| `alchemy_rpc_solana_getSupply` | Get SOL supply breakdown |
+| `alchemy_rpc_solana_getVersion` | Get node software version |
+| `alchemy_rpc_solana_getTransactionCount` | Get total transaction count |
+| `alchemy_rpc_solana_getInflationRate` | Get current inflation rate |
+| `alchemy_rpc_solana_getInflationGovernor` | Get inflation governor parameters |
+| `alchemy_rpc_solana_getInflationReward` | Get staking rewards by epoch |
+| `alchemy_rpc_solana_getVoteAccounts` | Get validator vote accounts |
+| `alchemy_rpc_solana_getLargestAccounts` | Get top 20 accounts by balance |
+| `alchemy_rpc_solana_getClusterNodes` | Get cluster node info |
+| `alchemy_rpc_solana_getLeaderSchedule` | Get leader schedule for an epoch |
+| `alchemy_rpc_solana_getFeeForMessage` | Get fee for a message |
+| `alchemy_rpc_solana_getRecentPrioritizationFees` | Get recent priority fee data |
+| `alchemy_rpc_solana_getMinimumBalanceForRentExemption` | Get rent-exempt minimum |
+| `alchemy_rpc_solana_getFirstAvailableBlock` | Get lowest available block |
+| `alchemy_rpc_solana_getGenesisHash` | Get genesis hash |
+| `alchemy_rpc_solana_getHighestSnapshotSlot` | Get highest snapshot slot |
+| `alchemy_rpc_solana_getIdentity` | Get node identity pubkey |
+| `alchemy_rpc_solana_getMaxRetransmitSlot` | Get max retransmit slot |
+| `alchemy_rpc_solana_getMaxShredInsertSlot` | Get max shred insert slot |
+| `alchemy_rpc_solana_getRecentPerformanceSamples` | Get recent TPS samples |
+| `alchemy_rpc_solana_getStakeActivation` | Get stake activation state |
+| `alchemy_rpc_solana_minimumLedgerSlot` | Get lowest ledger slot |
+| `alchemy_rpc_solana_requestAirdrop` | Airdrop SOL (devnet only) |
+
+</Accordion>
+
+<Accordion title="Solana Enhanced & DAS (13 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_rpc_solana_getPriorityFeeEstimate` | Get priority fee estimates by level |
+| `alchemy_rpc_solana_simulateBundle` | Simulate a bundle of transactions |
+| `alchemy_rpc_getAsset` | Get details of a Solana asset |
+| `alchemy_rpc_getAssets` | Get multiple Solana assets |
+| `alchemy_rpc_getAssetProof` | Get Merkle proof for a compressed asset |
+| `alchemy_rpc_getAssetsByOwner` | Get assets owned by a wallet |
+| `alchemy_rpc_getAssetsByAuthority` | Get assets by authority address |
+| `alchemy_rpc_getAssetsByGroup` | Get assets by group (e.g. collection) |
+| `alchemy_rpc_getAssetsByCreator` | Get assets by creator address |
+| `alchemy_rpc_searchAssets` | Search for assets by criteria |
+| `alchemy_rpc_getAssetSignatures` | Get transaction signatures for an asset |
+| `alchemy_rpc_getNftEditions` | Get NFT editions for a master edition |
+| `alchemy_rpc_getTokenAccounts` | Get token accounts for a wallet |
+
+</Accordion>
+
+### Data — REST APIs (31 tools)
+
+Call Alchemy's REST APIs for enriched blockchain data. All require `alchemy_select_app` first.
+
+<Accordion title="NFT API (24 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_data_getNFTsForOwner` | Get all NFTs owned by an address |
+| `alchemy_data_getNFTsForContract` | Get all NFTs in a contract |
+| `alchemy_data_getNFTsForCollection` | Get all NFTs in a collection |
+| `alchemy_data_getNFTMetadata` | Get NFT metadata by token ID |
+| `alchemy_data_getNFTMetadataBatch` | Get metadata for up to 100 NFTs |
+| `alchemy_data_getContractMetadata` | Get NFT contract metadata |
+| `alchemy_data_getCollectionMetadata` | Get collection metadata by slug |
+| `alchemy_data_getContractMetadataBatch` | Get metadata for multiple contracts |
+| `alchemy_data_getOwnersForNFT` | Get owners of a specific NFT |
+| `alchemy_data_getOwnersForContract` | Get all owners in a contract |
+| `alchemy_data_getFloorPrice` | Get floor price from marketplaces |
+| `alchemy_data_getNFTSales` | Get recent NFT sales |
+| `alchemy_data_getContractsForOwner` | Get NFT contracts held by an address |
+| `alchemy_data_getCollectionsForOwner` | Get collections held by an address (ETH only) |
+| `alchemy_data_isSpamContract` | Check if a contract is spam |
+| `alchemy_data_getSpamContracts` | List all spam contracts |
+| `alchemy_data_isAirdropNFT` | Check if an NFT is an airdrop |
+| `alchemy_data_reportSpam` | Report an address as spam |
+| `alchemy_data_searchContractMetadata` | Search NFT contracts by keyword |
+| `alchemy_data_summarizeNFTAttributes` | Get attribute prevalence summary |
+| `alchemy_data_isHolderOfContract` | Check if a wallet holds any NFT from a contract |
+| `alchemy_data_computeRarity` | Calculate attribute rarity for an NFT |
+| `alchemy_data_invalidateContract` | Invalidate cached contract metadata |
+| `alchemy_data_refreshNftMetadata` | Trigger metadata refresh for an NFT |
+
+</Accordion>
+
+<Accordion title="Prices API (3 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_data_getTokenPricesBySymbol` | Get token prices by symbol (ETH, BTC, etc.) |
+| `alchemy_data_getTokenPricesByAddress` | Get token prices by contract address |
+| `alchemy_data_getHistoricalTokenPrices` | Get historical price data over a time range |
+
+</Accordion>
+
+<Accordion title="Portfolio / Multi-Chain Data (4 tools)">
+
+| Tool | Description |
+|------|-------------|
+| `alchemy_data_getTokensByAddress` | Get tokens across multiple chains |
+| `alchemy_data_getTokenBalancesByAddress` | Get token balances with USD values across chains |
+| `alchemy_data_getNFTsByAddress` | Get NFTs across multiple chains |
+| `alchemy_data_getNFTContractsByAddress` | Get NFT contracts across multiple chains |
+
+</Accordion>
 
 ## Supported chains
 
-We support 50+ blockchains including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, Starknet, and more.
+We support **70+ blockchains** including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, Starknet, zkSync, Scroll, Linea, Mantle, Blast, and many more. Use `alchemy_list_chains` to see the full list.
 
 ## Watch the walkthrough
 
