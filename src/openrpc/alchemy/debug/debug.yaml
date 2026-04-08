@@ -332,6 +332,163 @@ methods:
             input: "0x"
             output: "0x"
 
+  - name: debug_traceCallMany
+    description: Runs multiple eth_call requests within the context of the given block execution using the final state of the parent block as the base. Each bundle can contain multiple transactions and optional block overrides. Returns nested arrays of traces (outer array per bundle, inner array per transaction).
+    params:
+      - name: Bundles
+        required: true
+        description: An array of call bundles. Each bundle is an object containing an array of transaction call objects and optional block header overrides.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              transactions:
+                type: array
+                description: Array of transaction call objects to simulate within this bundle.
+                items:
+                  $ref: "../_shared/components.yaml#/components/schemas/transactionObject"
+              blockOverride:
+                type: object
+                description: Optional overrides for the block header affecting all transactions in this bundle.
+                properties:
+                  blockNumber:
+                    $ref: "../_shared/components.yaml#/components/schemas/bytes"
+                  blockHash:
+                    type: object
+                    description: A mapping of block number to user-defined hash queryable via the BLOCKHASH opcode.
+                    additionalProperties:
+                      $ref: "../_shared/components.yaml#/components/schemas/hash32"
+                  coinbase:
+                    $ref: "../_shared/components.yaml#/components/schemas/address"
+                  timestamp:
+                    $ref: "../_shared/components.yaml#/components/schemas/bytes"
+                  difficulty:
+                    $ref: "../_shared/components.yaml#/components/schemas/bytes"
+                  gasLimit:
+                    $ref: "../_shared/components.yaml#/components/schemas/bytes"
+                  baseFee:
+                    $ref: "../_shared/components.yaml#/components/schemas/bytes"
+      - name: Simulation Context
+        required: true
+        description: The simulation context specifying the block to simulate against.
+        schema:
+          type: object
+          properties:
+            blockNumber:
+              description: Block number or tag to simulate against.
+              oneOf:
+                - $ref: "../_shared/components.yaml#/components/schemas/bytes"
+                - $ref: "../_shared/components.yaml#/components/schemas/blockTag"
+            transactionIndex:
+              type: integer
+              description: The index of the transaction within the block to simulate after. Default is -1 (after the entire block).
+      - name: Options
+        required: false
+        description: Options for the trace including tracer type and state overrides.
+        schema:
+          type: object
+          properties:
+            tracer:
+              type: string
+              enum: ["callTracer", "prestateTracer"]
+              description: The type of tracer to use.
+            stateOverrides:
+              type: object
+              description: Address-to-state mapping that allows overriding account state.
+              additionalProperties:
+                type: object
+                properties:
+                  stateDiff:
+                    type: object
+                    description: Storage slot overrides for the account.
+                    properties:
+                      balance:
+                        type: string
+                        description: The balance to override for the account.
+                    additionalProperties:
+                      type: string
+            timeout:
+              type: string
+              description: A duration string that overrides the default timeout for the trace (e.g., "5s", "300ms").
+    result:
+      name: Call traces
+      description: Nested array of call traces. The outer array corresponds to each bundle and the inner array corresponds to each transaction within a bundle.
+      schema:
+        type: array
+        items:
+          type: array
+          items:
+            type: object
+            description: A call trace object for a single transaction.
+            properties:
+              type:
+                type: string
+                description: The type of call (e.g., CALL, CREATE, DELEGATECALL).
+              from:
+                type: string
+                description: 20-byte address of the caller.
+              to:
+                type: string
+                description: 20-byte address of the recipient. Null for contract creation transactions.
+              value:
+                type: string
+                description: Amount of value included in the transfer (in hex).
+              gas:
+                type: string
+                description: Amount of gas provided for the call (in hex).
+              gasUsed:
+                type: string
+                description: Amount of gas used during the call (in hex).
+              input:
+                type: string
+                description: Call data.
+              output:
+                type: string
+                description: Return data.
+    examples:
+      - name: debug_traceCallMany example
+        params:
+          - name: Bundles
+            value:
+              - transactions:
+                  - from: "0xcdd37ada79f589c15bd4f8fd2083dc88e34a2af2"
+                    to: "0xdac17f958d2ee523a2206206994597c13d831ec7"
+                    gas: "0xb59b"
+                    value: "0x0"
+                    data: "0xa9059cbb000000000000000000000000b29d1cef6da3262df35fdee71a176c62687e747d000000000000000000000000000000000000000000000000000000001e3f0ccc"
+              - transactions:
+                  - from: "0xe088776deabb472ffd2843e330e79c880a5f979e"
+                    to: "0x70526cc7a6d6320b44122ea9d2d07670accc85a1"
+                    value: "0x0"
+                    data: "0x"
+          - name: Simulation Context
+            value:
+              blockNumber: "0x154bd82"
+              transactionIndex: -1
+          - name: Options
+            value:
+              tracer: "callTracer"
+        result:
+          name: "debug_traceCallMany response"
+          value:
+            - - type: CALL
+                from: "0xcdd37ada79f589c15bd4f8fd2083dc88e34a2af2"
+                to: "0xdac17f958d2ee523a2206206994597c13d831ec7"
+                value: "0x0"
+                gas: "0xb59b"
+                gasUsed: "0x5d5a"
+                input: "0xa9059cbb000000000000000000000000b29d1cef6da3262df35fdee71a176c62687e747d000000000000000000000000000000000000000000000000000000001e3f0ccc"
+                output: "0x"
+            - - type: CALL
+                from: "0xe088776deabb472ffd2843e330e79c880a5f979e"
+                to: "0x70526cc7a6d6320b44122ea9d2d07670accc85a1"
+                value: "0x0"
+                gas: "0x7fffffffffffadf7"
+                gasUsed: "0x0"
+                input: "0x"
+                output: "0x"
+
   - name: debug_traceTransaction
     description: Attempts to run the transaction in the exact same manner as it was executed on the network.
     params:
