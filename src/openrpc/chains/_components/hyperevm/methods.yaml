@@ -1,0 +1,120 @@
+components:
+  methods:
+    eth_bigBlockGasPrice:
+      name: eth_bigBlockGasPrice
+      summary: Get big block gas price
+      description: Returns the base fee for the next big block. HyperEVM uses a dual-block architecture with fast blocks (1-second interval, ~3M gas limit) and big blocks (1-minute interval, 30M gas limit). This method returns the base fee specifically for big blocks, as opposed to eth_gasPrice which returns the base fee for the next fast block.
+      params: []
+      result:
+        name: gasPrice
+        description: A hex-encoded unsigned integer representing the gas price in wei for big blocks.
+        schema:
+          type: string
+          example: "0x5f5e100"
+
+    eth_getBlockReceiptsWithSystemTx:
+      name: eth_getBlockReceiptsWithSystemTx
+      summary: Get block receipts including system transactions
+      description: Returns all transaction receipts for a given block, including receipts for system transactions that originate from HyperCore. System transactions are created by the system address and are not included in the regular receipt list returned by eth_getBlockReceipts.
+      params:
+        - name: blockNumberOrTag
+          required: true
+          description: A hex-encoded block number, or a block tag such as "latest", "earliest", or "pending".
+          schema:
+            type: string
+      result:
+        name: receipts
+        description: An array of transaction receipt objects including system transaction receipts.
+        schema:
+          type: array
+          items:
+            type: object
+          example:
+            - transactionHash: "0xf3d9ae18ef900e6d9ca67efedf867c35146d4b8c2d74309f95a9f05710a2e2af"
+              blockHash: "0x23e7f7021161099d6566d187802a0ebf83d958852c74d629341a4209b615e38b"
+              blockNumber: "0x1e8480"
+              from: "0x2222222222222222222222222222222222222222"
+              to: "0xad920cd7046c3e3c5b562bbf61c60d7a0b5d85cf"
+              status: "0x1"
+              gasUsed: "0x5208"
+
+    eth_getSystemTxsByBlockHash:
+      name: eth_getSystemTxsByBlockHash
+      summary: Get system transactions by block hash
+      description: Returns the system transactions for a block identified by hash. System transactions originate from HyperCore and are sent from the system address 0x2222222222222222222222222222222222222222. They represent operations such as HyperCore-to-HyperEVM transfers and have gasPrice of 0x0.
+      params:
+        - name: blockHash
+          required: true
+          description: The 32-byte hex-encoded hash of the block.
+          schema:
+            type: string
+      result:
+        name: transactions
+        description: An array of system transaction objects for the specified block.
+        schema:
+          type: array
+          items:
+            type: object
+          example:
+            - type: "0x0"
+              chainId: "0x3e7"
+              nonce: "0x13dc1"
+              gasPrice: "0x0"
+              gas: "0x7530"
+              to: "0xad920cd7046c3e3c5b562bbf61c60d7a0b5d85cf"
+              value: "0x17b9197d69c5f000"
+              input: "0x"
+              hash: "0xf3d9ae18ef900e6d9ca67efedf867c35146d4b8c2d74309f95a9f05710a2e2af"
+              blockHash: "0x23e7f7021161099d6566d187802a0ebf83d958852c74d629341a4209b615e38b"
+              blockNumber: "0x1e8480"
+              transactionIndex: "0x0"
+              from: "0x2222222222222222222222222222222222222222"
+
+    eth_getSystemTxsByBlockNumber:
+      name: eth_getSystemTxsByBlockNumber
+      summary: Get system transactions by block number
+      description: Returns the system transactions for a block identified by number or tag. System transactions originate from HyperCore and are sent from the system address 0x2222222222222222222222222222222222222222.
+      params:
+        - name: blockNumber
+          required: true
+          description: A hex-encoded block number, or a block tag such as "latest", "earliest", or "pending".
+          schema:
+            type: string
+      result:
+        name: transactions
+        description: An array of system transaction objects for the specified block.
+        schema:
+          type: array
+          items:
+            type: object
+          example:
+            - type: "0x0"
+              chainId: "0x3e7"
+              nonce: "0x13dc1"
+              gasPrice: "0x0"
+              gas: "0x7530"
+              to: "0xad920cd7046c3e3c5b562bbf61c60d7a0b5d85cf"
+              value: "0x17b9197d69c5f000"
+              input: "0x"
+              hash: "0xf3d9ae18ef900e6d9ca67efedf867c35146d4b8c2d74309f95a9f05710a2e2af"
+              blockHash: "0x23e7f7021161099d6566d187802a0ebf83d958852c74d629341a4209b615e38b"
+              blockNumber: "0x1e8480"
+              transactionIndex: "0x0"
+              from: "0x2222222222222222222222222222222222222222"
+
+    eth_usingBigBlocks:
+      name: eth_usingBigBlocks
+      summary: Check if an address uses big blocks
+      description: Returns whether the specified address has opted into using big blocks. In HyperEVM's dual-block architecture, users can set an usingBigBlocks flag via the evmUserModify L1 action to direct their transactions to big blocks instead of fast blocks.
+      params:
+        - name: address
+          required: true
+          description: The 20-byte hex-encoded Ethereum address to check.
+          schema:
+            type: string
+      result:
+        name: usingBigBlocks
+        description: A boolean indicating whether the address is using big blocks.
+        schema:
+          type: boolean
+          example: false
