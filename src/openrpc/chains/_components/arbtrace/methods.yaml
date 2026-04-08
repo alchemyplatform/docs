@@ -1,0 +1,678 @@
+components:
+  schemas:
+    TraceAction:
+      title: Trace action
+      type: object
+      properties:
+        callType:
+          title: Call type
+          type: string
+          description: The type of call (e.g., "call", "delegatecall", "staticcall").
+        from:
+          title: From address
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+          description: The address of the sender.
+        gas:
+          title: Gas
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: The gas provided for the call, encoded as hexadecimal.
+        input:
+          title: Input data
+          type: string
+          description: The input data sent with the call.
+        to:
+          title: To address
+          description: The address of the receiver. Null for contract creation.
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/address"
+            - type: "null"
+        value:
+          title: Value
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: The value transferred in wei, encoded as hexadecimal.
+
+    TraceResult:
+      title: Trace result
+      type: object
+      properties:
+        gasUsed:
+          title: Gas used
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: The amount of gas used by the trace, encoded as hexadecimal.
+        output:
+          title: Output
+          type: string
+          description: The return data from the call, encoded as hexadecimal.
+
+    TraceObject:
+      title: Trace object
+      type: object
+      properties:
+        action:
+          $ref: "#/components/schemas/TraceAction"
+        blockHash:
+          title: Block hash
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        blockNumber:
+          title: Block number
+          type: integer
+          description: The block number where this trace occurred.
+        error:
+          title: Error
+          type: string
+          description: Error message if the call failed (e.g., "Reverted").
+        result:
+          $ref: "#/components/schemas/TraceResult"
+        subtraces:
+          title: Subtraces
+          type: integer
+          description: The number of sub-traces created during execution.
+        traceAddress:
+          title: Trace address
+          type: array
+          items:
+            type: integer
+          description: The trace position indices in the call tree.
+        transactionHash:
+          title: Transaction hash
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        transactionPosition:
+          title: Transaction position
+          type: integer
+          description: The position of the transaction in the block.
+        type:
+          title: Trace type
+          type: string
+          description: The type of trace (e.g., "call", "create").
+
+    TraceCallResult:
+      title: Trace call result
+      type: object
+      properties:
+        output:
+          title: Output
+          type: string
+          description: The return value of the call, encoded as hexadecimal.
+        stateDiff:
+          title: State diff
+          description: The state differences, if requested. Null if not requested.
+          nullable: true
+        trace:
+          title: Trace array
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                $ref: "#/components/schemas/TraceAction"
+              error:
+                title: Error
+                type: string
+                nullable: true
+              result:
+                $ref: "#/components/schemas/TraceResult"
+              subtraces:
+                type: integer
+              traceAddress:
+                type: array
+                items:
+                  type: integer
+              type:
+                type: string
+          description: Array of trace objects for the call.
+        vmTrace:
+          title: VM trace
+          description: The VM trace, if requested. Null if not requested.
+          nullable: true
+
+    TransactionCallObject:
+      title: Transaction call object
+      type: object
+      properties:
+        from:
+          title: From address
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+          description: The address the transaction is sent from.
+        to:
+          title: To address
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+          description: The address the transaction is directed to.
+        gas:
+          title: Gas
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: Maximum gas allowance for the transaction.
+        gasPrice:
+          title: Gas price
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: Gas price in wei per gas unit.
+        value:
+          title: Value
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: Value to transfer in wei.
+        data:
+          title: Data
+          type: string
+          description: Hash of the method signature and encoded parameters.
+
+    TraceTypeArray:
+      title: Trace types
+      type: array
+      items:
+        type: string
+        enum:
+          - trace
+          - vmTrace
+          - stateDiff
+      description: Array of trace types to return (e.g., ["trace"]).
+
+    TraceFilterObject:
+      title: Trace filter object
+      type: object
+      properties:
+        fromBlock:
+          title: From block
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: Starting block number, encoded as hexadecimal.
+        toBlock:
+          title: To block
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+          description: Ending block number, encoded as hexadecimal.
+        fromAddress:
+          title: From addresses
+          type: array
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+          description: Filter traces sent from these addresses.
+        toAddress:
+          title: To addresses
+          type: array
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+          description: Filter traces sent to these addresses.
+        after:
+          title: After
+          type: integer
+          description: The offset trace number for pagination.
+        count:
+          title: Count
+          type: integer
+          description: Number of traces to return.
+
+  methods:
+    arbtrace_block:
+      name: arbtrace_block
+      summary: Returns traces created at a given block.
+      description: >
+        Returns traces for all transactions in the specified block. This is an
+        Arbitrum-specific tracing method that works for pre-Nitro blocks (before
+        block 22,207,815). For post-Nitro blocks, use Geth debug_* methods.
+      params:
+        - name: Block number
+          required: true
+          description: >
+            The block number as a hexadecimal string, or a block tag such as
+            "latest", "earliest", or "pending".
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Block traces
+        description: An array of trace objects for all transactions in the block.
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/TraceObject"
+      examples:
+        - name: arbtrace_block example
+          params:
+            - name: Block number
+              value: "0x152DD07"
+          result:
+            name: Block traces
+            value:
+              - action:
+                  callType: "call"
+                  from: "0x00000000000000000000000000000000000a4b05"
+                  gas: "0x0"
+                  input: "0x"
+                  to: "0xa4b05fffffffffffffffffffffffffffffffffff"
+                  value: "0x0"
+                blockHash: "0x5765e1e12766c561a99f2eca6be6dba225e5e2dbecc1c52c59dfd21f3c39071c"
+                blockNumber: 22207751
+                result:
+                  gasUsed: "0x0"
+                  output: "0x"
+                subtraces: 0
+                traceAddress: []
+                transactionHash: "0xd2ea43b18e2f0acb66b36e773f20a4e9a1ee2df00a9794f63c2f4d0519cbe12a"
+                transactionPosition: 0
+                type: "call"
+
+    arbtrace_call:
+      name: arbtrace_call
+      summary: Traces the execution of eth_call within a specific block context.
+      description: >
+        Executes a call and returns the trace results. This is an
+        Arbitrum-specific tracing method that works for pre-Nitro blocks (before
+        block 22,207,815). For post-Nitro blocks, use Geth debug_* methods.
+      params:
+        - name: Transaction
+          required: true
+          description: >
+            The transaction call object containing call parameters such as from,
+            to, gas, gasPrice, value, and data.
+          schema:
+            $ref: "#/components/schemas/TransactionCallObject"
+        - name: Trace types
+          required: true
+          description: >
+            Array of trace types to return. Valid values: "trace", "vmTrace", "stateDiff".
+          schema:
+            $ref: "#/components/schemas/TraceTypeArray"
+        - name: Block number
+          required: true
+          description: >
+            The block number as a hexadecimal string, or a block tag such as
+            "latest", "earliest", or "pending".
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Trace result
+        description: The trace result object containing output, traces, and optional state diff and VM trace.
+        schema:
+          $ref: "#/components/schemas/TraceCallResult"
+      examples:
+        - name: arbtrace_call example
+          params:
+            - name: Transaction
+              value:
+                from: "0x1234567890abcdef1234567890abcdef12345678"
+                to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                value: "0x0"
+                data: "0x70a08231000000000000000000000000abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+            - name: Trace types
+              value: ["trace"]
+            - name: Block number
+              value: "0x152DD07"
+          result:
+            name: Trace result
+            value:
+              output: "0x0000000000000000000000000000000000000000000000000000000000000000"
+              stateDiff: null
+              trace:
+                - action:
+                    callType: "call"
+                    from: "0x1234567890abcdef1234567890abcdef12345678"
+                    gas: "0x2faf080"
+                    input: "0x70a08231000000000000000000000000abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                    to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                    value: "0x0"
+                  result:
+                    gasUsed: "0x565"
+                    output: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                  subtraces: 0
+                  traceAddress: []
+                  type: "call"
+              vmTrace: null
+
+    arbtrace_callMany:
+      name: arbtrace_callMany
+      summary: Executes multiple call traces on the same block.
+      description: >
+        Executes multiple calls and returns traces for each. Before executing a
+        transaction, all preceding transactions are first applied and traced.
+        This is an Arbitrum-specific tracing method that works for pre-Nitro
+        blocks (before block 22,207,815). For post-Nitro blocks, use Geth
+        debug_* methods.
+      params:
+        - name: Calls
+          required: true
+          description: >
+            An array of call/trace-type pairs. Each element is an array of
+            [transaction call object, trace type array].
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                - $ref: "#/components/schemas/TransactionCallObject"
+                - $ref: "#/components/schemas/TraceTypeArray"
+              additionalItems: false
+        - name: Block number
+          required: true
+          description: >
+            The block number as a hexadecimal string, or a block tag such as
+            "latest", "earliest", or "pending".
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Trace results
+        description: An array of trace results, one per call.
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/TraceCallResult"
+      examples:
+        - name: arbtrace_callMany example
+          params:
+            - name: Calls
+              value:
+                - - from: "0x1234567890abcdef1234567890abcdef12345678"
+                    to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                    value: "0x0"
+                    data: "0x70a08231000000000000000000000000abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                  - ["trace"]
+                - - from: "0x1234567890abcdef1234567890abcdef12345678"
+                    to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                    value: "0x0"
+                    data: "0x18160ddd"
+                  - ["trace"]
+            - name: Block number
+              value: "0x152DD07"
+          result:
+            name: Trace results
+            value:
+              - output: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                stateDiff: null
+                trace:
+                  - action:
+                      callType: "call"
+                      from: "0x1234567890abcdef1234567890abcdef12345678"
+                      gas: "0x2faf080"
+                      input: "0x70a08231000000000000000000000000abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                      to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                      value: "0x0"
+                    result:
+                      gasUsed: "0x565"
+                      output: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                    subtraces: 0
+                    traceAddress: []
+                    type: "call"
+                vmTrace: null
+              - output: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                stateDiff: null
+                trace:
+                  - action:
+                      callType: "call"
+                      from: "0x1234567890abcdef1234567890abcdef12345678"
+                      gas: "0x2faf080"
+                      input: "0x18160ddd"
+                      to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+                      value: "0x0"
+                    result:
+                      gasUsed: "0x4a2"
+                      output: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                    subtraces: 0
+                    traceAddress: []
+                    type: "call"
+                vmTrace: null
+
+    arbtrace_filter:
+      name: arbtrace_filter
+      summary: Returns traces matching a given filter.
+      description: >
+        Returns all traces matching a specified filter object. Allows filtering
+        by block range, sender addresses, and recipient addresses. This is an
+        Arbitrum-specific tracing method that works for pre-Nitro blocks (before
+        block 22,207,815). For post-Nitro blocks, use Geth debug_* methods.
+      params:
+        - name: Filter
+          required: true
+          description: >
+            The filter object specifying the criteria for trace retrieval.
+          schema:
+            $ref: "#/components/schemas/TraceFilterObject"
+      result:
+        name: Filtered traces
+        description: An array of trace objects matching the filter criteria.
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/TraceObject"
+      examples:
+        - name: arbtrace_filter example
+          params:
+            - name: Filter
+              value:
+                fromBlock: "0x152DD07"
+                toBlock: "0x152DD07"
+                fromAddress:
+                  - "0x00000000000000000000000000000000000a4b05"
+                toAddress: []
+                after: 0
+                count: 10
+          result:
+            name: Filtered traces
+            value:
+              - action:
+                  callType: "call"
+                  from: "0x00000000000000000000000000000000000a4b05"
+                  gas: "0x0"
+                  input: "0x"
+                  to: "0xa4b05fffffffffffffffffffffffffffffffffff"
+                  value: "0x0"
+                blockHash: "0x5765e1e12766c561a99f2eca6be6dba225e5e2dbecc1c52c59dfd21f3c39071c"
+                blockNumber: 22207751
+                result:
+                  gasUsed: "0x0"
+                  output: "0x"
+                subtraces: 0
+                traceAddress: []
+                transactionHash: "0xd2ea43b18e2f0acb66b36e773f20a4e9a1ee2df00a9794f63c2f4d0519cbe12a"
+                transactionPosition: 0
+                type: "call"
+
+    arbtrace_get:
+      name: arbtrace_get
+      summary: Returns trace at a given position.
+      description: >
+        Returns a specific trace at the given position within a transaction.
+        This is an Arbitrum-specific tracing method that works for pre-Nitro
+        blocks (before block 22,207,815). For post-Nitro blocks, use Geth
+        debug_* methods.
+      params:
+        - name: Transaction hash
+          required: true
+          description: The hash of the transaction to get the trace from.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        - name: Trace address
+          required: true
+          description: >
+            An array of index positions specifying the trace address within the
+            transaction's trace tree.
+          schema:
+            type: array
+            items:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Trace
+        description: The trace object at the specified position.
+        schema:
+          $ref: "#/components/schemas/TraceObject"
+      examples:
+        - name: arbtrace_get example
+          params:
+            - name: Transaction hash
+              value: "0xd2ea43b18e2f0acb66b36e773f20a4e9a1ee2df00a9794f63c2f4d0519cbe12a"
+            - name: Trace address
+              value: ["0x0"]
+          result:
+            name: Trace
+            value:
+              action:
+                callType: "call"
+                from: "0x00000000000000000000000000000000000a4b05"
+                gas: "0x0"
+                input: "0x"
+                to: "0xa4b05fffffffffffffffffffffffffffffffffff"
+                value: "0x0"
+              blockHash: "0x5765e1e12766c561a99f2eca6be6dba225e5e2dbecc1c52c59dfd21f3c39071c"
+              blockNumber: 22207751
+              result:
+                gasUsed: "0x0"
+                output: "0x"
+              subtraces: 0
+              traceAddress:
+                - 0
+              transactionHash: "0xd2ea43b18e2f0acb66b36e773f20a4e9a1ee2df00a9794f63c2f4d0519cbe12a"
+              transactionPosition: 0
+              type: "call"
+
+    arbtrace_replayBlockTransactions:
+      name: arbtrace_replayBlockTransactions
+      summary: Replays all transactions in a block returning requested traces.
+      description: >
+        Replays all transactions in the specified block and returns the
+        requested trace types for each transaction. This is an
+        Arbitrum-specific tracing method that works for pre-Nitro blocks
+        (before block 22,207,815). For post-Nitro blocks, use Geth debug_*
+        methods.
+      params:
+        - name: Block number
+          required: true
+          description: >
+            The block number as a hexadecimal string, or a block tag such as
+            "latest", "earliest", or "pending".
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+        - name: Trace types
+          required: true
+          description: >
+            Array of trace types to return. Valid values: "trace", "vmTrace", "stateDiff".
+          schema:
+            $ref: "#/components/schemas/TraceTypeArray"
+      result:
+        name: Block transaction traces
+        description: An array of trace results, one per transaction in the block.
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/TraceCallResult"
+      examples:
+        - name: arbtrace_replayBlockTransactions example
+          params:
+            - name: Block number
+              value: "0x152DD07"
+            - name: Trace types
+              value: ["trace"]
+          result:
+            name: Block transaction traces
+            value:
+              - output: "0x"
+                stateDiff: null
+                trace:
+                  - action:
+                      callType: "call"
+                      from: "0x00000000000000000000000000000000000a4b05"
+                      gas: "0x0"
+                      input: "0x"
+                      to: "0xa4b05fffffffffffffffffffffffffffffffffff"
+                      value: "0x0"
+                    result:
+                      gasUsed: "0x0"
+                      output: "0x"
+                    subtraces: 0
+                    traceAddress: []
+                    type: "call"
+                vmTrace: null
+
+    arbtrace_replayTransaction:
+      name: arbtrace_replayTransaction
+      summary: Replays a transaction returning the requested traces.
+      description: >
+        Replays a specific transaction and returns the requested trace types
+        without actually executing it on the network. This is an
+        Arbitrum-specific tracing method that works for pre-Nitro blocks
+        (before block 22,207,815). For post-Nitro blocks, use Geth debug_*
+        methods.
+      params:
+        - name: Transaction hash
+          required: true
+          description: The hash of the transaction to replay.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        - name: Trace types
+          required: true
+          description: >
+            Array of trace types to return. Valid values: "trace", "vmTrace", "stateDiff".
+          schema:
+            $ref: "#/components/schemas/TraceTypeArray"
+      result:
+        name: Trace result
+        description: The trace result object for the replayed transaction.
+        schema:
+          $ref: "#/components/schemas/TraceCallResult"
+      examples:
+        - name: arbtrace_replayTransaction example
+          params:
+            - name: Transaction hash
+              value: "0xd2ea43b18e2f0acb66b36e773f20a4e9a1ee2df00a9794f63c2f4d0519cbe12a"
+            - name: Trace types
+              value: ["trace"]
+          result:
+            name: Trace result
+            value:
+              output: "0x"
+              stateDiff: null
+              trace:
+                - action:
+                    callType: "call"
+                    from: "0x00000000000000000000000000000000000a4b05"
+                    gas: "0x0"
+                    input: "0x"
+                    to: "0xa4b05fffffffffffffffffffffffffffffffffff"
+                    value: "0x0"
+                  result:
+                    gasUsed: "0x0"
+                    output: "0x"
+                  subtraces: 0
+                  traceAddress: []
+                  type: "call"
+              vmTrace: null
+
+    arbtrace_transaction:
+      name: arbtrace_transaction
+      summary: Returns all traces of a given transaction.
+      description: >
+        Returns all traces produced during the execution of a specific
+        transaction. This is an Arbitrum-specific tracing method that works for
+        pre-Nitro blocks (before block 22,207,815). For post-Nitro blocks, use
+        Geth debug_* methods.
+      params:
+        - name: Transaction hash
+          required: true
+          description: The hash of the transaction to trace.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Transaction traces
+        description: An array of trace objects for the given transaction.
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/TraceObject"
+      examples:
+        - name: arbtrace_transaction example
+          params:
+            - name: Transaction hash
+              value: "0xd2ea43b18e2f0acb66b36e773f20a4e9a1ee2df00a9794f63c2f4d0519cbe12a"
+          result:
+            name: Transaction traces
+            value:
+              - action:
+                  callType: "call"
+                  from: "0x00000000000000000000000000000000000a4b05"
+                  gas: "0x0"
+                  input: "0x"
+                  to: "0xa4b05fffffffffffffffffffffffffffffffffff"
+                  value: "0x0"
+                blockHash: "0x5765e1e12766c561a99f2eca6be6dba225e5e2dbecc1c52c59dfd21f3c39071c"
+                blockNumber: 22207751
+                result:
+                  gasUsed: "0x0"
+                  output: "0x"
+                subtraces: 0
+                traceAddress: []
+                transactionHash: "0xd2ea43b18e2f0acb66b36e773f20a4e9a1ee2df00a9794f63c2f4d0519cbe12a"
+                transactionPosition: 0
+                type: "call"

@@ -12,7 +12,7 @@ With Smart Wallets, you can allow users to pay for gas with any token, streamlin
 When a user pays for gas with a token, the gas is fronted using the network's native gas token and the payment tokens are transferred from the user's wallet to a wallet you configure in the policy.
 The equivalent USD amount and the admin fee are then added to your monthly invoice.
 
-Post-operation mode is recommended. This mode requires users to hold enough of the gas token in their wallet after their operation completes to pay the gas fee. If the balance is insufficient, the transaction reverts and you sponsor any gas used without token payment. If this doesn't work for your use case, see the [Token gas payment modes](#token-gas-payment-modes) section below for more options.
+Post-operation mode is recommended for most use cases. If the token approval is batched with your calls and any call in the batch reverts, the approval is also reverted and you (the policy owner) pay the gas cost without receiving token compensation. See the [Token gas payment modes](#token-gas-payment-modes) section below for details on when to use pre-operation mode instead.
 
 ## Prerequisites
 
@@ -51,40 +51,35 @@ Post-operation mode is recommended. This mode requires users to hold enough of t
 </Accordion>
 
 <Accordion title="Token gas payment modes">
-  The configured mode determines when the user's token payment occurs.
+  The configured mode determines when the user’s token payment occurs.
 
   **\[Recommended] Post-Operation**
 
   * No upfront allowance is required.
-  * The user signs an approval inside the same calls batch, and the paymaster contract pulls the token after the operation has executed.
-  * If that post-operation transfer fails, the entire batch is reverted and you (the developer) pay the gas fee.
+  * If the paymaster does not already have a sufficient allowance, a token approval is injected into the same atomic calls batch as your operations. The paymaster contract pulls the token after execution.
+  * When an approval is injected into the batch, if any call reverts, the approval is also reverted. The paymaster cannot collect the token payment and you (the policy owner) pay the gas cost without receiving token compensation.
+  * If a sufficient allowance already exists (e.g., from threshold mode or a prior approval), no approval is injected and the paymaster can collect payment even if the batch reverts.
 
   **Pre-Operation:**
 
   * The paymaster contract must have an allowance prior to the operation.
   * This can be done either through a prior call to `approve()` or by using an [ERC-7597 Permit](https://eips.ethereum.org/EIPS/eip-7597) signature.
-  * If the required allowance isn't in place when the transaction is submitted, it will be rejected.
+  * Because the token transfer occurs during validation (before execution), the paymaster collects payment regardless of whether the operation reverts.
+  * If the required allowance isn’t in place when the transaction is submitted, it will be rejected.
 
-  Post-operation mode is recommended for most use cases. This mode:
+  **Choosing a mode:**
+
+  Use **post-operation** mode when your operations are unlikely to revert. This mode:
 
   * Is the most gas efficient as it requires a single transfer.
   * Works with all ERC-20 tokens.
   * Requires a single signature from the user.
 
-  However, because tokens are deducted after execution, you may be required to pay for gas without receiving sufficient token payment.
-  Ensure that users have enough token left over to pay for gas after the operation, otherwise they won’t receive payment from users for gas and the operation will revert.
-  If the operation results in a static amount of the user’s token balance after execution and you can account for this before submitting the operation, use PostOp mode.
+  Use **pre-operation** mode when your operations may revert. Because the token transfer happens before execution, the paymaster is always compensated regardless of the execution outcome. This is the safer choice for:
 
-  Examples of static amounts:
-
-  * Payments, purchases, and deposits
-  * Operations unrelated to the payment token
-
-  Examples of dynamic amounts:
-
-  * Swaps that include the payment token
-
-  If you sponsor operations that result in dynamic amounts of the payment token left over, consider using pre-operation mode. See an example implementation below.
+  * Swaps or other operations with dynamic outcomes
+  * Any operation where revert conditions are difficult to predict ahead of time
+  * High-value gas operations where uncompensated gas costs are unacceptable
 </Accordion>
 
 <Accordion title="Pre-operation mode implementation">

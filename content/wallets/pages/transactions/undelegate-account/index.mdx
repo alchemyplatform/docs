@@ -1,0 +1,113 @@
+---
+title: Undelegate 7702 account
+description: Remove EIP-7702 delegation and restore an account to a plain EOA
+slug: wallets/transactions/undelegate-account
+---
+
+Undelegation removes the smart contract delegation from an [EIP-7702](/docs/wallets/transactions/using-eip-7702) account by delegating to the zero address (`0x0000...0000`). This restores the account to a plain EOA.
+
+## How it works
+
+When you undelegate an account, the Wallet API submits an EIP-7702 authorization that delegates the account to `address(0)`. Because the delegation target is the zero address, the EVM clears the account's code delegation and the account reverts to a standard externally-owned account.
+
+Gas for the undelegation is sponsored through a BSO (Bundler Sponsorship) policy, so the account does not need to hold native tokens.
+
+## Prerequisites
+
+* API key from your [dashboard](https://dashboard.alchemy.com/apps)
+* Enterprise plan tier — sponsored undelegation is gated to enterprise customers
+* A BSO (Bundler Sponsorship) policy ID
+* An account that is currently delegated via EIP-7702
+
+## Implementation
+
+<Tabs>
+  <Tab title="JavaScript" language="typescript">
+    <Markdown src="client.mdx" />
+  </Tab>
+
+  <Tab title="API" language="bash">
+    <Markdown src="api.mdx" />
+  </Tab>
+</Tabs>
+
+## Advanced
+
+<Accordion title="Preparing the EIP-7702 authorization yourself">
+  If you need full control over the authorization step — for example, to inspect the authorization data before signing or to sign in a separate service — you can prepare and sign the EIP-7702 authorization yourself, then submit it via `wallet_sendPreparedCalls`.
+
+  ```ts
+  import { serializeSignature } from "viem";
+  import { privateKeyToAccount } from "viem/accounts";
+  import { baseSepolia } from "viem/chains";
+  import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+
+  const account = privateKeyToAccount("0xYOUR_PRIVATE_KEY");
+
+  // Smart wallet client for preparing and submitting calls
+  const smartWalletClient = createSmartWalletClient({
+    transport: alchemyWalletTransport({ apiKey: "YOUR_API_KEY" }),
+    chain: baseSepolia,
+    signer: account,
+  });
+
+  // Prepare the undelegation to get the authorization data
+  const prepared = await smartWalletClient.prepareCalls({
+    account: account.address,
+    chainId: baseSepolia.id,
+    capabilities: {
+      paymaster: { policyId: "YOUR_BSO_POLICY_ID" },
+      eip7702Auth: {
+        delegation: "0x0000000000000000000000000000000000000000",
+      },
+    },
+  });
+
+  if (prepared.type !== "authorization") {
+    throw new Error("Expected prepareCalls result type to be 'authorization'");
+  }
+
+  // Sign the EIP-7702 authorization using the values from the prepare step
+  const { r, s, v, yParity } = await account.signAuthorization({
+    contractAddress: prepared.data.address,
+    chainId: prepared.chainId,
+    nonce: prepared.data.nonce,
+  });
+
+  // Submit via sendPreparedCalls
+  const result = await smartWalletClient.sendPreparedCalls({
+    type: "authorization",
+    chainId: baseSepolia.id,
+    data: prepared.data,
+    signature: {
+      type: "secp256k1",
+      data: serializeSignature({ r, s, yParity: yParity ?? Number(v - 27n) }),
+    },
+    capabilities: {
+      paymaster: {
+        policyId: "YOUR_BSO_POLICY_ID",
+      },
+    },
+  });
+
+  console.log(result);
+  ```
+</Accordion>
+
+<Accordion title="Checking delegation status">
+  After undelegation is confirmed, you can verify the account is no longer delegated by checking its code. A plain EOA has no code:
+
+  ```bash
+  cast code $ACCOUNT_ADDRESS --rpc-url https://base-sepolia.g.alchemy.com/v2/$ALCHEMY_API_KEY
+  # Returns 0x for a plain EOA
+  ```
+
+  If the account is still delegated, the response will contain the EIP-7702 delegation designator prefix (`0xef0100`).
+</Accordion>
+
+## Next steps
+
+Build more:
+
+* [How EIP-7702 works](/docs/wallets/transactions/using-eip-7702)
+* [Sponsor gas](/docs/wallets/transactions/sponsor-gas)

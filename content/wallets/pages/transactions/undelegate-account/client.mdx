@@ -1,0 +1,58 @@
+<Info>`@alchemy/wallet-apis` (v5.x.x) is currently in beta but is the recommended replacement for `@account-kit/wallet-client` (v4.x.x). If you run into any issues, please [reach out](mailto:support@alchemy.com).</Info>
+
+Use the [`undelegateAccount`](/docs/wallets/reference/wallet-apis/functions/undelegateAccount) action on the smart wallet client to remove EIP-7702 delegation and restore the account to a plain EOA. Gas is sponsored via a BSO policy.
+
+<CodeBlocks>
+
+```ts title="undelegateAccount.ts"
+import { client } from "./client.ts";
+
+// Undelegate the account — uses the client's paymaster policy
+const { id } = await client.undelegateAccount();
+
+// Wait for confirmation
+const status = await client.waitForCallsStatus({ id });
+
+console.log(status); // status: 200 once mined
+```
+
+```ts title="client.ts"
+import type { Hex } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { baseSepolia } from "viem/chains";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+
+export const client = createSmartWalletClient({
+  transport: alchemyWalletTransport({
+    apiKey: "YOUR_API_KEY",
+  }),
+  chain: baseSepolia,
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as const),
+  // BSO policy for gas sponsorship
+  paymaster: { policyId: "YOUR_BSO_POLICY_ID" },
+});
+```
+
+</CodeBlocks>
+
+You can also pass the policy ID per-call or override the account and chain:
+
+```ts
+import { baseSepolia } from "viem/chains";
+
+// Per-call policy ID
+const { id } = await client.undelegateAccount({
+  capabilities: {
+    paymaster: { policyId: "YOUR_BSO_POLICY_ID" },
+  },
+});
+
+// Override account and chain
+const { id } = await client.undelegateAccount({
+  account: "0xYourDelegatedAddress",
+  chain: baseSepolia,
+  capabilities: {
+    paymaster: { policyId: "YOUR_BSO_POLICY_ID" },
+  },
+});
+```
