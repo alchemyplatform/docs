@@ -27,8 +27,8 @@ Submits a signed transaction for execution on the network.
 ```bash cURL
 grpcurl \
   -d '{
-    "transaction": {"bcs": "BASE64_TX_BYTES"},
-    "signatures": [{"bcs": "BASE64_SIGNATURE"}]
+    "transaction": {"bcs": {"value": "BASE64_TX_BYTES"}},
+    "signatures": [{"bcs": {"value": "BASE64_SIGNATURE"}}]
   }' \
   YOUR_GRPC_ENDPOINT \
   sui.rpc.v2.TransactionExecutionService/ExecuteTransaction
@@ -60,7 +60,7 @@ Simulates transaction execution without submitting to the network. Use this to e
 ```bash cURL
 grpcurl \
   -d '{
-    "transaction": {"bcs": "BASE64_TX_BYTES"},
+    "transaction": {"bcs": {"value": "BASE64_TX_BYTES"}},
     "do_gas_selection": true
   }' \
   YOUR_GRPC_ENDPOINT \
