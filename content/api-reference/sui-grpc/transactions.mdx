@@ -1,0 +1,68 @@
+---
+title: Transactions
+description: Sui gRPC TransactionExecutionService API reference
+slug: reference/sui-grpc-transactions
+---
+
+The `TransactionExecutionService` provides methods for executing and simulating transactions on Sui.
+
+## ExecuteTransaction
+
+Submits a signed transaction for execution on the network.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `transaction` | Transaction | Yes | The transaction to execute |
+| `signatures` | repeated UserSignature | Yes | Array of user signatures |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `transaction` | ExecutedTransaction | The executed transaction result |
+
+```bash cURL
+grpcurl \
+  -d '{
+    "transaction": {"bcs": "BASE64_TX_BYTES"},
+    "signatures": [{"bcs": "BASE64_SIGNATURE"}]
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.TransactionExecutionService/ExecuteTransaction
+```
+
+---
+
+## SimulateTransaction
+
+Simulates transaction execution without submitting to the network. Use this to estimate gas costs or preview effects.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `transaction` | Transaction | Yes | The transaction to simulate |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+| `checks` | TransactionChecks | No | Enable or disable transaction checks |
+| `do_gas_selection` | bool | No | Perform automatic gas coin selection |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `transaction` | ExecutedTransaction | The simulated transaction result |
+| `command_outputs` | repeated CommandResult | Output of each transaction command |
+| `suggested_gas_price` | uint64 | Suggested gas price for the transaction |
+
+```bash cURL
+grpcurl \
+  -d '{
+    "transaction": {"bcs": "BASE64_TX_BYTES"},
+    "do_gas_selection": true
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.TransactionExecutionService/SimulateTransaction
+```

@@ -1,0 +1,35 @@
+---
+title: Subscriptions
+description: Sui gRPC SubscriptionService API reference
+slug: reference/sui-grpc-subscriptions
+---
+
+The `SubscriptionService` provides server-streaming RPCs for real-time data.
+
+## SubscribeCheckpoints
+
+Streams new checkpoints as they are finalized. This is a server-streaming RPC that keeps the connection open and sends checkpoint data in real time.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `read_mask` | FieldMask | No | Fields to include in each checkpoint |
+
+**Response** (stream):
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `checkpoint` | Checkpoint | The checkpoint data |
+| `cursor` | uint64 | Cursor position for resuming the stream |
+
+```bash cURL
+grpcurl \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.SubscriptionService/SubscribeCheckpoints
+```
+
+<Note>
+  This is a long-lived streaming connection. The server will continue sending checkpoints until the client disconnects.
+</Note>

@@ -1,0 +1,196 @@
+---
+title: Objects and ledger
+description: Sui gRPC LedgerService API reference
+slug: reference/sui-grpc-objects-and-ledger
+---
+
+The `LedgerService` provides methods for querying objects, transactions, checkpoints, epochs, and general chain information.
+
+## GetServiceInfo
+
+Returns chain metadata including the current checkpoint height and epoch.
+
+**Request**: No fields required.
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `chain` | string | Network name (e.g., `mainnet`) |
+| `chain_id` | string | Chain identifier |
+| `checkpoint_height` | uint64 | Current checkpoint height |
+| `epoch` | uint64 | Current epoch |
+| `lowest_available_checkpoint` | uint64 | Earliest available checkpoint |
+| `lowest_available_checkpoint_objects` | uint64 | Earliest checkpoint with object data |
+| `server` | string | Server identifier |
+| `timestamp` | Timestamp | Server timestamp |
+
+```bash cURL
+grpcurl \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetServiceInfo
+```
+
+---
+
+## GetObject
+
+Fetches a single object by ID, optionally at a specific version.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `object_id` | string | Yes | The object ID |
+| `version` | uint64 | No | Specific version to fetch |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `object` | Object | The requested object |
+
+```bash cURL
+grpcurl \
+  -d '{"object_id": "0x5"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetObject
+```
+
+---
+
+## BatchGetObjects
+
+Fetches multiple objects in a single request.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `requests` | repeated GetObjectRequest | Yes | Array of object requests |
+| `read_mask` | FieldMask | No | Fields to include in each response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `objects` | repeated GetObjectResult | Array of results, each containing an `object` or `error` |
+
+```bash cURL
+grpcurl \
+  -d '{
+    "requests": [
+      {"object_id": "0x5"},
+      {"object_id": "0x6"}
+    ]
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/BatchGetObjects
+```
+
+---
+
+## GetTransaction
+
+Fetches a single executed transaction by its digest.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `digest` | string | Yes | Transaction digest |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `transaction` | ExecutedTransaction | The executed transaction |
+
+```bash cURL
+grpcurl \
+  -d '{"digest": "YOUR_TX_DIGEST"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetTransaction
+```
+
+---
+
+## BatchGetTransactions
+
+Fetches multiple transactions by digest in a single request.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `digests` | repeated string | Yes | Array of transaction digests |
+| `read_mask` | FieldMask | No | Fields to include in each response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `transactions` | repeated GetTransactionResult | Array of results, each containing a `transaction` or `error` |
+
+```bash cURL
+grpcurl \
+  -d '{"digests": ["DIGEST_1", "DIGEST_2"]}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/BatchGetTransactions
+```
+
+---
+
+## GetCheckpoint
+
+Fetches a checkpoint by sequence number or digest.
+
+**Request** (one of):
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `sequence_number` | uint64 | No | Checkpoint sequence number |
+| `digest` | string | No | Checkpoint digest |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `checkpoint` | Checkpoint | The checkpoint data |
+
+```bash cURL
+grpcurl \
+  -d '{"sequence_number": 1000000}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetCheckpoint
+```
+
+---
+
+## GetEpoch
+
+Fetches epoch information. Returns the current epoch if no epoch number is specified.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `epoch` | uint64 | No | Epoch number. Defaults to current epoch |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `epoch` | Epoch | Epoch information |
+
+```bash cURL
+grpcurl \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetEpoch
+```

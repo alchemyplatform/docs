@@ -1,0 +1,55 @@
+---
+title: Name service
+description: Sui gRPC NameService API reference
+slug: reference/sui-grpc-name-service
+---
+
+The `NameService` provides methods for resolving SuiNS names to addresses and vice versa.
+
+## LookupName
+
+Resolves a SuiNS name to its record, including the associated address.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | Yes | The SuiNS name to look up (e.g., `example.sui`) |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `record` | NameRecord | The name record including the resolved address |
+
+```bash cURL
+grpcurl \
+  -d '{"name": "example.sui"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.NameService/LookupName
+```
+
+---
+
+## ReverseLookupName
+
+Resolves an address to its SuiNS name.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `address` | string | Yes | The address to reverse-lookup |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `record` | NameRecord | The name record for the address |
+
+```bash cURL
+grpcurl \
+  -d '{"address": "0xYOUR_ADDRESS"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.NameService/ReverseLookupName
+```

@@ -1,0 +1,120 @@
+---
+title: Move packages
+description: Sui gRPC MovePackageService API reference
+slug: reference/sui-grpc-move-packages
+---
+
+The `MovePackageService` provides methods for inspecting Move packages, functions, and data types.
+
+## GetPackage
+
+Fetches a Move package by its ID.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `package_id` | string | Yes | The Move package ID |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `package` | Package | The Move package including its modules |
+
+```bash cURL
+grpcurl \
+  -d '{"package_id": "0x2"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.MovePackageService/GetPackage
+```
+
+---
+
+## GetFunction
+
+Fetches a Move function definition by package, module, and function name.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `package_id` | string | Yes | The Move package ID |
+| `module_name` | string | Yes | The module name |
+| `name` | string | Yes | The function name |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `function` | FunctionDescriptor | The function definition including parameters and return types |
+
+```bash cURL
+grpcurl \
+  -d '{
+    "package_id": "0x2",
+    "module_name": "coin",
+    "name": "balance"
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.MovePackageService/GetFunction
+```
+
+---
+
+## GetDatatype
+
+Fetches a Move struct or enum definition by package, module, and name.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `package_id` | string | Yes | The Move package ID |
+| `module_name` | string | Yes | The module name |
+| `name` | string | Yes | The datatype name |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `datatype` | DatatypeDescriptor | The datatype definition including fields and abilities |
+
+```bash cURL
+grpcurl \
+  -d '{
+    "package_id": "0x2",
+    "module_name": "coin",
+    "name": "Coin"
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.MovePackageService/GetDatatype
+```
+
+---
+
+## ListPackageVersions
+
+Lists all versions of a Move package with pagination.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `package_id` | string | Yes | The Move package ID |
+| `page_size` | uint32 | No | Maximum results to return |
+| `page_token` | bytes | No | Pagination token from a previous response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `versions` | repeated PackageVersion | List of package versions |
+| `next_page_token` | bytes | Token for the next page of results |
+
+```bash cURL
+grpcurl \
+  -d '{"package_id": "0x2"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.MovePackageService/ListPackageVersions
+```

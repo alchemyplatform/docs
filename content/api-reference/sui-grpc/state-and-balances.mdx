@@ -1,0 +1,149 @@
+---
+title: State and balances
+description: Sui gRPC StateService API reference
+slug: reference/sui-grpc-state-and-balances
+---
+
+The `StateService` provides methods for querying coin balances, dynamic fields, and owned objects.
+
+## GetBalance
+
+Gets the balance of a specific coin type for an owner address.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `owner` | string | Yes | Owner address |
+| `coin_type` | string | No | Coin type (defaults to `0x2::sui::SUI`) |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `balance` | Balance | Balance information including total and coin count |
+
+```bash cURL
+grpcurl \
+  -d '{
+    "owner": "0xYOUR_ADDRESS",
+    "coin_type": "0x2::sui::SUI"
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/GetBalance
+```
+
+---
+
+## ListBalances
+
+Lists all coin balances for an owner with pagination.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `owner` | string | Yes | Owner address |
+| `page_size` | uint32 | No | Maximum results to return |
+| `page_token` | bytes | No | Pagination token from a previous response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `balances` | repeated Balance | List of balances by coin type |
+| `next_page_token` | bytes | Token for the next page of results |
+
+```bash cURL
+grpcurl \
+  -d '{"owner": "0xYOUR_ADDRESS"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/ListBalances
+```
+
+---
+
+## GetCoinInfo
+
+Gets metadata and treasury information for a coin type.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `coin_type` | string | Yes | The coin type to query |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `coin_type` | string | The queried coin type |
+| `metadata` | CoinMetadata | Coin metadata (name, symbol, decimals, etc.) |
+| `regulated_metadata` | RegulatedCoinMetadata | Regulated coin metadata if applicable |
+| `treasury` | CoinTreasury | Treasury information |
+
+```bash cURL
+grpcurl \
+  -d '{"coin_type": "0x2::sui::SUI"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/GetCoinInfo
+```
+
+---
+
+## ListDynamicFields
+
+Lists dynamic fields of an object with pagination.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `parent` | string | Yes | Parent object ID |
+| `page_size` | uint32 | No | Maximum results to return |
+| `page_token` | bytes | No | Pagination token from a previous response |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `dynamic_fields` | repeated DynamicField | List of dynamic fields |
+| `next_page_token` | bytes | Token for the next page of results |
+
+```bash cURL
+grpcurl \
+  -d '{"parent": "0xOBJECT_ID"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/ListDynamicFields
+```
+
+---
+
+## ListOwnedObjects
+
+Lists objects owned by an address, optionally filtered by type.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `owner` | string | Yes | Owner address |
+| `object_type` | string | No | Filter by object type |
+| `page_size` | uint32 | No | Maximum results to return |
+| `page_token` | bytes | No | Pagination token from a previous response |
+| `read_mask` | FieldMask | No | Fields to include in the response |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `objects` | repeated Object | List of owned objects |
+| `next_page_token` | bytes | Token for the next page of results |
+
+```bash cURL
+grpcurl \
+  -d '{"owner": "0xYOUR_ADDRESS"}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/ListOwnedObjects
+```

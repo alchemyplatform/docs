@@ -1,0 +1,99 @@
+---
+title: Sui gRPC quickstart
+description: Get started with the Sui gRPC API
+slug: reference/sui-grpc-quickstart
+---
+
+import { Steps, Step } from "/snippets/interactive-steps.mdx";
+
+This guide walks you through making your first Sui gRPC call.
+
+## Prerequisites
+
+- An [Alchemy API key](https://dashboard.alchemy.com/signup)
+- A gRPC client library for your language ([grpcurl](https://github.com/fullstorydev/grpcurl) for CLI testing)
+- The [Sui gRPC proto definitions](https://github.com/MystenLabs/sui-apis)
+
+## Endpoints
+
+| Network | Endpoint |
+| --- | --- |
+| Mainnet | `https://sui-mainnet.g.alchemy.com/v2/{apiKey}` |
+| Testnet | `https://sui-testnet.g.alchemy.com/v2/{apiKey}` |
+
+<Steps>
+<Step title="Get service info">
+
+Start with a `GetServiceInfo` call to verify your connection and check the current chain state.
+
+```bash cURL
+grpcurl \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetServiceInfo
+```
+
+Expected response:
+
+```json
+{
+  "chain": "mainnet",
+  "chainId": "35834a8a",
+  "checkpointHeight": "12345678",
+  "epoch": "500",
+  "server": "alchemy"
+}
+```
+
+</Step>
+<Step title="Fetch an object">
+
+Query a Sui object by its ID using `GetObject`. Use `read_mask` to request specific fields.
+
+```bash cURL
+grpcurl \
+  -d '{
+    "object_id": "0x5",
+    "read_mask": "object_id,version,digest,owner"
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetObject
+```
+
+</Step>
+<Step title="Get a transaction">
+
+Fetch a transaction by its digest.
+
+```bash cURL
+grpcurl \
+  -d '{
+    "digest": "YOUR_TX_DIGEST"
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetTransaction
+```
+
+</Step>
+<Step title="Check a balance">
+
+Query the SUI balance for an address.
+
+```bash cURL
+grpcurl \
+  -d '{
+    "owner": "0xYOUR_ADDRESS",
+    "coin_type": "0x2::sui::SUI"
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/GetBalance
+```
+
+</Step>
+</Steps>
+
+## Next steps
+
+- [Sui gRPC overview](/docs/reference/sui-grpc-overview) for the full list of available services and methods
+- [Objects and ledger](/docs/reference/sui-grpc-objects-and-ledger) for detailed `LedgerService` documentation
+- [Transactions](/docs/reference/sui-grpc-transactions) for executing and simulating transactions
