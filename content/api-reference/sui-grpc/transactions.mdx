@@ -26,11 +26,14 @@ Submits a signed transaction for execution on the network.
 
 ```bash cURL
 grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/transaction_execution_service.proto \
   -d '{
     "transaction": {"bcs": {"value": "BASE64_TX_BYTES"}},
     "signatures": [{"bcs": {"value": "BASE64_SIGNATURE"}}]
   }' \
-  YOUR_GRPC_ENDPOINT \
+  sui-mainnet.g.alchemy.com:443 \
   sui.rpc.v2.TransactionExecutionService/ExecuteTransaction
 ```
 
@@ -59,10 +62,13 @@ Simulates transaction execution without submitting to the network. Use this to e
 
 ```bash cURL
 grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/transaction_execution_service.proto \
   -d '{
     "transaction": {"bcs": {"value": "BASE64_TX_BYTES"}},
     "do_gas_selection": true
   }' \
-  YOUR_GRPC_ENDPOINT \
+  sui-mainnet.g.alchemy.com:443 \
   sui.rpc.v2.TransactionExecutionService/SimulateTransaction
 ```

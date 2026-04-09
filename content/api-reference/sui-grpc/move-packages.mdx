@@ -24,8 +24,11 @@ Fetches a Move package by its ID.
 
 ```bash cURL
 grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/move_package_service.proto \
   -d '{"package_id": "0x2"}' \
-  YOUR_GRPC_ENDPOINT \
+  sui-mainnet.g.alchemy.com:443 \
   sui.rpc.v2.MovePackageService/GetPackage
 ```
 
@@ -51,12 +54,15 @@ Fetches a Move function definition by package, module, and function name.
 
 ```bash cURL
 grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/move_package_service.proto \
   -d '{
     "package_id": "0x2",
     "module_name": "coin",
     "name": "balance"
   }' \
-  YOUR_GRPC_ENDPOINT \
+  sui-mainnet.g.alchemy.com:443 \
   sui.rpc.v2.MovePackageService/GetFunction
 ```
 
@@ -82,12 +88,15 @@ Fetches a Move struct or enum definition by package, module, and name.
 
 ```bash cURL
 grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/move_package_service.proto \
   -d '{
     "package_id": "0x2",
     "module_name": "coin",
     "name": "Coin"
   }' \
-  YOUR_GRPC_ENDPOINT \
+  sui-mainnet.g.alchemy.com:443 \
   sui.rpc.v2.MovePackageService/GetDatatype
 ```
 
@@ -114,7 +123,10 @@ Lists all versions of a Move package with pagination.
 
 ```bash cURL
 grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/move_package_service.proto \
   -d '{"package_id": "0x2"}' \
-  YOUR_GRPC_ENDPOINT \
+  sui-mainnet.g.alchemy.com:443 \
   sui.rpc.v2.MovePackageService/ListPackageVersions
 ```
