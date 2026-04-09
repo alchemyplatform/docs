@@ -1,0 +1,49 @@
+components:
+  methods:
+    chain_getFinalizedHead:
+      name: chain_getFinalizedHead
+      summary: Get hash of the last finalized block
+      description: Returns the block hash of the most recently finalized block in the canonical chain.
+      params: []
+      result:
+        name: BlockHash
+        description: The hash of the last finalized block.
+        schema:
+          type: string
+          example: "0xf0b30ecdc94c481ca96237d2a17408fef6c401f705a1f5f911e58d2a1f33fcb6"
+
+    chain_getHeader:
+      name: chain_getHeader
+      summary: Retrieves the header for a specific block
+      description: Returns the header of the block identified by the given hash. If no hash is provided, returns the header of the best (latest) block.
+      params:
+        - name: hash
+          required: false
+          description: The block hash to retrieve the header for. If omitted, returns the header of the current best block.
+          schema:
+            type: string
+      result:
+        name: Header
+        description: The block header object containing metadata about the block.
+        schema:
+          type: object
+          properties:
+            parentHash: { type: string }
+            number: { type: string }
+            stateRoot: { type: string }
+            extrinsicsRoot: { type: string }
+            digest:
+              type: object
+              properties:
+                logs:
+                  type: array
+                  items: { type: string }
+          example:
+            parentHash: "0xf0b30ecdc94c481ca96237d2a17408fef6c401f705a1f5f911e58d2a1f33fcb6"
+            number: "0x14fd"
+            stateRoot: "0xaa796217f92ed5a40ec03d184b05ad1e1824d2824559719b9bef3304ee3bff55"
+            extrinsicsRoot: "0x82faad984718975bccbfd58fdc67f59d367d678419a918f79c7a58cbb8e34a5b"
+            digest:
+              logs:
+                - "0x0642414245b50101000000..."
+                - "0x054241424501011687815..."
