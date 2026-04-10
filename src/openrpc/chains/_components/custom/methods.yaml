@@ -833,23 +833,136 @@ components:
 
     eth_getFinalizedHeader:
       name: eth_getFinalizedHeader
-      description: Returns the latest finalized execution payload header.
-      params: []
+      description: >-
+        Returns the latest finalized execution payload header. The finality
+        threshold is selected via `verifiedValidatorNum`; negative values are
+        shortcuts: `-1` (≥ 1/2 validators), `-2` (≥ 2/3 validators), `-3`
+        (all validators). The method returns the block header at the height
+        equal to `max(fastFinalizedHeight, probabilisticFinalizedHeight)`.
+      params:
+        - name: verifiedValidatorNum
+          required: true
+          description: >-
+            Number of validators required to verify the block for probabilistic
+            finality. Must be in `[1, len(currentValidators)]` or one of the
+            shortcut values: `-1` (≥ 1/2 validators), `-2` (≥ 2/3 validators),
+            `-3` (all validators).
+          schema:
+            type: integer
       result:
         name: Finalized Header
         description: The finalized execution block header.
         schema:
           type: object
-          additionalProperties: true
+          properties:
+            baseFeePerGas:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Base fee per gas in hex.
+            blobGasUsed:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Blob gas used in the block.
+            difficulty:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block difficulty.
+            excessBlobGas:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Excess blob gas.
+            extraData:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+              description: Extra data field.
+            gasLimit:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block gas limit.
+            gasUsed:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Total gas used in the block.
+            hash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Block hash.
+            logsBloom:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes256"
+              description: Bloom filter for logs.
+            milliTimestamp:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block timestamp in milliseconds since Unix epoch.
+            miner:
+              $ref: "../evm/base-types.yaml#/components/schemas/address"
+              description: Beneficiary/miner address.
+            mixHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Mix hash.
+            nonce:
+              $ref: "../evm/base-types.yaml#/components/schemas/bytes8"
+              description: Block nonce.
+            number:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block number.
+            parentBeaconBlockRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Parent beacon block root.
+            parentHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Parent block hash.
+            receiptsRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Receipts trie root.
+            requestsHash:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Requests hash.
+            sha3Uncles:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Uncles/ommers hash.
+            size:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block size in bytes.
+            stateRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: State trie root.
+            timestamp:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Block timestamp in seconds since Unix epoch.
+            totalDifficulty:
+              $ref: "../evm/base-types.yaml#/components/schemas/uint"
+              description: Total difficulty up to this block.
+            transactionsRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Transactions trie root.
+            withdrawalsRoot:
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+              description: Withdrawals trie root.
       examples:
         - name: eth_getFinalizedHeader example
-          params: []
+          params:
+            - name: verifiedValidatorNum
+              value: -3
           result:
             name: Finalized Header
             value:
-              parentHash: "0xabc123..."
-              number: "0x123456"
-              stateRoot: "0xdef456..."
+              baseFeePerGas: "0x0"
+              blobGasUsed: "0x0"
+              difficulty: "0x2"
+              excessBlobGas: "0x0"
+              extraData: "0xda8301060788643233646130343588676f312e32342e30836c696e004d518ce1f8b5831dffffb860b8c7390a8a9be245067620f30a4abd6f53290868da89fa6dbec51cf4168e03e1cd468da4302a7f45ce6492654c3f9ad3105a94e74f17e804ca6552306a314faca45222569612e7078c599e44a39eb93b6da80a903951b0cb4823bf5bd7732f46f84c84056f9bc5a04bc9b5101c179acd90c83a2ac1ff4685ed2b3576ccf24f2e8fd3870b1724efe784056f9bc6a028942e7a678e3f57ca057f6e58a69d0809247ae1bbf1d20b23eb8c72b6abdfa080b28358139305554bd08572388924d7249814fec1931c2ba25e646e3aab6e4a3935ae814c324138005140b593ef0c010f77e576d37c48389e78c282e7cabce75b01"
+              gasLimit: "0x3473bc0"
+              gasUsed: "0xb498a1"
+              hash: "0xdef001fe94c26896c92b875b97558a674824d0a643409edc616a845833578f2c"
+              logsBloom: "0xbe791bc23204004153e2505dc28ca82d012a9ea080584296c53824821112010fb48e148959285e0a7820f0802f020085179f30102654b5a02eb00236d52f08884510b613c5689d8d859818398001602338539d5090c4093b001c081730533d082f2800680a8a44b098c062ad0656482429405a4060068fc96d208ed18d7e244046a1d2acf82a0d6091852902240807f699749fc7804ed00a810453408013c564420ca1690112103339558996076d8c40d3044a2c4a808b693563182c6c27400de1b8b102ea16a019144300a12040d8012f24e500809e7a187c3043bf4478e0fae9506b2a900749004d607e14807101a10c00e4111d821c4cc78b0c80028c0a44"
+              milliTimestamp: "0x19d696b712a"
+              miner: "0xca503a7ed99eca485da2e875aedf7758472c378c"
+              mixHash: "0x00000000000000000000000000000000000000000000000000000000000000fa"
+              nonce: "0x0000000000000000"
+              number: "0x56f9bc7"
+              parentBeaconBlockRoot: "0x0000000000000000000000000000000000000000000000000000000000000000"
+              parentHash: "0x28942e7a678e3f57ca057f6e58a69d0809247ae1bbf1d20b23eb8c72b6abdfa0"
+              receiptsRoot: "0x59dac4d7b272eabe4a755f869c3ec87033d993ee392f8a70067fed733c7f8f4f"
+              requestsHash: "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+              size: "0x67d2"
+              stateRoot: "0xbfb9084e605d265d79844e82109f0fc3395c0ee09b46beef8523a5dea36afe17"
+              timestamp: "0x69d55afe"
+              totalDifficulty: "0xad64c73"
+              transactionsRoot: "0xb19dc98f4f0c28f6f40abc86b3de6b5299784e78dbcc1c6cf6f1e285e48edcf2"
+              withdrawalsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 
     eth_getTransactionReceiptsByBlock:
       name: eth_getTransactionReceiptsByBlock
@@ -1566,3 +1679,334 @@ components:
                     code: -32000
                     message: "execution reverted"
                     data: "0x08c379a00000000000000000000000000000000000000000000000000000000000000020..."
+
+    # Erigon methods
+    erigon_forks:
+      name: erigon_forks
+      summary: Get forks
+      description: Returns the genesis hash and lists of all height-based and time-based forks that the node is aware of.
+      params: []
+      result:
+        name: forks
+        description: Object containing genesis hash and fork activation points.
+        schema:
+          type: object
+          properties:
+            genesis: { type: string }
+            heightForks:
+              type: array
+              items: { type: integer }
+            timeForks:
+              type: array
+              items: { type: integer }
+          example:
+            genesis: "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"
+            heightForks:
+              [
+                1150000,
+                1920000,
+                2463000,
+                2675000,
+                4370000,
+                7280000,
+                9069000,
+                9200000,
+                12244000,
+                12965000,
+                13773000,
+                15050000,
+              ]
+            timeForks: [1681338455, 1710338135]
+
+    erigon_getHeaderByHash:
+      name: erigon_getHeaderByHash
+      summary: Get header by hash
+      description: Returns the block header for the given block hash.
+      params:
+        - name: hash
+          required: true
+          description: The block hash.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: header
+        description: The block header object.
+        schema:
+          type: object
+
+    erigon_getHeaderByNumber:
+      name: erigon_getHeaderByNumber
+      summary: Get header by number
+      description: Returns the block header for the given block number.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number or tag.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: header
+        description: The block header object.
+        schema:
+          type: object
+
+    erigon_getLogsByHash:
+      name: erigon_getLogsByHash
+      summary: Get logs by block hash
+      description: Returns all logs generated by transactions in the block with the given hash, grouped by transaction.
+      params:
+        - name: hash
+          required: true
+          description: The block hash.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: logs
+        description: Array of arrays of log objects, grouped by transaction.
+        schema:
+          type: array
+          items:
+            type: array
+            items: { type: object }
+
+    erigon_issuance:
+      name: erigon_issuance
+      summary: Get issuance
+      description: Returns the issuance and burn information for the given block, including block reward, uncle reward, total issuance, total burned, and tips.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number or tag.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: issuance
+        description: Issuance and burn information.
+        schema:
+          type: object
+          properties:
+            blockReward: { type: string }
+            uncleReward: { type: string }
+            issuance: { type: string }
+            burnt: { type: string }
+            totalIssued: { type: string }
+            totalBurnt: { type: string }
+            tips: { type: string }
+
+    # Network methods
+    net_peerCount:
+      name: net_peerCount
+      summary: Get peer count
+      description: Returns the number of peers currently connected to the client.
+      params: []
+      result:
+        name: peerCount
+        description: The number of connected peers as a hex string.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      examples:
+        - name: net_peerCount example
+          params: []
+          result:
+            name: peerCount
+            value: "0x2"
+
+    # Transaction pool methods
+    txpool_content:
+      name: txpool_content
+      summary: Get transaction pool content
+      description: Returns a list of the exact details of all transactions currently pending for inclusion in the next blocks, as well as ones that are being scheduled for future execution.
+      params: []
+      result:
+        name: content
+        description: Object with pending and queued transactions grouped by sender address and nonce.
+        schema:
+          type: object
+          properties:
+            pending: { type: object }
+            queued: { type: object }
+
+    # Parlia methods (BNB Smart Chain)
+    parlia_getSnapshot:
+      name: parlia_getSnapshot
+      summary: Get Parlia snapshot
+      description: Returns the consensus snapshot at the given block number for the BNB Smart Chain Parlia consensus engine. If omitted, returns the snapshot at the latest block.
+      params:
+        - name: blockNumber
+          required: false
+          description: The block number or tag.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: snapshot
+        description: The Parlia consensus snapshot.
+        schema:
+          type: object
+
+    # Debug methods
+    debug_executionWitness:
+      name: debug_executionWitness
+      summary: Get execution witness
+      description: Returns the execution witness for the given block number.
+      params:
+        - name: blockNumber
+          required: true
+          description: The block number or tag.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: executionWitness
+        description: The execution witness data.
+        schema:
+          type: object
+
+    debug_executionWitnessByHash:
+      name: debug_executionWitnessByHash
+      summary: Get execution witness by hash
+      description: Returns the execution witness for the given block hash.
+      params:
+        - name: blockHash
+          required: true
+          description: The block hash.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: executionWitness
+        description: The execution witness data.
+        schema:
+          type: object
+
+    # Stellar Soroban RPC methods
+    getHealth:
+      name: getHealth
+      summary: Get health
+      description: Returns the health status of the node.
+      params: []
+      result:
+        name: health
+        description: Health status of the node including ledger information.
+        schema:
+          type: object
+          properties:
+            status: { type: string }
+            latestLedger: { type: integer }
+            oldestLedger: { type: integer }
+            ledgerRetentionWindow: { type: integer }
+          example:
+            status: "healthy"
+            latestLedger: 50000
+            oldestLedger: 1
+            ledgerRetentionWindow: 17280
+
+    sendTransaction:
+      name: sendTransaction
+      summary: Send transaction
+      description: Submits a signed transaction to the network.
+      params:
+        - name: transaction
+          required: true
+          description: The signed transaction data.
+          schema:
+            type: string
+      result:
+        name: result
+        description: Transaction submission result.
+        schema:
+          type: object
+
+    getTransaction:
+      name: getTransaction
+      summary: Get transaction
+      description: Returns the details and status of a submitted transaction by its hash.
+      params:
+        - name: hash
+          required: true
+          description: The 64-character hex transaction hash.
+          schema:
+            type: string
+        - name: xdrFormat
+          required: false
+          description: Output format for XDR fields, either "base64" (default) or "json".
+          schema:
+            type: string
+      result:
+        name: result
+        description: Transaction details including status, ledger info, and XDR data.
+        schema:
+          type: object
+          properties:
+            status: { type: string }
+            latestLedger: { type: integer }
+            latestLedgerCloseTime: { type: integer }
+            oldestLedger: { type: integer }
+            oldestLedgerCloseTime: { type: integer }
+
+    getTransactions:
+      name: getTransactions
+      summary: Get transactions
+      description: Returns a paginated list of transactions from the network.
+      params:
+        - name: startLedger
+          required: false
+          description: Ledger sequence number to start from (inclusive). Omit if using cursor.
+          schema:
+            type: integer
+        - name: pagination
+          required: false
+          description: Pagination parameters with optional cursor and limit (1-200, default 50).
+          schema:
+            type: object
+            properties:
+              cursor: { type: string }
+              limit: { type: integer }
+        - name: xdrFormat
+          required: false
+          description: Output format for XDR fields, either "base64" (default) or "json".
+          schema:
+            type: string
+      result:
+        name: result
+        description: Paginated list of transactions with ledger metadata.
+        schema:
+          type: object
+          properties:
+            transactions: { type: array, items: { type: object } }
+            latestLedger: { type: integer }
+            cursor: { type: string }
+
+    simulateTransaction:
+      name: simulateTransaction
+      summary: Simulate transaction
+      description: Simulates a transaction invocation to estimate resource fees, required authorizations, and return values without submitting to the network.
+      params:
+        - name: transaction
+          required: true
+          description: Base64-encoded TransactionEnvelope XDR with a single invokeHostFunction operation.
+          schema:
+            type: string
+        - name: resourceConfig
+          required: false
+          description: Resource configuration with instructionLeeway for extra instruction budget.
+          schema:
+            type: object
+            properties:
+              instructionLeeway: { type: integer }
+        - name: xdrFormat
+          required: false
+          description: Output format for XDR fields, either "base64" (default) or "json".
+          schema:
+            type: string
+        - name: authMode
+          required: false
+          description: Authorization mode. "enforce" (default), "record", or "record_allow_nonroot".
+          schema:
+            type: string
+      result:
+        name: result
+        description: Simulation result with fee estimate, events, and transaction data.
+        schema:
+          type: object
+          properties:
+            latestLedger: { type: integer }
+            minResourceFee: { type: string }
+            transactionData: { type: string }
