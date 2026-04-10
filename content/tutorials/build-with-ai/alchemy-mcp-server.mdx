@@ -1,11 +1,11 @@
 ---
 title: Alchemy MCP Server
-description: Give your AI coding agent direct access to 100+ blockchains with 148 tools through the Model Context Protocol.
-subtitle: Give your AI coding agent direct access to 100+ blockchains with 148 tools through the Model Context Protocol.
+description: Give your AI coding agent direct access to 100+ blockchains with 159 tools through the Model Context Protocol.
+subtitle: Give your AI coding agent direct access to 100+ blockchains with 159 tools through the Model Context Protocol.
 slug: docs/alchemy-mcp-server
 ---
 
-The Alchemy MCP Server connects your AI tools to blockchain data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It exposes **148 tools** across token prices, NFT metadata, transaction history, smart contract simulation, tracing, account abstraction, Solana DAS, and more — covering **100+ networks** including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, and Starknet.
+The Alchemy MCP Server connects your AI tools to blockchain data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It exposes **159 tools** across token prices, NFT metadata, transaction history, smart contract simulation, tracing, account abstraction, Solana DAS, and more — covering **100+ networks** including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, and Starknet.
 
 ## Connect your client
 
@@ -135,51 +135,67 @@ For any other MCP-compatible client, point it at `https://mcp.alchemy.com/mcp` u
 
 Once connected, sign in with your Alchemy account when prompted. Then the typical workflow is:
 
-1. **`alchemy_list_apps`** — see your Alchemy apps
-2. **`alchemy_select_app`** — pick an app to use (caches the API key for subsequent calls)
-3. **Ask your agent** — e.g. *"What's the current price of ETH?"* or *"Show me the NFTs owned by vitalik.eth"*
+1. **Tell your agent which app to use** — e.g. *"Select an Alchemy app"*
+2. **Ask your agent** — e.g. *"What's the current price of ETH?"* or *"Show me the NFTs owned by vitalik.eth"*
 
 ## Available tools
 
-The server exposes **148 tools** in three categories:
+The server exposes **159 tools** in three categories:
 
-### Admin — Account & App Management (9 tools)
+### Admin — Account & App Management (8 tools)
 
 Manage your Alchemy account and apps. These tools do not interact with the blockchain.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_ping` | Health check |
-| `alchemy_list_apps` | List your Alchemy apps |
-| `alchemy_get_app` | Get app details |
-| `alchemy_select_app` | Select an app and cache its API key for RPC/Data tools |
-| `alchemy_create_app` | Create a new app |
-| `alchemy_update_app` | Update app name or description |
-| `alchemy_delete_app` | Delete an app |
-| `alchemy_list_chains` | List all 100+ supported networks |
-| `alchemy_update_allowlist` | Update app allowlists (network, address, origin, IP) |
+| `ping` | Health check |
+| `list_apps` | List your Alchemy apps |
+| `get_app` | Get app details |
+| `select_app` | Select an app and cache its API key for RPC/Data tools |
+| `create_app` | Create a new app |
+| `update_app` | Update app name or description |
+| `list_chains` | List all 100+ supported networks |
+| `update_allowlist` | Update app allowlists (network, address, origin, IP) |
 
-### RPC — On-Chain JSON-RPC (108 tools)
+### RPC — On-Chain JSON-RPC (123 tools)
 
-Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
+Make JSON-RPC calls to blockchain nodes. All require `select_app` first.
 
-<Accordion title="Generic RPC">
-
-| Tool | Description |
-|------|-------------|
-| `alchemy_rpc_call` | Make any JSON-RPC call to any network |
-
-</Accordion>
-
-<Accordion title="Core EVM (5 tools)">
+<Accordion title="Standard EVM RPC (31 tools)">
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_ethCall` | Execute a read-only smart contract call |
-| `alchemy_rpc_ethGetBlockReceipts` | Get all receipts for a block |
-| `alchemy_rpc_ethGetProof` | Get Merkle proof for account storage |
-| `alchemy_rpc_ethCreateAccessList` | Generate EIP-2930 access list |
-| `alchemy_rpc_ethBlobBaseFee` | Get EIP-4844 blob base fee |
+| `ethBlockNumber` | Get the latest block number |
+| `ethChainId` | Get the chain ID |
+| `ethGasPrice` | Get the current gas price |
+| `ethMaxPriorityFeePerGas` | Get the max priority fee per gas |
+| `ethBlobBaseFee` | Get EIP-4844 blob base fee |
+| `ethSyncing` | Get node sync status |
+| `ethGetBalance` | Get ETH balance for an address |
+| `ethGetCode` | Get contract bytecode |
+| `ethGetStorageAt` | Get storage value at a position |
+| `ethGetProof` | Get Merkle proof for account storage |
+| `ethGetBlockByNumber` | Get a block by number |
+| `ethGetBlockByHash` | Get a block by hash |
+| `ethGetBlockReceipts` | Get all receipts for a block |
+| `ethGetBlockTransactionCountByHash` | Get transaction count in a block by hash |
+| `ethGetBlockTransactionCountByNumber` | Get transaction count in a block by number |
+| `ethGetTransactionByHash` | Get a transaction by hash |
+| `ethGetTransactionByBlockHashAndIndex` | Get a transaction by block hash and index |
+| `ethGetTransactionByBlockNumberAndIndex` | Get a transaction by block number and index |
+| `ethGetTransactionReceipt` | Get a transaction receipt |
+| `ethGetTransactionCount` | Get the nonce for an address |
+| `ethGetLogs` | Get logs matching a filter |
+| `ethCall` | Execute a read-only smart contract call |
+| `ethEstimateGas` | Estimate gas for a transaction |
+| `ethCreateAccessList` | Generate EIP-2930 access list |
+| `ethFeeHistory` | Get historical fee data |
+| `ethCallBundle` | Simulate a bundle of transactions at a block |
+| `ethCallMany` | Simulate multiple transaction bundles across blocks |
+| `netListening` | Check if the node is listening for connections |
+| `netVersion` | Get the network ID |
+| `web3ClientVersion` | Get the client version |
+| `web3Sha3` | Compute a Keccak-256 hash |
 
 </Accordion>
 
@@ -187,9 +203,9 @@ Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_getTokenBalances` | Get ERC-20 token balances for an address |
-| `alchemy_rpc_getTokenMetadata` | Get token name, symbol, decimals, logo |
-| `alchemy_rpc_getTokenAllowance` | Get ERC-20 allowance for a spender |
+| `getTokenBalances` | Get ERC-20 token balances for an address |
+| `getTokenMetadata` | Get token name, symbol, decimals, logo |
+| `getTokenAllowance` | Get ERC-20 allowance for a spender |
 
 </Accordion>
 
@@ -197,8 +213,8 @@ Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_getAssetTransfers` | Get historical asset transfers (ERC-20, ERC-721, native, internal) |
-| `alchemy_rpc_getTransactionReceipts` | Get all transaction receipts for a block |
+| `getAssetTransfers` | Get historical asset transfers (ERC-20, ERC-721, native, internal) |
+| `getTransactionReceipts` | Get all transaction receipts for a block |
 
 </Accordion>
 
@@ -206,11 +222,11 @@ Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_simulateAssetChanges` | Simulate a transaction's asset changes |
-| `alchemy_rpc_simulateExecution` | Simulate a transaction's execution trace |
-| `alchemy_rpc_simulateAssetChangesBundle` | Simulate a bundle of transactions' asset changes |
-| `alchemy_rpc_simulateExecutionBundle` | Simulate a bundle of transactions' execution traces |
-| `alchemy_rpc_simulateUserOperationAssetChanges` | Simulate a UserOperation's asset changes |
+| `simulateAssetChanges` | Simulate a transaction's asset changes |
+| `simulateExecution` | Simulate a transaction's execution trace |
+| `simulateAssetChangesBundle` | Simulate a bundle of transactions' asset changes |
+| `simulateExecutionBundle` | Simulate a bundle of transactions' execution traces |
+| `simulateUserOperationAssetChanges` | Simulate a UserOperation's asset changes |
 
 </Accordion>
 
@@ -218,12 +234,12 @@ Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_traceCall` | Trace a call without creating a transaction |
-| `alchemy_rpc_traceTransaction` | Trace a mined transaction |
-| `alchemy_rpc_traceBlock` | Trace all transactions in a block |
-| `alchemy_rpc_traceFilter` | Filter traces by address and block range |
-| `alchemy_rpc_traceReplayTransaction` | Replay a transaction with traces |
-| `alchemy_rpc_traceReplayBlockTransactions` | Replay all transactions in a block |
+| `traceCall` | Trace a call without creating a transaction |
+| `traceTransaction` | Trace a mined transaction |
+| `traceBlock` | Trace all transactions in a block |
+| `traceFilter` | Filter traces by address and block range |
+| `traceReplayTransaction` | Replay a transaction with traces |
+| `traceReplayBlockTransactions` | Replay all transactions in a block |
 
 </Accordion>
 
@@ -231,43 +247,26 @@ Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_debugTraceTransaction` | Debug trace a transaction |
-| `alchemy_rpc_debugTraceCall` | Debug trace a call |
-| `alchemy_rpc_debugTraceBlockByNumber` | Debug trace a block by number |
-| `alchemy_rpc_debugTraceBlockByHash` | Debug trace a block by hash |
-| `alchemy_rpc_debugGetRawBlock` | Get raw RLP-encoded block data |
-| `alchemy_rpc_debugGetRawReceipts` | Get raw transaction receipts for a block |
+| `debugTraceTransaction` | Debug trace a transaction |
+| `debugTraceCall` | Debug trace a call |
+| `debugTraceBlockByNumber` | Debug trace a block by number |
+| `debugTraceBlockByHash` | Debug trace a block by hash |
+| `debugGetRawBlock` | Get raw RLP-encoded block data |
+| `debugGetRawReceipts` | Get raw transaction receipts for a block |
 
 </Accordion>
 
-<Accordion title="ERC-4337 Account Abstraction (8 tools)">
+<Accordion title="ERC-4337 Account Abstraction (7 tools)">
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_sendUserOperation` | Submit a UserOperation to the bundler |
-| `alchemy_rpc_estimateUserOperationGas` | Estimate gas for a UserOperation |
-| `alchemy_rpc_getUserOperationReceipt` | Get a UserOperation receipt |
-| `alchemy_rpc_getUserOperationByHash` | Get a UserOperation by hash |
-| `alchemy_rpc_supportedEntryPoints` | List supported EntryPoint addresses |
-| `alchemy_rpc_rundlerMaxPriorityFeePerGas` | Get bundler's max priority fee per gas |
-| `alchemy_rpc_requestGasAndPaymasterAndData` | Request gas sponsorship + paymaster data |
-| `alchemy_rpc_requestPaymasterAndData` | Request paymaster data only |
-
-</Accordion>
-
-<Accordion title="Smart Wallet API (9 tools)">
-
-| Tool | Description |
-|------|-------------|
-| `alchemy_rpc_walletRequestAccount` | Get or create a smart account |
-| `alchemy_rpc_walletPrepareCalls` | Prepare a user operation for signing |
-| `alchemy_rpc_walletSendPreparedCalls` | Submit a signed user operation |
-| `alchemy_rpc_walletGetCallsStatus` | Check status of submitted calls |
-| `alchemy_rpc_walletGetCapabilities` | Get wallet capabilities by chain |
-| `alchemy_rpc_walletListAccounts` | List smart accounts for a signer |
-| `alchemy_rpc_walletCreateSession` | Create a scoped session with permissions |
-| `alchemy_rpc_walletGetCrossChainStatus` | Get cross-chain transaction status |
-| `alchemy_rpc_walletRequestQuote` | Request a token swap quote |
+| `estimateUserOperationGas` | Estimate gas for a UserOperation |
+| `getUserOperationReceipt` | Get a UserOperation receipt |
+| `getUserOperationByHash` | Get a UserOperation by hash |
+| `supportedEntryPoints` | List supported EntryPoint addresses |
+| `rundlerMaxPriorityFeePerGas` | Get bundler's max priority fee per gas |
+| `requestGasAndPaymasterAndData` | Request gas sponsorship + paymaster data |
+| `requestPaymasterAndData` | Request paymaster data only |
 
 </Accordion>
 
@@ -275,56 +274,56 @@ Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_solana_getBalance` | Get SOL balance in lamports |
-| `alchemy_rpc_solana_getAccountInfo` | Get account data (owner, lamports, data) |
-| `alchemy_rpc_solana_getMultipleAccounts` | Get data for multiple accounts |
-| `alchemy_rpc_solana_getTransaction` | Get a confirmed transaction by signature |
-| `alchemy_rpc_solana_getSignaturesForAddress` | Get transaction signatures for an address |
-| `alchemy_rpc_solana_getSignatureStatuses` | Get statuses of transaction signatures |
-| `alchemy_rpc_solana_simulateTransaction` | Simulate a transaction without submitting |
-| `alchemy_rpc_solana_getTokenAccountBalance` | Get SPL Token account balance |
-| `alchemy_rpc_solana_getTokenAccountsByOwner` | Get all token accounts for a wallet |
-| `alchemy_rpc_solana_getTokenAccountsByDelegate` | Get delegated token accounts |
-| `alchemy_rpc_solana_getTokenSupply` | Get total supply of an SPL Token |
-| `alchemy_rpc_solana_getTokenLargestAccounts` | Get top 20 holders of a token |
-| `alchemy_rpc_solana_getBlock` | Get a confirmed block by slot |
-| `alchemy_rpc_solana_getBlockHeight` | Get current block height |
-| `alchemy_rpc_solana_getBlockTime` | Get Unix timestamp for a slot |
-| `alchemy_rpc_solana_getBlocks` | Get confirmed blocks in a range |
-| `alchemy_rpc_solana_getBlocksWithLimit` | Get confirmed blocks from a slot with limit |
-| `alchemy_rpc_solana_getBlockCommitment` | Get vote commitment for a block |
-| `alchemy_rpc_solana_getBlockProduction` | Get block production stats |
-| `alchemy_rpc_solana_getSlot` | Get current slot |
-| `alchemy_rpc_solana_getSlotLeader` | Get current slot leader |
-| `alchemy_rpc_solana_getSlotLeaders` | Get slot leaders for a range |
-| `alchemy_rpc_solana_getLatestBlockhash` | Get latest blockhash |
-| `alchemy_rpc_solana_isBlockhashValid` | Check blockhash validity |
-| `alchemy_rpc_solana_getProgramAccounts` | Get all accounts owned by a program |
-| `alchemy_rpc_solana_getEpochInfo` | Get current epoch info |
-| `alchemy_rpc_solana_getEpochSchedule` | Get epoch schedule |
-| `alchemy_rpc_solana_getSupply` | Get SOL supply breakdown |
-| `alchemy_rpc_solana_getVersion` | Get node software version |
-| `alchemy_rpc_solana_getTransactionCount` | Get total transaction count |
-| `alchemy_rpc_solana_getInflationRate` | Get current inflation rate |
-| `alchemy_rpc_solana_getInflationGovernor` | Get inflation governor parameters |
-| `alchemy_rpc_solana_getInflationReward` | Get staking rewards by epoch |
-| `alchemy_rpc_solana_getVoteAccounts` | Get validator vote accounts |
-| `alchemy_rpc_solana_getLargestAccounts` | Get top 20 accounts by balance |
-| `alchemy_rpc_solana_getClusterNodes` | Get cluster node info |
-| `alchemy_rpc_solana_getLeaderSchedule` | Get leader schedule for an epoch |
-| `alchemy_rpc_solana_getFeeForMessage` | Get fee for a message |
-| `alchemy_rpc_solana_getRecentPrioritizationFees` | Get recent priority fee data |
-| `alchemy_rpc_solana_getMinimumBalanceForRentExemption` | Get rent-exempt minimum |
-| `alchemy_rpc_solana_getFirstAvailableBlock` | Get lowest available block |
-| `alchemy_rpc_solana_getGenesisHash` | Get genesis hash |
-| `alchemy_rpc_solana_getHighestSnapshotSlot` | Get highest snapshot slot |
-| `alchemy_rpc_solana_getIdentity` | Get node identity pubkey |
-| `alchemy_rpc_solana_getMaxRetransmitSlot` | Get max retransmit slot |
-| `alchemy_rpc_solana_getMaxShredInsertSlot` | Get max shred insert slot |
-| `alchemy_rpc_solana_getRecentPerformanceSamples` | Get recent TPS samples |
-| `alchemy_rpc_solana_getStakeActivation` | Get stake activation state |
-| `alchemy_rpc_solana_minimumLedgerSlot` | Get lowest ledger slot |
-| `alchemy_rpc_solana_requestAirdrop` | Airdrop SOL (devnet only) |
+| `solana_getBalance` | Get SOL balance in lamports |
+| `solana_getAccountInfo` | Get account data (owner, lamports, data) |
+| `solana_getMultipleAccounts` | Get data for multiple accounts |
+| `solana_getTransaction` | Get a confirmed transaction by signature |
+| `solana_getSignaturesForAddress` | Get transaction signatures for an address |
+| `solana_getSignatureStatuses` | Get statuses of transaction signatures |
+| `solana_simulateTransaction` | Simulate a transaction without submitting |
+| `solana_getTokenAccountBalance` | Get SPL Token account balance |
+| `solana_getTokenAccountsByOwner` | Get all token accounts for a wallet |
+| `solana_getTokenAccountsByDelegate` | Get delegated token accounts |
+| `solana_getTokenSupply` | Get total supply of an SPL Token |
+| `solana_getTokenLargestAccounts` | Get top 20 holders of a token |
+| `solana_getBlock` | Get a confirmed block by slot |
+| `solana_getBlockHeight` | Get current block height |
+| `solana_getBlockTime` | Get Unix timestamp for a slot |
+| `solana_getBlocks` | Get confirmed blocks in a range |
+| `solana_getBlocksWithLimit` | Get confirmed blocks from a slot with limit |
+| `solana_getBlockCommitment` | Get vote commitment for a block |
+| `solana_getBlockProduction` | Get block production stats |
+| `solana_getSlot` | Get current slot |
+| `solana_getSlotLeader` | Get current slot leader |
+| `solana_getSlotLeaders` | Get slot leaders for a range |
+| `solana_getLatestBlockhash` | Get latest blockhash |
+| `solana_isBlockhashValid` | Check blockhash validity |
+| `solana_getProgramAccounts` | Get all accounts owned by a program |
+| `solana_getEpochInfo` | Get current epoch info |
+| `solana_getEpochSchedule` | Get epoch schedule |
+| `solana_getSupply` | Get SOL supply breakdown |
+| `solana_getVersion` | Get node software version |
+| `solana_getTransactionCount` | Get total transaction count |
+| `solana_getInflationRate` | Get current inflation rate |
+| `solana_getInflationGovernor` | Get inflation governor parameters |
+| `solana_getInflationReward` | Get staking rewards by epoch |
+| `solana_getVoteAccounts` | Get validator vote accounts |
+| `solana_getLargestAccounts` | Get top 20 accounts by balance |
+| `solana_getClusterNodes` | Get cluster node info |
+| `solana_getLeaderSchedule` | Get leader schedule for an epoch |
+| `solana_getFeeForMessage` | Get fee for a message |
+| `solana_getRecentPrioritizationFees` | Get recent priority fee data |
+| `solana_getMinimumBalanceForRentExemption` | Get rent-exempt minimum |
+| `solana_getFirstAvailableBlock` | Get lowest available block |
+| `solana_getGenesisHash` | Get genesis hash |
+| `solana_getHighestSnapshotSlot` | Get highest snapshot slot |
+| `solana_getIdentity` | Get node identity pubkey |
+| `solana_getMaxRetransmitSlot` | Get max retransmit slot |
+| `solana_getMaxShredInsertSlot` | Get max shred insert slot |
+| `solana_getRecentPerformanceSamples` | Get recent TPS samples |
+| `solana_getStakeActivation` | Get stake activation state |
+| `solana_minimumLedgerSlot` | Get lowest ledger slot |
+| `solana_requestAirdrop` | Airdrop SOL (devnet only) |
 
 </Accordion>
 
@@ -332,54 +331,51 @@ Make JSON-RPC calls to blockchain nodes. All require `alchemy_select_app` first.
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_rpc_solana_getPriorityFeeEstimate` | Get priority fee estimates by level |
-| `alchemy_rpc_solana_simulateBundle` | Simulate a bundle of transactions |
-| `alchemy_rpc_getAsset` | Get details of a Solana asset |
-| `alchemy_rpc_getAssets` | Get multiple Solana assets |
-| `alchemy_rpc_getAssetProof` | Get Merkle proof for a compressed asset |
-| `alchemy_rpc_getAssetsByOwner` | Get assets owned by a wallet |
-| `alchemy_rpc_getAssetsByAuthority` | Get assets by authority address |
-| `alchemy_rpc_getAssetsByGroup` | Get assets by group (e.g. collection) |
-| `alchemy_rpc_getAssetsByCreator` | Get assets by creator address |
-| `alchemy_rpc_searchAssets` | Search for assets by criteria |
-| `alchemy_rpc_getAssetSignatures` | Get transaction signatures for an asset |
-| `alchemy_rpc_getNftEditions` | Get NFT editions for a master edition |
-| `alchemy_rpc_getTokenAccounts` | Get token accounts for a wallet |
+| `solana_getPriorityFeeEstimate` | Get priority fee estimates by level |
+| `solana_simulateBundle` | Simulate a bundle of transactions |
+| `solana_getAsset` | Get details of a Solana asset |
+| `solana_getAssets` | Get multiple Solana assets |
+| `solana_getAssetProof` | Get Merkle proof for a compressed asset |
+| `solana_getAssetsByOwner` | Get assets owned by a wallet |
+| `solana_getAssetsByAuthority` | Get assets by authority address |
+| `solana_getAssetsByGroup` | Get assets by group (e.g. collection) |
+| `solana_getAssetsByCreator` | Get assets by creator address |
+| `solana_searchAssets` | Search for assets by criteria |
+| `solana_getAssetSignatures` | Get transaction signatures for an asset |
+| `solana_getNftEditions` | Get NFT editions for a master edition |
+| `solana_getTokenAccounts` | Get token accounts for a wallet |
 
 </Accordion>
 
-### Data — REST APIs (31 tools)
+### Data — REST APIs (28 tools)
 
-Call Alchemy's REST APIs for enriched blockchain data. All require `alchemy_select_app` first.
+Call Alchemy's REST APIs for enriched blockchain data. All require `select_app` first.
 
-<Accordion title="NFT API (24 tools)">
+<Accordion title="NFT API (21 tools)">
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_data_getNFTsForOwner` | Get all NFTs owned by an address |
-| `alchemy_data_getNFTsForContract` | Get all NFTs in a contract |
-| `alchemy_data_getNFTsForCollection` | Get all NFTs in a collection |
-| `alchemy_data_getNFTMetadata` | Get NFT metadata by token ID |
-| `alchemy_data_getNFTMetadataBatch` | Get metadata for up to 100 NFTs |
-| `alchemy_data_getContractMetadata` | Get NFT contract metadata |
-| `alchemy_data_getCollectionMetadata` | Get collection metadata by slug |
-| `alchemy_data_getContractMetadataBatch` | Get metadata for multiple contracts |
-| `alchemy_data_getOwnersForNFT` | Get owners of a specific NFT |
-| `alchemy_data_getOwnersForContract` | Get all owners in a contract |
-| `alchemy_data_getFloorPrice` | Get floor price from marketplaces |
-| `alchemy_data_getNFTSales` | Get recent NFT sales |
-| `alchemy_data_getContractsForOwner` | Get NFT contracts held by an address |
-| `alchemy_data_getCollectionsForOwner` | Get collections held by an address (ETH only) |
-| `alchemy_data_isSpamContract` | Check if a contract is spam |
-| `alchemy_data_getSpamContracts` | List all spam contracts |
-| `alchemy_data_isAirdropNFT` | Check if an NFT is an airdrop |
-| `alchemy_data_reportSpam` | Report an address as spam |
-| `alchemy_data_searchContractMetadata` | Search NFT contracts by keyword |
-| `alchemy_data_summarizeNFTAttributes` | Get attribute prevalence summary |
-| `alchemy_data_isHolderOfContract` | Check if a wallet holds any NFT from a contract |
-| `alchemy_data_computeRarity` | Calculate attribute rarity for an NFT |
-| `alchemy_data_invalidateContract` | Invalidate cached contract metadata |
-| `alchemy_data_refreshNftMetadata` | Trigger metadata refresh for an NFT |
+| `getNFTsForOwner` | Get all NFTs owned by an address |
+| `getNFTsForContract` | Get all NFTs in a contract |
+| `getNFTsForCollection` | Get all NFTs in a collection |
+| `getNFTMetadata` | Get NFT metadata by token ID |
+| `getNFTMetadataBatch` | Get metadata for up to 100 NFTs |
+| `getContractMetadata` | Get NFT contract metadata |
+| `getCollectionMetadata` | Get collection metadata by slug |
+| `getContractMetadataBatch` | Get metadata for multiple contracts |
+| `getOwnersForNFT` | Get owners of a specific NFT |
+| `getOwnersForContract` | Get all owners in a contract |
+| `getFloorPrice` | Get floor price from marketplaces |
+| `getNFTSales` | Get recent NFT sales |
+| `getContractsForOwner` | Get NFT contracts held by an address |
+| `getCollectionsForOwner` | Get collections held by an address (ETH only) |
+| `isSpamContract` | Check if a contract is spam |
+| `getSpamContracts` | List all spam contracts |
+| `isAirdropNFT` | Check if an NFT is an airdrop |
+| `searchContractMetadata` | Search NFT contracts by keyword |
+| `summarizeNFTAttributes` | Get attribute prevalence summary |
+| `isHolderOfContract` | Check if a wallet holds any NFT from a contract |
+| `computeRarity` | Calculate attribute rarity for an NFT |
 
 </Accordion>
 
@@ -387,9 +383,9 @@ Call Alchemy's REST APIs for enriched blockchain data. All require `alchemy_sele
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_data_getTokenPricesBySymbol` | Get token prices by symbol (ETH, BTC, etc.) |
-| `alchemy_data_getTokenPricesByAddress` | Get token prices by contract address |
-| `alchemy_data_getHistoricalTokenPrices` | Get historical price data over a time range |
+| `getTokenPricesBySymbol` | Get token prices by symbol (ETH, BTC, etc.) |
+| `getTokenPricesByAddress` | Get token prices by contract address |
+| `getHistoricalTokenPrices` | Get historical price data over a time range |
 
 </Accordion>
 
@@ -397,16 +393,16 @@ Call Alchemy's REST APIs for enriched blockchain data. All require `alchemy_sele
 
 | Tool | Description |
 |------|-------------|
-| `alchemy_data_getTokensByAddress` | Get tokens across multiple chains |
-| `alchemy_data_getTokenBalancesByAddress` | Get token balances with USD values across chains |
-| `alchemy_data_getNFTsByAddress` | Get NFTs across multiple chains |
-| `alchemy_data_getNFTContractsByAddress` | Get NFT contracts across multiple chains |
+| `getTokensByAddress` | Get tokens across multiple chains |
+| `getTokenBalancesByAddress` | Get token balances with USD values across chains |
+| `getNFTsByAddress` | Get NFTs across multiple chains |
+| `getNFTContractsByAddress` | Get NFT contracts across multiple chains |
 
 </Accordion>
 
 ## Supported chains
 
-We support **100+ blockchains** including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, Starknet, zkSync, Scroll, Linea, Mantle, Blast, and many more. Use `alchemy_list_chains` to see the full list.
+We support **100+ blockchains** including Ethereum, Base, Polygon, Arbitrum, Optimism, Solana, Starknet, zkSync, Scroll, Linea, Mantle, Blast, and many more. Use `list_chains` to see the full list.
 
 ## Local development
 
