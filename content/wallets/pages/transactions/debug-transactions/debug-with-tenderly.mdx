@@ -25,7 +25,7 @@ Two buttons appear in the transaction detail panel depending on the type of fail
 
 When a transaction is included onchain but reverts (status: **Onchain Failure** or **Partial Failure**), the **Debug** button appears in the detail panel. This applies to transactions where the bundler submitted the user operation, it was mined, but execution reverted during the inner call.
 
-Use **Debug** when:
+### When to use Debug
 
 * The transaction reverted with a generic `execution reverted` and no reason string — the debugger shows exactly which nested call failed and why.
 * A third-party contract (a DEX, NFT marketplace, or lending protocol) reverted with a custom error — the debugger decodes the function call, inputs, and the exact point of failure.
@@ -64,7 +64,7 @@ When a `wallet_sendPreparedCalls` call fails before reaching the network (the bu
 
 The simulation reconstructs the `handleOps` call that would have been submitted to the EntryPoint and runs it through Tenderly's simulation engine. This produces a full execution trace as if the transaction had been mined, allowing you to inspect what would have happened onchain.
 
-Use **Simulate** when:
+### When to use Simulate
 
 * The error contains opaque revert data (e.g., `0x7939f424`) instead of a human-readable reason — the simulation decodes the full execution trace and identifies which contract emitted the error.
 * The smart account's validation reverted with a generic reason like `AA23 reverted` — the simulation shows what happened inside `validateUserOp` so you can pinpoint the failing check.
@@ -80,7 +80,7 @@ Use **Simulate** when:
   <Step title="Click Simulate">
     In the detail panel, locate the **Simulate** button. The button appears on `wallet_sendPreparedCalls` events with a `UserOperationExecutionError` on a supported Tenderly network.
 
-    <img src="https://alchemyapi-res.cloudinary.com/image/upload/v1775841739/docs/aa-sdk/images/wallets/tld-tenderly-simulate-button.png" alt="Simulate button in the Wallet API Log detail panel" />
+    <img src="https://alchemyapi-res.cloudinary.com/image/upload/v1775842475/docs/aa-sdk/images/wallets/tld-tenderly-simulate-button.png" alt="Simulate button in the Wallet API Log detail panel" />
   </Step>
 
   <Step title="Wait for the simulation to complete">
