@@ -1,0 +1,94 @@
+---
+title: Sui gRPC overview
+description: High-performance gRPC API for querying and executing on Sui
+slug: reference/sui-grpc-overview
+---
+
+Sui gRPC is a high-performance API for interacting with the Sui blockchain using Protocol Buffers and gRPC. It provides typed, efficient access to objects, transactions, balances, Move packages, and more.
+
+## Why Sui gRPC?
+
+Sui gRPC offers advantages over the JSON-RPC API:
+
+* **Strongly typed**: Protocol Buffers provide strict typing and schema validation
+* **Efficient serialization**: Binary encoding reduces payload size compared to JSON
+* **Streaming support**: Subscribe to real-time checkpoint updates with server-streaming RPCs
+* **Field masking**: Request only the fields you need with `read_mask` to reduce response size
+* **Batch operations**: Fetch multiple objects or transactions in a single request
+
+## Available services
+
+### [Objects and ledger](/docs/reference/sui-grpc-objects-and-ledger)
+
+Query objects, transactions, checkpoints, and epochs through the `LedgerService`.
+
+| gRPC method | JSON-RPC equivalent |
+| --- | --- |
+| `GetObject` | `sui_getObject` |
+| `BatchGetObjects` | `sui_multiGetObjects` |
+| `GetTransaction` | `sui_getTransactionBlock` |
+| `BatchGetTransactions` | `sui_multiGetTransactionBlocks` |
+| `GetCheckpoint` | `sui_getCheckpoint` |
+| `GetEpoch` | No equivalent |
+| `GetServiceInfo` | `sui_getChainIdentifier` |
+
+### [Transactions](/docs/reference/sui-grpc-transactions)
+
+Execute and simulate transactions through the `TransactionExecutionService`.
+
+| gRPC method | JSON-RPC equivalent |
+| --- | --- |
+| `ExecuteTransaction` | `sui_executeTransactionBlock` |
+| `SimulateTransaction` | `sui_dryRunTransactionBlock`, `sui_devInspectTransactionBlock` |
+
+### [State and balances](/docs/reference/sui-grpc-state-and-balances)
+
+Query coin balances, dynamic fields, and owned objects through the `StateService`.
+
+| gRPC method | JSON-RPC equivalent |
+| --- | --- |
+| `GetBalance` | `suix_getBalance` |
+| `ListBalances` | `suix_getAllBalances`, `suix_getCoins`, `suix_getAllCoins` |
+| `GetCoinInfo` | `suix_getCoinMetadata`, `suix_getTotalSupply` |
+| `ListDynamicFields` | `suix_getDynamicFields` |
+| `ListOwnedObjects` | `suix_getOwnedObjects` |
+
+### [Move packages](/docs/reference/sui-grpc-move-packages)
+
+Inspect Move packages, functions, and data types through the `MovePackageService`.
+
+| gRPC method | JSON-RPC equivalent |
+| --- | --- |
+| `GetPackage` | `sui_getNormalizedMoveModulesByPackage` |
+| `GetFunction` | `sui_getNormalizedMoveFunction`, `sui_getMoveFunctionArgTypes` |
+| `GetDatatype` | `sui_getNormalizedMoveStruct` |
+| `ListPackageVersions` | No equivalent |
+
+### [Name service](/docs/reference/sui-grpc-name-service)
+
+Resolve SuiNS names through the `NameService`.
+
+| gRPC method | JSON-RPC equivalent |
+| --- | --- |
+| `LookupName` | `suix_resolveNameServiceAddress` |
+| `ReverseLookupName` | `suix_resolveNameServiceNames` |
+
+### [Subscriptions](/docs/reference/sui-grpc-subscriptions)
+
+Stream real-time checkpoint data through the `SubscriptionService`.
+
+| gRPC method | JSON-RPC equivalent |
+| --- | --- |
+| `SubscribeCheckpoints` | No equivalent |
+
+### [Signature verification](/docs/reference/sui-grpc-signature-verification)
+
+Verify user signatures through the `SignatureVerificationService`.
+
+| gRPC method | JSON-RPC equivalent |
+| --- | --- |
+| `VerifySignature` | No equivalent |
+
+## Getting started
+
+Check out the [quickstart guide](/docs/reference/sui-grpc-quickstart) to make your first gRPC call.
