@@ -10,6 +10,10 @@ slug: reference/bundler-sponsored-operations
 
 Bundler sponsorship is a beta feature that allows the bundler to sponsor gas fees for user operations directly, eliminating the need for an onchain paymaster contract. This approach provides a streamlined way to abstract gas costs from your users while reducing the complexity and overhead associated with deploying and managing paymaster contracts.
 
+<Tip title="No fee estimation, no drop-and-replace">
+  With bundler sponsorship, you set a **max spend limit** per user operation and the bundler handles fee estimation, gas pricing, and automatic retries internally. You never need to calculate `maxFeePerGas`, apply priority fee buffers, or implement drop-and-replace logic. [Learn more below](#automatic-retries-and-fee-management).
+</Tip>
+
 ## How it differs from paymaster sponsorship
 
 Traditional gas sponsorship in ERC-4337 relies on paymaster contracts deployed onchain. These contracts:
@@ -25,12 +29,50 @@ Bundler sponsorship, in contrast:
 * Uses your Gas Manager policy to control spending
 * Reduces gas overhead by eliminating paymaster contract calls
 * Simplifies multi-chain deployments
+* **Handles fee estimation and retries automatically** — you set a max spend limit and the bundler does the rest
 
 <Info>
   Bundler sponsorship is currently in **beta**. While it's production-ready, features and pricing may evolve based on user feedback.
 
   For beta access, please reach out to [account-abstraction@alchemy.com](mailto:account-abstraction@alchemy.com).
 </Info>
+
+## Automatic retries and fee management
+
+One of the most significant benefits of bundler sponsorship is that the bundler fully manages fee estimation and transaction inclusion on your behalf.
+
+### How it works under the hood
+
+When you submit a user operation with bundler sponsorship:
+
+1. **You set gas fees to zero** — pass `maxFeePerGas: "0x0"` and `maxPriorityFeePerGas: "0x0"` in your request. The bundler interprets this as "sponsor and manage fees for me."
+2. **The bundler estimates optimal fees** — it reads the current network conditions (base fee, priority fee, congestion) and selects appropriate gas pricing to land your operation onchain.
+3. **The bundler submits the bundle transaction** — your user operation is included in a bundle and submitted to the network.
+4. **If the transaction doesn't land, the bundler retries automatically** — the bundler monitors the transaction and, if it remains pending due to fee changes or network congestion, resubmits with updated fee parameters. You don't need to poll, detect stuck operations, or implement drop-and-replace logic.
+5. **Costs stay within your policy limit** — the total gas cost is capped by the **Max Spend Per UO** you configure in your Gas Manager policy.
+
+### Why this matters
+
+With the standard Bundler API, you're responsible for a multi-step fee estimation flow:
+
+* Fetch the current base fee via `eth_getBlockByNumber`
+* Query `rundler_maxPriorityFeePerGas` for the priority fee
+* Apply buffers (25% on priority fee, 27–50% on base fee) to account for market movement
+* Calculate `maxFeePerGas` from the buffered values
+* Monitor for stuck user operations and resubmit with higher fees if needed (drop-and-replace)
+
+Bundler sponsorship eliminates all of this. You configure a **Max Spend Per UO** limit once in your policy, and the bundler:
+
+* Estimates fees dynamically based on real-time network conditions
+* Applies appropriate buffers automatically
+* Retries with updated fees if a transaction doesn't land
+* Ensures you never pay more than your configured limit per operation
+
+This is especially valuable in volatile fee environments where base fees can spike between the time you estimate and the time your operation is submitted.
+
+<Note>
+  While the bundler handles retries and fee adjustments automatically, inclusion ultimately depends on network conditions. In rare cases of extreme congestion or sustained fee spikes beyond your configured max spend limit, an operation may not land. Set your Max Spend Per UO with sufficient headroom for your target networks.
+</Note>
 
 ## Policy setup
 
@@ -62,7 +104,7 @@ To enable bundler sponsorship, you need to:
 
 1. **Create a Bundler Sponsored Operations policy** in your dashboard with the required Max Spend Per UO configuration
 2. **Include the policy ID** in your requests via the `x-alchemy-policy-id` header
-3. **Set gas fees to zero** in your user operation overrides
+3. **Set gas fees to zero** in your user operation overrides — the bundler handles fee estimation and retries from there
 
 ### Example implementation
 
@@ -101,7 +143,8 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
       signer,
     });
 
-    // Send user operation with bundler sponsorship
+    // Send user operation with bundler sponsorship.
+    // Gas fees are set to zero — the bundler estimates fees and retries automatically.
     const uo = await client.sendUserOperation({
       overrides: {
         maxFeePerGas: "0x0",
@@ -131,7 +174,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 
 2. **Transport Configuration**: The `x-alchemy-policy-id` header must be included in the transport configuration's `fetchOptions.headers`.
 
-3. **Gas Fee Overrides**: Set both `maxFeePerGas` and `maxPriorityFeePerGas` to `"0x0"` to indicate that the bundler should sponsor all gas costs.
+3. **Gas Fee Overrides**: Set both `maxFeePerGas` and `maxPriorityFeePerGas` to `"0x0"` to indicate that the bundler should sponsor all gas costs. The bundler selects optimal fees and retries if needed — you don't need to estimate or buffer fees yourself.
 
 ## Requirements
 
@@ -145,11 +188,23 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 
 ## Benefits
 
-* **Simplified Architecture**: No need to deploy or manage paymaster contracts
-* **Lower Onchain Gas Costs**: Eliminates the gas overhead of paymaster verification and contract calls
-* **Reduced Latency**: Fewer network calls and onchain interactions result in faster user operation processing
-* **Easier Multi-Chain Support**: Use the same policy type across multiple chains
-* **Centralized Policy Management**: Control spending limits and rules from the dashboard
+* **No fee estimation required**: Set gas fees to zero and let the bundler handle fee calculation, buffering, and optimization. No need to call `rundler_maxPriorityFeePerGas` or manually compute `maxFeePerGas`.
+* **Automatic retries**: The bundler monitors pending transactions and resubmits with updated fees if needed. You don't need to implement drop-and-replace logic or poll for stuck operations.
+* **Simplified Architecture**: No need to deploy or manage paymaster contracts.
+* **Lower Onchain Gas Costs**: Eliminates the gas overhead of paymaster verification and contract calls.
+* **Reduced Latency**: Fewer network calls and onchain interactions result in faster user operation processing.
+* **Easier Multi-Chain Support**: Use the same policy type across multiple chains without managing per-chain fee strategies.
+* **Centralized Policy Management**: Control spending limits and rules from the dashboard.
+
+## Bundler sponsorship vs. standard fee management
+
+| Concern | Standard Bundler API | Bundler Sponsorship |
+| --- | --- | --- |
+| Fee estimation | You fetch base fee, query `rundler_maxPriorityFeePerGas`, and apply buffers | The bundler handles it — set fees to zero |
+| Stuck operations | You detect and drop-and-replace with higher fees | The bundler retries automatically |
+| Fee buffers | You calculate and apply 25–50% buffers | Built-in — the bundler adjusts dynamically |
+| Cost control | You manage fee caps in your application logic | Set a **Max Spend Per UO** in your policy |
+| Multi-chain fees | Different buffer strategies per chain type | Same zero-fee pattern everywhere |
 
 ## Limitations (beta)
 
@@ -163,6 +218,7 @@ As this feature is currently in beta, be aware of:
 ## Related documentation
 
 * [Bundler API Quickstart](/docs/reference/bundler-api-quickstart)
+* [Bundler API Fee Logic](/docs/reference/bundler-api-fee-logic)
 * [Gas Manager Admin API](/docs/wallets/api-reference/gas-manager-admin-api/admin-api-endpoints/get-policy)
 * [Compute Unit Costs](/docs/reference/compute-unit-costs)
 * [Smart Wallets documentation](/docs/wallets)
