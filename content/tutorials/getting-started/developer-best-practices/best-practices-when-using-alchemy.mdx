@@ -52,6 +52,14 @@ HTTPS is a better option for standard JSON-RPC node requests for several reasons
 
 * **HTTP status codes**: When web3 developers use WebSockets they won't receive HTTP status codes in WebSockets responses, which can be useful for debugging or sorting responses.
 
+If you do need WebSockets for subscriptions, keep the stream as narrow as
+possible. WebSocket subscriptions are billed based on the bandwidth delivered as
+part of the subscription, so broad streams and large payloads can scale usage
+much faster than standard HTTPS request patterns. Prefer filtered
+subscriptions, smaller payloads when available, and set
+[usage limits](/docs/how-to-set-usage-limits-and-alerts-for-your-account) or
+[usage alerts](/docs/dashboard-alerts) before deploying high-volume streams.
+
 ## 5. Avoid Large Request / Response Sizes
 
 We recommend keeping the vast majority of requests to be under 100 KB and avoiding response sizes above 10 MB.
