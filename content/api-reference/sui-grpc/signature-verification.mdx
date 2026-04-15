@@ -1,0 +1,41 @@
+---
+title: Signature verification
+description: Sui gRPC SignatureVerificationService API reference
+slug: reference/sui-grpc-signature-verification
+---
+
+The `SignatureVerificationService` provides methods for verifying user signatures.
+
+## VerifySignature
+
+Verifies a user signature against a message and address. Supports standard signatures and ZkLogin signatures (via the `jwks` parameter).
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `address` | string | Yes | The address that signed the message |
+| `signature` | UserSignature | Yes | The signature to verify |
+| `message` | Bcs | Yes | The BCS-encoded message that was signed |
+| `jwks` | repeated ActiveJwk | No | Active JSON Web Keys for ZkLogin signature verification |
+
+**Response**:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `is_valid` | bool | Whether the signature is valid |
+| `reason` | string | Reason for failure if the signature is invalid |
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/signature_verification_service.proto \
+  -d '{
+    "address": "0xYOUR_ADDRESS",
+    "signature": {"bcs": {"value": "BASE64_SIGNATURE"}},
+    "message": {"bcs": {"value": "BASE64_MESSAGE"}}
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.SignatureVerificationService/VerifySignature
+```
