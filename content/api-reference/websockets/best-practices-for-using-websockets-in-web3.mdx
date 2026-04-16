@@ -68,6 +68,25 @@ Using Alchemy’s [Subscription API](/docs/reference/subscription-api), there ar
 4. [newHeads](/docs/reference/newheads): Emits new blocks that are added to the blockchain.
 5. ​[logs](/docs/reference/logs): Emits logs attached to a new block that match certain topic filters.
 
+## Keep subscription scope narrow
+
+WebSocket subscriptions are most effective when you only stream the updates you
+actually need. On Alchemy, WebSocket subscriptions are billed based on the
+bandwidth delivered as part of the subscription, so broad streams can scale
+usage quickly.
+
+To keep WebSocket usage predictable:
+
+* Prefer filtered subscriptions over network-wide streams whenever possible.
+* Prefer hashes or other smaller payloads when full transaction objects are not
+  required.
+* Set [usage limits](/docs/how-to-set-usage-limits-and-alerts-for-your-account)
+  and [usage alerts](/docs/dashboard-alerts) before deploying high-volume
+  streams.
+
+For pricing details, see
+[Compute Unit Costs](/docs/reference/compute-unit-costs#webhooks-and-subscription-apis).
+
 ## Subscribe to transaction updates
 
 It's no different from initiating a subscription using the base Ethereum websocket API. You can use the exact same commands as the ones introduced above. To start/stop receiving push updates on certain transaction changes (primarily confirmation of a pending transaction and confirmation that it has been fully mined), you’ll need to send either [eth\_subscribe](/docs/reference/eth-subscribe) or [eth\_unsubscribe](/docs/reference/eth-unsubscribe).
@@ -135,6 +154,11 @@ In most common request frameworks, support for retrying failed HTTP requests com
 ## 4. HTTP status codes
 
 When web3 developers use WebSockets they won't receive HTTP status codes in WebSockets responses, which can be useful for debugging or sorting responses.
+
+If you do need WebSockets for subscriptions, keep the stream scope narrow.
+Broad subscription streams can generate much more ongoing traffic than an
+equivalent HTTP polling pattern because the server continues pushing every
+matching event until you unsubscribe.
 
 ## 5. gZip Compression
 
