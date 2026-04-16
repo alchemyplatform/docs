@@ -1,215 +1,151 @@
 ---
 title: Wallet APIs
-description: Send transactions at scale — gas sponsorship, batching, retries, and token swaps — all through one API.
+description: Simple APIs to send transactions with advanced capabilities.
 slug: wallets
 layout: overview
 hide-toc: true
 ---
 
-Send transactions at scale — gas sponsorship, batching, retries, and token swaps — all through one API.
+Simple APIs to send transactions with advanced capabilities. Gas sponsorship, batching, retries, and more — all handled for you.
 
 <Card title="Quickstart →" icon="bolt" href="/docs/wallets/quickstart">
   Send your first gasless transaction in under 5 minutes.
 </Card>
 
----
+***
 
 ## How it works
 
 <CardGroup cols={4}>
-  <Card title="01 — Prepare" icon="fa-solid fa-file-code">
-    Build one or more calls (transfer, swap, mint — anything). The SDK or API
-    encodes them for you.
+  <Card title="1. Prepare" icon="fa-solid fa-file-code">
+    Build one or more calls - transfer, swap, — anything.
   </Card>
-  <Card title="02 — Sign" icon="fa-solid fa-key">
-    Your signer (embedded wallet, Privy, Turnkey, or any EOA) signs the
-    user-operation or 7702 authorization.
+
+  <Card title="2. Sign" icon="fa-solid fa-key">
+    Bring your own embedded wallet or key to sign.
   </Card>
-  <Card title="03 — Send" icon="fa-solid fa-paper-plane">
-    Alchemy's bundler submits, sponsors gas, handles fee estimation, and retries
-    automatically.
+
+  <Card title="3. Send" icon="fa-solid fa-paper-plane">
+    We submit, optimize gas, sponsor fees, and retry if needed.
   </Card>
-  <Card title="04 — Track" icon="fa-solid fa-magnifying-glass">
-    Get a transaction hash back. Poll status or use webhooks for confirmation.
+
+  <Card title="4. Track" icon="fa-solid fa-magnifying-glass">
+    Get status and transaction data through simple endpoints.
   </Card>
 </CardGroup>
 
----
-
-## Quick example
-
-```typescript
-import { createSmartAccountClient } from "@account-kit/smart-contracts";
-
-const client = createSmartAccountClient({ ... });
-
-// Send a gasless, batched transaction
-const { hash } = await client.sendUserOperation({
-  uo: [
-    { target: "0xTOKEN", data: encodeFunctionData({ ... }) },
-    { target: "0xDEX",   data: encodeFunctionData({ ... }) },
-  ],
-});
-```
-
----
+***
 
 ## Capabilities
 
 <CardGroup cols={2}>
-  <Card
-    title="Gas sponsorship"
-    icon="fa-solid fa-gas-pump"
-    href="/docs/wallets/transactions/sponsor-gas/overview"
-  >
-    Cover gas fees so users never need ETH. Create a policy, set spending
-    limits, and start sponsoring in minutes.
+  <Card title="Gas sponsorship" icon="fa-solid fa-gas-pump" href="/docs/wallets/transactions/sponsor-gas/overview">
+    Cover gas fees so users never need ETH and you never hold crypto on your balance sheet. Set custom spending rules.
   </Card>
-  <Card
-    title="ERC-20 gas payments"
-    icon="fa-solid fa-coins"
-    href="/docs/wallets/transactions/pay-gas-with-any-token"
-  >
+
+  <Card title="ERC-20 gas payments" icon="fa-solid fa-coins" href="/docs/wallets/transactions/pay-gas-with-any-token">
     Let users pay gas with USDC, USDT, or any ERC-20 token instead of the
     native currency.
   </Card>
-  <Card
-    title="Batching"
-    icon="fa-solid fa-layer-group"
-    href="/docs/wallets/transactions/send-batch-transactions"
-  >
-    Bundle multiple calls into a single atomic transaction — approve + swap,
+
+  <Card title="Solana sponsorship" icon="fa-solid fa-gas-pump" href="/docs/wallets/transactions/solana/sponsor-gas">
+    Sponsor fees & rent and say goodbye to "insufficient fees".
+  </Card>
+
+  <Card title="Batch transactions" icon="fa-solid fa-layer-group" href="/docs/wallets/transactions/send-batch-transactions">
+    Combine multiple calls into a single atomic transaction — approve + swap,
     mint + transfer, and more.
   </Card>
-  <Card
-    title="Automatic retries"
-    icon="fa-solid fa-rotate"
-    href="/docs/wallets/transactions/retry-transactions"
-  >
+
+  <Card title="Automatic retries" icon="fa-solid fa-rotate" href="/docs/wallets/transactions/retry-transactions">
     Stuck transactions are automatically re-priced and resubmitted so they
     land on-chain.
   </Card>
-  <Card
-    title="Session keys"
-    icon="fa-solid fa-clock"
-    href="/docs/wallets/transactions/grant-session-keys"
-  >
-    Grant scoped, time-limited signing permissions so users approve once and
-    transact without repeated prompts.
+
+  <Card title="Session keys" icon="fa-solid fa-clock" href="/docs/wallets/transactions/grant-session-keys">
+    Grant scoped, time-limited signing permissions for autonomous signing. 
   </Card>
-  <Card
-    title="Parallel transactions"
-    icon="fa-solid fa-arrows-split-up-and-left"
-    href="/docs/wallets/transactions/send-parallel-transactions"
-  >
-    Fire multiple independent transactions without waiting for nonce
-    ordering — ideal for high-throughput backends.
+
+  <Card title="Parallel transactions" icon="fa-solid fa-arrows-split-up-and-left" href="/docs/wallets/transactions/send-parallel-transactions">
+    Fire multiple transactions simultaneously without nonce collisions.
   </Card>
-  <Card
-    title="Token swaps"
-    icon="fa-solid fa-arrow-right-arrow-left"
-    href="/docs/wallets/transactions/swap-tokens"
-  >
-    Same-chain and cross-chain token swaps with built-in routing and
-    best-price execution.
+
+  <Card title="Token swaps" icon="fa-solid fa-arrow-right-arrow-left" href="/docs/wallets/transactions/swap-tokens">
+    Same-chain and cross-chain token swaps with built-in routing.
   </Card>
-  <Card
-    title="Debug transactions"
-    icon="fa-solid fa-bug"
-    href="/docs/wallets/transactions/debug-transactions"
-  >
-    Trace failed transactions, inspect revert reasons, and debug with
-    Tenderly integration.
+
+  <Card title="Track status" icon="fa-solid fa-bug" href="/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-get-calls-status">
+    Track the status of the transaction via APIs.
+  </Card>
+
+  <Card title="Debug transactions" icon="fa-solid fa-bug" href="/docs/wallets/transactions/debug-transactions">
+    Debug failed transactions and reverts.
+  </Card>
+
+  <Card title="EIP-7702" icon="fa-solid fa-arrow-right-arrow-up" href="/docs/wallets/transactions/sponsor-gas/overview">
+    Upgrade embedded EOA users to smart wallets.
   </Card>
 </CardGroup>
 
----
+***
+
+## What it looks like
+
+```typescript
+// Prepare, sign, and send — in one call
+const { id } = await client.sendCalls({
+  calls: [
+    { to: "0xContractA", data: "0x..." },
+    { to: "0xContractB", data: "0x..." },
+  ],
+});
+
+// Track
+const status = await client.waitForCallsStatus({ id });
+```
+Use the TypeScript SDK or call the REST APIs directly from any language.
+
+***
 
 ## Wallet integration
 
-Alchemy Wallet APIs work with any signer. Bring your own or use a managed
-embedded wallet.
+Compatible with any embedded wallet or key management solution.
 
 <CardGroup cols={2}>
-  <Card
-    title="Privy (recommended)"
-    icon="fa-solid fa-shield-halved"
-    href="/docs/wallets/third-party/signers/privy"
-  >
-    Embedded wallets with social login, email OTP, and passkeys — production-ready
-    and fully managed.
+  <Card title="Privy (recommended)" icon="fa-solid fa-shield-halved" href="/docs/wallets/third-party/signers/privy">
+    Embedded wallets with social login, email OTP, and passkeys.
   </Card>
-  <Card
-    title="Alchemy Signer"
-    icon="fa-solid fa-wallet"
-    href="/docs/wallets/authentication/overview"
-  >
-    Alchemy's own embedded signer with email, social, and passkey
-    authentication.
-  </Card>
-  <Card
-    title="Turnkey"
-    icon="fa-solid fa-lock"
-    href="/docs/wallets/third-party/signers/turnkey"
-  >
-    Secure key infrastructure for custom wallet flows with policy
-    controls.
-  </Card>
-  <Card
-    title="Any EOA / custom signer"
-    icon="fa-solid fa-plug"
-    href="/docs/wallets/third-party/signers/custom-integration"
-  >
-    Integrate MetaMask, WalletConnect, or any EIP-1193 provider as a
-    signer.
+  <Card title="Other signers" icon="fa-solid fa-plug" href="/docs/wallets/third-party/signers/custom-integration">
+    Integrate other embedded wallets or any EIP-1193 provider as a signer.
   </Card>
 </CardGroup>
 
----
+***
 
 ## Explore
 
 <CardGroup cols={3}>
-  <Card
-    title="Supported chains"
-    icon="fa-solid fa-link"
-    href="/docs/wallets/supported-chains"
-  >
+  <Card title="Supported chains" icon="fa-solid fa-link" href="/docs/wallets/supported-chains">
     See every EVM and Solana network supported.
   </Card>
-  <Card
-    title="Recipes"
-    icon="fa-solid fa-book"
-    href="/docs/wallets/recipes"
-  >
+
+  <Card title="Recipes" icon="fa-solid fa-book" href="/docs/wallets/recipes">
     End-to-end guides: send USDC, Hyperliquid, Aave, and more.
   </Card>
-  <Card
-    title="API reference"
-    icon="fa-solid fa-code"
-    href="/docs/reference/smart-wallet-quickstart"
-  >
+
+  <Card title="API reference" icon="fa-solid fa-code" href="/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls">
     Full REST API reference for server-side wallet management.
   </Card>
-  <Card
-    title="Pricing"
-    icon="fa-solid fa-dollar-sign"
-    href="https://wallet-calculator.alchemy.com/"
-  >
+
+  <Card title="Pricing" icon="fa-solid fa-dollar-sign" href="/docs/reference/compute-unit-costs#wallet-apis">
     Estimate costs and compare plans.
   </Card>
-  <Card
-    title="FAQs"
-    icon="fa-solid fa-circle-question"
-    href="/docs/wallets/resources/faqs"
-  >
+
+  <Card title="FAQs" icon="fa-solid fa-circle-question" href="/docs/wallets/resources/faqs">
     Common questions and troubleshooting.
   </Card>
-  <Card
-    title="Contact us"
-    icon="fa-solid fa-envelope"
-    href="/docs/wallets/resources/contact-us"
-  >
+
+  <Card title="Contact us" icon="fa-solid fa-envelope" href="/docs/wallets/resources/contact-us">
     Get help from the Alchemy team.
   </Card>
 </CardGroup>
