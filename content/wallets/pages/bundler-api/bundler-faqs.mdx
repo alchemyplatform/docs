@@ -10,14 +10,22 @@ slug: wallets/reference/bundler-faqs
 
 ### How can I track the status of a userOp?
 
-To understand the status of a userOp you can use the `eth_getUserOperationByHash` method as follows: loop over `eth_getUserOperationByHash` for as long as you are willing to wait for the userOp to land. If it still returns `null` after the timeout, there are two possibilities:
+To understand the status of a userOp you can use the `eth_getUserOperationByHash` method as follows: loop over `eth_getUserOperationByHash` for as long as you are willing to wait for the userOp to land. If it still returns `null` after the timeout, there are two possibilities:
 
-1. **The userOp is still pending**: This is the most common scenario and typically means *the fees are too low*. In this case, you should drop and replace the userOp with higher fees.
-2. **The userOp has been dropped**: The most common (but rare) reason is that they paymaster signature has expired. However, this should rarely happen if you set a reasonable sponsorship expiry time, unless there is a significant delay in sending the userOp after the paymaster signs it.
+1. **The userOp is still pending**: This is the most common scenario and typically means *the fees are too low*. In this case, you should drop and replace the userOp with higher fees.
+2. **The userOp has been dropped**: The most common (but rare) reason is that they paymaster signature has expired. However, this should rarely happen if you set a reasonable sponsorship expiry time, unless there is a significant delay in sending the userOp after the paymaster signs it.
+
+<Tip>
+  With [Bundler Sponsored Operations](/docs/reference/bundler-sponsored-operations), the bundler handles retries and fee adjustments automatically, which can help reduce stuck operations. There is no guarantee every operation will land, but the bundler resubmits with updated fees as needed.
+</Tip>
 
 ### How do I get my userOp unstuck from the mempool?
 
 For EIP-1559 fee markets, the base fee is fixed per block. To prioritize the inclusion of your userOp and get it unstuck from the mempool, you need to increase the `maxPriorityFeePerGas`. This can be achieved by dropping and replacing the userOp with a new one that has a higher `maxPriorityFeePerGas`.
+
+<Tip>
+  [Bundler Sponsored Operations](/docs/reference/bundler-sponsored-operations) can help with this — the bundler manages fees and retries automatically, which reduces the likelihood of operations getting stuck.
+</Tip>
 
 ### Can accepted userOps be dropped?
 
@@ -32,7 +40,7 @@ This is a possible but rare scenario and can occur due to several reasons:
 
 The transaction hash is not included in the response of `eth_sendUserOperation` for the following reasons:
 
-* The hash of the bundle transaction that a userOp is included in can change before that userOp is mined. This can happen for multiple reasons, such as the pending bundle transaction being dropped and replaced by the bundler if it’s underpriced, or the bundle transaction being frontrun by another bundle that includes the userOp.
+* The hash of the bundle transaction that a userOp is included in can change before that userOp is mined. This can happen for multiple reasons, such as the pending bundle transaction being dropped and replaced by the bundler if it's underpriced, or the bundle transaction being frontrun by another bundle that includes the userOp.
 * Adding the transaction hash to the response of `eth_sendUserOperation` is incompatible with the future P2P mempool, since any bundler can bundle the userOp and land it onchain.
 
 ## Common Errors
@@ -48,11 +56,15 @@ To handle these errors, you should:
 * add buffers on top of the gas estimates to account for market fluctuations
 * implement retry mechanisms.
 
+<Tip>
+  [Bundler Sponsored Operations](/docs/reference/bundler-sponsored-operations) can help avoid `precheck failed` fee errors because the bundler estimates and manages fees internally. You set gas fees to zero and configure a max spend limit — the bundler handles fee estimation and retries from there.
+</Tip>
+
 ### Resolve `Replacement Underpriced` errors
 
-You might get a `"Replacement Underpriced Error"` when using `eth_sendUserOperation`. This error occurs when a user already has an existing userOp in the mempool. userOps can become "stuck" in the mempool if their gas fee limits are too low to be included in a bundle.
+You might get a `"Replacement Underpriced Error"` when using `eth_sendUserOperation`. This error occurs when a user already has an existing userOp in the mempool. userOps can become "stuck" in the mempool if their gas fee limits are too low to be included in a bundle.
 
-To resolve this, you need to increase both `maxFeePerGas` and `maxPriorityFeePerGas` by at least 10%.
+To resolve this, you need to increase both `maxFeePerGas` and `maxPriorityFeePerGas` by at least 10%.
 
 To do so, follow the next steps:
 
@@ -62,9 +74,9 @@ To do so, follow the next steps:
 
 2. **Choose the suitable increase values**: Once you have the re-estimated gas fees, choose the maximum of a 10% increase or the re-estimated values. This ensures that your new gas fee is competitively priced to be included in a block.
 
-3. **Account for Rundler's service tip**: Rundler requires a small tip for its services via `maxPriorityFeePerGas`. Detailed information about this can be found [below](/docs/reference/bundler-faqs#fees).
+3. **Account for Rundler's service tip**: Rundler requires a small tip for its services via `maxPriorityFeePerGas`. Detailed information about this can be found [below](/docs/reference/bundler-faqs#fees).
 
-After calculating the new values, send your `userOp` again with the updated fees and it should go through successfully.
+After calculating the new values, send your `userOp` again with the updated fees and it should go through successfully.
 
 ### Debug `-32521: Execution reverted` errors
 
@@ -79,7 +91,7 @@ To debug these errors, you should:
 
 * Isolate the first 4 bytes of `revertData`.
 * Paste into a signatures DB (e.g. [4byte.sourcify.dev](https://4byte.sourcify.dev)).
-  * If it matches a known error, you’ll see the standard signature.
+  * If it matches a known error, you'll see the standard signature.
   * If not, it's a **custom error** - check the contract's ABI or source for error declarations.
 * Decode any arguments (using a tool like [calldata.swiss-knife.xyz](https://calldata.swiss-knife.xyz/decoder) or your ABI).
 * Map the error back to the contract source code to understand under what conditions it reverts.
@@ -152,6 +164,10 @@ Recommended Actions for Calculating `maxFeePerGas`:
   estimating userOp gas fees.
 </Info>
 
+<Tip>
+  To avoid manual fee estimation, consider [Bundler Sponsored Operations](/docs/reference/bundler-sponsored-operations). The bundler estimates fees, applies buffers, and retries automatically — you just set a max spend limit per operation.
+</Tip>
+
 ### How fee values are determined
 
 * [alchemy\_requestGasAndPaymasterAndData](/docs/wallets/api-reference/gas-manager-admin-api/gas-abstraction-api-endpoints/alchemy-request-gas-and-paymaster-and-data) is an opinionated endpoint that tries to set fee values that give your userOps a high chance of landing onchain. The estimates may be slightly high, but this is intentional to land your UOs faster.
@@ -173,9 +189,9 @@ Versions v0.6, v0.7, and v0.8 of ERC-4337 are currently supported.
 
 The latest version of ERC-4337 is v0.8, which builds on v0.7 with additional improvements including native support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) account delegation and further gas optimizations.
 
-The appropriate version to use is determined by the smart account for which you are trying to send a userOp. Typically, a smart account is written to be compatible with a specific EntryPoint version. To determine which version is compatible, look at the smart account’s source code and check the first parameter of the `validateUserOp` function. If it has type `UserOperation`, the account uses v0.6. If the parameter type is `PackedUserOperation`, the account uses v0.7 or v0.8.
+The appropriate version to use is determined by the smart account for which you are trying to send a userOp. Typically, a smart account is written to be compatible with a specific EntryPoint version. To determine which version is compatible, look at the smart account's source code and check the first parameter of the `validateUserOp` function. If it has type `UserOperation`, the account uses v0.6. If the parameter type is `PackedUserOperation`, the account uses v0.7 or v0.8.
 
-For more information about the differences between the versions, refer to the specifications for [ERC-4337 v0.6.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/eip/EIPS/eip-4337.md), [ERC-4337 v0.7.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.7.0/erc/ERCS/erc-4337.md), and [ERC-4337 v0.8.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.8.0/erc/ERCS/erc-4337.md), particularly the description of the user operation fields.
+For more information about the differences between the versions, refer to the specifications for [ERC-4337 v0.6.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/eip/EIPS/eip-4337.md), [ERC-4337 v0.7.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.7.0/erc/ERCS/erc-4337.md), and [ERC-4337 v0.8.0](https://github.com/eth-infinitism/account-abstraction/blob/v0.8.0/erc/ERCS/erc-4337.md), particularly the description of the user operation fields.
 
 ### EntryPoint contract addresses (v0.6, v0.7, v0.8)
 
