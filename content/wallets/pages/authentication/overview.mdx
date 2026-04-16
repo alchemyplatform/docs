@@ -1,129 +1,57 @@
 ---
-title: Authentication overview
-description: Comprehensive guide to authentication methods and user onboarding with Smart Wallets
+title: Signer integration overview
+description: Comprehensive guide to integrating signers for user onboarding with Wallet APIs
 slug: wallets/authentication/overview
 ---
 
-Authentication is the process by which users verify their identity to access your application. In web3, providing users with seamless login experiences for their decentralized applications and blockchain wallets is essential for creating exceptional user experiences that drive adoption.
+A **signer** is the service or key that controls a wallet — it authenticates users and signs transactions on their behalf. Wallet APIs work with any signer that produces a valid signature: Alchemy's embedded signer, third-party auth providers, EOA wallets, or your own custodial key.
 
-## Why Seamless Authentication Matters in Web3
+## Why signer choice matters
 
-Traditional blockchain authentication creates significant barriers to user adoption that generally don't exist in web2 experiences:
+The signer you choose determines three things for your users:
 
-* **Complex private key management** - Users must securely store and manage cryptographic keys
-* **Wallet installation requirements** - Additional software downloads and setup
-* **Technical knowledge barriers** - Understanding of blockchain concepts and wallet security
-* **Poor user experience** - Lengthy onboarding flows and confusing interfaces
+| Concern               | What it means                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| **Onboarding UX**     | Email/social login (embedded signer) vs. "Connect Wallet" (EOA) vs. server-side key (custodial) |
+| **Custody model**     | Who holds the private key — user, shared (MPC), or your backend                               |
+| **Recovery options**  | What happens when a user loses access to their device or credentials                           |
 
-With Smart Wallets, you can solve these challenges by using seamless and familiar login methods while maintaining the security and decentralization benefits of blockchain technology.
+## Integration paths
 
-## Features
+### Embedded wallets (recommended for consumer apps)
 
-### Multiple login methods
+Use Alchemy's built-in signer to create wallets behind familiar login flows. No browser extension, no seed phrase.
 
-Choose from a variety of authentication options to match your users' preferences:
+* **[Email OTP](/docs/wallets/authentication/login-methods/email-otp)** — Passwordless login with 6-digit verification codes
+* **[Email Magic Links](/docs/wallets/authentication/login-methods/email-magic-link)** — One-click authentication via secure email links
+* **[Social Login](/docs/wallets/authentication/login-methods/social-login)** — OAuth with Google, Apple, Discord, Twitter, and more
+* **[Passkey Authentication](/docs/wallets/authentication/login-methods/passkey-signup)** — Biometric and hardware-based passwordless login
+* **[Bring Your Own Auth](/docs/wallets/authentication/login-methods/bring-your-own-auth)** — Integrate existing JWT/OIDC authentication systems
+* **[SMS Login](/docs/wallets/authentication/login-methods/sms-login)** — Phone number based verification
 
-* **[Email OTP](/docs/wallets/authentication/login-methods/email-otp)** - Passwordless login with 6-digit verification codes
-* **[Email Magic Links](/docs/wallets/authentication/login-methods/email-magic-link)** - One-click authentication via secure email links
-* **[Social Login](/docs/wallets/authentication/login-methods/social-login)** - OAuth with Google, Apple, Discord, Twitter, and more
-* **[Passkey Authentication](/docs/wallets/authentication/login-methods/passkey-signup)** - Biometric and hardware-based passwordless login
-* **[Bring Your Own Auth](/docs/wallets/authentication/login-methods/bring-your-own-auth)** - Integrate existing JWT/OIDC authentication systems
-* And more!
+### Third-party signers
 
-### Flexible implementation options
+Already using another auth or wallet provider? Plug it in directly:
 
-Implement authentication in the way that best fits your application:
+* **[Choosing a signer](/docs/wallets/signer/what-is-a-signer)** — Compare custody models, security trade-offs, and provider options
+* **[Custom signer integration](/docs/wallets/third-party/signers/custom-integration)** — Bring any EIP-1193 provider or viem `LocalAccount`
 
-* **Pre-built UI Components** - Deploy quickly with minimal code using `<AuthCard />` or `<AuthModal />`
-* **Custom UI Integration** - Build completely custom experiences with headless React hooks
-* **Modal or Embedded Flows** - Choose between popup modals or embedded authentication forms
-* **Whitelabel Solutions** - Customize theming and branding to match your application
+### EOA / self-custodial wallets
 
-### Framework support
+Let web3-native users connect MetaMask, Ledger, or any injected wallet and upgrade to a smart account via [EIP-7702](/docs/wallets/transactions/using-eip-7702).
 
-Smart Wallets authentication works across multiple platforms:
+## Implementation options
 
-* **React** - Full-featured hooks, components, and TypeScript support
-* **React Native** - Mobile-optimized authentication flows for iOS and Android
-* **Other JavaScript Frameworks** - Svelte, Vue, and vanilla JavaScript support
-* **Backend Integration** - Server-side authentication validation and user management
+| Approach                  | Best for                                        | Docs link                                                        |
+| ------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| **Pre-built UI**          | Ship fast with `<AuthCard />` or `<AuthModal />`| [UI components](/docs/wallets/react/ui-components)               |
+| **React hooks**           | Custom UX with full control                     | [React hooks](/docs/wallets/react/react-hooks)                   |
+| **Core JS (non-React)**   | Svelte, Vue, vanilla JS                         | [Other JS overview](/docs/wallets/core/overview)                 |
+| **Server-side / API**     | Backend wallet management                       | [Transaction API quickstart](/docs/wallets/reference/smart-wallet-quickstart) |
 
-### Enterprise-grade security
+## Next steps
 
-* **Non-custodial Architecture** - Users maintain full control over their private keys
-* **Secure Enclave Storage** - Keys generated and stored in hardware security modules
-* **Multi-Factor Authentication (MFA)** - Additional security layers for high-value operations
-* **Account Recovery** - Flexible recovery options through trusted contacts or backup methods
-
-### Multi-Factor Authentication (MFA)
-
-Add additional security layers for sensitive operations:
-
-* **Email OTP MFA** - Secondary verification via email codes
-* **Email Magic Link MFA** - Additional verification via email links
-* **Social Login MFA** - Secondary authentication through social providers
-
-## Implementation approaches
-
-### Quick start with pre-built components
-
-Deploy authentication in minutes with minimal code:
-
-```tsx twoslash
-import { AuthCard } from "@account-kit/react";
-
-function App() {
-  return (
-    <div>
-      <h1>Welcome to My App</h1>
-      <AuthCard />
-    </div>
-  );
-}
-```
-
-### Custom UI with React hooks
-
-Build completely custom authentication experiences:
-
-```tsx twoslash
-import {
-  useAuthenticate,
-  useSignerStatus,
-  useAuthModal,
-} from "@account-kit/react";
-
-function CustomAuth() {
-  const { authenticate } = useAuthenticate();
-  const { isInitializing, isConnected } = useSignerStatus();
-  const { openAuthModal } = useAuthModal();
-
-  const handleEmailAuth = async () => {
-    await authenticate({
-      type: "email",
-      email: "user@example.com",
-    });
-  };
-
-  if (isInitializing) return <div>Loading...</div>;
-  if (isConnected) return <div>Welcome back!</div>;
-
-  return (
-    <div>
-      <button onClick={handleEmailAuth}>Login with Email</button>
-      <button onClick={openAuthModal}>Show Auth Modal</button>
-    </div>
-  );
-}
-```
-
-## Next Steps
-
-Ready to implement authentication? Start with these guides:
-
-1. **[React Quickstart](/docs/wallets/react/quickstart)** - Complete React setup with authentication
-2. **[Email OTP Guide](/docs/wallets/authentication/login-methods/email-otp)** - Implement email-based authentication
-3. **[Social Login Setup](/docs/wallets/authentication/login-methods/social-login)** - Configure OAuth providers
-4. **[Custom UI Implementation](/docs/wallets/react/react-hooks)** - Build custom authentication experiences
-
-After authenticating users, generate wallets for them and they can start sending transactions with a few clicks.
+1. **[Quickstart](/docs/wallets/quickstart)** — Send your first transaction end-to-end
+2. **[Email OTP guide](/docs/wallets/authentication/login-methods/email-otp)** — Implement email-based onboarding
+3. **[Social login setup](/docs/wallets/authentication/login-methods/social-login)** — Configure OAuth providers
+4. **[Choosing a signer](/docs/wallets/signer/what-is-a-signer)** — Deep dive into custody models and provider comparison
