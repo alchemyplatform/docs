@@ -148,6 +148,9 @@ See the [Privy JWT usage docs](https://docs.privy.io) for full details.
 The migration happens in a single session where the user is authenticated with both Alchemy and Privy simultaneously.
 
 ```tsx
+// useImportWallet is a React hook — call it at the component/hook level, not inside async functions
+const {importWallet} = useImportWallet();
+
 async function handleMigration(userId: string) {
   // 1. Get JWT from your auth provider (same token Privy is already using)
   const jwt = await getToken();
@@ -167,8 +170,7 @@ async function handleMigration(userId: string) {
     // 4. Export private key from Alchemy
     const privateKey = await alchemySigner.exportPrivateKey();
 
-    // 5. Import into Privy using the useImportWallet hook
-    const {importWallet} = useImportWallet();
+    // 5. Import into Privy
     await importWallet({privateKey});
 
     // 6. Mark migration complete
