@@ -18,13 +18,11 @@ The signer you choose determines three things for your users:
 
 ## Bring your own wallet or signer
 
-Wallet APIs don't lock you into a specific signer. If you already have an auth stack or key custody solution, you can plug it in directly.
+Wallet APIs are compatible with any viem-compatible signer or embedded wallet solution. If you already have an auth stack or key custody solution, you can plug it in directly.
 
 Common categories we work with out of the box:
 
 * **Embedded wallet providers** — Privy, Turnkey, Openfort, Dynamic, and similar services that manage keys on behalf of your users
-* **MPC / TSS services** — Fireblocks, Web3Auth, Lit Protocol, and other threshold-signing providers
-* **HSM-backed keys** — AWS KMS, GCP KMS, Azure Key Vault, or any hardware-backed signer exposed through a signing function
 * **Custom backends** — your own server-side key management, passkey service, or proprietary auth
 
 As long as the signer is viem compatible and can produce a valid signature, Wallet APIs handle the rest — transaction preparation, gas sponsorship, and bundling. Note that [EIP‑7702 account upgrades](#upgrade-existing-eoas-with-eip-7702) additionally require the signer to implement viem's `signAuthorization`, which is supported by embedded wallet providers (Privy, Turnkey, …) and `privateKeyToAccount`, but **not** by most external browser/hardware wallets such as MetaMask or Ledger today.
@@ -33,16 +31,14 @@ See [Bring your own signer](/docs/wallets/third-party/signers/custom-integration
 
 ## viem-compatible signers
 
-Any signer that implements viem's [`Account`](https://viem.sh/docs/accounts/local) / `LocalAccount` or [`WalletClient`](https://viem.sh/docs/clients/wallet) interface works with `createSmartWalletClient` with no extra adapters.
+Any signer that implements viem's [`Account`](https://viem.sh/docs/accounts/local) / `LocalAccount` or [`WalletClient`](https://viem.sh/docs/clients/wallet) interface and exposes the `signAuthorization` function works with `createSmartWalletClient` with no extra adapters.
 
 ```ts
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrumSepolia } from "viem/chains";
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
 
-// Any viem LocalAccount works — this one is backed by a private key,
-// but the same client accepts accounts from Privy, Turnkey, KMS signers,
-// or any custom `toAccount({ address, signMessage, signTypedData, signAuthorization })`.
+// Any viem LocalAccount works — this one is backed by a private key
 const signer = privateKeyToAccount("0xYOUR_PRIVATE_KEY");
 
 const client = createSmartWalletClient({
@@ -52,7 +48,6 @@ const client = createSmartWalletClient({
 });
 ```
 
-If your signer exposes an EIP-1193 provider (e.g. `window.ethereum`) instead of a `LocalAccount`, pass a viem `WalletClient` as the signer. See [Bring your own signer](/docs/wallets/third-party/signers/custom-integration) for both patterns and the required method surface.
 
 ## Integration paths
 
@@ -60,14 +55,9 @@ If your signer exposes an EIP-1193 provider (e.g. `window.ethereum`) instead of 
 
 Embedded wallets create and manage keys for your users behind familiar login flows — no browser extension, no seed phrase. Because embedded wallets expose a viem `LocalAccount` (including `signAuthorization`), they are fully compatible with EIP-7702 account upgrades out of the box.
 
-Supported login methods:
 
-* **[Email OTP](/docs/wallets/authentication/login-methods/email-otp)** — Passwordless login with 6-digit verification codes
-* **[Email Magic Links](/docs/wallets/authentication/login-methods/email-magic-link)** — One-click authentication via secure email links
 * **[Social Login](/docs/wallets/authentication/login-methods/social-login)** — OAuth with Google, Apple, Discord, Twitter, and more
 * **[Passkey Authentication](/docs/wallets/authentication/login-methods/passkey-signup)** — Biometric and hardware-based passwordless login
-* **[Bring Your Own Auth](/docs/wallets/authentication/login-methods/bring-your-own-auth)** — Integrate existing JWT/OIDC authentication systems
-* **[SMS Login](/docs/wallets/authentication/login-methods/sms-login)** — Phone number based verification
 
 #### Recommended embedded wallet provider: Privy
 
@@ -88,7 +78,7 @@ Already using another auth or wallet provider? Plug it in directly:
 
 ### EOA / self-custodial wallets
 
-Users who already have an external wallet (MetaMask, Rabby, Coinbase Wallet, Ledger, or any browser‑injected / hardware wallet) can still use Wallet APIs — but **EIP‑7702 delegation is not available for these wallets today**. See [Options for external EOA users](#options-for-external-eoa-users) below for what to do instead.
+Users who already have an external wallet (MetaMask, Rabby, Coinbase Wallet, Ledger, or any browser‑injected / hardware wallet) cannot leverage Wallet APIs for smart account features like sponsorship because **EIP‑7702 delegation is not available for these wallets today**. 
 
 ## Upgrade existing EOAs with EIP-7702
 
@@ -97,7 +87,7 @@ Users who already have an external wallet (MetaMask, Rabby, Coinbase Wallet, Led
 <Warning>
   **EIP‑7702 is only compatible with embedded wallets today.** Delegating an EOA requires the signer to expose viem's `signAuthorization` method so the wallet can sign the EIP‑7702 authorization tuple. Most external browser / hardware wallets — including MetaMask, Rabby, Coinbase Wallet, and Ledger — do **not** expose `signAuthorization` in their provider APIs, so they cannot be upgraded via 7702 from a dapp.
 
-  Embedded wallet providers (Privy, Turnkey, and similar) do expose `signAuthorization` via their viem `LocalAccount`, which is why 7702 works end‑to‑end with them. We hope MetaMask and other external wallets will add support for arbitrary EIP‑7702 authorization signing in the future — when they do, the same upgrade flow will work for them without any code changes on your side.
+  Embedded wallet providers (Privy, Turnkey, and similar) do expose `signAuthorization` via their viem `LocalAccount`, which is why 7702 works end‑to‑end with them. 
 </Warning>
 
 When the signer does support it (i.e. an embedded wallet), upgrading an EOA with 7702 unlocks:
@@ -112,21 +102,11 @@ Delegation happens at send time: the first transaction combines the EIP-7702 aut
 
 See the [EIP-7702 guide](/docs/wallets/transactions/using-eip-7702) for the full flow, non-7702 mode, and wallet compatibility notes.
 
-### Options for external EOA users
 
-If your user is connecting an external EOA (MetaMask, Rabby, Coinbase Wallet, Ledger, etc.), you have three realistic options. Pick based on how much of the smart‑wallet feature set you actually need for that user.
 
-1. **Send transactions as a plain EOA (no sponsorship, no delegation)** — the simplest option. The user signs and sends transactions from their existing EOA like any normal dapp. They keep the same address, pay their own gas, and get no smart‑account features (no sponsorship, no batching, no session keys). This is the right choice for web3‑native users who expect a traditional "Connect Wallet" experience.
 
-2. **Make the EOA an owner of a new smart account (no 7702)** — deploy a fresh smart account and set the user's EOA as the signer/owner. The smart account then gets all the usual features (sponsorship, batching, session keys, etc.), and the user signs operations with their EOA.
 
-   <Warning>
-     This is generally **not recommended**. The smart account has a different address than the user's EOA, so any assets, NFTs, ENS names, or onchain history tied to the EOA do not move with them — and funding the smart account requires a separate transfer. There is also no real benefit over going one of the other two routes: you don't get in‑place upgrades, and you can't easily migrate off the smart account later if the user wants to go back to a plain EOA or switch providers. Only use this path if you specifically need a counterfactual smart account tied to an existing EOA owner and you've accepted these trade‑offs.
-   </Warning>
 
-3. **Import the EOA's key into an embedded wallet (e.g. Privy)** — have the user import their existing private key (or seed) into an embedded wallet provider like [Privy](/docs/wallets/third-party/signers/privy). Once the key lives inside the embedded wallet, the signer exposes `signAuthorization`, so the account can be upgraded via EIP‑7702 and gets the full smart‑wallet feature set at the same address. This is the best option for users who want smart‑account features without changing addresses — with the caveat that they have to trust the embedded wallet provider's key‑custody model.
-
-> **Looking ahead:** we expect external wallets (MetaMask, Rabby, Coinbase Wallet, Ledger, and others) to eventually support EIP‑7702 authorization signing natively. When they do, option (3) becomes optional rather than required — the user's existing external wallet will be able to delegate in place, just like embedded wallets do today.
 
 ## Implementation options
 
