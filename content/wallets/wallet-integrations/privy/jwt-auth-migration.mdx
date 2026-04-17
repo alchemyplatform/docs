@@ -1,0 +1,466 @@
+---
+title: "Migrate JWT authentication from Alchemy to Privy"
+description: "Step-by-step guide to migrate embedded wallets from Alchemy to Privy when using JWT (JSON Web Token) authentication."
+slug: wallets/wallet-integrations/privy/jwt-auth-migration
+---
+
+This guide is for developers who authenticate users with Alchemy Signer using **JWT (JSON Web Token) authentication** and need to migrate to Privy.
+
+<Info>If you use standard auth methods (email, Google, passkeys) with the React SDK, use the [React migration guide](/wallets/wallet-integrations/privy/react-migration) instead.</Info>
+
+## How JWT migration differs from standard migration
+
+With JWT auth, you control both sides of authentication — your server generates JWTs, and both Alchemy and your new provider accept them. This simplifies the migration because:
+
+* **No user export/import needed** (unless you also use other auth methods) — both providers authenticate via your JWT
+* **JWTs are reusable** — they're not one-time-use tokens, so the same JWT can authenticate with both Alchemy and Privy in a single session
+* **Migration detection is your responsibility** — since there's no Privy-side metadata, you track which users have migrated in your own database
+
+## Choose your integration path
+
+This guide covers two paths. Both share the same Privy dashboard setup (Steps 1–2a), but differ in how authentication and wallet import happen:
+
+|  | **Client-side path** | **Server-side path** |
+| --- | --- | --- |
+| **Best for** | React / React Native apps where the user's browser handles auth | Backend services where your server controls auth and wallets |
+| **Auth hook** | `useSubscribeToJwtAuthWithFlag` (React SDK) | REST API: exchange JWT for a Privy `userSigner` |
+| **Wallet import** | `useImportWallet` hook (client-side) | `@privy-io/node` SDK or REST API `/v1/wallets/import/*` |
+| **Private key exposure** | Briefly in client memory during export→import | On your server during export→import |
+
+## Step 1: Add a migration tracking field to your user database
+
+Add a field to your user/account model to track migration status. Every existing user starts as `needs_migration = true`.
+
+```sql
+ALTER TABLE users ADD COLUMN signer_migrated BOOLEAN DEFAULT FALSE;
+```
+
+Or use whatever mechanism fits your stack — a boolean field, a status enum, a separate migration table. The point is: you need a way to check on each login whether this user still needs their Alchemy wallet keys migrated.
+
+## Step 2: Set up Privy with JWT auth
+
+### 2a. Create a Privy app and configure JWT verification
+
+This setup is the same regardless of whether you choose the client-side or server-side path.
+
+1. Go to the [Privy Dashboard](https://dashboard.privy.io/) and create an app
+2. Request access to **Custom Auth Support** in the **Integrations > Plugins** tab
+3. Navigate to **User Management > Authentication > JWT-based auth**
+4. Select the environment:
+   * **Client side** if JWT-authenticated requests will come from end-user devices (React / React Native)
+   * **Server side** if requests will come from your backend servers
+5. Provide your JWT verification key — either a **JWKS endpoint** URL or a **public verification key** (PEM certificate)
+6. Enter the JWT claim that contains the user's unique ID (usually `sub`)
+
+See the [Privy JWT setup docs](https://docs.privy.io) for full details.
+
+### 2b. Disable automatic wallet creation
+
+During migration, you don't want Privy to auto-create new wallets — you'll be importing existing ones. If using a client SDK, set `createOnLogin: "off"`:
+
+```tsx
+<PrivyProvider
+  appId="YOUR_PRIVY_APP_ID"
+  config={{
+    embeddedWallets: {
+      createOnLogin: "off",
+    },
+  }}
+>
+```
+
+## Step 3: Reconnect sending and gas sponsorship
+
+Install `@alchemy/wallet-apis` and wire up `createSmartWalletClient`. See the [Privy signer integration guide](/wallets/third-party/signers/privy) for full setup details, or follow the [React migration guide Step 2](/wallets/wallet-integrations/privy/react-migration#step-2-reconnect-sending-and-gas-sponsorship) for a walkthrough.
+
+***
+
+## Client-side path
+
+Use this path if you have a React or React Native app and want the migration to happen in the user's browser/device.
+
+### 4a. Integrate Privy auth (client-side)
+
+Instead of calling a Privy login function directly, you subscribe the Privy SDK to your existing auth provider's state using the `useSubscribeToJwtAuthWithFlag` hook. Privy will automatically authenticate when your provider reports the user is logged in.
+
+In a component that lives **below both `PrivyProvider` and your auth provider**:
+
+```tsx
+import {useAuth} from 'your-auth-provider';
+import {useSubscribeToJwtAuthWithFlag} from '@privy-io/react-auth';
+
+const AuthStateSync = () => {
+  const {getToken, isLoading, isAuthenticated} = useAuth();
+
+  useSubscribeToJwtAuthWithFlag({
+    isAuthenticated,
+    isLoading,
+    getExternalJwt: async () => {
+      if (isAuthenticated) {
+        return await getToken();
+      }
+    },
+  });
+
+  return null;
+};
+```
+
+Mount this component throughout the lifetime of your app to keep Privy in sync:
+
+```tsx
+import {AuthProvider} from 'your-auth-provider';
+import {PrivyProvider} from '@privy-io/react-auth';
+
+function App() {
+  return (
+    <AuthProvider>
+      <PrivyProvider appId="YOUR_PRIVY_APP_ID" config={{embeddedWallets: {createOnLogin: 'off'}}}>
+        <AuthStateSync />
+        <MainContent />
+      </PrivyProvider>
+    </AuthProvider>
+  );
+}
+```
+
+You can check the user's Privy auth status with `usePrivy`:
+
+```tsx
+import {usePrivy} from '@privy-io/react-auth';
+
+function MainContent() {
+  const {user, ready, authenticated} = usePrivy();
+
+  if (!ready) return <div>Loading...</div>;
+  if (!authenticated) return <div>Please log in through your authentication provider</div>;
+
+  return <div>Welcome, {user.id}!</div>;
+}
+```
+
+<Warning>Do not call Privy's `login` method (from `useLogin` or `usePrivy`) when using JWT-based auth. Let your auth provider handle login; Privy syncs automatically.</Warning>
+
+See the [Privy JWT usage docs](https://docs.privy.io) for full details.
+
+### 4b. Build the client-side migration flow
+
+The migration happens in a single session where the user is authenticated with both Alchemy and Privy simultaneously.
+
+```tsx
+async function handleMigration(userId: string) {
+  // 1. Get JWT from your auth provider (same token Privy is already using)
+  const jwt = await getToken();
+
+  // 2. Check if user needs migration
+  const user = await getUserFromDB(userId);
+  if (!user.signer_migrated) {
+    // 3. Authenticate with Alchemy using the SAME JWT
+    const alchemySigner = new AlchemyWebSigner({
+      client: {
+        connection: {apiKey: 'YOUR_ALCHEMY_API_KEY'},
+        iframeConfig: {iframeContainerId: 'alchemy-signer-iframe-container'},
+      },
+    });
+    await alchemySigner.authenticate({type: 'jwt', token: jwt});
+
+    // 4. Export private key from Alchemy
+    const privateKey = await alchemySigner.exportPrivateKey();
+
+    // 5. Import into Privy using the useImportWallet hook
+    const {importWallet} = useImportWallet();
+    await importWallet({privateKey});
+
+    // 6. Mark migration complete
+    await updateUserDB(userId, {signer_migrated: true});
+  }
+}
+```
+
+### 4c. Authenticate with Alchemy
+
+Use the same JWT to authenticate with the Alchemy signer. JWTs are reusable, so the same token works for both Privy and Alchemy in the same session.
+
+```tsx
+import { AlchemyWebSigner } from "@account-kit/signer";
+
+const alchemySigner = new AlchemyWebSigner({
+  client: {
+    connection: { apiKey: "YOUR_ALCHEMY_API_KEY" },
+    iframeConfig: {
+      iframeContainerId: "alchemy-signer-iframe-container",
+    },
+  },
+});
+
+// Authenticate with JWT — same token you used for Privy
+await alchemySigner.authenticate({ type: "jwt", token: jwt });
+```
+
+### 4d. Export private key from Alchemy
+
+Once authenticated, export the user's private key material.
+
+```tsx
+const privateKey = await alchemySigner.exportPrivateKey(...);
+
+// If you have an encryption key, you can export the private key in an encrypted manner:
+// Necessary for the server-side flow
+const privateKeyEncrypted = await alchemySigner.exportPrivateKeyEncrypted(...);
+```
+
+### 4e. Import into Privy (client-side)
+
+Use the `useImportWallet` hook from `@privy-io/react-auth`. It accepts a raw hex private key (with or without `0x` prefix) for Ethereum, or a base58-encoded key for Solana.
+
+**Ethereum:**
+
+```tsx
+import {useImportWallet} from '@privy-io/react-auth';
+
+const {importWallet} = useImportWallet();
+const wallet = await importWallet({privateKey: ethPrivateKey});
+```
+
+**Solana:**
+
+```tsx
+import {useImportWallet} from '@privy-io/react-auth/solana';
+
+const {importWallet} = useImportWallet();
+const wallet = await importWallet({privateKey: solPrivateKey});
+```
+
+### 4f. Mark migration complete
+
+Update your database so the user isn't prompted again on next login.
+
+```tsx
+await db.users.update(userId, {signer_migrated: true});
+```
+
+***
+
+## Server-side path
+
+Use this path if your backend controls authentication and you want to handle the entire migration flow server-side — no client SDK required.
+
+### 5a. Integrate Privy auth (server-side)
+
+When selecting "Server side" in the Privy dashboard JWT configuration (Step 2a), Privy accepts JWTs directly from your backend. Your server exchanges the user's JWT for a Privy session via the REST API.
+
+Set up the `@privy-io/node` SDK:
+
+```tsx
+import {PrivyClient} from '@privy-io/node';
+
+const privy = new PrivyClient({
+  appId: 'your-privy-app-id',
+  appSecret: 'your-privy-app-secret',
+});
+```
+
+### 5b. Build the server-side migration flow
+
+On each user login, your server checks whether the user needs migration. If so, it exports the key from Alchemy and imports it into Privy using the Node SDK or REST API.
+
+```tsx
+async function handleUserLogin(userId: string, jwt: string) {
+  const user = await getUserFromDB(userId);
+
+  if (!user.signer_migrated) {
+    // 1. Export private key from Alchemy (Follow the steps from 4c)
+
+    // 2. Import into Privy via the Node SDK
+    const wallet = await privy.wallets().import({
+      wallet: {
+        entropy_type: 'private-key',
+        chain_type: 'ethereum',
+        address: user.wallet_address,
+        private_key: privateKey,
+      },
+    });
+
+    // 3. Mark migration complete
+    await db.users.update(userId, {signer_migrated: true});
+  }
+}
+```
+
+### 5c. Import into Privy (server-side)
+
+The `@privy-io/node` SDK encrypts the key material automatically for secure transmission to the TEE.
+
+**Ethereum (raw private key):**
+
+```tsx
+const wallet = await privy.wallets().import({
+  wallet: {
+    entropy_type: 'private-key',
+    chain_type: 'ethereum',
+    address: '<wallet-address>',
+    private_key: '<hex-encoded-private-key>',
+  },
+});
+```
+
+**Solana (raw private key):**
+
+```tsx
+const wallet = await privy.wallets().import({
+  wallet: {
+    entropy_type: 'private-key',
+    chain_type: 'solana',
+    address: '<wallet-address>',
+    private_key: '<base58-encoded-private-key>',
+  },
+});
+```
+
+**HD wallet (mnemonic):**
+
+If you're migrating HD wallets with a BIP39 mnemonic:
+
+```tsx
+const wallet = await privy.wallets().import({
+  wallet: {
+    entropy_type: 'hd',
+    chain_type: 'ethereum',
+    address: '<wallet-address>',
+    private_key: '<bip39-mnemonic>',
+    index: 0,
+  },
+});
+```
+
+You can optionally assign an owner, policies, or additional signers at import time:
+
+```tsx
+const wallet = await privy.wallets().import({
+  wallet: {
+    entropy_type: 'private-key',
+    chain_type: 'ethereum',
+    address: '<wallet-address>',
+    private_key: '<hex-encoded-private-key>',
+  },
+  owner_id: '<privy-user-id>',
+  policy_ids: ['<policy-id>'],
+  additional_signers: [{signer_id: '<signer-id>'}],
+});
+```
+
+### REST API alternative
+
+If you're not using Node.js, use the REST API directly. The flow is three steps:
+
+**1. Initialize** — call `/v1/wallets/import/init` to get an encryption public key:
+
+```bash
+curl --request POST \
+  --url https://api.privy.io/v1/wallets/import/init \
+  --header 'Authorization: Basic <encoded-app-credentials>' \
+  --header 'Content-Type: application/json' \
+  --header 'privy-app-id: <privy-app-id>' \
+  --data '{
+    "address": "<wallet-address>",
+    "chain_type": "ethereum",
+    "entropy_type": "private-key",
+    "encryption_type": "HPKE"
+  }'
+```
+
+**2. Encrypt** — encrypt the private key using HPKE with the returned public key (KEM: `DHKEM_P256_HKDF_SHA256`, KDF: `HKDF_SHA256`, AEAD: `CHACHA20_POLY1305`).
+
+**3. Submit** — call `/v1/wallets/import/submit` with the encrypted key:
+
+```bash
+curl --request POST \
+  --url https://api.privy.io/v1/wallets/import/submit \
+  --header 'Authorization: Basic <encoded-app-credentials>' \
+  --header 'Content-Type: application/json' \
+  --header 'privy-app-id: <privy-app-id>' \
+  --data '{
+    "wallet": {
+      "address": "<wallet-address>",
+      "chain_type": "ethereum",
+      "entropy_type": "private-key",
+      "encryption_type": "HPKE",
+      "ciphertext": "<base64-encoded-encrypted-key>",
+      "encapsulated_key": "<base64-encoded-encapsulated-key>"
+    }
+  }'
+```
+
+See the [Privy key import docs](https://docs.privy.io) for the full encryption example and HD wallet variant.
+
+### 5d. Mark migration complete
+
+```tsx
+await db.users.update(userId, {signer_migrated: true});
+```
+
+***
+
+## Step 6: Deploy
+
+Unlike the React migration, JWT migration does **not require a user export/import step** — unless your users also use other auth methods (email, Google, etc.) alongside JWT.
+
+**If JWT is your only auth method:**
+
+* Deploy your updated app
+* Users authenticate via JWT with Privy going forward
+* Migration happens automatically on each user's first login
+* No Alchemy dashboard export needed
+
+**If you also use other auth methods:**
+
+* You still need to export users from Alchemy and import into Privy (see [React migration guide Step 4](/wallets/wallet-integrations/privy/react-migration#step-4-deploy-your-updated-app-export-users-and-import-into-privy))
+* Follow the same Deploy → Export → Import sequence
+
+### Next steps
+
+After migration, follow the Privy guides for using embedded wallets:
+
+* [Send a transaction](https://docs.privy.io/wallets/using-wallets/ethereum/send-a-transaction) (generic wallet usage)
+* [Create authorization keys](https://docs.privy.io/controls/authorization-keys/keys/create/user/request) (for server-side usage of wallets)
+* [Prepare smart wallet operations](/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-api-endpoints/wallet-prepare-calls)
+* [Sign smart wallet operations](https://docs.privy.io/api-reference/wallets/ethereum/eth-sign-user-operation)
+
+## Important notes
+
+### No user export/import needed (JWT-only)
+
+Because JWT authentication is controlled by your server, both Alchemy and Privy can verify the same JWT. There's no user metadata to transfer — your server is the source of truth for user identity. The only thing being migrated is the private key material.
+
+### Security considerations
+
+* **Client-side path:** The private key is briefly available in client memory during the export→import handoff. This is different from the React SDK which uses encrypted TEE-to-TEE transfer.
+* **Server-side path:** The private key passes through your server. The `@privy-io/node` SDK automatically encrypts key material with HPKE before transmitting to Privy's TEE — the plaintext key never leaves your server unencrypted over the wire.
+
+### Migration tracking is on you
+
+The [React migration SDK](/wallets/wallet-integrations/privy/react-migration) detects migration need automatically via Privy metadata. In the JWT path, you own this logic entirely via your user database.
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Can I use the React migration SDK with JWT auth?">
+    The React migration SDK supports standard auth methods (email, Google, passkeys). If your users authenticated exclusively via JWT, use this guide instead. If you have a mix of JWT and standard auth users, you may need both paths.
+  </Accordion>
+
+  <Accordion title="Are JWTs one-time use?">
+    No. JWTs are reusable until they expire. The same JWT can authenticate with both Alchemy and Privy in the same session.
+  </Accordion>
+
+  <Accordion title="What if my JWT has a short expiration?">
+    Ensure the JWT is valid for the duration of the migration flow (authenticate with both providers + export + import). If your JWTs expire quickly, generate a fresh one at the start of the migration flow.
+  </Accordion>
+
+  <Accordion title="Do I need to change my JWT signing/verification setup?">
+    You'll need to configure Privy to accept your JWTs (JWKS endpoint or public key, plus the user ID claim). Your JWT generation on the server side stays the same.
+  </Accordion>
+
+  <Accordion title="Which path should I choose — client-side or server-side?">
+    If you already have a React or React Native app with Alchemy's client SDK, the client-side path is the most straightforward — it mirrors the flow you already have. If your architecture is backend-driven (e.g., your server holds keys or controls wallet operations), the server-side path keeps everything on the server without requiring a client SDK integration.
+  </Accordion>
+</AccordionGroup>
