@@ -1,7 +1,7 @@
 ---
 title: Build with AI
-description: Pick the right Alchemy tool for your AI workflow. Teach a coding agent every Alchemy API with Agent Skills, give it live data via the MCP Server, automate from the terminal with the CLI, or let it authenticate autonomously with a wallet.
-subtitle: Pick the right Alchemy tool for your AI workflow. Teach a coding agent every Alchemy API with Agent Skills, give it live data via the MCP Server, automate from the terminal with the CLI, or let it authenticate autonomously with a wallet.
+description: Pick the right Alchemy tool for your AI workflow. Teach a coding agent every Alchemy API with Agent Skills, automate from the terminal with the CLI, give it live data via the MCP Server, or let it authenticate autonomously with a wallet.
+subtitle: Pick the right Alchemy tool for your AI workflow. Teach a coding agent every Alchemy API with Agent Skills, automate from the terminal with the CLI, give it live data via the MCP Server, or let it authenticate autonomously with a wallet.
 slug: docs/build-with-ai-overview
 ---
 
@@ -22,20 +22,6 @@ npx skills add alchemyplatform/skills --yes
 
 [Get started with Agent Skills →](docs/alchemy-agent-skills)
 
-### MCP Server
-
-The [Alchemy MCP Server](https://github.com/alchemyplatform/alchemy-mcp-server) exposes our APIs through the [Model Context Protocol](https://modelcontextprotocol.io/), so AI tools can fetch blockchain data as tool calls inside a conversation.
-
-```bash
-claude mcp add alchemy --transport http https://mcp.alchemy.com/mcp
-```
-
-* 159 tools across token prices, NFT metadata, transaction history, simulation, tracing, account abstraction, Solana DAS, and more
-* 100+ supported networks
-* Hosted at `https://mcp.alchemy.com/mcp` with OAuth, no API key or local install required
-
-[Get started with the MCP Server →](docs/alchemy-mcp-server)
-
 ### Alchemy CLI
 
 The [Alchemy CLI](docs/alchemy-cli) is a single binary that wraps every Alchemy product. Use it for live querying, admin tasks, and local automation, or give it to an AI agent as a structured shell tool.
@@ -50,6 +36,20 @@ npm i -g @alchemy/cli@latest
 * Supports API key, access key, and x402 wallet authentication
 
 [Get started with the CLI →](docs/alchemy-cli)
+
+### MCP Server
+
+The [Alchemy MCP Server](https://github.com/alchemyplatform/alchemy-mcp-server) exposes our APIs through the [Model Context Protocol](https://modelcontextprotocol.io/), so AI tools can fetch blockchain data as tool calls inside a conversation.
+
+```bash
+claude mcp add alchemy --transport http https://mcp.alchemy.com/mcp
+```
+
+* 159 tools across token prices, NFT metadata, transaction history, simulation, tracing, account abstraction, Solana DAS, and more
+* 100+ supported networks
+* Hosted at `https://mcp.alchemy.com/mcp` with OAuth, no API key or local install required
+
+[Get started with the MCP Server →](docs/alchemy-mcp-server)
 
 ### Agent authentication and payment
 
@@ -66,18 +66,18 @@ Your agent can authenticate with a crypto wallet instead of an API key, purchasi
 | I want to... | Use |
 |---|---|
 | Give my AI coding agent knowledge of all Alchemy APIs | [Agent Skills](docs/alchemy-agent-skills) |
-| Let my IDE copilot query live onchain data during a conversation | [MCP Server](docs/alchemy-mcp-server) |
 | Run quick onchain queries or admin tasks from the terminal | [CLI](docs/alchemy-cli) |
 | Script a recurring job, cron, or CI step that calls Alchemy | [CLI](docs/alchemy-cli) |
 | Give a shell-driven agent a structured tool surface | [CLI](docs/alchemy-cli) with `--json --no-interactive` |
+| Let my IDE copilot query live onchain data during a conversation | [MCP Server](docs/alchemy-mcp-server) |
 | Build an autonomous agent that authenticates with a wallet and pays in USDC | [Agent Authentication and Payment](docs/alchemy-for-agents) plus [Skills](docs/alchemy-agent-skills) or [CLI](docs/alchemy-cli) |
 | Give a coding agent both API knowledge and live data access | Agent Skills + MCP Server |
 
-These tools layer on top of each other. An agent using **Skills** to understand our APIs can also call the **MCP Server** for live data, shell out to the **CLI** for admin tasks, and use the **`agentic-gateway` skill** or `--x402` flag to operate without a pre-provisioned API key.
+These tools layer on top of each other. An agent using **Skills** to understand our APIs can shell out to the **CLI** for admin tasks, call the **MCP Server** for live data, and use the **`agentic-gateway` skill** or `--x402` flag to operate without a pre-provisioned API key.
 
 ## Supported AI tools
 
-| Tool | Skills | MCP Server | CLI | Agent Auth |
+| Tool | Skills | CLI | MCP Server | Agent Auth |
 |---|---|---|---|---|
 | [Claude Code](https://www.anthropic.com/claude-code) | Yes | Yes | Yes | Yes |
 | [Cursor](https://cursor.com) | Yes | Yes | Yes | Yes |
