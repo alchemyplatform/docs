@@ -1,23 +1,17 @@
 ---
 outline: deep
-title: Choosing an authentication method
-description: Explore Smart Wallets integration guides for authentication including Magic.Link, Privy, Web3Auth, EOAs, and many more!
+title: Choosing a signer
+description: Explore Wallet APIs integration guides for signers including Alchemy, Turnkey, Privy, Web3Auth, EOAs, and many more!
 slug: wallets/signer/what-is-a-signer
 ---
 
-An **owner** is a service or application that manages a private key and signs operations. Most web3 users today use an [Externally Owned Account (EOA)](https://ethereum.org/en/developers/docs/accounts/#externally-owned-accounts-and-key-pairs) with a self-custodial wallet such as MetaMask to manage the private key.
+A **signer** (also called an "owner") is the service or key that controls a smart wallet — it manages a private key, authenticates users, and signs transactions on their behalf. Your choice of signer determines the onboarding experience, custody model, and recovery options available to your users.
 
-With Smart Wallets, deploy a **smart wallet** for each user instead of an EOA wallet. This smart wallet stores the user's assets (e.g. tokens or NFTs).
+This guide covers the different signer types, the criteria to evaluate when choosing one, and how they plug into Wallet APIs.
 
-The owner connected to the `SmartWalletClient` signs messages, data including transactions. The signatures are only valid and execute if the owner is one of the owners of the account.
+## Role of a signer
 
-Using Smart Wallets, secure your user's account with an email, social login, or passkeys. You can also use a self-custodial wallet like MetaMask as the owner. Choose any authentication service or application to manage the owner private key for the user.
-
-This doc provides a basic introduction to owners, the criteria to consider when choosing one, and how they integrate with the Smart Wallets SDK.
-
-## Role of an owner
-
-The owner plays a crucial role in your app because it controls the user's smart wallet. The owner is responsible for:
+The signer plays a crucial role in your app because it controls the user's smart wallet. The signer is responsible for:
 
 * Securely storing the user's private key which controls the user's assets
 * Authenticating the user
@@ -27,11 +21,11 @@ The owner plays a crucial role in your app because it controls the user's smart 
 
 ## Criteria to consider
 
-Here are some important criteria to consider when choosing an owner.
+Here are some important criteria to consider when choosing a signer.
 
 * **Custody model:** Who has access to the private key?
   * Self-Custodial: the end user controls the private key and manually approves signature requests
-  * Non-Custodial: a third-party service manages the private key or a subset of the key shares, but cannot sign transactions without the user’s involvement
+  * Non-Custodial: a third-party service manages the private key or a subset of the key shares, but cannot sign transactions without the user's involvement
   * Custodial: a third-party service manages the private key and can sign transactions without the user's involvement
 
 * **Security model**: Assess the security model of the provider. Where is the private key stored? (on a device? in the cloud? on what cloud provider?) Is the private key encrypted? What encryption algorithm is used? Who has access to the decryption keys? This is a non-exhaustive list and we recommend doing further research.
@@ -44,28 +38,28 @@ Here are some important criteria to consider when choosing an owner.
 
 * **Key recovery**: If the user forgets their password or loses their passkey, what recovery methods does the provider offer? If the provider stores a backup copy of the private key or MPC key shares, where are those backups stored and who has access to them?
 
-## Types of owners
+## Types of signers
 
 ### Non-custodial wallets
 
-Non-custodial wallet providers store private keys such that they cannot access the private key without the user’s involvement. For example, the user must provide a password or passkey that only they know in order to decrypt the private key stored by the provider. Users benefit from heightened security, while remaining in control of their private keys at all times. This is similar to a safety deposit box vault: the provider secures the bank vault but only the user has access to the individual safety deposit boxes (e.g. wallets).
+Non-custodial wallet providers store private keys such that they cannot access the private key without the user's involvement. For example, the user must provide a password or passkey that only they know in order to decrypt the private key stored by the provider. Users benefit from heightened security, while remaining in control of their private keys at all times. This is similar to a safety deposit box vault: the provider secures the bank vault but only the user has access to the individual safety deposit boxes (e.g. wallets).
 
 **Example**: Alchemy, Turnkey, Magic
 
 ### MPC wallets (non-custodial)
 
-Multi-Party Computation (MPC) providers split the owner account private key into key shares that are then distributed to a number of share holders. Share holders only know the value of their key share and transaction holders can sign transactions without revealing their key shares to other holders.
+Multi-Party Computation (MPC) providers split the signer account private key into key shares that are then distributed to a number of share holders. Share holders only know the value of their key share and transaction holders can sign transactions without revealing their key shares to other holders.
 
 Valid signatures do not always require all shares to sign a transaction. MPC providers can set a threshold, requiring a certain number of shares for a signature to be valid. Common configurations are 2 of 2 shares or 2 of 3 shares. By requiring multiple shares, MPC models mitigate the risks associated with a single key being compromised.
 
-Some MPC providers offer recovery services in which key share(s) are backed up in the service provider’s cloud, on the end user’s device, or in the end user’s cloud (e.g. iCloud or Google Drive). When evaluating an MPC provider, understand where each key share is stored.
+Some MPC providers offer recovery services in which key share(s) are backed up in the service provider's cloud, on the end user's device, or in the end user's cloud (e.g. iCloud or Google Drive). When evaluating an MPC provider, understand where each key share is stored.
 
 **Example**: Privy, Fireblocks MPC, Portal, Capsule, WalletKit
 
 <Accordion title="TSS vs SSSS">
   There are two common approaches to MPC.
 
-  Traditionally, MPC services leveraged SSSS (Shamir’s Secret Shard Sharing). This approach generates a private key in one location and then the shares are distributed to the parties involved. When a user wants to sign, they need to retrieve N of M shares and reconstruct the key locally.
+  Traditionally, MPC services leveraged SSSS (Shamir's Secret Shard Sharing). This approach generates a private key in one location and then the shares are distributed to the parties involved. When a user wants to sign, they need to retrieve N of M shares and reconstruct the key locally.
 
   An improvement on SSSS is Threshold Signature Scheme (TSS). In this model, the key is never recreated during signing. Instead, each party is given the message to sign and then signs the payload locally before broadcasting the signature to the rest of the group. This allows for the key material to remain private and deconstructed.
 
@@ -76,13 +70,13 @@ Some MPC providers offer recovery services in which key share(s) are backed up i
 
 ### Decentralized MPC network (non-custodial)
 
-A decentralized MPC network is an extension on the MPC approach outlined above. Instead of relying on a single, centralized service to store a key share and initiate signature requests, an MPC network distributes this responsibility across many nodes in a network. The user’s private key is split into many key shares with each share store by a different node. The user may request signatures from the network and a valid signature will be produced if and only if a threshold number of nodes agree to sign the request.
+A decentralized MPC network is an extension on the MPC approach outlined above. Instead of relying on a single, centralized service to store a key share and initiate signature requests, an MPC network distributes this responsibility across many nodes in a network. The user's private key is split into many key shares with each share store by a different node. The user may request signatures from the network and a valid signature will be produced if and only if a threshold number of nodes agree to sign the request.
 
 Examples: Lit Protocol, Web3Auth (Torus Network)
 
 ### Self-custodial wallet
 
-Self-custodial wallets store the private key locally where only the end user can access it. For example, the user may store their seed phrase in a browser extension, in a mobile app using their phone’s secure enclave, or in a hardware wallet. When using a self-custodial wallet, the user is the only one with the power to sign transactions.
+Self-custodial wallets store the private key locally where only the end user can access it. For example, the user may store their seed phrase in a browser extension, in a mobile app using their phone's secure enclave, or in a hardware wallet. When using a self-custodial wallet, the user is the only one with the power to sign transactions.
 
 Self-custodial wallets require the user to maintain good security hygiene at all times. They also rely on the user to backup a copy of their private key in the event the wallet is lost or destroyed. If the user loses access to the device on which their private key is stored, they will have no way to recover the account unless they backed up the private key in another device or location.
 
@@ -90,19 +84,19 @@ Self-custodial wallets require the user to maintain good security hygiene at all
 
 ### Custodial wallet
 
-Custodial wallet providers have full control over the user’s private key and sign transactions on behalf of the user. These services typically implement security measures to ensure that only the authorized user(s) can request a signature. These providers are also typically regulated entities (e.g., qualified custodians). The user must trust this service provider to securely store the private key and sign transactions if and only if the user wishes.
+Custodial wallet providers have full control over the user's private key and sign transactions on behalf of the user. These services typically implement security measures to ensure that only the authorized user(s) can request a signature. These providers are also typically regulated entities (e.g., qualified custodians). The user must trust this service provider to securely store the private key and sign transactions if and only if the user wishes.
 
 **Example**: Coinbase Custody, Bitgo
 
-## Owner interfaces
+## Signer interfaces
 
-The `SmartWalletClient` accepts any owner that conforms to standard [viem](https://viem.sh/) account interfaces. The `signer` parameter of `createSmartWalletClient` accepts:
+The `SmartWalletClient` accepts any signer that conforms to standard [viem](https://viem.sh/) account interfaces. The `signer` parameter of `createSmartWalletClient` accepts:
 
 1. [**`LocalAccount`**](https://viem.sh/docs/accounts/local) — A viem local account, such as one created with [`privateKeyToAccount`](https://viem.sh/docs/accounts/local/privateKeyToAccount) or [`toAccount`](https://viem.sh/docs/accounts/local/toAccount). Useful for private key signers, hardware wallets, or custom account implementations.
 2. [**Viem `WalletClient`**](https://viem.sh/docs/clients/wallet) — A viem wallet client with a mounted account. Since a wallet client can wrap any [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) compliant provider, this is useful for connecting third-party embedded wallet providers or browser extension wallets.
 
-For [EIP-7702](/docs/wallets/transactions/using-eip-7702) delegation, the owner must support `signAuthorization`. See the [third-party authentication integration guide](/docs/wallets/third-party/signers/custom-integration) for details on bringing your own authentication provider.
+For [EIP-7702](/docs/wallets/transactions/using-eip-7702) delegation, the signer must support `signAuthorization`. See the [third-party signer integration guide](/docs/wallets/third-party/signers/custom-integration) for details on bringing your own signer.
 
 ***
 
-*Disclaimer: This page refers to third-party services, products software, technology, and content (collectively, “Third-Party Services”) that may be integrated or interact with Alchemy’s software and services. Alchemy is not responsible for any Third-Party Service, or for any compatibility issues, errors, or bugs caused in whole or in part by the Third-Party Service or any update or upgrade thereto. Your use of any Third-Party Service is at your own risk. You are responsible for obtaining any associated licenses and consents to the extent necessary for you to use the Third-Party Services. Your use of the Third-Party Services may be subject to separate terms and conditions set forth by the provider (including disclaimers or warnings), separate fees or charges, or a separate privacy notice. You are responsible for understanding and complying with any such terms or privacy notice.*
+*Disclaimer: This page refers to third-party services, products software, technology, and content (collectively, "Third-Party Services") that may be integrated or interact with Alchemy's software and services. Alchemy is not responsible for any Third-Party Service, or for any compatibility issues, errors, or bugs caused in whole or in part by the Third-Party Service or any update or upgrade thereto. Your use of any Third-Party Service is at your own risk. You are responsible for obtaining any associated licenses and consents to the extent necessary for you to use the Third-Party Services. Your use of the Third-Party Services may be subject to separate terms and conditions set forth by the provider (including disclaimers or warnings), separate fees or charges, or a separate privacy notice. You are responsible for understanding and complying with any such terms or privacy notice.*

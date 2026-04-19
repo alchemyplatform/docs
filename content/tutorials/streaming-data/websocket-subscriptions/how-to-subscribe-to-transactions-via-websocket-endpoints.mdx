@@ -26,7 +26,7 @@ It allows for strengthened requests with specific parameters given by the user i
 
 * `toAddress`(optional): Singular address or array of addresses **to** receive pending transactions sent from this address.
 * `fromAddress`(optional): Singular address or array of addresses **from** receive pending transactions sent from this address.
-* `hashesOnly`(optional - default set to `false`): The response matches the payload of [eth\_getTransactionByHash](/docs/reference/eth-gettransactionbyhash). This is information about a transaction by the transaction hash including `blockHash`, `blockNumber` and `transactionIndex`.
+* `hashesOnly`(optional - default set to `false`): The response matches the payload of [eth\_getTransactionByHash](/docs/reference/eth-gettransactionbyhash). This is information about a transaction by the transaction hash including `blockHash`, `blockNumber` and `transactionIndex`. For a lighter-weight starting point, keep this set to `true` unless you need full transaction objects immediately.
 
 ## Step 0: Configure your developer environment
 
@@ -74,7 +74,7 @@ From your terminal, run the following commands:
   wscat -c wss://eth-mainnet.g.alchemy.com/v2/demo
 
   // then call subscription 
-  {"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions", {"toAddress": ["0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0xdAC17F958D2ee523a2206206994597C13D831ec7"], "hashesOnly": false}]}
+  {"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_pendingTransactions", {"toAddress": ["0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "0xdAC17F958D2ee523a2206206994597C13D831ec7"], "hashesOnly": true}]}
   ```
 </CodeGroup>
 
@@ -88,23 +88,7 @@ If successful, you should see output that looks something like this:
     "jsonrpc": "2.0",
     "method": "eth_subscription",
     "params": {
-      "result": {
-        "blockHash": null,
-        "blockNumber": null,
-        "from": "0x098bdcdc84ab11a57b7c156557dca8cef853523d",
-        "gas": "0x1284a",
-        "gasPrice": "0x6fc23ac00",
-        "hash": "0x10466101bd8979f3dcba18eb72155be87bdcd4962527d97c84ad93fc4ad5d461",
-        "input": "0xa9059cbb00000000000000000000000054406f1ec84f89532f83768f3f159b73b237257f0000000000000000000000000000000000000000000000000000000001c9c380",
-        "nonce": "0x11",
-        "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "transactionIndex": null,
-        "value": "0x0",
-        "type": "0x0",
-        "v": "0x26",
-        "r": "0x93ddd646056f365352f7e53dfe5dc81bde53f5b7c7bbe5deea555a62540d6995",
-        "s": "0x79ed82a681930feb11eb68feccd1df2e53e1b96cf9171ae4ffcf53e9b2a40e8e"
-      },
+      "result": "0x10466101bd8979f3dcba18eb72155be87bdcd4962527d97c84ad93fc4ad5d461",
       "subscription": "0xf13f7073ddef66a8c1b0c9c9f0e543c3"
     }
   }
@@ -177,16 +161,9 @@ Next, add the following code to the `main.js` file, using your Alchemy API key:
 
   const provider = new WebSocketProvider('wss://eth-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->')
 
-  // Listen for pending transactions
-  provider.on('pending', async (txHash) => {
-    try {
-      const tx = await provider.getTransaction(txHash)
-      if (tx) {
-        console.log('Pending transaction:', tx)
-      }
-    } catch (error) {
-      console.error('Error fetching transaction:', error)
-    }
+  // Listen for pending transaction hashes
+  provider.on('pending', (txHash) => {
+    console.log('Pending transaction hash:', txHash)
   })
 
   console.log('Listening for pending transactions...')
@@ -197,45 +174,15 @@ Run this script by running the following command in your terminal:
 
 `node main.js`
 
-If successful, you should see a stream of transactions as the result. This stream of output indicates the latest (pending or mined) transactions hitting the Ethereum Mainnet. It should look something like this:
+If successful, you should see a stream of transaction hashes as the result.
+This stream of output indicates the latest pending transactions hitting the
+Ethereum Mainnet. It should look something like this:
 
 <CodeGroup>
   ```json Results
   [
-    {
-      "blockHash": null,
-      "blockNumber": null,
-      "from": "0x0dd25571522e0ac38712b56834dc6081cde33325",
-      "gas": "0x8b5d7",
-      "gasPrice": "0xd09dc30c",
-      "hash": "0x9575c90c4923d7d1981029bfcfc3f23b91ec78683b881b571763dff0c00a72da",
-      "input": "0x0357371d0000000000000000000000000dd25571522e0ac38712b56834dc6081cde3332500000000000000000000000000000000000000000000000000b1a2bc2ec50000",
-      "nonce": "0x14c",
-      "to": "0xfebfd3467c4362eee971c433e3613c009ab55ce4",
-      "transactionIndex": null,
-      "value": "0x0",
-      "type": "0x0",
-      "v": "0x27125",
-      "r": "0xdc427da8df7cd9a4e831734a9ec4d8127d2c068497e667138b0092635157c5db",
-      "s": "0x5d4b996fd467702e7602030de3517e024a31085d57cfe2ff064e98460bc2da28"
-    },
-    {
-      "blockHash": null,
-      "blockNumber": null,
-      "from": "0x61141bce5352fc9b5ff648468676e356518d86ab",
-      "gas": "0x55730",
-      "gasPrice": "0x77359410",
-      "hash": "0xc81a148daba8bb67daca8b3e645d07c9caaf2977ebdd46245f97f12cc3737dd2",
-      "input": "0x29dd214d00000000000000000000000000000000000000000000000000000000000000c0...",
-      "nonce": "0x3f927",
-      "to": "0x000054d3a0bc83ec7808f52fcdc28a96c89f6c5c",
-      "transactionIndex": null,
-      "value": "0x0",
-      "type": "0x0",
-      "v": "0x27125",
-      "r": "0x5466a7a7d1823c2290fc4803cac0340dcab34e843a8c0681763ca60fd7ccc7b2",
-      "s": "0x3030ce868c4d09b71009af597175bdecace2f081a0f78f0e4705e318d19076a9"
-    }
+    "0x9575c90c4923d7d1981029bfcfc3f23b91ec78683b881b571763dff0c00a72da",
+    "0xc81a148daba8bb67daca8b3e645d07c9caaf2977ebdd46245f97f12cc3737dd2"
   ]
   ```
 </CodeGroup>

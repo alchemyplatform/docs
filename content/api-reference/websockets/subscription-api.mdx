@@ -34,6 +34,27 @@ WebSocket is a bidirectional communication protocol that maintains a network con
 
 Instead, an open WebSocket connection can push network updates to you by allowing subscriptions to certain network states, such as new transactions or blocks being added to the blockchain.
 
+<Warning>
+  **Keep subscription scope narrow**
+
+  WebSocket subscriptions on Alchemy are billed based on the bandwidth
+  delivered as part of the subscription. Broad or unfiltered subscriptions can
+  produce high event volumes, especially for pending or mined transaction
+  streams.
+
+  To keep usage predictable:
+
+  * Prefer narrow filters when the subscription supports them.
+  * Prefer smaller payloads, such as hashes, when you do not need full
+    transaction objects.
+  * Set [usage limits](/docs/how-to-set-usage-limits-and-alerts-for-your-account)
+    and [usage alerts](/docs/dashboard-alerts) before running high-volume
+    streams in production.
+
+  For pricing details, see
+  [Compute Unit Costs](/docs/reference/compute-unit-costs#webhooks-and-subscription-apis).
+</Warning>
+
 ## Using JSON-RPC requests to access WebSockets
 
 The `eth_subscribe` and `eth_unsubscribe` JSON-RPC methods allow you to access WebSockets.

@@ -19,10 +19,15 @@ The `alchemy_minedTransactions` subscription type subscribes to mined transactio
 
 * `addresses` (optional): \[`array of objects`] list of addresses to filter mined transactions for specified by `to` or `from` in the following format: `[{"to": "string", "from": "string"}]`. Limit of 1000 total addresses.
 * `includeRemoved` (optional): `boolean` specifier to include transactions that have been removed from the cannonical chain (or [re-orged](/docs/what-is-proof-of-stake#what-is-a-re-org-re-organization)).
-* `hashesOnly` (optional): `boolean` default value is `false`, where the response will return a full transaction object (matches the payload of [eth\_getTransactionByHash](/docs/reference/eth-gettransactionbyhash)) . If set to `true`, the payload returned contains only the *hashes* of the transactions that are mined.
+* `hashesOnly` (optional): `boolean` default value is `false`, where the response will return a full transaction object (matches the payload of [eth\_getTransactionByHash](/docs/reference/eth-gettransactionbyhash)) . If set to `true`, the payload returned contains only the *hashes* of the transactions that are mined. Prefer `true` unless you need full transaction objects immediately.
 
 <Info>
   Excluding all parameters returns the transaction information for **all transactions** that are mined on chain.
+</Info>
+
+<Info>
+  A good starting point is to add address filters and set `hashesOnly` to
+  `true`, then request full transaction objects only when you need them.
 </Info>
 
 # Returns
@@ -56,9 +61,6 @@ With `hashesOnly` = `false`
   ```shell wscat
   // initiate websocket stream first
   wscat -c wss://eth-mainnet.g.alchemy.com/v2/demo
-
-  // no param specification - return all mined txs  
-  {"jsonrpc":"2.0","id": 2, "method": "eth_subscribe", "params": ["alchemy_minedTransactions"]}
 
   // to and from filters, hashesOnly = true
   {
@@ -168,7 +170,6 @@ With `hashesOnly` = `false`
   ```json results
   {"id":1,"result":"0xf13f7073ddef66a8c1b0c9c9f0e543c3","jsonrpc":"2.0"}
 
-  // hashesOnly = true
   {
     "jsonrpc": "2.0",
     "method": "eth_subscription",
@@ -177,35 +178,6 @@ With `hashesOnly` = `false`
   			"removed": false
   			"transaction": {
   				"hash":"0xa8f2cf69e302da6c8100b80298ed77c37b6e75eed1177ca22acd5772c9fb9876",
-  			}
-      },
-      "subscription": "0xf13f7073ddef66a8c1b0c9c9f0e543c3"
-    }
-  }
-
-  // hashesOnly = false
-  {
-    "jsonrpc": "2.0",
-    "method": "eth_subscription",
-    "params": {
-      "result": {
-  			"removed": false
-  			"transaction": {
-  	      "blockHash":"0xbe847be2bceb74e660daf96b3f0669d58f59dc9101715689a00ef864a5408f43",
-  				"blockNumber":"0x5b8d80",
-  				"hash":"0xa8f2cf69e302da6c8100b80298ed77c37b6e75eed1177ca22acd5772c9fb9876",
-  				"from":"0x2a9847093ad514639e8cdec960b5e51686960291",
-  				"gas":"0x4f588",
-  				"gasPrice":"0xc22a75840",
-  				"input":"0x000101d521928b4146",
-  				"nonce":"0x9a2",
-  				"r":"0xb5889c55a0ebbf86627524affc9c4fdedc4608bee7a0f9880b5ec965d58e4264",
-  				"s":"0x2da32e817e2483ec2199ec0121b93384ac820049a75e11b40d152fc7558a5d72",
-  				"to":"0xc7ed8919c70dd8ccf1a57c0ed75b25ceb2dd22d1",
-  				"transactionIndex":"0x14",
-  				"type":"0x0",
-  				"v":"0x1c",
-  				"value":"0x0"
   			}
       },
       "subscription": "0xf13f7073ddef66a8c1b0c9c9f0e543c3"
