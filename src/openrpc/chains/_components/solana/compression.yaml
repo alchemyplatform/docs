@@ -1,0 +1,794 @@
+components:
+  schemas:
+    # Primitive types
+    Hash:
+      title: Hash
+      type: string
+      description: A 32-byte hash represented as a base-58 string.
+    Base58String:
+      title: Base58 String
+      type: string
+      description: A base-58 encoded string.
+    Base64String:
+      title: Base64 String
+      type: string
+      description: A base-64 encoded string.
+    UnsignedInteger:
+      title: Unsigned Integer
+      type: integer
+      description: An unsigned 64-bit integer.
+    UnixTimestamp:
+      title: Unix Timestamp
+      type: integer
+      description: A Unix timestamp in seconds.
+    Limit:
+      title: Limit
+      type: integer
+      description: Maximum number of items to return.
+    SerializableSignature:
+      title: Solana Signature
+      type: string
+      description: A base-58 encoded Solana transaction signature.
+
+    # Context
+    Context:
+      title: Compression Context
+      type: object
+      properties:
+        slot:
+          type: integer
+          description: The slot at which the response was generated.
+
+    # Filters
+    Memcmp:
+      title: Memcmp Filter
+      type: object
+      properties:
+        offset:
+          type: integer
+          description: Byte offset into account data to start the comparison.
+        bytes:
+          $ref: "#/components/schemas/Base58String"
+    FilterSelector:
+      title: Filter Selector
+      type: object
+      properties:
+        memcmp:
+          $ref: "#/components/schemas/Memcmp"
+    DataSlice:
+      title: Data Slice
+      type: object
+      properties:
+        offset:
+          type: integer
+          description: Byte offset from which to start reading.
+        length:
+          type: integer
+          description: Number of bytes to return.
+
+    # Compressed account data
+    AccountState:
+      title: Account State
+      type: string
+      enum:
+        - initialized
+        - frozen
+    AccountData:
+      title: Compressed Account Data
+      type: object
+      properties:
+        discriminator:
+          $ref: "#/components/schemas/UnsignedInteger"
+        data:
+          $ref: "#/components/schemas/Base64String"
+        dataHash:
+          $ref: "#/components/schemas/Hash"
+    Account:
+      title: Compressed Account
+      type: object
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        data:
+          $ref: "#/components/schemas/AccountData"
+        hash:
+          $ref: "#/components/schemas/Hash"
+        lamports:
+          $ref: "#/components/schemas/UnsignedInteger"
+        leafIndex:
+          $ref: "#/components/schemas/UnsignedInteger"
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        seq:
+          $ref: "#/components/schemas/UnsignedInteger"
+        slotCreated:
+          $ref: "#/components/schemas/UnsignedInteger"
+        tree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+    AccountList:
+      title: Compressed Account List
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+    PaginatedAccountList:
+      title: Paginated Compressed Account List
+      type: object
+      properties:
+        cursor:
+          $ref: "#/components/schemas/Hash"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+
+    # Token data
+    TokenData:
+      title: Compressed Token Data
+      type: object
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        amount:
+          $ref: "#/components/schemas/UnsignedInteger"
+        delegate:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        state:
+          $ref: "#/components/schemas/AccountState"
+        tlv:
+          $ref: "#/components/schemas/Base64String"
+    TokenAccount:
+      title: Compressed Token Account
+      type: object
+      properties:
+        account:
+          $ref: "#/components/schemas/Account"
+        tokenData:
+          $ref: "#/components/schemas/TokenData"
+    TokenAccountList:
+      title: Compressed Token Account List
+      type: object
+      properties:
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TokenAccount"
+    TokenAccountBalance:
+      title: Compressed Token Account Balance
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/UnsignedInteger"
+    TokenBalance:
+      title: Compressed Token Balance
+      type: object
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        balance:
+          $ref: "#/components/schemas/UnsignedInteger"
+    TokenBalanceList:
+      title: Compressed Token Balance List
+      type: object
+      properties:
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+        token_balances:
+          type: array
+          items:
+            $ref: "#/components/schemas/TokenBalance"
+    TokenBalanceListV2:
+      title: Compressed Token Balance List (V2)
+      type: object
+      properties:
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TokenBalance"
+
+    # Owner balances
+    OwnerBalance:
+      title: Owner Balance
+      type: object
+      properties:
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        balance:
+          $ref: "#/components/schemas/UnsignedInteger"
+    OwnerBalanceList:
+      title: Owner Balance List
+      type: object
+      properties:
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OwnerBalance"
+
+    # Signatures
+    SignatureInfo:
+      title: Signature Info
+      type: object
+      properties:
+        signature:
+          $ref: "#/components/schemas/SerializableSignature"
+        slot:
+          $ref: "#/components/schemas/UnsignedInteger"
+        blockTime:
+          $ref: "#/components/schemas/UnixTimestamp"
+    SignatureInfoList:
+      title: Signature Info List
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SignatureInfo"
+    SignatureInfoWithError:
+      title: Signature Info With Error
+      type: object
+      properties:
+        signature:
+          $ref: "#/components/schemas/SerializableSignature"
+        slot:
+          $ref: "#/components/schemas/UnsignedInteger"
+        blockTime:
+          $ref: "#/components/schemas/UnixTimestamp"
+        error:
+          type: string
+          nullable: true
+    SignatureInfoListWithError:
+      title: Signature Info List With Error
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SignatureInfoWithError"
+    PaginatedSignatureInfoList:
+      title: Paginated Signature Info List
+      type: object
+      properties:
+        cursor:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SignatureInfo"
+
+    # Proofs
+    AddressWithTree:
+      title: Address With Tree
+      type: object
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        tree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+    GetCompressedAccountProofResponseValue:
+      title: Compressed Account Proof
+      type: object
+      properties:
+        hash:
+          $ref: "#/components/schemas/Hash"
+        leafIndex:
+          type: integer
+          description: Leaf index of the account in the merkle tree.
+        merkleTree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        proof:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hash"
+        root:
+          $ref: "#/components/schemas/Hash"
+        rootSeq:
+          type: integer
+          description: Sequence number of the root.
+    MerkleContextWithNewAddressProof:
+      title: New Address Proof
+      type: object
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        higherRangeAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        lowerRangeAddress:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        lowElementLeafIndex:
+          type: integer
+          description: Leaf index of the low element in the indexed merkle tree.
+        merkleTree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        nextIndex:
+          type: integer
+          description: Next available index in the indexed merkle tree.
+        proof:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hash"
+        root:
+          $ref: "#/components/schemas/Hash"
+        rootSeq:
+          type: integer
+          description: Sequence number of the root.
+    CompressedProof:
+      title: Compressed Proof
+      type: object
+      properties:
+        a:
+          type: array
+          items:
+            type: integer
+        b:
+          type: array
+          items:
+            type: integer
+        c:
+          type: array
+          items:
+            type: integer
+    CompressedProofWithContext:
+      title: Validity Proof With Context
+      type: object
+      properties:
+        compressedProof:
+          $ref: "#/components/schemas/CompressedProof"
+        roots:
+          type: array
+          items:
+            type: string
+        rootIndices:
+          type: array
+          items:
+            type: integer
+        leafIndices:
+          type: array
+          items:
+            type: integer
+        leaves:
+          type: array
+          items:
+            type: string
+        merkleTrees:
+          type: array
+          items:
+            type: string
+    TreeContextInfo:
+      title: Tree Context Info
+      type: object
+      properties:
+        cpiContext:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        queue:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        tree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        treeType:
+          type: integer
+          description: Type identifier for the merkle tree variant.
+    MerkleContextV2:
+      title: Merkle Context (V2)
+      type: object
+      properties:
+        cpiContext:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        nextTreeContext:
+          $ref: "#/components/schemas/TreeContextInfo"
+        queue:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        tree:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        treeType:
+          type: integer
+          description: Type identifier for the merkle tree variant.
+    RootIndex:
+      title: Root Index
+      type: object
+      properties:
+        proveByIndex:
+          type: boolean
+        rootIndex:
+          type: integer
+          description: Index of the root in the merkle tree history.
+    AccountProofInputs:
+      title: Account Proof Inputs
+      type: object
+      properties:
+        hash:
+          type: string
+          description: Hash of the compressed account.
+        leafIndex:
+          type: integer
+          description: Leaf index of the account in the merkle tree.
+        merkleContext:
+          $ref: "#/components/schemas/MerkleContextV2"
+        root:
+          type: string
+          description: Root of the merkle tree.
+        rootIndex:
+          $ref: "#/components/schemas/RootIndex"
+    AddressProofInputs:
+      title: Address Proof Inputs
+      type: object
+      properties:
+        address:
+          type: string
+          description: The address being proven.
+        merkleContext:
+          $ref: "#/components/schemas/MerkleContextV2"
+        root:
+          type: string
+          description: Root of the indexed merkle tree.
+        rootIndex:
+          type: integer
+          description: Index of the root in the merkle tree history.
+    CompressedProofWithContextV2:
+      title: Validity Proof With Context (V2)
+      type: object
+      properties:
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountProofInputs"
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddressProofInputs"
+        compressedProof:
+          $ref: "#/components/schemas/CompressedProof"
+
+    # Compressed account with optional token data (used by getTransactionWithCompressionInfo)
+    AccountWithOptionalTokenData:
+      title: Compressed Account With Optional Token Data
+      type: object
+      properties:
+        account:
+          $ref: "#/components/schemas/Account"
+        optionalTokenData:
+          $ref: "#/components/schemas/TokenData"
+
+    # Method param objects
+    GetCompressedAccountParams:
+      title: getCompressedAccount Params
+      type: object
+      description: Provide either an `address` or a `hash` to identify the account.
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          nullable: true
+        hash:
+          $ref: "#/components/schemas/Hash"
+          nullable: true
+    GetCompressedAccountsByOwnerParams:
+      title: getCompressedAccountsByOwner Params
+      type: object
+      required:
+        - owner
+      properties:
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        cursor:
+          $ref: "#/components/schemas/Hash"
+          nullable: true
+        dataSlice:
+          $ref: "#/components/schemas/DataSlice"
+          nullable: true
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/FilterSelector"
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetCompressedMintTokenHoldersParams:
+      title: getCompressedMintTokenHolders Params
+      type: object
+      required:
+        - mint
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+          nullable: true
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetCompressedTokenAccountsByDelegateParams:
+      title: getCompressedTokenAccountsByDelegate Params
+      type: object
+      required:
+        - delegate
+      properties:
+        delegate:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          nullable: true
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+          nullable: true
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetCompressedTokenAccountsByOwnerParams:
+      title: getCompressedTokenAccountsByOwner Params
+      type: object
+      required:
+        - owner
+      properties:
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          nullable: true
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+          nullable: true
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetCompressedTokenBalancesByOwnerParams:
+      title: getCompressedTokenBalancesByOwner Params
+      type: object
+      required:
+        - owner
+      properties:
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          nullable: true
+        cursor:
+          $ref: "#/components/schemas/Base58String"
+          nullable: true
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetCompressionSignaturesForAddressParams:
+      title: getCompressionSignaturesForAddress Params
+      type: object
+      required:
+        - address
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        cursor:
+          type: string
+          nullable: true
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetCompressionSignaturesForOwnerParams:
+      title: getCompressionSignaturesForOwner Params
+      type: object
+      required:
+        - owner
+      properties:
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        cursor:
+          type: string
+          nullable: true
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetLatestSignaturesParams:
+      title: Latest Signatures Params
+      type: object
+      properties:
+        cursor:
+          type: string
+          nullable: true
+        limit:
+          $ref: "#/components/schemas/Limit"
+          nullable: true
+    GetMultipleCompressedAccountsParams:
+      title: getMultipleCompressedAccounts Params
+      type: object
+      description: Provide either `addresses` or `hashes` to identify the accounts.
+      properties:
+        addresses:
+          type: array
+          items:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          nullable: true
+        hashes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hash"
+          nullable: true
+    GetValidityProofParams:
+      title: getValidityProof Params
+      type: object
+      properties:
+        hashes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hash"
+        newAddressesWithTrees:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddressWithTree"
+
+    # Result wrappers (envelope around context + value)
+    AccountResult:
+      title: Compressed Account Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/Account"
+    AccountProofResult:
+      title: Compressed Account Proof Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/GetCompressedAccountProofResponseValue"
+    PaginatedAccountListResult:
+      title: Paginated Compressed Account List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/PaginatedAccountList"
+    AccountListResult:
+      title: Compressed Account List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/AccountList"
+    UnsignedIntegerResult:
+      title: Unsigned Integer Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/UnsignedInteger"
+    OwnerBalanceListResult:
+      title: Owner Balance List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/OwnerBalanceList"
+    TokenAccountBalanceResult:
+      title: Compressed Token Account Balance Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/TokenAccountBalance"
+    TokenAccountListResult:
+      title: Compressed Token Account List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/TokenAccountList"
+    TokenBalanceListResult:
+      title: Compressed Token Balance List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/TokenBalanceList"
+    TokenBalanceListV2Result:
+      title: Compressed Token Balance List Result (V2)
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/TokenBalanceListV2"
+    SignatureInfoListResult:
+      title: Signature Info List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/SignatureInfoList"
+    PaginatedSignatureInfoListResult:
+      title: Paginated Signature Info List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/PaginatedSignatureInfoList"
+    SignatureInfoListWithErrorResult:
+      title: Signature Info List With Error Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/SignatureInfoListWithError"
+    NewAddressProofListResult:
+      title: New Address Proof List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          type: array
+          items:
+            $ref: "#/components/schemas/MerkleContextWithNewAddressProof"
+    AccountProofListResult:
+      title: Compressed Account Proof List Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          type: array
+          items:
+            $ref: "#/components/schemas/GetCompressedAccountProofResponseValue"
+    ValidityProofResult:
+      title: Validity Proof Result
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/CompressedProofWithContext"
+    ValidityProofResultV2:
+      title: Validity Proof Result (V2)
+      type: object
+      properties:
+        context:
+          $ref: "#/components/schemas/Context"
+        value:
+          $ref: "#/components/schemas/CompressedProofWithContextV2"
+
+    # Transaction with compression info
+    TransactionWithCompressionInfo:
+      title: Transaction With Compression Info
+      type: object
+      description: A Solana transaction with additional compression information.
+      properties:
+        compression_info:
+          type: object
+          properties:
+            closedAccounts:
+              type: array
+              items:
+                $ref: "#/components/schemas/AccountWithOptionalTokenData"
+            openedAccounts:
+              type: array
+              items:
+                $ref: "#/components/schemas/AccountWithOptionalTokenData"
+        transaction:
+          type: object
+          description: An encoded confirmed transaction with status meta.
+
+    # Indexer health
+    IndexerHealth:
+      title: Indexer Health
+      type: string
+      description: Indexer health status. Returns `ok` when healthy.
+      enum:
+        - ok
