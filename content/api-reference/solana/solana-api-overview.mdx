@@ -13,7 +13,7 @@ Alchemy's Solana endpoint exposes three distinct API surfaces on the same URL. U
 
 ## Core Solana RPC methods
 
-Standard Solana JSON-RPC methods for reading on-chain state, submitting transactions, and inspecting the cluster. Most of these are standard methods from the official [Solana RPC specification](https://solana.com/docs/rpc). A few (like [`getPriorityFeeEstimate`](/docs/chains/solana/solana-api-endpoints/get-priority-fee-estimate) and [`simulateBundle`](/docs/chains/solana/solana-api-endpoints/simulate-bundle)) are provider-specific extensions (Alchemy and Jito, respectively) exposed on the same endpoint for convenience.
+Standard [Solana JSON-RPC](https://solana.com/docs/rpc) methods for reading on-chain state, submitting transactions, and inspecting the cluster. Every method in this table follows the official Solana RPC specification and works against any Solana RPC provider. For Alchemy-only methods (like `getPriorityFeeEstimate` and `simulateBundle`), see [Alchemy-specific extensions](#alchemy-specific-extensions) below.
 
 |                                                                                                 |                                                                                             |
 | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
@@ -31,19 +31,26 @@ Standard Solana JSON-RPC methods for reading on-chain state, submitting transact
 | [`getLatestBlockhash`](/docs/chains/solana/solana-api-endpoints/get-latest-blockhash)           | [`getLeaderSchedule`](/docs/chains/solana/solana-api-endpoints/get-leader-schedule)         |
 | [`getMaxRetransmitSlot`](/docs/chains/solana/solana-api-endpoints/get-max-retransmit-slot)      | [`getMaxShredInsertSlot`](/docs/chains/solana/solana-api-endpoints/get-max-shred-insert-slot) |
 | [`getMinimumBalanceForRentExemption`](/docs/chains/solana/solana-api-endpoints/get-minimum-balance-for-rent-exemption) | [`getMultipleAccounts`](/docs/chains/solana/solana-api-endpoints/get-multiple-accounts)     |
-| [`getPriorityFeeEstimate`](/docs/chains/solana/solana-api-endpoints/get-priority-fee-estimate)  | [`getProgramAccounts`](/docs/chains/solana/solana-api-endpoints/get-program-accounts)       |
-| [`getRecentPerformanceSamples`](/docs/chains/solana/solana-api-endpoints/get-recent-performance-samples) | [`getRecentPrioritizationFees`](/docs/chains/solana/solana-api-endpoints/get-recent-prioritization-fees) |
-| [`getSignaturesForAddress`](/docs/chains/solana/solana-api-endpoints/get-signatures-for-address) | [`getSignatureStatuses`](/docs/chains/solana/solana-api-endpoints/get-signature-statuses)   |
-| [`getSlot`](/docs/chains/solana/solana-api-endpoints/get-slot)                                  | [`getSlotLeader`](/docs/chains/solana/solana-api-endpoints/get-slot-leader)                 |
-| [`getSlotLeaders`](/docs/chains/solana/solana-api-endpoints/get-slot-leaders)                   | [`getStakeActivation`](/docs/chains/solana/solana-api-endpoints/get-stake-activation)       |
-| [`getSupply`](/docs/chains/solana/solana-api-endpoints/get-supply)                              | [`getTokenAccountBalance`](/docs/chains/solana/solana-api-endpoints/get-token-account-balance) |
-| [`getTokenAccountsByDelegate`](/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-delegate) | [`getTokenAccountsByOwner`](/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-owner) |
-| [`getTokenLargestAccounts`](/docs/chains/solana/solana-api-endpoints/get-token-largest-accounts) | [`getTokenSupply`](/docs/chains/solana/solana-api-endpoints/get-token-supply)               |
-| [`getTransaction`](/docs/chains/solana/solana-api-endpoints/get-transaction)                    | [`getTransactionCount`](/docs/chains/solana/solana-api-endpoints/get-transaction-count)     |
-| [`getVersion`](/docs/chains/solana/solana-api-endpoints/get-version)                            | [`getVoteAccounts`](/docs/chains/solana/solana-api-endpoints/get-vote-accounts)             |
-| [`isBlockhashValid`](/docs/chains/solana/solana-api-endpoints/is-blockhash-valid)               | [`minimumLedgerSlot`](/docs/chains/solana/solana-api-endpoints/minimum-ledger-slot)         |
-| [`requestAirdrop`](/docs/chains/solana/solana-api-endpoints/request-airdrop)                    | [`sendTransaction`](/docs/chains/solana/solana-api-endpoints/send-transaction)              |
-| [`simulateBundle`](/docs/chains/solana/solana-api-endpoints/simulate-bundle)                    |                                                                                             |
+| [`getProgramAccounts`](/docs/chains/solana/solana-api-endpoints/get-program-accounts)           | [`getRecentPerformanceSamples`](/docs/chains/solana/solana-api-endpoints/get-recent-performance-samples) |
+| [`getRecentPrioritizationFees`](/docs/chains/solana/solana-api-endpoints/get-recent-prioritization-fees) | [`getSignaturesForAddress`](/docs/chains/solana/solana-api-endpoints/get-signatures-for-address) |
+| [`getSignatureStatuses`](/docs/chains/solana/solana-api-endpoints/get-signature-statuses)       | [`getSlot`](/docs/chains/solana/solana-api-endpoints/get-slot)                              |
+| [`getSlotLeader`](/docs/chains/solana/solana-api-endpoints/get-slot-leader)                     | [`getSlotLeaders`](/docs/chains/solana/solana-api-endpoints/get-slot-leaders)               |
+| [`getStakeActivation`](/docs/chains/solana/solana-api-endpoints/get-stake-activation)           | [`getSupply`](/docs/chains/solana/solana-api-endpoints/get-supply)                          |
+| [`getTokenAccountBalance`](/docs/chains/solana/solana-api-endpoints/get-token-account-balance)  | [`getTokenAccountsByDelegate`](/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-delegate) |
+| [`getTokenAccountsByOwner`](/docs/chains/solana/solana-api-endpoints/get-token-accounts-by-owner) | [`getTokenLargestAccounts`](/docs/chains/solana/solana-api-endpoints/get-token-largest-accounts) |
+| [`getTokenSupply`](/docs/chains/solana/solana-api-endpoints/get-token-supply)                   | [`getTransaction`](/docs/chains/solana/solana-api-endpoints/get-transaction)                |
+| [`getTransactionCount`](/docs/chains/solana/solana-api-endpoints/get-transaction-count)         | [`getVersion`](/docs/chains/solana/solana-api-endpoints/get-version)                        |
+| [`getVoteAccounts`](/docs/chains/solana/solana-api-endpoints/get-vote-accounts)                 | [`isBlockhashValid`](/docs/chains/solana/solana-api-endpoints/is-blockhash-valid)           |
+| [`minimumLedgerSlot`](/docs/chains/solana/solana-api-endpoints/minimum-ledger-slot)             | [`requestAirdrop`](/docs/chains/solana/solana-api-endpoints/request-airdrop)                |
+| [`sendTransaction`](/docs/chains/solana/solana-api-endpoints/send-transaction)                  |                                                                                             |
+
+### Alchemy-specific extensions
+
+These methods are provider-specific extensions exposed on Alchemy's Solana endpoint for convenience. They are not part of the official Solana RPC specification and are not available on other Solana RPC providers.
+
+|                                                                                                 |                                                                                             |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [`getPriorityFeeEstimate`](/docs/chains/solana/solana-api-endpoints/get-priority-fee-estimate)  | [`simulateBundle`](/docs/chains/solana/solana-api-endpoints/simulate-bundle)                |
 
 ## DAS API (Digital Asset Standard)
 
