@@ -59,26 +59,19 @@ After a subscribe request succeeds, the server returns a numeric subscription id
 | [`logsSubscribe`](/docs/reference/logs-subscribe)         | Subscribe to transaction log messages that match a log filter.   |
 | [`signatureSubscribe`](/docs/reference/signature-subscribe) | Subscribe to status notifications for one transaction signature. |
 
-## Blocks
-
-| Method                                                | Description                                                                         |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [`blockSubscribe`](/docs/reference/block-subscribe)   | Subscribe to block notifications as blocks reach confirmed or finalized commitment. |
-
 ## Cluster
 
 | Method                                                                  | Description                                                          |
 | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | [`rootSubscribe`](/docs/reference/root-subscribe)                       | Subscribe to notifications when the validator sets a new root slot.  |
 | [`slotSubscribe`](/docs/reference/slot-subscribe)                       | Subscribe to notifications when the validator processes a new slot.  |
-| [`slotsUpdatesSubscribe`](/docs/reference/slots-updates-subscribe)      | Subscribe to tagged slot lifecycle updates emitted by the validator. |
 
 # Pricing
 
 Solana WebSocket subscriptions on Alchemy are billed by **bandwidth**: **$80 per 1 TB** streamed, pro-rated by bytes delivered. 
 
 <Warning>
-  Broad streams can produce very high bandwidth, especially `programSubscribe` without filters and `blockSubscribe` with `transactionDetails: "full"`. To keep usage predictable:
+  Broad streams can produce very high bandwidth, especially `programSubscribe` without filters. To keep usage predictable:
 
   * Prefer the most specific stream and scope with `mentions` / `mentionsAccountOrProgram` / `dataSize` / `memcmp` filters.
   * Keep payloads small (e.g. `encoding: "base64"`, `transactionDetails: "signatures"`).
