@@ -4,34 +4,18 @@ $schema: https://meta.open-rpc.org/
 openrpc: 1.2.4
 info:
   title: Alchemy Injective JSON-RPC Specification
-  description: >-
-    JSON-RPC methods for Injective aligned with Alchemy chain configuration (EVM namespace methods
-    plus chain-specific custom methods). Injective Mainnet chain ID is 0x6f0 (1776); Injective
-    Testnet chain ID is 0x59f (1439). Block tags `latest` and `finalized` are supported for reads.
-
-    The following methods are enabled on Injective Testnet only (not on Injective Mainnet):
-    `eth_getBlockReceipts`, `eth_syncing`, and `net_listening`.
-
-    The Injective chain also enables the `debug` method group; use the Alchemy Debug API on the
-    same HTTPS URLs for `debug_*` methods (see Debug API documentation). Debug access may require
-    an eligible billing plan.
+  description: A specification of the standard JSON-RPC methods for Injective.
   version: 0.0.0
 servers:
   - url: https://injective-mainnet.g.alchemy.com/v2
     name: Injective Mainnet
-    description: >-
-      Mainnet JSON-RPC. Does not expose `eth_getBlockReceipts`, `eth_syncing`, or `net_listening`
-      (those are testnet-only per chain configuration).
   - url: https://injective-testnet.g.alchemy.com/v2
     name: Injective Testnet
-    description: >-
-      Testnet JSON-RPC. Includes `eth_getBlockReceipts`, `eth_syncing`, and `net_listening` in
-      addition to the methods shared with mainnet.
 methods:
   - $ref: ../_components/custom/methods.yaml#/components/methods/eth_feeHistory
   - $ref: ../_components/custom/methods.yaml#/components/methods/eth_fillTransaction
   - $ref: >-
-      ../_components/custom/methods.yaml#/components/methods/eth_getBlockReceipts
+      ../_components/injective/methods.yaml#/components/methods/eth_getBlockReceipts
   - $ref: ../_components/custom/methods.yaml#/components/methods/eth_getProof
   - $ref: >-
       ../_components/custom/methods.yaml#/components/methods/eth_getUncleByBlockHashAndIndex
@@ -46,8 +30,8 @@ methods:
   - $ref: >-
       ../_components/custom/methods.yaml#/components/methods/eth_newPendingTransactionFilter
   - $ref: ../_components/custom/methods.yaml#/components/methods/eth_protocolVersion
-  - $ref: ../_components/custom/methods.yaml#/components/methods/eth_syncing
-  - $ref: ../_components/custom/methods.yaml#/components/methods/net_listening
+  - $ref: ../_components/injective/methods.yaml#/components/methods/eth_syncing
+  - $ref: ../_components/injective/methods.yaml#/components/methods/net_listening
   - $ref: ../_components/custom/methods.yaml#/components/methods/net_peerCount
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_blockNumber
   - $ref: ../_components/evm/methods.yaml#/components/methods/eth_call

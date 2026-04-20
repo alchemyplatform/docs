@@ -9,7 +9,9 @@ slug: docs/injective/injective-api-overview
 
 📙 Get started with our [Injective API Quickstart Guide](/docs/reference/injective-api-quickstart).
 
-Injective on Alchemy uses the standard EVM JSON-RPC surface, plus several methods that are enabled per network via Alchemy chain configuration (`topconfig` allowlists alongside the `evm` and `debug` method groups on the Injective chain). Standard `eth_*`, `net_*`, and `web3_*` calls apply where listed below, and Geth-style **`debug_*`** methods are available through the [Debug API](/docs/reference/debug-api-quickstart) on the same HTTPS URLs (plan requirements may apply).
+Injective on Alchemy uses the standard EVM JSON-RPC surface for the Node API. Method availability follows Alchemy chain configuration (`topconfig` allowlists). Network-specific behavior for individual methods (for example Injective Mainnet vs Testnet) appears on **that method’s** reference page in this section.
+
+For Geth-style **`debug_*`** RPC, use the separate **[Debug API](/docs/reference/debug-api-quickstart)** specification and [endpoint reference](/docs/reference/debug-api-endpoints) (coverage is maintained there, not in this chain OpenRPC spec). Plan requirements may apply.
 
 ### Network identifiers
 
@@ -51,16 +53,10 @@ These methods are enabled on **both** [Injective Mainnet](https://injective-main
 
 ### JSON-RPC — Injective Testnet only
 
-Per `topconfig` allowlists, these methods are enabled on **Injective Testnet** but **not** on Injective Mainnet:
+These methods are enabled on **Injective Testnet** but **not** on Injective Mainnet (see each method page for details):
 
 | Method | Endpoint |
 | ------ | -------- |
 | [`eth_getBlockReceipts`](/docs/chains/injective/injective-api-endpoints/eth-get-block-receipts) | All receipts for a block |
 | [`eth_syncing`](/docs/chains/injective/injective-api-endpoints/eth-syncing) | Sync status |
 | [`net_listening`](/docs/chains/injective/injective-api-endpoints/net-listening) | P2P listening flag |
-
-### Debug namespace (mainnet and testnet)
-
-The Injective chain includes the **`debug`** method group. The following Geth-style methods are supported on both Injective networks when using the [Debug API](/docs/reference/debug-api-endpoints) (same base URL as the Node API; access may require a paid plan):
-
-`debug_dbAncient`, `debug_dbAncients`, `debug_dbGet`, `debug_getBadBlocks`, `debug_getRawBlock`, `debug_getRawHeader`, `debug_getRawReceipts`, `debug_getTrieFlushInterval`, `debug_storageRangeAt`, `debug_traceBlockByHash`, `debug_traceBlockByNumber`, `debug_traceCall`, `debug_traceCallMany`, `debug_traceTransaction`.
