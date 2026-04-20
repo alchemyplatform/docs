@@ -1,0 +1,81 @@
+---
+title: Alchemy Photon APIs for Solana ZK Compression (Beta)
+description: Alchemy Photon APIs for Solana ZK Compression (Beta)
+subtitle: Alchemy Photon APIs for Solana ZK Compression (Beta)
+slug: reference/alchemy-photon-apis-for-solana
+---
+
+> ℹ️ This API is in Beta and CU values may change in the future. Any feedback on performance, data coverage, or pricing is welcome!
+
+> ❓ Questions? Contact us in your dedicated Alchemy channel or shoot us an email at data-services-product@alchemy.com
+
+## Background
+
+Alchemy supports the [Photon](https://github.com/helius-labs/photon) indexer, an open-source ZK Compression indexer maintained by Helius. These endpoints let you read [ZK Compressed](https://www.zkcompression.com/) Solana state — accounts, token balances, and transaction signatures — through the same familiar JSON-RPC surface used for standard Solana calls.
+
+ZK Compression stores most of an account's data off-chain in a merkle tree while keeping a small commitment on-chain, letting applications mint and manage thousands of accounts or tokens at a fraction of the normal rent cost. Photon indexes those compressed accounts and exposes them through the methods below, following the [Photon API specification](https://github.com/helius-labs/photon).
+
+These endpoints are served through the standard Solana Alchemy endpoints (`https://solana-mainnet.g.alchemy.com/v2/<API_KEY>` and `https://solana-devnet.g.alchemy.com/v2/<API_KEY>`), so you can call them with the same client you already use for Solana Core RPC.
+
+## Methods
+
+| Method | Function | CU cost | Throughput CUs (how many CUs this will count for towards your CUs per second capacity) |
+| --- | --- | --- | --- |
+| [getCompressedAccount](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-account) | Returns the compressed account with the given address or hash. | - | - |
+| [getCompressedAccountProof](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-account-proof) | Returns a merkle proof for the compressed account with the given hash. | - | - |
+| [getCompressedAccountsByOwner](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-accounts-by-owner) | Returns the owner's compressed accounts. | - | - |
+| [getCompressedBalance](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-balance) | Returns the balance for the compressed account with the given address or hash. | - | - |
+| [getCompressedBalanceByOwner](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-balance-by-owner) | Returns the total balance of the owner's compressed accounts. | - | - |
+| [getCompressedMintTokenHolders](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-mint-token-holders) | Returns the owner balances for a given mint in descending order, for compressed tokens. | - | - |
+| [getCompressedTokenAccountBalance](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-token-account-balance) | Returns the balance for a given compressed token account. | - | - |
+| [getCompressedTokenAccountsByDelegate](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-token-accounts-by-delegate) | Returns the compressed token accounts that are partially or fully delegated to the given delegate. | - | - |
+| [getCompressedTokenAccountsByOwner](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-token-accounts-by-owner) | Returns the compressed token accounts owned by the given Pubkey. | - | - |
+| [getCompressedTokenBalancesByOwner](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-token-balances-by-owner) | Returns the compressed token balances for the given Pubkey. **Deprecated** — use `getCompressedTokenBalancesByOwnerV2`. | - | - |
+| [getCompressedTokenBalancesByOwnerV2](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compressed-token-balances-by-owner-v-2) | Returns the compressed token balances for the given Pubkey, with pagination. | - | - |
+| [getCompressionSignaturesForAccount](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compression-signatures-for-account) | Returns the signatures of transactions that closed or opened a compressed account with the given hash. | - | - |
+| [getCompressionSignaturesForAddress](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compression-signatures-for-address) | Returns the signatures of transactions that have modified an address's compressed account. | - | - |
+| [getCompressionSignaturesForOwner](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compression-signatures-for-owner) | Returns the signatures of transactions that have modified the owner's compressed accounts. | - | - |
+| [getCompressionSignaturesForTokenOwner](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-compression-signatures-for-token-owner) | Returns the signatures of transactions that have modified the owner's compressed token accounts. | - | - |
+| [getLatestCompressionSignatures](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-latest-compression-signatures) | Returns the signatures of the latest transactions that used the compression program. | - | - |
+| [getLatestNonVotingSignatures](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-latest-non-voting-signatures) | Returns the signatures of the latest non-voting transactions. | - | - |
+| [getMultipleCompressedAccountProofs](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-multiple-compressed-account-proofs) | Returns multiple compressed account proofs. | - | - |
+| [getMultipleCompressedAccounts](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-multiple-compressed-accounts) | Returns multiple compressed accounts, identified by address or hash. | - | - |
+| [getMultipleNewAddressProofs](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-multiple-new-address-proofs) | Returns proofs that the new addresses are not taken and can be created. | - | - |
+| [getMultipleNewAddressProofsV2](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-multiple-new-address-proofs-v-2) | Returns proofs that the new addresses are not taken and can be created (v2). | - | - |
+| [getTransactionWithCompressionInfo](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-transaction-with-compression-info) | Returns the transaction data for the given signature along with parsed compression info. | - | - |
+| [getValidityProof](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-validity-proof) | Returns a single ZK Validity proof for compressed accounts and new addresses. | - | - |
+| [getValidityProofV2](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-validity-proof-v-2) | Returns a single ZK Validity proof for compressed accounts and new addresses (v2). | - | - |
+| [getIndexerHealth](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-indexer-health) | Returns an error if the indexer is stale by more than a configured number of blocks, otherwise returns `ok`. | - | - |
+| [getIndexerSlot](/docs/reference/alchemy-photon-apis-for-solana/solana-photon-api-endpoints/get-indexer-slot) | Returns the slot of the latest block the indexer has processed. | - | - |
+
+> CU costs for Photon methods are not published yet — they will be added to this page as the API exits Beta.
+
+## Docs & Sandbox
+
+💻 Use the following link to view request/response parameters for each method and to test requests: https://dev-docs.alchemy.com/alchemy/json-rpc/solana-photon.json
+
+### How to view parameters
+
+Explore the dropdowns for each method in the right pane:
+
+![](https://alchemyapi-res.cloudinary.com/image/upload/v1753814677/docs/image_2_rjgxvf.png)
+
+![](https://alchemyapi-res.cloudinary.com/image/upload/v1753814677/docs/image_3_csagja.png)
+
+### How to test requests
+
+1. Click the Inspector button
+
+![](https://alchemyapi-res.cloudinary.com/image/upload/v1753814677/docs/image_4_snzuxf.png)
+
+2. Enter a valid Alchemy endpoint in the input box
+
+![](https://alchemyapi-res.cloudinary.com/image/upload/v1753814677/docs/image_5_zvb2ti.png)
+
+3. Input the request body in the left pane
+
+![](https://alchemyapi-res.cloudinary.com/image/upload/v1753814678/docs/image_6_fhp6m3.png)
+
+4. Press the run button to view the request and response on the right pane
+
+![](https://alchemyapi-res.cloudinary.com/image/upload/v1753814859/docs/image_8_djk7qy.png)
