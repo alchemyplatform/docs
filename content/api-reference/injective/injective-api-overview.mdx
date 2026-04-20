@@ -1,7 +1,7 @@
 ---
 title: Injective API Overview
-description: Overview of available Injective API methods
-subtitle: Comprehensive list of Injective JSON-RPC methods
+description: Overview of available Injective API methods for mainnet and testnet
+subtitle: Injective JSON-RPC methods aligned with Alchemy chain configuration
 slug: docs/injective/injective-api-overview
 ---
 
@@ -9,28 +9,58 @@ slug: docs/injective/injective-api-overview
 
 📙 Get started with our [Injective API Quickstart Guide](/docs/reference/injective-api-quickstart).
 
-|                                                                                                 |                                                                                             |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| [`eth_blockNumber`](/docs/chains/injective/injective-api-endpoints/eth-block-number)            | [`eth_call`](/docs/chains/injective/injective-api-endpoints/eth-call)                       |
-| [`eth_chainId`](/docs/chains/injective/injective-api-endpoints/eth-chain-id)                    | [`eth_estimateGas`](/docs/chains/injective/injective-api-endpoints/eth-estimate-gas)        |
-| [`eth_feeHistory`](/docs/chains/injective/injective-api-endpoints/eth-fee-history)              | [`eth_fillTransaction`](/docs/chains/injective/injective-api-endpoints/eth-fill-transaction) |
-| [`eth_gasPrice`](/docs/chains/injective/injective-api-endpoints/eth-gas-price)                  | [`eth_getAccount`](/docs/chains/injective/injective-api-endpoints/eth-get-account)          |
-| [`eth_getBalance`](/docs/chains/injective/injective-api-endpoints/eth-get-balance)              | [`eth_getBlockByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-block-by-hash) |
-| [`eth_getBlockByNumber`](/docs/chains/injective/injective-api-endpoints/eth-get-block-by-number) | [`eth_getBlockReceipts`](/docs/chains/injective/injective-api-endpoints/eth-get-block-receipts) |
-| [`eth_getBlockTransactionCountByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-block-transaction-count-by-hash) | [`eth_getBlockTransactionCountByNumber`](/docs/chains/injective/injective-api-endpoints/eth-get-block-transaction-count-by-number) |
-| [`eth_getCode`](/docs/chains/injective/injective-api-endpoints/eth-get-code)                    | [`eth_getFilterChanges`](/docs/chains/injective/injective-api-endpoints/eth-get-filter-changes) |
-| [`eth_getFilterLogs`](/docs/chains/injective/injective-api-endpoints/eth-get-filter-logs)       | [`eth_getLogs`](/docs/chains/injective/injective-api-endpoints/eth-get-logs)                |
-| [`eth_getProof`](/docs/chains/injective/injective-api-endpoints/eth-get-proof)                  | [`eth_getRawTransactionByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-raw-transaction-by-hash) |
-| [`eth_getStorageAt`](/docs/chains/injective/injective-api-endpoints/eth-get-storage-at)         | [`eth_getTransactionByBlockHashAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-by-block-hash-and-index) |
-| [`eth_getTransactionByBlockNumberAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-by-block-number-and-index) | [`eth_getTransactionByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-by-hash) |
-| [`eth_getTransactionCount`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-count) | [`eth_getTransactionReceipt`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-receipt) |
-| [`eth_getUncleByBlockHashAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-by-block-hash-and-index) | [`eth_getUncleByBlockNumberAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-by-block-number-and-index) |
-| [`eth_getUncleCountByBlockHash`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-count-by-block-hash) | [`eth_getUncleCountByBlockNumber`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-count-by-block-number) |
-| [`eth_maxPriorityFeePerGas`](/docs/chains/injective/injective-api-endpoints/eth-max-priority-fee-per-gas) | [`eth_newBlockFilter`](/docs/chains/injective/injective-api-endpoints/eth-new-block-filter) |
-| [`eth_newFilter`](/docs/chains/injective/injective-api-endpoints/eth-new-filter)                | [`eth_newPendingTransactionFilter`](/docs/chains/injective/injective-api-endpoints/eth-new-pending-transaction-filter) |
-| [`eth_protocolVersion`](/docs/chains/injective/injective-api-endpoints/eth-protocol-version)    | [`eth_sendRawTransaction`](/docs/chains/injective/injective-api-endpoints/eth-send-raw-transaction) |
-| [`eth_submitWork`](/docs/chains/injective/injective-api-endpoints/eth-submit-work)              | [`eth_subscribe`](/docs/chains/injective/injective-api-endpoints/eth-subscribe)             |
-| [`eth_syncing`](/docs/chains/injective/injective-api-endpoints/eth-syncing)                     | [`eth_uninstallFilter`](/docs/chains/injective/injective-api-endpoints/eth-uninstall-filter) |
-| [`eth_unsubscribe`](/docs/chains/injective/injective-api-endpoints/eth-unsubscribe)             | [`net_listening`](/docs/chains/injective/injective-api-endpoints/net-listening)             |
-| [`net_peerCount`](/docs/chains/injective/injective-api-endpoints/net-peer-count)                | [`net_version`](/docs/chains/injective/injective-api-endpoints/net-version)                 |
-| [`web3_clientVersion`](/docs/chains/injective/injective-api-endpoints/web-3-client-version)     | [`web3_sha3`](/docs/chains/injective/injective-api-endpoints/web-3-sha-3)                   |
+Injective on Alchemy uses the standard EVM JSON-RPC surface, plus several methods that are enabled per network via Alchemy chain configuration (`topconfig` allowlists alongside the `evm` and `debug` method groups on the Injective chain). Standard `eth_*`, `net_*`, and `web3_*` calls apply where listed below, and Geth-style **`debug_*`** methods are available through the [Debug API](/docs/reference/debug-api-quickstart) on the same HTTPS URLs (plan requirements may apply).
+
+### Network identifiers
+
+| Network | Chain ID (hex) | Chain ID (decimal) | Block tags |
+| ------- | -------------- | ------------------ | ---------- |
+| Injective Mainnet | `0x6f0` | 1776 | `latest`, `finalized` |
+| Injective Testnet | `0x59f` | 1439 | `latest`, `finalized` |
+
+Mainnet transactions: [Injective Explorer](https://explorer.injective.network/). Testnet: [Injective Testnet Explorer](https://testnet.explorer.injective.network/).
+
+### JSON-RPC (EVM namespace) — mainnet and testnet
+
+These methods are enabled on **both** [Injective Mainnet](https://injective-mainnet.g.alchemy.com/v2) and [Injective Testnet](https://injective-testnet.g.alchemy.com/v2):
+
+| | |
+| - | - |
+| [`eth_blockNumber`](/docs/chains/injective/injective-api-endpoints/eth-block-number) | [`eth_call`](/docs/chains/injective/injective-api-endpoints/eth-call) |
+| [`eth_chainId`](/docs/chains/injective/injective-api-endpoints/eth-chain-id) | [`eth_estimateGas`](/docs/chains/injective/injective-api-endpoints/eth-estimate-gas) |
+| [`eth_feeHistory`](/docs/chains/injective/injective-api-endpoints/eth-fee-history) | [`eth_fillTransaction`](/docs/chains/injective/injective-api-endpoints/eth-fill-transaction) |
+| [`eth_gasPrice`](/docs/chains/injective/injective-api-endpoints/eth-gas-price) | [`eth_getAccount`](/docs/chains/injective/injective-api-endpoints/eth-get-account) |
+| [`eth_getBalance`](/docs/chains/injective/injective-api-endpoints/eth-get-balance) | [`eth_getBlockByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-block-by-hash) |
+| [`eth_getBlockByNumber`](/docs/chains/injective/injective-api-endpoints/eth-get-block-by-number) | [`eth_getBlockTransactionCountByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-block-transaction-count-by-hash) |
+| [`eth_getBlockTransactionCountByNumber`](/docs/chains/injective/injective-api-endpoints/eth-get-block-transaction-count-by-number) | [`eth_getCode`](/docs/chains/injective/injective-api-endpoints/eth-get-code) |
+| [`eth_getFilterChanges`](/docs/chains/injective/injective-api-endpoints/eth-get-filter-changes) | [`eth_getFilterLogs`](/docs/chains/injective/injective-api-endpoints/eth-get-filter-logs) |
+| [`eth_getLogs`](/docs/chains/injective/injective-api-endpoints/eth-get-logs) | [`eth_getProof`](/docs/chains/injective/injective-api-endpoints/eth-get-proof) |
+| [`eth_getRawTransactionByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-raw-transaction-by-hash) | [`eth_getStorageAt`](/docs/chains/injective/injective-api-endpoints/eth-get-storage-at) |
+| [`eth_getTransactionByBlockHashAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-by-block-hash-and-index) | [`eth_getTransactionByBlockNumberAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-by-block-number-and-index) |
+| [`eth_getTransactionByHash`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-by-hash) | [`eth_getTransactionCount`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-count) |
+| [`eth_getTransactionReceipt`](/docs/chains/injective/injective-api-endpoints/eth-get-transaction-receipt) | [`eth_getUncleByBlockHashAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-by-block-hash-and-index) |
+| [`eth_getUncleByBlockNumberAndIndex`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-by-block-number-and-index) | [`eth_getUncleCountByBlockHash`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-count-by-block-hash) |
+| [`eth_getUncleCountByBlockNumber`](/docs/chains/injective/injective-api-endpoints/eth-get-uncle-count-by-block-number) | [`eth_maxPriorityFeePerGas`](/docs/chains/injective/injective-api-endpoints/eth-max-priority-fee-per-gas) |
+| [`eth_newBlockFilter`](/docs/chains/injective/injective-api-endpoints/eth-new-block-filter) | [`eth_newFilter`](/docs/chains/injective/injective-api-endpoints/eth-new-filter) |
+| [`eth_newPendingTransactionFilter`](/docs/chains/injective/injective-api-endpoints/eth-new-pending-transaction-filter) | [`eth_protocolVersion`](/docs/chains/injective/injective-api-endpoints/eth-protocol-version) |
+| [`eth_sendRawTransaction`](/docs/chains/injective/injective-api-endpoints/eth-send-raw-transaction) | [`eth_submitWork`](/docs/chains/injective/injective-api-endpoints/eth-submit-work) |
+| [`eth_subscribe`](/docs/chains/injective/injective-api-endpoints/eth-subscribe) | [`eth_uninstallFilter`](/docs/chains/injective/injective-api-endpoints/eth-uninstall-filter) |
+| [`eth_unsubscribe`](/docs/chains/injective/injective-api-endpoints/eth-unsubscribe) | [`net_peerCount`](/docs/chains/injective/injective-api-endpoints/net-peer-count) |
+| [`net_version`](/docs/chains/injective/injective-api-endpoints/net-version) | [`web3_clientVersion`](/docs/chains/injective/injective-api-endpoints/web-3-client-version) |
+| [`web3_sha3`](/docs/chains/injective/injective-api-endpoints/web-3-sha-3) | — |
+
+### JSON-RPC — Injective Testnet only
+
+Per `topconfig` allowlists, these methods are enabled on **Injective Testnet** but **not** on Injective Mainnet:
+
+| Method | Endpoint |
+| ------ | -------- |
+| [`eth_getBlockReceipts`](/docs/chains/injective/injective-api-endpoints/eth-get-block-receipts) | All receipts for a block |
+| [`eth_syncing`](/docs/chains/injective/injective-api-endpoints/eth-syncing) | Sync status |
+| [`net_listening`](/docs/chains/injective/injective-api-endpoints/net-listening) | P2P listening flag |
+
+### Debug namespace (mainnet and testnet)
+
+The Injective chain includes the **`debug`** method group. The following Geth-style methods are supported on both Injective networks when using the [Debug API](/docs/reference/debug-api-endpoints) (same base URL as the Node API; access may require a paid plan):
+
+`debug_dbAncient`, `debug_dbAncients`, `debug_dbGet`, `debug_getBadBlocks`, `debug_getRawBlock`, `debug_getRawHeader`, `debug_getRawReceipts`, `debug_getTrieFlushInterval`, `debug_storageRangeAt`, `debug_traceBlockByHash`, `debug_traceBlockByNumber`, `debug_traceCall`, `debug_traceCallMany`, `debug_traceTransaction`.
