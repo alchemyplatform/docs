@@ -1,0 +1,81 @@
+---
+title: voteSubscribe
+description: Subscribe to gossip vote notifications from the Solana cluster.
+subtitle: Subscribe to gossip vote notifications from the Solana cluster.
+slug: reference/vote-subscribe
+---
+
+The `voteSubscribe` method opens a stream that emits a notification for each new vote observed in gossip. These votes are pre-consensus, so there is no guarantee that they will land in the ledger. Pair it with [`voteUnsubscribe`](#unsubscribe) to stop receiving notifications.
+
+<Warning>
+  This subscription is unstable and is disabled by default on most validators. It must be explicitly enabled with the validator's `--rpc-pubsub-enable-vote-subscription` flag for the upstream node to forward votes. Availability and payload shape may change without notice.
+</Warning>
+
+# Supported Networks
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](https://alchemyapi-res.cloudinary.com/image/upload/v1764179964/docs/api-reference/alchemy-transact/transaction-simulation/523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+# Parameters
+
+* None
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://solana-mainnet.g.alchemy.com/v2/demo
+
+  // then call subscription
+  {"jsonrpc":"2.0","id":1,"method":"voteSubscribe"}
+  ```
+</CodeGroup>
+
+<Info>
+  `@solana/web3.js` does not currently expose a typed helper for `voteSubscribe`. Use raw JSON-RPC over a WebSocket client (such as `ws` or `wscat`).
+</Info>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  // subscribe response
+  {"jsonrpc":"2.0","result":0,"id":1}
+
+  // notification
+  {
+    "jsonrpc": "2.0",
+    "method": "voteNotification",
+    "params": {
+      "result": {
+        "hash": "8Rshv2oMkPu5E4opXTRyuyBeZBqQ4S477VG26wUTFxUM",
+        "slots": [1, 2],
+        "timestamp": null,
+        "signature": "2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b",
+        "votePubkey": "9QU2QSxhb24FUX3Tu2FpczXjpK3VYrvRudywSZaM29mF"
+      },
+      "subscription": 0
+    }
+  }
+  ```
+</CodeGroup>
+
+# Unsubscribe
+
+Use `voteUnsubscribe` with the subscription id returned by `voteSubscribe` to cancel the stream.
+
+* `subscription_id`: `number` - The subscription id to cancel.
+
+<CodeGroup>
+  ```shell wscat
+  {"jsonrpc":"2.0","id":1,"method":"voteUnsubscribe","params":[0]}
+  ```
+</CodeGroup>
+
+```json result
+{"jsonrpc":"2.0","result":true,"id":1}
+```

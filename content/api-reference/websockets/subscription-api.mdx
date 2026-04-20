@@ -1,7 +1,7 @@
 ---
 title: Subscription API Overview
-description: Learn how to subscribe to pending transactions, log events, new blocks and more using WebSockets on Ethereum, Polygon, Arbitrum, and Optimism.
-subtitle: Learn how to subscribe to pending transactions, log events, new blocks and more using WebSockets on Ethereum, Polygon, Arbitrum, and Optimism.
+description: Learn how to subscribe to pending transactions, log events, new blocks, account and program updates, and more using WebSockets on Ethereum, Polygon, Arbitrum, Optimism, and Solana.
+subtitle: Learn how to subscribe to pending transactions, log events, new blocks, account and program updates, and more using WebSockets on Ethereum, Polygon, Arbitrum, Optimism, and Solana.
 slug: reference/subscription-api
 ---
 
@@ -27,6 +27,39 @@ For a full list of Subscription API endpoints and supported chains see the [Subs
 | [logs](/docs/reference/logs)                                               | Emits logs attached to a new block that match certain topic filters.                                                   |
 | [monadNewHeads](/docs/reference/monadnewheads)                             | Fires a notification each time as soon as a block is Proposed and the node has a chance to speculatively execute.     |
 | [monadLogs](/docs/reference/monadlogs)                                     | Emits logs attached to a new block that match certain topic filters as soon as the block is Proposed and the node has a chance to speculatively execute.                  |
+
+## Solana subscription endpoints
+
+Solana uses native `*Subscribe` / `*Unsubscribe` PubSub methods (not `eth_subscribe`). Each `*Subscribe` call returns a numeric subscription id that you pass to the matching `*Unsubscribe` to cancel the stream. See the [Solana Subscription API Endpoints](/docs/reference/solana-subscription-api-endpoints) index for shared request/notification format details.
+
+**Accounts**
+
+| Subscription Type                                         | Description                                                            |
+| --------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [accountSubscribe](/docs/reference/account-subscribe)     | Subscribe to notifications when one account's lamports or data change. |
+| [programSubscribe](/docs/reference/program-subscribe)     | Subscribe to notifications for accounts owned by a program.            |
+
+**Transactions**
+
+| Subscription Type                                             | Description                                                      |
+| ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [logsSubscribe](/docs/reference/logs-subscribe)               | Subscribe to transaction log messages that match a log filter.   |
+| [signatureSubscribe](/docs/reference/signature-subscribe)     | Subscribe to status notifications for one transaction signature. |
+
+**Blocks**
+
+| Subscription Type                                     | Description                                                                         |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [blockSubscribe](/docs/reference/block-subscribe)     | Subscribe to block notifications as blocks reach confirmed or finalized commitment. |
+
+**Cluster**
+
+| Subscription Type                                                       | Description                                                          |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [rootSubscribe](/docs/reference/root-subscribe)                         | Subscribe to notifications when the validator sets a new root slot.  |
+| [slotSubscribe](/docs/reference/slot-subscribe)                         | Subscribe to notifications when the validator processes a new slot.  |
+| [slotsUpdatesSubscribe](/docs/reference/slots-updates-subscribe)        | Subscribe to tagged slot lifecycle updates emitted by the validator. |
+| [voteSubscribe](/docs/reference/vote-subscribe)                         | Subscribe to gossip vote notifications.                              |
 
 # What are WebSockets and how do they differ from HTTP?
 

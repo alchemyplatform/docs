@@ -1,0 +1,122 @@
+---
+title: programSubscribe
+description: Subscribe to notifications for accounts owned by a Solana program.
+subtitle: Subscribe to notifications for accounts owned by a Solana program.
+slug: reference/program-subscribe
+---
+
+The `programSubscribe` method opens a stream that emits a notification when the lamports or data of any account owned by a given program change. Pair it with [`programUnsubscribe`](#unsubscribe) to stop receiving notifications.
+
+# Supported Networks
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](https://alchemyapi-res.cloudinary.com/image/upload/v1764179964/docs/api-reference/alchemy-transact/transaction-simulation/523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+# Parameters
+
+* `pubkey`: `string` - Program pubkey, as a base-58 encoded string.
+
+* `config` (optional): `object` - Configuration object containing:
+
+  * `commitment`: `string` - The commitment level. One of `processed`, `confirmed`, `finalized`. Defaults to `finalized`.
+  * `encoding`: `string` - Account data encoding. One of `base58`, `base64`, `base64+zstd`, `jsonParsed`. Defaults to `base58`.
+  * `filters`: `array` (optional) - An array of filter objects (`memcmp` and/or `dataSize`) to narrow which program-owned accounts trigger notifications.
+
+<Warning>
+  `programSubscribe` without filters can produce extremely high volumes of notifications. Use `dataSize` and `memcmp` filters to scope the stream to the accounts you care about.
+</Warning>
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://solana-mainnet.g.alchemy.com/v2/demo
+
+  // then call subscription
+  {"jsonrpc":"2.0","id":1,"method":"programSubscribe","params":["TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",{"encoding":"jsonParsed","filters":[{"dataSize":165}]}]}
+  ```
+
+  ```javascript @solana/web3.js
+  import { Connection, PublicKey } from '@solana/web3.js'
+
+  const connection = new Connection(
+    'https://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+    {
+      wsEndpoint: 'wss://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+      commitment: 'finalized'
+    }
+  )
+
+  const programId = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+
+  const subscriptionId = connection.onProgramAccountChange(
+    programId,
+    ({ accountId, accountInfo }, context) => {
+      console.log('Program account update at slot', context.slot, {
+        account: accountId.toBase58(),
+        lamports: accountInfo.lamports,
+        owner: accountInfo.owner.toBase58()
+      })
+    },
+    'finalized',
+    [{ dataSize: 165 }]
+  )
+
+  // To unsubscribe later:
+  // await connection.removeProgramAccountChangeListener(subscriptionId)
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  // subscribe response
+  {"jsonrpc":"2.0","result":24040,"id":1}
+
+  // notification
+  {
+    "jsonrpc": "2.0",
+    "method": "programNotification",
+    "params": {
+      "result": {
+        "context": { "slot": 5208469 },
+        "value": {
+          "pubkey": "H4vnBqifaSACnKa7acsxstsY1iV1bvJNxsCY7enrd1hq",
+          "account": {
+            "data": ["11116bv5nS2h3y12kD1yUKeMZvGcKLSjQgX6BeV7u1FrjeJcKfsHRTPuR3oZ1EioKtYGiYxpxMG5vpbZLsbcBYBEmZZcMKaSoGx9JZeAuWf", "base58"],
+            "executable": false,
+            "lamports": 33594,
+            "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "rentEpoch": 636,
+            "space": 80
+          }
+        }
+      },
+      "subscription": 24040
+    }
+  }
+  ```
+</CodeGroup>
+
+# Unsubscribe
+
+Use `programUnsubscribe` with the subscription id returned by `programSubscribe` to cancel the stream.
+
+* `subscription_id`: `number` - The subscription id to cancel.
+
+<CodeGroup>
+  ```shell wscat
+  {"jsonrpc":"2.0","id":1,"method":"programUnsubscribe","params":[24040]}
+  ```
+</CodeGroup>
+
+```json result
+{"jsonrpc":"2.0","result":true,"id":1}
+```
+
+When using `@solana/web3.js`, call `connection.removeProgramAccountChangeListener(subscriptionId)` instead of sending the raw JSON-RPC request.

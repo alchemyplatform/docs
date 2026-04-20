@@ -1,0 +1,114 @@
+---
+title: logsSubscribe
+description: Subscribe to Solana transaction log messages that match a log filter.
+subtitle: Subscribe to Solana transaction log messages that match a log filter.
+slug: reference/logs-subscribe
+---
+
+The `logsSubscribe` method opens a stream that emits a notification any time a transaction is committed and its logs match the supplied filter. Pair it with [`logsUnsubscribe`](#unsubscribe) to stop receiving notifications.
+
+# Supported Networks
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](https://alchemyapi-res.cloudinary.com/image/upload/v1764179964/docs/api-reference/alchemy-transact/transaction-simulation/523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+# Parameters
+
+* `filter`: filter criteria for log subscriptions. Accepts one of:
+
+  * `"all"` - subscribe to all transactions except simple vote transactions.
+  * `"allWithVotes"` - subscribe to all transactions including simple vote transactions.
+  * An object: `{ "mentions": ["<pubkey>"] }` - subscribe to transactions that mention exactly one of the provided base-58 encoded pubkeys.
+
+* `config` (optional): `object` - Configuration object containing:
+
+  * `commitment`: `string` - The commitment level. One of `processed`, `confirmed`, `finalized`. Defaults to `finalized`.
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://solana-mainnet.g.alchemy.com/v2/demo
+
+  // then call subscription
+  {"jsonrpc":"2.0","id":1,"method":"logsSubscribe","params":[{"mentions":["11111111111111111111111111111111"]},{"commitment":"finalized"}]}
+  ```
+
+  ```javascript @solana/web3.js
+  import { Connection, PublicKey } from '@solana/web3.js'
+
+  const connection = new Connection(
+    'https://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+    {
+      wsEndpoint: 'wss://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+      commitment: 'finalized'
+    }
+  )
+
+  const subscriptionId = connection.onLogs(
+    new PublicKey('11111111111111111111111111111111'),
+    (logs, context) => {
+      console.log('Logs at slot', context.slot, {
+        signature: logs.signature,
+        err: logs.err,
+        logs: logs.logs
+      })
+    },
+    'finalized'
+  )
+
+  // To unsubscribe later:
+  // await connection.removeOnLogsListener(subscriptionId)
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  // subscribe response
+  {"jsonrpc":"2.0","result":24040,"id":1}
+
+  // notification
+  {
+    "jsonrpc": "2.0",
+    "method": "logsNotification",
+    "params": {
+      "result": {
+        "context": { "slot": 5208469 },
+        "value": {
+          "signature": "5h6xBEauJ3PK6SWCZ1PGjBvj8vDdWG3KpwATGy1ARAXFSDwt8GFXM7W5Ncn16wmqokgpiKRLuS83KUxyZyv2sUYv",
+          "err": null,
+          "logs": [
+            "Program 11111111111111111111111111111111 invoke [1]",
+            "Program 11111111111111111111111111111111 success"
+          ]
+        }
+      },
+      "subscription": 24040
+    }
+  }
+  ```
+</CodeGroup>
+
+# Unsubscribe
+
+Use `logsUnsubscribe` with the subscription id returned by `logsSubscribe` to cancel the stream.
+
+* `subscription_id`: `number` - The subscription id to cancel.
+
+<CodeGroup>
+  ```shell wscat
+  {"jsonrpc":"2.0","id":1,"method":"logsUnsubscribe","params":[24040]}
+  ```
+</CodeGroup>
+
+```json result
+{"jsonrpc":"2.0","result":true,"id":1}
+```
+
+When using `@solana/web3.js`, call `connection.removeOnLogsListener(subscriptionId)` instead of sending the raw JSON-RPC request.

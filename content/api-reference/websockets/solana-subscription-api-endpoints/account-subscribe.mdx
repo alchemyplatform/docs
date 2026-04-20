@@ -1,0 +1,113 @@
+---
+title: accountSubscribe
+description: Subscribe to notifications when one Solana account's lamports or data change.
+subtitle: Subscribe to notifications when one Solana account's lamports or data change.
+slug: reference/account-subscribe
+---
+
+The `accountSubscribe` method opens a stream that emits a notification any time the lamports or data of a specified account change. Pair it with [`accountUnsubscribe`](#unsubscribe) to stop receiving notifications.
+
+# Supported Networks
+
+<Info>
+  Check the [Chains](https://dashboard.alchemy.com/chains) page for details about product and chain support!
+
+  ![](https://alchemyapi-res.cloudinary.com/image/upload/v1764179964/docs/api-reference/alchemy-transact/transaction-simulation/523fb8a9a9d899921ee1046d0ff1b389967a9976d1c6112ebbbe071ddd1ef374-image.png)
+</Info>
+
+# Parameters
+
+* `pubkey`: `string` - Account pubkey, as a base-58 encoded string.
+
+* `config` (optional): `object` - Configuration object containing:
+
+  * `commitment`: `string` - The commitment level to use. One of `processed`, `confirmed`, `finalized`. Defaults to `finalized`.
+  * `encoding`: `string` - Account data encoding. One of `base58`, `base64`, `base64+zstd`, `jsonParsed`. Defaults to `base58`.
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://solana-mainnet.g.alchemy.com/v2/demo
+
+  // then call subscription
+  {"jsonrpc":"2.0","id":1,"method":"accountSubscribe","params":["CM78CPUeXjn8o3yroDHxUtKsZZgoy4GPkPPXfouKNH12",{"encoding":"jsonParsed","commitment":"finalized"}]}
+  ```
+
+  ```javascript @solana/web3.js
+  import { Connection, PublicKey } from '@solana/web3.js'
+
+  const connection = new Connection(
+    'https://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+    {
+      wsEndpoint: 'wss://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+      commitment: 'finalized'
+    }
+  )
+
+  const accountPubkey = new PublicKey('CM78CPUeXjn8o3yroDHxUtKsZZgoy4GPkPPXfouKNH12')
+
+  const subscriptionId = connection.onAccountChange(
+    accountPubkey,
+    (accountInfo, context) => {
+      console.log('Account update at slot', context.slot, {
+        lamports: accountInfo.lamports,
+        owner: accountInfo.owner.toBase58(),
+        dataLen: accountInfo.data.length
+      })
+    },
+    'finalized'
+  )
+
+  // To unsubscribe later:
+  // await connection.removeAccountChangeListener(subscriptionId)
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  // subscribe response
+  {"jsonrpc":"2.0","result":23784,"id":1}
+
+  // notification
+  {
+    "jsonrpc": "2.0",
+    "method": "accountNotification",
+    "params": {
+      "result": {
+        "context": { "slot": 5199307 },
+        "value": {
+          "data": ["11116bv5nS2h3y12kD1yUKeMZvGcKLSjQgX6BeV7u1FrjeJcKfsHRTPuR3oZ1EioKtYGiYxpxMG5vpbZLsbcBYBEmZZcMKaSoGx9JZeAuWf", "base58"],
+          "executable": false,
+          "lamports": 33594,
+          "owner": "11111111111111111111111111111111",
+          "rentEpoch": 635,
+          "space": 80
+        }
+      },
+      "subscription": 23784
+    }
+  }
+  ```
+</CodeGroup>
+
+# Unsubscribe
+
+Use `accountUnsubscribe` with the subscription id returned by `accountSubscribe` to cancel the stream.
+
+* `subscription_id`: `number` - The subscription id to cancel.
+
+<CodeGroup>
+  ```shell wscat
+  {"jsonrpc":"2.0","id":1,"method":"accountUnsubscribe","params":[23784]}
+  ```
+</CodeGroup>
+
+```json result
+{"jsonrpc":"2.0","result":true,"id":1}
+```
+
+When using `@solana/web3.js`, call `connection.removeAccountChangeListener(subscriptionId)` instead of sending the raw JSON-RPC request.
