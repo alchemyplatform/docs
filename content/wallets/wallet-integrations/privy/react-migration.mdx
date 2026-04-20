@@ -34,28 +34,21 @@ npm uninstall @account-kit/react
 
 ### 1b. Replace the Alchemy provider with Privy
 
-Remove `AlchemyAccountProvider` (and `cookieToInitialState` if using SSR) and wrap your app with `PrivyProvider` instead.
+Remove `AlchemyAccountProvider` and wrap your app with `PrivyProvider` instead.
 
-Ensure you set `createOnLogin` to `"users-without-wallets"`, and that the plugin for wallet creation is set as follows:
+During the migration window, set `createOnLogin` to `"off"` so Privy doesn't create a fresh wallet before the migration SDK can import the existing one. Once all users have migrated, switch it back to `"users-without-wallets"`.
 
 ```tsx
-import { PrivyProvider, createWalletCreationOnLoginPlugin, User } from '@privy-io/react-auth';
+import { PrivyProvider } from '@privy-io/react-auth';
 
 function Providers({ children }) {
-  // Add custom logic to only create a new embedded wallet
-  const walletCreationPluginOptions = {
-    shouldCreateWallet: ({user}: {user: User}) =>
-      user.customMetadata?.['alchemy_org_id'] === undefined,
-  };
-
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}
       config={{
-        plugins: [createWalletCreationOnLoginPlugin(walletCreationPluginOptions)],
         embeddedWallets: {
           ethereum: {
-            createOnLogin: "users-without-wallets",
+            createOnLogin: "off",
           }
         },
       }}
@@ -72,11 +65,10 @@ function Providers({ children }) {
 |---|---|
 | `useSignerStatus().isConnected` | `usePrivy().authenticated` |
 | `useAuthModal().openAuthModal()` | `usePrivy().login()` |
-| `useLogout()` | `usePrivy().logout` — Function, not hook |
+| `useLogout()` | `usePrivy().logout` |
 | `useUser()` | `usePrivy().user` — Email is at `user.email?.address`, not `user.email` |
 | `useSmartAccountClient()` | See [Step 2](#step-2-reconnect-sending-and-gas-sponsorship) below — uses `@alchemy/wallet-apis` |
 | `useSendUserOperation()` | `client.sendCalls()` — See [Step 2](#step-2-reconnect-sending-and-gas-sponsorship) below |
-| `cookieToInitialState` (SSR) | Remove entirely |
 
 Update every file that imports from `@account-kit/react`.
 
@@ -86,12 +78,12 @@ At this point: Your app should compile, users can log in with Privy, but sending
 
 Wire Privy wallets to Alchemy's transaction infrastructure so gasless transactions, batching, and all your existing flows work again. This uses Alchemy SDK v5 with Wallet APIs.
 
-<Info>
-Full guide for Privy + Alchemy: [Privy signer integration](/wallets/third-party/signers/privy). More on Alchemy SDK v5: [Wallet APIs overview](/wallets).
-</Info>
-
 * The client defaults to EIP-7702, which delegates the Privy wallet to a smart wallet at send time.
 * If you were previously using ERC-4337 (with assets directly in smart accounts), see the EIP-7702 guide for non-7702 mode. You'll need to add an additional call to `wallet_requestAccount` before sending.
+
+<Info>
+For advanced setups, see the full [Privy signer integration guide](/wallets/third-party/signers/privy) or the [Alchemy Wallet APIs overview](/wallets).
+</Info>
 
 ### Prerequisites
 
@@ -191,7 +183,7 @@ The SDK supports migrating users who signed up with:
 * Twitter/X
 * GitHub
 * Discord
-* Passkey (non-anonymous, e.g. attached an email)
+* Passkey (both anonymous and non-anonymous, e.g. attached an email)
 
 For non-React frameworks or other authentication methods, please [reach out](mailto:support@alchemy.com) for support.
 
@@ -222,7 +214,7 @@ import { sepolia } from '@account-kit/infra';
 
 const alchemyConfig = createMigrationConfig(
   {
-    transport: alchemy({ apiKey: 'YOUR_ALCHEMY_API_KEY' }),
+    transport: alchemy({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
     chain: sepolia, // Use your app's chain
     ssr: true,
   },
@@ -232,7 +224,7 @@ const alchemyConfig = createMigrationConfig(
         [{ type: 'email' }],
         [
           { type: 'passkey' },
-          { type: 'social', authProviderId: 'google', mode: 'popup' },
+          { type: 'social', authProviderId: 'google', mode: 'redirect' },
           // Add any other providers your users signed up with
         ],
       ],
@@ -240,6 +232,8 @@ const alchemyConfig = createMigrationConfig(
   },
 );
 ```
+
+<Warning>Never commit your Alchemy API key to source control. Load it from an environment variable (for example `NEXT_PUBLIC_ALCHEMY_API_KEY` in Next.js) and restrict the key to the correct apps, networks, and origins from the [Alchemy Dashboard](https://dashboard.alchemy.com/).</Warning>
 
 ### 3d. Set up the provider
 
@@ -274,13 +268,12 @@ The SDK automatically detects users who need migration and guides them through t
 | `privyAppId` | `string` | Yes | Your Privy application ID |
 | `privyClientId` | `string` | Yes | Your Privy app client ID |
 | `showDebugButton` | `boolean` | No | Show debug buttons for testing (dev only) |
-| `skipOrgVerification` | `boolean` | No | Skip Alchemy org ID verification (dev only) |
 
 ### After migration is complete
 
 Once all users have migrated their wallets (e.g. logged in at least once):
 * You can safely remove `@privy-io/alchemy-migration`, `@account-kit/react`, and `@account-kit/infra` from your app
-* Set `createOnLogin` back to `"users-without-wallets"` so new users get wallets automatically
+* Set `createOnLogin` to `"users-without-wallets"` so new users get wallets automatically
 * Remove the `MigrationProvider` wrapper
 
 ## Step 4: Deploy your updated app, export users, and import into Privy
@@ -350,7 +343,7 @@ Privy will create accounts for each user with the appropriate linked accounts an
     Most common causes:
 
     1. **Users were not imported from Alchemy before logging in.** Privy created a fresh account with no migration metadata. Fix: delete the Privy user and re-import.
-    2. **The wallet creation plugin is not properly set.** If not set, `createOnLogin` is set to `"users-without-wallets"` instead of `"off"`. Privy auto-creates a wallet before the migration SDK runs. Fix: set it to `"off"`.
+    2. **`createOnLogin` is not set to `"off"`.** If `createOnLogin` is `"users-without-wallets"` (or unset), Privy auto-creates a wallet before the migration SDK runs, so there's nothing to migrate into. Fix: set it to `"off"` until migration is complete.
     3. **The user already has all their wallets in Privy** (no migration needed).
   </Accordion>
 </AccordionGroup>
