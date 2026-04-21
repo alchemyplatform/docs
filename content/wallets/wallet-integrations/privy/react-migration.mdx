@@ -1,14 +1,20 @@
 ---
-title: "Migrate embedded wallets from Alchemy to Privy (React)"
-description: "Step-by-step guide to migrate your app and users' embedded wallets from Alchemy Account Kit to Privy using the React migration SDK."
+title: "Migrate the Alchemy signer to Privy (React)"
+description: "Step-by-step guide to migrate your React app's signer from Alchemy Account Kit to Privy, while keeping Alchemy's transaction infrastructure and gas sponsorship."
 slug: wallets/wallet-integrations/privy/react-migration
 ---
 
-This guide walks you through migrating your app and users' embedded wallets from Alchemy's Account Kit to Privy. The migration SDK handles re-authenticating users with Alchemy, securely exporting their private keys, and importing them into Privy.
+This guide walks you through migrating the **signer** for your app and users' embedded wallets from Alchemy's Account Kit to Privy. You'll keep Alchemy's transaction infrastructure and gas sponsorship — only the signer (auth + key custody) changes. The migration SDK handles re-authenticating users with Alchemy, securely exporting their private keys, and importing them into Privy.
 
 After completing this migration, users will log in with Privy (wallet addresses are preserved, assets are maintained) and transactions will continue to be sent and sponsored by Alchemy.
 
-<Info>If you authenticate users with JWT (JSON Web Token) authentication instead of standard auth methods, use the [JWT auth migration guide](/wallets/wallet-integrations/privy/jwt-auth-migration) instead.</Info>
+<Info>This guide is for **React** apps. For non-React frameworks, [reach out](mailto:support@alchemy.com) for support. If you authenticate users with JWT (JSON Web Token) authentication instead of standard auth methods, use the [JWT auth migration guide](/wallets/wallet-integrations/privy/jwt-auth-migration) instead.</Info>
+
+## Prerequisites
+
+* **Alchemy API Key** — From the [Alchemy Dashboard](https://dashboard.alchemy.com/). Must be the same app that has your Smart Wallets configuration and gas policy linked.
+* **Gas Sponsorship Policy ID** — From the [Gas Manager dashboard](https://dashboard.alchemy.com/services/gas-manager/configuration).
+* A React app currently using Alchemy Account Kit (`@account-kit/react`).
 
 ## Overview
 
@@ -21,9 +27,8 @@ After completing this migration, users will log in with Privy (wallet addresses 
 
 Before anything else, you need to replace Alchemy's auth SDK with Privy's SDK to support login and sign up.
 
-1. Go to the [Privy Dashboard](https://dashboard.privy.io/) and set up an account
-2. Follow the steps to set up a Privy application using `react-auth`
-3. Under **Login methods**, enable the same auth methods your Alchemy users signed up with (email, Google, passkeys, etc.)
+1. Go to the [Privy Dashboard](https://dashboard.privy.io/) and create an app
+2. Under **User Management - Authentication**, enable the same auth methods your Alchemy users signed up with (email, Google, passkeys, etc.)
 
 ### 1a. Install Privy and remove Alchemy auth packages
 
@@ -65,7 +70,7 @@ function Providers({ children }) {
 |---|---|
 | `useSignerStatus().isConnected` | `usePrivy().authenticated` |
 | `useAuthModal().openAuthModal()` | `usePrivy().login()` |
-| `useLogout()` | `usePrivy().logout` |
+| `useLogout()` | `usePrivy().logout()` |
 | `useUser()` | `usePrivy().user` — Email is at `user.email?.address`, not `user.email` |
 | `useSmartAccountClient()` | See [Step 2](#step-2-reconnect-sending-and-gas-sponsorship) below — uses `@alchemy/wallet-apis` |
 | `useSendUserOperation()` | `client.sendCalls()` — See [Step 2](#step-2-reconnect-sending-and-gas-sponsorship) below |
@@ -79,16 +84,11 @@ At this point: Your app should compile, users can log in with Privy, but sending
 Wire Privy wallets to Alchemy's transaction infrastructure so gasless transactions, batching, and all your existing flows work again. This uses Alchemy SDK v5 with Wallet APIs.
 
 * The client defaults to EIP-7702, which delegates the Privy wallet to a smart wallet at send time.
-* If you were previously using ERC-4337 (with assets directly in smart accounts), see the EIP-7702 guide for non-7702 mode. You'll need to add an additional call to `wallet_requestAccount` before sending.
+* If you were previously using ERC-4337 (with assets directly in smart accounts), see the [non-7702 mode guide](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode). You'll need to add an additional call to `wallet_requestAccount` before sending.
 
 <Info>
 For advanced setups, see the full [Privy signer integration guide](/wallets/third-party/signers/privy) or the [Alchemy Wallet APIs overview](/wallets).
 </Info>
-
-### Prerequisites
-
-* **Alchemy API Key** — From the [Alchemy Dashboard](https://dashboard.alchemy.com/). Must be the same app that has your Smart Wallets configuration and gas policy linked.
-* **Gas Sponsorship Policy ID** — From the [Gas Manager dashboard](https://dashboard.alchemy.com/services/gas-manager/configuration).
 
 ### 2a. Install
 
@@ -121,11 +121,13 @@ const usePrivySigner = () => {
 
 ### 2c. Send gasless transactions
 
+You can use any chain here — imported from `viem/chains`. Use whichever chain matches your Alchemy app configuration.
+
 ```tsx
 import { useMemo, useCallback } from "react";
 import { zeroAddress } from "viem";
 import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
-import { arbitrumSepolia } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains"; // Swap for any viem chain you support
 
 function SendTransaction({ signer }: { signer: LocalAccount }) {
   const client = useMemo(
@@ -185,12 +187,18 @@ The SDK supports migrating users who signed up with:
 * Discord
 * Passkey (both anonymous and non-anonymous, e.g. attached an email)
 
-For non-React frameworks or other authentication methods, please [reach out](mailto:support@alchemy.com) for support.
+For authentication methods not listed above, please [reach out](mailto:support@alchemy.com) for support.
 
 ### 3a. Install
 
 ```bash
-npm install @privy-io/alchemy-migration @account-kit/react @account-kit/infra
+npm install @privy-io/alchemy-migration
+```
+
+The migration SDK re-uses the Alchemy Account Kit UI under the hood. If `@account-kit/react` or `@account-kit/infra` aren't already resolved in your project (for example because you removed `@account-kit/react` in Step 1a and never had `@account-kit/infra` as a direct dependency), install them alongside the migration SDK:
+
+```bash
+npm install @account-kit/react @account-kit/infra
 ```
 
 ### 3b. Import styles
@@ -209,8 +217,7 @@ The `auth.sections` should include all the login methods originally used on Alch
 
 ```tsx
 import { createMigrationConfig } from '@privy-io/alchemy-migration';
-import { alchemy } from '@account-kit/infra';
-import { sepolia } from '@account-kit/infra';
+import { alchemy, sepolia } from '@account-kit/infra';
 
 const alchemyConfig = createMigrationConfig(
   {
@@ -233,7 +240,7 @@ const alchemyConfig = createMigrationConfig(
 );
 ```
 
-<Warning>Never commit your Alchemy API key to source control. Load it from an environment variable (for example `NEXT_PUBLIC_ALCHEMY_API_KEY` in Next.js) and restrict the key to the correct apps, networks, and origins from the [Alchemy Dashboard](https://dashboard.alchemy.com/).</Warning>
+<Warning>Never commit your Alchemy API key to source control. Load it from an environment variable (for example `NEXT_PUBLIC_ALCHEMY_API_KEY` in Next.js) and restrict the key to the correct apps, networks, and origins from the [Alchemy Dashboard](https://dashboard.alchemy.com/). For production apps, the best practice is to keep your API key on your backend and proxy Alchemy requests through it rather than exposing it in the client bundle at all.</Warning>
 
 ### 3d. Set up the provider
 
@@ -278,7 +285,7 @@ Once all users have migrated their wallets (e.g. logged in at least once):
 
 ## Step 4: Deploy your updated app, export users, and import into Privy
 
-In order for Privy to be able to detect if a user needs migration, you need to migrate over user data including auth methods to Privy. This is not a migration of keys.
+In order for Privy to be able to detect if a user needs migration, you need to migrate user data (including auth methods) to Privy. This is a separate step from the migration of keys.
 
 ### Recommended cutover sequence
 
@@ -290,7 +297,6 @@ In order for Privy to be able to detect if a user needs migration, you need to m
 2. Deploy your updated app with Privy auth
 3. Immediately export from Alchemy
 4. Import into Privy
-5. Redeploy app
 
 Privy will create accounts for each user with the appropriate linked accounts and migration metadata. The migration SDK (Step 3) uses this metadata to detect which users need wallet migration.
 
@@ -324,7 +330,7 @@ Privy will create accounts for each user with the appropriate linked accounts an
   </Accordion>
 
   <Accordion title="What if a user has both ETH and SOL wallets?">
-    Both are migrated automatically. The SDK migrates each chain independently.
+    Both are migrated automatically. The SDK migrates each wallet independently.
   </Accordion>
 
   <Accordion title="What if a user already has a Privy wallet?">
