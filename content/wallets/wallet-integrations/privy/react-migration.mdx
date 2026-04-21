@@ -41,19 +41,26 @@ npm uninstall @account-kit/react
 
 Remove `AlchemyAccountProvider` and wrap your app with `PrivyProvider` instead.
 
-During the migration window, set `createOnLogin` to `"off"` so Privy doesn't create a fresh wallet before the migration SDK can import the existing one. Once all users have migrated, switch it back to `"users-without-wallets"`.
+Set `createOnLogin` to `"users-without-wallets"` and register the custom wallet creation plugin so Privy only creates a fresh embedded wallet for users who don't have an Alchemy wallet to migrate. Users with Alchemy metadata are skipped here and picked up by the migration SDK in Step 3.
 
 ```tsx
-import { PrivyProvider } from '@privy-io/react-auth';
+import { PrivyProvider, createWalletCreationOnLoginPlugin, User } from '@privy-io/react-auth';
 
 function Providers({ children }) {
+  // Only create a new embedded wallet for users who don't have an Alchemy wallet to migrate.
+  const walletCreationPluginOptions = {
+    shouldCreateWallet: ({ user }: { user: User }) =>
+      user.customMetadata?.['alchemy_org_id'] === undefined,
+  };
+
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}
       config={{
+        plugins: [createWalletCreationOnLoginPlugin(walletCreationPluginOptions)],
         embeddedWallets: {
           ethereum: {
-            createOnLogin: "off",
+            createOnLogin: "users-without-wallets",
           }
         },
       }}
@@ -121,7 +128,7 @@ const usePrivySigner = () => {
 
 ### 2c. Send gasless transactions
 
-You can use any chain here — imported from `viem/chains`. Use whichever chain matches your Alchemy app configuration.
+Import the chain(s) you need from `viem/chains`. Make sure the chain is enabled on your Alchemy app and supports Gas Manager sponsorship.
 
 ```tsx
 import { useMemo, useCallback } from "react";
@@ -193,12 +200,6 @@ For authentication methods not listed above, please [reach out](mailto:support@a
 
 ```bash
 npm install @privy-io/alchemy-migration
-```
-
-The migration SDK re-uses the Alchemy Account Kit UI under the hood. If `@account-kit/react` or `@account-kit/infra` aren't already resolved in your project (for example because you removed `@account-kit/react` in Step 1a and never had `@account-kit/infra` as a direct dependency), install them alongside the migration SDK:
-
-```bash
-npm install @account-kit/react @account-kit/infra
 ```
 
 ### 3b. Import styles
