@@ -1,16 +1,21 @@
 ---
 title: Alchemy CLI
-description: Query blockchain data, call JSON-RPC methods, and manage your Alchemy account from the terminal. Built for live querying, admin work, and local automation by humans and AI agents alike.
-subtitle: Query blockchain data, call JSON-RPC methods, and manage your Alchemy account from the terminal. Built for live querying, admin work, and local automation by humans and AI agents alike.
+description: Query blockchain data and manage your Alchemy account from the terminal, built for live querying, local automation, and AI agents.
+subtitle: Query blockchain data and manage your Alchemy account from the terminal, built for live querying, local automation, and AI agents.
 slug: docs/alchemy-cli
 ---
 
-The Alchemy CLI is a single binary that wraps every Alchemy product, including JSON-RPC nodes, the Data APIs, Smart Wallets, the Notify webhook API, and the Admin API. Use it to:
+The Alchemy CLI wraps every Alchemy product including nodes, Data APIs, Smart Wallets, webhooks, and more. Use it to:
 
-* **Live query onchain data** without writing a script (`alchemy balance vitalik.eth`, `alchemy tx 0x...`)
-* **Run admin tasks** like creating apps, rotating allowlists, and managing webhooks
-* **Automate local workflows** in shell scripts, cron jobs, and CI pipelines
-* **Give AI agents a structured tool surface** with `--json --no-interactive` output and a built-in `agent-prompt` command
+* Live query onchain data without writing a script
+* Run admin tasks like creating apps, rotating allowlists, and managing webhooks
+* Automate workflows in shell scripts, cron jobs, and CI pipelines
+
+```bash
+alchemy balance vitalik.eth
+alchemy tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b
+alchemy block latest
+```
 
 ## Install
 
@@ -18,74 +23,21 @@ The Alchemy CLI is a single binary that wraps every Alchemy product, including J
 npm i -g @alchemy/cli@latest
 ```
 
-Verify the install:
-
-```bash
-alchemy --version
-```
-
-To upgrade later, re-run the install command or check for updates:
-
-```bash
-alchemy update-check
-```
-
 ## Authenticate
 
-The CLI uses different credentials depending on the command family. The fastest path is to pick the auth method that matches what you want to do.
-
-| Auth method | Where to get it | Used by |
-|---|---|---|
-| **API key** | [Alchemy Dashboard](https://dashboard.alchemy.com/) → your app | `balance`, `tx`, `block`, `rpc`, `trace`, `debug`, `tokens`, `nfts`, `transfers`, `prices`, `portfolio`, `simulate`, `solana`, `bundler`, `gas-manager` |
-| **Access key** | [Alchemy Dashboard](https://dashboard.alchemy.com/) → Access Keys | `apps` |
-| **Webhook API key** | [Alchemy Dashboard](https://dashboard.alchemy.com/) → Notify | `webhooks` |
-| **x402 wallet** | Generated locally with `alchemy wallet generate` | Most node and data commands, no API key required |
-
-You can pass credentials per-command with flags (`--api-key`, `--access-key`, `--webhook-api-key`), set them as environment variables (`ALCHEMY_API_KEY`, `ALCHEMY_ACCESS_KEY`, `ALCHEMY_WEBHOOK_API_KEY`), or persist them with `alchemy config set`.
-
-### Sign in once with your Alchemy account
-
-Browser-based login pulls keys for you and configures the CLI in one shot:
+Sign in via browser. The CLI saves a token and prompts you to pick an app, then uses that app's API key for every request.
 
 ```bash
-alchemy auth login
+alchemy auth
 ```
 
-Check status anytime:
+That's it. Skip ahead to [your first commands](#your-first-commands).
 
-```bash
-alchemy auth status
-alchemy setup status
-```
+For other auth methods (manual API key, access key for Admin API, webhook key for Notify, x402 wallet), see [Authentication options](#authentication-options) at the bottom of this page.
 
-`setup status` reports whether you have everything needed to run a command and prints `nextCommands` to fix anything missing.
+## Your first commands
 
-### Set credentials manually
-
-```bash
-alchemy config set api-key YOUR_API_KEY
-alchemy config set access-key YOUR_ACCESS_KEY
-alchemy config set webhook-api-key YOUR_WEBHOOK_API_KEY
-alchemy config set network base-mainnet
-alchemy config set app YOUR_APP_ID
-```
-
-Use `alchemy config list` to see saved values and `alchemy config reset <key>` to clear one.
-
-### Use a wallet instead of an API key
-
-For autonomous workflows, the CLI can authenticate with a wallet using the [x402 payment protocol](docs/alchemy-for-agents). Your agent or script signs requests with a local key and pays for credits in USDC.
-
-```bash
-alchemy wallet generate
-alchemy config set x402 true
-```
-
-After this, all node and data commands route through the gateway and bill from your wallet. See [Agent Authentication and Payment](docs/alchemy-for-agents) for the full flow.
-
-## First commands
-
-Once you have an API key set, try a few queries.
+Once you've signed in, try a few queries.
 
 ```bash
 alchemy balance vitalik.eth
@@ -101,6 +53,31 @@ Switch networks per-command with `--network`, or change the default with `alchem
 ```bash
 alchemy network list --search base
 ```
+
+## Use it from AI agents and scripts
+
+The CLI is designed to be a first-class tool surface for AI agents. Two flags make every command machine-readable:
+
+* `--json` returns structured JSON on stdout for success and on stderr for errors
+* `--no-interactive` disables prompts so the command never blocks waiting for input
+
+Combine them in any automation:
+
+```bash
+alchemy --json --no-interactive balance vitalik.eth
+```
+
+For agents that need to learn the full command surface (every subcommand, every flag, every error code, recovery steps), run:
+
+```bash
+alchemy --json --no-interactive agent-prompt
+```
+
+The output includes an `executionPolicy`, a `preflight` check, the auth matrix, every command's arguments and options, an error catalog with retry semantics, and runnable examples. Drop it into an agent's system prompt or a [skill](docs/alchemy-agent-skills) so the agent calls the CLI correctly without trial and error.
+
+<Tip>
+  Pair the CLI with [Agent Skills](docs/alchemy-agent-skills) for code generation and the [Alchemy MCP Server](docs/alchemy-mcp-server) for in-conversation queries. The CLI shines for shell-driven workflows, cron jobs, and any agent that already runs terminal commands.
+</Tip>
 
 ## Command reference
 
@@ -236,7 +213,7 @@ Requires an access key. The CLI also caches a "selected app" so you can omit the
 
 | Command | Description |
 |---|---|
-| `alchemy auth login` | Sign in via browser. Supports `--force` to re-authenticate. |
+| `alchemy auth` | Sign in via browser. Supports `--force` to re-authenticate and `-y` to skip the confirmation prompt. |
 | `alchemy auth status` | Show whether you're signed in |
 | `alchemy auth logout` | Clear the saved authentication token |
 | `alchemy setup status` | Show what's configured and which commands to run next |
@@ -284,30 +261,66 @@ These flags work on every command.
 | `--debug` | Enable debug diagnostics |
 | `--no-interactive` | Disable the REPL and prompt-driven interactions |
 
-## Use it from AI agents and scripts
+## Authentication options
 
-The CLI is designed to be a first-class tool surface for AI agents. Two flags make every command machine-readable:
+Browser login (`alchemy auth`) covers most use cases. The sections below cover the rest.
 
-* `--json` returns structured JSON on stdout for success and on stderr for errors
-* `--no-interactive` disables prompts so the command never blocks waiting for input
+### Manual API key
 
-Combine them in any automation:
-
-```bash
-alchemy --json --no-interactive balance vitalik.eth
-```
-
-For agents that need to learn the full command surface (every subcommand, every flag, every error code, recovery steps), run:
+If you'd rather bypass the browser flow, drop in your [Alchemy Dashboard](https://dashboard.alchemy.com/) API key directly:
 
 ```bash
-alchemy --json --no-interactive agent-prompt
+alchemy config set api-key YOUR_API_KEY
 ```
 
-The output includes an `executionPolicy`, a `preflight` check, the auth matrix, every command's arguments and options, an error catalog with retry semantics, and runnable examples. Drop it into an agent's system prompt or a [skill](docs/alchemy-agent-skills) so the agent calls the CLI correctly without trial and error.
+You can also pass `--api-key` per-command or set `ALCHEMY_API_KEY` in your environment.
 
-<Tip>
-  Pair the CLI with [Agent Skills](docs/alchemy-agent-skills) for code generation and the [Alchemy MCP Server](docs/alchemy-mcp-server) for in-conversation queries. The CLI shines for shell-driven workflows, cron jobs, and any agent that already runs terminal commands.
-</Tip>
+### Access key (Admin API)
+
+The `apps` commands use a separate access key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) → Access Keys.
+
+```bash
+alchemy config set access-key YOUR_ACCESS_KEY
+```
+
+You can also pass `--access-key` or set `ALCHEMY_ACCESS_KEY`.
+
+### Webhook API key (Notify)
+
+The `webhooks` commands use a webhook API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) Notify section.
+
+```bash
+alchemy config set webhook-api-key YOUR_WEBHOOK_API_KEY
+```
+
+You can also pass `--webhook-api-key` or set `ALCHEMY_WEBHOOK_API_KEY`.
+
+### x402 wallet auth
+
+For autonomous workflows, the CLI can authenticate with a wallet using the [x402 payment protocol](docs/alchemy-for-agents) instead of an API key. Your script signs requests with a local key and pays for credits in USDC.
+
+```bash
+alchemy wallet generate
+alchemy --x402 balance vitalik.eth
+```
+
+To make x402 the default for every command, persist it:
+
+```bash
+alchemy config set x402 true
+```
+
+x402 covers most node and data commands. See [Agent Authentication and Payment](docs/alchemy-for-agents) for the full flow.
+
+### Check what's configured
+
+```bash
+alchemy auth status
+alchemy setup status
+alchemy config list
+```
+
+`setup status` reports whether you have everything needed to run a command and prints `nextCommands` to fix anything missing.
 
 ## Shell completions
 
