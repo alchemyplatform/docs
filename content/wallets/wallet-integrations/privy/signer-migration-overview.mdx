@@ -4,41 +4,42 @@ description: "Overview of migrating the signer for your app and users' embedded 
 slug: wallets/wallet-integrations/privy/signer-migration-overview
 ---
 
-This page is the landing guide for moving the **signer** (auth + key custody) for your app from Alchemy's Account Kit to Privy, while continuing to use Alchemy's transaction infrastructure and gas sponsorship. Start here to understand what changes for you and your users, then drop into the sub-guide that matches your auth setup.
+This page is the landing guide for moving the **signer** (auth + key custody) for your app from Alchemy's Account Kit to Privy, while continuing to use Alchemy's transaction infrastructure and gas sponsorship. Start here to confirm which sub-guide applies to your app, then drop into it for the step-by-step walkthrough.
 
 <Info>
 Pick the detailed guide that matches your app:
-* **[React migration](/wallets/wallet-integrations/privy/react-migration)** — React apps using standard auth methods (email, Google, passkeys, etc.)
-* **[JWT auth migration](/wallets/wallet-integrations/privy/jwt-auth-migration)** — Apps authenticating users with JWT (JSON Web Token)
+* **[React migration](/wallets/wallet-integrations/privy/react-migration)** — the default path. React apps using standard auth methods (email, Google, passkeys, etc.).
+* **[JWT auth migration](/wallets/wallet-integrations/privy/jwt-auth-migration)** — special case for apps authenticating users with JWT (JSON Web Token).
 </Info>
 
-## What migration looks like
+## What to expect
 
-### For developers
+You swap the signer layer and keep everything else. Users keep their wallet addresses, assets, and history — the only visible change is the login screen switching from Alchemy to Privy. The drop-in migration SDK re-authenticates each user on first login and transfers their keys from Alchemy's TEE to Privy's TEE, invisibly.
 
-You swap the signer layer and keep everything else.
+At a high level, the React migration is two steps:
 
-* **Auth SDK** — Replace `@account-kit/react` (or your JWT integration with `AlchemyWebSigner`) with Privy's SDK (`@privy-io/react-auth`, `@privy-io/node`, or the REST API).
-* **Keys** — Private keys move from Alchemy's TEE to Privy's TEE. For standard auth (React), the drop-in migration SDK (`@privy-io/alchemy-migration`) handles export and import with end-to-end encryption the first time each user logs in. For JWT, you export from Alchemy and import into Privy yourself using the same JWT across both providers.
-* **User records** — For standard auth, export users from the Alchemy Dashboard and import the JSON into the Privy Dashboard so Privy knows which users need wallet migration. For JWT-only apps, no user export/import is needed — both providers verify the same JWT.
-* **Transactions and gas sponsorship** — Stay on Alchemy. You rewire Privy wallets to Alchemy's transaction infrastructure via `@alchemy/wallet-apis` and keep the same Gas Manager policy.
+<Steps>
+  <Step title="Swap the auth SDK and reconnect sending">
+    Replace `@account-kit/react` with `@privy-io/react-auth`, then wire Privy wallets back to Alchemy's transaction infrastructure with `@alchemy/wallet-apis` (same Gas Manager policy, same chains).
+  </Step>
+  <Step title="Migrate existing users' keys">
+    Drop in `@privy-io/alchemy-migration` and wrap your app with `MigrationProvider`. The SDK detects users with Alchemy wallets on login and transfers their keys to Privy via end-to-end encryption.
+  </Step>
+</Steps>
 
-### For end users
-
-Users keep their wallets. The only visible change is the login screen switching from Alchemy to Privy.
-
-* **Wallet addresses are preserved.** Assets, history, and NFTs stay at the same address.
-* **No seed phrases, no manual steps.** The migration SDK (React) or your JWT handoff runs invisibly on the user's first login after the switch.
-* **Users sign in once with their original method** (email OTP, Google, passkey, etc.) to authorize the key transfer, then continue as usual.
+For the full, runnable walkthrough — including user export/import and cleanup — follow the [React migration guide](/wallets/wallet-integrations/privy/react-migration). If you authenticate users with JWT, follow the [JWT auth migration guide](/wallets/wallet-integrations/privy/jwt-auth-migration) instead.
 
 ## Prerequisites
 
-Before starting, have the following ready:
+Before starting, confirm your setup and have the following ready:
 
+* **Confirm your migration path.** Review the [Edge cases](#edge-cases) below to self-identify which guide applies:
+  * Confirm you're using **EIP-7702 or ERC-4337** (the default is 7702; 4337 needs an extra step).
+  * Confirm your **account type** is Modular Account v2 (MAv2). Non-MAv2 accounts stay on the lower-level SDK.
+  * Pick the **migration guide** that matches — React by default, JWT if you authenticate with JSON Web Tokens.
 * **Alchemy API key** — From the [Alchemy Dashboard](https://dashboard.alchemy.com/). Use the same app that has your Smart Wallets configuration and Gas Manager policy linked.
 * **Gas Manager policy ID** — From the [Gas Manager dashboard](https://dashboard.alchemy.com/services/gas-manager/configuration). Must be linked to the app above.
 * **Privy account and app** — Create an app in the [Privy Dashboard](https://dashboard.privy.io/). Enable the same auth methods your Alchemy users originally signed up with.
-* **Your app's current auth setup** — Know which auth methods your users signed up with and whether you use standard auth or JWT-based auth. This determines which sub-guide applies.
 
 ## Edge cases
 
@@ -48,76 +49,15 @@ Most apps follow the default path: 7702 delegation to Modular Account v2 (MAv2) 
 
 The `@alchemy/wallet-apis` client defaults to **EIP-7702 delegation to Modular Account v2**. This is the default for Wallets v5 and Wallet APIs, and it's what the [Privy signer integration guide](/wallets/third-party/signers/privy) assumes.
 
-There are two account modes to understand:
-
-* **EIP-7702 delegation (default).** The signer (EOA) *is* the account. Assets live at the signer address, and the EOA is delegated to MAv2 so it can use smart wallet features (batching, gas sponsorship, session keys). No dedicated smart contract account address.
+* **EIP-7702 delegation (default).** The signer (EOA) *is* the account. Assets live at the signer address, and the EOA is delegated to MAv2.
 * **Pure ERC-4337.** The signer is the *owner* of a separate smart contract account. Assets live at the smart contract account address, not at the signer.
 
-**If your existing app uses 7702 delegation to MAv2:** nothing special is needed. Connect the Privy signer to the Wallet APIs as shown in the sub-guides and the Privy signer integration guide.
-
-**If your existing app uses pure ERC-4337:** you must override the default when connecting the Privy signer to the Wallet APIs, otherwise `sendCalls` will treat the Privy EOA as the account and transactions will target the wrong address. See [How to use non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) for the full flow. At a minimum you need to:
-
-1. **Call `requestAccount` before `prepareCalls` / `sendCalls`.** Pass `creationHint: { accountType: "sma-b" }` to create (or look up) the dedicated smart contract account for your signer. If you previously used this owner in 7702 mode, the `creationHint` is required so a separate smart wallet is created for that owner.
-2. **Pass the returned account address as `account` on `sendCalls`** (or as `from` on the `wallet_prepareCalls` JSON-RPC request). If you skip this, the Wallet APIs fall back to 7702 mode against the signer address.
-3. **Cache and reuse the returned address.** The smart contract account address is stable for a given signer — you don't need to call `requestAccount` before every transaction. Storing it alongside your user record keeps the first-send latency low.
-4. **Make sure your signer can sign on behalf of the smart contract account.** Privy's embedded wallet (via `toViemAccount`) works as an owner signer out of the box, so no extra wiring is required beyond the three points above.
+If your existing app uses pure ERC-4337, you must override the default when connecting the Privy signer to the Wallet APIs. See [How to use non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) for the full flow.
 
 ### Account type — non-MAv2 users
 
-Wallet APIs only support Modular Account v2 (as the 7702 delegation target and as the `sma-b` smart contract account). If your current app uses a different smart account implementation, you can't drop onto Wallet APIs as-is — you need to stay on the lower-level SDK for those users.
-
-This applies if your existing integration uses any of:
-
-* Light Account
-* Light Account v2 / MultiOwnerLightAccount
-* Modular Account v1
-* Simple Account
-* A custom smart account implementation
-
-**Migration path for these apps:**
-
-1. **Keep the signer migration itself the same** — swap Alchemy's signer for Privy and pull the Privy embedded wallet out as a viem `LocalAccount` via `toViemAccount`.
-2. **Do not move sending to `@alchemy/wallet-apis`** for users whose existing accounts aren't MAv2. Instead, continue using `@account-kit/smart-contracts` with the client that matches your account type — for example, [`createLightAccountAlchemyClient`](/wallets/smart-contracts/other-accounts/light-account/getting-started) for Light Account or [`createModularAccountV2Client`](/wallets/smart-contracts/modular-account-v2/overview) for MAv2. Pass the Privy-backed `LocalAccount` as the `signer`.
-3. **New users can start on MAv2.** If you want new sign-ups to land on MAv2 + Wallet APIs, branch in your app so only legacy users hit the account-kit client path, and everyone else goes through `@alchemy/wallet-apis`.
-
-See [Choosing a smart account](/wallets/smart-contracts/choosing-a-smart-account) for the account implementations available in the lower-level SDK.
+Wallet APIs only support Modular Account v2. If your current app already uses a different smart account implementation, you need to stay on the lower-level SDK for those users.
 
 ### Session keys
 
-Legacy session keys are supported on Wallet APIs / v5. If your users have session keys that were installed onchain through the v4 `@account-kit/wallet-client` integration (via `installValidation`), you can continue to use them without reinstalling — you build a permissions context hex string and pass it in `capabilities.permissions.context` on `sendCalls`.
-
-Requirements:
-
-* The smart wallet must be Modular Account v2 (`sma-b`) or an EIP-7702 account delegated to MAv2.
-* The session key must already be installed onchain with a known `entityId`.
-* You must know whether the key was installed as a **global** validation or scoped to specific selectors.
-
-See the [Use existing session keys](/wallets/reference/wallet-apis-session-keys/legacy-session-keys) reference for the full guide.
-
-## What to expect — end-to-end flow
-
-At a high level, every migration follows the same shape. The sub-guides fill in each step.
-
-<Steps>
-  <Step title="Set up Privy and swap the auth SDK">
-    Create a Privy app, enable the same auth methods your Alchemy users signed up with, and replace `@account-kit/react` (or your JWT integration) with the Privy SDK. Users can now log in with Privy.
-  </Step>
-  <Step title="Reconnect sending and gas sponsorship">
-    Install `@alchemy/wallet-apis`, convert the Privy embedded wallet to a viem account with `toViemAccount`, and create a smart wallet client pointing at Alchemy with your existing Gas Manager policy ID. Sending transactions works again, gas sponsorship keeps flowing. Handle the 7702 vs. 4337 and non-MAv2 cases called out above if they apply to your app.
-  </Step>
-  <Step title="Migrate existing users' wallet keys">
-    For standard React auth, drop in `@privy-io/alchemy-migration` and wrap your app with `MigrationProvider`. The SDK detects users who need migration on login, re-authenticates them with Alchemy, and transfers their keys to Privy via TEE-to-TEE encryption. For JWT auth, track migration status in your own database and run the export-then-import flow on first login, either fully client-side or with a server-side import.
-  </Step>
-  <Step title="Deploy, export users (standard auth), and cut over">
-    Deploy your updated app and — for standard auth only — export users from the Alchemy Dashboard and import the JSON into the Privy Dashboard. Sequence matters: deploy and export together (or immediately back-to-back) so no new users slip between the two. JWT-only apps skip the export/import entirely.
-  </Step>
-  <Step title="Clean up after everyone has migrated">
-    Once users have logged in at least once after the cutover, remove `@privy-io/alchemy-migration`, `@account-kit/react`, and `@account-kit/infra` from your app, remove the `MigrationProvider` wrapper, and switch `createOnLogin` back to `"users-without-wallets"` so new users get a Privy wallet automatically.
-  </Step>
-</Steps>
-
-For the full, runnable steps, see:
-
-* [Migrate the Alchemy signer to Privy (React)](/wallets/wallet-integrations/privy/react-migration)
-* [Migrate JWT authentication from Alchemy to Privy](/wallets/wallet-integrations/privy/jwt-auth-migration)
-* [Privy signer integration guide](/wallets/third-party/signers/privy) — reference for the final Privy + Wallet APIs setup
+If your users have legacy session keys installed onchain through the v4 `@account-kit/wallet-client` integration, they're still supported on Wallet APIs. See the [Use existing session keys](/wallets/reference/wallet-apis-session-keys/legacy-session-keys) reference for the guide.
