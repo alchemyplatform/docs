@@ -35,6 +35,12 @@ export const RPC_URL = `https://solana-devnet.g.alchemy.com/v2/${ALCHEMY_API_KEY
 export interface AlchemyFeePayerResponse {
   result?: {
     serializedTransaction: string; // base64
+    estimatedFeeLamports: number;
+    estimatedRentLamports: number;
+    prefundLamports?: number; // omitted when no prefund simulation ran
+    simulationSlot?: number; // omitted when no prefund simulation ran
+    usesDurableNonce: boolean;
+    lastValidBlockHeight?: number; // omitted for durable-nonce transactions
   };
   error?: any;
 }

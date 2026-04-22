@@ -4,18 +4,20 @@ description: How to sponsor fees & rent on Solana
 slug: wallets/transactions/solana/sponsor-gas
 ---
 
-Fees and rent are a significant barrier to entry for new users of your app. Sponsor fees and rent to enable users to transact without holding SOL.
+Fees and rent are a significant barrier to entry for new users of your app. Sponsor them to let users transact without holding SOL.
 
 * Works with any Solana wallet. [Check out Solana Wallet APIs](/docs/wallets/react/solana-wallets/get-started)
 * No need to manage SOL. Fees and rent are sponsored and added to your bill.
 
 ## How it works
 
-When you request gas sponsorship for a transaction using a configured policy, the policy engine determines if that transaction is eligible for sponsorship. If eligible, the Gas Manager pays for the fees and rent upfront when the transaction is sent. The Gas Manager records the sponsored cost and adds it to your monthly bill.
+When you request sponsorship for a transaction using a configured policy, the policy engine determines if that transaction is eligible. If eligible, the Gas Manager sets the fee payer, signs the transaction, and returns the updated serialized transaction. The sponsored cost is added to your monthly bill.
 
-* Fees: the cost of executing transactions
-* Rent: the minimum payment to store data onchain
-  * Rent sponsorship is supported for `createAccount` and `createAssociatedTokenAccount`. If you need support for custom programs, contact [wallets@alchemy.com](mailto:wallets@alchemy.com).
+* Fees: the cost of executing transactions. Alchemy's fee payer replaces yours on every sponsored transaction.
+* Rent: the minimum payment to store data onchain.
+  * Top-level rent sponsorship: on every sponsored transaction, any top-level `SystemProgram.createAccount` and Associated Token Program `Create`/`CreateIdempotent` instructions are rewritten so the paymaster funds them directly. You do not need to opt in — this happens for all requests.
+  * CPI rent sponsorship: for account creation that happens inside a cross-program invocation (CPI), opt in per request with `prefundRent: true`. See [CPI rent prefunding](#cpi-rent-prefunding) below — this mode adds a hard requirement on `payerKey`.
+  * We do not support sponsoring rent for `SystemProgram.createAccountWithSeed`.
 
 ## Prerequisites
 
@@ -35,9 +37,14 @@ When you request gas sponsorship for a transaction using a configured policy, th
 
     ### Request sponsorship for the serialized transaction
 
-    To sponsor fees and rent on Solana, 1) set the `payerKey` field of the transaction to the feePayer wallet that pays for the gas, and 2) the feePayer wallet must sign the transaction.
+    To sponsor fees on Solana, 1) set the `payerKey` field of the transaction, and 2) call `alchemy_requestFeePayer`.
 
-    Get the `feePayer` address and the feePayer signature through [`alchemy_requestFeePayer`](/docs/reference/alchemy-requestfeepayer) using your gas policy ID and the serialized transaction. The Gas Manager updates the `feePayer` and adds the signature to the `serializedTransaction` if and only if the transaction satisfies the rules defined in your policy.
+    `alchemy_requestFeePayer` updates the `feePayer` and adds the fee-payer signature if the transaction satisfies the rules defined in your policy.
+
+    What to put at `payerKey` depends on the request:
+
+    * **Default (fees + top-level rent):** any placeholder address that is not otherwise referenced in the transaction. The paymaster replaces it as the fee payer, and any top-level `createAccount`/`createAssociatedTokenAccount` instructions are rewritten so the paymaster funds them — the identity of the placeholder does not affect sponsorship.
+    * **With `prefundRent: true`:** the user's wallet, specifically the account your program's CPI will debit for rent. See [CPI rent prefunding](#cpi-rent-prefunding) for the full contract.
 
     <Markdown src="api-request.mdx" />
 
@@ -48,3 +55,47 @@ When you request gas sponsorship for a transaction using a configured policy, th
     <Markdown src="api-sign.mdx" />
   </Tab>
 </Tabs>
+
+## CPI rent prefunding
+
+Use `prefundRent: true` to opt into cross-program invocation (CPI) rent prefunding when a transaction may create accounts through CPI.
+
+<Note>
+  This feature is allowlisted. Contact [support@alchemy.com](mailto:support@alchemy.com) to request access.
+</Note>
+
+```json
+{
+  "policyId": "<POLICY_ID>",
+  "serializedTransaction": "<base64-serialized-tx>",
+  "prefundRent": true
+}
+```
+
+### How it works
+
+When `prefundRent` is enabled, the service simulates the sponsored transaction to estimate any rent that may be needed for CPI-driven account creation. If needed, it adds a `SystemProgram.transfer` from the paymaster to the user's wallet — signaled by being the original `payerKey` on the submitted transaction, before the paymaster replaces it as fee payer — so the user's wallet holds enough SOL to cover the CPI's account creation.
+
+When a prefund simulation runs, the response includes `prefundLamports` and `simulationSlot` alongside the normal fee sponsorship fields. Both are omitted when no simulation ran — either because `prefundRent` was not requested or because the fee payer was replaced rather than injected, leaving no user wallet to top up.
+
+We support sponsoring rent for inner `SystemProgram.createAccount` calls. `SystemProgram.createAccountWithSeed` is not sponsored today.
+
+### Requirements
+
+* **`payerKey` MUST be set to the user's wallet** — the same account your program's CPI will debit for rent. This is different from fee and top-level rent sponsorship, where `payerKey` can be any placeholder address. With `prefundRent: true`, the service targets `payerKey` by position: it transfers SOL to whatever account sits there, and only detects inner `createAccount` calls funded by that same account. If `payerKey` is a placeholder (or any account other than the CPI funder), prefunding silently misses and the transaction will fail on-chain for lack of rent.
+* **Set `maxSpendPerTxnUsd`** on every policy used with `prefundRent`. The request is rejected if the policy does not have this cap.
+
+### Best practices
+
+* Enable `prefundRent` only for flows that may create accounts through CPI.
+* Submit the returned transaction promptly from your backend after collecting signatures.
+* For extra protection against stale state, when the response includes `simulationSlot`, consider passing it as `minContextSlot` when submitting the transaction.
+
+### Notes
+
+* Simulation is not the same as execution. Account state can change between sponsorship and submission, and programs can take different CPI paths at execution time.
+  * `minContextSlot` reduces stale-state risk, but it does not guarantee identical execution.
+  * If execution needs more lamports than the simulation predicted, the transaction will fail. If execution needs less, the extra SOL remains in the funded wallet and is still billed to your policy.
+* **Important:** Only use `prefundRent` for payloads you control or can validate. If an attacker can influence the transaction or the programs it invokes, they may be able to grief your policy by causing failed or unnecessarily expensive prefunds.
+* `prefundRent` is not transaction-shape-preserving. When prefunding is needed, the returned transaction includes an added top-level `SystemProgram.transfer` instruction before your program flow. Programs that inspect sibling instructions or depend on exact top-level instruction ordering can behave differently or fail.
+* Durable nonce transactions have a simulation caveat: the service simulates a modified copy without `AdvanceNonceAccount`, then returns a nonce-preserving transaction for submission.
