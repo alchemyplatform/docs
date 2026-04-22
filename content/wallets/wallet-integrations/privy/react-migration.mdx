@@ -10,6 +10,8 @@ After completing this migration, users will log in with Privy (wallet addresses 
 
 <Info>This guide is for **React** apps. For non-React frameworks, [reach out](mailto:support@alchemy.com) for support. If you authenticate users with JWT (JSON Web Token) authentication instead of standard auth methods, use the [JWT auth migration guide](/wallets/wallet-integrations/privy/jwt-auth-migration) instead.</Info>
 
+<Note>Before starting, read the [signer migration overview](/wallets/wallet-integrations/privy/signer-migration-overview) to confirm your account type (Modular Account v2 vs. another implementation) and connection type (EIP-7702 vs. ERC-4337). Apps not on MAv2, or using pure 4337, need to adjust a step in this guide — the overview's [Edge cases](/wallets/wallet-integrations/privy/signer-migration-overview#edge-cases) section walks through each.</Note>
+
 ## Prerequisites
 
 * **Alchemy API Key** — From the [Alchemy Dashboard](https://dashboard.alchemy.com/). Must be the same app that has your Smart Wallets configuration and gas policy linked.
@@ -92,6 +94,7 @@ Wire Privy wallets to Alchemy's transaction infrastructure so gasless transactio
 
 * The client defaults to EIP-7702, which delegates the Privy wallet to a smart wallet at send time.
 * If you were previously using ERC-4337 (with assets directly in smart accounts), see the [non-7702 mode guide](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode). You'll need to add an additional call to `wallet_requestAccount` before sending.
+* If your existing app uses a smart account other than Modular Account v2 (Light Account, Modular Account v1, Simple Account, or a custom implementation), stop here and stay on the lower-level SDK for those users. Wallet APIs only support MAv2 — see the overview's [Account type edge case](/wallets/wallet-integrations/privy/signer-migration-overview#account-type--non-mav2-users) and the [choosing a smart account](/wallets/smart-contracts/choosing-a-smart-account) reference.
 
 <Info>
 For advanced setups, see the full [Privy signer integration guide](/wallets/third-party/signers/privy) or the [Alchemy Wallet APIs overview](/wallets).
