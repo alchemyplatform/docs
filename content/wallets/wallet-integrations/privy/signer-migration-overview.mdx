@@ -34,8 +34,8 @@ For the full, runnable walkthrough — including user export/import and cleanup 
 Before starting, confirm your setup and have the following ready:
 
 * **Confirm your migration path.** Review the [Edge cases](#edge-cases) below to self-identify which guide applies:
-  * Confirm you're using **EIP-7702 or ERC-4337** (the default is 7702; 4337 needs an extra step).
-  * Confirm your **account type** is Modular Account v2 (MAv2). Non-MAv2 accounts stay on the lower-level SDK.
+  * Confirm whether you want to use **EIP-7702 or ERC-4337** after migration — the default changed between SDK versions. See [EIP-7702 vs. ERC-4337](#eip-7702-vs-erc-4337) below.
+  * Confirm your **account type**. Modular Account v2 (MAv2) is the default; Light Account and MAv1 are also supported on Wallet APIs — reach out to [support@alchemy.com](mailto:support@alchemy.com) to enable these legacy account types.
   * Pick the **migration guide** that matches — React by default, JWT if you authenticate with JSON Web Tokens.
 * **Alchemy API key** — From the [Alchemy Dashboard](https://dashboard.alchemy.com/). Use the same app that has your Smart Wallets configuration and Gas Manager policy linked.
 * **Gas Manager policy ID** — From the [Gas Manager dashboard](https://dashboard.alchemy.com/services/gas-manager/configuration). Must be linked to the app above.
@@ -43,20 +43,20 @@ Before starting, confirm your setup and have the following ready:
 
 ## Edge cases
 
-Most apps follow the default path: 7702 delegation to Modular Account v2 (MAv2) with the Wallet APIs. If that's you, the sub-guides cover everything you need. The three cases below change the migration path and are worth reviewing before you start.
+The sub-guides assume the Wallet APIs defaults: EIP-7702 delegation to Modular Account v2 (MAv2). The three cases below change the migration path and are worth reviewing before you start.
 
 ### EIP-7702 vs. ERC-4337
 
-The `@alchemy/wallet-apis` client defaults to **EIP-7702 delegation to Modular Account v2**. This is the default for Wallets v5 and Wallet APIs, and it's what the [Privy signer integration guide](/wallets/third-party/signers/privy) assumes.
+The `@account-kit/react` package (SDK v4) defaulted to **ERC-4337** with a smart contract account (SMA). The new `@alchemy/wallet-apis` package defaults to **EIP-7702 delegation to Modular Account v2** instead.
 
-* **EIP-7702 delegation (default).** The signer (EOA) *is* the account. Assets live at the signer address, and the EOA is delegated to MAv2.
-* **Pure ERC-4337.** The signer is the *owner* of a separate smart contract account. Assets live at the smart contract account address, not at the signer.
+* **EIP-7702 delegation (Wallet APIs default).** The signer (EOA) address *is* the account address. Assets live at the signer address, and the EOA is delegated to MAv2.
+* **ERC-4337 (SDK v4 default).** The signer is the *owner* of a separate smart contract account. Assets live at the smart contract account address, not at the signer address.
 
-If your existing app uses pure ERC-4337, you must override the default when connecting the Privy signer to the Wallet APIs. See [How to use non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) for the full flow.
+If you want to keep using pure ERC-4337 accounts after migration, you need to request the existing smart contract account type explicitly instead of using the Wallet APIs default. See [How to use non-7702 mode](/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) for the full flow.
 
 ### Account type — non-MAv2 users
 
-Wallet APIs only support Modular Account v2. If your current app already uses a different smart account implementation, you need to stay on the lower-level SDK for those users.
+Wallet APIs default to Modular Account v2, but Light Account and MAv1 are also supported. If your current app uses one of those account types, reach out to [support@alchemy.com](mailto:support@alchemy.com) to enable it.
 
 ### Session keys
 
