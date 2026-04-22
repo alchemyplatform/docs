@@ -41,6 +41,8 @@ servers:
     name: Celo Sepolia
   - url: https://frax-mainnet.g.alchemy.com/v2
     name: Frax Mainnet
+  - url: https://gensyn-mainnet.g.alchemy.com/v2
+    name: Gensyn Mainnet
   - url: https://gensyn-testnet.g.alchemy.com/v2
     name: Gensyn Testnet
   - url: https://hyperliquid-mainnet.g.alchemy.com/v2
@@ -644,16 +646,20 @@ methods:
 
   - name: "alchemy_requestFeePayer"
     description: |
-      Requests fee and rent sponsorship for a Solana transaction and returns the **fully-signed** `serializedTransaction` (now containing the fee-payer signature).
+      Requests fee sponsorship for a Solana transaction and returns the updated `serializedTransaction` with the paymaster fee payer set and signed.
 
       <Note>
-        We support rent sponsorship for `createAccount` and `createAssociatedTokenAccount` programs. If you need support for sponsoring rent in custom programs, please contact us at [wallets@alchemy.com](mailto:wallets@alchemy.com).
+        On every sponsored request, any top-level `SystemProgram.createAccount` and Associated Token Program `Create`/`CreateIdempotent` instructions are rewritten so the paymaster funds them directly — no opt-in required. For CPI-driven account creation, opt into rent prefunding with `prefundRent: true`; policies using `prefundRent` must set `maxSpendPerTxnUsd`.
+      </Note>
+
+      <Note>
+        CPI rent prefunding is allowlisted. Contact [support@alchemy.com](mailto:support@alchemy.com) for access.
       </Note>
 
     params:
       - name: "params[0]"
         required: true
-        description: "Object containing the policy ID and the unsigned serialized transaction."
+        description: "Object containing the policy ID, serialized transaction, and optional rent-prefunding settings."
         schema:
           type: "object"
           required: ["policyId", "serializedTransaction"]
@@ -673,17 +679,41 @@ methods:
               type: "string"
               pattern: "^[A-Za-z0-9+/]+={0,2}$"
               description: >
-                The unsigned transaction produced by `tx.serialize()`.
-                It may already contain a `feePayer`; the service will overwrite it
-                with the sponsoring account and add the fee-payer signature.
+                The serialized transaction produced by `tx.serialize()`.
+                The service replaces the existing `feePayer` with the sponsoring
+                account and adds the fee-payer signature. For default requests,
+                `payerKey` can be any placeholder address. For requests with
+                `prefundRent: true`, `payerKey` MUST be the user's wallet — the
+                same account the program's CPI will debit for rent — because
+                prefunding targets that position.
+            webhookData:
+              type: "string"
+              description: Optional metadata forwarded to your policy webhook.
+            prefundRent:
+              type: "boolean"
+              default: false
+              description: >
+                Opts into cross-program invocation (CPI) rent prefunding. Use
+                this when the transaction creates accounts through CPI and the
+                user's wallet needs SOL prefunded first. Requires two things:
+                (1) the policy must set `maxSpendPerTxnUsd`, and (2) the
+                transaction's `payerKey` MUST be the user's wallet (the account
+                the CPI debits for rent). Prefunding targets `payerKey` by
+                position, so a placeholder `payerKey` silently misses and the
+                transaction fails on-chain for lack of rent.
     result:
       name: "Sponsored transaction wrapper"
       description: >
-        Object containing the **fully-signed** transaction ready for
-        `sendRawTransaction`.
+        Object containing the sponsored transaction plus fee and rent estimates.
       schema:
         type: "object"
-        required: ["serializedTransaction"]
+        required:
+          [
+            "serializedTransaction",
+            "estimatedFeeLamports",
+            "estimatedRentLamports",
+            "usesDurableNonce",
+          ]
         properties:
           serializedTransaction:
             title: "base-64-encoded Solana transaction"
@@ -691,6 +721,37 @@ methods:
             description: >
               The transaction after the service sets the `feePayer` field and
               adds the fee-payer signature.
+          estimatedFeeLamports:
+            type: "integer"
+            description: Estimated network fee in lamports for the returned transaction.
+          estimatedRentLamports:
+            type: "integer"
+            description: Estimated rent in lamports covered by sponsorship.
+          prefundLamports:
+            type: "integer"
+            description: >
+              Lamports transferred to the transaction's `payerKey` to cover
+              CPI-driven account creation rent. Omitted when no prefund
+              simulation ran — i.e., `prefundRent` was not requested, or it
+              was requested but the fee payer was replaced rather than
+              injected so there was no user wallet to top up.
+          simulationSlot:
+            type: "integer"
+            description: >
+              Slot used for rent-prefunding simulation. Omitted when no
+              prefund simulation ran. When present, pass it as
+              `minContextSlot` when submitting the transaction to reduce
+              stale-state risk. Simulation is only an estimate: onchain state
+              or CPI behavior can change before execution, so prefunding may
+              still end up too low or higher than what is ultimately consumed.
+          usesDurableNonce:
+            type: "boolean"
+            description: Whether the returned transaction uses a durable nonce.
+          lastValidBlockHeight:
+            type: "integer"
+            description: >
+              Expiry hint for recent-blockhash transactions. Omitted for durable
+              nonce transactions.
     servers:
       [
         {
@@ -703,16 +764,37 @@ methods:
         },
       ]
     examples:
-      - name: "alchemy_requestFeePayer example"
+      - name: "Default request"
         params:
           - name: "params[0]"
             value:
               policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
-              serializedTransaction: "AgICAQMEBQYHCAkKCwwNDg8BCg==" # unsigned tx
+              serializedTransaction: "AgICAQMEBQYHCAkKCwwNDg8BCg=="
         result:
           name: "Sponsored transaction wrapper"
           value:
-            serializedTransaction: "AQIDBAUGBwgJCgsMDQ4PEA==" # signed tx
+            serializedTransaction: "AQIDBAUGBwgJCgsMDQ4PEA=="
+            estimatedFeeLamports: 5000
+            estimatedRentLamports: 890880
+            usesDurableNonce: false
+            lastValidBlockHeight: 567890
+      - name: "With CPI rent prefunding"
+        params:
+          - name: "params[0]"
+            value:
+              policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
+              serializedTransaction: "AgICAQMEBQYHCAkKCwwNDg8BCg=="
+              prefundRent: true
+        result:
+          name: "Sponsored transaction wrapper"
+          value:
+            serializedTransaction: "AQIDBAUGBwgJCgsMDQ4PEA=="
+            estimatedFeeLamports: 5000
+            estimatedRentLamports: 890880
+            prefundLamports: 890880
+            simulationSlot: 456789
+            usesDurableNonce: false
+            lastValidBlockHeight: 567890
   - name: "alchemy_requestPaymasterTokenQuote"
     description: |
       Requests ERC20 fee quote for a `UserOperation`. Optionally accepts fee parameter overrides to be used in the `UserOperation`.
