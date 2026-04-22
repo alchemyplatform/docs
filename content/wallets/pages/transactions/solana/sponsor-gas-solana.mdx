@@ -74,7 +74,7 @@ Use `prefundRent: true` to opt into cross-program invocation (CPI) rent prefundi
 
 ### How it works
 
-When `prefundRent` is enabled, the service simulates the sponsored transaction to estimate any rent that may be needed for CPI-driven account creation. If needed, it adds a `SystemProgram.transfer` from the paymaster to `payerKey` before returning the sponsored transaction, so `payerKey` holds enough SOL to cover the CPI's account creation.
+When `prefundRent` is enabled, the service simulates the sponsored transaction to estimate any rent that may be needed for CPI-driven account creation. If needed, it adds a `SystemProgram.transfer` from the paymaster to the user's wallet — signaled by being the original `payerKey` on the submitted transaction, before the paymaster replaces it as fee payer — so the user's wallet holds enough SOL to cover the CPI's account creation.
 
 When a prefund simulation runs, the response includes `prefundLamports` and `simulationSlot` alongside the normal fee sponsorship fields. Both are omitted when no simulation ran — either because `prefundRent` was not requested or because the fee payer was replaced rather than injected, leaving no user wallet to top up.
 
