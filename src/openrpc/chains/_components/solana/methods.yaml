@@ -1617,3 +1617,131 @@ components:
         description: A ZK validity proof with V2 merkle context for inclusion and non-inclusion claims.
         schema:
           $ref: ./compression.yaml#/components/schemas/ValidityProofResultV2
+
+    alchemy_requestFeePayer_prefundRent:
+      name: alchemy_requestFeePayer_prefundRent
+      summary: Request a sponsored Solana fee payer with CPI rent prefunding.
+      description: |
+        Variant of [`alchemy_requestFeePayer`](/docs/reference/alchemy-request-fee-payer) invoked with `prefundRent: true`.
+
+        Requests fee sponsorship for a Solana transaction and returns the updated `serializedTransaction` with the paymaster fee payer set and signed. In addition to sponsoring the network fee, the paymaster simulates the transaction and transfers enough lamports to the user's wallet to cover rent for any accounts created through cross-program invocation (CPI).
+
+        Use this variant when the transaction creates accounts through CPI and the user's wallet needs SOL prefunded first. For transactions that only create accounts through top-level `SystemProgram.createAccount` or Associated Token Program `Create`/`CreateIdempotent` instructions, use the default [`alchemy_requestFeePayer`](/docs/reference/alchemy-request-fee-payer) — the paymaster funds those directly without prefunding.
+
+        Requirements:
+        - The Gas Manager policy must set `maxSpendPerTxnUsd`.
+        - The transaction's `payerKey` MUST be the user's wallet — the same account the program's CPI will debit for rent. Prefunding targets `payerKey` by position, so a placeholder `payerKey` silently misses and the transaction fails on-chain for lack of rent.
+        - CPI rent prefunding is allowlisted. Contact [support@alchemy.com](mailto:support@alchemy.com) for access.
+
+        Billed at 1250 CUs per call (vs. 1000 CUs for the default `alchemy_requestFeePayer`).
+      params:
+        - name: params[0]
+          required: true
+          description: Object containing the policy ID, serialized transaction, and rent-prefunding flag.
+          schema:
+            type: object
+            required:
+              - policyId
+              - serializedTransaction
+              - prefundRent
+            properties:
+              policyId:
+                description: The Gas Manager Policy ID or list of Gas Manager Policy IDs. The policy must set `maxSpendPerTxnUsd`.
+                oneOf:
+                  - title: policyId
+                    type: string
+                    format: uuid
+                  - title: policyIdArray
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+              serializedTransaction:
+                type: string
+                pattern: "^[A-Za-z0-9+/]+={0,2}$"
+                description: >
+                  The serialized transaction produced by `tx.serialize()`.
+                  The service replaces the existing `feePayer` with the
+                  sponsoring account and adds the fee-payer signature. With
+                  `prefundRent: true`, `payerKey` MUST be the user's wallet —
+                  the same account the program's CPI will debit for rent —
+                  because prefunding targets that position.
+              webhookData:
+                type: string
+                description: Optional metadata forwarded to your policy webhook.
+              prefundRent:
+                type: boolean
+                enum: [true]
+                description: >
+                  Must be `true` for this method. Opts into cross-program
+                  invocation (CPI) rent prefunding. For the default (no
+                  prefunding) behavior, call `alchemy_requestFeePayer` with
+                  `prefundRent: false` (or omitted) instead.
+      result:
+        name: Sponsored transaction wrapper
+        description: Object containing the sponsored transaction plus fee and rent estimates.
+        schema:
+          type: object
+          required:
+            - serializedTransaction
+            - estimatedFeeLamports
+            - estimatedRentLamports
+            - usesDurableNonce
+          properties:
+            serializedTransaction:
+              title: base-64-encoded Solana transaction
+              type: string
+              description: The transaction after the service sets the `feePayer` field and adds the fee-payer signature.
+            estimatedFeeLamports:
+              type: integer
+              description: Estimated network fee in lamports for the returned transaction.
+            estimatedRentLamports:
+              type: integer
+              description: Estimated rent in lamports covered by sponsorship.
+            prefundLamports:
+              type: integer
+              description: >
+                Lamports transferred to the transaction's `payerKey` to
+                cover CPI-driven account creation rent. Omitted when the
+                fee payer was replaced rather than injected, so there was
+                no user wallet to top up.
+            simulationSlot:
+              type: integer
+              description: >
+                Slot used for rent-prefunding simulation. When present,
+                pass it as `minContextSlot` when submitting the transaction
+                to reduce stale-state risk. Simulation is only an estimate:
+                onchain state or CPI behavior can change before execution,
+                so prefunding may still end up too low or higher than what
+                is ultimately consumed.
+            usesDurableNonce:
+              type: boolean
+              description: Whether the returned transaction uses a durable nonce.
+            lastValidBlockHeight:
+              type: integer
+              description: Expiry hint for recent-blockhash transactions. Omitted for durable nonce transactions.
+      examples:
+        - name: alchemy_requestFeePayer_prefundRent example
+          params:
+            - name: params[0]
+              value:
+                policyId: "69d524a7-e932-4214-8673-dcdcba31bb42"
+                serializedTransaction: "AgICAQMEBQYHCAkKCwwNDg8BCg=="
+                prefundRent: true
+          result:
+            name: Sponsored transaction wrapper
+            value:
+              serializedTransaction: "AQIDBAUGBwgJCgsMDQ4PEA=="
+              estimatedFeeLamports: 5000
+              estimatedRentLamports: 890880
+              prefundLamports: 890880
+              simulationSlot: 456789
+              usesDurableNonce: false
+              lastValidBlockHeight: 567890
+      errors:
+        - code: -32602
+          message: Invalid params
+          data: >
+            Returned when `prefundRent` is not `true`, when the policy does
+            not set `maxSpendPerTxnUsd`, or when `serializedTransaction` is
+            malformed.
