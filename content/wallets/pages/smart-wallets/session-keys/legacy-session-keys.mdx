@@ -1,0 +1,171 @@
+---
+title: Use existing session keys
+subtitle: Use session keys installed via `installValidation` with Wallet APIs
+url: https://alchemy.com/docs/wallets/reference/wallet-apis-session-keys/legacy-session-keys
+slug: wallets/reference/wallet-apis-session-keys/legacy-session-keys
+---
+
+<Warning>
+  This guide is for session keys that were **manually installed** onchain via [`installValidation`](/docs/wallets/smart-contracts/modular-account-v2/session-keys/adding-session-keys). For new session keys, use [`wallet_createSession`](/docs/reference/wallet-apis-session-keys/api) or [`grantPermissions`](/docs/reference/wallet-apis-session-keys/sdk) instead — they handle installation, permissions, and context automatically.
+</Warning>
+
+If you have session keys installed directly on a Modular Account V2 (for example, from a v4 `@account-kit/wallet-client` integration) and are migrating to Wallet APIs (`@alchemy/wallet-apis` v5), you can use those existing keys without reinstalling them. Build a permissions context hex string and pass it when sending transactions.
+
+## Requirements
+
+- The smart wallet must be a **Modular Account V2** (`sma-b`) or an **EIP-7702 account** delegated to Modular Account V2.
+- The session key must already be **installed onchain** with a known `entityId` via `installValidation`.
+- You must know whether the session key was installed as a **global** validation (`isGlobal: true`) or scoped to specific selectors.
+
+## Build the permissions context
+
+The permissions context tells Wallet APIs how to locate and validate the session key onchain. Construct it by concatenating three values:
+
+| Byte(s) | Value | Meaning |
+|---|---|---|
+| `0x02` | Fixed prefix | Indicates a session key installed outside of Wallet APIs |
+| `0x01` or `0x00` | `isGlobal` flag | `0x01` if the key was installed with `isGlobal: true`, `0x00` otherwise |
+| 4 bytes | `entityId` | The `entityId` used in the `installValidation` call, as a `uint32` hex value |
+
+<Tabs>
+  <Tab title="JavaScript">
+    ```ts
+    import { concatHex, toHex } from "viem";
+
+    const isGlobal = true; // match the value used in installValidation
+    const entityId = 1; // match the entityId used in installValidation
+
+    const permissionsContext = concatHex([
+      "0x02",
+      isGlobal ? "0x01" : "0x00",
+      toHex(entityId, { size: 4 }),
+    ]);
+    ```
+  </Tab>
+
+  <Tab title="Manual">
+    For an `entityId` of `1` with `isGlobal: true`:
+
+    ```
+    0x02 01 00000001
+    ```
+
+    This produces: `0x020100000001`
+  </Tab>
+</Tabs>
+
+## Send transactions with the context
+
+Pass the permissions context in `capabilities.permissions.context` when sending transactions.
+
+<Tabs>
+  <Tab title="SDK">
+    ```ts
+    import { privateKeyToAccount } from "viem/accounts";
+    import { arbitrumSepolia } from "viem/chains";
+    import { concatHex, toHex } from "viem";
+    import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+
+    const sessionKey = privateKeyToAccount("0xSESSION_PRIVATE_KEY" as const);
+
+    // The address of the account that the session key is installed on
+    const accountAddress = "0xACCOUNT_ADDRESS";
+
+    const isGlobal = true;
+    const entityId = 1;
+
+    const permissionsContext = concatHex([
+      "0x02",
+      isGlobal ? "0x01" : "0x00",
+      toHex(entityId, { size: 4 }),
+    ]);
+
+    const client = createSmartWalletClient({
+      transport: alchemyWalletTransport({
+        apiKey: "YOUR_API_KEY",
+      }),
+      chain: arbitrumSepolia,
+      signer: sessionKey,
+      account: accountAddress,
+    });
+
+    const { id } = await client.sendCalls({
+      calls: [{ to: "0x...", value: BigInt(0) }],
+      capabilities: {
+        permissions: {
+          context: permissionsContext,
+        },
+      },
+    });
+
+    await client.waitForCallsStatus({ id });
+    ```
+  </Tab>
+
+  <Tab title="API">
+    Use the context in both `wallet_prepareCalls` and `wallet_sendPreparedCalls`:
+
+    ```bash
+    # Step 1: Prepare calls
+    curl --request POST \
+        --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+        --header 'content-type: application/json' \
+        --data '
+    {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "wallet_prepareCalls",
+        "params": [
+            {
+                "from": "'$ACCOUNT_ADDRESS'",
+                "chainId": "'$CHAIN_ID'",
+                "calls": [
+                    {
+                        "to": "0x0000000000000000000000000000000000000000",
+                        "value": "0x0"
+                    }
+                ],
+                "capabilities": {
+                    "permissions": {
+                        "context": "'$PERMISSIONS_CONTEXT'"
+                    }
+                }
+            }
+        ]
+    }'
+    ```
+
+    Then sign the returned `signatureRequest` with the **session key** and send via `wallet_sendPreparedCalls`:
+
+    ```bash
+    # Step 2: Send prepared calls
+    curl --request POST \
+        --url https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+        --header 'content-type: application/json' \
+        --data '
+    {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "wallet_sendPreparedCalls",
+        "params": [
+            {
+                "type": "user-operation-v070",
+                "data": { ...prepareCallsResult },
+                "chainId": "'$CHAIN_ID'",
+                "capabilities": {
+                    "permissions": {
+                        "context": "'$PERMISSIONS_CONTEXT'"
+                    }
+                },
+                "signature": {
+                    "type": "secp256k1",
+                    "data": "'$SESSION_KEY_SIGNATURE'"
+                }
+            }
+        ]
+    }'
+    ```
+
+    See [Send transactions (API)](/docs/wallets/transactions/send-transactions) for the full prepare-sign-send flow.
+  </Tab>
+</Tabs>
