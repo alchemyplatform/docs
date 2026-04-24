@@ -1,0 +1,75 @@
+name: Block originator self-approval on docs-agent PRs
+
+# When the docs-agent (JackReacher0807) opens a PR on behalf of someone who
+# requested the change via Slack, the requester is attributed in the PR body
+# under "## Requested by\n@<github_username>". This workflow watches for
+# approvals on those PRs and dismisses any approval submitted by that
+# attributed user, so the docs-agent's PRs always require a non-originator
+# review before merging.
+#
+# Branch protection on main only needs "Require 1 approval"; this workflow
+# ensures that 1 approval can't come from the person who originated the request.
+#
+# Scope: this workflow does NOT affect human-authored PRs — it only fires when
+# the PR author is JackReacher0807 (the docs-agent's GitHub identity).
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  block-originator-self-approval:
+    if: github.event.review.state == 'approved' && github.event.pull_request.user.login == 'JackReacher0807'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Compare approver to originator and dismiss if same
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          APPROVER: ${{ github.event.review.user.login }}
+          REVIEW_ID: ${{ github.event.review.id }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          # Extract the GitHub username from the "## Requested by" section.
+          # The agent emits this exact format:
+          #
+          #   ## Requested by
+          #
+          #   @<github_username> (via Slack thread)
+          #
+          # If attribution failed, the section is replaced with a fallback line
+          # that contains no @ mention — REQUESTED_BY ends up empty and we let
+          # reviewers apply judgment (with a one-time warning comment).
+          REQUESTED_BY="$(printf '%s' "$PR_BODY" \
+            | grep -A 2 '^## Requested by' \
+            | grep -oE '@[A-Za-z0-9_-]+' \
+            | head -1 \
+            | tr -d '@')"
+
+          if [ -z "$REQUESTED_BY" ]; then
+            echo "No '## Requested by' attribution found in PR body."
+            # Post a one-time heads-up so reviewers know the rule isn't enforced
+            # for this PR. Skip if a comment already exists.
+            EXISTING="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+              --jq '.[] | select(.body | startswith(":warning: docs-agent PR has no Requested-by attribution")) | .id' \
+              | head -1)"
+            if [ -z "$EXISTING" ]; then
+              gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+                -f body=":warning: docs-agent PR has no Requested-by attribution. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment."
+            fi
+            exit 0
+          fi
+
+          echo "Approver=$APPROVER, Originator=$REQUESTED_BY"
+
+          if [ "$APPROVER" = "$REQUESTED_BY" ]; then
+            echo "Approver is the originator. Dismissing approval $REVIEW_ID."
+            gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
+              -f message="@$APPROVER you originated this docs request via Slack. Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review."
+          else
+            echo "Approver is not the originator. No action."
+          fi
