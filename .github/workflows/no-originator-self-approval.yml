@@ -6,18 +6,20 @@ name: Block originator self-approval on docs-agent PRs
 # PRs and dismisses any approval submitted by that user, so a docs-agent PR
 # always requires a non-originator review before merging.
 #
-# Branch protection on main only needs "Require 1 approval"; this workflow
-# ensures that 1 approval can't come from the person who originated the request.
+# Branch protection on main needs both "Require 1 approval" and this workflow
+# as a required check. The review requirement supplies an approval, and this
+# check ensures that approval did not come from the person who originated the
+# docs-agent request.
 #
 # Why commit message and not PR body: the PR body is editable by anyone with
 # write access (including the originator), who could remove their own @mention
 # before approving. The commit message is GPG-signed by docs-agent's key
-# (AB0009C56564B53A); force-pushing to amend the trailer would either lose
-# the signature (no agent key on the originator's machine) or — if the repo
-# has "Dismiss stale pull request approvals when new commits are pushed"
-# enabled — drop existing approvals.
+# (AB0009C56564B53A). Force-pushing to amend the trailer would either lose
+# the signature (no agent key on the originator's machine) or, if the repo has
+# "Dismiss stale pull request approvals when new commits are pushed" enabled,
+# drop existing approvals.
 #
-# Scope: this workflow does NOT affect human-authored PRs — it only fires when
+# Scope: this workflow does NOT affect human-authored PRs. It only fires when
 # the PR author is JackReacher0807 (the docs-agent's GitHub identity).
 
 on:
@@ -36,6 +38,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
           sparse-checkout: |
             .github/workflows/docs-agent-pubkey.asc
           sparse-checkout-cone-mode: false
@@ -45,6 +48,8 @@ jobs:
           APPROVER: ${{ github.event.review.user.login }}
           REVIEW_ID: ${{ github.event.review.id }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REVIEW_COMMIT_SHA: ${{ github.event.review.commit_id }}
         run: |
           set -euo pipefail
 
@@ -62,6 +67,7 @@ jobs:
           EXPECTED_FPR="48AB9EC753D58474E845E808AB0009C56564B53A"
           PUBKEY_FILE=".github/workflows/docs-agent-pubkey.asc"
           export GNUPGHOME="$(mktemp -d)"
+          trap 'rm -rf "$GNUPGHOME"' EXIT
 
           # Helper: retry-loop wrapper around the dismissal API call. Used for
           # all fail-closed paths AND the originator-match dismissal so a
@@ -99,9 +105,8 @@ jobs:
             exit 1
           fi
 
-          # Post-import verify the pinned key actually loaded. Silent-import-
-          # without-keys would otherwise silently degrade every PR to the
-          # warn-only path.
+          # Post-import verify the pinned key actually loaded. Silent import
+          # without keys would otherwise make every commit look untrusted.
           if ! gpg --list-keys "$EXPECTED_FPR" >/dev/null 2>&1; then
             echo "ERROR: pinned pubkey $EXPECTED_FPR not present in keyring after import" >&2
             dismiss_with_retry ":warning: Originator self-approval check could not initialize (pinned pubkey missing from imported keyring). Approval dismissed by default per fail-closed policy." || true
@@ -110,13 +115,13 @@ jobs:
 
           # Collect ALL Requested-by trailers from commits in this PR that
           # are BOTH:
-          #   1. Authored on GitHub by JackReacher0807 (the docs-agent), AND
+          #   1. In the exact commit range approved by this review, AND
           #   2. Cryptographically signed by the pinned agent GPG key
           #      (verified locally in the workflow, not just trusting
           #      GitHub's flag)
           #
           # We then dismiss the approval if the approver matches ANY of the
-          # trailers (case-insensitive — GitHub logins are case-insensitive).
+          # trailers (case-insensitive because GitHub logins are case-insensitive).
           #
           # Why "any of" instead of "the first":
           #
@@ -134,149 +139,95 @@ jobs:
           # one remains. This requires (a) push access to the branch, and
           # (b) the attacker still can't sign with our pinned key, so any
           # replacement commits would fail the local-verification filter
-          # below and be excluded from the trailer set entirely (treated
-          # as untrusted, missing-attribution path fires).
+          # below and be excluded from the trailer set entirely, which makes
+          # the missing-attribution fail-closed path fire.
           # Branch-protection settings further reduce attack surface:
           #   - "Require signed commits"
           #   - "Dismiss stale pull request approvals when new commits are pushed"
           #   - "Restrict who can push to matching branches"
           # See PR #1262 for the full threat-model discussion.
           #
-          # `|| true` on each command substitution is critical: under pipefail,
-          # grep-no-match propagates a non-zero exit and the step aborts before
-          # the empty-attribution fallback runs.
-          #
-          # Fetch ALL commits (paginated). GitHub's pull-request commits
-          # endpoint returns 30/page by default; PRs with many fixup commits
-          # could span multiple pages and a missing-page would silently drop
-          # the originator's trailer from ALL_REQUESTED_BY. Use --paginate
-          # with per_page=100 (the max for this endpoint) and merge pages.
-          #
-          # Fail-closed on API errors: if commits-fetch fails after retries,
-          # we cannot validate the originator, so the only safe action is
-          # to dismiss the approval (rather than treat as "no attribution"
-          # and silently allow). The approver can re-approve once the API
-          # recovers.
-          # NOTE: --method GET is REQUIRED. `gh api` defaults to POST as soon
-          # as any -f/-F parameter is given (per gh manual). The pull-request
-          # commits endpoint is GET-only; without --method GET the call hits
-          # a non-existent POST endpoint and returns 404, sending every
-          # approval through the fail-closed dismissal path.
-          fetch_commits() {
-            for attempt in 1 2 3; do
-              if out=$(gh api --method GET --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" 2>/tmp/gh-err); then
-                # gh api --paginate emits one JSON array per page; merge them.
-                printf '%s' "$out" | jq -s 'add // []'
-                return 0
-              fi
-              echo "Commit-fetch attempt $attempt failed:" >&2
-              cat /tmp/gh-err >&2 || true
-              sleep $((attempt * 5))
-            done
-            return 1
-          }
-
-          if ! COMMITS_JSON="$(fetch_commits)"; then
-            echo "ERROR: could not fetch PR commits after 3 retries — failing closed by dismissing approval"
-            dismiss_with_retry ":warning: Originator self-approval check could not run (GitHub API unavailable after 3 retries). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+          # Fetch and inspect commits locally instead of using the REST pull
+          # request commits endpoint. That endpoint is capped at 250 commits,
+          # which is not acceptable for an enforcement decision. Local git
+          # history also lets us evaluate the exact commit SHA that the
+          # approval was submitted against, avoiding live-PR drift.
+          if [ -z "${BASE_SHA:-}" ] || [ -z "${REVIEW_COMMIT_SHA:-}" ]; then
+            echo "ERROR: missing base or reviewed commit SHA from event payload" >&2
+            dismiss_with_retry ":warning: Originator self-approval check could not run (missing review commit metadata). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
             exit 1
           fi
 
-          NUM_COMMITS="$(printf '%s' "$COMMITS_JSON" | jq 'length' 2>/dev/null || echo 0)"
+          if ! git fetch --no-tags --filter=blob:none origin "$REVIEW_COMMIT_SHA" 2>/tmp/git-fetch-err; then
+            echo "ERROR: failed to fetch reviewed commit $REVIEW_COMMIT_SHA:" >&2
+            cat /tmp/git-fetch-err >&2 || true
+            dismiss_with_retry ":warning: Originator self-approval check could not fetch the reviewed commit. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
+
+          if ! git cat-file -e "$REVIEW_COMMIT_SHA^{commit}" 2>/dev/null; then
+            echo "ERROR: reviewed commit $REVIEW_COMMIT_SHA is not available after fetch" >&2
+            dismiss_with_retry ":warning: Originator self-approval check could not inspect the reviewed commit. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
+
+          COMMITS_FILE="$(mktemp)"
+          if ! git rev-list --reverse "$BASE_SHA..$REVIEW_COMMIT_SHA" > "$COMMITS_FILE" 2>/tmp/rev-list-err; then
+            echo "ERROR: failed to enumerate PR commits from $BASE_SHA to $REVIEW_COMMIT_SHA:" >&2
+            cat /tmp/rev-list-err >&2 || true
+            dismiss_with_retry ":warning: Originator self-approval check could not enumerate PR commits. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
 
           TRAILERS_FILE="$(mktemp)"
-          for i in $(seq 0 $((NUM_COMMITS - 1))); do
-            payload="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].commit.verification.payload // empty")"
-            signature="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].commit.verification.signature // empty")"
-            message="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].commit.message // empty")"
-            author_login="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].author.login // empty")"
-            sha="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].sha // empty")"
-
-            # Skip if not authored by the agent on GitHub
-            if [ "$author_login" != "JackReacher0807" ]; then
-              echo "skip $sha: author=$author_login (not JackReacher0807)"
-              continue
-            fi
-
-            # Skip if no signature attached
-            if [ -z "$payload" ] || [ -z "$signature" ]; then
-              echo "skip $sha: missing payload or signature"
-              continue
-            fi
-
+          while IFS= read -r sha; do
             # Cryptographically verify against our pinned key only.
             #
-            # NOTE 1: payload MUST be written with a trailing newline. Git
-            # commits the payload as raw bytes ending in \n; the API's
-            # verification.payload preserves those bytes but jq-decoded
-            # strings are written without the trailing newline by printf
-            # '%s'. Without the newline, gpg outputs BADSIG.
-            #
-            # NOTE 2: gpg's VALIDSIG status line has the format
+            # NOTE: gpg's VALIDSIG status line has the format
             #   [GNUPG:] VALIDSIG <signing_key_fpr> <date> ... <primary_key_fpr>
             # When a key has signing subkeys (the default for `gpg
             # --full-generate-key`), the FIRST fingerprint after VALIDSIG
             # is the signing SUBKEY, and the LAST field is the PRIMARY key.
             # Our pinned EXPECTED_FPR is the primary fingerprint, so we
             # match against the last field via awk, not the first.
-            sig_file="$(mktemp)"
-            payload_file="$(mktemp)"
-            printf '%s' "$signature" > "$sig_file"
-            printf '%s\n' "$payload" > "$payload_file"
-
-            # gpg --verify exits non-zero on BADSIG (tampered payload),
+            # git verify-commit exits non-zero on BADSIG (tampered payload),
             # NO_PUBKEY (untrusted signer), or invalid sig data. Under
             # `set -euo pipefail`, that would abort the whole step before
-            # the else branch runs — turning "skip an untrusted commit"
+            # the else branch runs, turning "skip an untrusted commit"
             # into a hard workflow failure that prevents the dismissal
             # logic from running for legitimately verified commits later
             # in the loop. Capture exit cleanly via an `if` block so a
             # bad signature just falls through to the SKIP path.
             primary_fpr=""
-            if gpg_status="$(gpg --status-fd=1 --verify "$sig_file" "$payload_file" 2>/dev/null)"; then
-              primary_fpr="$(printf '%s' "$gpg_status" | awk '/^\[GNUPG:\] VALIDSIG/ {print $NF}' | head -1)"
+            if gpg_status="$(git verify-commit --raw "$sha" 2>&1)"; then
+              primary_fpr="$(printf '%s\n' "$gpg_status" | awk '/^\[GNUPG:\] VALIDSIG/ {print $NF; exit}')"
             fi
             if [ "$primary_fpr" = "$EXPECTED_FPR" ]; then
               echo "trust $sha: verified against pinned primary key"
-              printf '%s' "$message" \
-                | grep -oE '[Rr]equested[-_ ][Bb]y[[:space:]]*:[[:space:]]*@[A-Za-z0-9_-]+' \
-                | grep -oE '@[A-Za-z0-9_-]+' \
-                | tr -d '@' \
-                | tr '[:upper:]' '[:lower:]' \
+              git show -s --format=%B "$sha" \
+                | git interpret-trailers --parse \
+                | awk -F': *' 'tolower($1) == "requested-by" { value=$2; sub(/^[[:space:]]*@/, "", value); sub(/[[:space:]]+$/, "", value); if (value ~ /^[A-Za-z0-9-]+$/) print tolower(value) }' \
                 >> "$TRAILERS_FILE" || true
             else
               echo "skip $sha: primary_fpr=$primary_fpr (expected $EXPECTED_FPR)"
             fi
-            rm -f "$sig_file" "$payload_file"
-          done
+          done < "$COMMITS_FILE"
 
           ALL_REQUESTED_BY="$(sort -u "$TRAILERS_FILE" | grep -v '^$' || true)"
           APPROVER_LOWER="$(printf '%s' "$APPROVER" | tr '[:upper:]' '[:lower:]')"
 
           if [ -z "$ALL_REQUESTED_BY" ]; then
-            echo "No 'Requested-by:' trailer found in any verified docs-agent commit on this PR."
-            # Post a one-time heads-up so reviewers know the rule isn't enforced
-            # for this PR. Skip if a comment already exists. Paginate the
-            # comments fetch so a duplicate-suppression check works on PRs
-            # that have accumulated more than one page (30) of comments.
-            EXISTING="$(gh api --method GET --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" 2>/dev/null \
-              | jq -s 'add // []' \
-              | jq -r '.[] | select(.body | startswith(":warning: docs-agent PR has no Requested-by attribution")) | .id' \
-              | head -1 || true)"
-            if [ -z "$EXISTING" ]; then
-              gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-                -f body=":warning: docs-agent PR has no Requested-by attribution in any verified docs-agent commit message. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment." \
-                || echo "WARN: failed to post missing-attribution comment (non-critical)" >&2
-            fi
-            exit 0
+            echo "ERROR: no 'Requested-by:' trailer found in any pinned-key-verified docs-agent commit on this PR." >&2
+            dismiss_with_retry ":warning: docs-agent PR has no trusted Requested-by attribution in any pinned-key-verified commit message. Approval dismissed by default per fail-closed policy; please add trusted attribution before re-approving." || true
+            exit 1
           fi
 
           echo "Approver=$APPROVER_LOWER, AllRequestedBy=$(printf '%s' "$ALL_REQUESTED_BY" | tr '\n' ',' | sed 's/,$//')"
 
           if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
             echo "Approver matches a Requested-by trailer in this PR. Dismissing approval $REVIEW_ID."
-            if ! dismiss_with_retry "@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review."; then
-              echo "ERROR: dismissal of originator approval failed after 3 retries — exiting 1 to surface the failure" >&2
+            if ! dismiss_with_retry "@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request. Please ask another team member to review."; then
+              echo "ERROR: dismissal of originator approval failed after 3 retries, exiting 1 to surface the failure" >&2
               exit 1
             fi
           else
