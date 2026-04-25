@@ -1,14 +1,21 @@
 name: Block originator self-approval on docs-agent PRs
 
 # When the docs-agent (JackReacher0807) opens a PR on behalf of someone who
-# requested the change via Slack, the requester is attributed in the PR body
-# under "## Requested by\n@<github_username>". This workflow watches for
-# approvals on those PRs and dismisses any approval submitted by that
-# attributed user, so the docs-agent's PRs always require a non-originator
-# review before merging.
+# requested the change via Slack, it includes a "Requested-by: @<github_username>"
+# trailer in the commit message. This workflow watches for approvals on those
+# PRs and dismisses any approval submitted by that user, so a docs-agent PR
+# always requires a non-originator review before merging.
 #
 # Branch protection on main only needs "Require 1 approval"; this workflow
 # ensures that 1 approval can't come from the person who originated the request.
+#
+# Why commit message and not PR body: the PR body is editable by anyone with
+# write access (including the originator), who could remove their own @mention
+# before approving. The commit message is GPG-signed by docs-agent's key
+# (AB0009C56564B53A); force-pushing to amend the trailer would either lose
+# the signature (no agent key on the originator's machine) or — if the repo
+# has "Dismiss stale pull request approvals when new commits are pushed"
+# enabled — drop existing approvals.
 #
 # Scope: this workflow does NOT affect human-authored PRs — it only fires when
 # the PR author is JackReacher0807 (the docs-agent's GitHub identity).
@@ -27,39 +34,39 @@ jobs:
       - name: Compare approver to originator and dismiss if same
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_BODY: ${{ github.event.pull_request.body }}
           APPROVER: ${{ github.event.review.user.login }}
           REVIEW_ID: ${{ github.event.review.id }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
 
-          # Extract the GitHub username from the "## Requested by" section.
-          # The agent emits this exact format:
+          # Pull the Requested-by trailer from any of the PR's commit messages
+          # (the agent emits it on its first commit; later fixup commits may
+          # not repeat it). Commit messages are immutable without a force-push,
+          # which is independently protected by GPG signing + branch protection.
           #
-          #   ## Requested by
-          #
-          #   @<github_username> (via Slack thread)
-          #
-          # If attribution failed, the section is replaced with a fallback line
-          # that contains no @ mention — REQUESTED_BY ends up empty and we let
-          # reviewers apply judgment (with a one-time warning comment).
-          REQUESTED_BY="$(printf '%s' "$PR_BODY" \
-            | grep -A 2 '^## Requested by' \
+          # `|| true` on each command substitution is critical: under pipefail,
+          # grep-no-match propagates a non-zero exit and the step aborts before
+          # the empty-attribution fallback runs.
+          COMMITS_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" || true)"
+          REQUESTED_BY="$(printf '%s' "$COMMITS_JSON" \
+            | jq -r '.[].commit.message' 2>/dev/null \
+            | grep -oE 'Requested-by:[[:space:]]*@[A-Za-z0-9_-]+' \
             | grep -oE '@[A-Za-z0-9_-]+' \
             | head -1 \
-            | tr -d '@')"
+            | tr -d '@' \
+            || true)"
 
           if [ -z "$REQUESTED_BY" ]; then
-            echo "No '## Requested by' attribution found in PR body."
+            echo "No 'Requested-by:' trailer found in any commit on this PR."
             # Post a one-time heads-up so reviewers know the rule isn't enforced
             # for this PR. Skip if a comment already exists.
             EXISTING="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
               --jq '.[] | select(.body | startswith(":warning: docs-agent PR has no Requested-by attribution")) | .id' \
-              | head -1)"
+              | head -1 || true)"
             if [ -z "$EXISTING" ]; then
               gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-                -f body=":warning: docs-agent PR has no Requested-by attribution. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment."
+                -f body=":warning: docs-agent PR has no Requested-by attribution in any commit message. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment."
             fi
             exit 0
           fi
