@@ -99,7 +99,39 @@ jobs:
           # `|| true` on each command substitution is critical: under pipefail,
           # grep-no-match propagates a non-zero exit and the step aborts before
           # the empty-attribution fallback runs.
-          COMMITS_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" || true)"
+          #
+          # Fetch ALL commits (paginated). GitHub's pull-request commits
+          # endpoint returns 30/page by default; PRs with many fixup commits
+          # could span multiple pages and a missing-page would silently drop
+          # the originator's trailer from ALL_REQUESTED_BY. Use --paginate
+          # with per_page=100 (the max for this endpoint) and merge pages.
+          #
+          # Fail-closed on API errors: if commits-fetch fails after retries,
+          # we cannot validate the originator, so the only safe action is
+          # to dismiss the approval (rather than treat as "no attribution"
+          # and silently allow). The approver can re-approve once the API
+          # recovers.
+          fetch_commits() {
+            for attempt in 1 2 3; do
+              if out=$(gh api --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" 2>/tmp/gh-err); then
+                # gh api --paginate emits one JSON array per page; merge them.
+                printf '%s' "$out" | jq -s 'add // []'
+                return 0
+              fi
+              echo "Commit-fetch attempt $attempt failed:" >&2
+              cat /tmp/gh-err >&2 || true
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          if ! COMMITS_JSON="$(fetch_commits)"; then
+            echo "ERROR: could not fetch PR commits after 3 retries — failing closed by dismissing approval"
+            gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
+              -f message=":warning: Originator self-approval check could not run (GitHub API unavailable after 3 retries). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
+
           NUM_COMMITS="$(printf '%s' "$COMMITS_JSON" | jq 'length' 2>/dev/null || echo 0)"
 
           TRAILERS_FILE="$(mktemp)"
