@@ -59,7 +59,7 @@ jobs:
           COMMITS_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" || true)"
           REQUESTED_BY="$(printf '%s' "$COMMITS_JSON" \
             | jq -r '.[] | select(.author.login == "JackReacher0807") | select(.commit.verification.verified == true) | .commit.message' 2>/dev/null \
-            | grep -oE 'Requested-by:[[:space:]]*@[A-Za-z0-9_-]+' \
+            | grep -oE '[Rr]equested[-_ ][Bb]y[[:space:]]*:[[:space:]]*@[A-Za-z0-9_-]+' \
             | grep -oE '@[A-Za-z0-9_-]+' \
             | head -1 \
             | tr -d '@' \
