@@ -40,33 +40,54 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Pull the Requested-by trailer from commits that are BOTH:
+          # Collect ALL Requested-by trailers from commits in this PR that
+          # are BOTH:
           #   1. Authored on GitHub by JackReacher0807 (the docs-agent), AND
           #   2. GPG-verified by GitHub (signature matches a known key on
           #      JackReacher0807's account)
           #
-          # Without these two filters, a collaborator with push access to the
-          # PR branch (or maintainer-edit on a fork PR) could add a commit
-          # with a fake "Requested-by: @<other-person>" trailer to redirect
-          # the policy at someone else, then approve their own request without
-          # being dismissed. Filtering on author.login + verification.verified
-          # closes that bypass — the originator can't forge an agent-signed
-          # commit because they don't have the agent's private GPG key.
+          # We then dismiss the approval if the approver matches ANY of the
+          # trailers (case-insensitive — GitHub logins are case-insensitive).
+          #
+          # Why "any of" instead of "the first":
+          #
+          # An attacker with PR-branch-write access could push an additional
+          # signed commit with a fake "Requested-by: @<some-other-victim>"
+          # trailer, hoping to redirect the rule away from themselves. Taking
+          # only the first/last trailer is vulnerable to this. By checking
+          # the approver against the full set, the original (real) trailer
+          # is still in the set, so the real originator's approval is still
+          # dismissed even if other trailers were added.
+          #
+          # Residual force-push risk: if the attacker REPLACES (not adds) the
+          # entire commit history with a single commit attributing to someone
+          # else, the real originator's trailer is gone and only the fake
+          # one remains. This requires (a) push access to the branch, and
+          # (b) is mitigated by branch protection settings:
+          #   - "Require signed commits" — non-agent commits are rejected
+          #   - "Dismiss stale pull request approvals when new commits are
+          #     pushed" — force-push drops approvals; attacker has to
+          #     re-approve and the workflow fires again on the new approval
+          #   - "Restrict who can push to matching branches" — limit
+          #     attacker universe
+          # See PR #1262 for the full threat-model discussion.
           #
           # `|| true` on each command substitution is critical: under pipefail,
           # grep-no-match propagates a non-zero exit and the step aborts before
           # the empty-attribution fallback runs.
           COMMITS_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" || true)"
-          REQUESTED_BY="$(printf '%s' "$COMMITS_JSON" \
+          ALL_REQUESTED_BY="$(printf '%s' "$COMMITS_JSON" \
             | jq -r '.[] | select(.author.login == "JackReacher0807") | select(.commit.verification.verified == true) | .commit.message' 2>/dev/null \
             | grep -oE '[Rr]equested[-_ ][Bb]y[[:space:]]*:[[:space:]]*@[A-Za-z0-9_-]+' \
             | grep -oE '@[A-Za-z0-9_-]+' \
-            | head -1 \
             | tr -d '@' \
+            | tr '[:upper:]' '[:lower:]' \
+            | sort -u \
             || true)"
+          APPROVER_LOWER="$(printf '%s' "$APPROVER" | tr '[:upper:]' '[:lower:]')"
 
-          if [ -z "$REQUESTED_BY" ]; then
-            echo "No 'Requested-by:' trailer found in any commit on this PR."
+          if [ -z "$ALL_REQUESTED_BY" ]; then
+            echo "No 'Requested-by:' trailer found in any verified docs-agent commit on this PR."
             # Post a one-time heads-up so reviewers know the rule isn't enforced
             # for this PR. Skip if a comment already exists.
             EXISTING="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
@@ -74,17 +95,17 @@ jobs:
               | head -1 || true)"
             if [ -z "$EXISTING" ]; then
               gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-                -f body=":warning: docs-agent PR has no Requested-by attribution in any commit message. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment."
+                -f body=":warning: docs-agent PR has no Requested-by attribution in any verified docs-agent commit message. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment."
             fi
             exit 0
           fi
 
-          echo "Approver=$APPROVER, Originator=$REQUESTED_BY"
+          echo "Approver=$APPROVER_LOWER, AllRequestedBy=$(printf '%s' "$ALL_REQUESTED_BY" | tr '\n' ',' | sed 's/,$//')"
 
-          if [ "$APPROVER" = "$REQUESTED_BY" ]; then
-            echo "Approver is the originator. Dismissing approval $REVIEW_ID."
+          if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+            echo "Approver matches a Requested-by trailer in this PR. Dismissing approval $REVIEW_ID."
             gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
-              -f message="@$APPROVER you originated this docs request via Slack. Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review."
+              -f message="@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review."
           else
-            echo "Approver is not the originator. No action."
+            echo "Approver does not match any Requested-by trailer. No action."
           fi
