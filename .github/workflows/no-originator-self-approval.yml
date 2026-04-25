@@ -111,9 +111,14 @@ jobs:
           # to dismiss the approval (rather than treat as "no attribution"
           # and silently allow). The approver can re-approve once the API
           # recovers.
+          # NOTE: --method GET is REQUIRED. `gh api` defaults to POST as soon
+          # as any -f/-F parameter is given (per gh manual). The pull-request
+          # commits endpoint is GET-only; without --method GET the call hits
+          # a non-existent POST endpoint and returns 404, sending every
+          # approval through the fail-closed dismissal path.
           fetch_commits() {
             for attempt in 1 2 3; do
-              if out=$(gh api --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" 2>/tmp/gh-err); then
+              if out=$(gh api --method GET --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" 2>/tmp/gh-err); then
                 # gh api --paginate emits one JSON array per page; merge them.
                 printf '%s' "$out" | jq -s 'add // []'
                 return 0
@@ -154,13 +159,29 @@ jobs:
               continue
             fi
 
-            # Cryptographically verify against our pinned key only
+            # Cryptographically verify against our pinned key only.
+            #
+            # NOTE 1: payload MUST be written with a trailing newline. Git
+            # commits the payload as raw bytes ending in \n; the API's
+            # verification.payload preserves those bytes but jq-decoded
+            # strings are written without the trailing newline by printf
+            # '%s'. Without the newline, gpg outputs BADSIG.
+            #
+            # NOTE 2: gpg's VALIDSIG status line has the format
+            #   [GNUPG:] VALIDSIG <signing_key_fpr> <date> ... <primary_key_fpr>
+            # When a key has signing subkeys (the default for `gpg
+            # --full-generate-key`), the FIRST fingerprint after VALIDSIG
+            # is the signing SUBKEY, and the LAST field is the PRIMARY key.
+            # Our pinned EXPECTED_FPR is the primary fingerprint, so we
+            # match against the last field via awk, not the first.
             sig_file="$(mktemp)"
             payload_file="$(mktemp)"
             printf '%s' "$signature" > "$sig_file"
-            printf '%s' "$payload" > "$payload_file"
-            if gpg --status-fd=1 --verify "$sig_file" "$payload_file" 2>/dev/null | grep -qE "^\[GNUPG:\] VALIDSIG $EXPECTED_FPR"; then
-              echo "trust $sha: verified against pinned key"
+            printf '%s\n' "$payload" > "$payload_file"
+            primary_fpr="$(gpg --status-fd=1 --verify "$sig_file" "$payload_file" 2>/dev/null \
+              | awk '/^\[GNUPG:\] VALIDSIG/ {print $NF}' | head -1)"
+            if [ "$primary_fpr" = "$EXPECTED_FPR" ]; then
+              echo "trust $sha: verified against pinned primary key"
               printf '%s' "$message" \
                 | grep -oE '[Rr]equested[-_ ][Bb]y[[:space:]]*:[[:space:]]*@[A-Za-z0-9_-]+' \
                 | grep -oE '@[A-Za-z0-9_-]+' \
@@ -168,7 +189,7 @@ jobs:
                 | tr '[:upper:]' '[:lower:]' \
                 >> "$TRAILERS_FILE" || true
             else
-              echo "skip $sha: signature does not match pinned key $EXPECTED_FPR"
+              echo "skip $sha: primary_fpr=$primary_fpr (expected $EXPECTED_FPR)"
             fi
             rm -f "$sig_file" "$payload_file"
           done
