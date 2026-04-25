@@ -60,19 +60,51 @@ jobs:
           # The fingerprint is hardcoded below; account compromise can't
           # change it.
           EXPECTED_FPR="48AB9EC753D58474E845E808AB0009C56564B53A"
+          PUBKEY_FILE=".github/workflows/docs-agent-pubkey.asc"
           export GNUPGHOME="$(mktemp -d)"
-          gpg --batch --quiet --import .github/workflows/docs-agent-pubkey.asc
 
-          # Verify the pubkey actually loaded. If gpg silently failed (corrupted
-          # file, wrong format, etc.), every signature check would fail closed
-          # on the trust filter and the rule would silently degrade to the
-          # missing-attribution path — never enforcing. Better to fail loudly.
+          # Helper: retry-loop wrapper around the dismissal API call. Used for
+          # all fail-closed paths AND the originator-match dismissal so a
+          # transient API hiccup doesn't leave the approval intact when our
+          # logic says it should be dismissed.
+          dismiss_with_retry() {
+            local message="$1"
+            for attempt in 1 2 3; do
+              if gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
+                  -f message="$message" \
+                  -f event=DISMISS >/dev/null 2>/tmp/dismiss-err; then
+                return 0
+              fi
+              echo "Dismiss attempt $attempt failed:" >&2
+              cat /tmp/dismiss-err >&2 || true
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          # Pubkey file must exist before we can verify anything. If someone
+          # deleted it from main (only possible via merge to main, which is
+          # exactly what this rule is enforcing), fail closed.
+          if [ ! -f "$PUBKEY_FILE" ]; then
+            echo "ERROR: pubkey file $PUBKEY_FILE missing from checkout" >&2
+            dismiss_with_retry ":warning: Originator self-approval check could not initialize (pinned pubkey file missing from repo). Approval dismissed by default per fail-closed policy." || true
+            exit 1
+          fi
+
+          # Import. If import itself fails (corrupted file etc.), fail closed.
+          if ! gpg --batch --quiet --import "$PUBKEY_FILE" 2>/tmp/gpg-import-err; then
+            echo "ERROR: gpg --import failed:" >&2
+            cat /tmp/gpg-import-err >&2 || true
+            dismiss_with_retry ":warning: Originator self-approval check could not initialize (pubkey import failed). Approval dismissed by default per fail-closed policy." || true
+            exit 1
+          fi
+
+          # Post-import verify the pinned key actually loaded. Silent-import-
+          # without-keys would otherwise silently degrade every PR to the
+          # warn-only path.
           if ! gpg --list-keys "$EXPECTED_FPR" >/dev/null 2>&1; then
             echo "ERROR: pinned pubkey $EXPECTED_FPR not present in keyring after import" >&2
-            echo "       The signed-commit verification cannot run; failing closed by dismissing approval." >&2
-            gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
-              -f message=":warning: Originator self-approval check could not initialize (pinned pubkey missing from workflow). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." \
-              -f event=DISMISS || true
+            dismiss_with_retry ":warning: Originator self-approval check could not initialize (pinned pubkey missing from imported keyring). Approval dismissed by default per fail-closed policy." || true
             exit 1
           fi
 
@@ -146,9 +178,7 @@ jobs:
 
           if ! COMMITS_JSON="$(fetch_commits)"; then
             echo "ERROR: could not fetch PR commits after 3 retries — failing closed by dismissing approval"
-            gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
-              -f message=":warning: Originator self-approval check could not run (GitHub API unavailable after 3 retries). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." \
-              -f event=DISMISS || true
+            dismiss_with_retry ":warning: Originator self-approval check could not run (GitHub API unavailable after 3 retries). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
             exit 1
           fi
 
@@ -193,8 +223,19 @@ jobs:
             payload_file="$(mktemp)"
             printf '%s' "$signature" > "$sig_file"
             printf '%s\n' "$payload" > "$payload_file"
-            primary_fpr="$(gpg --status-fd=1 --verify "$sig_file" "$payload_file" 2>/dev/null \
-              | awk '/^\[GNUPG:\] VALIDSIG/ {print $NF}' | head -1)"
+
+            # gpg --verify exits non-zero on BADSIG (tampered payload),
+            # NO_PUBKEY (untrusted signer), or invalid sig data. Under
+            # `set -euo pipefail`, that would abort the whole step before
+            # the else branch runs — turning "skip an untrusted commit"
+            # into a hard workflow failure that prevents the dismissal
+            # logic from running for legitimately verified commits later
+            # in the loop. Capture exit cleanly via an `if` block so a
+            # bad signature just falls through to the SKIP path.
+            primary_fpr=""
+            if gpg_status="$(gpg --status-fd=1 --verify "$sig_file" "$payload_file" 2>/dev/null)"; then
+              primary_fpr="$(printf '%s' "$gpg_status" | awk '/^\[GNUPG:\] VALIDSIG/ {print $NF}' | head -1)"
+            fi
             if [ "$primary_fpr" = "$EXPECTED_FPR" ]; then
               echo "trust $sha: verified against pinned primary key"
               printf '%s' "$message" \
@@ -224,7 +265,8 @@ jobs:
               | head -1 || true)"
             if [ -z "$EXISTING" ]; then
               gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-                -f body=":warning: docs-agent PR has no Requested-by attribution in any verified docs-agent commit message. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment."
+                -f body=":warning: docs-agent PR has no Requested-by attribution in any verified docs-agent commit message. The originator-self-approval rule cannot be enforced for this PR; please apply review judgment." \
+                || echo "WARN: failed to post missing-attribution comment (non-critical)" >&2
             fi
             exit 0
           fi
@@ -233,9 +275,10 @@ jobs:
 
           if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
             echo "Approver matches a Requested-by trailer in this PR. Dismissing approval $REVIEW_ID."
-            gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
-              -f message="@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review." \
-              -f event=DISMISS
+            if ! dismiss_with_retry "@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review."; then
+              echo "ERROR: dismissal of originator approval failed after 3 retries — exiting 1 to surface the failure" >&2
+              exit 1
+            fi
           else
             echo "Approver does not match any Requested-by trailer. No action."
           fi
