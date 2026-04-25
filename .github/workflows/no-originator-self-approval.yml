@@ -40,17 +40,25 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Pull the Requested-by trailer from any of the PR's commit messages
-          # (the agent emits it on its first commit; later fixup commits may
-          # not repeat it). Commit messages are immutable without a force-push,
-          # which is independently protected by GPG signing + branch protection.
+          # Pull the Requested-by trailer from commits that are BOTH:
+          #   1. Authored on GitHub by JackReacher0807 (the docs-agent), AND
+          #   2. GPG-verified by GitHub (signature matches a known key on
+          #      JackReacher0807's account)
+          #
+          # Without these two filters, a collaborator with push access to the
+          # PR branch (or maintainer-edit on a fork PR) could add a commit
+          # with a fake "Requested-by: @<other-person>" trailer to redirect
+          # the policy at someone else, then approve their own request without
+          # being dismissed. Filtering on author.login + verification.verified
+          # closes that bypass — the originator can't forge an agent-signed
+          # commit because they don't have the agent's private GPG key.
           #
           # `|| true` on each command substitution is critical: under pipefail,
           # grep-no-match propagates a non-zero exit and the step aborts before
           # the empty-attribution fallback runs.
           COMMITS_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" || true)"
           REQUESTED_BY="$(printf '%s' "$COMMITS_JSON" \
-            | jq -r '.[].commit.message' 2>/dev/null \
+            | jq -r '.[] | select(.author.login == "JackReacher0807") | select(.commit.verification.verified == true) | .commit.message' 2>/dev/null \
             | grep -oE 'Requested-by:[[:space:]]*@[A-Za-z0-9_-]+' \
             | grep -oE '@[A-Za-z0-9_-]+' \
             | head -1 \
