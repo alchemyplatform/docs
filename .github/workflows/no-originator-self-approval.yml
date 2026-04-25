@@ -31,6 +31,13 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      - name: Checkout to access pinned agent public key
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          sparse-checkout: |
+            .github/workflows/docs-agent-pubkey.asc
+          sparse-checkout-cone-mode: false
       - name: Compare approver to originator and dismiss if same
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,11 +47,27 @@ jobs:
         run: |
           set -euo pipefail
 
+          # PINNED KEY VERIFICATION (defense against account compromise):
+          #
+          # GitHub's `verification.verified == true` only confirms the
+          # signature is valid against SOME key on JackReacher0807's account.
+          # If that account is compromised and an attacker adds their own
+          # GPG key, commits signed with that key would also pass GitHub's
+          # check. To close this, we re-verify each commit's signature
+          # against ONLY the pinned agent fingerprint, in an isolated
+          # gpg keyring containing only the agent's checked-in public key.
+          # The fingerprint is hardcoded below; account compromise can't
+          # change it.
+          EXPECTED_FPR="48AB9EC753D58474E845E808AB0009C56564B53A"
+          export GNUPGHOME="$(mktemp -d)"
+          gpg --batch --quiet --import .github/workflows/docs-agent-pubkey.asc
+
           # Collect ALL Requested-by trailers from commits in this PR that
           # are BOTH:
           #   1. Authored on GitHub by JackReacher0807 (the docs-agent), AND
-          #   2. GPG-verified by GitHub (signature matches a known key on
-          #      JackReacher0807's account)
+          #   2. Cryptographically signed by the pinned agent GPG key
+          #      (verified locally in the workflow, not just trusting
+          #      GitHub's flag)
           #
           # We then dismiss the approval if the approver matches ANY of the
           # trailers (case-insensitive — GitHub logins are case-insensitive).
@@ -63,27 +86,62 @@ jobs:
           # entire commit history with a single commit attributing to someone
           # else, the real originator's trailer is gone and only the fake
           # one remains. This requires (a) push access to the branch, and
-          # (b) is mitigated by branch protection settings:
-          #   - "Require signed commits" — non-agent commits are rejected
-          #   - "Dismiss stale pull request approvals when new commits are
-          #     pushed" — force-push drops approvals; attacker has to
-          #     re-approve and the workflow fires again on the new approval
-          #   - "Restrict who can push to matching branches" — limit
-          #     attacker universe
+          # (b) the attacker still can't sign with our pinned key, so any
+          # replacement commits would fail the local-verification filter
+          # below and be excluded from the trailer set entirely (treated
+          # as untrusted, missing-attribution path fires).
+          # Branch-protection settings further reduce attack surface:
+          #   - "Require signed commits"
+          #   - "Dismiss stale pull request approvals when new commits are pushed"
+          #   - "Restrict who can push to matching branches"
           # See PR #1262 for the full threat-model discussion.
           #
           # `|| true` on each command substitution is critical: under pipefail,
           # grep-no-match propagates a non-zero exit and the step aborts before
           # the empty-attribution fallback runs.
           COMMITS_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" || true)"
-          ALL_REQUESTED_BY="$(printf '%s' "$COMMITS_JSON" \
-            | jq -r '.[] | select(.author.login == "JackReacher0807") | select(.commit.verification.verified == true) | .commit.message' 2>/dev/null \
-            | grep -oE '[Rr]equested[-_ ][Bb]y[[:space:]]*:[[:space:]]*@[A-Za-z0-9_-]+' \
-            | grep -oE '@[A-Za-z0-9_-]+' \
-            | tr -d '@' \
-            | tr '[:upper:]' '[:lower:]' \
-            | sort -u \
-            || true)"
+          NUM_COMMITS="$(printf '%s' "$COMMITS_JSON" | jq 'length' 2>/dev/null || echo 0)"
+
+          TRAILERS_FILE="$(mktemp)"
+          for i in $(seq 0 $((NUM_COMMITS - 1))); do
+            payload="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].commit.verification.payload // empty")"
+            signature="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].commit.verification.signature // empty")"
+            message="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].commit.message // empty")"
+            author_login="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].author.login // empty")"
+            sha="$(printf '%s' "$COMMITS_JSON" | jq -r ".[$i].sha // empty")"
+
+            # Skip if not authored by the agent on GitHub
+            if [ "$author_login" != "JackReacher0807" ]; then
+              echo "skip $sha: author=$author_login (not JackReacher0807)"
+              continue
+            fi
+
+            # Skip if no signature attached
+            if [ -z "$payload" ] || [ -z "$signature" ]; then
+              echo "skip $sha: missing payload or signature"
+              continue
+            fi
+
+            # Cryptographically verify against our pinned key only
+            sig_file="$(mktemp)"
+            payload_file="$(mktemp)"
+            printf '%s' "$signature" > "$sig_file"
+            printf '%s' "$payload" > "$payload_file"
+            if gpg --status-fd=1 --verify "$sig_file" "$payload_file" 2>/dev/null | grep -qE "^\[GNUPG:\] VALIDSIG $EXPECTED_FPR"; then
+              echo "trust $sha: verified against pinned key"
+              printf '%s' "$message" \
+                | grep -oE '[Rr]equested[-_ ][Bb]y[[:space:]]*:[[:space:]]*@[A-Za-z0-9_-]+' \
+                | grep -oE '@[A-Za-z0-9_-]+' \
+                | tr -d '@' \
+                | tr '[:upper:]' '[:lower:]' \
+                >> "$TRAILERS_FILE" || true
+            else
+              echo "skip $sha: signature does not match pinned key $EXPECTED_FPR"
+            fi
+            rm -f "$sig_file" "$payload_file"
+          done
+
+          ALL_REQUESTED_BY="$(sort -u "$TRAILERS_FILE" | grep -v '^$' || true)"
           APPROVER_LOWER="$(printf '%s' "$APPROVER" | tr '[:upper:]' '[:lower:]')"
 
           if [ -z "$ALL_REQUESTED_BY" ]; then
