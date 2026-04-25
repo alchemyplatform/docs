@@ -180,6 +180,7 @@ jobs:
           fi
 
           TRAILERS_FILE="$(mktemp)"
+          TRUSTED_COMMIT_COUNT=0
           while IFS= read -r sha; do
             # Cryptographically verify against our pinned key only.
             #
@@ -203,6 +204,7 @@ jobs:
               primary_fpr="$(printf '%s\n' "$gpg_status" | awk '/^\[GNUPG:\] VALIDSIG/ {print $NF; exit}')"
             fi
             if [ "$primary_fpr" = "$EXPECTED_FPR" ]; then
+              TRUSTED_COMMIT_COUNT=$((TRUSTED_COMMIT_COUNT + 1))
               echo "trust $sha: verified against pinned primary key"
               git show -s --format=%B "$sha" \
                 | git interpret-trailers --parse \
@@ -217,7 +219,12 @@ jobs:
           APPROVER_LOWER="$(printf '%s' "$APPROVER" | tr '[:upper:]' '[:lower:]')"
 
           if [ -z "$ALL_REQUESTED_BY" ]; then
-            echo "No trusted Requested-by trailer found in any pinned-key-verified docs-agent commit on this PR. Allowing approval because there is no originator attribution to enforce."
+            if [ "$TRUSTED_COMMIT_COUNT" -eq 0 ]; then
+              echo "ERROR: no pinned-key-verified docs-agent commits found in the reviewed range." >&2
+              dismiss_with_retry ":warning: Originator self-approval check found no pinned-key-verified docs-agent commits in the reviewed range. Approval dismissed by default because trusted attribution may have been removed." || true
+              exit 1
+            fi
+            echo "No trusted Requested-by trailer found across $TRUSTED_COMMIT_COUNT pinned-key-verified docs-agent commit(s). Allowing approval because there is no originator attribution to enforce."
             exit 0
           fi
 
