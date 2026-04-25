@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      contents: read
     steps:
       - name: Checkout to access pinned agent public key
         uses: actions/checkout@v4
@@ -61,6 +62,19 @@ jobs:
           EXPECTED_FPR="48AB9EC753D58474E845E808AB0009C56564B53A"
           export GNUPGHOME="$(mktemp -d)"
           gpg --batch --quiet --import .github/workflows/docs-agent-pubkey.asc
+
+          # Verify the pubkey actually loaded. If gpg silently failed (corrupted
+          # file, wrong format, etc.), every signature check would fail closed
+          # on the trust filter and the rule would silently degrade to the
+          # missing-attribution path — never enforcing. Better to fail loudly.
+          if ! gpg --list-keys "$EXPECTED_FPR" >/dev/null 2>&1; then
+            echo "ERROR: pinned pubkey $EXPECTED_FPR not present in keyring after import" >&2
+            echo "       The signed-commit verification cannot run; failing closed by dismissing approval." >&2
+            gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
+              -f message=":warning: Originator self-approval check could not initialize (pinned pubkey missing from workflow). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." \
+              -f event=DISMISS || true
+            exit 1
+          fi
 
           # Collect ALL Requested-by trailers from commits in this PR that
           # are BOTH:
@@ -133,7 +147,8 @@ jobs:
           if ! COMMITS_JSON="$(fetch_commits)"; then
             echo "ERROR: could not fetch PR commits after 3 retries — failing closed by dismissing approval"
             gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
-              -f message=":warning: Originator self-approval check could not run (GitHub API unavailable after 3 retries). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+              -f message=":warning: Originator self-approval check could not run (GitHub API unavailable after 3 retries). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." \
+              -f event=DISMISS || true
             exit 1
           fi
 
@@ -200,9 +215,12 @@ jobs:
           if [ -z "$ALL_REQUESTED_BY" ]; then
             echo "No 'Requested-by:' trailer found in any verified docs-agent commit on this PR."
             # Post a one-time heads-up so reviewers know the rule isn't enforced
-            # for this PR. Skip if a comment already exists.
-            EXISTING="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-              --jq '.[] | select(.body | startswith(":warning: docs-agent PR has no Requested-by attribution")) | .id' \
+            # for this PR. Skip if a comment already exists. Paginate the
+            # comments fetch so a duplicate-suppression check works on PRs
+            # that have accumulated more than one page (30) of comments.
+            EXISTING="$(gh api --method GET --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" 2>/dev/null \
+              | jq -s 'add // []' \
+              | jq -r '.[] | select(.body | startswith(":warning: docs-agent PR has no Requested-by attribution")) | .id' \
               | head -1 || true)"
             if [ -z "$EXISTING" ]; then
               gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
@@ -216,7 +234,8 @@ jobs:
           if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
             echo "Approver matches a Requested-by trailer in this PR. Dismissing approval $REVIEW_ID."
             gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
-              -f message="@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review."
+              -f message="@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request — please ask another team member to review." \
+              -f event=DISMISS
           else
             echo "Approver does not match any Requested-by trailer. No action."
           fi
