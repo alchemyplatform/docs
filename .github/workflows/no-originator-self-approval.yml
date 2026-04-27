@@ -56,10 +56,6 @@ jobs:
           set -euo pipefail
 
           REVIEW_STATE_LOWER="$(printf '%s' "$REVIEW_STATE" | tr '[:upper:]' '[:lower:]')"
-          if [ "$REVIEW_STATE_LOWER" != "approved" ]; then
-            echo "Review state is $REVIEW_STATE. No approval enforcement needed."
-            exit 0
-          fi
 
           if [ "$PR_AUTHOR" != "JackReacher0807" ]; then
             echo "PR author is $PR_AUTHOR, not JackReacher0807. No docs-agent enforcement needed."
@@ -255,11 +251,9 @@ jobs:
             exit 0
           fi
 
-          echo "Approver=$APPROVER_LOWER, AllRequestedBy=$(printf '%s' "$ALL_REQUESTED_BY" | tr '\n' ',' | sed 's/,$//')"
-
           if ! REVIEWS_JSON="$(fetch_reviews)"; then
             echo "ERROR: could not fetch PR reviews after 3 retries." >&2
-            if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+            if [ "$REVIEW_STATE_LOWER" = "approved" ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
               dismiss_with_retry ":warning: Originator self-approval check could not fetch current PR reviews. Approval dismissed by default because you are listed as the docs request originator." || true
             fi
             exit 1
@@ -267,36 +261,31 @@ jobs:
 
           ACTIVE_APPROVERS="$(
             printf '%s' "$REVIEWS_JSON" \
-              | jq -r 'sort_by(.submitted_at // "") | reduce .[] as $review ({}; .[$review.user.login | ascii_downcase] = ($review.state | ascii_upcase)) | to_entries[] | select(.value == "APPROVED") | .key'
+              | jq -r 'map(select((.state | ascii_upcase) != "COMMENTED")) | sort_by(.submitted_at // "") | reduce .[] as $review ({}; .[$review.user.login | ascii_downcase] = ($review.state | ascii_upcase)) | to_entries[] | select(.value == "APPROVED") | .key'
           )"
 
-          HAS_REQUESTER_APPROVAL=0
-          HAS_NON_REQUESTER_APPROVAL=0
+          NON_REQUESTER_APPROVAL_COUNT=0
           while IFS= read -r active_approver; do
             [ -n "$active_approver" ] || continue
-            if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$active_approver"; then
-              HAS_REQUESTER_APPROVAL=1
-            else
-              HAS_NON_REQUESTER_APPROVAL=1
+            if ! printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$active_approver"; then
+              NON_REQUESTER_APPROVAL_COUNT=$((NON_REQUESTER_APPROVAL_COUNT + 1))
             fi
           done <<< "$ACTIVE_APPROVERS"
 
-          if [ "$HAS_REQUESTER_APPROVAL" -eq 0 ] && [ "$HAS_NON_REQUESTER_APPROVAL" -eq 0 ]; then
-            echo "ERROR: no active approvals found after an approval event." >&2
-            exit 1
-          fi
+          echo "Approver=$APPROVER_LOWER, AllRequestedBy=$(printf '%s' "$ALL_REQUESTED_BY" | tr '\n' ',' | sed 's/,$//'), NonRequesterApprovals=$NON_REQUESTER_APPROVAL_COUNT"
 
-          if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
-            echo "Approver matches a Requested-by trailer in this PR. Dismissing approval $REVIEW_ID."
+          if [ "$REVIEW_STATE_LOWER" = "approved" ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+            echo "Approver matches a Requested-by trailer. Dismissing approval $REVIEW_ID."
             if ! dismiss_with_retry "@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request. Please ask another team member to review."; then
               echo "ERROR: dismissal of originator approval failed after 3 retries, exiting 1 to surface the failure" >&2
               exit 1
             fi
-            if [ "$HAS_NON_REQUESTER_APPROVAL" -eq 0 ]; then
-              echo "ERROR: only requester approval is active. Failing required check until a non-requester approves." >&2
-              exit 1
-            fi
-            echo "A non-requester approval is also active. Required check can pass."
-          else
-            echo "Approver does not match any Requested-by trailer. No action."
           fi
+
+          if [ "$NON_REQUESTER_APPROVAL_COUNT" -gt 0 ]; then
+            echo "$NON_REQUESTER_APPROVAL_COUNT non-requester approval(s) active. Check passes."
+            exit 0
+          fi
+
+          echo "No active non-requester approvals. Failing required check."
+          exit 1
