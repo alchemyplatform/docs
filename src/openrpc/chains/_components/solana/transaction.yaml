@@ -556,9 +556,7 @@ components:
           default: desc
         limit:
           type: integer
-          description: >-
-            Maximum number of results to return. Maximum is 1,000 for
-            `signatures` mode and 100 for `full` mode.
+          description: Maximum number of results to return. Maximum is 1,000.
           default: 1000
         paginationToken:
           type: string
@@ -590,6 +588,15 @@ components:
           description: >-
             The maximum transaction version to return. Only applies when
             `transactionDetails` is `full`.
+        commitment:
+          type: string
+          description: >-
+            Commitment level for the request. Must be `confirmed` or `finalized`;
+            passing `processed` returns an error. Defaults to `finalized`.
+          enum:
+            - confirmed
+            - finalized
+          default: finalized
         filters:
           $ref: "#/components/schemas/GetTransactionsForAddressFilters"
     GetTransactionsForAddressFilters:
