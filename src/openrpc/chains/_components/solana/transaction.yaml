@@ -596,45 +596,30 @@ components:
       title: GetTransactionsForAddress Filters
       type: object
       properties:
-        status:
-          type: string
-          description: Filter by transaction outcome.
-          enum:
-            - any
-            - succeeded
-            - failed
-          default: any
         blockTime:
           $ref: "#/components/schemas/RangeFilter"
           description: >-
             Restrict results to transactions whose `blockTime` falls within
-            this range (Unix timestamps). Converted internally to an
-            approximate slot range.
+            this range (Unix timestamps, seconds).
         slot:
           $ref: "#/components/schemas/RangeFilter"
           description: Restrict results to transactions within this slot range.
-        tokenAccounts:
-          type: string
-          description: >-
-            Filter by token account activity. `all` returns only transactions
-            that include token balances; `balanceChanged` returns only
-            transactions where at least one pre/post token balance differs;
-            `none` applies no token-account filter.
-          enum:
-            - none
-            - all
-            - balanceChanged
-          default: none
     RangeFilter:
       title: Range Filter
       type: object
       properties:
         gte:
           type: integer
-          description: Inclusive lower bound of the range.
+          description: Match values greater than or equal to this bound.
+        gt:
+          type: integer
+          description: Match values strictly greater than this bound.
         lte:
           type: integer
-          description: Inclusive upper bound of the range.
+          description: Match values less than or equal to this bound.
+        lt:
+          type: integer
+          description: Match values strictly less than this bound.
     GetTransactionsForAddressResult:
       title: GetTransactionsForAddress Result
       type: object
