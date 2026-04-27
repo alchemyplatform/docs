@@ -201,7 +201,7 @@ Content under `content/wallets/pages/low-level-infra/` targets developers workin
 **Link Strategy**:
 
 * **Link to existing docs** instead of repeating content
-* **Use relative links**: All relative links should begin with `/wallets/...` instead of full URLs (`https://www.alchemy.com/docs/wallets/...`)
+* **Use relative links**: All relative links should begin with `/docs/wallets/...` instead of full URLs (`https://www.alchemy.com/docs/wallets/...`). The `/docs/` prefix is required — links missing it work on the live site via fallback formatting, but the lychee link checker (run on every PR) fails on them.
 * **Ensure no broken or circular references**
 
 ***
@@ -283,7 +283,7 @@ Ensure you are using aa-sdk version 3.x or later...
 
 **Links and References**:
 
-* ✅ **Use relative links**: `[/wallets/authentication]`
+* ✅ **Use relative links**: `[/docs/wallets/authentication]`
 * ❌ **Avoid full URLs**: `[https://www.alchemy.com/docs/...]`
 * ✅ **Include alt text** for all images
 * ✅ **Verify no broken links**
