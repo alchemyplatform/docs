@@ -1,4 +1,4 @@
-name: Block originator self-approval on docs-agent PRs
+name: Docs agent review guard
 
 # When the docs-agent (JackReacher0807) opens a PR on behalf of someone who
 # requested the change via Slack, it includes a "Requested-by: @<github_username>"
@@ -28,6 +28,7 @@ on:
 
 jobs:
   block-originator-self-approval:
+    name: Self-approval guard
     if: github.event.review.state == 'approved' && github.event.pull_request.user.login == 'JackReacher0807'
     runs-on: ubuntu-latest
     permissions:
