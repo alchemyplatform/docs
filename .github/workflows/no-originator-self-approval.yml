@@ -19,8 +19,8 @@ name: Docs agent review guard
 # "Dismiss stale pull request approvals when new commits are pushed" enabled,
 # drop existing approvals.
 #
-# Scope: this workflow does NOT affect human-authored PRs. It only fires when
-# the PR author is JackReacher0807 (the docs-agent's GitHub identity).
+# Scope: this workflow only enforces docs-agent PRs. It passes for
+# human-authored PRs so the check can be required for every PR.
 
 on:
   pull_request_review:
@@ -29,7 +29,6 @@ on:
 jobs:
   block-originator-self-approval:
     name: Self-approval guard
-    if: github.event.review.state == 'approved' && github.event.pull_request.user.login == 'JackReacher0807'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -47,12 +46,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPROVER: ${{ github.event.review.user.login }}
+          REVIEW_STATE: ${{ github.event.review.state }}
           REVIEW_ID: ${{ github.event.review.id }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           REVIEW_COMMIT_SHA: ${{ github.event.review.commit_id }}
         run: |
           set -euo pipefail
+
+          REVIEW_STATE_LOWER="$(printf '%s' "$REVIEW_STATE" | tr '[:upper:]' '[:lower:]')"
+          if [ "$REVIEW_STATE_LOWER" != "approved" ]; then
+            echo "Review state is $REVIEW_STATE. No approval enforcement needed."
+            exit 0
+          fi
+
+          if [ "$PR_AUTHOR" != "JackReacher0807" ]; then
+            echo "PR author is $PR_AUTHOR, not JackReacher0807. No docs-agent enforcement needed."
+            exit 0
+          fi
 
           # PINNED KEY VERIFICATION (defense against account compromise):
           #
@@ -84,6 +96,20 @@ jobs:
               fi
               echo "Dismiss attempt $attempt failed:" >&2
               cat /tmp/dismiss-err >&2 || true
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          fetch_reviews() {
+            for attempt in 1 2 3; do
+              if out=$(gh api --method GET --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" 2>/tmp/reviews-err); then
+                # gh api --paginate emits one JSON array per page; merge them.
+                printf '%s' "$out" | jq -s 'add // []'
+                return 0
+              fi
+              echo "Review-fetch attempt $attempt failed:" >&2
+              cat /tmp/reviews-err >&2 || true
               sleep $((attempt * 5))
             done
             return 1
@@ -231,12 +257,46 @@ jobs:
 
           echo "Approver=$APPROVER_LOWER, AllRequestedBy=$(printf '%s' "$ALL_REQUESTED_BY" | tr '\n' ',' | sed 's/,$//')"
 
+          if ! REVIEWS_JSON="$(fetch_reviews)"; then
+            echo "ERROR: could not fetch PR reviews after 3 retries." >&2
+            if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+              dismiss_with_retry ":warning: Originator self-approval check could not fetch current PR reviews. Approval dismissed by default because you are listed as the docs request originator." || true
+            fi
+            exit 1
+          fi
+
+          ACTIVE_APPROVERS="$(
+            printf '%s' "$REVIEWS_JSON" \
+              | jq -r 'sort_by(.submitted_at // "") | reduce .[] as $review ({}; .[$review.user.login | ascii_downcase] = ($review.state | ascii_upcase)) | to_entries[] | select(.value == "APPROVED") | .key'
+          )"
+
+          HAS_REQUESTER_APPROVAL=0
+          HAS_NON_REQUESTER_APPROVAL=0
+          while IFS= read -r active_approver; do
+            [ -n "$active_approver" ] || continue
+            if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$active_approver"; then
+              HAS_REQUESTER_APPROVAL=1
+            else
+              HAS_NON_REQUESTER_APPROVAL=1
+            fi
+          done <<< "$ACTIVE_APPROVERS"
+
+          if [ "$HAS_REQUESTER_APPROVAL" -eq 0 ] && [ "$HAS_NON_REQUESTER_APPROVAL" -eq 0 ]; then
+            echo "ERROR: no active approvals found after an approval event." >&2
+            exit 1
+          fi
+
           if printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
             echo "Approver matches a Requested-by trailer in this PR. Dismissing approval $REVIEW_ID."
             if ! dismiss_with_retry "@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request. Please ask another team member to review."; then
               echo "ERROR: dismissal of originator approval failed after 3 retries, exiting 1 to surface the failure" >&2
               exit 1
             fi
+            if [ "$HAS_NON_REQUESTER_APPROVAL" -eq 0 ]; then
+              echo "ERROR: only requester approval is active. Failing required check until a non-requester approves." >&2
+              exit 1
+            fi
+            echo "A non-requester approval is also active. Required check can pass."
           else
             echo "Approver does not match any Requested-by trailer. No action."
           fi
