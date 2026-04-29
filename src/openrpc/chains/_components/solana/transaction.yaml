@@ -240,6 +240,199 @@ components:
         until:
           type: string
           description: Search until this transaction signature, if found before the limit is reached.
+    GetTransactionsForAddressFilters:
+      title: GetTransactionsForAddress Filters
+      type: object
+      description: Advanced filtering options for narrowing down results.
+      properties:
+        slot:
+          type: object
+          description: "Filter by slot number using comparison operators: `gte`, `gt`, `lte`, `lt`."
+          properties:
+            gte:
+              type: integer
+              description: Include slots greater than or equal to this value.
+            gt:
+              type: integer
+              description: Include slots strictly greater than this value.
+            lte:
+              type: integer
+              description: Include slots less than or equal to this value.
+            lt:
+              type: integer
+              description: Include slots strictly less than this value.
+        blockTime:
+          type: object
+          description: "Filter by Unix timestamp using comparison operators: `gte`, `gt`, `lte`, `lt`, `eq`."
+          properties:
+            gte:
+              type: integer
+              description: Include block times greater than or equal to this Unix timestamp.
+            gt:
+              type: integer
+              description: Include block times strictly greater than this Unix timestamp.
+            lte:
+              type: integer
+              description: Include block times less than or equal to this Unix timestamp.
+            lt:
+              type: integer
+              description: Include block times strictly less than this Unix timestamp.
+            eq:
+              type: integer
+              description: Include block times exactly equal to this Unix timestamp.
+        signature:
+          type: object
+          description: "Filter by transaction signature using comparison operators: `gte`, `gt`, `lte`, `lt`."
+          properties:
+            gte:
+              type: string
+              description: Include signatures greater than or equal to this base-58 encoded value.
+            gt:
+              type: string
+              description: Include signatures strictly greater than this base-58 encoded value.
+            lte:
+              type: string
+              description: Include signatures less than or equal to this base-58 encoded value.
+            lt:
+              type: string
+              description: Include signatures strictly less than this base-58 encoded value.
+        status:
+          type: string
+          description: Filter by transaction success/failure status.
+          enum:
+            - succeeded
+            - failed
+            - any
+          default: any
+        tokenAccounts:
+          type: string
+          description: >-
+            Filter transactions for related token accounts. `none` returns only
+            transactions that reference the provided address. `balanceChanged`
+            also returns transactions that modify the balance of a token account
+            owned by the provided address. `all` returns transactions that
+            reference the provided address or any token account owned by it.
+          enum:
+            - none
+            - balanceChanged
+            - all
+          default: none
+    GetTransactionsForAddressConfig:
+      title: GetTransactionsForAddress Configuration
+      type: object
+      description: Optional configuration object containing additional settings for the query.
+      properties:
+        transactionDetails:
+          type: string
+          description: >-
+            Level of transaction detail to return. `signatures` returns basic
+            signature info (faster). `full` returns complete transaction data,
+            removing the need for follow-up `getTransaction` calls (requires
+            `limit` <= 100).
+          enum:
+            - signatures
+            - full
+          default: signatures
+        sortOrder:
+          type: string
+          description: >-
+            Sort order for results. `desc` returns newest first (default). `asc`
+            returns oldest first (chronological order).
+          enum:
+            - asc
+            - desc
+          default: desc
+        limit:
+          type: integer
+          description: >-
+            Maximum number of transactions to return. Up to 1,000 when
+            `transactionDetails` is `signatures`, or up to 100 when
+            `transactionDetails` is `full`.
+          default: 1000
+        paginationToken:
+          type: string
+          description: 'Pagination token from a previous response (format: `"slot:position"`).'
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+          description: Commitment level. Only `finalized` or `confirmed` are supported; `processed` is not supported.
+          default: finalized
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        encoding:
+          type: string
+          description: >-
+            Encoding format for transaction data (only applies when
+            `transactionDetails` is `full`).
+          enum:
+            - json
+            - jsonParsed
+            - base64
+            - base58
+        maxSupportedTransactionVersion:
+          type: integer
+          description: >-
+            The maximum transaction version to return. If omitted, only legacy
+            transactions are returned. Set to `0` to include all versioned
+            transactions.
+        filters:
+          $ref: "#/components/schemas/GetTransactionsForAddressFilters"
+    GetTransactionsForAddressEntry:
+      title: GetTransactionsForAddress Entry
+      type: object
+      description: A single transaction entry returned by `getTransactionsForAddress`.
+      properties:
+        signature:
+          type: string
+          description: The transaction signature as a base-58 encoded string. Only present when `transactionDetails` is `signatures`.
+        slot:
+          type: integer
+          description: The slot that contains the block with the transaction.
+        transactionIndex:
+          type: integer
+          description: The zero-based index of the transaction within its block.
+        blockTime:
+          type: integer
+          nullable: true
+          description: The estimated production time of the transaction as a Unix timestamp, null if not available.
+        err:
+          type: object
+          nullable: true
+          description: Error if the transaction failed, null if it succeeded. Only present when `transactionDetails` is `signatures`.
+        memo:
+          type: string
+          nullable: true
+          description: The memo associated with the transaction, null if no memo is present. Only present when `transactionDetails` is `signatures`.
+        confirmationStatus:
+          type: string
+          nullable: true
+          description: The transaction's cluster confirmation status. Only present when `transactionDetails` is `signatures`.
+        version:
+          oneOf:
+            - type: string
+            - type: number
+          nullable: true
+          description: Transaction version. Only present when `transactionDetails` is `full`.
+        transaction:
+          type: object
+          description: Full transaction data. Only present when `transactionDetails` is `full`.
+        meta:
+          type: object
+          nullable: true
+          description: Transaction status metadata. Only present when `transactionDetails` is `full`.
+    GetTransactionsForAddressResult:
+      title: GetTransactionsForAddress Result
+      type: object
+      description: Paginated transaction history for the queried address.
+      properties:
+        data:
+          type: array
+          description: Array of transaction entries matching the query.
+          items:
+            $ref: "#/components/schemas/GetTransactionsForAddressEntry"
+        paginationToken:
+          type: string
+          nullable: true
+          description: 'Token for fetching the next page (format: `"slot:position"`), or null if no more results.'
     SignatureInfo:
       title: Signature Information
       type: object
