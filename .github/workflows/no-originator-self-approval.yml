@@ -1,0 +1,291 @@
+name: Docs agent review guard
+
+# When the docs-agent (JackReacher0807) opens a PR on behalf of someone who
+# requested the change via Slack, it includes a "Requested-by: @<github_username>"
+# trailer in the commit message. This workflow watches for approvals on those
+# PRs and dismisses any approval submitted by that user, so a docs-agent PR
+# always requires a non-originator review before merging.
+#
+# Branch protection on main needs both "Require 1 approval" and this workflow
+# as a required check. The review requirement supplies an approval, and this
+# check ensures that approval did not come from the person who originated the
+# docs-agent request.
+#
+# Why commit message and not PR body: the PR body is editable by anyone with
+# write access (including the originator), who could remove their own @mention
+# before approving. The commit message is GPG-signed by docs-agent's key
+# (AB0009C56564B53A). Force-pushing to amend the trailer would either lose
+# the signature (no agent key on the originator's machine) or, if the repo has
+# "Dismiss stale pull request approvals when new commits are pushed" enabled,
+# drop existing approvals.
+#
+# Scope: this workflow only enforces docs-agent PRs. It passes for
+# human-authored PRs so the check can be required for every PR.
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  block-originator-self-approval:
+    name: Self-approval guard
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Checkout to access pinned agent public key
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          sparse-checkout: |
+            .github/workflows/docs-agent-pubkey.asc
+          sparse-checkout-cone-mode: false
+      - name: Compare approver to originator and dismiss if same
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPROVER: ${{ github.event.review.user.login }}
+          REVIEW_STATE: ${{ github.event.review.state }}
+          REVIEW_ID: ${{ github.event.review.id }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REVIEW_COMMIT_SHA: ${{ github.event.review.commit_id }}
+        run: |
+          set -euo pipefail
+
+          REVIEW_STATE_LOWER="$(printf '%s' "$REVIEW_STATE" | tr '[:upper:]' '[:lower:]')"
+
+          if [ "$PR_AUTHOR" != "JackReacher0807" ]; then
+            echo "PR author is $PR_AUTHOR, not JackReacher0807. No docs-agent enforcement needed."
+            exit 0
+          fi
+
+          # PINNED KEY VERIFICATION (defense against account compromise):
+          #
+          # GitHub's `verification.verified == true` only confirms the
+          # signature is valid against SOME key on JackReacher0807's account.
+          # If that account is compromised and an attacker adds their own
+          # GPG key, commits signed with that key would also pass GitHub's
+          # check. To close this, we re-verify each commit's signature
+          # against ONLY the pinned agent fingerprint, in an isolated
+          # gpg keyring containing only the agent's checked-in public key.
+          # The fingerprint is hardcoded below; account compromise can't
+          # change it.
+          EXPECTED_FPR="48AB9EC753D58474E845E808AB0009C56564B53A"
+          PUBKEY_FILE=".github/workflows/docs-agent-pubkey.asc"
+          export GNUPGHOME="$(mktemp -d)"
+          trap 'rm -rf "$GNUPGHOME"' EXIT
+
+          # Helper: retry-loop wrapper around the dismissal API call. Used for
+          # all fail-closed paths AND the originator-match dismissal so a
+          # transient API hiccup doesn't leave the approval intact when our
+          # logic says it should be dismissed.
+          dismiss_with_retry() {
+            local message="$1"
+            for attempt in 1 2 3; do
+              if gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
+                  -f message="$message" \
+                  -f event=DISMISS >/dev/null 2>/tmp/dismiss-err; then
+                return 0
+              fi
+              echo "Dismiss attempt $attempt failed:" >&2
+              cat /tmp/dismiss-err >&2 || true
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          fetch_reviews() {
+            for attempt in 1 2 3; do
+              if out=$(gh api --method GET --paginate -F per_page=100 "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" 2>/tmp/reviews-err); then
+                # gh api --paginate emits one JSON array per page; merge them.
+                printf '%s' "$out" | jq -s 'add // []'
+                return 0
+              fi
+              echo "Review-fetch attempt $attempt failed:" >&2
+              cat /tmp/reviews-err >&2 || true
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          # Pubkey file must exist before we can verify anything. If someone
+          # deleted it from main (only possible via merge to main, which is
+          # exactly what this rule is enforcing), fail closed.
+          if [ ! -f "$PUBKEY_FILE" ]; then
+            echo "ERROR: pubkey file $PUBKEY_FILE missing from checkout" >&2
+            dismiss_with_retry ":warning: Originator self-approval check could not initialize (pinned pubkey file missing from repo). Approval dismissed by default per fail-closed policy." || true
+            exit 1
+          fi
+
+          # Import. If import itself fails (corrupted file etc.), fail closed.
+          if ! gpg --batch --quiet --import "$PUBKEY_FILE" 2>/tmp/gpg-import-err; then
+            echo "ERROR: gpg --import failed:" >&2
+            cat /tmp/gpg-import-err >&2 || true
+            dismiss_with_retry ":warning: Originator self-approval check could not initialize (pubkey import failed). Approval dismissed by default per fail-closed policy." || true
+            exit 1
+          fi
+
+          # Post-import verify the pinned key actually loaded. Silent import
+          # without keys would otherwise make every commit look untrusted.
+          if ! gpg --list-keys "$EXPECTED_FPR" >/dev/null 2>&1; then
+            echo "ERROR: pinned pubkey $EXPECTED_FPR not present in keyring after import" >&2
+            dismiss_with_retry ":warning: Originator self-approval check could not initialize (pinned pubkey missing from imported keyring). Approval dismissed by default per fail-closed policy." || true
+            exit 1
+          fi
+
+          # Collect ALL Requested-by trailers from commits in this PR that
+          # are BOTH:
+          #   1. In the exact commit range approved by this review, AND
+          #   2. Cryptographically signed by the pinned agent GPG key
+          #      (verified locally in the workflow, not just trusting
+          #      GitHub's flag)
+          #
+          # We then dismiss the approval if the approver matches ANY of the
+          # trailers (case-insensitive because GitHub logins are case-insensitive).
+          #
+          # Why "any of" instead of "the first":
+          #
+          # An attacker with PR-branch-write access could push an additional
+          # signed commit with a fake "Requested-by: @<some-other-victim>"
+          # trailer, hoping to redirect the rule away from themselves. Taking
+          # only the first/last trailer is vulnerable to this. By checking
+          # the approver against the full set, the original (real) trailer
+          # is still in the set, so the real originator's approval is still
+          # dismissed even if other trailers were added.
+          #
+          # Residual force-push risk: if the attacker REPLACES (not adds) the
+          # entire commit history with a single commit attributing to someone
+          # else, the real originator's trailer is gone and only the fake
+          # one remains. This requires (a) push access to the branch, and
+          # (b) the attacker still can't sign with our pinned key, so any
+          # replacement commits would fail the local-verification filter
+          # below and be excluded from the trailer set entirely, which makes
+          # the missing-attribution fail-closed path fire.
+          # Branch-protection settings further reduce attack surface:
+          #   - "Require signed commits"
+          #   - "Dismiss stale pull request approvals when new commits are pushed"
+          #   - "Restrict who can push to matching branches"
+          # See PR #1262 for the full threat-model discussion.
+          #
+          # Fetch and inspect commits locally instead of using the REST pull
+          # request commits endpoint. That endpoint is capped at 250 commits,
+          # which is not acceptable for an enforcement decision. Local git
+          # history also lets us evaluate the exact commit SHA that the
+          # approval was submitted against, avoiding live-PR drift.
+          if [ -z "${BASE_SHA:-}" ] || [ -z "${REVIEW_COMMIT_SHA:-}" ]; then
+            echo "ERROR: missing base or reviewed commit SHA from event payload" >&2
+            dismiss_with_retry ":warning: Originator self-approval check could not run (missing review commit metadata). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
+
+          if ! git fetch --no-tags --filter=blob:none origin "$REVIEW_COMMIT_SHA" 2>/tmp/git-fetch-err; then
+            echo "ERROR: failed to fetch reviewed commit $REVIEW_COMMIT_SHA:" >&2
+            cat /tmp/git-fetch-err >&2 || true
+            dismiss_with_retry ":warning: Originator self-approval check could not fetch the reviewed commit. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
+
+          if ! git cat-file -e "$REVIEW_COMMIT_SHA^{commit}" 2>/dev/null; then
+            echo "ERROR: reviewed commit $REVIEW_COMMIT_SHA is not available after fetch" >&2
+            dismiss_with_retry ":warning: Originator self-approval check could not inspect the reviewed commit. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
+
+          COMMITS_FILE="$(mktemp)"
+          if ! git rev-list --reverse "$BASE_SHA..$REVIEW_COMMIT_SHA" > "$COMMITS_FILE" 2>/tmp/rev-list-err; then
+            echo "ERROR: failed to enumerate PR commits from $BASE_SHA to $REVIEW_COMMIT_SHA:" >&2
+            cat /tmp/rev-list-err >&2 || true
+            dismiss_with_retry ":warning: Originator self-approval check could not enumerate PR commits. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
+            exit 1
+          fi
+
+          TRAILERS_FILE="$(mktemp)"
+          TRUSTED_COMMIT_COUNT=0
+          while IFS= read -r sha; do
+            # Cryptographically verify against our pinned key only.
+            #
+            # NOTE: gpg's VALIDSIG status line has the format
+            #   [GNUPG:] VALIDSIG <signing_key_fpr> <date> ... <primary_key_fpr>
+            # When a key has signing subkeys (the default for `gpg
+            # --full-generate-key`), the FIRST fingerprint after VALIDSIG
+            # is the signing SUBKEY, and the LAST field is the PRIMARY key.
+            # Our pinned EXPECTED_FPR is the primary fingerprint, so we
+            # match against the last field via awk, not the first.
+            # git verify-commit exits non-zero on BADSIG (tampered payload),
+            # NO_PUBKEY (untrusted signer), or invalid sig data. Under
+            # `set -euo pipefail`, that would abort the whole step before
+            # the else branch runs, turning "skip an untrusted commit"
+            # into a hard workflow failure that prevents the dismissal
+            # logic from running for legitimately verified commits later
+            # in the loop. Capture exit cleanly via an `if` block so a
+            # bad signature just falls through to the SKIP path.
+            primary_fpr=""
+            if gpg_status="$(git verify-commit --raw "$sha" 2>&1)"; then
+              primary_fpr="$(printf '%s\n' "$gpg_status" | awk '/^\[GNUPG:\] VALIDSIG/ {print $NF; exit}')"
+            fi
+            if [ "$primary_fpr" = "$EXPECTED_FPR" ]; then
+              TRUSTED_COMMIT_COUNT=$((TRUSTED_COMMIT_COUNT + 1))
+              echo "trust $sha: verified against pinned primary key"
+              git show -s --format=%B "$sha" \
+                | git interpret-trailers --parse \
+                | awk -F': *' 'tolower($1) == "requested-by" { value=$2; sub(/^[[:space:]]*@/, "", value); sub(/[[:space:]]+$/, "", value); if (value ~ /^[A-Za-z0-9-]+$/) print tolower(value) }' \
+                >> "$TRAILERS_FILE" || true
+            else
+              echo "skip $sha: primary_fpr=$primary_fpr (expected $EXPECTED_FPR)"
+            fi
+          done < "$COMMITS_FILE"
+
+          ALL_REQUESTED_BY="$(sort -u "$TRAILERS_FILE" | grep -v '^$' || true)"
+          APPROVER_LOWER="$(printf '%s' "$APPROVER" | tr '[:upper:]' '[:lower:]')"
+
+          if [ -z "$ALL_REQUESTED_BY" ]; then
+            if [ "$TRUSTED_COMMIT_COUNT" -eq 0 ]; then
+              echo "ERROR: no pinned-key-verified docs-agent commits found in the reviewed range." >&2
+              dismiss_with_retry ":warning: Originator self-approval check found no pinned-key-verified docs-agent commits in the reviewed range. Approval dismissed by default because trusted attribution may have been removed." || true
+              exit 1
+            fi
+            echo "No trusted Requested-by trailer found across $TRUSTED_COMMIT_COUNT pinned-key-verified docs-agent commit(s). Allowing approval because there is no originator attribution to enforce."
+            exit 0
+          fi
+
+          if ! REVIEWS_JSON="$(fetch_reviews)"; then
+            echo "ERROR: could not fetch PR reviews after 3 retries." >&2
+            if [ "$REVIEW_STATE_LOWER" = "approved" ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+              dismiss_with_retry ":warning: Originator self-approval check could not fetch current PR reviews. Approval dismissed by default because you are listed as the docs request originator." || true
+            fi
+            exit 1
+          fi
+
+          ACTIVE_APPROVERS="$(
+            printf '%s' "$REVIEWS_JSON" \
+              | jq -r 'map(select((.state | ascii_upcase) != "COMMENTED")) | sort_by(.submitted_at // "") | reduce .[] as $review ({}; .[$review.user.login | ascii_downcase] = ($review.state | ascii_upcase)) | to_entries[] | select(.value == "APPROVED") | .key'
+          )"
+
+          NON_REQUESTER_APPROVAL_COUNT=0
+          while IFS= read -r active_approver; do
+            [ -n "$active_approver" ] || continue
+            if ! printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$active_approver"; then
+              NON_REQUESTER_APPROVAL_COUNT=$((NON_REQUESTER_APPROVAL_COUNT + 1))
+            fi
+          done <<< "$ACTIVE_APPROVERS"
+
+          echo "Approver=$APPROVER_LOWER, AllRequestedBy=$(printf '%s' "$ALL_REQUESTED_BY" | tr '\n' ',' | sed 's/,$//'), NonRequesterApprovals=$NON_REQUESTER_APPROVAL_COUNT"
+
+          if [ "$REVIEW_STATE_LOWER" = "approved" ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+            echo "Approver matches a Requested-by trailer. Dismissing approval $REVIEW_ID."
+            if ! dismiss_with_retry "@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request. Please ask another team member to review."; then
+              echo "ERROR: dismissal of originator approval failed after 3 retries, exiting 1 to surface the failure" >&2
+              exit 1
+            fi
+          fi
+
+          if [ "$NON_REQUESTER_APPROVAL_COUNT" -gt 0 ]; then
+            echo "$NON_REQUESTER_APPROVAL_COUNT non-requester approval(s) active. Check passes."
+            exit 0
+          fi
+
+          echo "No active non-requester approvals. Failing required check."
+          exit 1
