@@ -1079,6 +1079,51 @@ components:
         description: The current transaction count from the ledger.
         schema:
           $ref: ./state.yaml#/components/schemas/TransactionCount
+    getTransactionsForAddress:
+      name: getTransactionsForAddress
+      description: >-
+        Returns transaction history for a given address with advanced
+        filtering, bidirectional sorting, and pagination. Combines the
+        functionality of `getSignaturesForAddress` and `getTransaction` into a
+        single call, returning up to 1,000 signatures or up to 100 full
+        transactions per request.
+      params:
+        - name: Account address
+          required: true
+          description: Base-58 encoded public key of the account to query transaction history for.
+          schema:
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: Configuration
+          required: false
+          description: >-
+            Optional configuration object containing transaction detail level,
+            sort order, limit, pagination token, commitment, encoding, and
+            filters (slot, blockTime, signature, status, tokenAccounts).
+          schema:
+            $ref: ./transaction.yaml#/components/schemas/GetTransactionsForAddressConfig
+      examples:
+        - name: getTransactionsForAddress example
+          params:
+            - name: Account address
+              value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+            - name: Configuration
+              value:
+                transactionDetails: "signatures"
+                sortOrder: "desc"
+                limit: 100
+                filters:
+                  status: "succeeded"
+                  tokenAccounts: "balanceChanged"
+      result:
+        name: Transaction history
+        description: >-
+          A paginated list of transactions for the address. Each entry
+          includes the slot, transaction index, and either a signature plus
+          metadata (when `transactionDetails` is `signatures`) or the full
+          transaction and meta objects (when `transactionDetails` is `full`).
+          A `paginationToken` is returned when more results are available.
+        schema:
+          $ref: ./transaction.yaml#/components/schemas/GetTransactionsForAddressResult
 
     # ZK Compression methods (Photon indexer)
     getCompressedAccount:
