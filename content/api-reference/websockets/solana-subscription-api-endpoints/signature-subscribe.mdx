@@ -1,0 +1,95 @@
+---
+title: signatureSubscribe
+description: Subscribe to status notifications for one Solana transaction signature.
+subtitle: Subscribe to status notifications for one Solana transaction signature.
+slug: reference/signature-subscribe
+---
+
+The `signatureSubscribe` method opens a stream that emits a single notification when a given transaction signature reaches the requested commitment level (or when transaction status changes if `enableReceivedNotification` is set). After the notification fires, the subscription is automatically cancelled. Pair it with [`signatureUnsubscribe`](#unsubscribe) to cancel a subscription before it fires.
+
+# Parameters
+
+* `signature`: `string` - Transaction signature, as a base-58 encoded string.
+
+* `config` (optional): `object` - Configuration object containing:
+
+  * `commitment`: `string` - The commitment level. One of `processed`, `confirmed`, `finalized`. Defaults to `finalized`.
+  * `enableReceivedNotification`: `boolean` (optional) - When `true`, the subscription also fires a notification when the transaction has been `received` by the node, before reaching the requested commitment.
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
+
+  // then call subscription
+  {"jsonrpc":"2.0","id":1,"method":"signatureSubscribe","params":["2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b",{"commitment":"finalized","enableReceivedNotification":false}]}
+  ```
+
+  ```javascript @solana/web3.js
+  import { Connection } from '@solana/web3.js'
+
+  const connection = new Connection(
+    'https://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+    {
+      wsEndpoint: 'wss://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+      commitment: 'finalized'
+    }
+  )
+
+  const signature = '2EBVM6cB8vAAD93Ktr6Vd8p67XPbQzCJX47MpReuiCXJAtcjaxpvWpcg9Ege1Nr5Tk3a2GFrByT7WPBjdsTycY9b'
+
+  const subscriptionId = connection.onSignature(
+    signature,
+    (result, context) => {
+      console.log('Signature status at slot', context.slot, result)
+    },
+    'finalized'
+  )
+
+  // The subscription is auto-removed by the node once it fires.
+  // To remove it manually before it fires:
+  // await connection.removeSignatureListener(subscriptionId)
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  // subscribe response
+  {"jsonrpc":"2.0","result":24006,"id":1}
+
+  // notification (commitment reached)
+  {
+    "jsonrpc": "2.0",
+    "method": "signatureNotification",
+    "params": {
+      "result": {
+        "context": { "slot": 5207624 },
+        "value": { "err": null }
+      },
+      "subscription": 24006
+    }
+  }
+  ```
+</CodeGroup>
+
+# Unsubscribe
+
+Use `signatureUnsubscribe` with the subscription id returned by `signatureSubscribe` to cancel a pending subscription. (After the notification has already fired, the subscription is removed automatically.)
+
+* `subscription_id`: `number` - The subscription id to cancel.
+
+<CodeGroup>
+  ```shell wscat
+  {"jsonrpc":"2.0","id":1,"method":"signatureUnsubscribe","params":[subscription_id]}
+  ```
+</CodeGroup>
+
+```json result
+{"jsonrpc":"2.0","result":true,"id":1}
+```
+
+When using `@solana/web3.js`, call `connection.removeSignatureListener(subscriptionId)` instead of sending the raw JSON-RPC request.
