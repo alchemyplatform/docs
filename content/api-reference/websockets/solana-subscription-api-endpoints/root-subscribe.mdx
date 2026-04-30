@@ -1,0 +1,79 @@
+---
+title: rootSubscribe
+description: Subscribe to notifications when the Solana validator sets a new root slot.
+subtitle: Subscribe to notifications when the Solana validator sets a new root slot.
+slug: reference/root-subscribe
+---
+
+The `rootSubscribe` method opens a stream that emits a notification each time the validator sets a new root slot. The notification payload is a single number: the slot of the new root. Pair it with [`rootUnsubscribe`](#unsubscribe) to stop receiving notifications.
+
+# Parameters
+
+* None
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream first
+  wscat -c wss://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
+
+  // then call subscription
+  {"jsonrpc":"2.0","id":1,"method":"rootSubscribe"}
+  ```
+
+  ```javascript @solana/web3.js
+  import { Connection } from '@solana/web3.js'
+
+  const connection = new Connection(
+    'https://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->',
+    {
+      wsEndpoint: 'wss://solana-mainnet.g.alchemy.com/v2/<-- ALCHEMY APP API KEY -->'
+    }
+  )
+
+  const subscriptionId = connection.onRootChange((rootSlot) => {
+    console.log('New root slot:', rootSlot)
+  })
+
+  // To unsubscribe later:
+  // await connection.removeRootChangeListener(subscriptionId)
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  // subscribe response
+  {"jsonrpc":"2.0","result":0,"id":1}
+
+  // notification
+  {
+    "jsonrpc": "2.0",
+    "method": "rootNotification",
+    "params": {
+      "result": 42,
+      "subscription": 0
+    }
+  }
+  ```
+</CodeGroup>
+
+# Unsubscribe
+
+Use `rootUnsubscribe` with the subscription id returned by `rootSubscribe` to cancel the stream.
+
+* `subscription_id`: `number` - The subscription id to cancel.
+
+<CodeGroup>
+  ```shell wscat
+  {"jsonrpc":"2.0","id":1,"method":"rootUnsubscribe","params":[subscription_id]}
+  ```
+</CodeGroup>
+
+```json result
+{"jsonrpc":"2.0","result":true,"id":1}
+```
+
+When using `@solana/web3.js`, call `connection.removeRootChangeListener(subscriptionId)` instead of sending the raw JSON-RPC request.
