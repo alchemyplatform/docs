@@ -36,6 +36,29 @@ If you've already used an owner address in 7702 mode (e.g. by calling `wallet_pr
 * Using an owner that doesn't support signing EIP-7702 authorizations
 * Specific requirements for smart wallet architecture
 
+### Supported account types
+
+Pass the `accountType` value inside `creationHint` when calling `wallet_requestAccount` to select the account type. If omitted, the default is `"sma-b"` (Modular Account v2).
+
+<Note>
+For new integrations, we recommend **Modular Account v2** — either via EIP-7702 (the default) or as a smart contract account (`"sma-b"`). The other account types below are supported for backwards compatibility with existing deployments.
+</Note>
+
+| `accountType` value | Account | Notes |
+|---|---|---|
+| `"sma-b"` | Modular Account v2 (MAv2) | **Recommended.** Default. Single owner. |
+| `"7702"` | Smart EOA (EIP-7702) | **Recommended.** Explicitly request a 7702-delegated MAv2 account. |
+| `"la-v2"` | Light Account v2 | Backwards compatibility only. Single owner. |
+| `"la-v2-multi-owner"` | Light Account v2 (Multi-Owner) | Backwards compatibility only. Requires `initialOwners` array in `creationHint`. |
+| `"ma-v1-multi-owner"` | Modular Account v1 (Multi-Owner) | Backwards compatibility only. |
+| `"la-v1.1.0"` | Light Account v1.1.0 | Backwards compatibility only. |
+| `"la-v1.0.2"` | Light Account v1.0.2 | Backwards compatibility only. |
+| `"la-v1.0.1"` | Light Account v1.0.1 | Backwards compatibility only. |
+
+### Example: request a non-7702 account
+
+Call `requestAccount` with the desired `accountType`, then pass the returned address to subsequent calls like `sendCalls`:
+
 <Tabs>
   <Tab title="SDK">
     ```ts
