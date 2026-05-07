@@ -426,7 +426,10 @@ methods:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
       - name: tokenType
         required: false
-        description: Filter by token type. Accepted values are `fungible`, `nonFungible`, `regularNft`, `compressedNft`, and `all`.
+        description: >
+          Filter by token type. Accepted values are `fungible`, `nonFungible`, `regularNft`,
+          `compressedNft`, and `all`. The Alchemy DAS proxy treats `tokenType` and the legacy
+          `interface` filter as mutually exclusive — prefer `tokenType` for new integrations.
         schema:
           type: string
           enum:
@@ -500,11 +503,6 @@ methods:
             - all
             - any
           default: all
-      - name: interface
-        required: false
-        description: The interface of the asset.
-        schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetInterface
       - name: creatorAddress
         required: false
         description: The creator address to filter by.
