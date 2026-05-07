@@ -1128,20 +1128,28 @@ components:
     # ZK Compression methods (Photon indexer)
     getCompressedAccount:
       name: getCompressedAccount
-      description: Returns the compressed account with the given address or hash.
+      description: Returns the compressed account with the given address or hash. Provide either `address` or `hash`.
+      paramStructure: by-name
       params:
-        - name: Account identifier
-          required: true
-          description: The compressed account to query, identified by either its address or its hash.
+        - name: address
+          required: false
+          description: Pubkey of the compressed account to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedAccountParams
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: hash
+          required: false
+          description: Hash of the compressed account to query.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Hash
+              - type: "null"
       examples:
         - name: getCompressedAccount example
           params:
-            - name: Account identifier
-              value:
-                address: null
-                hash: "11111111111111111111111111111111"
+            - name: hash
+              value: "11111111111111111111111111111111"
       result:
         name: Compressed account
         description: The compressed account data with context information.
@@ -1171,18 +1179,46 @@ components:
     getCompressedAccountsByOwner:
       name: getCompressedAccountsByOwner
       description: Returns the compressed accounts owned by the given Pubkey.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: owner
           required: true
-          description: Owner Pubkey and optional pagination, filter, and data slice settings.
+          description: Pubkey of the owner whose compressed accounts to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedAccountsByOwnerParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Hash
+              - type: "null"
+        - name: dataSlice
+          required: false
+          description: Optional account data slice to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/DataSlice
+              - type: "null"
+        - name: filters
+          required: false
+          description: Optional filters to apply to the account data.
+          schema:
+            type: array
+            items:
+              $ref: ./compression.yaml#/components/schemas/FilterSelector
+        - name: limit
+          required: false
+          description: Maximum number of accounts to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressedAccountsByOwner example
           params:
-            - name: Configuration
-              value:
-                owner: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: owner
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Compressed accounts
         description: A paginated list of compressed accounts owned by the given Pubkey.
@@ -1191,20 +1227,28 @@ components:
 
     getCompressedBalance:
       name: getCompressedBalance
-      description: Returns the balance for the compressed account with the given address or hash.
+      description: Returns the balance for the compressed account with the given address or hash. Provide either `address` or `hash`.
+      paramStructure: by-name
       params:
-        - name: Account identifier
-          required: true
-          description: The compressed account to query, identified by either its address or its hash.
+        - name: address
+          required: false
+          description: Pubkey of the compressed account to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedAccountParams
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: hash
+          required: false
+          description: Hash of the compressed account to query.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Hash
+              - type: "null"
       examples:
         - name: getCompressedBalance example
           params:
-            - name: Account identifier
-              value:
-                address: null
-                hash: "11111111111111111111111111111111"
+            - name: hash
+              value: "11111111111111111111111111111111"
       result:
         name: Compressed balance
         description: The lamport balance of the compressed account.
@@ -1234,18 +1278,32 @@ components:
     getCompressedMintTokenHolders:
       name: getCompressedMintTokenHolders
       description: Returns owners of compressed token accounts for the given mint, ranked by balance.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: mint
           required: true
-          description: Mint Pubkey and optional pagination settings.
+          description: Pubkey of the mint whose token holders to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedMintTokenHoldersParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Base58String
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of holders to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressedMintTokenHolders example
           params:
-            - name: Configuration
-              value:
-                mint: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: mint
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Token holders
         description: A paginated list of owner balances for the given mint.
@@ -1254,20 +1312,28 @@ components:
 
     getCompressedTokenAccountBalance:
       name: getCompressedTokenAccountBalance
-      description: Returns the balance for the compressed token account with the given address or hash.
+      description: Returns the balance for the compressed token account with the given address or hash. Provide either `address` or `hash`.
+      paramStructure: by-name
       params:
-        - name: Account identifier
-          required: true
-          description: The compressed token account to query, identified by either its address or its hash.
+        - name: address
+          required: false
+          description: Pubkey of the compressed token account to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedAccountParams
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: hash
+          required: false
+          description: Hash of the compressed token account to query.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Hash
+              - type: "null"
       examples:
         - name: getCompressedTokenAccountBalance example
           params:
-            - name: Account identifier
-              value:
-                address: null
-                hash: "11111111111111111111111111111111"
+            - name: hash
+              value: "11111111111111111111111111111111"
       result:
         name: Token account balance
         description: The token balance of the compressed token account.
@@ -1277,18 +1343,39 @@ components:
     getCompressedTokenAccountsByDelegate:
       name: getCompressedTokenAccountsByDelegate
       description: Returns the compressed token accounts delegated to the given Pubkey.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: delegate
           required: true
-          description: Delegate Pubkey and optional mint filter and pagination settings.
+          description: Pubkey of the delegate.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedTokenAccountsByDelegateParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: mint
+          required: false
+          description: Optional mint Pubkey to filter accounts by.
+          schema:
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Base58String
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of accounts to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressedTokenAccountsByDelegate example
           params:
-            - name: Configuration
-              value:
-                delegate: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: delegate
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Compressed token accounts
         description: A paginated list of compressed token accounts delegated to the given Pubkey.
@@ -1298,18 +1385,39 @@ components:
     getCompressedTokenAccountsByOwner:
       name: getCompressedTokenAccountsByOwner
       description: Returns the compressed token accounts owned by the given Pubkey.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: owner
           required: true
-          description: Owner Pubkey and optional mint filter and pagination settings.
+          description: Pubkey of the owner whose compressed token accounts to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedTokenAccountsByOwnerParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: mint
+          required: false
+          description: Optional mint Pubkey to filter accounts by.
+          schema:
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Base58String
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of accounts to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressedTokenAccountsByOwner example
           params:
-            - name: Configuration
-              value:
-                owner: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: owner
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Compressed token accounts
         description: A paginated list of compressed token accounts owned by the given Pubkey.
@@ -1319,18 +1427,39 @@ components:
     getCompressedTokenBalancesByOwner:
       name: getCompressedTokenBalancesByOwner
       description: Returns the compressed token balances for the given Pubkey.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: owner
           required: true
-          description: Owner Pubkey and optional mint filter and pagination settings.
+          description: Pubkey of the owner whose compressed token balances to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedTokenBalancesByOwnerParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: mint
+          required: false
+          description: Optional mint Pubkey to filter balances by.
+          schema:
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Base58String
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of balances to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressedTokenBalancesByOwner example
           params:
-            - name: Configuration
-              value:
-                owner: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: owner
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Compressed token balances
         description: A paginated list of compressed token balances for the owner.
@@ -1340,18 +1469,39 @@ components:
     getCompressedTokenBalancesByOwnerV2:
       name: getCompressedTokenBalancesByOwnerV2
       description: Returns the compressed token balances for the given Pubkey.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: owner
           required: true
-          description: Owner Pubkey and optional mint filter and pagination settings.
+          description: Pubkey of the owner whose compressed token balances to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressedTokenBalancesByOwnerParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: mint
+          required: false
+          description: Optional mint Pubkey to filter balances by.
+          schema:
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Base58String
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of balances to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressedTokenBalancesByOwnerV2 example
           params:
-            - name: Configuration
-              value:
-                owner: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: owner
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Compressed token balances
         description: A paginated list of compressed token balances for the owner.
@@ -1381,18 +1531,32 @@ components:
     getCompressionSignaturesForAddress:
       name: getCompressionSignaturesForAddress
       description: Returns the transaction signatures that closed or opened a compressed account at the given address.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: address
           required: true
-          description: Address Pubkey and optional pagination settings.
+          description: Pubkey of the compressed account address.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressionSignaturesForAddressParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - type: string
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of signatures to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressionSignaturesForAddress example
           params:
-            - name: Configuration
-              value:
-                address: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: address
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Signatures
         description: A paginated list of transaction signatures.
@@ -1402,18 +1566,32 @@ components:
     getCompressionSignaturesForOwner:
       name: getCompressionSignaturesForOwner
       description: Returns the transaction signatures involving compressed accounts owned by the given Pubkey.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: owner
           required: true
-          description: Owner Pubkey and optional pagination settings.
+          description: Pubkey of the owner whose compression-related signatures to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressionSignaturesForOwnerParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - type: string
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of signatures to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressionSignaturesForOwner example
           params:
-            - name: Configuration
-              value:
-                owner: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: owner
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Signatures
         description: A paginated list of transaction signatures.
@@ -1423,18 +1601,32 @@ components:
     getCompressionSignaturesForTokenOwner:
       name: getCompressionSignaturesForTokenOwner
       description: Returns the transaction signatures involving compressed token accounts owned by the given Pubkey.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: owner
           required: true
-          description: Owner Pubkey and optional pagination settings.
+          description: Pubkey of the owner whose compressed token signatures to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetCompressionSignaturesForOwnerParams
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
+        - name: cursor
+          required: false
+          description: Pagination cursor returned by a previous response.
+          schema:
+            oneOf:
+              - type: string
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of signatures to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getCompressionSignaturesForTokenOwner example
           params:
-            - name: Configuration
-              value:
-                owner: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: owner
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: Signatures
         description: A paginated list of transaction signatures.
@@ -1470,12 +1662,22 @@ components:
     getLatestCompressionSignatures:
       name: getLatestCompressionSignatures
       description: Returns the most recent transaction signatures involving compressed state.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: cursor
           required: false
-          description: Optional pagination settings.
+          description: Pagination cursor returned by a previous response.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetLatestSignaturesParams
+            oneOf:
+              - type: string
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of signatures to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getLatestCompressionSignatures example
           params: []
@@ -1488,12 +1690,22 @@ components:
     getLatestNonVotingSignatures:
       name: getLatestNonVotingSignatures
       description: Returns the most recent non-voting transaction signatures observed by the indexer.
+      paramStructure: by-name
       params:
-        - name: Configuration
+        - name: cursor
           required: false
-          description: Optional pagination settings.
+          description: Pagination cursor returned by a previous response.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetLatestSignaturesParams
+            oneOf:
+              - type: string
+              - type: "null"
+        - name: limit
+          required: false
+          description: Maximum number of signatures to return.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Limit
+              - type: "null"
       examples:
         - name: getLatestNonVotingSignatures example
           params: []
@@ -1528,22 +1740,34 @@ components:
 
     getMultipleCompressedAccounts:
       name: getMultipleCompressedAccounts
-      description: Returns the compressed accounts with the given addresses or hashes.
+      description: Returns the compressed accounts with the given addresses or hashes. Provide either `addresses` or `hashes`.
+      paramStructure: by-name
       params:
-        - name: Account identifiers
-          required: true
-          description: Provide either an `addresses` array or a `hashes` array to identify the accounts.
+        - name: addresses
+          required: false
+          description: An array of compressed account addresses to query.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetMultipleCompressedAccountsParams
+            oneOf:
+              - type: array
+                items:
+                  $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: hashes
+          required: false
+          description: An array of compressed account hashes to query.
+          schema:
+            oneOf:
+              - type: array
+                items:
+                  $ref: ./compression.yaml#/components/schemas/Hash
+              - type: "null"
       examples:
         - name: getMultipleCompressedAccounts example
           params:
-            - name: Account identifiers
+            - name: hashes
               value:
-                addresses: null
-                hashes:
-                  - "11157t3sqMV725NVRLrVQbAu98Jjfk1uCKehJnXXQs"
-                  - "1117mWrzzrZr312ebPDHu8tbfMwFNvCvMbr6WepCNG"
+                - "11157t3sqMV725NVRLrVQbAu98Jjfk1uCKehJnXXQs"
+                - "1117mWrzzrZr312ebPDHu8tbfMwFNvCvMbr6WepCNG"
       result:
         name: Compressed accounts
         description: A list of compressed accounts.
@@ -1620,20 +1844,30 @@ components:
     getValidityProof:
       name: getValidityProof
       description: Returns a single ZK validity proof for the given compressed account hashes and/or new addresses.
+      paramStructure: by-name
       params:
-        - name: Configuration
-          required: true
-          description: Compressed account hashes to prove inclusion for and/or new addresses to prove non-inclusion for.
+        - name: hashes
+          required: false
+          description: Compressed account hashes to prove inclusion for.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetValidityProofParams
+            type: array
+            items:
+              $ref: ./compression.yaml#/components/schemas/Hash
+        - name: newAddressesWithTrees
+          required: false
+          description: New addresses paired with their merkle tree Pubkeys, to prove non-inclusion for.
+          schema:
+            type: array
+            items:
+              $ref: ./compression.yaml#/components/schemas/AddressWithTree
       examples:
         - name: getValidityProof example
           params:
-            - name: Configuration
+            - name: hashes
               value:
-                hashes:
-                  - "11111111111111111111111111111111"
-                newAddressesWithTrees: []
+                - "11111111111111111111111111111111"
+            - name: newAddressesWithTrees
+              value: []
       result:
         name: Validity proof
         description: A ZK validity proof with context for inclusion and non-inclusion claims.
@@ -1643,20 +1877,30 @@ components:
     getValidityProofV2:
       name: getValidityProofV2
       description: Returns a single ZK validity proof for the given compressed account hashes and/or new addresses, with V2 merkle context information.
+      paramStructure: by-name
       params:
-        - name: Configuration
-          required: true
-          description: Compressed account hashes to prove inclusion for and/or new addresses to prove non-inclusion for.
+        - name: hashes
+          required: false
+          description: Compressed account hashes to prove inclusion for.
           schema:
-            $ref: ./compression.yaml#/components/schemas/GetValidityProofParams
+            type: array
+            items:
+              $ref: ./compression.yaml#/components/schemas/Hash
+        - name: newAddressesWithTrees
+          required: false
+          description: New addresses paired with their merkle tree Pubkeys, to prove non-inclusion for.
+          schema:
+            type: array
+            items:
+              $ref: ./compression.yaml#/components/schemas/AddressWithTree
       examples:
         - name: getValidityProofV2 example
           params:
-            - name: Configuration
+            - name: hashes
               value:
-                hashes:
-                  - "11111111111111111111111111111111"
-                newAddressesWithTrees: []
+                - "11111111111111111111111111111111"
+            - name: newAddressesWithTrees
+              value: []
       result:
         name: Validity proof
         description: A ZK validity proof with V2 merkle context for inclusion and non-inclusion claims.
