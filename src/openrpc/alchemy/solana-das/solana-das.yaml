@@ -744,12 +744,19 @@ methods:
     params:
       - name: ownerAddress
         required: true
-        description: The owner address to filter token accounts by. Either `ownerAddress` or `mintAddress` must be provided; `ownerAddress` is the most common.
+        description: >
+          The owner (wallet) address whose token accounts you want to list.
+          Either `ownerAddress` or `mintAddress` must be provided; `ownerAddress`
+          is the common case (passing a wallet pubkey, getting back its token holdings).
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
       - name: mintAddress
         required: false
-        description: The mint address to filter token accounts by. Can be used in place of `ownerAddress` to query all token accounts for a given mint.
+        description: >
+          The mint address to filter token accounts by. Pass this INSTEAD OF `ownerAddress`
+          when you want to list every token account for a given mint, or alongside
+          `ownerAddress` to narrow a wallet's holdings to a specific mint.
+          Leave empty if you only want results scoped by owner.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
       - name: page
