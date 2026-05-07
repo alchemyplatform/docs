@@ -34,7 +34,7 @@ alchemy auth
 
 That's it. Skip ahead to [your first commands](#your-first-commands).
 
-For other auth methods (manual API key, access key for Admin API, webhook key for Notify, x402 wallet), see [Authentication options](#authentication-options) at the bottom of this page.
+For other auth methods (manual API key, webhook key for Notify, x402 wallet), see [Authentication options](#authentication-options) at the bottom of this page.
 
 ## Your first commands
 
@@ -117,7 +117,7 @@ alchemy evm logs --address 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --from-blo
 echo 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b | alchemy evm receipt
 ```
 
-### EVM Data
+#### Data
 
 | Command | Description |
 |---|---|
@@ -137,7 +137,7 @@ echo 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b | alchem
 | `alchemy evm data portfolio nfts --body <json>` | NFTs owned across one or more networks |
 | `alchemy evm data portfolio nft-contracts --body <json>` | NFT contracts by `address`/`network` pairs |
 
-### Simulation API
+#### Simulation
 
 Preview a transaction's outcome before broadcasting.
 
@@ -150,24 +150,7 @@ Preview a transaction's outcome before broadcasting.
 
 All four accept an optional `--block-tag` (defaults to `latest`).
 
-### Wallets and signing
-
-Use `alchemy wallet` to connect the signer used by onchain actions. EVM commands can use a browser-approved session wallet or a local private key. Solana transaction commands currently use a local Solana wallet.
-
-| Command | Description |
-|---|---|
-| `alchemy wallet connect` | Connect a wallet. Use `--mode session` or `--mode local`. |
-| `alchemy wallet connect --mode local --chain evm --import <path>` | Import a local EVM private key file |
-| `alchemy wallet connect --mode local --chain solana` | Create or configure a local Solana wallet |
-| `alchemy wallet status` | Show session, local EVM, local Solana, and active signer status. Add `--verify` to check the backend session. |
-| `alchemy wallet address` | Display configured wallet addresses |
-| `alchemy wallet qr` | Display an EVM or Solana wallet address as a QR code |
-| `alchemy wallet use <session\|local>` | Set the active signer for EVM transactions |
-| `alchemy wallet disconnect` | Revoke the current wallet session and clear it locally |
-
-Most wallet-signed EVM commands accept `--signer session|local` to override the active signer for that invocation. If both session and local EVM wallets are configured and you have not chosen one, the CLI defaults to the session wallet and prints a warning with the command to switch.
-
-### Transactions
+#### Transactions
 
 Wallet-signed EVM actions return a smart wallet call ID and, once confirmed, a transaction hash. Use `alchemy evm status <id-or-hash>` to check either value.
 
@@ -192,6 +175,25 @@ Use `--gas-sponsored` and `--gas-policy-id <id>` on supported EVM actions to req
 
 Use `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` as the native token address for swap and bridge commands.
 
+Most wallet-signed EVM commands accept `--signer session|local` to override the active signer for that invocation. If both session and local EVM wallets are configured and you have not chosen one, the CLI defaults to the session wallet and prints a warning with the command to switch.
+
+### Wallets and signing
+
+Use `alchemy wallet` to connect the signer used by onchain actions. EVM commands can use a browser-approved session wallet or a local private key. Solana transaction commands currently use a local Solana wallet.
+
+| Command | Description |
+|---|---|
+| `alchemy wallet connect` | Connect a wallet. Use `--mode session` or `--mode local`. |
+| `alchemy wallet connect --mode local --chain evm --import <path>` | Import a local EVM private key file |
+| `alchemy wallet connect --mode local --chain solana` | Create or configure a local Solana wallet |
+| `alchemy wallet status` | Show session, local EVM, local Solana, and active signer status. Add `--verify` to check the backend session. |
+| `alchemy wallet address` | Display configured wallet addresses |
+| `alchemy wallet qr` | Display an EVM or Solana wallet address as a QR code |
+| `alchemy wallet use <session\|local>` | Set the active signer for EVM transactions |
+| `alchemy wallet disconnect` | Revoke the current wallet session and clear it locally |
+
+### Solana
+
 Solana transaction commands use a local Solana wallet. Use `--fee-sponsored` and `--fee-policy-id <id>` on supported Solana actions to request fee sponsorship.
 
 ```bash
@@ -206,11 +208,6 @@ alchemy solana status <signature>
 | `alchemy solana delegate approve --token-account <addr> --mint <addr> --delegate <addr> --amount <n> --decimals <n>` | Approve an SPL token delegate |
 | `alchemy solana delegate revoke --token-account <addr>` | Revoke an SPL token delegate |
 | `alchemy solana status [id]` | Check a Solana transaction signature or operation ID |
-
-### Solana
-
-| Command | Description |
-|---|---|
 | `alchemy solana rpc <method> [params]` | Call any Solana JSON-RPC method |
 | `alchemy solana das <method> [params]` | Call a Solana DAS method (e.g. `getAssetsByOwner`) |
 | `alchemy solana network list` | List Solana network IDs |
@@ -244,7 +241,7 @@ Requires a webhook API key. Pass `--webhook-api-key <key>` on the `webhook` comm
 
 ### App (Admin API)
 
-Requires an access key. The CLI also caches a "selected app" so you can omit the ID on most commands.
+The CLI uses your browser login automatically for Admin API commands. It also caches a "selected app" so you can omit the ID on most commands.
 
 | Command | Description |
 |---|---|
@@ -270,7 +267,7 @@ Requires an access key. The CLI also caches a "selected app" so you can omit the
 | `alchemy auth logout` | Clear the saved authentication token |
 | `alchemy doctor` | Run setup checks and print remediation commands |
 | `alchemy config status` | Show setup status and remediation commands |
-| `alchemy config set <key> <value>` | Set config values such as `api-key`, `access-key`, `webhook-api-key`, `app`, `network`, `verbose`, `wallet-key-file`, `x402`, gas sponsorship, and fee sponsorship |
+| `alchemy config set <key> <value>` | Set config values such as `api-key`, `webhook-api-key`, `app`, `network`, `verbose`, `wallet-key-file`, `x402`, gas sponsorship, and fee sponsorship |
 | `alchemy config get <key>` | Read a single config value |
 | `alchemy config list` | Print every saved config value (use `--reveal` to unmask secrets) |
 | `alchemy config reset [key]` | Reset a single key, or pass `-y, --yes` to reset everything |
@@ -320,16 +317,6 @@ alchemy config set api-key YOUR_API_KEY
 ```
 
 You can also pass `--api-key` per-command or set `ALCHEMY_API_KEY` in your environment.
-
-### Access key (Admin API)
-
-The `app` commands use a separate access key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) → Access Keys.
-
-```bash
-alchemy config set access-key YOUR_ACCESS_KEY
-```
-
-You can also set `ALCHEMY_ACCESS_KEY` in your environment.
 
 ### Webhook API key (Notify)
 
@@ -381,7 +368,6 @@ alchemy completions fish > ~/.config/fish/completions/alchemy.fish
 
 ## Next steps
 
-* [GitHub: alchemyplatform/alchemy-cli](https://github.com/alchemyplatform/alchemy-cli)
 * [Agent Skills](docs/alchemy-agent-skills)
 * [Alchemy MCP Server](docs/alchemy-mcp-server)
 * [Agent Authentication and Payment](docs/alchemy-for-agents)
