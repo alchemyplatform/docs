@@ -1178,7 +1178,10 @@ components:
 
     getCompressedAccountsByOwner:
       name: getCompressedAccountsByOwner
-      description: Returns the compressed accounts owned by the given Pubkey.
+      description: |
+        Returns the compressed accounts owned by the given Pubkey.
+
+        Advanced filters (`dataSlice`, `filters`) are supported by the underlying Photon API but are not modeled in this Try It widget. To use them, send the request directly with `dataSlice: { offset, length }` and/or `filters: [{ memcmp: { offset, bytes } }]` added to the `params` object.
       paramStructure: by-name
       params:
         - name: owner
@@ -1193,20 +1196,6 @@ components:
             oneOf:
               - $ref: ./compression.yaml#/components/schemas/Hash
               - type: "null"
-        - name: dataSlice
-          required: false
-          description: Optional account data slice to return.
-          schema:
-            oneOf:
-              - $ref: ./compression.yaml#/components/schemas/DataSlice
-              - type: "null"
-        - name: filters
-          required: false
-          description: Optional filters to apply to the account data.
-          schema:
-            type: array
-            items:
-              $ref: ./compression.yaml#/components/schemas/FilterSelector
         - name: limit
           required: false
           description: Maximum number of accounts to return.
@@ -1218,7 +1207,7 @@ components:
         - name: getCompressedAccountsByOwner example
           params:
             - name: owner
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Compressed accounts
         description: A paginated list of compressed accounts owned by the given Pubkey.
@@ -1248,7 +1237,7 @@ components:
         - name: getCompressedBalance example
           params:
             - name: hash
-              value: "3KC9cKQhhzEPjwuyQaohM6SGaZu1ukKRZw2QRgc1sYVL"
+              value: "2U9KV9sCU5MtJaDTKVkuuEbagVEBL9BQSfUBsaiEP6Cf"
       result:
         name: Compressed balance
         description: The lamport balance of the compressed account.
@@ -1268,7 +1257,7 @@ components:
         - name: getCompressedBalanceByOwner example
           params:
             - name: owner
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Compressed balance
         description: The total compressed lamport balance for the owner.
@@ -1303,7 +1292,7 @@ components:
         - name: getCompressedMintTokenHolders example
           params:
             - name: mint
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "5iVmFCCwJTuuw7p4FrxYoZ1bUNdjg14j7uv5hMsMpump"
       result:
         name: Token holders
         description: A paginated list of owner balances for the given mint.
@@ -1342,7 +1331,10 @@ components:
 
     getCompressedTokenAccountsByDelegate:
       name: getCompressedTokenAccountsByDelegate
-      description: Returns the compressed token accounts delegated to the given Pubkey.
+      description: |
+        Returns the compressed token accounts delegated to the given Pubkey.
+
+        Compressed token delegation is rare on mainnet, so most Pubkeys (including the example value) currently return an empty `items` array. To see a non-empty response, supply a Pubkey that has been set as the SPL-Token-2022 delegate on a compressed token account.
       paramStructure: by-name
       params:
         - name: delegate
@@ -1375,7 +1367,7 @@ components:
         - name: getCompressedTokenAccountsByDelegate example
           params:
             - name: delegate
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Compressed token accounts
         description: A paginated list of compressed token accounts delegated to the given Pubkey.
@@ -1417,7 +1409,7 @@ components:
         - name: getCompressedTokenAccountsByOwner example
           params:
             - name: owner
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Compressed token accounts
         description: A paginated list of compressed token accounts owned by the given Pubkey.
@@ -1459,7 +1451,7 @@ components:
         - name: getCompressedTokenBalancesByOwner example
           params:
             - name: owner
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Compressed token balances
         description: A paginated list of compressed token balances for the owner.
@@ -1501,7 +1493,7 @@ components:
         - name: getCompressedTokenBalancesByOwnerV2 example
           params:
             - name: owner
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Compressed token balances
         description: A paginated list of compressed token balances for the owner.
@@ -1530,7 +1522,10 @@ components:
 
     getCompressionSignaturesForAddress:
       name: getCompressionSignaturesForAddress
-      description: Returns the transaction signatures that closed or opened a compressed account at the given address.
+      description: |
+        Returns the transaction signatures that closed or opened a compressed account at the given address.
+
+        This is for Light-Protocol style compressed accounts that have an `address` set (rather than the more common hash-only compressed token accounts). Most Pubkeys currently return an empty `items` array because the addressed-compressed-account namespace is not yet widely populated.
       paramStructure: by-name
       params:
         - name: address
@@ -1591,7 +1586,7 @@ components:
         - name: getCompressionSignaturesForOwner example
           params:
             - name: owner
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Signatures
         description: A paginated list of transaction signatures.
@@ -1626,7 +1621,7 @@ components:
         - name: getCompressionSignaturesForTokenOwner example
           params:
             - name: owner
-              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+              value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
       result:
         name: Signatures
         description: A paginated list of transaction signatures.
@@ -1717,22 +1712,28 @@ components:
 
     getMultipleCompressedAccountProofs:
       name: getMultipleCompressedAccountProofs
-      description: Returns merkle proofs for the compressed accounts with the given hashes.
+      description: |
+        Returns merkle proofs for the compressed accounts with the given hashes.
+
+        The Photon API expects the JSON-RPC `params` array to be the list of hashes itself (each positional element is one hash). The spec models the first two positional slots; pass additional hashes as additional positional elements when needed.
       params:
-        - name: hashes
+        - name: hash
           required: true
-          description: An array of compressed account hashes to query.
+          description: First compressed account hash to query.
           schema:
-            type: array
-            items:
-              $ref: ./compression.yaml#/components/schemas/Hash
+            $ref: ./compression.yaml#/components/schemas/Hash
+        - name: hash2
+          required: false
+          description: Optional additional compressed account hash to query.
+          schema:
+            $ref: ./compression.yaml#/components/schemas/Hash
       examples:
         - name: getMultipleCompressedAccountProofs example
           params:
-            - name: hashes
-              value:
-                - "3KC9cKQhhzEPjwuyQaohM6SGaZu1ukKRZw2QRgc1sYVL"
-                - "41GMzTte97MK7eZqo5rb7JNjABrm4r4XkhSCVZdZgtka"
+            - name: hash
+              value: "3KC9cKQhhzEPjwuyQaohM6SGaZu1ukKRZw2QRgc1sYVL"
+            - name: hash2
+              value: "41GMzTte97MK7eZqo5rb7JNjABrm4r4XkhSCVZdZgtka"
       result:
         name: Compressed account proofs
         description: An array of merkle proofs for the requested compressed accounts.
@@ -1777,21 +1778,21 @@ components:
 
     getMultipleNewAddressProofs:
       name: getMultipleNewAddressProofs
-      description: Returns non-inclusion proofs for the given addresses, used when creating compressed accounts.
+      description: |
+        Returns non-inclusion proofs for the given addresses, used when creating compressed accounts.
+
+        The Photon API expects the JSON-RPC `params` array to be the list of addresses itself (each positional element is one Pubkey). The spec models the first positional slot; pass additional addresses as additional positional elements when needed.
       params:
-        - name: addresses
+        - name: address
           required: true
-          description: An array of addresses to prove non-inclusion for.
+          description: First address to prove non-inclusion for.
           schema:
-            type: array
-            items:
-              $ref: ./base-types.yaml#/components/schemas/Pubkey
+            $ref: ./base-types.yaml#/components/schemas/Pubkey
       examples:
         - name: getMultipleNewAddressProofs example
           params:
-            - name: addresses
-              value:
-                - "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+            - name: address
+              value: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
       result:
         name: New address proofs
         description: An array of non-inclusion proofs for the requested addresses.
@@ -1800,22 +1801,23 @@ components:
 
     getMultipleNewAddressProofsV2:
       name: getMultipleNewAddressProofsV2
-      description: Returns non-inclusion proofs for the given (address, tree) pairs, used when creating compressed accounts.
+      description: |
+        Returns non-inclusion proofs for the given (address, tree) pairs, used when creating compressed accounts.
+
+        The Photon API expects the JSON-RPC `params` array to be the list of pairs itself (each positional element is one `{ address, tree }` object). The spec models the first positional slot; pass additional pairs as additional positional elements when needed.
       params:
-        - name: addressesWithTrees
+        - name: addressWithTree
           required: true
-          description: An array of address and tree Pubkey pairs to prove non-inclusion for.
+          description: First address paired with the merkle tree Pubkey it should be inserted into.
           schema:
-            type: array
-            items:
-              $ref: ./compression.yaml#/components/schemas/AddressWithTree
+            $ref: ./compression.yaml#/components/schemas/AddressWithTree
       examples:
         - name: getMultipleNewAddressProofsV2 example
           params:
-            - name: addressesWithTrees
+            - name: addressWithTree
               value:
-                - address: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
-                  tree: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+                address: "11111112cMQwSC9qirWGjZM6gLGwW69X22mqwLLGP"
+                tree: "amt1Ayt45jfbdw5YSo7iz6WZxUmnZsQTYXy82hVwyC2"
       result:
         name: New address proofs
         description: An array of non-inclusion proofs for the requested (address, tree) pairs.
@@ -1835,7 +1837,7 @@ components:
         - name: getTransactionWithCompressionInfo example
           params:
             - name: signature
-              value: "5J8H5sTvEhnGcB4R8K1n7mfoiWUD9RzPVGES7e3WxC7c"
+              value: "2M5XHXBGZSwqYw6HN5TfReiamMXghcJEdwLJCyUPgoAo2kJrSt7EZnS43WRqx1Fiq95W5SV2n86oAKgDARrLLG3u"
       result:
         name: Transaction with compression info
         description: The transaction details with associated compression state changes.
