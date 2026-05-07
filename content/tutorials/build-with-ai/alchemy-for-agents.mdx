@@ -1,27 +1,28 @@
 ---
 title: Agent Authentication and Payment
-description: Authenticate your AI agent with an EVM or Solana wallet instead of an API key using SIWE and SIWS. Your agent purchases credits with USDC via the x402 payment protocol.
-subtitle: Authenticate your AI agent with an EVM or Solana wallet instead of an API key using SIWE and SIWS. Your agent purchases credits with USDC via the x402 payment protocol.
+description: Authenticate your AI agent with an EVM wallet instead of an API key using SIWE. Your agent can pay with USDC through the x402 payment protocol.
+subtitle: Authenticate your AI agent with an EVM wallet instead of an API key using SIWE. Your agent can pay with USDC through the x402 payment protocol.
 slug: docs/alchemy-for-agents
 ---
 
 ## How it works
 
-x402 wallet authentication uses three open standards:
+x402 wallet authentication in the Alchemy CLI uses two open standards today:
 
 * **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with an EVM wallet.
-* **[SIWS (Sign-In With Solana)](https://phantom.com/learn/developers/sign-in-with-solana):** Adapted from EIP-4361 for Solana's ed25519 signatures. Your agent authenticates with a Solana wallet.
-* **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When your agent's credits run out, the server responds with HTTP 402, your agent purchases more credits and retries the request. Zero protocol fees.
+* **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When payment is required, the server responds with HTTP 402, the CLI signs the payment challenge with the same EVM wallet, and retries the request. Zero protocol fees.
+
+The CLI also supports local Solana wallets for Solana transaction signing, but x402 gateway authentication currently uses an EVM wallet and SIWE.
 
 ## The flow
 
 When your agent needs to access Alchemy APIs without an API key, it handles the full wallet authentication flow:
 
-1. **Wallet setup:** Your agent creates a new wallet or imports an existing one. You choose between an EVM wallet (USDC on Base) or a Solana wallet (USDC on Solana).
-2. **Authentication:** Your agent generates a signed auth token using SIWE (EVM) or SIWS (Solana) and includes it in every API request.
-3. **Credits:** Your agent purchases 1 USDC worth of credits from your wallet. When credits run out, the server responds with HTTP 402, and your agent purchases another 1 USDC of credits automatically.
+1. **Wallet setup:** Your agent creates a local EVM wallet or imports an existing EVM private key.
+2. **Authentication:** Your agent generates a signed SIWE token and includes it in every x402 gateway request.
+3. **Payment:** When payment is required, the server responds with HTTP 402, and your agent signs the requested USDC payment before retrying automatically.
 
-Your wallet type only determines authentication and payment. Either wallet type can query any chain across [all networks Alchemy supports](docs/reference/node-supported-chains).
+The x402 wallet only determines authentication and payment. Once authenticated, it can query any chain across [all networks Alchemy supports](docs/reference/node-supported-chains).
 
 ## What your agent can access
 
@@ -37,14 +38,15 @@ All standard Alchemy APIs are available through the x402 gateway:
 
 These are the same APIs available with a standard API key. The only difference is the authentication and payment mechanism.
 
-## EVM vs Solana wallets
+## CLI wallet roles
 
 | | EVM wallet | Solana wallet |
 |---|---|---|
-| **Standard** | SIWE (EIP-4361) | SIWS |
+| **CLI use** | x402 gateway auth and EVM transaction signing | Solana transaction signing |
+| **Auth standard** | SIWE (EIP-4361) | Not used for x402 in the CLI today |
 | **Signature** | secp256k1 | ed25519 |
-| **Payment** | USDC on Base | USDC on Solana |
-| **Queryable chains** | [All supported networks](docs/reference/node-supported-chains) | [All supported networks](docs/reference/node-supported-chains) |
+| **Payment** | USDC through x402 payment challenges | Not used for x402 in the CLI today |
+| **Queryable chains through x402** | [All supported networks](docs/reference/node-supported-chains) | Not applicable |
 
 ## Install as an agent skill
 
@@ -58,13 +60,15 @@ Your agent will walk you through wallet setup and handle authentication and paym
 
 ## Use it from the CLI
 
-The [Alchemy CLI](docs/alchemy-cli) ships the same x402 flow built in. Point the CLI at a local wallet key, opt into x402, and node and data commands bill from your wallet without an API key.
+The [Alchemy CLI](docs/alchemy-cli) ships the x402 flow built in. Create or import a local EVM wallet, opt into x402, and node and data commands can authenticate and pay from that wallet without an API key.
 
 ```bash
-alchemy config set wallet-key-file ./wallet.key
+alchemy wallet connect --mode local --chain evm
 alchemy config set x402 true
 alchemy evm data balance vitalik.eth
 ```
+
+You can also point at an existing EVM private key file with `alchemy config set wallet-key-file <path>`, pass `--wallet-key-file <path>`, or set `ALCHEMY_WALLET_KEY`.
 
 ## Watch it in action
 
