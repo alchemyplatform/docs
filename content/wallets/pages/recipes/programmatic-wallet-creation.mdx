@@ -125,9 +125,9 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
     const signed = await client.signPreparedCalls(prepared); // signed by the signer on the client
     const sent = await client.sendPreparedCalls(signed);
 
-    const txHash = await client.waitForCallsStatus({ id: sent.id });
+    const status = await client.waitForCallsStatus({ id: sent.id });
     console.log("Call ID:", sent.id);
-    console.log("Tx hash:", txHash);
+    console.log("Status:", status.status);
     ```
 
     <Note>
@@ -193,15 +193,15 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
       const signed = await client.signPreparedCalls(prepared); // signed by the signer on the client
       const sent = await client.sendPreparedCalls(signed);
 
-      // 5) Wait for inclusion → tx hash
-      const txHash = await client.waitForCallsStatus({
+      // 5) Wait for inclusion
+      const status = await client.waitForCallsStatus({
         id: sent.id,
       });
 
       console.log("Call ID:", sent.id);
-      console.log("Tx hash:", txHash);
+      console.log("Status:", status.status);
 
-      return { address, id: sent.id, txHash };
+      return { address, id: sent.id };
     }
 
     main().then(
@@ -231,46 +231,20 @@ This recipe shows how to programmatically create a smart wallet: you’ll genera
 
     * `Counterfactual address: 0x…`
     * `Call ID: 0x…`
-    * `Tx hash: 0x…` (open on an **Arbitrum Sepolia** explorer to see the deployment)
+    * `Status: success`
 
     Example:
 
     ```shell
     Counterfactual address: 0x022fA5358476f0EB881138BD822E5150AFb36c5B
     Call ID: 0x0000000000000000000000000000000000000000000000000000000000066eee7d4670e76c7186cf2fb9d448e3b8348e316bdb5b142c3ff3149aa703805c81cb
-    Tx hash: {
-      id: '0x0000000000000000000000000000000000000000000000000000000000066eee7d4670e76c7186cf2fb9d448e3b8348e316bdb5b142c3ff3149aa703805c81cb',
-      status: 'success',
-      atomic: true,
-      chainId: 421614,
-      receipts: [
-        {
-          status: 'success',
-          blockHash: '0x180071dc55dbcf7d31dd2fbe1c1a58e3cb5564d0b59c465c4f558236340cecd3',
-          blockNumber: 196845735n,
-          gasUsed: 208770n,
-          transactionHash: '0x2e625854abcb557bc2bc02e97d2f3deaae544a2aface000fbcf1c3573fee1526',
-          logs: [Array]
-        }
-      ],
-      statusCode: 200,
-      version: '2.0.0'
-    }
+    Status: success
     ✅ Wallet provisioned: {
       address: '0x022fA5358476f0EB881138BD822E5150AFb36c5B',
-      id: '0x0000000000000000000000000000000000000000000000000000000000066eee7d4670e76c7186cf2fb9d448e3b8348e316bdb5b142c3ff3149aa703805c81cb',
-      txHash: {
-        id: '0x0000000000000000000000000000000000000000000000000000000000066eee7d4670e76c7186cf2fb9d448e3b8348e316bdb5b142c3ff3149aa703805c81cb',
-        status: 'success',
-        atomic: true,
-        chainId: 421614,
-        receipts: [ [Object] ],
-        statusCode: 200,
-        version: '2.0.0'
-      }
+      id: '0x0000000000000000000000000000000000000000000000000000000000066eee7d4670e76c7186cf2fb9d448e3b8348e316bdb5b142c3ff3149aa703805c81cb'
     }
     ```
   </Step>
 </Steps>
 
-And when opened in an Arbitrum Sepolia explorer, you should see the [deployment](https://sepolia.arbiscan.io/address/0x022fA5358476f0EB881138BD822E5150AFb36c5B#internaltx). You have now learned how to programmatically create a smart wallet.
+You have now learned how to programmatically create a smart wallet. Use the call ID to track your transaction via the [wallet APIs](/docs/wallets/reference/wallet-apis/functions/getCallsStatus).
