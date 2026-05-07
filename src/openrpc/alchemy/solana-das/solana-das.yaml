@@ -129,7 +129,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -199,11 +199,11 @@ methods:
                 - id
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: >
                 The field to sort by. Note: Only `id` is supported for cursor-based pagination
-                (using `before`/`after`). Sorting by `created`, `updated`, `recentAction`, or `none`
+                (using `before`/`after`). Sorting by `created`, `updated`, `recent_action`, or `none`
                 requires page-based pagination (using `page`).
             sortDirection:
               type: string
@@ -289,7 +289,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -366,7 +366,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -446,7 +446,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -505,14 +505,6 @@ methods:
         description: The interface of the asset.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetInterface
-      - name: ownerType
-        required: false
-        description: The ownership model.
-        schema:
-          type: string
-          enum:
-            - single
-            - token
       - name: creatorAddress
         required: false
         description: The creator address to filter by.
@@ -570,16 +562,10 @@ methods:
           type: boolean
       - name: supply
         required: false
-        description: Supply filter criteria.
+        description: Supply filter. Match assets whose supply equals this value.
         schema:
-          type: object
-          properties:
-            printMaxSupply:
-              type: integer
-              description: Maximum print supply filter.
-            printCurrentSupply:
-              type: integer
-              description: Current print supply filter.
+          type: integer
+          minimum: 0
       - name: supplyMint
         required: false
         description: Filter assets whose supply is tied to a specific mint.
@@ -587,19 +573,25 @@ methods:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
       - name: royaltyTargetType
         required: false
-        description: Royalty target type criteria.
+        description: Royalty target type to filter by.
         schema:
           type: string
+          enum:
+            - creators
+            - fanout
+            - single
       - name: royaltyTarget
         required: false
-        description: Royalty target criteria.
+        description: The royalty target address (Pubkey) to filter by.
         schema:
-          type: string
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
       - name: royaltyAmount
         required: false
-        description: Royalty amount criteria.
+        description: The royalty amount (in basis points) to filter by.
         schema:
           type: integer
+          minimum: 0
+          maximum: 10000
       - name: jsonUri
         required: false
         description: Filter by JSON URI.
@@ -612,33 +604,7 @@ methods:
           type: string
       - name: options
         required: false
-        description: Optional response shaping flags.
-        schema:
-          type: object
-          properties:
-            showUnverifiedCollections:
-              type: boolean
-              default: false
-              description: Show unverified collections instead of skipping them.
-            showCollectionMetadata:
-              type: boolean
-              default: false
-              description: Show metadata for the collection.
-            showZeroBalance:
-              type: boolean
-              default: false
-              description: Display assets with zero balance.
-            showInscription:
-              type: boolean
-              default: false
-              description: Display inscription details.
-            showFungible:
-              type: boolean
-              default: false
-              description: Include fungible assets in the result.
-      - name: displayOptions
-        required: false
-        description: Alias for `options`. Prefer `options` in new integrations.
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
         schema:
           type: object
           properties:
@@ -820,17 +786,7 @@ methods:
           type: string
       - name: options
         required: false
-        description: Optional response shaping flags. Currently supports `showZeroBalance`.
-        schema:
-          type: object
-          properties:
-            showZeroBalance:
-              type: boolean
-              default: false
-              description: If true, include token accounts with a zero token balance.
-      - name: displayOptions
-        required: false
-        description: Alias for `options`. Prefer `options` in new integrations.
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
         schema:
           type: object
           properties:
