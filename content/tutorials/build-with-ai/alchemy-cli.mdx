@@ -32,9 +32,16 @@ Sign in via browser. The CLI saves a token and prompts you to pick an app, then 
 alchemy auth
 ```
 
+To change the selected app later, list your apps and select one:
+
+```bash
+alchemy app list
+alchemy app select <app-id>
+```
+
 That's it. Skip ahead to [your first commands](#your-first-commands).
 
-For other auth methods (manual API key, webhook key for Notify, x402 wallet), see [Authentication options](#authentication-options) at the bottom of this page.
+For other configuration changes, see [Configuration options](#configuration-options) at the bottom of this page.
 
 ## Your first commands
 
@@ -304,19 +311,9 @@ These flags work on every command.
 | `--debug` | Enable debug diagnostics |
 | `--no-interactive` | Disable the REPL and prompt-driven interactions |
 
-## Authentication options
+## Configuration options
 
-Browser login (`alchemy auth`) covers most use cases. The sections below cover the rest.
-
-### Manual API key
-
-If you'd rather bypass the browser flow, drop in your [Alchemy Dashboard](https://dashboard.alchemy.com/) API key directly:
-
-```bash
-alchemy config set api-key YOUR_API_KEY
-```
-
-You can also pass `--api-key` per-command or set `ALCHEMY_API_KEY` in your environment.
+Browser login (`alchemy auth`) covers most setup. The sections below cover configuration you may still change after signing in.
 
 ### Webhook API key (Notify)
 
@@ -327,23 +324,6 @@ alchemy config set webhook-api-key YOUR_WEBHOOK_API_KEY
 ```
 
 You can also pass `--webhook-api-key` or set `ALCHEMY_WEBHOOK_API_KEY`.
-
-### x402 wallet auth
-
-For autonomous workflows, the CLI can authenticate API requests with a wallet using the [x402 payment protocol](docs/alchemy-for-agents) instead of an API key. x402 uses a local EVM key for gateway authentication and is separate from the `alchemy wallet use` active signer used by EVM transaction commands.
-
-```bash
-alchemy config set wallet-key-file ./wallet.key
-alchemy --x402 evm data balance vitalik.eth
-```
-
-To make x402 the default for every command, persist it:
-
-```bash
-alchemy config set x402 true
-```
-
-x402 covers most node and data commands. See [Agent Authentication and Payment](docs/alchemy-for-agents) for the full flow.
 
 ### Check what's configured
 
