@@ -418,10 +418,13 @@ methods:
   - name: searchAssets
     description: >
       Search for assets using a complex set of filter criteria. `ownerAddress` is required.
-      Collection-grouping filters (`grouping: ["collection", "<address>"]`) are also supported
-      by the underlying API but are not exposed in this Try It form because the server
-      requires an exact 2-element tuple — pass `grouping` directly when calling the API
-      from your own client.
+
+      A few less common filters are accepted by the underlying API but are not exposed
+      in the Try It form because their values cannot be defaulted to a useful placeholder
+      without zeroing the result set: `name` (substring match), `jsonUri` (exact match),
+      `royaltyAmount` (basis-points integer match), `supply` (exact integer match), and
+      `grouping` (strict 2-tuple of `[groupKey, groupValue]`, e.g. `["collection", "<address>"]`).
+      Pass these directly when calling the API from your own client.
     paramStructure: by-name
     params:
       - name: ownerAddress
@@ -548,12 +551,6 @@ methods:
         description: Filter for assets that are eligible for compression but have not yet been compressed.
         schema:
           type: boolean
-      - name: supply
-        required: false
-        description: Supply filter. Match assets whose supply equals this value.
-        schema:
-          type: integer
-          minimum: 0
       - name: supplyMint
         required: false
         description: Filter assets whose supply is tied to a specific mint.
@@ -573,23 +570,6 @@ methods:
         description: The royalty target address (Pubkey) to filter by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: royaltyAmount
-        required: false
-        description: The royalty amount (in basis points) to filter by.
-        schema:
-          type: integer
-          minimum: 0
-          maximum: 10000
-      - name: jsonUri
-        required: false
-        description: Filter by JSON URI.
-        schema:
-          type: string
-      - name: name
-        required: false
-        description: Filter assets by name (substring match).
-        schema:
-          type: string
       - name: options
         required: false
         description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
