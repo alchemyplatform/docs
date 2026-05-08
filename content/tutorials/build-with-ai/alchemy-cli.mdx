@@ -5,16 +5,17 @@ subtitle: Query blockchain data and manage your Alchemy account from the termina
 slug: docs/alchemy-cli
 ---
 
-The Alchemy CLI wraps every Alchemy product including nodes, Data APIs, Wallet APIs, webhooks, and more. Use it to:
+The Alchemy CLI wraps Alchemy's node, Data API, wallet, transaction, webhook, and account management surfaces. Use it to:
 
 * Live query onchain data without writing a script
+* Send transactions with a session wallet or local wallet
 * Run admin tasks like creating apps, rotating allowlists, and managing webhooks
 * Automate workflows in shell scripts, cron jobs, and CI pipelines
 
 ```bash
-alchemy balance vitalik.eth
-alchemy tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b
-alchemy block latest
+alchemy evm data balance vitalik.eth
+alchemy evm tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b
+alchemy evm block latest
 ```
 
 ## Install
@@ -31,27 +32,35 @@ Sign in via browser. The CLI saves a token and prompts you to pick an app, then 
 alchemy auth
 ```
 
+To change the selected app later, list your apps and select one:
+
+```bash
+alchemy app list
+alchemy app select <app-id>
+```
+
 That's it. Skip ahead to [your first commands](#your-first-commands).
 
-For other auth methods (manual API key, access key for Admin API, webhook key for Notify, x402 wallet), see [Authentication options](#authentication-options) at the bottom of this page.
+For other configuration changes, see [Configuration options](#configuration-options) at the bottom of this page.
 
 ## Your first commands
 
-Once you've signed in, try a few queries.
+Once you've signed in, try a few EVM queries.
 
 ```bash
-alchemy balance vitalik.eth
-alchemy gas
-alchemy tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b
-alchemy tokens balances vitalik.eth --metadata
-alchemy nfts vitalik.eth --limit 5
-alchemy prices symbol ETH,BTC,SOL
+alchemy evm data balance vitalik.eth
+alchemy evm gas
+alchemy evm tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b
+alchemy evm data tokens balances vitalik.eth --metadata
+alchemy evm data nfts vitalik.eth --limit 5
+alchemy evm data price symbol ETH,BTC,SOL
 ```
 
-Switch networks per-command with `--network`, or change the default with `alchemy config set network <id>`. List available networks:
+Switch networks per-command with `--network`, or change the default with `alchemy config set network <id>`. List available EVM or Solana networks:
 
 ```bash
-alchemy network list --search base
+alchemy evm network list --search base
+alchemy solana network list --search mainnet
 ```
 
 ## Use it from AI agents and scripts
@@ -64,16 +73,16 @@ The CLI is designed to be a first-class tool surface for AI agents. Two flags ma
 Combine them in any automation:
 
 ```bash
-alchemy --json --no-interactive balance vitalik.eth
+alchemy --json --no-interactive evm data balance vitalik.eth
 ```
 
-For agents that need to learn the full command surface (every subcommand, every flag, every error code, recovery steps), run:
+For agents that need to learn the command surface, auth methods, error codes, recovery steps, and runnable examples, run:
 
 ```bash
 alchemy --json --no-interactive agent-prompt
 ```
 
-The output includes an `executionPolicy`, a `preflight` check, the auth matrix, every command's arguments and options, an error catalog with retry semantics, and runnable examples. Drop it into an agent's system prompt or a [skill](docs/alchemy-agent-skills) so the agent calls the CLI correctly without trial and error.
+The output includes an `executionPolicy`, a `preflight` check, the auth matrix, the command tree with arguments and options, an error catalog with retry semantics, and runnable examples. Drop it into an agent's system prompt or a [skill](docs/alchemy-agent-skills) so the agent calls the CLI correctly without trial and error.
 
 <Tip>
   Pair the CLI with [Agent Skills](docs/alchemy-agent-skills) for code generation and the [Alchemy MCP Server](docs/alchemy-mcp-server) for in-conversation queries. The CLI shines for shell-driven workflows, cron jobs, and any agent that already runs terminal commands.
@@ -81,155 +90,203 @@ The output includes an `executionPolicy`, a `preflight` check, the auth matrix, 
 
 ## Command reference
 
-The CLI groups commands by Alchemy product. Each section below lists every subcommand at the time of writing. Run `alchemy help <command>` for the latest options and arguments.
+The CLI groups commands by chain and product area. Each section below lists every subcommand at the time of writing. Run `alchemy help <command>` for the latest options and arguments.
 
-### Onchain queries
+### EVM
 
-Direct read access to JSON-RPC nodes across [100+ networks](docs/reference/node-supported-chains).
+Use `alchemy evm` for EVM JSON-RPC, Data API wrappers, simulation, and wallet-signed actions across [100+ networks](docs/reference/node-supported-chains).
 
 | Command | Description |
 |---|---|
-| `alchemy balance <address>` | Native token balance (ETH, MATIC, etc.) for a single address. Accepts ENS names. |
-| `alchemy tx <hash>` | Transaction details by hash |
-| `alchemy receipt <hash>` | Transaction receipt with status, gas used, and logs |
-| `alchemy block <number>` | Block details by number, hex, or tag (`latest`, `earliest`, `pending`) |
-| `alchemy gas` | Current base fee plus suggested priority fee |
-| `alchemy logs` | Query event logs with `--address`, `--topic`, `--from-block`, `--to-block` |
-| `alchemy rpc <method> [params]` | Raw JSON-RPC call for any `eth_*` or chain-specific method |
-| `alchemy trace <method> [params]` | Call a `trace_*` method (e.g. `trace_transaction`, `trace_block`) |
-| `alchemy debug <method> [params]` | Call a `debug_*` method (e.g. `debug_traceTransaction`) |
+| `alchemy evm rpc <method> [params]` | Raw JSON-RPC call for any `eth_*` or chain-specific method |
+| `alchemy evm data ...` | Data API wrappers for balances, tokens, NFTs, transfers, prices, and portfolio data |
+| `alchemy evm send <to> <amount>` | Send native tokens or ERC-20 tokens with the active EVM signer |
+| `alchemy evm contract read <address> <function>` | Call a view or pure contract function with `eth_call` |
+| `alchemy evm contract call <address> <function>` | Execute a state-changing contract function with a wallet signer |
+| `alchemy evm swap quote` | Get a same-chain swap quote without executing |
+| `alchemy evm swap execute` | Execute a same-chain token swap |
+| `alchemy evm approve <spender_address> --token-address <addr>` | Approve, revoke, or reset ERC-20 allowances |
+| `alchemy evm status [id]` | Check a smart wallet call ID or EVM transaction hash |
+| `alchemy evm network list` | List EVM network IDs |
+| `alchemy evm tx [hash]` | Transaction details by hash; reads from stdin when omitted |
+| `alchemy evm receipt [hash]` | Transaction receipt; reads from stdin when omitted |
+| `alchemy evm block <number>` | Block details by number, hex, or tag (`latest`, `earliest`, `pending`) |
+| `alchemy evm trace <method> [params]` | Call a `trace_*` method |
+| `alchemy evm debug <method> [params]` | Call a `debug_*` method |
+| `alchemy evm gas` | Current base fee plus suggested priority fee |
+| `alchemy evm logs` | Query event logs with `--address`, `--topic`, `--from-block`, `--to-block` |
+| `alchemy evm simulate ...` | Preview asset changes or execution traces before broadcasting |
 
 Example: pipe a tx hash from one command into another.
 
 ```bash
-alchemy logs --address 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --from-block 0x14a4400 --to-block latest
-echo 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b | alchemy receipt
+alchemy evm logs --address 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --from-block 0x14a4400 --to-block latest
+echo 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b | alchemy evm receipt
 ```
 
-### Token API
+#### Data
 
 | Command | Description |
 |---|---|
-| `alchemy tokens balances <address>` | ERC-20 balances for an address. Add `--metadata` to format with symbol and decimals. |
-| `alchemy tokens metadata <contract>` | Token name, symbol, decimals, and logo |
-| `alchemy tokens allowance --owner <addr> --spender <addr> --contract <addr>` | ERC-20 allowance for a spender |
+| `alchemy evm data balance [address]` | Native token balance for an address. Accepts ENS names and `--block`. Alias: `bal`. |
+| `alchemy evm data tokens balances [address]` | ERC-20 balances for an address. Add `--metadata` to format with symbol and decimals. |
+| `alchemy evm data tokens metadata <contract>` | Token name, symbol, decimals, and logo |
+| `alchemy evm data tokens allowance --owner <addr> --spender <addr> --contract <addr>` | ERC-20 allowance for a spender |
+| `alchemy evm data nfts [address]` | NFTs owned by an address. Supports `--limit` and `--page-key`. |
+| `alchemy evm data nfts metadata --contract <addr> --token-id <id>` | NFT metadata for a specific token |
+| `alchemy evm data nfts contract <address>` | NFT contract metadata |
+| `alchemy evm data history [address]` | Asset transfer history with sender, recipient, block, category, count, and page filters |
+| `alchemy evm data price symbol <symbols>` | Spot prices by comma-separated symbols (e.g. `ETH,BTC,SOL`) |
+| `alchemy evm data price address --addresses <json>` | Spot prices by token address. `--addresses` takes a JSON array of `{network, address}`. |
+| `alchemy evm data price historical --body <json>` | Historical prices for a JSON request payload |
+| `alchemy evm data portfolio tokens --body <json>` | Token portfolio by `address`/`network` pairs |
+| `alchemy evm data portfolio token-balances --body <json>` | Token balances by `address`/`network` pairs |
+| `alchemy evm data portfolio nfts --body <json>` | NFTs owned across one or more networks |
+| `alchemy evm data portfolio nft-contracts --body <json>` | NFT contracts by `address`/`network` pairs |
 
-### NFT API
-
-| Command | Description |
-|---|---|
-| `alchemy nfts <address>` | NFTs owned by an address on the current network. Supports `--limit` and `--page-key`. |
-| `alchemy nfts metadata --contract <addr> --token-id <id>` | NFT metadata for a specific token |
-| `alchemy nfts contract <address>` | NFT contract metadata |
-
-### Transfers API
-
-| Command | Description |
-|---|---|
-| `alchemy transfers <address>` | Inbound and outbound asset movements (ERC-20, ERC-721, ERC-1155, native) for a wallet. Supports `--from-address`, `--to-address`, `--from-block`, `--to-block`, `--category`, `--max-count`, `--page-key`. |
-
-### Prices API
-
-| Command | Description |
-|---|---|
-| `alchemy prices symbol <symbols>` | Spot prices by comma-separated symbols (e.g. `ETH,BTC,SOL`) |
-| `alchemy prices address --addresses <json>` | Spot prices by token address. `--addresses` takes a JSON array of `{network, address}`. |
-| `alchemy prices historical --body <json>` | Historical prices for a JSON request payload |
-
-### Portfolio API
-
-Cross-network views in a single call.
-
-| Command | Description |
-|---|---|
-| `alchemy portfolio tokens --body <json>` | All ERC-20 holdings and USD values for a wallet across networks |
-| `alchemy portfolio token-balances --body <json>` | Token balances by `address`/`network` pairs |
-| `alchemy portfolio nfts --body <json>` | NFTs owned across one or more networks |
-| `alchemy portfolio nft-contracts --body <json>` | NFT contracts by `address`/`network` pairs |
-
-### Simulation API
+#### Simulation
 
 Preview a transaction's outcome before broadcasting.
 
 | Command | Description |
 |---|---|
-| `alchemy simulate asset-changes --tx <json>` | Human-readable breakdown of token transfers, ETH movements, and NFT transfers |
-| `alchemy simulate execution --tx <json>` | Full execution trace for a single transaction |
-| `alchemy simulate asset-changes-bundle --txs <json>` | Asset changes for a bundle of transactions |
-| `alchemy simulate execution-bundle --txs <json>` | Execution traces for a bundle of transactions |
+| `alchemy evm simulate asset-changes --tx <json>` | Human-readable breakdown of token transfers, ETH movements, and NFT transfers |
+| `alchemy evm simulate execution --tx <json>` | Full execution trace for a single transaction |
+| `alchemy evm simulate asset-changes-bundle --txs <json>` | Asset changes for a bundle of transactions |
+| `alchemy evm simulate execution-bundle --txs <json>` | Execution traces for a bundle of transactions |
 
 All four accept an optional `--block-tag` (defaults to `latest`).
 
-### Wallet APIs (Bundler and Gas Manager)
+#### Transactions
+
+Wallet-signed EVM actions return a smart wallet call ID and, once confirmed, a transaction hash. Use `alchemy evm status <id-or-hash>` to check either value.
+
+```bash
+alchemy wallet connect
+alchemy wallet use session
+alchemy evm send vitalik.eth 0.01 -n base-mainnet
+alchemy evm status <call-id-or-tx-hash>
+```
+
+Use `--gas-sponsored` and `--gas-policy-id <id>` on supported EVM actions to request gas sponsorship. You can persist defaults with `alchemy config set evm-gas-sponsored true` and `alchemy config set evm-gas-policy-id <id>`.
 
 | Command | Description |
 |---|---|
-| `alchemy bundler send-user-operation --user-op <json> --entry-point <addr>` | Submit a UserOperation |
-| `alchemy bundler estimate-user-operation-gas --user-op <json> --entry-point <addr>` | Estimate gas for a UserOperation, with optional `--state-override` |
-| `alchemy bundler get-user-operation-receipt --user-op-hash <hash>` | Fetch a UserOperation receipt |
-| `alchemy gas-manager request-gas-and-paymaster --body <json>` | Request gas sponsorship and paymaster data |
-| `alchemy gas-manager request-paymaster-token-quote --body <json>` | Quote ERC-20 paymaster pricing |
+| `alchemy evm send <to> <amount>` | Send native tokens. Add `--token <address>` for ERC-20 transfers. |
+| `alchemy evm contract call <address> <function>` | Execute a contract function with `--args`, `--abi-file` or `--abi`, and optional `--value`. |
+| `alchemy evm approve <spender_address> --token-address <addr>` | Approve, revoke, or reset ERC-20 allowances with exactly one of `--amount`, `--unlimited`, or `--revoke`. |
+| `alchemy evm swap quote --from <token> --to <token> --amount <n>` | Quote a same-chain swap |
+| `alchemy evm swap execute --from <token> --to <token> --amount <n>` | Execute a same-chain swap |
+| `alchemy xchain bridge quote --from <token> --to <token> --amount <n> --to-network <id>` | Quote a cross-chain bridge. Source network comes from `-n, --network`. |
+| `alchemy xchain bridge execute --from <token> --to <token> --amount <n> --to-network <id>` | Execute a cross-chain bridge |
+
+Use `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` as the native token address for swap and bridge commands.
+
+Most wallet-signed EVM commands accept `--signer session|local` to override the active signer for that invocation. If both session and local EVM wallets are configured and you have not chosen one, the CLI defaults to the session wallet and prints a warning with the command to switch.
+
+### Wallets and signing
+
+Use `alchemy wallet` to connect the signer used by onchain actions. EVM commands can use a browser-approved session wallet or a local private key. Solana transaction commands currently use a local Solana wallet.
+
+| Command | Description |
+|---|---|
+| `alchemy wallet connect` | Connect a wallet. Use `--mode session` or `--mode local`. Local mode supports `--chain evm\|solana\|both` and defaults to both. |
+| `alchemy wallet connect --mode local --chain evm --import <path>` | Import a local EVM private key file |
+| `alchemy wallet connect --mode local --chain solana` | Create or configure a local Solana wallet |
+| `alchemy wallet status` | Show session, local EVM, local Solana, and active signer status. Add `--verify` to check the backend session. |
+| `alchemy wallet address` | Display configured wallet addresses |
+| `alchemy wallet qr` | Display an EVM or Solana wallet address as a QR code |
+| `alchemy wallet use <session\|local>` | Set the active signer for EVM transactions |
+| `alchemy wallet disconnect` | Revoke the current wallet session and clear it locally |
 
 ### Solana
 
+Solana transaction commands use a local Solana wallet. Use `--fee-sponsored` and `--fee-policy-id <id>` on supported Solana actions to request fee sponsorship.
+
+```bash
+alchemy wallet connect --mode local --chain solana
+alchemy solana send <recipient> 0.1 -n solana-mainnet
+alchemy solana status <signature>
+```
+
 | Command | Description |
 |---|---|
+| `alchemy solana send <to> <amount>` | Send native SOL. SPL token transfers are not yet supported. |
+| `alchemy solana delegate approve --token-account <addr> --mint <addr> --delegate <addr> --amount <n> --decimals <n>` | Approve an SPL token delegate |
+| `alchemy solana delegate revoke --token-account <addr>` | Revoke an SPL token delegate |
+| `alchemy solana status [id]` | Check a Solana transaction signature; reads from stdin when omitted |
 | `alchemy solana rpc <method> [params]` | Call any Solana JSON-RPC method |
 | `alchemy solana das <method> [params]` | Call a Solana DAS method (e.g. `getAssetsByOwner`) |
+| `alchemy solana network list` | List Solana network IDs |
+| `alchemy solana program accounts <program-id>` | List accounts owned by a Solana program. Supports `--filters`, `--encoding`, and `--limit`. |
+| `alchemy solana program account <address>` | Show a Solana account |
+| `alchemy solana program show <program-id>` | Show Solana program account metadata |
 
-### Webhooks (Notify)
+`alchemy solana swap` is reserved for future support and is not implemented yet.
 
-Requires a webhook API key. Pass `--webhook-api-key <key>`, set `ALCHEMY_WEBHOOK_API_KEY`, or run `alchemy config set webhook-api-key <key>`.
-
-| Command | Description |
-|---|---|
-| `alchemy webhooks list` | List all registered webhooks |
-| `alchemy webhooks create --body <json>` | Register a new webhook. Add `--dry-run` to preview the payload. |
-| `alchemy webhooks update --body <json>` | Update an existing webhook |
-| `alchemy webhooks delete <webhookId>` | Delete a webhook. Supports `--dry-run` and `-y, --yes`. |
-| `alchemy webhooks addresses <webhookId>` | List addresses tracked by an address-activity webhook |
-| `alchemy webhooks nft-filters <webhookId>` | List NFT filters on an NFT-activity webhook |
-
-### Apps (Admin API)
-
-Requires an access key. The CLI also caches a "selected app" so you can omit the ID on most commands.
+### Cross-chain
 
 | Command | Description |
 |---|---|
-| `alchemy apps list` | List apps. Supports `--search`, `--id`, `--limit`, `--cursor`, `--all`. |
-| `alchemy apps get <id>` | Get app details |
-| `alchemy apps create --name <name> --networks <ids> --description <desc> --products <ids>` | Create a new app. Supports `--dry-run`. |
-| `alchemy apps update <id> --name <name> --description <desc>` | Update app name or description |
-| `alchemy apps delete <id>` | Delete an app. Supports `--dry-run` and `-y, --yes`. |
-| `alchemy apps networks <id> --networks <ids>` | Update the network allowlist |
-| `alchemy apps address-allowlist <id> --addresses <addrs>` | Update the address allowlist |
-| `alchemy apps origin-allowlist <id> --origins <origins>` | Update the origin allowlist |
-| `alchemy apps ip-allowlist <id> --ips <ips>` | Update the IP allowlist |
-| `alchemy apps configured-networks` | List RPC network slugs configured for the selected app |
-| `alchemy apps select [id]` | Select an app to use as the default for subsequent commands |
-| `alchemy apps chains` | List Admin API chain identifiers (e.g. `ETH_MAINNET`) for app configuration |
+| `alchemy xchain bridge quote` | Get a bridge quote from the source `-n, --network` to `--to-network` |
+| `alchemy xchain bridge execute` | Execute a bridge from the source `-n, --network` to `--to-network` |
 
-### Auth, config, networks, and setup
+Bridge currently supports EVM mainnets. Use `alchemy evm swap` for same-chain token exchanges.
+
+### Webhook (Notify)
+
+Requires a webhook API key. Pass `--webhook-api-key <key>` on the `webhook` command, set `ALCHEMY_WEBHOOK_API_KEY`, or run `alchemy config set webhook-api-key <key>`.
 
 | Command | Description |
 |---|---|
-| `alchemy auth` | Sign in via browser. Supports `--force` to re-authenticate and `-y` to skip the confirmation prompt. |
+| `alchemy webhook list` | List all registered webhooks |
+| `alchemy webhook create --body <json>` | Register a new webhook. Add `--dry-run` to preview the payload. |
+| `alchemy webhook update --body <json>` | Update an existing webhook. Add `--dry-run` to preview the payload. |
+| `alchemy webhook delete <webhookId>` | Delete a webhook. Supports `--dry-run` and `-y, --yes`. |
+| `alchemy webhook addresses <webhookId>` | List addresses tracked by an address-activity webhook |
+| `alchemy webhook nft-filters <webhookId>` | List NFT filters on an NFT-activity webhook |
+
+### App (Admin API)
+
+The CLI uses your browser login automatically for Admin API commands. It also caches a "selected app" so you can omit the ID on most commands.
+
+| Command | Description |
+|---|---|
+| `alchemy app list` | List apps. Supports `--search`, `--id`, `--limit`, `--cursor`, `--all`. |
+| `alchemy app get <id>` | Get app details |
+| `alchemy app create --name <name> --networks <ids> --description <desc> --products <ids>` | Create a new app. Supports `--dry-run`. |
+| `alchemy app update <id> --name <name> --description <desc>` | Update app name or description. Supports `--dry-run`. |
+| `alchemy app delete <id>` | Delete an app. Supports `--dry-run` and `-y, --yes`. |
+| `alchemy app networks <id> --networks <ids>` | Update the network allowlist. Supports `--dry-run`. |
+| `alchemy app address-allowlist <id> --addresses <addrs>` | Update the address allowlist. Supports `--dry-run`. |
+| `alchemy app origin-allowlist <id> --origins <origins>` | Update the origin allowlist. Supports `--dry-run`. |
+| `alchemy app ip-allowlist <id> --ips <ips>` | Update the IP allowlist. Supports `--dry-run`. |
+| `alchemy app configured-networks` | List RPC network slugs configured for the selected app |
+| `alchemy app select [id]` | Select an app to use as the default for subsequent commands |
+| `alchemy app chains` | List Admin API chain identifiers (e.g. `ETH_MAINNET`) for app configuration |
+
+### Auth and config
+
+| Command | Description |
+|---|---|
+| `alchemy auth` | Sign in via browser. Use `alchemy auth login --force` to re-authenticate and `-y` to skip the confirmation prompt. |
 | `alchemy auth status` | Show whether you're signed in |
 | `alchemy auth logout` | Clear the saved authentication token |
-| `alchemy setup status` | Show what's configured and which commands to run next |
-| `alchemy config set <key> <value>` | Set `api-key`, `access-key`, `webhook-api-key`, `app`, `network`, `verbose`, `wallet-key-file`, or `x402` |
+| `alchemy doctor` | Run setup checks and print remediation commands |
+| `alchemy config status` | Show setup status and remediation commands |
+| `alchemy config set app [app-id]` | Select the default app interactively, or set it by ID |
+| `alchemy config set webhook-api-key <key>` | Save the Notify webhook API key |
+| `alchemy config set network <id>` | Set the default network |
+| `alchemy config set verbose <true\|false>` | Set default verbose output |
+| `alchemy config set wallet-key-file <path>` | Set the local EVM wallet key file used for x402 wallet auth |
+| `alchemy config set x402 <true\|false>` | Enable or disable x402 wallet auth by default |
+| `alchemy config set evm-gas-sponsored <true\|false>` | Enable or disable EVM gas sponsorship by default |
+| `alchemy config set evm-gas-policy-id <id>` | Save the EVM gas policy ID |
+| `alchemy config set solana-fee-sponsored <true\|false>` | Enable or disable Solana fee sponsorship by default |
+| `alchemy config set solana-fee-policy-id <id>` | Save the Solana fee policy ID |
 | `alchemy config get <key>` | Read a single config value |
 | `alchemy config list` | Print every saved config value (use `--reveal` to unmask secrets) |
 | `alchemy config reset [key]` | Reset a single key, or pass `-y, --yes` to reset everything |
-| `alchemy network list` | List RPC network IDs. Supports `--mainnet-only`, `--testnet-only`, `--search`. |
-
-### Wallet (x402)
-
-| Command | Description |
-|---|---|
-| `alchemy wallet generate` | Create a new local wallet for x402 authentication |
-| `alchemy wallet import <path>` | Import a wallet from a private key file |
-| `alchemy wallet address` | Print the address of the locally configured x402 wallet |
 
 ### Utilities
 
@@ -238,7 +295,9 @@ Requires an access key. The CLI also caches a "selected app" so you can omit the
 | `alchemy version` | Print the CLI version |
 | `alchemy update-check` | Check whether a newer CLI version is available |
 | `alchemy completions <shell>` | Generate completion scripts for `bash`, `zsh`, or `fish` |
-| `alchemy agent-prompt` | Emit a JSON document describing every command, auth method, error code, and example for AI agents |
+| `alchemy agent-prompt` | Emit a JSON document describing the CLI command tree, auth methods, error codes, and examples for AI agents |
+| `alchemy install mcp` | Install Alchemy MCP configuration for a supported client |
+| `alchemy install skills` | Install Alchemy Agent Skills for a supported client |
 | `alchemy help [command]` | Show help for any command |
 
 ## Global flags
@@ -248,10 +307,10 @@ These flags work on every command.
 | Flag | Description |
 |---|---|
 | `--api-key <key>` | API key for RPC and Data API requests (env: `ALCHEMY_API_KEY`) |
-| `--access-key <key>` | Access key for Admin API requests (env: `ALCHEMY_ACCESS_KEY`) |
 | `-n, --network <id>` | Target network, defaults to `eth-mainnet` (env: `ALCHEMY_NETWORK`) |
 | `--x402` | Use x402 wallet-based gateway auth |
-| `--wallet-key-file <path>` | Path to a wallet private key file for x402 |
+| `--wallet-key-file <path>` | Path to an EVM wallet private key file for x402 |
+| `--solana-wallet-key-file <path>` | Path to a Solana wallet key file |
 | `--json` | Force JSON output (auto-enabled when piped) |
 | `-q, --quiet` | Suppress non-essential output |
 | `--verbose` | Enable verbose output |
@@ -261,33 +320,13 @@ These flags work on every command.
 | `--debug` | Enable debug diagnostics |
 | `--no-interactive` | Disable the REPL and prompt-driven interactions |
 
-## Authentication options
+## Configuration options
 
-Browser login (`alchemy auth`) covers most use cases. The sections below cover the rest.
-
-### Manual API key
-
-If you'd rather bypass the browser flow, drop in your [Alchemy Dashboard](https://dashboard.alchemy.com/) API key directly:
-
-```bash
-alchemy config set api-key YOUR_API_KEY
-```
-
-You can also pass `--api-key` per-command or set `ALCHEMY_API_KEY` in your environment.
-
-### Access key (Admin API)
-
-The `apps` commands use a separate access key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) → Access Keys.
-
-```bash
-alchemy config set access-key YOUR_ACCESS_KEY
-```
-
-You can also pass `--access-key` or set `ALCHEMY_ACCESS_KEY`.
+Browser login (`alchemy auth`) covers most setup. The sections below cover configuration you may still change after signing in.
 
 ### Webhook API key (Notify)
 
-The `webhooks` commands use a webhook API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) Notify section.
+The `webhook` commands use a webhook API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/) Notify section.
 
 ```bash
 alchemy config set webhook-api-key YOUR_WEBHOOK_API_KEY
@@ -295,32 +334,16 @@ alchemy config set webhook-api-key YOUR_WEBHOOK_API_KEY
 
 You can also pass `--webhook-api-key` or set `ALCHEMY_WEBHOOK_API_KEY`.
 
-### x402 wallet auth
-
-For autonomous workflows, the CLI can authenticate with a wallet using the [x402 payment protocol](docs/alchemy-for-agents) instead of an API key. Your script signs requests with a local key and pays for credits in USDC.
-
-```bash
-alchemy wallet generate
-alchemy --x402 balance vitalik.eth
-```
-
-To make x402 the default for every command, persist it:
-
-```bash
-alchemy config set x402 true
-```
-
-x402 covers most node and data commands. See [Agent Authentication and Payment](docs/alchemy-for-agents) for the full flow.
-
 ### Check what's configured
 
 ```bash
 alchemy auth status
-alchemy setup status
+alchemy doctor
+alchemy config status
 alchemy config list
 ```
 
-`setup status` reports whether you have everything needed to run a command and prints `nextCommands` to fix anything missing.
+`doctor` and `config status` report whether you have everything needed to run commands and print remediation steps for missing configuration.
 
 ## Shell completions
 
@@ -334,7 +357,6 @@ alchemy completions fish > ~/.config/fish/completions/alchemy.fish
 
 ## Next steps
 
-* [GitHub: alchemyplatform/alchemy-cli](https://github.com/alchemyplatform/alchemy-cli)
 * [Agent Skills](docs/alchemy-agent-skills)
 * [Alchemy MCP Server](docs/alchemy-mcp-server)
 * [Agent Authentication and Payment](docs/alchemy-for-agents)
