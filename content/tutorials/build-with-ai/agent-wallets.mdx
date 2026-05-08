@@ -1,0 +1,90 @@
+---
+title: Agent Wallets
+description: Give your AI agent a wallet without giving it your keys. Agent wallets in the Alchemy CLI let an agent send, swap, bridge, and call contracts onchain through a scoped, revocable session, with the private key safely held by Privy and approval staying with you in the Alchemy Dashboard.
+subtitle: Give your AI agent a wallet without giving it your keys. Agent wallets in the Alchemy CLI let an agent send, swap, bridge, and call contracts onchain through a scoped, revocable session, with the private key safely held by Privy and approval staying with you in the Alchemy Dashboard.
+slug: docs/agent-wallets
+---
+
+Agent wallets let an AI coding agent transact onchain from the terminal without ever holding a private key. You create or pick a wallet in the [Alchemy Dashboard](https://dashboard.alchemy.com/), grant the [Alchemy CLI](docs/alchemy-cli) a scoped, time-bound session against it, and the agent calls `alchemy evm send`, `swap`, `bridge`, and contract methods through that session. The wallet itself stays with our embedded wallet partner [Privy](https://www.privy.io/), and you revoke access in one click whenever you want.
+
+## Why agent wallets
+
+Until now, giving an AI agent the ability to transact has meant choosing between two bad defaults:
+
+* Paste a private key into a `.env` file and accept that any prompt the agent sees can drain that wallet
+* Wire a wallet SDK into a custom backend and rebuild authentication, signing, and revocation logic yourself
+
+Agent wallets replace both. The wallet's private key never touches the CLI, never touches Alchemy, and never sits in a `.env` file. You keep custody through the dashboard, the agent gets a session you approved with a clear scope and an expiry, and you can revoke that session in one click.
+
+## How it works
+
+Three parties hold three responsibilities:
+
+* **You** approve and revoke sessions through the Alchemy Dashboard.
+* **Alchemy** holds the CLI session and a verification layer in between.
+* **Privy** securely holds the wallet's private key.
+
+When you run `alchemy wallet connect`, the CLI generates a fresh P-256 keypair on your machine. The private key for that keypair never leaves the device. Your browser opens to the dashboard, where you create or pick the wallet you want the agent to use and approve the session. Approval attaches your CLI's public key as a signer on that wallet, scoped to specific capabilities and bounded by a session expiry you set.
+
+Every signing call is a two-step challenge:
+
+1. Our backend builds the canonical payload Privy expects.
+2. Your CLI signs the exact bytes locally, and only then does the request reach Privy.
+
+If the session expires, gets revoked from the dashboard, or fails any binding check, the next signing attempt is rejected before it ever reaches Privy. Revocation takes effect immediately.
+
+## What the agent can do
+
+Once a session is live, the agent has access to the full transaction surface through the CLI:
+
+* `alchemy evm send` for native and ERC-20 transfers
+* `alchemy evm swap` for same-chain swaps
+* `alchemy xchain bridge` for cross-chain bridges
+* `alchemy evm contract call` for arbitrary contract method calls
+* `alchemy evm approve` for ERC-20 allowance management
+
+Transactions go through our [Wallet APIs](/docs/wallets), so gas sponsorship, batching, automatic retries, ERC-20 gas payments, and cross-chain swaps come along for the ride. The same CLI that already wraps our Data APIs for queries now sends transactions through the wallet you authorized.
+
+## Quickstart
+
+You need Node 22 or higher and an Alchemy account. Three commands and you have an agent-controllable wallet ready to use:
+
+```bash
+npm i -g @alchemy/cli@latest
+alchemy auth
+alchemy wallet connect
+```
+
+`alchemy wallet connect` defaults to session mode. The CLI prints a URL that opens in your browser, where you pick a wallet in the dashboard and approve the session. From there, your agent can run any of the wallet-signed commands.
+
+To send a transaction immediately after connecting:
+
+```bash
+alchemy evm send vitalik.eth 0.01 -n base-mainnet
+alchemy evm status <call-id-or-tx-hash>
+```
+
+To check session status or revoke:
+
+```bash
+alchemy wallet status --verify
+alchemy wallet disconnect
+```
+
+`alchemy wallet disconnect` also revokes the session on the backend, so it cannot be reused.
+
+## Built for coding agents
+
+The CLI was designed as a tool surface for AI agents from the start. Two flags make every command machine-readable and non-blocking:
+
+* `--json` returns structured JSON on stdout for success and on stderr for errors
+* `--no-interactive` disables prompts so commands never block waiting for input
+
+`alchemy agent-prompt` emits a JSON document describing every command, every flag, every error code, and runnable examples. Drop it into an agent's system prompt or install the [Agent Skill](docs/alchemy-agent-skills), and the agent picks up the wallet commands automatically. There is no SDK to integrate, no docs page for it to interpret, and no prompt engineering to teach it the new commands.
+
+## Next steps
+
+* [Alchemy CLI: Wallets and signing](docs/alchemy-cli#wallets-and-signing) for the full command reference
+* [Wallet APIs](/docs/wallets) for the underlying transaction infrastructure
+* [Agent Authentication and Payment](docs/alchemy-for-agents) for autonomous agents that authenticate and pay with a wallet instead of an API key
+* [Alchemy Dashboard](https://dashboard.alchemy.com/) to create a wallet and approve a session
