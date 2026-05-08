@@ -416,7 +416,12 @@ methods:
         $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetList
 
   - name: searchAssets
-    description: Search for assets using a complex set of filter criteria. `ownerAddress` is required.
+    description: >
+      Search for assets using a complex set of filter criteria. `ownerAddress` is required.
+      Collection-grouping filters (`grouping: ["collection", "<address>"]`) are also supported
+      by the underlying API but are not exposed in this Try It form because the server
+      requires an exact 2-element tuple — pass `grouping` directly when calling the API
+      from your own client.
     paramStructure: by-name
     params:
       - name: ownerAddress
@@ -518,21 +523,6 @@ methods:
         description: The authority address to filter by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: grouping
-        required: false
-        description: >
-          Collection grouping filter. Must be a 2-element tuple of `[groupKey, groupValue]`,
-          for example `["collection", "<collectionAddress>"]`.
-        schema:
-          type: array
-          minItems: 2
-          maxItems: 2
-          items:
-            - type: string
-              description: The grouping key (e.g., `collection`).
-            - type: string
-              description: The grouping value (e.g., the collection address).
-          additionalItems: false
       - name: delegate
         required: false
         description: The delegate address to filter by.
