@@ -129,7 +129,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -199,11 +199,11 @@ methods:
                 - id
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: >
                 The field to sort by. Note: Only `id` is supported for cursor-based pagination
-                (using `before`/`after`). Sorting by `created`, `updated`, `recentAction`, or `none`
+                (using `before`/`after`). Sorting by `created`, `updated`, `recent_action`, or `none`
                 requires page-based pagination (using `page`).
             sortDirection:
               type: string
@@ -289,7 +289,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -366,7 +366,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -416,9 +416,36 @@ methods:
         $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetList
 
   - name: searchAssets
-    description: Search for assets using a complex set of filter criteria.
+    description: >
+      Search for assets using a complex set of filter criteria. `ownerAddress` is required.
+
+      A few less common filters are accepted by the underlying API but are not exposed
+      in the Try It form because their values cannot be defaulted to a useful placeholder
+      without zeroing the result set: `name` (substring match), `jsonUri` (exact match),
+      `royaltyAmount` (basis-points integer match), `supply` (exact integer match), and
+      `grouping` (strict 2-tuple of `[groupKey, groupValue]`, e.g. `["collection", "<address>"]`).
+      Pass these directly when calling the API from your own client.
     paramStructure: by-name
     params:
+      - name: ownerAddress
+        required: true
+        description: The owner address to filter by. Required by the Alchemy DAS proxy on every call, including when other filters are also provided.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: tokenType
+        required: false
+        description: >
+          Filter by token type. Accepted values are `fungible`, `nonFungible`, `regularNFT`,
+          `compressedNFT`, and `all`. The Alchemy DAS proxy treats `tokenType` and the legacy
+          `interface` filter as mutually exclusive — prefer `tokenType` for new integrations.
+        schema:
+          type: string
+          enum:
+            - fungible
+            - nonFungible
+            - regularNFT
+            - compressedNFT
+            - all
       - name: sortBy
         required: false
         description: Sorting criteria for assets.
@@ -430,7 +457,7 @@ methods:
               enum:
                 - created
                 - updated
-                - recentAction
+                - recent_action
                 - none
               description: The field to sort by.
             sortDirection:
@@ -444,13 +471,15 @@ methods:
         description: The maximum number of assets to retrieve.
         schema:
           type: integer
+          minimum: 1
           maximum: 1000
           default: 100
       - name: page
         required: false
-        description: The index of the "page" to retrieve.
+        description: The index of the page to retrieve (1-indexed).
         schema:
           type: integer
+          minimum: 1
           default: 1
       - name: before
         required: false
@@ -462,6 +491,11 @@ methods:
         description: Retrieve assets after this cursor.
         schema:
           type: string
+      - name: cursor
+        required: false
+        description: Cursor for pagination. Returned in the previous response.
+        schema:
+          type: string
       - name: negate
         required: false
         description: Invert the search filter.
@@ -470,31 +504,13 @@ methods:
           default: false
       - name: conditionType
         required: false
-        description: Condition type for multiple filters.
+        description: How multiple filters are combined. `all` requires every filter to match; `any` matches if at least one filter matches.
         schema:
           type: string
           enum:
             - all
             - any
           default: all
-      - name: interface
-        required: false
-        description: The interface of the asset.
-        schema:
-          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetInterface
-      - name: ownerAddress
-        required: false
-        description: The owner address to filter by.
-        schema:
-          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: ownerType
-        required: false
-        description: The ownership model.
-        schema:
-          type: string
-          enum:
-            - single
-            - token
       - name: creatorAddress
         required: false
         description: The creator address to filter by.
@@ -510,14 +526,7 @@ methods:
         description: The authority address to filter by.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: grouping
-        required: false
-        description: Grouping criteria for assets.
-        schema:
-          type: array
-          items:
-            type: string
-      - name: delegateAddress
+      - name: delegate
         required: false
         description: The delegate address to filter by.
         schema:
@@ -527,38 +536,73 @@ methods:
         description: Filter by frozen status.
         schema:
           type: boolean
-      - name: supply
-        required: false
-        description: Supply filter criteria.
-        schema:
-          type: object
-          properties:
-            printMaxSupply:
-              type: integer
-              description: Maximum print supply filter.
-            printCurrentSupply:
-              type: integer
-              description: Current print supply filter.
-      - name: mutable
-        required: false
-        description: Filter by mutable status.
-        schema:
-          type: boolean
       - name: burnt
         required: false
         description: Filter by burnt status.
         schema:
           type: boolean
-      - name: jsonUri
+      - name: compressed
         required: false
-        description: Filter by JSON URI.
+        description: Filter for compressed NFTs (cNFTs) that use state compression.
+        schema:
+          type: boolean
+      - name: compressible
+        required: false
+        description: Filter for assets that are eligible for compression but have not yet been compressed.
+        schema:
+          type: boolean
+      - name: supplyMint
+        required: false
+        description: Filter assets whose supply is tied to a specific mint.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: royaltyTargetType
+        required: false
+        description: Royalty target type to filter by.
         schema:
           type: string
+          enum:
+            - creators
+            - fanout
+            - single
+      - name: royaltyTarget
+        required: false
+        description: The royalty target address (Pubkey) to filter by.
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
+      - name: options
+        required: false
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
+        schema:
+          type: object
+          properties:
+            showUnverifiedCollections:
+              type: boolean
+              default: false
+              description: Show unverified collections instead of skipping them.
+            showCollectionMetadata:
+              type: boolean
+              default: false
+              description: Show metadata for the collection.
+            showZeroBalance:
+              type: boolean
+              default: false
+              description: Display assets with zero balance.
+            showInscription:
+              type: boolean
+              default: false
+              description: Display inscription details.
+            showFungible:
+              type: boolean
+              default: false
+              description: Include fungible assets in the result.
     examples:
       - name: searchAssets example
         params:
           - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: tokenType
+            value: "all"
           - name: sortBy
             value:
               sortBy: "created"
@@ -665,61 +709,73 @@ methods:
         $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/NftEditionList
 
   - name: getTokenAccounts
-    description: Returns token accounts based on the specified filters.
+    description: Returns token accounts based on the specified filters. At least one of `ownerAddress` or `mintAddress` is required.
     paramStructure: by-name
     params:
+      - name: ownerAddress
+        required: true
+        description: >
+          The owner (wallet) address whose token accounts you want to list.
+          Either `ownerAddress` or `mintAddress` must be provided; `ownerAddress`
+          is the common case (passing a wallet pubkey, getting back its token holdings).
+        schema:
+          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
       - name: mintAddress
         required: false
-        description: The mint address to filter token accounts by.
+        description: >
+          The mint address to filter token accounts by. Pass this INSTEAD OF `ownerAddress`
+          when you want to list every token account for a given mint, or alongside
+          `ownerAddress` to narrow a wallet's holdings to a specific mint.
+          Leave empty if you only want results scoped by owner.
         schema:
           $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: ownerAddress
+      - name: page
         required: false
-        description: The owner address to filter token accounts by.
+        description: The page of results to return (1-indexed). Use either page-based pagination (`page`) or cursor-based pagination (`cursor`/`before`/`after`), not both.
         schema:
-          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: programId
-        required: false
-        description: The program ID to filter accounts by.
-        schema:
-          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Pubkey
-      - name: commitment
-        required: false
-        description: The level of commitment desired for the query.
-        schema:
-          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Commitment
-      - name: minContextSlot
-        required: false
-        description: The minimum slot that the request can be evaluated at.
-        schema:
-          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/MinContextSlot
-      - name: dataSlice
-        required: false
-        description: Limit the returned account data.
-        schema:
-          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/DataSlice
-      - name: encoding
-        required: false
-        description: Encoding format for account data.
-        schema:
-          $ref: ../../chains/_components/solana/base-types.yaml#/components/schemas/Encoding
+          type: integer
+          minimum: 1
+          default: 1
       - name: limit
         required: false
         description: The maximum number of token accounts to retrieve.
         schema:
           type: integer
+          minimum: 1
           maximum: 1000
           default: 100
       - name: cursor
         required: false
-        description: Cursor for pagination.
+        description: Cursor for pagination. Returned in the previous response.
         schema:
           type: string
+      - name: before
+        required: false
+        description: Returns results before the specified cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Returns results after the specified cursor.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
+        schema:
+          type: object
+          properties:
+            showZeroBalance:
+              type: boolean
+              default: false
+              description: If true, include token accounts with a zero token balance.
     examples:
       - name: getTokenAccounts example
         params:
           - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: limit
+            value: 100
     result:
       name: Token accounts
       description: Returns token accounts matching the specified criteria.
