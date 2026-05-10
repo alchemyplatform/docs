@@ -1128,23 +1128,17 @@ components:
     # ZK Compression methods (Photon indexer)
     getCompressedAccount:
       name: getCompressedAccount
-      description: Returns the compressed account with the given address or hash. Provide either `address` or `hash`.
+      description: |
+        Returns the compressed account with the given hash.
+
+        The underlying Photon API also accepts an `address` Pubkey as an alternative to `hash` (compressed accounts created with a Light Protocol address). To query by address instead, send the request directly with `params: { "address": "<pubkey>" }`. The Try It widget here exposes only `hash` because addressed compressed accounts are rare on mainnet and rendering both fields produced an unusable default form.
       paramStructure: by-name
       params:
-        - name: address
-          required: false
-          description: Pubkey of the compressed account to query.
-          schema:
-            oneOf:
-              - $ref: ./base-types.yaml#/components/schemas/Pubkey
-              - type: "null"
         - name: hash
-          required: false
+          required: true
           description: Hash of the compressed account to query.
           schema:
-            oneOf:
-              - $ref: ./compression.yaml#/components/schemas/Hash
-              - type: "null"
+            $ref: ./compression.yaml#/components/schemas/Hash
       examples:
         - name: getCompressedAccount example
           params:
@@ -1264,11 +1258,13 @@ components:
           params:
             - name: owner
               value: "bukwBg6C8VAHsuak1dPm5Teiu3eWe78xakgTL8QjVbW"
+            - name: limit
+              value: 1
           result:
             name: Compressed accounts
             value:
               context:
-                slot: 418485602
+                slot: 418890736
               value:
                 items:
                   - hash: 2U9KV9sCU5MtJaDTKVkuuEbagVEBL9BQSfUBsaiEP6Cf
@@ -1280,7 +1276,7 @@ components:
                     leafIndex: 838169
                     seq: 884595
                     slotCreated: 357735567
-                cursor:
+                cursor: 2U9KV9sCU5MtJaDTKVkuuEbagVEBL9BQSfUBsaiEP6Cf
       result:
         name: Compressed accounts
         description: A paginated list of compressed accounts owned by the given Pubkey.
