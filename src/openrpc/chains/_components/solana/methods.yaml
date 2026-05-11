@@ -1129,42 +1129,40 @@ components:
     getCompressedAccount:
       name: getCompressedAccount
       description: |
-        Returns the compressed account with the given hash.
+        Returns the compressed account matching the given `address` or `hash`. Provide exactly one of the two — blank fields are omitted from the JSON-RPC payload.
 
-        The underlying Photon API also accepts an `address` Pubkey as an alternative to `hash` (compressed accounts created with a Light Protocol address). To query by address instead, send the request directly with `params: { "address": "<pubkey>" }`. The Try It widget here exposes only `hash` because addressed compressed accounts are rare on mainnet and rendering both fields produced an unusable default form.
+        - `address` queries compressed accounts created with a Light Protocol address.
+        - `hash` queries by the merkle-tree leaf hash and works for every compressed account.
       paramStructure: by-name
       params:
-        - name: hash
-          required: true
-          description: Hash of the compressed account to query.
+        - name: address
+          required: false
+          description: Pubkey of the compressed account to query. Leave blank to query by `hash` instead.
           schema:
-            $ref: ./compression.yaml#/components/schemas/Hash
+            oneOf:
+              - $ref: ./base-types.yaml#/components/schemas/Pubkey
+              - type: "null"
+        - name: hash
+          required: false
+          description: Hash of the compressed account to query. Leave blank to query by `address` instead.
+          schema:
+            oneOf:
+              - $ref: ./compression.yaml#/components/schemas/Hash
+              - type: "null"
       examples:
         - name: getCompressedAccount example
           params:
-            - name: hash
+            - name: address
               value: "3KC9cKQhhzEPjwuyQaohM6SGaZu1ukKRZw2QRgc1sYVL"
           result:
             name: Compressed account
             value:
               context:
-                slot: 418485594
+                slot: 419132638
               value:
-                hash: 3KC9cKQhhzEPjwuyQaohM6SGaZu1ukKRZw2QRgc1sYVL
-                address:
-                data:
-                  discriminator: 2
-                  data: RhAVR6AmcnFercuAcoi9gbc/hIy3UBfL/FeQkTk7SE8I8WaM+ETZsH8YD96DZJdZG7IPY2fuP8pCP/oQV1de4R5hETEZAAAAAAAA
-                  dataHash: mkARkU6arYpeTacykBCEytKihySvzGJXbkG5PbwhieQ
-                owner: cTokenmWW8bLPjZEBAUgYy3zKxQZW6VKi7bqNFEVv3m
-                lamports: 0
-                tree: smt6ukQDSPPYHSshQovmiRUjG9jGFq2hW9vgrDFk5Yz
-                leafIndex: 832574
-                seq: 877634
-                slotCreated: 357735227
       result:
         name: Compressed account
-        description: The compressed account data with context information.
+        description: The compressed account data with context information. `value` is `null` when no compressed account matches the supplied `address` or `hash`.
         schema:
           $ref: ./compression.yaml#/components/schemas/AccountResult
 
