@@ -50,6 +50,15 @@ exclude = [
     ".*developer\\.offchainlabs\\.com.*", # Rate-limits crawlers with 429
     ".*openai\\.com/index/.*",       # Returns 404 to bot traffic
 
+    # New Bitcoin-ecosystem chains (BCH, DOGE, LTC) launched in PR #1281.
+    # Per-method endpoint pages at /docs/chains/<chain>/<chain>-api-endpoints/<method>
+    # are materialized by Daikon's daily noon-EST chain-spec sync once the
+    # upstream chain-config registers them. Until then the linked method
+    # tables in the overview pages (34 methods x 3 chains) 404 on lychee.
+    # Remove these excludes after Daikon has rendered the method pages.
+    ".*/docs/chains/bitcoincash/bitcoincash-api-endpoints/.*", # Daikon-generated, post-launch
+    ".*/docs/chains/dogecoin/dogecoin-api-endpoints/.*",       # Daikon-generated, post-launch
+    ".*/docs/chains/litecoin/litecoin-api-endpoints/.*",       # Daikon-generated, post-launch
 ]
 
 # Include these patterns even if they match exclude patterns
