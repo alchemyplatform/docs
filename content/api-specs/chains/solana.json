@@ -1240,6 +1240,29 @@
       }
     },
     {
+      "name": "getHealth",
+      "description": "Returns the current health of the node.",
+      "params": [],
+      "result": {
+        "name": "Health status",
+        "description": "If the node is healthy, the result is \"ok\".",
+        "schema": {
+          "title": "Health Status",
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Result is 'ok' if healthy."
+            },
+            {
+              "type": "object",
+              "description": "An error object if unhealthy."
+            }
+          ],
+          "description": "Result is 'ok' if healthy, or an error object if unhealthy."
+        }
+      }
+    },
+    {
       "name": "getHighestSnapshotSlot",
       "description": "Returns the highest slot information that the node has snapshots for.",
       "params": [],
@@ -3334,12 +3357,12 @@
     },
     {
       "name": "getTransactionsForAddress",
-      "description": "Returns confirmed transactions that include the given address, with support for pagination, sort order, and filtering by slot range or block time range.",
+      "description": "Returns transaction history for a given address with advanced filtering, bidirectional sorting, and pagination. Combines the functionality of `getSignaturesForAddress` and `getTransaction` into a single call, returning up to 1,000 signatures or up to 100 full transactions per request.",
       "params": [
         {
           "name": "Account address",
           "required": true,
-          "description": "The account address as a base-58 encoded string.",
+          "description": "Base-58 encoded public key of the account to query transaction history for.",
           "schema": {
             "title": "Pubkey",
             "type": "string",
@@ -3349,14 +3372,15 @@
         {
           "name": "Configuration",
           "required": false,
-          "description": "Optional configuration object.",
+          "description": "Optional configuration object containing transaction detail level, sort order, limit, pagination token, commitment, encoding, and filters (slot, blockTime, signature, status, tokenAccounts).",
           "schema": {
             "title": "GetTransactionsForAddress Configuration",
             "type": "object",
+            "description": "Optional configuration object containing additional settings for the query.",
             "properties": {
               "transactionDetails": {
                 "type": "string",
-                "description": "Level of transaction detail to return. `signatures` returns only signature objects; `full` returns complete transaction data.",
+                "description": "Level of transaction detail to return. `signatures` returns basic signature info (faster). `full` returns complete transaction data, removing the need for follow-up `getTransaction` calls (requires `limit` <= 100).",
                 "enum": [
                   "signatures",
                   "full"
@@ -3365,78 +3389,146 @@
               },
               "sortOrder": {
                 "type": "string",
-                "description": "Order in which to return transactions. `desc` returns newest first; `asc` returns oldest first.",
+                "description": "Sort order for results. `desc` returns newest first (default). `asc` returns oldest first (chronological order).",
                 "enum": [
-                  "desc",
-                  "asc"
+                  "asc",
+                  "desc"
                 ],
                 "default": "desc"
               },
               "limit": {
                 "type": "integer",
-                "description": "Maximum number of results to return. Maximum is 1,000.",
+                "description": "Maximum number of transactions to return. Up to 1,000 when `transactionDetails` is `signatures`, or up to 100 when `transactionDetails` is `full`.",
                 "default": 1000
               },
               "paginationToken": {
                 "type": "string",
-                "description": "Opaque token returned by a previous response. When provided, the response resumes from the position identified by this token."
+                "description": "Pagination token from a previous response (format: `\"slot:position\"`)."
               },
-              "before": {
+              "commitment": {
+                "title": "Commitment Level",
                 "type": "string",
-                "description": "Return transactions older than this transaction signature (exclusive)."
+                "description": "Commitment level. Only `finalized` or `confirmed` are supported; `processed` is not supported.",
+                "enum": [
+                  "processed",
+                  "confirmed",
+                  "finalized"
+                ],
+                "default": "finalized"
               },
-              "until": {
-                "type": "string",
-                "description": "Stop searching at this transaction signature (exclusive). Results will not include the transaction identified by this signature."
+              "minContextSlot": {
+                "title": "Minimum Context Slot",
+                "type": "integer",
+                "description": "The minimum slot that the request can be evaluated at."
               },
               "encoding": {
                 "type": "string",
-                "description": "Encoding format for transaction data. Only applies when `transactionDetails` is `full`.",
+                "description": "Encoding format for transaction data (only applies when `transactionDetails` is `full`).",
                 "enum": [
                   "json",
                   "jsonParsed",
                   "base64",
                   "base58"
-                ],
-                "default": "json"
+                ]
               },
               "maxSupportedTransactionVersion": {
                 "type": "integer",
-                "description": "The maximum transaction version to return. Only applies when `transactionDetails` is `full`."
+                "description": "The maximum transaction version to return. If omitted, only legacy transactions are returned. Set to `0` to include all versioned transactions."
               },
               "filters": {
                 "title": "GetTransactionsForAddress Filters",
                 "type": "object",
+                "description": "Advanced filtering options for narrowing down results.",
                 "properties": {
-                  "blockTime": {
-                    "description": "Restrict results to transactions whose `blockTime` falls within this range (Unix timestamps). Converted internally to an approximate slot range.",
-                    "title": "Range Filter",
+                  "slot": {
                     "type": "object",
+                    "description": "Filter by slot number using comparison operators: `gte`, `gt`, `lte`, `lt`.",
                     "properties": {
                       "gte": {
                         "type": "integer",
-                        "description": "Inclusive lower bound of the range."
+                        "description": "Include slots greater than or equal to this value."
+                      },
+                      "gt": {
+                        "type": "integer",
+                        "description": "Include slots strictly greater than this value."
                       },
                       "lte": {
                         "type": "integer",
-                        "description": "Inclusive upper bound of the range."
+                        "description": "Include slots less than or equal to this value."
+                      },
+                      "lt": {
+                        "type": "integer",
+                        "description": "Include slots strictly less than this value."
                       }
                     }
                   },
-                  "slot": {
-                    "description": "Restrict results to transactions within this slot range.",
-                    "title": "Range Filter",
+                  "blockTime": {
                     "type": "object",
+                    "description": "Filter by Unix timestamp using comparison operators: `gte`, `gt`, `lte`, `lt`, `eq`.",
                     "properties": {
                       "gte": {
                         "type": "integer",
-                        "description": "Inclusive lower bound of the range."
+                        "description": "Include block times greater than or equal to this Unix timestamp."
+                      },
+                      "gt": {
+                        "type": "integer",
+                        "description": "Include block times strictly greater than this Unix timestamp."
                       },
                       "lte": {
                         "type": "integer",
-                        "description": "Inclusive upper bound of the range."
+                        "description": "Include block times less than or equal to this Unix timestamp."
+                      },
+                      "lt": {
+                        "type": "integer",
+                        "description": "Include block times strictly less than this Unix timestamp."
+                      },
+                      "eq": {
+                        "type": "integer",
+                        "description": "Include block times exactly equal to this Unix timestamp."
                       }
                     }
+                  },
+                  "signature": {
+                    "type": "object",
+                    "description": "Filter by transaction signature using comparison operators: `gte`, `gt`, `lte`, `lt`.",
+                    "properties": {
+                      "gte": {
+                        "type": "string",
+                        "description": "Include signatures greater than or equal to this base-58 encoded value."
+                      },
+                      "gt": {
+                        "type": "string",
+                        "description": "Include signatures strictly greater than this base-58 encoded value."
+                      },
+                      "lte": {
+                        "type": "string",
+                        "description": "Include signatures less than or equal to this base-58 encoded value."
+                      },
+                      "lt": {
+                        "type": "string",
+                        "description": "Include signatures strictly less than this base-58 encoded value."
+                      }
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Filter by transaction success/failure status.",
+                    "enum": [
+                      "succeeded",
+                      "failed",
+                      "any"
+                    ],
+                    "default": "any"
+                  },
+                  "tokenAccounts": {
+                    "type": "string",
+                    "description": "Filter transactions for related token accounts. `none` returns only transactions that reference the provided address. `balanceChanged` also returns transactions that modify the balance of a token account owned by the provided address. `all` returns transactions that reference the provided address or any token account owned by it.",
+                    "enum": [
+                      "none",
+                      "balanceChanged",
+                      "all"
+                    ],
+                    "default": "none"
                   }
                 }
               }
@@ -3446,158 +3538,103 @@
       ],
       "examples": [
         {
-          "name": "getTransactionsForAddress example (signatures)",
+          "name": "getTransactionsForAddress example",
           "params": [
             {
               "name": "Account address",
-              "value": "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+              "value": "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
             },
             {
               "name": "Configuration",
               "value": {
                 "transactionDetails": "signatures",
-                "limit": 3,
-                "sortOrder": "desc"
+                "sortOrder": "desc",
+                "limit": 100,
+                "filters": {
+                  "status": "succeeded",
+                  "tokenAccounts": "balanceChanged"
+                }
               }
             }
-          ],
-          "result": {
-            "name": "Transaction signatures result",
-            "value": {
-              "data": [
-                {
-                  "signature": "5UfDuX7WXcCJZMDKMaNbDcBrF5P3dHBvxFAGVmNXEWpLVFGHqvFbKHq7gVd4qePXkY2Lw3nZbM3fhKJtxqzCNVk",
-                  "slot": 251000042,
-                  "err": null,
-                  "blockTime": 1710000123,
-                  "confirmationStatus": "finalized"
-                },
-                {
-                  "signature": "3kxVBJHbNbBWU4Yr5rHzVyxMzNh4bzmGP7w5dQtmjqBT4e6Dkv2FvGLxHyNE9MbqUjuAzXsW8aM7EkXLsQNpYm3",
-                  "slot": 250999987,
-                  "err": null,
-                  "blockTime": 1710000099,
-                  "confirmationStatus": "finalized"
-                },
-                {
-                  "signature": "2mJkNpXyWv9NQxbLfBhzGCu3FbVeKxDsTHAjpMwYRN6nBqe5RsEzKWa4VJHoMtNcUxbPyL1sdEo8RvGkLz4DpAf",
-                  "slot": 250999801,
-                  "err": null,
-                  "blockTime": 1710000011,
-                  "confirmationStatus": "finalized"
-                }
-              ],
-              "paginationToken": "250999801:42"
-            }
-          }
+          ]
         }
       ],
       "result": {
-        "name": "Transactions result",
-        "description": "An object containing an array of transaction data and a pagination token for fetching the next page.",
+        "name": "Transaction history",
+        "description": "A paginated list of transactions for the address. Each entry includes the slot, transaction index, and either a signature plus metadata (when `transactionDetails` is `signatures`) or the full transaction and meta objects (when `transactionDetails` is `full`). A `paginationToken` is returned when more results are available.",
         "schema": {
           "title": "GetTransactionsForAddress Result",
           "type": "object",
+          "description": "Paginated transaction history for the queried address.",
           "properties": {
             "data": {
               "type": "array",
-              "description": "Array of transaction results. Each item is a signature object when `transactionDetails` is `signatures`, or a full transaction object when `transactionDetails` is `full`.",
+              "description": "Array of transaction entries matching the query.",
               "items": {
-                "oneOf": [
-                  {
-                    "title": "Signature Information",
-                    "type": "object",
-                    "properties": {
-                      "signature": {
-                        "type": "string",
-                        "description": "The transaction signature as a base-58 encoded string."
-                      },
-                      "slot": {
-                        "type": "integer",
-                        "description": "The slot that contains the block with the transaction."
-                      },
-                      "err": {
-                        "type": "object",
-                        "nullable": true,
-                        "description": "Error if the transaction failed, null if the transaction succeeded."
-                      },
-                      "memo": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "The memo associated with the transaction, null if no memo is present."
-                      },
-                      "blockTime": {
-                        "type": "integer",
-                        "nullable": true,
-                        "description": "The estimated production time of the transaction as a Unix timestamp, null if not available."
-                      },
-                      "confirmationStatus": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "The transaction's cluster confirmation status, either `processed`, `confirmed`, or `finalized`."
-                      },
-                      "transactionIndex": {
-                        "type": "integer",
-                        "description": "The index of this transaction within its block."
-                      }
-                    }
+                "title": "GetTransactionsForAddress Entry",
+                "type": "object",
+                "description": "A single transaction entry returned by `getTransactionsForAddress`.",
+                "properties": {
+                  "signature": {
+                    "type": "string",
+                    "description": "The transaction signature as a base-58 encoded string. Only present when `transactionDetails` is `signatures`."
                   },
-                  {
-                    "title": "Transaction Details",
+                  "slot": {
+                    "type": "integer",
+                    "description": "The slot that contains the block with the transaction."
+                  },
+                  "transactionIndex": {
+                    "type": "integer",
+                    "description": "The zero-based index of the transaction within its block."
+                  },
+                  "blockTime": {
+                    "type": "integer",
+                    "nullable": true,
+                    "description": "The estimated production time of the transaction as a Unix timestamp, null if not available."
+                  },
+                  "err": {
                     "type": "object",
-                    "properties": {
-                      "slot": {
-                        "type": "integer",
-                        "description": "The slot this transaction was processed in."
+                    "nullable": true,
+                    "description": "Error if the transaction failed, null if it succeeded. Only present when `transactionDetails` is `signatures`."
+                  },
+                  "memo": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The memo associated with the transaction, null if no memo is present. Only present when `transactionDetails` is `signatures`."
+                  },
+                  "confirmationStatus": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The transaction's cluster confirmation status. Only present when `transactionDetails` is `signatures`."
+                  },
+                  "version": {
+                    "oneOf": [
+                      {
+                        "type": "string"
                       },
-                      "transaction": {
-                        "oneOf": [
-                          {
-                            "type": "object",
-                            "description": "The transaction details in JSON format."
-                          },
-                          {
-                            "type": "string",
-                            "description": "The transaction details as encoded binary data."
-                          }
-                        ],
-                        "description": "The transaction details, either in JSON format or encoded binary data."
-                      },
-                      "blockTime": {
-                        "type": "integer",
-                        "nullable": true,
-                        "description": "Estimated production time as a Unix timestamp."
-                      },
-                      "meta": {
-                        "type": "object",
-                        "nullable": true,
-                        "description": "Transaction status metadata."
-                      },
-                      "version": {
-                        "oneOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ],
-                        "nullable": true,
-                        "description": "Transaction version."
-                      },
-                      "transactionIndex": {
-                        "type": "integer",
-                        "description": "The index of this transaction within its block."
+                      {
+                        "type": "number"
                       }
-                    }
+                    ],
+                    "nullable": true,
+                    "description": "Transaction version. Only present when `transactionDetails` is `full`."
+                  },
+                  "transaction": {
+                    "type": "object",
+                    "description": "Full transaction data. Only present when `transactionDetails` is `full`."
+                  },
+                  "meta": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "Transaction status metadata. Only present when `transactionDetails` is `full`."
                   }
-                ]
+                }
               }
             },
             "paginationToken": {
               "type": "string",
               "nullable": true,
-              "description": "Token to pass as `paginationToken` in the next request to retrieve the following page of results. `null` when there are no more results."
+              "description": "Token for fetching the next page (format: `\"slot:position\"`), or null if no more results."
             }
           }
         }
@@ -3911,6 +3948,74 @@
       }
     },
     {
+      "name": "sendTransaction",
+      "description": "Submits a signed transaction to the cluster for processing.",
+      "params": [
+        {
+          "name": "Transaction",
+          "required": true,
+          "description": "Fully-signed Transaction, as encoded string.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "Configuration",
+          "required": false,
+          "description": "Optional configuration object.",
+          "schema": {
+            "title": "SendTransaction Configuration",
+            "type": "object",
+            "properties": {
+              "encoding": {
+                "type": "string",
+                "description": "Encoding used for the transaction data.",
+                "enum": [
+                  "base58",
+                  "base64"
+                ],
+                "default": "base58"
+              },
+              "skipPreflight": {
+                "type": "boolean",
+                "description": "Skip preflight transaction checks if `true`.",
+                "default": false
+              },
+              "preflightCommitment": {
+                "title": "Commitment Level",
+                "type": "string",
+                "description": "Commitment level to use for preflight.",
+                "enum": [
+                  "processed",
+                  "confirmed",
+                  "finalized"
+                ],
+                "default": "finalized"
+              },
+              "maxRetries": {
+                "type": "integer",
+                "description": "Maximum retries for the RPC node to send the transaction."
+              },
+              "minContextSlot": {
+                "title": "Minimum Context Slot",
+                "type": "integer",
+                "description": "The minimum slot that the request can be evaluated at."
+              }
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "Transaction signature",
+        "description": "The first signature in the transaction, used as the transaction ID.",
+        "schema": {
+          "title": "Send Transaction Result",
+          "type": "string",
+          "description": "The transaction signature as a base-58 encoded string."
+        }
+      }
+    },
+    {
       "name": "simulateBundle",
       "description": "Simulates sending a Jito bundle of transactions.",
       "params": [
@@ -4186,222 +4291,6 @@
           }
         }
       }
-    },
-    {
-      "name": "simulateTransaction",
-      "description": "Simulates sending a transaction.",
-      "params": [
-        {
-          "name": "Transaction",
-          "required": true,
-          "description": "The transaction to simulate, as an encoded string.",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "Configuration",
-          "required": false,
-          "description": "Optional configuration object containing additional options.",
-          "schema": {
-            "title": "SimulateTransaction Configuration",
-            "type": "object",
-            "properties": {
-              "commitment": {
-                "title": "Commitment Level",
-                "type": "string",
-                "description": "Configures the state commitment for querying.",
-                "enum": [
-                  "processed",
-                  "confirmed",
-                  "finalized"
-                ],
-                "default": "finalized"
-              },
-              "sigVerify": {
-                "type": "boolean",
-                "description": "If true, the transaction signatures will be verified.",
-                "default": false
-              },
-              "replaceRecentBlockhash": {
-                "type": "boolean",
-                "description": "If true, replaces recent blockhash with the most recent one.",
-                "default": false
-              },
-              "minContextSlot": {
-                "title": "Minimum Context Slot",
-                "type": "integer",
-                "description": "The minimum slot that the request can be evaluated at."
-              },
-              "encoding": {
-                "type": "string",
-                "description": "Encoding used for the transaction data.",
-                "enum": [
-                  "base58",
-                  "base64"
-                ],
-                "default": "base58"
-              },
-              "innerInstructions": {
-                "type": "boolean",
-                "description": "If true, includes inner instructions in the response.",
-                "default": false
-              },
-              "accounts": {
-                "title": "SimulateTransaction Accounts Configuration",
-                "type": "object",
-                "properties": {
-                  "addresses": {
-                    "type": "array",
-                    "description": "An array of account Pubkeys to return.",
-                    "items": {
-                      "title": "Pubkey",
-                      "type": "string",
-                      "description": "Base-58 encoded public key."
-                    }
-                  },
-                  "encoding": {
-                    "description": "Encoding for returned account data.",
-                    "default": "base64",
-                    "title": "Data Encoding",
-                    "type": "string",
-                    "enum": [
-                      "base58",
-                      "base64",
-                      "base64+zstd",
-                      "jsonParsed"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      ],
-      "examples": [
-        {
-          "name": "simulateTransaction example",
-          "params": [
-            {
-              "name": "Transaction",
-              "value": "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDZDnD3LUKXWQB8kE0TBLbgGOZmAFW2KdPBOEJie5JAGbhbwJIKOS2F6RAMYzzNMwSCCpNg9MnCHEbVcVPNRByxQbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpjJclj04lr3XiJv5dZ3MN1MlkHd0BkPZ/IFOrnFYCxQECAgABDAIAAAAgTgAAAAAAAA=="
-            },
-            {
-              "name": "Configuration",
-              "value": {
-                "encoding": "base64"
-              }
-            }
-          ],
-          "result": {
-            "name": "Simulated transaction result",
-            "value": {
-              "err": null,
-              "logs": [
-                "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [1]",
-                "Program log: Instruction: Transfer",
-                "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb consumed 1714 of 200000 compute units",
-                "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb success"
-              ],
-              "accounts": null,
-              "unitsConsumed": 1714,
-              "returnData": null,
-              "innerInstructions": null
-            }
-          }
-        }
-      ],
-      "result": {
-        "name": "Simulated transaction result",
-        "description": "The result of simulating the transaction.",
-        "schema": {
-          "title": "Simulated Transaction Result",
-          "type": "object",
-          "properties": {
-            "err": {
-              "type": "string",
-              "nullable": true,
-              "description": "Error if the transaction failed, null if succeeded."
-            },
-            "logs": {
-              "type": "array",
-              "nullable": true,
-              "description": "Log messages output during execution.",
-              "items": {
-                "type": "string"
-              }
-            },
-            "accounts": {
-              "type": "array",
-              "nullable": true,
-              "description": "Array of account information.",
-              "items": {
-                "title": "Account Information",
-                "type": "object",
-                "properties": {
-                  "lamports": {
-                    "type": "integer",
-                    "description": "Number of lamports assigned to this account."
-                  },
-                  "owner": {
-                    "title": "Pubkey",
-                    "type": "string",
-                    "description": "Program owner of this account."
-                  },
-                  "data": {
-                    "title": "Account Data",
-                    "type": "array",
-                    "description": "Account data in the specified encoding format.",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "executable": {
-                    "type": "boolean",
-                    "description": "Indicates if the account contains a program."
-                  },
-                  "rentEpoch": {
-                    "type": "integer",
-                    "description": "The epoch at which this account will next owe rent."
-                  },
-                  "size": {
-                    "type": "integer",
-                    "description": "The data size of the account."
-                  }
-                }
-              }
-            },
-            "unitsConsumed": {
-              "type": "integer",
-              "description": "Compute budget units consumed."
-            },
-            "returnData": {
-              "title": "Return Data",
-              "type": "object",
-              "nullable": true,
-              "properties": {
-                "programId": {
-                  "title": "Pubkey",
-                  "type": "string",
-                  "description": "Program that generated the return data."
-                },
-                "data": {
-                  "type": "array",
-                  "description": "Return data as base-64 encoded binary data.",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "innerInstructions": {
-              "type": "object",
-              "nullable": true,
-              "description": "Inner instructions if `innerInstructions` is true."
-            }
-          }
-        }
-      }
     }
   ],
   "x-bot-ignore": [
@@ -4416,6 +4305,32 @@
     "getAssetSignatures",
     "getNftEditions",
     "searchAssets",
+    "getCompressedAccount",
+    "getCompressedAccountProof",
+    "getCompressedAccountsByOwner",
+    "getCompressedBalance",
+    "getCompressedBalanceByOwner",
+    "getCompressedMintTokenHolders",
+    "getCompressedTokenAccountBalance",
+    "getCompressedTokenAccountsByDelegate",
+    "getCompressedTokenAccountsByOwner",
+    "getCompressedTokenBalancesByOwner",
+    "getCompressedTokenBalancesByOwnerV2",
+    "getCompressionSignaturesForAccount",
+    "getCompressionSignaturesForAddress",
+    "getCompressionSignaturesForOwner",
+    "getCompressionSignaturesForTokenOwner",
+    "getLatestCompressionSignatures",
+    "getLatestNonVotingSignatures",
+    "getMultipleCompressedAccountProofs",
+    "getMultipleCompressedAccounts",
+    "getMultipleNewAddressProofs",
+    "getMultipleNewAddressProofsV2",
+    "getTransactionWithCompressionInfo",
+    "getValidityProof",
+    "getValidityProofV2",
+    "getIndexerHealth",
+    "getIndexerSlot",
     "alchemy_getTokenAccountsByOwner",
     "get_solana_token_metadata",
     "getTokenAccounts",
@@ -4424,8 +4339,11 @@
     "alchemy_getTokenAccountsByDelegate",
     "alchemy_getTokenLargestAccounts",
     "sendStakedTransaction",
+    "alchemy_requestFeePayer_prefundRent",
     "alchemy_requestFeePayer",
-    "simulateTransaction"
+    "simulateTransaction",
+    "sendTransaction",
+    "getHealth"
   ],
   "x-auth-params": [
     {
