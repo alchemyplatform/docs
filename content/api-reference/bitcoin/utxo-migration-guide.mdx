@@ -1,0 +1,303 @@
+---
+title: Migrating UTXO data to Alchemy
+description: Migrate your UTXO API calls to Alchemy from QuickNode, BlockCypher, or Blockdaemon. Side-by-side examples for Bitcoin, Bitcoin Cash, Litecoin, and Dogecoin.
+subtitle: Side-by-side migration guide for QuickNode, BlockCypher, and Blockdaemon
+slug: docs/bitcoin/utxo-migration-guide
+---
+
+This guide provides a straightforward path for migrating your UTXO API calls to Alchemy from QuickNode, BlockCypher, or Blockdaemon. Whether you're already on Alchemy for other chains or evaluating providers, we'll walk you through every step.
+
+Please reach out to [data-services-product@alchemy.com](mailto:data-services-product@alchemy.com) with any questions.
+
+## Supported networks
+
+Our UTXO APIs are available on the following networks:
+
+* `BTC` Bitcoin (mainnet and testnet4)
+* `BCH` Bitcoin Cash (mainnet and testnet)
+* `LTC` Litecoin (mainnet and testnet)
+* `DOGE` Dogecoin (mainnet)
+
+## What Alchemy's UTXO API provides
+
+Our UTXO API endpoints are a drop-in replacement for QuickNode's Blockbook add-on, BlockCypher's Address API, and Blockdaemon's custom Bitcoin RPC methods.
+
+* **Full Blockbook parity.** Balance history, address info, block data, transaction lookups, and UTXOs.
+* **REST API.** Clean, simple GET requests with no JSON-RPC boilerplate.
+* **Multi-chain support.** Bitcoin, Bitcoin Cash, Litecoin, and Dogecoin from a single provider.
+
+UTXO API reference: [Bitcoin](https://www.alchemy.com/docs/chains/bitcoin/utxo-api-endpoints/utxo-api-endpoints/get-block-hash-by-index), [Bitcoin Cash](https://www.alchemy.com/docs/chains/bitcoincash/utxo-api-endpoints/utxo-api-endpoints/get-block-hash-by-index), [Litecoin](https://www.alchemy.com/docs/chains/litecoin/utxo-api-endpoints/utxo-api-endpoints/get-block-hash-by-index), [Dogecoin](https://www.alchemy.com/docs/chains/dogecoin/utxo-api-endpoints/utxo-api-endpoints/get-block-hash-by-index).
+
+## How to enable UTXO endpoints
+
+Purchase the UTXO add-on for your desired chain from the [Alchemy dashboard](https://dashboard.alchemy.com/).
+
+<Note title="Key difference">
+  Alchemy's standard chain endpoints use JSON-RPC, while the UTXO API endpoints are REST. QuickNode wraps its UTXO functionality (Blockbook) in JSON-RPC. This is the primary architectural difference between the two.
+</Note>
+
+## Migrating from QuickNode
+
+### Example: Get balance history
+
+Below is a side-by-side comparison of the same API call, with the same address and same time range, showing how the request and response differ between Alchemy and QuickNode.
+
+Example address: `bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0`
+
+**QuickNode request (old)**
+
+```bash
+curl -X POST "https://docs-demo.btc.quiknode.pro/" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "jsonrpc": "2.0",
+  "method": "bb_getBalanceHistory",
+  "params": [
+    "bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0",
+    {
+      "from": "1683684000",
+      "to": "1700042400"
+    }
+  ],
+  "id": 1
+}'
+```
+
+**QuickNode response**
+
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": [
+    {
+      "time": 1685689200,
+      "txs": 5,
+      "received": "0",
+      "sent": "10247601921605917",
+      "sentToSelf": "0",
+      "rates": {
+        "usd": 1907.2123
+      }
+    },
+    {
+      "time": 1694084400,
+      "txs": 4,
+      "received": "0",
+      "sent": "8064344277547668",
+      "sentToSelf": "0",
+      "rates": {
+        "usd": 1646.305
+      }
+    }
+  ]
+}
+```
+
+Source: [QuickNode `bb_getBalanceHistory`](https://www.quicknode.com/docs/bitcoin/bb_getbalancehistory).
+
+**Alchemy request (new)**
+
+```bash
+curl --request GET \
+  --url 'https://bitcoin-mainnet.g.alchemy.com/v2/{apiKey}/api/v2/balancehistory/bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0?from=1683684000&to=1700042400'
+```
+
+**Alchemy response**
+
+```json
+[
+  {
+    "time": 1685689200,
+    "txs": 5,
+    "received": "0",
+    "sent": "10247601921605917",
+    "sentToSelf": "0"
+  },
+  {
+    "time": 1694084400,
+    "txs": 4,
+    "received": "0",
+    "sent": "8064344277547668",
+    "sentToSelf": "0"
+  }
+]
+```
+
+Source: [Alchemy Get balance history](/docs/chains/bitcoin/utxo-api-endpoints/utxo-api-endpoints/get-balance-history).
+
+### Understand the differences
+
+|                          | QuickNode                            | Alchemy                                |
+| ------------------------ | ------------------------------------ | -------------------------------------- |
+| Protocol                 | JSON-RPC (POST)                      | REST (GET)                             |
+| Address                  | Passed in `params` array             | Passed in URL path                     |
+| Time range               | Passed as strings in `params` object | Passed as query parameters             |
+| Response wrapper         | Wrapped in `jsonrpc`, `id`, `result` | Clean JSON array, no wrapper           |
+| Fiat rates in response   | Included via `fiatcurrency` param    | Included via `fiatcurrency` query param |
+
+## Migrating from BlockCypher
+
+### Example: Get address balance
+
+Below is a side-by-side comparison of how to retrieve address balance and transaction summary data. Both requests query the same address.
+
+Example address: `1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD`
+
+**BlockCypher request (old)**
+
+```bash
+curl --request GET \
+  --url 'https://api.blockcypher.com/v1/btc/main/addrs/1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD/balance'
+```
+
+Source: [BlockCypher Address Balance Endpoint](https://www.blockcypher.com/dev/bitcoin/#address-balance-endpoint).
+
+**BlockCypher response**
+
+```json
+{
+  "address": "1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD",
+  "total_received": 4433416,
+  "total_sent": 0,
+  "balance": 4433416,
+  "unconfirmed_balance": 0,
+  "final_balance": 4433416,
+  "n_tx": 7,
+  "unconfirmed_n_tx": 0,
+  "final_n_tx": 7
+}
+```
+
+**Alchemy request (new)**
+
+```bash
+curl --request GET \
+  --url 'https://bitcoin-mainnet.g.alchemy.com/v2/{apiKey}/api/v2/address/1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD'
+```
+
+Source: [Alchemy Get address](/docs/chains/bitcoin/utxo-api-endpoints/utxo-api-endpoints/get-address).
+
+**Alchemy response**
+
+```json
+{
+  "address": "1DEP8i3QJCsomS4BSMY2RpU1upv62aGvhD",
+  "balance": "4433416",
+  "totalReceived": "4433416",
+  "totalSent": "0",
+  "unconfirmedBalance": "0",
+  "unconfirmedTxs": 0,
+  "txs": 7
+}
+```
+
+### Understand the differences
+
+|                    | BlockCypher                              | Alchemy                                       |
+| ------------------ | ---------------------------------------- | --------------------------------------------- |
+| Protocol           | REST (GET)                               | REST (GET)                                    |
+| Base URL pattern   | `/v1/btc/main/addrs/{address}`           | `/v2/{apiKey}/api/v2/address/{address}`       |
+| Authentication     | Token as query parameter                 | API key in URL path                           |
+| Balance unit       | Integer (satoshis)                       | String (satoshis)                             |
+| Response format    | Flat JSON with `snake_case` fields       | Flat JSON with `camelCase` fields             |
+| Supported chains   | BTC, LTC, DOGE, DASH                     | BTC, BCH, LTC, DOGE                           |
+
+## Migrating from Blockdaemon
+
+### Example: Get address balance
+
+Below is a side-by-side comparison of how to retrieve address balance data. Both requests query the same address.
+
+Example address: `bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0`
+
+**Blockdaemon request (old)**
+
+```bash
+curl -X POST "https://svc.blockdaemon.com/bitcoin/mainnet/native" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "jsonrpc": "1.0",
+  "id": "curltest",
+  "method": "bd_getbalance",
+  "params": [
+    "bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0"
+  ]
+}'
+```
+
+Source: [Blockdaemon Bitcoin custom methods](https://docs.blockdaemon.com/reference/bitcoin-custom-methods-rpc-api).
+
+**Blockdaemon response**
+
+```json
+{
+  "id": "curltest",
+  "result": {
+    "trusted": "0.00000000",
+    "untrusted_pending": "0.00000000"
+  }
+}
+```
+
+**Alchemy request (new)**
+
+```bash
+curl --request GET \
+  --url 'https://bitcoin-mainnet.g.alchemy.com/v2/{apiKey}/api/v2/address/bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0'
+```
+
+Source: [Alchemy Get address](/docs/chains/bitcoin/utxo-api-endpoints/utxo-api-endpoints/get-address).
+
+**Alchemy response**
+
+```json
+{
+  "address": "bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0",
+  "balance": "0",
+  "totalReceived": "18311946199153585",
+  "totalSent": "18311946199153585",
+  "unconfirmedBalance": "0",
+  "unconfirmedTxs": 0,
+  "txs": 9
+}
+```
+
+### Understand the differences
+
+|                   | Blockdaemon                                            | Alchemy                                                |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------------------ |
+| Protocol          | JSON-RPC 1.0 (POST)                                    | REST (GET)                                             |
+| Address           | Passed in `params` array                               | Passed in URL path                                     |
+| Authentication    | `Authorization: Bearer` header                         | API key in URL path                                    |
+| Balance data      | Returns `trusted` and `untrusted_pending` only         | Returns balance, totalReceived, totalSent, tx count    |
+| Response wrapper  | Wrapped in `jsonrpc`, `id`, `result`                   | Clean JSON object, no wrapper                          |
+| Balance history   | Not available                                          | Available via `/api/v2/balancehistory/{address}`       |
+
+## Benchmarking results
+
+Across Bitcoin, Litecoin, Dogecoin, and Bitcoin Cash, Alchemy is **3x faster overall** than competitors on average latency, and up to **5x faster on UTXO-specific methods**, the API surface that matters most for blockchain applications querying transaction and balance data.
+
+We maintain a live dashboard with real-time performance metrics for our UTXO endpoints across all supported networks, benchmarked against QuickNode and Blockdaemon. [View live dashboard](https://alchemyinsights.grafana.net/public-dashboards/255a89badeb94c12853ff5493c8af667).
+
+## Start your migration to Alchemy
+
+We understand migrating services can be complex, but we are here to make it easy with dedicated support, feature parity, and expanded capabilities.
+
+If there's a feature you need, let us know. Contact us at [data-services-product@alchemy.com](mailto:data-services-product@alchemy.com).
+
+## Frequently asked questions
+
+* **Why should I migrate my UTXO calls to Alchemy?**
+  * Alchemy's UTXO API provides full Blockbook feature parity with a clean REST interface - no JSON-RPC boilerplate, no wrappers in responses, and consistent multi-chain support from a single provider. Whether you're coming from QuickNode, BlockCypher, or Blockdaemon, the migration is straightforward.
+* **Is Alchemy's UTXO API a drop-in replacement?**
+  * The data returned is equivalent, but the request format may differ. QuickNode and Blockdaemon use JSON-RPC POST requests, while BlockCypher and Alchemy both use REST GET. You will need to update your HTTP calls, but the underlying data models are the same.
+* **How do I enable UTXO endpoints on my Alchemy account?**
+  * Purchase the UTXO add-on for your desired chain directly from the Alchemy dashboard. Once enabled, you can start making REST API calls immediately.
+* **I'm migrating from BlockCypher. How different is the integration?**
+  * BlockCypher and Alchemy both use REST GET endpoints, so the migration is the most straightforward of the three. The main changes are the base URL pattern, field naming convention (`snake_case` vs `camelCase`), and authentication method (query param vs URL path).
+* **I'm migrating from Blockdaemon. Does Alchemy support the same data?**
+  * Alchemy provides richer address data than Blockdaemon's `bd_getbalance` method, including total received, total sent, and transaction counts - all from a single REST call with no JSON-RPC wrapper. Alchemy also offers balance history, which is not available through Blockdaemon's Bitcoin RPC.
+* **Where can I get help with my migration?**
+  * Contact [data-services-product@alchemy.com](mailto:data-services-product@alchemy.com) with any questions or feature requests. We offer dedicated migration support.
