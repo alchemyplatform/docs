@@ -1,0 +1,45 @@
+---
+title: UTXO
+description: Understand how the Unspent Transaction Output (UTXO) model tracks balances on Bitcoin Cash.
+subtitle: The model Bitcoin Cash uses to track user balances
+slug: docs/bitcoincash/utxo
+---
+
+Bitcoin Cash uses the **Unspent Transaction Output (UTXO) model** to track user balances, in contrast to the **account model** used by Ethereum and other EVM chains.
+
+## UTXO-based model
+
+UTXO stands for *Unspent Transaction Output*. Instead of tracking an account's overall balance, the network maintains a set of UTXOs: outputs from past transactions that credit specific addresses with a specific amount.
+
+When someone says they own 3 BCH, what they actually hold is one or more UTXOs that together sum to 3 BCH. To spend that balance, a wallet selects specific UTXOs as inputs to a new transaction.
+
+## What is a UTXO?
+
+A UTXO is the output of a previous transaction that has not yet been spent. Every time a transaction is confirmed:
+
+* The inputs reference one or more UTXOs from previous transactions.
+* The outputs create new UTXOs credited to the recipient addresses.
+* Any leftover value (input minus output minus fee) returns to the sender as a "change" UTXO.
+
+So each transaction consumes old UTXOs and produces new ones. The full set of UTXOs at any point in time represents the network's spendable state.
+
+## Properties of UTXOs
+
+* **Non-fungible.** Each UTXO is a distinct object referenced by its transaction ID and output index.
+* **Specific to spend.** To spend a UTXO you must refer to that exact UTXO, not just an aggregate balance.
+* **Change creates new UTXOs.** Any leftover from the input value becomes a new UTXO sent back to the spender.
+* **Single-use.** A UTXO can only be spent once; double-spending is prevented at consensus.
+* **Script-locked.** Each UTXO carries a locking script that defines the conditions under which it can be spent (typically a signature from the owning private key).
+
+## Account model vs UTXO model
+
+|                    | Account model (Ethereum, EVM chains)                        | UTXO model (Bitcoin Cash)                                                         |
+| ------------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| User balance       | Single overall account state (e.g. address X holds 4.2 ETH) | Sum of specific UTXOs (e.g. address X owns 29 UTXOs totalling 2.65 BCH)           |
+| Query model        | Direct: read account balance                                | Compute: aggregate over an address's UTXOs                                        |
+| Privacy            | Repeated address use correlates activity                    | Rotating addresses per output is the recommended privacy model                    |
+| Transaction model  | State transition: balance update                            | Input/output: consume UTXOs, create new ones                                      |
+
+## Querying UTXO data with Alchemy
+
+Alchemy's UTXO API gives you a clean REST interface to fetch Bitcoin Cash addresses, balances, balance history, UTXOs, and block/transaction data. See the UTXO API endpoints in the sidebar, or the [UTXO migration guide](https://www.alchemy.com/docs/bitcoin/utxo-migration-guide) if you're moving from QuickNode, BlockCypher, or Blockdaemon.
