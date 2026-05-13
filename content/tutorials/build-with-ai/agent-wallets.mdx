@@ -1,89 +1,43 @@
 ---
 title: Agent Wallets
-description: Set up Agent Wallets so AI agents can run wallet-signed Alchemy CLI actions without exposing private keys.
-subtitle: Set up Agent Wallets so AI agents can run wallet-signed Alchemy CLI actions without exposing private keys.
+description: Give your AI agent a secure wallet it can use from the Alchemy CLI without exposing private keys.
+subtitle: Wallets that allow your agent to send tokens, swap, bridge, call contracts and check transaction status.
 slug: docs/agent-wallets
 ---
 
-Agent Wallets are embedded wallets for agents that you manage in the Alchemy Dashboard. They let an AI agent use the [Alchemy CLI](docs/alchemy-cli) to execute wallet-signed EVM actions while the wallet private key stays out of the CLI.
+Agent Wallets give your AI agent a real onchain wallet it can use with the [Alchemy CLI](docs/alchemy-cli) to perform onchain actions.
 
-Use Agent Wallets when you want an agent to send tokens, execute swaps, manage allowances, call contracts, or bridge tokens from a CLI session that you can review and revoke in the [Alchemy Dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet).
+Built with Privy embedded wallets, your agent will never see the wallet's private key. You approve wallet access, and you can revoke it at any time.
 
-<Note>
-  In the CLI, `session` means an Agent Wallet session approved through the Alchemy Dashboard. It is not a generic browser wallet connection. Solana transaction commands currently use a local Solana wallet.
-</Note>
+## Get Started
 
-## What are Agent Wallets?
-
-Agent Wallets give agents a controlled signing surface:
-
-* You create and manage the wallet in the Alchemy Dashboard.
-* The CLI gets access through a browser-approved Agent Wallet session.
-* Private keys are never exposed to or stored by the CLI.
-* Access is scoped and revocable from the Alchemy Dashboard.
-* The Alchemy Dashboard remains the source of truth for wallets, sessions, and revocation.
-
-## How it works
-
-1. Create or select an EVM Agent Wallet in the [Alchemy Dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet).
-2. Install and authenticate the Alchemy CLI.
-3. Run `alchemy wallet connect`.
-4. Approve the CLI session in the browser and dashboard flow.
-5. Run wallet-signed actions from the CLI.
-6. Revoke CLI sessions from the Alchemy Dashboard when access is no longer needed.
-
-The approved session lets the CLI request signatures for supported EVM actions, but it does not expose the wallet private key to the terminal, your shell environment, or the agent.
-
-## Set up the CLI session
+Paste this prompt into your AI agent:
 
 ```bash
-npm i -g @alchemy/cli@latest
-alchemy auth
-alchemy wallet connect
-alchemy wallet use session
+Install the latest Alchemy CLI with `npm i -g @alchemy/cli@latest`, then help me log in and create a wallet.
 ```
 
-`alchemy wallet connect` starts the browser approval flow. Use `alchemy wallet use session` to select your Agent Wallet session signer for EVM transactions.
+Your agent installs the CLI, authenticates, and connects an Agent Wallet.
 
-## Run wallet-signed actions
+## Use cases
 
-After approval, use the same CLI command surface for signed actions:
-
-```bash
-alchemy evm send <recipient> 0.01 -n base-mainnet
-alchemy evm swap quote --from 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE --to <token> --amount 0.01 -n base-mainnet
-alchemy xchain bridge quote --from <token> --to <token> --amount 1 --to-network <network> -n <source-network>
-alchemy evm status <call-id-or-tx-hash>
-```
-
-Quote commands do not submit transactions. Use the corresponding execute command when you are ready to submit a swap or bridge with your Agent Wallet session signer.
-
-For the full command surface, see [Alchemy CLI wallets and signing](docs/alchemy-cli#wallets-and-signing).
-
-## Manage sessions and revocation
-
-`alchemy wallet connect` creates a CLI session for your Agent Wallet. You can check or clear the session from the CLI:
-
-```bash
-alchemy wallet status --verify
-alchemy wallet disconnect
-```
-
-You can also view and revoke sessions in the [Agent Wallets dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet). Revoking a session prevents future CLI signing for that session.
-
-## Use Agent Wallets with automation
-
-For agents and scripts, combine CLI commands with `--json --no-interactive` so output is structured and commands do not wait for prompts:
-
-```bash
-alchemy --json --no-interactive evm data balance vitalik.eth
-```
-
-Approve the Agent Wallet session before running non-interactive wallet-signed commands. For signed EVM actions, use the active `session` signer or pass `--signer session`.
+<CardGroup cols={2}>
+  <Card title="DeFi automation" icon="chart-line">
+    Check balances, quote and execute swaps, bridge to another chain, and deposit into a protocol — all in a single agent workflow.
+  </Card>
+  <Card title="Onchain development" icon="code">
+    Fund test wallets, deploy contracts, call contract methods, and automate repetitive dev tasks without leaving the CLI.
+  </Card>
+  <Card title="Treasury management" icon="wallet">
+    Send payments, move assets between wallets, and rebalance across chains as part of operational or finance workflows.
+  </Card>
+  <Card title="Multi-chain workflows" icon="arrow-right-arrow-left">
+    Bridge assets to where they're needed, then act — swap, deposit, or call contracts on the destination chain.
+  </Card>
+</CardGroup>
 
 ## Next steps
 
-* [Alchemy CLI](docs/alchemy-cli)
-* [Alchemy Dashboard Agent Wallets](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet)
-* [Agent Skills](docs/alchemy-agent-skills)
-* [Alchemy MCP Server](docs/alchemy-mcp-server)
+- [Alchemy CLI](docs/alchemy-cli)
+- [Alchemy CLI wallets and signing](docs/alchemy-cli#wallets-and-signing)
+- [Alchemy Dashboard Agent Wallets](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet)
