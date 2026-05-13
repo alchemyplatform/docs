@@ -9,7 +9,7 @@ info:
     Bitcoin Cash, Litecoin, and Dogecoin networks. The same paths are available across all supported
     UTXO networks — switch networks by changing the `{network}` server variable.
 servers:
-  - url: https://{network}.g.alchemy.com/v2/{apiKey}
+  - url: https://{network}.g.alchemy.com/v2
     variables:
       network:
         default: bitcoin-mainnet
@@ -21,19 +21,15 @@ servers:
           - litecoin-mainnet
           - litecoin-testnet
           - dogecoin-mainnet
-      apiKey:
-        default: docs-demo
-        description: Your Alchemy API key. Get one at https://dashboard.alchemy.com/
-security:
-  - apiKey: []
 paths:
-  "/api/v2/block-index/{block_height}":
+  "/{apiKey}/api/v2/block-index/{block_height}":
     get:
       operationId: getBlockHashByIndex
       summary: Get Block Hash
       description: Returns the block hash for a given block height on the selected network.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/blockHeight"
       responses:
         "200":
@@ -49,7 +45,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  "/api/v2/tx/{txid}":
+  "/{apiKey}/api/v2/tx/{txid}":
     get:
       operationId: getTransaction
       summary: Get Transaction
@@ -58,6 +54,7 @@ paths:
         across UTXO networks. Empty fields are omitted.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/txid"
       responses:
         "200":
@@ -98,7 +95,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  "/api/v2/tx-specific/{txid}":
+  "/{apiKey}/api/v2/tx-specific/{txid}":
     get:
       operationId: getTransactionSpecific
       summary: Get Transaction Specific
@@ -107,6 +104,7 @@ paths:
         all chain-specific fields not surfaced by the normalized `/tx/{txid}` endpoint.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/txid"
       responses:
         "200":
@@ -122,7 +120,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  "/api/v2/address/{address}":
+  "/{apiKey}/api/v2/address/{address}":
     get:
       operationId: getAddress
       summary: Get Address
@@ -131,6 +129,7 @@ paths:
         by block height.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/address"
         - in: query
           name: page
@@ -203,7 +202,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  "/api/v2/xpub/{xpub}":
+  "/{apiKey}/api/v2/xpub/{xpub}":
     get:
       operationId: getXpub
       summary: Get Xpub
@@ -213,6 +212,7 @@ paths:
         prefix or by an explicit output descriptor.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - in: path
           name: xpub
           required: true
@@ -280,7 +280,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  "/api/v2/utxo/{descriptor}":
+  "/{apiKey}/api/v2/utxo/{descriptor}":
     get:
       operationId: getUtxo
       summary: Get UTXOs
@@ -290,6 +290,7 @@ paths:
         UTXOs are sorted newest-first.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - in: path
           name: descriptor
           required: true
@@ -330,7 +331,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  "/api/v2/block/{block}":
+  "/{apiKey}/api/v2/block/{block}":
     get:
       operationId: getBlock
       summary: Get Block
@@ -339,6 +340,7 @@ paths:
         Results are paginated.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - in: path
           name: block
           required: true
@@ -373,7 +375,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  "/api/v2/sendtx/{hex}":
+  "/{apiKey}/api/v2/sendtx/{hex}":
     get:
       operationId: sendTransactionGet
       summary: Send Transaction (GET)
@@ -382,6 +384,7 @@ paths:
         transaction ID on success. For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - in: path
           name: hex
           required: true
@@ -401,7 +404,7 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
-  "/api/v2/sendtx/":
+  "/{apiKey}/api/v2/sendtx/":
     post:
       operationId: sendTransactionPost
       summary: Send Transaction (POST)
@@ -411,6 +414,8 @@ paths:
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
       tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
       requestBody:
         required: true
         content:
@@ -431,7 +436,7 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
-  "/api/v2/tickers-list":
+  "/{apiKey}/api/v2/tickers-list":
     get:
       operationId: getTickersList
       summary: Get Tickers List
@@ -440,6 +445,7 @@ paths:
         timestamp, along with the actual data timestamp.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - in: query
           name: timestamp
           required: false
@@ -460,7 +466,7 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
-  "/api/v2/tickers":
+  "/{apiKey}/api/v2/tickers":
     get:
       operationId: getTickers
       summary: Get Tickers
@@ -470,6 +476,7 @@ paths:
         actual rate timestamp.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - in: query
           name: currency
           required: false
@@ -498,7 +505,7 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
-  "/api/v2/balancehistory/{address}":
+  "/{apiKey}/api/v2/balancehistory/{address}":
     get:
       operationId: getBalanceHistory
       summary: Get Balance History
@@ -507,6 +514,7 @@ paths:
         secondary (fiat) currency rates at the time of the transaction.
       tags: ["UTXO API Endpoints"]
       parameters:
+        - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/address"
         - in: query
           name: from
@@ -564,13 +572,15 @@ paths:
           $ref: "#/components/responses/BadRequest"
 
 components:
-  securitySchemes:
-    apiKey:
-      type: apiKey
-      in: query
-      name: apiKey
-      description: Alchemy API key. Pass via the `{apiKey}` server variable.
   parameters:
+    apiKey:
+      name: apiKey
+      in: path
+      required: true
+      schema:
+        type: string
+        default: docs-demo
+      description: For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)
     blockHeight:
       in: path
       name: block_height
