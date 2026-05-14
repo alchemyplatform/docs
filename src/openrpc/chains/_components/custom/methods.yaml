@@ -1970,11 +1970,15 @@ components:
             latestLedger: 50000
             oldestLedger: 1
             ledgerRetentionWindow: 17280
+      examples:
+        - name: getHealth example
+          params: []
 
     sendTransaction:
       name: sendTransaction
       summary: Send transaction
       description: Submits a signed transaction to the network.
+      paramStructure: by-name
       params:
         - name: transaction
           required: true
@@ -1986,11 +1990,22 @@ components:
         description: Transaction submission result.
         schema:
           type: object
+      examples:
+        - name: sendTransaction example
+          description: |
+            Submits a base64-encoded TransactionEnvelope XDR. The default value below is an unsigned envelope
+            that calls `name()` on the native XLM Stellar Asset Contract; resubmitting it returns
+            `status: "ERROR"` with an `errorResultXdr` so you can see the response shape without sending real funds.
+            Replace the value with your own signed envelope to actually submit a transaction.
+          params:
+            - name: transaction
+              value: "AAAAAgAAAAA7mRE4Dv6Yi6CokA6xz+RPNm99vpRr7QdyQPf2JN8VxQAAAGQAAAAAAAAAZQAAAAEAAAAAAAAAAAAAAABp/P05AAAAAAAAAAEAAAAAAAAAGAAAAAAAAAABJbT82FmuwvpjSEOMSJs8PBDJi20hvk/TyzDLaJU++XcAAAAEbmFtZQAAAAAAAAAAAAAAAAAAAAA="
 
     getTransaction:
       name: getTransaction
       summary: Get transaction
       description: Returns the details and status of a submitted transaction by its hash.
+      paramStructure: by-name
       params:
         - name: hash
           required: true
@@ -2013,11 +2028,20 @@ components:
             latestLedgerCloseTime: { type: integer }
             oldestLedger: { type: integer }
             oldestLedgerCloseTime: { type: integer }
+      examples:
+        - name: getTransaction example
+          description: |
+            Looks up a real successful Stellar mainnet transaction. Stellar RPC retains transactions
+            for ~14 days, so this hash will eventually age out and need to be replaced with a fresher one.
+          params:
+            - name: hash
+              value: "86d85a0db4d7cdf2aa8e4b633e050e8c3c138deae7cac62ff4d4ff5fb732fe96"
 
     getTransactions:
       name: getTransactions
       summary: Get transactions
       description: Returns a paginated list of transactions from the network.
+      paramStructure: by-name
       params:
         - name: startLedger
           required: false
@@ -2046,11 +2070,24 @@ components:
             transactions: { type: array, items: { type: object } }
             latestLedger: { type: integer }
             cursor: { type: string }
+      examples:
+        - name: getTransactions example
+          description: |
+            Returns one transaction starting at a recent mainnet ledger. Stellar RPC keeps roughly
+            the last 14 days of transactions; if the example ledger has aged out, replace `startLedger`
+            with a value within the current retention window (see `oldestLedger` from `getHealth`).
+          params:
+            - name: startLedger
+              value: 62462511
+            - name: pagination
+              value:
+                limit: 1
 
     simulateTransaction:
       name: simulateTransaction
       summary: Simulate transaction
       description: Simulates a transaction invocation to estimate resource fees, required authorizations, and return values without submitting to the network.
+      paramStructure: by-name
       params:
         - name: transaction
           required: true
@@ -2083,3 +2120,14 @@ components:
             latestLedger: { type: integer }
             minResourceFee: { type: string }
             transactionData: { type: string }
+      examples:
+        - name: simulateTransaction example
+          description: |
+            Simulates a read-only call to `name()` on the native XLM Stellar Asset Contract
+            (`CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA`). The envelope is unsigned —
+            simulation never checks signatures, sequence numbers, or time bounds, so this example
+            is stable indefinitely and returns the SCV-encoded string `"native"` in `results[0].xdr`
+            along with a populated `minResourceFee`, `transactionData`, and `events`.
+          params:
+            - name: transaction
+              value: "AAAAAgAAAAA7mRE4Dv6Yi6CokA6xz+RPNm99vpRr7QdyQPf2JN8VxQAAAGQAAAAAAAAAZQAAAAEAAAAAAAAAAAAAAABp/P05AAAAAAAAAAEAAAAAAAAAGAAAAAAAAAABJbT82FmuwvpjSEOMSJs8PBDJi20hvk/TyzDLaJU++XcAAAAEbmFtZQAAAAAAAAAAAAAAAAAAAAA="
