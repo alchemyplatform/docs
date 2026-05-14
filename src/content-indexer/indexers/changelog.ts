@@ -36,10 +36,7 @@ const formatLongDate = (dateString: string): string => {
  * Caps at MAX_HEADINGS to stay within the ~155 character meta description limit.
  * Example output: "Week of January 8, 2026: updates to Developer Experience and Node."
  */
-const buildChangelogDescription = (
-  content: string,
-  date: string,
-): string => {
+const buildChangelogDescription = (content: string, date: string): string => {
   const headings = Array.from(content.matchAll(/^## (.+)$/gm))
     .map((m) => m[1].trim())
     .slice(0, MAX_HEADINGS);
