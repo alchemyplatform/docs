@@ -116,21 +116,49 @@ Yellowstone supports replaying historical updates by setting `from_slot` on the 
 
 ## Workflow B: historical backfill via transaction replay
 
-Snapshotting forward only captures state from the moment your subscription starts. To answer questions about earlier periods, replay the transactions that touched the account.
+Snapshotting forward only captures state from the moment your subscription starts. For periods before that, the available primitive is the transaction history exposed through `getTransaction`. This workflow is best understood by what each `getTransaction` response actually contains and what it does not.
+
+### What `getTransaction` provides
+
+For each transaction, `getTransaction` returns:
+
+* `meta.preBalances` and `meta.postBalances`: SOL lamport balances per account (indexed against `transaction.message.accountKeys`).
+* `meta.preTokenBalances` and `meta.postTokenBalances`: SPL token balances per account.
+* `meta.innerInstructions`: CPIs invoked by the top-level instructions.
+* `meta.logMessages`: program log output.
+* `transaction.message.instructions` and `transaction.message.accountKeys`: the instructions and the accounts they touched.
+
+What `getTransaction` does **not** return: pre or post account `data` blobs. There is no `preAccountData` / `postAccountData` field. That is the central constraint on this workflow.
+
+<Warning>
+  Transaction replay can reliably reconstruct three things: **SOL lamport balances** (from pre/post balances), **SPL token balances** (from pre/post token balances), and **events emitted via program logs** (Anchor `emit!` macros, custom `msg!` lines).
+
+  It **cannot** reconstruct arbitrary program account `data` blobs from `getTransaction` alone. To rebuild full account `data` for historical periods, you need either (a) a starting `data` snapshot from before the period of interest, plus program-specific decoding of each touching instruction to derive the new state, or (b) the program emitting comprehensive event logs that cover every state mutation. If neither applies, the supported path is to start workflow A as early as possible and accept that history before the subscription start is not recoverable from transactions alone.
+</Warning>
 
 ### Pattern
 
 1. Call [`getSignaturesForAddress`](/docs/chains/solana/solana-api-endpoints/get-signatures-for-address) for the target account, paging through history with `before` and `until` cursors. Returns signatures plus block times.
-2. For each signature, call [`getTransaction`](/docs/chains/solana/solana-api-endpoints/get-transaction) to fetch the full transaction, pre/post balances, token balances, and inner instructions.
-3. Apply each transaction's effect on the account to your local replica, in slot order. Stop and write a snapshot whenever the next transaction crosses your target sampling boundary (the next hour, the next day, or any other cadence).
+2. For each signature, call [`getTransaction`](/docs/chains/solana/solana-api-endpoints/get-transaction) and locate the target account's index in `transaction.message.accountKeys`.
+3. Read `meta.postBalances[i]` (and `meta.postTokenBalances` for token accounts) for the state immediately after this transaction's writes. Persist a row keyed by `(pubkey, slot, signature)` so you can later answer "balance at hour H" as the row with the largest slot less than or equal to `block_at(H)`.
+
+`meta.preBalances` and `meta.postBalances` are consistent across adjacent transactions: the `preBalances[i]` of the transaction at slot T+1 equals the `postBalances[i]` of the most recent earlier transaction that touched account `i`. Use the post-side of each transaction as the canonical value for its slot.
 
 Alchemy's Solana archival surface is optimized for this kind of historical scan. Per the [Built for Solana](https://www.alchemy.com/blog/solana-infrastructure) release, `getTransaction` is up to 20x faster than other providers on historical calls, and `getSignaturesForAddress` supports recency-first ordering so you can walk from the present backward without scanning from genesis.
 
-### When you need program-account state, not just a single account
+### When you need program-account state, not just balances
 
-If you are snapshotting state across an entire program (for example, every position account under a lending program), do the initial enumeration with paginated [`getProgramAccounts`](/docs/chains/solana/solana-api-endpoints/get-program-accounts) calls. See [AccountsDB Infrastructure](/docs/solana/accounts-db-infra) for the `pageKey` + `order` pattern. Once you have the address set, you can either backfill each address with workflow B, or subscribe to the program owner via workflow A to capture future changes.
+For lending position values, vault share prices, oracle values, market state, and any other field that lives inside a program account's `data` blob, workflow B is not sufficient on its own (see the warning above). The supported path is:
 
-### Minimal TypeScript example
+1. Enumerate the account set with paginated [`getProgramAccounts`](/docs/chains/solana/solana-api-endpoints/get-program-accounts) calls using Alchemy's [AccountsDB Infrastructure](/docs/solana/accounts-db-infra) (`pageKey` + `order`). This gives you every account and its **current** `data`.
+2. Start a Yellowstone gRPC subscription (workflow A) filtered by program owner. From that point forward, every state change is captured with the full new `data` bytes.
+3. Treat the moment the subscription starts as your "history begins here" marker. Reads at any slot at or after that marker resolve against the snapshot table; reads before it are not supported by this workflow.
+
+The earlier you start workflow A, the smaller the unsupported window. If a backfill before the subscription start is required, the practical options are to bootstrap from an external historical-snapshot source for the program or to model the program's instructions program-side and replay them against a starting snapshot. Both are out of scope for this guide.
+
+### Minimal TypeScript example: lamport balance backfill
+
+This example walks one account's signature history and persists post-balance per transaction, which is what workflow B reliably supports.
 
 ```typescript
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -140,11 +168,19 @@ const connection = new Connection(
   "confirmed"
 );
 
-async function walkAccountHistory(
+type BalanceRow = {
+  pubkey: string;
+  slot: number;
+  signature: string;
+  lamports: number;
+};
+
+async function backfillLamportHistory(
   address: string,
   untilSlot: number
-): Promise<void> {
+): Promise<BalanceRow[]> {
   const pubkey = new PublicKey(address);
+  const rows: BalanceRow[] = [];
   let before: string | undefined = undefined;
 
   while (true) {
@@ -155,23 +191,40 @@ async function walkAccountHistory(
     if (sigs.length === 0) break;
 
     for (const sig of sigs) {
-      if (sig.slot < untilSlot) return;
+      if (sig.slot < untilSlot) return rows;
 
       const tx = await connection.getTransaction(sig.signature, {
         maxSupportedTransactionVersion: 0,
       });
-      if (!tx) continue;
+      if (!tx || !tx.meta) continue;
 
-      // Apply the transaction's effect on the target account here.
-      // For lamports-only changes, use tx.meta.preBalances/postBalances.
-      // For program-state changes, decode the account data using your IDL.
-      console.log(`slot=${sig.slot} signature=${sig.signature}`);
+      // Locate the target account's index in the message account keys.
+      const keys = tx.transaction.message.getAccountKeys({
+        accountKeysFromLookups: tx.meta.loadedAddresses,
+      });
+      const index = keys
+        .keySegments()
+        .flat()
+        .findIndex((k) => k.equals(pubkey));
+      if (index === -1) continue;
+
+      // Post-balance is the canonical lamport value after this transaction's writes.
+      rows.push({
+        pubkey: address,
+        slot: sig.slot,
+        signature: sig.signature,
+        lamports: tx.meta.postBalances[index],
+      });
     }
 
     before = sigs[sigs.length - 1].signature;
   }
+
+  return rows;
 }
 ```
+
+For SPL token balances, swap `meta.postBalances[index]` for the matching entry in `meta.postTokenBalances` (which is indexed by `accountIndex` and includes `mint`, `owner`, and `uiTokenAmount`). For program log events, parse `meta.logMessages` against your program's known event format.
 
 ## Choosing a sampling cadence
 
@@ -184,17 +237,17 @@ To map wall-clock timestamps to slots for the boundaries, call [`getBlockTime`](
 
 ## Workflow comparison
 
-| Aspect                 | Yellowstone gRPC (Workflow A)                        | Transaction replay (Workflow B)                                |
-| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
-| Time horizon           | From subscription start, forward                     | From any point in history, backward                            |
-| Latency to new data    | Real-time (sub-second)                               | As fast as you can page archival history                       |
-| Filter granularity     | Address, owner, memcmp, data size, lamports          | Per-address (via `getSignaturesForAddress`)                    |
-| Reconstruction effort  | None — receive full account bytes per update         | Decode each transaction's effect on the account using your IDL |
-| Replay after gap       | `from_slot`, up to 6000 slots (~40 min)              | Unbounded, limited only by archival depth                      |
-| Best for               | Ongoing capture of a known account or program set    | Backfilling history before your stream started                 |
-| Plan requirement       | PAYG or Enterprise                                   | Available on all paid plans                                    |
+| Aspect                | Yellowstone gRPC (Workflow A)                     | Transaction replay (Workflow B)                                                       |
+| --------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Time horizon          | From subscription start, forward                  | From any point in history, backward                                                   |
+| Latency to new data   | Real-time (sub-second)                            | As fast as you can page archival history                                              |
+| Filter granularity    | Address, owner, memcmp, data size, lamports       | Per-address (via `getSignaturesForAddress`)                                           |
+| Data captured         | Full account bytes (data, lamports, owner)        | SOL balance, SPL token balance, program log events only (no account `data` blobs)     |
+| Replay after gap      | `from_slot`, up to 6000 slots (~40 min)           | Unbounded, limited only by archival depth                                             |
+| Best for              | Ongoing capture of a known account or program set | Backfilling SOL/token balance history; not sufficient for arbitrary program state     |
+| Plan requirement      | PAYG or Enterprise                                | Available on all paid plans                                                           |
 
-Combine the two: turn on the gRPC subscription first, persist its slot as your "snapshot start", then run the backfill from your business epoch up to that slot. Once the backfill completes, your store has continuous coverage.
+Combine the two: turn on the gRPC subscription first, persist its slot as your "snapshot start", then run workflow B in parallel to backfill SOL and SPL token balance history before that slot. For full account `data` history before the subscription start, see the warning under [Workflow B](#workflow-b-historical-backfill-via-transaction-replay): start workflow A as early as possible, or source a starting snapshot from an external historical-data product.
 
 ## Related references
 
