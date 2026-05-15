@@ -1,0 +1,202 @@
+---
+title: Snapshotting historical Solana account state
+description: Patterns for capturing Solana account state at regular intervals (hourly, daily, or arbitrary slot cadence) using Alchemy's Yellowstone gRPC streams and archival JSON-RPC methods.
+subtitle: Capture point-in-time Solana account state at any cadence using gRPC subscriptions and archival JSON-RPC
+slug: docs/solana/historical-account-state
+---
+
+Many Solana workloads need to know what an account looked like at a previous point in time: portfolio analytics, TVL history, vault accounting, oracle audits, treasury reporting, ML feature stores. Standard Solana JSON-RPC does not expose a "read this account as of slot N" primitive. This page covers the two patterns Alchemy supports today for reconstructing historical account state, how to combine them, and how to land at common cadences like hourly snapshots.
+
+## Why Solana RPC alone is not enough
+
+`getAccountInfo` returns the **current** state of an account. The `minContextSlot` parameter is a freshness floor (the read must be evaluated at a slot greater than or equal to `minContextSlot`), not a historical lookup. Solana validators do not retain prior versions of an account's data once the account is updated, so no JSON-RPC method can answer "what did this account hold at slot N" directly.
+
+What Solana **does** retain is the full transaction and block history. Alchemy's archival infrastructure exposes that history through `getTransaction`, `getBlock`, and `getSignaturesForAddress`, which means you can reconstruct historical account state by:
+
+1. **Capturing it forward** as the chain advances, persisting periodic snapshots to your own store.
+2. **Reconstructing it backward** by replaying the transactions that wrote to the account.
+
+Most production indexers combine both: stream forward from "now" while backfilling history for the period before the stream started.
+
+## Workflow A: forward snapshotting via Yellowstone gRPC
+
+[Yellowstone gRPC](/docs/reference/yellowstone-grpc-overview) is the recommended path for ongoing state capture. A single subscription receives every account update for the addresses or programs you care about, with the slot number attached to each update, and persists at minimal latency.
+
+### How it works
+
+1. Open a Yellowstone gRPC subscription with an account filter ([`accounts`](/docs/reference/yellowstone-grpc-subscribe-accounts) in the [`SubscribeRequest`](/docs/reference/yellowstone-grpc-subscribe-request)).
+2. On every `SubscribeUpdateAccount` your handler receives, write a row containing `(pubkey, slot, write_version, data, lamports, owner, txn_signature)` to your store.
+3. Index the resulting table by `(pubkey, slot)` so you can query the latest version at or before any target slot.
+
+To produce hourly snapshots, you do not need a separate sampling job. Solana blocks land at roughly 400 ms, so an active account may have many writes per hour and a quiet account may have none. Both cases are handled the same way: a query for "the state of this account at hour H" becomes "the row with the largest `slot` that is less than or equal to the slot corresponding to the timestamp at the end of hour H". Use `getBlockTime` or `getBlocks` to map wall-clock timestamps to slots.
+
+### Filter options
+
+The Yellowstone account filter supports three styles, in order of selectivity:
+
+* **Specific addresses** ([`account`](/docs/reference/yellowstone-grpc-subscribe-accounts#account-address-filter)): pass a list of pubkeys to watch. Best when you know the accounts upfront.
+* **Program owner** ([`owner`](/docs/reference/yellowstone-grpc-subscribe-accounts#owner-filter)): receive every account owned by a given program. Use this when the account set is dynamic (for example, all vault accounts under a single program).
+* **Memcmp / data-size / lamports / `token_account_state`** ([`filters`](/docs/reference/yellowstone-grpc-subscribe-accounts#memcmp-filter)): narrow further by byte patterns, account discriminator, or balance ranges. Combine with `owner` to watch a specific subset of a program's accounts.
+
+If you need to enumerate the initial set of accounts before subscribing (for example, all program-derived accounts under a vault program), use `getProgramAccounts` paginated via Alchemy's [AccountsDB Infrastructure](/docs/solana/accounts-db-infra). The `pageKey` and `order` parameters let you scan large account sets without timing out.
+
+### Minimal Rust example
+
+```rust
+use anyhow::Result;
+use futures::{sink::SinkExt, stream::StreamExt};
+use std::collections::HashMap;
+use yellowstone_grpc_client::{ClientTlsConfig, GeyserGrpcClient};
+use yellowstone_grpc_proto::geyser::{
+    CommitmentLevel, SubscribeRequest, SubscribeRequestFilterAccounts,
+    subscribe_update::UpdateOneof,
+};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let endpoint = "https://solana-mainnet.g.alchemy.com";
+    let x_token = "YOUR_ALCHEMY_API_KEY";
+
+    let mut client = GeyserGrpcClient::build_from_shared(endpoint)?
+        .tls_config(ClientTlsConfig::new().with_native_roots())?
+        .x_token(Some(x_token))?
+        .connect()
+        .await?;
+
+    let (mut tx, mut stream) = client.subscribe().await?;
+
+    // Subscribe to a specific set of account pubkeys
+    let mut accounts = HashMap::new();
+    accounts.insert(
+        "accounts_to_snapshot".to_string(),
+        SubscribeRequestFilterAccounts {
+            account: vec![
+                "AccountPubkey1...".to_string(),
+                "AccountPubkey2...".to_string(),
+            ],
+            owner: vec![],
+            filters: vec![],
+            nonempty_txn_signature: Some(true),
+        },
+    );
+
+    tx.send(SubscribeRequest {
+        accounts,
+        commitment: Some(CommitmentLevel::Confirmed as i32),
+        ..Default::default()
+    })
+    .await?;
+
+    while let Some(Ok(msg)) = stream.next().await {
+        if let Some(UpdateOneof::Account(update)) = msg.update_oneof {
+            if let Some(info) = update.account {
+                // Persist this snapshot. Index by (pubkey, slot, write_version).
+                println!(
+                    "slot={} pubkey={} lamports={} data_len={}",
+                    update.slot,
+                    bs58::encode(&info.pubkey).into_string(),
+                    info.lamports,
+                    info.data.len()
+                );
+            }
+        }
+    }
+
+    Ok(())
+}
+```
+
+For client setup, authentication details, and language samples in TypeScript and Go, see the [Yellowstone gRPC Quickstart](/docs/reference/yellowstone-grpc-quickstart).
+
+### Recovering from disconnects
+
+Yellowstone supports replaying historical updates by setting `from_slot` on the `SubscribeRequest`. The replay window is up to **6000 slots (~40 minutes)** of history. Persist the slot of the last update you successfully wrote, and on reconnect resubscribe with `from_slot` set to that slot. If your downtime exceeds the replay window, fall back to the backfill workflow below for the gap.
+
+## Workflow B: historical backfill via transaction replay
+
+Snapshotting forward only captures state from the moment your subscription starts. To answer questions about earlier periods, replay the transactions that touched the account.
+
+### Pattern
+
+1. Call [`getSignaturesForAddress`](/docs/chains/solana/solana-api-endpoints/get-signatures-for-address) for the target account, paging through history with `before` and `until` cursors. Returns signatures plus block times.
+2. For each signature, call [`getTransaction`](/docs/chains/solana/solana-api-endpoints/get-transaction) to fetch the full transaction, pre/post balances, token balances, and inner instructions.
+3. Apply each transaction's effect on the account to your local replica, in slot order. Stop and write a snapshot whenever the next transaction crosses your target sampling boundary (the next hour, the next day, or any other cadence).
+
+Alchemy's Solana archival surface is optimized for this kind of historical scan. Per the [Built for Solana](https://www.alchemy.com/blog/solana-infrastructure) release, `getTransaction` is up to 20x faster than other providers on historical calls, and `getSignaturesForAddress` supports recency-first ordering so you can walk from the present backward without scanning from genesis.
+
+### When you need program-account state, not just a single account
+
+If you are snapshotting state across an entire program (for example, every position account under a lending program), do the initial enumeration with paginated [`getProgramAccounts`](/docs/chains/solana/solana-api-endpoints/get-program-accounts) calls. See [AccountsDB Infrastructure](/docs/solana/accounts-db-infra) for the `pageKey` + `order` pattern. Once you have the address set, you can either backfill each address with workflow B, or subscribe to the program owner via workflow A to capture future changes.
+
+### Minimal TypeScript example
+
+```typescript
+import { Connection, PublicKey } from "@solana/web3.js";
+
+const connection = new Connection(
+  "https://solana-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY",
+  "confirmed"
+);
+
+async function walkAccountHistory(
+  address: string,
+  untilSlot: number
+): Promise<void> {
+  const pubkey = new PublicKey(address);
+  let before: string | undefined = undefined;
+
+  while (true) {
+    const sigs = await connection.getSignaturesForAddress(pubkey, {
+      before,
+      limit: 1000,
+    });
+    if (sigs.length === 0) break;
+
+    for (const sig of sigs) {
+      if (sig.slot < untilSlot) return;
+
+      const tx = await connection.getTransaction(sig.signature, {
+        maxSupportedTransactionVersion: 0,
+      });
+      if (!tx) continue;
+
+      // Apply the transaction's effect on the target account here.
+      // For lamports-only changes, use tx.meta.preBalances/postBalances.
+      // For program-state changes, decode the account data using your IDL.
+      console.log(`slot=${sig.slot} signature=${sig.signature}`);
+    }
+
+    before = sigs[sigs.length - 1].signature;
+  }
+}
+```
+
+## Choosing a sampling cadence
+
+The two workflows above give you per-update granularity. Picking a coarser cadence (hourly, daily) is a query-time concern, not an ingest-time one. Two common approaches:
+
+* **Store every update, derive snapshots at query time.** Recommended when the account set is small or update volume is moderate. Lets you change cadence later without re-ingesting.
+* **Materialize fixed-cadence rollups.** Run a periodic job that, for each tracked account, writes the latest value at or before each cadence boundary into a separate table. Reduces query cost when you only ever read at fixed intervals.
+
+To map wall-clock timestamps to slots for the boundaries, call [`getBlockTime`](/docs/chains/solana/solana-api-endpoints/get-block-time) on a candidate slot, or use [`getBlocks`](/docs/chains/solana/solana-api-endpoints/get-blocks) to find the slot range that bounds a target timestamp.
+
+## Workflow comparison
+
+| Aspect                 | Yellowstone gRPC (Workflow A)                        | Transaction replay (Workflow B)                                |
+| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
+| Time horizon           | From subscription start, forward                     | From any point in history, backward                            |
+| Latency to new data    | Real-time (sub-second)                               | As fast as you can page archival history                       |
+| Filter granularity     | Address, owner, memcmp, data size, lamports          | Per-address (via `getSignaturesForAddress`)                    |
+| Reconstruction effort  | None — receive full account bytes per update         | Decode each transaction's effect on the account using your IDL |
+| Replay after gap       | `from_slot`, up to 6000 slots (~40 min)              | Unbounded, limited only by archival depth                      |
+| Best for               | Ongoing capture of a known account or program set    | Backfilling history before your stream started                 |
+| Plan requirement       | PAYG or Enterprise                                   | Available on all paid plans                                    |
+
+Combine the two: turn on the gRPC subscription first, persist its slot as your "snapshot start", then run the backfill from your business epoch up to that slot. Once the backfill completes, your store has continuous coverage.
+
+## Related references
+
+* [AccountsDB Infrastructure](/docs/solana/accounts-db-infra) — paginated `getProgramAccounts` and `getTokenLargestAccounts` for enumerating large account sets.
+* [Yellowstone gRPC Overview](/docs/reference/yellowstone-grpc-overview) and [Subscribe to Accounts](/docs/reference/yellowstone-grpc-subscribe-accounts) — full filter reference and protobuf definitions.
+* [Solana API FAQ — Historical Data (Archival)](/docs/solana-api-faq#historical-data-archival) — the full set of archival JSON-RPC methods.
+* [Built for Solana](https://www.alchemy.com/blog/solana-infrastructure) and [How Alchemy Built the Fastest Archival Methods on Solana](https://www.alchemy.com/blog/how-alchemy-built-the-fastest-archival-methods-on-solana) — background on the archival stack powering the methods above.
