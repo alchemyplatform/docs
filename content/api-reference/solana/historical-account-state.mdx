@@ -26,9 +26,11 @@ Most production indexers combine both: stream forward from "now" while backfilli
 
 1. Open a Yellowstone gRPC subscription with an account filter ([`accounts`](/docs/reference/yellowstone-grpc-subscribe-accounts) in the [`SubscribeRequest`](/docs/reference/yellowstone-grpc-subscribe-request)).
 2. On every `SubscribeUpdateAccount` your handler receives, write a row containing `(pubkey, slot, write_version, data, lamports, owner, txn_signature)` to your store.
-3. Index the resulting table by `(pubkey, slot)` so you can query the latest version at or before any target slot.
+3. Index the resulting table by `(pubkey, slot, write_version)` so you can query the latest version at or before any target slot.
 
-To produce hourly snapshots, you do not need a separate sampling job. Solana blocks land at roughly 400 ms, so an active account may have many writes per hour and a quiet account may have none. Both cases are handled the same way: a query for "the state of this account at hour H" becomes "the row with the largest `slot` that is less than or equal to the slot corresponding to the timestamp at the end of hour H". Use `getBlockTime` or `getBlocks` to map wall-clock timestamps to slots.
+A single Solana slot can contain multiple transactions that write to the same account. The `write_version` field is a monotonically increasing counter that disambiguates those intra-slot updates: the final state for a slot is the row with the highest `write_version` at that slot. Always tie-break by `(slot, write_version)` rather than `slot` alone.
+
+To produce hourly snapshots, you do not need a separate sampling job. Solana blocks land at roughly 400 ms, so an active account may have many writes per hour and a quiet account may have none. Both cases are handled the same way: a query for "the state of this account at hour H" returns the row with the largest `(slot, write_version)` pair where `slot` is less than or equal to the slot corresponding to the timestamp at the end of hour H. In SQL that is `ORDER BY slot DESC, write_version DESC LIMIT 1`. Use `getBlockTime` or `getBlocks` to map wall-clock timestamps to slots.
 
 ### Filter options
 
