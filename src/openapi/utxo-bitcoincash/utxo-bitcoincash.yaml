@@ -1,0 +1,842 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
+openapi: 3.1.0
+info:
+  title: 🪙 UTXO API (Bitcoin Cash)
+  version: "1.0"
+  description: >
+    REST API for Bitcoin Cash, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
+    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on the
+    Bitcoin Cash networks. The same paths are available on every UTXO chain Alchemy supports —
+    switch chains using the chain-specific overview pages or by changing the host.
+servers:
+  - url: https://{network}.g.alchemy.com/v2
+    variables:
+      network:
+        default: bitcoincash-mainnet
+        enum:
+          - bitcoincash-mainnet
+          - bitcoincash-testnet
+paths:
+  "/{apiKey}/api/v2/block-index/{block_height}":
+    get:
+      operationId: getBlockHashByIndex
+      summary: Get Block Hash
+      description: Returns the block hash for a given block height on the selected network.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/blockHeight"
+      responses:
+        "200":
+          description: Block hash for the requested height.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockIndexResponse"
+              example:
+                blockHash: "000000000000000001b4642b21d69e5ebfe640dc86beff246597bbe2dcd1d5c9"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/tx/{txid}":
+    get:
+      operationId: getTransaction
+      summary: Get Transaction
+      description: >
+        Returns normalized transaction data for the given transaction ID. Response shape is consistent
+        across UTXO networks. Empty fields are omitted.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/txid"
+      responses:
+        "200":
+          description: Transaction details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tx"
+              example:
+                txid: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
+                version: 1
+                vin:
+                  - txid: "9a3a10888fb4e8b6ecc83a5add5c5bc8db33650feeaac9a2a94fe114d4e311fd"
+                    vout: 2
+                    sequence: 4294967295
+                    n: 0
+                    addresses:
+                      ["bitcoincash:qzk7vrrk3x87psq5x8kateumge0crzsd3g6r84k0ef"]
+                    isAddress: true
+                    value: "546"
+                vout:
+                  - value: "546"
+                    n: 1
+                    hex: "76a91462e9075c5cbf27d50a539e7afbe1f6a1d772479e88ac"
+                    addresses:
+                      ["bitcoincash:qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"]
+                    isAddress: true
+                blockHash: "000000000000000000b9cc8d1b01604a308f872fae0408045466e82ec6ae9ac1"
+                blockHeight: 941680
+                confirmations: 9484
+                blockTime: 1773119738
+                size: 479
+                value: "45484"
+                valueIn: "45965"
+                fees: "481"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/tx-specific/{txid}":
+    get:
+      operationId: getTransactionSpecific
+      summary: Get Transaction Specific
+      description: >
+        Returns transaction data in the exact format returned by the underlying coin backend, including
+        all chain-specific fields not surfaced by the normalized `/tx/{txid}` endpoint.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/txid"
+      responses:
+        "200":
+          description: Backend-native transaction object.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Backend-specific transaction object. Shape varies by coin.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/address/{address}":
+    get:
+      operationId: getAddress
+      summary: Get Address
+      description: >
+        Returns balances and transactions for the given Bitcoin Cash address. Transactions are sorted
+        newest-first by block height. Bitcoin Cash addresses use the `bitcoincash:` CashAddr prefix.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/address"
+        - in: query
+          name: page
+          required: false
+          description: Page of returned transactions, starting from 1.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          required: false
+          description: Number of transactions returned per page (max 1000).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1000
+        - in: query
+          name: from
+          required: false
+          description: Filter transactions starting from this block height.
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: to
+          required: false
+          description: Filter transactions up to this block height.
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: details
+          required: false
+          description: Level of detail to return.
+          schema:
+            type: string
+            enum: [basic, tokens, tokenBalances, txids, txslight, txs]
+            default: txids
+        - in: query
+          name: secondary
+          required: false
+          description: Secondary (fiat) currency code for balance conversion, e.g. `usd` or `eur`.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Address details, balances, and transactions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressInfo"
+              example:
+                page: 1
+                totalPages: 2
+                itemsOnPage: 1000
+                address: "bitcoincash:qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"
+                balance: "7671258180"
+                totalReceived: "7671258180"
+                totalSent: "0"
+                unconfirmedBalance: "0"
+                unconfirmedTxs: 0
+                txs: 1228
+                txids:
+                  - "20063eb8ae04c6449ea397ca609db09522e316795d96eb47d3e4c50591fb3679"
+                  - "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/xpub/{xpub}":
+    get:
+      operationId: getXpub
+      summary: Get Xpub
+      description: >
+        Returns balances and transactions for an xpub or output descriptor on Bitcoin Cash. Supports
+        BIP44 and BIP49 derivation schemes. The BIP version is determined by the xpub prefix or by an
+        explicit output descriptor.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: xpub
+          required: true
+          description: Extended public key or output descriptor.
+          schema:
+            type: string
+          example: "xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1000
+        - in: query
+          name: from
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: to
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: details
+          required: false
+          schema:
+            type: string
+            enum: [basic, tokens, tokenBalances, txids, txs]
+            default: txids
+        - in: query
+          name: tokens
+          required: false
+          description: Which derived addresses to return.
+          schema:
+            type: string
+            enum: [nonzero, used, derived]
+            default: nonzero
+        - in: query
+          name: secondary
+          required: false
+          description: Secondary (fiat) currency code for balance conversion.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Xpub details, balances, derived addresses, and transactions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressInfo"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/utxo/{descriptor}":
+    get:
+      operationId: getUtxo
+      summary: Get UTXOs
+      description: >
+        Returns the unspent transaction outputs for a Bitcoin Cash address, xpub, or output
+        descriptor. Includes confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to
+        limit to confirmed only. UTXOs are sorted newest-first.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: descriptor
+          required: true
+          description: Bitcoin Cash address, xpub, or output descriptor.
+          schema:
+            type: string
+          example: "bitcoincash:qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"
+        - in: query
+          name: confirmed
+          required: false
+          description: When `true`, exclude unconfirmed UTXOs.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: List of UTXOs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Utxo"
+              example:
+                - txid: "20063eb8ae04c6449ea397ca609db09522e316795d96eb47d3e4c50591fb3679"
+                  vout: 1
+                  value: "600"
+                  height: 949568
+                  confirmations: 1591
+                - txid: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
+                  vout: 1
+                  value: "546"
+                  height: 941680
+                  confirmations: 9479
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/block/{block}":
+    get:
+      operationId: getBlock
+      summary: Get Block
+      description: >
+        Returns information about a block on Bitcoin Cash, including transactions, by block hash or
+        block height. Results are paginated.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: block
+          required: true
+          description: Block height (integer) or block hash (hex string).
+          schema:
+            type: string
+          example: "860730"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1000
+      responses:
+        "200":
+          description: Block details with paginated transactions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Block"
+              example:
+                page: 1
+                totalPages: 1
+                itemsOnPage: 1000
+                hash: "000000000000000001b4642b21d69e5ebfe640dc86beff246597bbe2dcd1d5c9"
+                previousBlockHash: "000000000000000000ec5ff3da7aa8064ddb9fc0630a9f5859ad8e2d6e07de78"
+                nextBlockHash: "000000000000000002247a19f9f7b69fc1a5d330455c82a7f37efd8deee6f64a"
+                height: 860730
+                confirmations: 90434
+                size: 95372
+                time: 1724718072
+                version: 1040187392
+                merkleRoot: "fd9773cd0359a8ba3ef62e542ad86a38536b6a81d7cdcf2f25d494264dd55a55"
+                nonce: "3293742657"
+                bits: "18025986"
+                difficulty: "467929700151.3096"
+                txCount: 196
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/sendtx/{hex}":
+    get:
+      operationId: sendTransactionGet
+      summary: Send Transaction (GET)
+      description: >
+        Broadcasts a signed raw Bitcoin Cash transaction encoded as a hex string in the path. Returns
+        the transaction ID on success. For larger payloads, use the POST variant.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: hex
+          required: true
+          description: Hex-encoded raw transaction bytes.
+          schema:
+            type: string
+          example: "010000000001..."
+      responses:
+        "200":
+          description: Transaction broadcast result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendTxResponse"
+              example:
+                result: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/sendtx/":
+    post:
+      operationId: sendTransactionPost
+      summary: Send Transaction (POST)
+      description: >
+        Broadcasts a signed raw Bitcoin Cash transaction by sending hex bytes in the request body.
+        The trailing slash on the path is mandatory; see the [Blockbook API
+        reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
+        Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              description: Hex-encoded raw transaction bytes.
+              example: "010000000001..."
+      responses:
+        "200":
+          description: Transaction broadcast result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendTxResponse"
+              example:
+                result: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/tickers-list":
+    get:
+      operationId: getTickersList
+      summary: Get Tickers List
+      description: >
+        Returns the list of available currency rate tickers (secondary currencies) for Bitcoin Cash at
+        a given timestamp, along with the actual data timestamp.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: query
+          name: timestamp
+          required: false
+          description: Unix timestamp to query availability for. Defaults to the latest available.
+          schema:
+            type: integer
+            example: 1578391200
+      responses:
+        "200":
+          description: Available tickers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TickersListResponse"
+              example:
+                ts: 1578391200
+                available_currencies: ["eur", "usd"]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/tickers":
+    get:
+      operationId: getTickers
+      summary: Get Tickers
+      description: >
+        Returns the Bitcoin Cash currency rate for the specified currency and timestamp. If the
+        requested currency is unavailable for that timestamp, the closest rate is returned with the
+        actual rate timestamp.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: query
+          name: currency
+          required: false
+          description: Fiat or crypto currency code (e.g. `usd`, `eur`, `eth`). Omit to return all.
+          schema:
+            type: string
+            example: usd
+        - in: query
+          name: timestamp
+          required: false
+          description: Unix timestamp. Omit to return the latest.
+          schema:
+            type: integer
+            example: 1578391200
+      responses:
+        "200":
+          description: Currency rate response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TickerRates"
+              example:
+                ts: 1578391200
+                rates:
+                  usd: 240.13
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/balancehistory/{address}":
+    get:
+      operationId: getBalanceHistory
+      summary: Get Balance History
+      description: >
+        Returns the balance history for the specified Bitcoin Cash address. Optionally enrich each
+        bucket with secondary (fiat) currency rates at the time of the transaction.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/address"
+        - in: query
+          name: from
+          required: true
+          description: Start of the history range as a Unix timestamp.
+          schema:
+            type: integer
+            example: 1501545600
+        - in: query
+          name: to
+          required: true
+          description: End of the history range as a Unix timestamp.
+          schema:
+            type: integer
+            example: 1757280000
+        - in: query
+          name: fiatcurrency
+          required: false
+          description: Fiat currency code to enrich each bucket with.
+          schema:
+            type: string
+            example: usd
+        - in: query
+          name: groupBy
+          required: false
+          description: Aggregation interval in seconds. Defaults to 3600.
+          schema:
+            type: integer
+            default: 3600
+      responses:
+        "200":
+          description: Balance history buckets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BalanceHistoryEntry"
+              example:
+                - time: 1724720400
+                  txs: 1
+                  received: "100000"
+                  sent: "0"
+                  sentToSelf: "0"
+                  rates:
+                    usd: 322.7
+                - time: 1724724000
+                  txs: 1
+                  received: "0"
+                  sent: "100000"
+                  sentToSelf: "0"
+                  rates:
+                    usd: 323.1
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+components:
+  parameters:
+    apiKey:
+      name: apiKey
+      in: path
+      required: true
+      schema:
+        type: string
+        default: docs-demo
+      description: For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)
+    blockHeight:
+      in: path
+      name: block_height
+      required: true
+      description: Block height as a non-negative integer.
+      schema:
+        type: integer
+        minimum: 0
+      example: 860730
+    txid:
+      in: path
+      name: txid
+      required: true
+      description: Hex-encoded transaction ID.
+      schema:
+        type: string
+      example: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
+    address:
+      in: path
+      name: address
+      required: true
+      description: Bitcoin Cash CashAddr address (`bitcoincash:` prefixed).
+      schema:
+        type: string
+      example: "bitcoincash:qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"
+  responses:
+    BadRequest:
+      description: Malformed request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              message: "invalid request"
+    NotFound:
+      description: Resource not found on the requested network.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              message: "not found"
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+    BlockIndexResponse:
+      type: object
+      required: [blockHash]
+      properties:
+        blockHash:
+          type: string
+          description: Hex-encoded block hash for the requested height.
+    SendTxResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Transaction ID of the broadcast transaction.
+    Vin:
+      type: object
+      properties:
+        txid: { type: string }
+        vout: { type: integer }
+        sequence: { type: integer }
+        n: { type: integer }
+        addresses:
+          type: array
+          items: { type: string }
+        isAddress: { type: boolean }
+        value:
+          type: string
+          description: Value in the smallest denomination, as a decimal string.
+    Vout:
+      type: object
+      properties:
+        value:
+          type: string
+          description: Value in the smallest denomination, as a decimal string.
+        n: { type: integer }
+        spent: { type: boolean }
+        hex: { type: string }
+        addresses:
+          type: array
+          items: { type: string }
+        isAddress: { type: boolean }
+    Tx:
+      type: object
+      properties:
+        txid: { type: string }
+        version: { type: integer }
+        lockTime: { type: integer }
+        vin:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vin"
+        vout:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vout"
+        blockHash: { type: string }
+        blockHeight:
+          type: integer
+          description: Height of the block, or `-1` for unconfirmed transactions.
+        confirmations: { type: integer }
+        confirmationETABlocks:
+          type: integer
+          description: Estimated blocks to first confirmation (only set when unconfirmed).
+        confirmationETASeconds:
+          type: integer
+          description: Estimated seconds to first confirmation (only set when unconfirmed).
+        blockTime: { type: integer }
+        size: { type: integer }
+        vsize: { type: integer }
+        value:
+          type: string
+        valueIn:
+          type: string
+        fees:
+          type: string
+        hex: { type: string }
+        rbf: { type: boolean }
+    Token:
+      type: object
+      description: Derived token entry for an xpub or address.
+      properties:
+        type:
+          type: string
+          example: XPUBAddress
+        name: { type: string }
+        path: { type: string }
+        transfers: { type: integer }
+        decimals: { type: integer }
+        balance:
+          type: string
+        totalReceived:
+          type: string
+        totalSent:
+          type: string
+    AddressInfo:
+      type: object
+      properties:
+        page: { type: integer }
+        totalPages: { type: integer }
+        itemsOnPage: { type: integer }
+        address: { type: string }
+        balance:
+          type: string
+        totalReceived:
+          type: string
+        totalSent:
+          type: string
+        unconfirmedBalance:
+          type: string
+        unconfirmedTxs: { type: integer }
+        txs: { type: integer }
+        txids:
+          type: array
+          items: { type: string }
+        usedTokens: { type: integer }
+        tokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/Token"
+        secondaryValue: { type: number }
+    Utxo:
+      type: object
+      required: [txid, vout, value]
+      properties:
+        txid: { type: string }
+        vout: { type: integer }
+        value:
+          type: string
+          description: Value in the smallest denomination, as a decimal string.
+        height:
+          type: integer
+          description: Block height. Omitted for unconfirmed UTXOs.
+        confirmations: { type: integer }
+        lockTime:
+          type: integer
+          description: Lock time, only set for unconfirmed UTXOs with non-zero locktime.
+        coinbase:
+          type: boolean
+          description: True if the output comes from a coinbase transaction within the first 100 confirmations.
+        address: { type: string }
+        path:
+          type: string
+          description: Derivation path. Only set when querying by xpub or descriptor.
+    Block:
+      type: object
+      properties:
+        page: { type: integer }
+        totalPages: { type: integer }
+        itemsOnPage: { type: integer }
+        hash: { type: string }
+        previousBlockHash: { type: string }
+        nextBlockHash: { type: string }
+        height: { type: integer }
+        confirmations: { type: integer }
+        size: { type: integer }
+        time: { type: integer }
+        version: { type: integer }
+        merkleRoot: { type: string }
+        nonce: { type: string }
+        bits: { type: string }
+        difficulty: { type: string }
+        txCount: { type: integer }
+        txs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tx"
+    TickersListResponse:
+      type: object
+      properties:
+        ts: { type: integer }
+        available_currencies:
+          type: array
+          items: { type: string }
+    TickerRates:
+      type: object
+      properties:
+        ts: { type: integer }
+        rates:
+          type: object
+          additionalProperties:
+            type: number
+    BalanceHistoryEntry:
+      type: object
+      properties:
+        time: { type: integer }
+        txs: { type: integer }
+        received:
+          type: string
+        sent:
+          type: string
+        sentToSelf:
+          type: string
+        rates:
+          type: object
+          additionalProperties:
+            type: number

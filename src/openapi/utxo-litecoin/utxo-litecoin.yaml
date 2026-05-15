@@ -1,0 +1,847 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
+openapi: 3.1.0
+info:
+  title: 🪙 UTXO API (Litecoin)
+  version: "1.0"
+  description: >
+    REST API for Litecoin, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
+    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on the
+    Litecoin networks. The same paths are available on every UTXO chain Alchemy supports —
+    switch chains using the chain-specific overview pages or by changing the host.
+servers:
+  - url: https://{network}.g.alchemy.com/v2
+    variables:
+      network:
+        default: litecoin-mainnet
+        enum:
+          - litecoin-mainnet
+          - litecoin-testnet
+paths:
+  "/{apiKey}/api/v2/block-index/{block_height}":
+    get:
+      operationId: getBlockHashByIndex
+      summary: Get Block Hash
+      description: Returns the block hash for a given block height on the selected network.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/blockHeight"
+      responses:
+        "200":
+          description: Block hash for the requested height.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockIndexResponse"
+              example:
+                blockHash: "91ccb5ed8ad6ecfef1347511fa09436a191ea07c93c9c03397a617ade19f8b04"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/tx/{txid}":
+    get:
+      operationId: getTransaction
+      summary: Get Transaction
+      description: >
+        Returns normalized transaction data for the given transaction ID. Response shape is consistent
+        across UTXO networks. Empty fields are omitted.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/txid"
+      responses:
+        "200":
+          description: Transaction details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tx"
+              example:
+                txid: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
+                version: 2
+                vin:
+                  - txid: "3e004412be5d56b1e0fefcf73f5010a49e498c728e5097e8f09278b7b389dff7"
+                    vout: 21
+                    sequence: 4294967295
+                    n: 0
+                    addresses: ["LNqEYhSgarC9gY6AAdBHyVJvEikQth3eNj"]
+                    isAddress: true
+                    value: "2868006"
+                vout:
+                  - value: "100000"
+                    n: 0
+                    spent: true
+                    hex: "76a914be7846a7ac1fa99117c8ea7472f240c68f01eb8f88ac"
+                    addresses: ["Lcb4jao9XQ9WQGBW4hcBf7kVUSe5Ze6bsf"]
+                    isAddress: true
+                  - value: "2718006"
+                    n: 1
+                    hex: "76a914815d8e3e2dd0fc88de37e0bf16b8af5a64055f4188ac"
+                    addresses: ["Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"]
+                    isAddress: true
+                blockHash: "6d1a8eedc9ce9055366efdb8260c8d4ea0a8fa01905d3ecf92716a8940a0d06e"
+                blockHeight: 2981901
+                confirmations: 125935
+                blockTime: 1759937639
+                size: 225
+                vsize: 225
+                value: "2818006"
+                valueIn: "2868006"
+                fees: "50000"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/tx-specific/{txid}":
+    get:
+      operationId: getTransactionSpecific
+      summary: Get Transaction Specific
+      description: >
+        Returns transaction data in the exact format returned by the underlying coin backend, including
+        all chain-specific fields not surfaced by the normalized `/tx/{txid}` endpoint.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/txid"
+      responses:
+        "200":
+          description: Backend-native transaction object.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Backend-specific transaction object. Shape varies by coin.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/address/{address}":
+    get:
+      operationId: getAddress
+      summary: Get Address
+      description: >
+        Returns balances and transactions for the given Litecoin address. Transactions are sorted
+        newest-first by block height.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/address"
+        - in: query
+          name: page
+          required: false
+          description: Page of returned transactions, starting from 1.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          required: false
+          description: Number of transactions returned per page (max 1000).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1000
+        - in: query
+          name: from
+          required: false
+          description: Filter transactions starting from this block height.
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: to
+          required: false
+          description: Filter transactions up to this block height.
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: details
+          required: false
+          description: Level of detail to return.
+          schema:
+            type: string
+            enum: [basic, tokens, tokenBalances, txids, txslight, txs]
+            default: txids
+        - in: query
+          name: secondary
+          required: false
+          description: Secondary (fiat) currency code for balance conversion, e.g. `usd` or `eur`.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Address details, balances, and transactions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressInfo"
+              example:
+                page: 1
+                totalPages: 1
+                itemsOnPage: 1000
+                address: "Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"
+                balance: "2728006"
+                totalReceived: "218883700604"
+                totalSent: "218880972598"
+                unconfirmedBalance: "0"
+                unconfirmedTxs: 0
+                txs: 247
+                txids:
+                  - "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
+                  - "c5826af541034211d27483996160f6c5467adc9de7fd6045afe3b0957ac7ddb7"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/xpub/{xpub}":
+    get:
+      operationId: getXpub
+      summary: Get Xpub
+      description: >
+        Returns balances and transactions for an xpub or output descriptor on Litecoin. Supports
+        BIP44, BIP49, BIP84, and BIP86 (Taproot) derivation schemes. The BIP version is determined
+        by the xpub prefix or by an explicit output descriptor.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: xpub
+          required: true
+          description: Extended public key or output descriptor.
+          schema:
+            type: string
+          example: "xpub6CUGRUonZSQ4TWtTMmzXdrXDtypWKiKrhko4egpiMZbpiaQL2jkwSB1icqYh2cfDfVxdx4df189oLKnC5fSwqPfgyP3hooxujYzAu3fDVmz"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1000
+        - in: query
+          name: from
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: to
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: details
+          required: false
+          schema:
+            type: string
+            enum: [basic, tokens, tokenBalances, txids, txs]
+            default: txids
+        - in: query
+          name: tokens
+          required: false
+          description: Which derived addresses to return.
+          schema:
+            type: string
+            enum: [nonzero, used, derived]
+            default: nonzero
+        - in: query
+          name: secondary
+          required: false
+          description: Secondary (fiat) currency code for balance conversion.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Xpub details, balances, derived addresses, and transactions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressInfo"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/utxo/{descriptor}":
+    get:
+      operationId: getUtxo
+      summary: Get UTXOs
+      description: >
+        Returns the unspent transaction outputs for a Litecoin address, xpub, or output descriptor.
+        Includes confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to limit to
+        confirmed only. UTXOs are sorted newest-first.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: descriptor
+          required: true
+          description: Litecoin address, xpub, or output descriptor.
+          schema:
+            type: string
+          example: "Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"
+        - in: query
+          name: confirmed
+          required: false
+          description: When `true`, exclude unconfirmed UTXOs.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: List of UTXOs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Utxo"
+              example:
+                - txid: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
+                  vout: 1
+                  value: "2718006"
+                  height: 2981901
+                  confirmations: 125929
+                - txid: "c5826af541034211d27483996160f6c5467adc9de7fd6045afe3b0957ac7ddb7"
+                  vout: 0
+                  value: "10000"
+                  height: 2876920
+                  confirmations: 230910
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/block/{block}":
+    get:
+      operationId: getBlock
+      summary: Get Block
+      description: >
+        Returns information about a block on Litecoin, including transactions, by block hash or
+        block height. Results are paginated.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: block
+          required: true
+          description: Block height (integer) or block hash (hex string).
+          schema:
+            type: string
+          example: "860730"
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1000
+      responses:
+        "200":
+          description: Block details with paginated transactions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Block"
+              example:
+                page: 1
+                totalPages: 1
+                itemsOnPage: 1000
+                hash: "91ccb5ed8ad6ecfef1347511fa09436a191ea07c93c9c03397a617ade19f8b04"
+                previousBlockHash: "688543ada7bc18b23a9b4db0d11233d1a1d4380d97801ff0c66506f99bba9aa8"
+                nextBlockHash: "2b7697a2567aa93e3e4261d58a660fde5e7e552d0b13b39a753cfc4cbb741819"
+                height: 860730
+                confirmations: 2247106
+                size: 266
+                time: 1443630565
+                version: 3
+                merkleRoot: "e596d7458fa44d83e22210c8d00ef3e80ee6eb2b36d9008b9ddbb44cbc566575"
+                nonce: "324698247"
+                bits: "1b01697d"
+                difficulty: "46410.79910526145"
+                txCount: 1
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  "/{apiKey}/api/v2/sendtx/{hex}":
+    get:
+      operationId: sendTransactionGet
+      summary: Send Transaction (GET)
+      description: >
+        Broadcasts a signed raw Litecoin transaction encoded as a hex string in the path. Returns
+        the transaction ID on success. For larger payloads, use the POST variant.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: path
+          name: hex
+          required: true
+          description: Hex-encoded raw transaction bytes.
+          schema:
+            type: string
+          example: "010000000001..."
+      responses:
+        "200":
+          description: Transaction broadcast result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendTxResponse"
+              example:
+                result: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/sendtx/":
+    post:
+      operationId: sendTransactionPost
+      summary: Send Transaction (POST)
+      description: >
+        Broadcasts a signed raw Litecoin transaction by sending hex bytes in the request body.
+        The trailing slash on the path is mandatory; see the [Blockbook API
+        reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
+        Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              description: Hex-encoded raw transaction bytes.
+              example: "010000000001..."
+      responses:
+        "200":
+          description: Transaction broadcast result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendTxResponse"
+              example:
+                result: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/tickers-list":
+    get:
+      operationId: getTickersList
+      summary: Get Tickers List
+      description: >
+        Returns the list of available currency rate tickers (secondary currencies) for Litecoin at
+        a given timestamp, along with the actual data timestamp.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: query
+          name: timestamp
+          required: false
+          description: Unix timestamp to query availability for. Defaults to the latest available.
+          schema:
+            type: integer
+            example: 1578391200
+      responses:
+        "200":
+          description: Available tickers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TickersListResponse"
+              example:
+                ts: 1578391200
+                available_currencies: ["eur", "usd"]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/tickers":
+    get:
+      operationId: getTickers
+      summary: Get Tickers
+      description: >
+        Returns the Litecoin currency rate for the specified currency and timestamp. If the
+        requested currency is unavailable for that timestamp, the closest rate is returned with
+        the actual rate timestamp.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - in: query
+          name: currency
+          required: false
+          description: Fiat or crypto currency code (e.g. `usd`, `eur`, `eth`). Omit to return all.
+          schema:
+            type: string
+            example: usd
+        - in: query
+          name: timestamp
+          required: false
+          description: Unix timestamp. Omit to return the latest.
+          schema:
+            type: integer
+            example: 1578391200
+      responses:
+        "200":
+          description: Currency rate response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TickerRates"
+              example:
+                ts: 1578391200
+                rates:
+                  usd: 42.71
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  "/{apiKey}/api/v2/balancehistory/{address}":
+    get:
+      operationId: getBalanceHistory
+      summary: Get Balance History
+      description: >
+        Returns the balance history for the specified Litecoin address. Optionally enrich each
+        bucket with secondary (fiat) currency rates at the time of the transaction.
+      tags: ["UTXO API Endpoints"]
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/address"
+        - in: query
+          name: from
+          required: true
+          description: Start of the history range as a Unix timestamp.
+          schema:
+            type: integer
+            example: 1318325224
+        - in: query
+          name: to
+          required: true
+          description: End of the history range as a Unix timestamp.
+          schema:
+            type: integer
+            example: 1757280000
+        - in: query
+          name: fiatcurrency
+          required: false
+          description: Fiat currency code to enrich each bucket with.
+          schema:
+            type: string
+            example: usd
+        - in: query
+          name: groupBy
+          required: false
+          description: Aggregation interval in seconds. Defaults to 3600.
+          schema:
+            type: integer
+            default: 3600
+      responses:
+        "200":
+          description: Balance history buckets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BalanceHistoryEntry"
+              example:
+                - time: 1759935600
+                  txs: 1
+                  received: "2718006"
+                  sent: "0"
+                  sentToSelf: "0"
+                  rates:
+                    usd: 76.42
+                - time: 1759939200
+                  txs: 1
+                  received: "0"
+                  sent: "2718006"
+                  sentToSelf: "0"
+                  rates:
+                    usd: 76.55
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+components:
+  parameters:
+    apiKey:
+      name: apiKey
+      in: path
+      required: true
+      schema:
+        type: string
+        default: docs-demo
+      description: For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)
+    blockHeight:
+      in: path
+      name: block_height
+      required: true
+      description: Block height as a non-negative integer.
+      schema:
+        type: integer
+        minimum: 0
+      example: 860730
+    txid:
+      in: path
+      name: txid
+      required: true
+      description: Hex-encoded transaction ID.
+      schema:
+        type: string
+      example: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
+    address:
+      in: path
+      name: address
+      required: true
+      description: Litecoin address.
+      schema:
+        type: string
+      example: "Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"
+  responses:
+    BadRequest:
+      description: Malformed request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              message: "invalid request"
+    NotFound:
+      description: Resource not found on the requested network.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              message: "not found"
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+    BlockIndexResponse:
+      type: object
+      required: [blockHash]
+      properties:
+        blockHash:
+          type: string
+          description: Hex-encoded block hash for the requested height.
+    SendTxResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Transaction ID of the broadcast transaction.
+    Vin:
+      type: object
+      properties:
+        txid: { type: string }
+        vout: { type: integer }
+        sequence: { type: integer }
+        n: { type: integer }
+        addresses:
+          type: array
+          items: { type: string }
+        isAddress: { type: boolean }
+        value:
+          type: string
+          description: Value in the smallest denomination, as a decimal string.
+    Vout:
+      type: object
+      properties:
+        value:
+          type: string
+          description: Value in the smallest denomination, as a decimal string.
+        n: { type: integer }
+        spent: { type: boolean }
+        hex: { type: string }
+        addresses:
+          type: array
+          items: { type: string }
+        isAddress: { type: boolean }
+    Tx:
+      type: object
+      properties:
+        txid: { type: string }
+        version: { type: integer }
+        lockTime: { type: integer }
+        vin:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vin"
+        vout:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vout"
+        blockHash: { type: string }
+        blockHeight:
+          type: integer
+          description: Height of the block, or `-1` for unconfirmed transactions.
+        confirmations: { type: integer }
+        confirmationETABlocks:
+          type: integer
+          description: Estimated blocks to first confirmation (only set when unconfirmed).
+        confirmationETASeconds:
+          type: integer
+          description: Estimated seconds to first confirmation (only set when unconfirmed).
+        blockTime: { type: integer }
+        size: { type: integer }
+        vsize: { type: integer }
+        value:
+          type: string
+        valueIn:
+          type: string
+        fees:
+          type: string
+        hex: { type: string }
+        rbf: { type: boolean }
+    Token:
+      type: object
+      description: Derived token entry for an xpub or address.
+      properties:
+        type:
+          type: string
+          example: XPUBAddress
+        name: { type: string }
+        path: { type: string }
+        transfers: { type: integer }
+        decimals: { type: integer }
+        balance:
+          type: string
+        totalReceived:
+          type: string
+        totalSent:
+          type: string
+    AddressInfo:
+      type: object
+      properties:
+        page: { type: integer }
+        totalPages: { type: integer }
+        itemsOnPage: { type: integer }
+        address: { type: string }
+        balance:
+          type: string
+        totalReceived:
+          type: string
+        totalSent:
+          type: string
+        unconfirmedBalance:
+          type: string
+        unconfirmedTxs: { type: integer }
+        txs: { type: integer }
+        txids:
+          type: array
+          items: { type: string }
+        usedTokens: { type: integer }
+        tokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/Token"
+        secondaryValue: { type: number }
+    Utxo:
+      type: object
+      required: [txid, vout, value]
+      properties:
+        txid: { type: string }
+        vout: { type: integer }
+        value:
+          type: string
+          description: Value in the smallest denomination, as a decimal string.
+        height:
+          type: integer
+          description: Block height. Omitted for unconfirmed UTXOs.
+        confirmations: { type: integer }
+        lockTime:
+          type: integer
+          description: Lock time, only set for unconfirmed UTXOs with non-zero locktime.
+        coinbase:
+          type: boolean
+          description: True if the output comes from a coinbase transaction within the first 100 confirmations.
+        address: { type: string }
+        path:
+          type: string
+          description: Derivation path. Only set when querying by xpub or descriptor.
+    Block:
+      type: object
+      properties:
+        page: { type: integer }
+        totalPages: { type: integer }
+        itemsOnPage: { type: integer }
+        hash: { type: string }
+        previousBlockHash: { type: string }
+        nextBlockHash: { type: string }
+        height: { type: integer }
+        confirmations: { type: integer }
+        size: { type: integer }
+        time: { type: integer }
+        version: { type: integer }
+        merkleRoot: { type: string }
+        nonce: { type: string }
+        bits: { type: string }
+        difficulty: { type: string }
+        txCount: { type: integer }
+        txs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tx"
+    TickersListResponse:
+      type: object
+      properties:
+        ts: { type: integer }
+        available_currencies:
+          type: array
+          items: { type: string }
+    TickerRates:
+      type: object
+      properties:
+        ts: { type: integer }
+        rates:
+          type: object
+          additionalProperties:
+            type: number
+    BalanceHistoryEntry:
+      type: object
+      properties:
+        time: { type: integer }
+        txs: { type: integer }
+        received:
+          type: string
+        sent:
+          type: string
+        sentToSelf:
+          type: string
+        rates:
+          type: object
+          additionalProperties:
+            type: number
