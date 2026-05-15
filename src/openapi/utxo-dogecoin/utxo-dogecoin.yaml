@@ -389,7 +389,10 @@ paths:
       summary: Send Transaction (GET)
       description: >
         Broadcasts a signed raw Dogecoin transaction encoded as a hex string in the path. Returns
-        the transaction ID on success. For larger payloads, use the POST variant.
+        the transaction ID on success. The example value below is the hex of an already-confirmed
+        Dogecoin transaction; re-sending it will respond with the Bitcoin-Core
+        `-27: transaction already in block chain` error. Substitute your own signed raw-transaction
+        hex to broadcast. For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -399,7 +402,7 @@ paths:
           description: Hex-encoded raw transaction bytes.
           schema:
             type: string
-          example: "010000000001..."
+          example: "0100000001d051d9ef4f425d17e563bf7b8deb069dc6c1ede2d11e992db86d1ee7da74b7e6010000006b4830450221009fb8326bb131eae26db852816b6ce964525d8ff61e2b303e34bedb08307cb482022073ead61ededcd78577d23376cd7d485690dbb45700da8b6e8d3c71de1289529901210265a3c00a588c899676681e166c916ed030385c9da5a4c8d4b9029eed88a56d44ffffffff02dc6c9931000000001976a914830a7420e63d76244ff7cbd1c248e94c1446325988acf7c00bad270000001976a9140be4c25349ee33a3f3d9674fdd31618918cacd4588ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -421,6 +424,11 @@ paths:
         The trailing slash on the path is mandatory; see the [Blockbook API
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
+
+
+        > **Heads up**: the POST variant currently returns `{ "error": "Parse error" }` (HTTP 400)
+        > on the Alchemy proxy regardless of body format. Until that upstream issue is resolved,
+        > prefer the GET variant above for hex payloads under the URL-length limit.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -431,7 +439,7 @@ paths:
             schema:
               type: string
               description: Hex-encoded raw transaction bytes.
-              example: "010000000001..."
+              example: "0100000001d051d9ef4f425d17e563bf7b8deb069dc6c1ede2d11e992db86d1ee7da74b7e6010000006b4830450221009fb8326bb131eae26db852816b6ce964525d8ff61e2b303e34bedb08307cb482022073ead61ededcd78577d23376cd7d485690dbb45700da8b6e8d3c71de1289529901210265a3c00a588c899676681e166c916ed030385c9da5a4c8d4b9029eed88a56d44ffffffff02dc6c9931000000001976a914830a7420e63d76244ff7cbd1c248e94c1446325988acf7c00bad270000001976a9140be4c25349ee33a3f3d9674fdd31618918cacd4588ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -451,6 +459,11 @@ paths:
       description: >
         Returns the list of available currency rate tickers (secondary currencies) for Dogecoin at
         a given timestamp, along with the actual data timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -482,6 +495,11 @@ paths:
         Returns the Dogecoin currency rate for the specified currency and timestamp. If the
         requested currency is unavailable for that timestamp, the closest rate is returned with
         the actual rate timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"

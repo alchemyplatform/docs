@@ -297,7 +297,7 @@ paths:
           description: Address, xpub, or output descriptor.
           schema:
             type: string
-          example: "bc1q0wd209cv5k9pd9mhk7nspacywcj038xxdhnt5u"
+          example: "1FzWLkAahHooV3kzTgyx6qsswXJ6sCXkSR"
         - in: query
           name: confirmed
           required: false
@@ -315,17 +315,16 @@ paths:
                 items:
                   $ref: "#/components/schemas/Utxo"
               example:
-                - txid: "a79e396a32e10856c97b95f43da7e9d2b9a11d446f7638dbd75e5e7603128cac"
+                - txid: "804973d96dbd6462ce1ebe9e88e2ceb449ef51104c65fbe5457133b2b4187e22"
                   vout: 1
-                  value: "39748685"
-                  height: 2648043
-                  confirmations: 47
-                  coinbase: true
-                - txid: "de4f379fdc3ea9be063e60340461a014f372a018d70c3db35701654e7066b3ef"
-                  vout: 0
-                  value: "122492339065"
-                  height: 2646043
-                  confirmations: 2047
+                  value: "450000"
+                  height: 766367
+                  confirmations: 183174
+                - txid: "c2e3fd958801f35caef168734402796a63edfe3cbf052e97127f9098187a19af"
+                  vout: 1
+                  value: "450000"
+                  height: 763766
+                  confirmations: 185775
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -380,8 +379,12 @@ paths:
       operationId: sendTransactionGet
       summary: Send Transaction (GET)
       description: >
-        Broadcasts a signed raw transaction encoded as a hex string in the path. Returns the
-        transaction ID on success. For larger payloads, use the POST variant.
+        Broadcasts a signed raw Bitcoin transaction encoded as a hex string in the path. Returns
+        the transaction ID on success. The example value below is the hex of a confirmed Bitcoin
+        transaction; re-sending it will respond with a Bitcoin-Core RPC error (e.g.
+        `-25: bad-txns-inputs-missingorspent` once the inputs are spent, or
+        `-27: transaction already in block chain` for unspent re-broadcasts). Substitute your own
+        signed raw-transaction hex to broadcast. For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -391,7 +394,7 @@ paths:
           description: Hex-encoded raw transaction bytes.
           schema:
             type: string
-          example: "010000000001..."
+          example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -400,7 +403,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "7c3be24063f268aaa1ed81b64776798f56088757641a34fb156c4f51ed2e9d25"
+                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -409,10 +412,15 @@ paths:
       operationId: sendTransactionPost
       summary: Send Transaction (POST)
       description: >
-        Broadcasts a signed raw transaction by sending hex bytes in the request body. The trailing
-        slash on the path is mandatory; see the [Blockbook API
+        Broadcasts a signed raw Bitcoin transaction by sending hex bytes in the request body. The
+        trailing slash on the path is mandatory; see the [Blockbook API
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
+
+
+        > **Heads up**: the POST variant currently returns `{ "error": "Parse error" }` (HTTP 400)
+        > on the Alchemy proxy regardless of body format. Until that upstream issue is resolved,
+        > prefer the GET variant above for hex payloads under the URL-length limit.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -423,7 +431,7 @@ paths:
             schema:
               type: string
               description: Hex-encoded raw transaction bytes.
-              example: "010000000001..."
+              example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -432,7 +440,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "7c3be24063f268aaa1ed81b64776798f56088757641a34fb156c4f51ed2e9d25"
+                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -443,6 +451,11 @@ paths:
       description: >
         Returns the list of available currency rate tickers (secondary currencies) for a given
         timestamp, along with the actual data timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -474,6 +487,11 @@ paths:
         Returns the currency rate for the specified currency and timestamp. If the requested
         currency is unavailable for that timestamp, the closest rate is returned with the
         actual rate timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"

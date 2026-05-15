@@ -392,7 +392,10 @@ paths:
       summary: Send Transaction (GET)
       description: >
         Broadcasts a signed raw Bitcoin Cash transaction encoded as a hex string in the path. Returns
-        the transaction ID on success. For larger payloads, use the POST variant.
+        the transaction ID on success. The example value below is the hex of an already-confirmed
+        Bitcoin Cash transaction; re-sending it will respond with the Bitcoin-Core
+        `-27: transaction already in block chain` error. Substitute your own signed raw-transaction
+        hex to broadcast. For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -402,7 +405,7 @@ paths:
           description: Hex-encoded raw transaction bytes.
           schema:
             type: string
-          example: "010000000001..."
+          example: "0100000002fd11e3d414e14fa9a2c9aaee0f6533dbc85b5cdd5a3ac8ecb6e8b48f88103a9a020000006a473044022067fc686b4fe5dcae65ec721d47faf9312634f7087d3bb9924f2f4e5c3d55e2b302206c403b098b62b648ef329a23184b0b9320745b1227463aeeafcbfb7f5563218d412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff3051fba1337c0898f3cbf87e9bdb0efa5beab0bef8d32f0deb8d1d29326ea4eb010000006a47304402204ef4b516abac3d419c5dae87c4f5da412ad159b9288c35034a044433109c4355022002cd568e69f2490bc45f71f7cbe3a29124548057ed625b286616e590e45f87a8412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff040000000000000000406a04534c500001010453454e4420c4c788a1664de4213b9bcb806e3fb47f786d53f6f63220deb6719b2c087b457308000000174876e80008000775d6bd84740022020000000000001976a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac22020000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac68ad0000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -424,6 +427,11 @@ paths:
         The trailing slash on the path is mandatory; see the [Blockbook API
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
+
+
+        > **Heads up**: the POST variant currently returns `{ "error": "Parse error" }` (HTTP 400)
+        > on the Alchemy proxy regardless of body format. Until that upstream issue is resolved,
+        > prefer the GET variant above for hex payloads under the URL-length limit.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -434,7 +442,7 @@ paths:
             schema:
               type: string
               description: Hex-encoded raw transaction bytes.
-              example: "010000000001..."
+              example: "0100000002fd11e3d414e14fa9a2c9aaee0f6533dbc85b5cdd5a3ac8ecb6e8b48f88103a9a020000006a473044022067fc686b4fe5dcae65ec721d47faf9312634f7087d3bb9924f2f4e5c3d55e2b302206c403b098b62b648ef329a23184b0b9320745b1227463aeeafcbfb7f5563218d412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff3051fba1337c0898f3cbf87e9bdb0efa5beab0bef8d32f0deb8d1d29326ea4eb010000006a47304402204ef4b516abac3d419c5dae87c4f5da412ad159b9288c35034a044433109c4355022002cd568e69f2490bc45f71f7cbe3a29124548057ed625b286616e590e45f87a8412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff040000000000000000406a04534c500001010453454e4420c4c788a1664de4213b9bcb806e3fb47f786d53f6f63220deb6719b2c087b457308000000174876e80008000775d6bd84740022020000000000001976a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac22020000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac68ad0000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -454,6 +462,11 @@ paths:
       description: >
         Returns the list of available currency rate tickers (secondary currencies) for Bitcoin Cash at
         a given timestamp, along with the actual data timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -485,6 +498,11 @@ paths:
         Returns the Bitcoin Cash currency rate for the specified currency and timestamp. If the
         requested currency is unavailable for that timestamp, the closest rate is returned with the
         actual rate timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"

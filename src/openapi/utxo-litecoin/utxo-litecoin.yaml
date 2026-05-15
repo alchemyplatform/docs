@@ -397,7 +397,10 @@ paths:
       summary: Send Transaction (GET)
       description: >
         Broadcasts a signed raw Litecoin transaction encoded as a hex string in the path. Returns
-        the transaction ID on success. For larger payloads, use the POST variant.
+        the transaction ID on success. The example value below is the hex of an already-confirmed
+        Litecoin transaction; re-sending it will respond with the Bitcoin-Core `-27: Transaction
+        already in block chain` error. Substitute your own signed raw-transaction hex to broadcast.
+        For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -407,7 +410,7 @@ paths:
           description: Hex-encoded raw transaction bytes.
           schema:
             type: string
-          example: "010000000001..."
+          example: "0200000001f7df89b3b77892f0e897508e728c499ea410503ff7fcfee0b1565dbe1244003e150000006a47304402200d49aa9e5e883f600a0d21c5258d731b8b5c10e521fcae83284d0bfd81a73857022051cee4e2cdaa29535a52b0dbb6e540882f52a09f73bbaa738dbeeb3ae8e3bca101210318d87bcd93c083e8ff34d4321280f04d4e43c585a1320688982fae054f398ba0ffffffff02a0860100000000001976a914be7846a7ac1fa99117c8ea7472f240c68f01eb8f88ac36792900000000001976a914d73e63c04a6cbad8d5dc94fdbef5175d2364e32f88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -429,6 +432,11 @@ paths:
         The trailing slash on the path is mandatory; see the [Blockbook API
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
+
+
+        > **Heads up**: the POST variant currently returns `{ "error": "Parse error" }` (HTTP 400)
+        > on the Alchemy proxy regardless of body format. Until that upstream issue is resolved,
+        > prefer the GET variant above for hex payloads under the URL-length limit.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -439,7 +447,7 @@ paths:
             schema:
               type: string
               description: Hex-encoded raw transaction bytes.
-              example: "010000000001..."
+              example: "0200000001f7df89b3b77892f0e897508e728c499ea410503ff7fcfee0b1565dbe1244003e150000006a47304402200d49aa9e5e883f600a0d21c5258d731b8b5c10e521fcae83284d0bfd81a73857022051cee4e2cdaa29535a52b0dbb6e540882f52a09f73bbaa738dbeeb3ae8e3bca101210318d87bcd93c083e8ff34d4321280f04d4e43c585a1320688982fae054f398ba0ffffffff02a0860100000000001976a914be7846a7ac1fa99117c8ea7472f240c68f01eb8f88ac36792900000000001976a914d73e63c04a6cbad8d5dc94fdbef5175d2364e32f88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -459,6 +467,11 @@ paths:
       description: >
         Returns the list of available currency rate tickers (secondary currencies) for Litecoin at
         a given timestamp, along with the actual data timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -490,6 +503,11 @@ paths:
         Returns the Litecoin currency rate for the specified currency and timestamp. If the
         requested currency is unavailable for that timestamp, the closest rate is returned with
         the actual rate timestamp.
+
+
+        > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
+        > time` on the Alchemy proxy. The schema and request shape below are documented for
+        > reference; "Try It" will not return live data until the upstream service is restored.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
