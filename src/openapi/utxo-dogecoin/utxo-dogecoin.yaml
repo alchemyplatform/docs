@@ -1,25 +1,19 @@
 # yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
 openapi: 3.1.0
 info:
-  title: 🪙 UTXO API
+  title: 🪙 UTXO API (Dogecoin)
   version: "1.0"
   description: >
-    REST API for UTXO-based chains, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
-    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on Bitcoin,
-    Bitcoin Cash, Litecoin, and Dogecoin networks. The same paths are available across all supported
-    UTXO networks — switch networks by changing the `{network}` server variable.
+    REST API for Dogecoin, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
+    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on
+    Dogecoin. The same paths are available on every UTXO chain Alchemy supports — switch chains
+    using the chain-specific overview pages or by changing the host.
 servers:
   - url: https://{network}.g.alchemy.com/v2
     variables:
       network:
-        default: bitcoin-mainnet
+        default: dogecoin-mainnet
         enum:
-          - bitcoin-mainnet
-          - bitcoin-testnet4
-          - bitcoincash-mainnet
-          - bitcoincash-testnet
-          - litecoin-mainnet
-          - litecoin-testnet
           - dogecoin-mainnet
 paths:
   "/{apiKey}/api/v2/block-index/{block_height}":
@@ -39,7 +33,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/BlockIndexResponse"
               example:
-                blockHash: "0000000000000000000b7b8574bc6fd285825ec2dbcbeca149121fc05b0c828c"
+                blockHash: "56acd910a28cf4fd3504252464f80bcf11944246e4ab49c8d9108582cd4d5592"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -64,32 +58,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/Tx"
               example:
-                txid: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
-                version: 2
-                lockTime: 860729
+                txid: "bdd9010d7a666d3b7d3c7434b1ed98ccdf51e07aa69f00919f191f6a5e217482"
+                version: 1
                 vin:
-                  - txid: "0eb7b574373de2c88d0dc1444f49947c681d0437d21361f9ebb4dd09c62f2a66"
+                  - txid: "e6b774dae71e6db82d991ed1e2edc1c69d06eb8d7bbf63e5175d424fefd951d0"
                     vout: 1
-                    sequence: 4294967293
+                    sequence: 4294967295
                     n: 0
-                    addresses: ["bc1qmgwnfjlda4ns3g6g3yz74w6scnn9yu2ts82yyc"]
+                    addresses: ["D6Dz1pzn2AcwSfz1Sat6Re54pghrFxcRa8"]
                     isAddress: true
-                    value: "10106300"
+                    value: "171349091667"
                 vout:
-                  - value: "175000"
+                  - value: "832138460"
                     n: 0
-                    hex: "76a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac"
-                    addresses: ["1Nb1ykSD7J5k4RFjJQGsrD9gxBE6jzfNa9"]
+                    hex: "76a914830a7420e63d76244ff7cbd1c248e94c1446325988ac"
+                    addresses: ["DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L"]
                     isAddress: true
-                blockHash: "00000000000000000000effeb0c4460480e6a347deab95332c63007a68646ee5"
-                blockHeight: 860730
-                confirmations: 1
-                blockTime: 1725956288
-                size: 225
-                vsize: 144
-                value: "10063100"
-                valueIn: "10106300"
-                fees: "43200"
+                blockHash: "9d9435c808eb48f81bae0dad67238ff0d23486340f3ec03194164a46c78e4ce6"
+                blockHeight: 6170356
+                confirmations: 37436
+                blockTime: 1776485581
+                size: 226
+                value: "171239091667"
+                valueIn: "171349091667"
+                fees: "110000000"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -125,8 +117,8 @@ paths:
       operationId: getAddress
       summary: Get Address
       description: >
-        Returns balances and transactions for the given address. Transactions are sorted newest-first
-        by block height.
+        Returns balances and transactions for the given Dogecoin address. Transactions are sorted
+        newest-first by block height.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -185,18 +177,18 @@ paths:
                 $ref: "#/components/schemas/AddressInfo"
               example:
                 page: 1
-                totalPages: 1
+                totalPages: 2
                 itemsOnPage: 1000
-                address: "bc1q0wd209cv5k9pd9mhk7nspacywcj038xxdhnt5u"
-                balance: "4225100"
-                totalReceived: "4225100"
-                totalSent: "0"
+                address: "DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L"
+                balance: "6107498363136"
+                totalReceived: "5581286217473096314"
+                totalSent: "5581280109974733178"
                 unconfirmedBalance: "0"
                 unconfirmedTxs: 0
-                txs: 2
+                txs: 1471
                 txids:
-                  - "0db6010dc0815a4bdaa505bd1ccc851056b0d53c7e4ea7af39c4d648a2c0c019"
-                  - "7532920ddc506218337cceac978cce9c7f98e27ad3226dee55f3e934e0b32e80"
+                  - "1b8599ba1425c62df8097a688ae5b63a807a1f1d212080f213c0a22bbc1623c2"
+                  - "152eafdee44fae922f1a4c0b110433e9bbe4f1190089f15b8fcc705dbbaad63e"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -207,9 +199,9 @@ paths:
       operationId: getXpub
       summary: Get Xpub
       description: >
-        Returns balances and transactions for an xpub or output descriptor. Supports BIP44, BIP49,
-        BIP84, and BIP86 (Taproot) derivation schemes. The BIP version is determined by the xpub
-        prefix or by an explicit output descriptor.
+        Returns balances and transactions for an xpub or output descriptor on Dogecoin. Supports
+        BIP44 derivation. The BIP version is determined by the xpub prefix or by an explicit
+        output descriptor.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -285,19 +277,19 @@ paths:
       operationId: getUtxo
       summary: Get UTXOs
       description: >
-        Returns the unspent transaction outputs for an address, xpub, or output descriptor. Includes
-        confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to limit to confirmed only.
-        UTXOs are sorted newest-first.
+        Returns the unspent transaction outputs for a Dogecoin address, xpub, or output descriptor.
+        Includes confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to limit to
+        confirmed only. UTXOs are sorted newest-first.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - in: path
           name: descriptor
           required: true
-          description: Address, xpub, or output descriptor.
+          description: Dogecoin address, xpub, or output descriptor.
           schema:
             type: string
-          example: "bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0"
+          example: "DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L"
         - in: query
           name: confirmed
           required: false
@@ -315,16 +307,16 @@ paths:
                 items:
                   $ref: "#/components/schemas/Utxo"
               example:
-                - txid: "8dcad3625c620d2c54b4adc06a80990362c80728e40dc3c7db0cd1940c91a277"
-                  vout: 1
-                  value: "72922678"
-                  height: 949623
-                  confirmations: 454
-                - txid: "f08b10f4c244a8bf543c984cda29c204436307f2adde1e1044f8a2e3d13bcf1d"
-                  vout: 1
-                  value: "37862950"
-                  height: 949623
-                  confirmations: 454
+                - txid: "1b8599ba1425c62df8097a688ae5b63a807a1f1d212080f213c0a22bbc1623c2"
+                  vout: 5
+                  value: "1857000000"
+                  height: 6201476
+                  confirmations: 6319
+                - txid: "152eafdee44fae922f1a4c0b110433e9bbe4f1190089f15b8fcc705dbbaad63e"
+                  vout: 0
+                  value: "1370237805"
+                  height: 6197469
+                  confirmations: 10326
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -335,8 +327,8 @@ paths:
       operationId: getBlock
       summary: Get Block
       description: >
-        Returns information about a block, including transactions, by block hash or block height.
-        Results are paginated.
+        Returns information about a block on Dogecoin, including transactions, by block hash or
+        block height. Results are paginated.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -369,6 +361,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Block"
+              example:
+                page: 1
+                totalPages: 1
+                itemsOnPage: 1000
+                hash: "56acd910a28cf4fd3504252464f80bcf11944246e4ab49c8d9108582cd4d5592"
+                previousBlockHash: "44158276941865c4edf59dfe95b2b413f8647446c2939817c2112ab8fc426382"
+                nextBlockHash: "323f3fad908db6d5937eabb66d5cc67d1cd4be5009fa84f0786e83c6bc931c35"
+                height: 860730
+                confirmations: 5347067
+                size: 3590
+                time: 1441293539
+                version: 6422786
+                merkleRoot: "78107b10d593f186e16638f1a1e921ad93976ee51c419773405a2f5ed82c0a5f"
+                nonce: "0"
+                bits: "1b046d84"
+                difficulty: "14800.81935350472"
+                txCount: 10
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -379,12 +388,11 @@ paths:
       operationId: sendTransactionGet
       summary: Send Transaction (GET)
       description: >
-        Broadcasts a signed raw Bitcoin transaction encoded as a hex string in the path. Returns
-        the transaction ID on success. The example value below is the hex of a confirmed Bitcoin
-        transaction; re-sending it will respond with a Bitcoin-Core RPC error (e.g.
-        `-25: bad-txns-inputs-missingorspent` once the inputs are spent, or
-        `-27: transaction already in block chain` for unspent re-broadcasts). Substitute your own
-        signed raw-transaction hex to broadcast. For larger payloads, use the POST variant.
+        Broadcasts a signed raw Dogecoin transaction encoded as a hex string in the path. Returns
+        the transaction ID on success. The example value below is the hex of an already-confirmed
+        Dogecoin transaction; re-sending it will respond with the Bitcoin-Core
+        `-27: transaction already in block chain` error. Substitute your own signed raw-transaction
+        hex to broadcast. For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -394,7 +402,7 @@ paths:
           description: Hex-encoded raw transaction bytes.
           schema:
             type: string
-          example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
+          example: "0100000001d051d9ef4f425d17e563bf7b8deb069dc6c1ede2d11e992db86d1ee7da74b7e6010000006b4830450221009fb8326bb131eae26db852816b6ce964525d8ff61e2b303e34bedb08307cb482022073ead61ededcd78577d23376cd7d485690dbb45700da8b6e8d3c71de1289529901210265a3c00a588c899676681e166c916ed030385c9da5a4c8d4b9029eed88a56d44ffffffff02dc6c9931000000001976a914830a7420e63d76244ff7cbd1c248e94c1446325988acf7c00bad270000001976a9140be4c25349ee33a3f3d9674fdd31618918cacd4588ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -403,7 +411,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+                result: "bdd9010d7a666d3b7d3c7434b1ed98ccdf51e07aa69f00919f191f6a5e217482"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -412,8 +420,8 @@ paths:
       operationId: sendTransactionPost
       summary: Send Transaction (POST)
       description: >
-        Broadcasts a signed raw Bitcoin transaction by sending hex bytes in the request body. The
-        trailing slash on the path is mandatory; see the [Blockbook API
+        Broadcasts a signed raw Dogecoin transaction by sending hex bytes in the request body.
+        The trailing slash on the path is mandatory; see the [Blockbook API
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
 
@@ -431,7 +439,7 @@ paths:
             schema:
               type: string
               description: Hex-encoded raw transaction bytes.
-              example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
+              example: "0100000001d051d9ef4f425d17e563bf7b8deb069dc6c1ede2d11e992db86d1ee7da74b7e6010000006b4830450221009fb8326bb131eae26db852816b6ce964525d8ff61e2b303e34bedb08307cb482022073ead61ededcd78577d23376cd7d485690dbb45700da8b6e8d3c71de1289529901210265a3c00a588c899676681e166c916ed030385c9da5a4c8d4b9029eed88a56d44ffffffff02dc6c9931000000001976a914830a7420e63d76244ff7cbd1c248e94c1446325988acf7c00bad270000001976a9140be4c25349ee33a3f3d9674fdd31618918cacd4588ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -440,7 +448,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+                result: "bdd9010d7a666d3b7d3c7434b1ed98ccdf51e07aa69f00919f191f6a5e217482"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -449,8 +457,8 @@ paths:
       operationId: getTickersList
       summary: Get Tickers List
       description: >
-        Returns the list of available currency rate tickers (secondary currencies) for a given
-        timestamp, along with the actual data timestamp.
+        Returns the list of available currency rate tickers (secondary currencies) for Dogecoin at
+        a given timestamp, along with the actual data timestamp.
 
 
         > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
@@ -465,7 +473,7 @@ paths:
           description: Unix timestamp to query availability for. Defaults to the latest available.
           schema:
             type: integer
-            example: 1574346615
+            example: 1578391200
       responses:
         "200":
           description: Available tickers.
@@ -474,7 +482,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/TickersListResponse"
               example:
-                ts: 1574346615
+                ts: 1578391200
                 available_currencies: ["eur", "usd"]
         "400":
           $ref: "#/components/responses/BadRequest"
@@ -484,9 +492,9 @@ paths:
       operationId: getTickers
       summary: Get Tickers
       description: >
-        Returns the currency rate for the specified currency and timestamp. If the requested
-        currency is unavailable for that timestamp, the closest rate is returned with the
-        actual rate timestamp.
+        Returns the Dogecoin currency rate for the specified currency and timestamp. If the
+        requested currency is unavailable for that timestamp, the closest rate is returned with
+        the actual rate timestamp.
 
 
         > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
@@ -508,7 +516,7 @@ paths:
           description: Unix timestamp. Omit to return the latest.
           schema:
             type: integer
-            example: 1574346615
+            example: 1578391200
       responses:
         "200":
           description: Currency rate response.
@@ -517,9 +525,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/TickerRates"
               example:
-                ts: 1574346615
+                ts: 1578391200
                 rates:
-                  usd: 7914.5
+                  usd: 0.00195
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -528,8 +536,8 @@ paths:
       operationId: getBalanceHistory
       summary: Get Balance History
       description: >
-        Returns the balance history for the specified address. Optionally enrich each bucket with
-        secondary (fiat) currency rates at the time of the transaction.
+        Returns the balance history for the specified Dogecoin address. Optionally enrich each
+        bucket with secondary (fiat) currency rates at the time of the transaction.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -540,14 +548,14 @@ paths:
           description: Start of the history range as a Unix timestamp.
           schema:
             type: integer
-            example: 1578391200
+            example: 1386474927
         - in: query
           name: to
           required: true
           description: End of the history range as a Unix timestamp.
           schema:
             type: integer
-            example: 1578488400
+            example: 1757280000
         - in: query
           name: fiatcurrency
           required: false
@@ -572,20 +580,20 @@ paths:
                 items:
                   $ref: "#/components/schemas/BalanceHistoryEntry"
               example:
-                - time: 1578391200
-                  txs: 5
-                  received: "5000000"
-                  sent: "0"
-                  sentToSelf: "100000"
-                  rates:
-                    usd: 7855.9
-                - time: 1578488400
+                - time: 1776484800
                   txs: 1
-                  received: "0"
-                  sent: "5000000"
+                  received: "832138460"
+                  sent: "0"
                   sentToSelf: "0"
                   rates:
-                    usd: 8283.11
+                    usd: 0.155
+                - time: 1776488400
+                  txs: 1
+                  received: "0"
+                  sent: "832138460"
+                  sentToSelf: "0"
+                  rates:
+                    usd: 0.156
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -615,15 +623,15 @@ components:
       description: Hex-encoded transaction ID.
       schema:
         type: string
-      example: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+      example: "bdd9010d7a666d3b7d3c7434b1ed98ccdf51e07aa69f00919f191f6a5e217482"
     address:
       in: path
       name: address
       required: true
-      description: Coin-specific address string.
+      description: Dogecoin address.
       schema:
         type: string
-      example: "bc1q0wd209cv5k9pd9mhk7nspacywcj038xxdhnt5u"
+      example: "DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L"
   responses:
     BadRequest:
       description: Malformed request.
