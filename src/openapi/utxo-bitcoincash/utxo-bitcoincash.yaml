@@ -1,26 +1,21 @@
 # yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
 openapi: 3.1.0
 info:
-  title: 🪙 UTXO API
+  title: 🪙 UTXO API (Bitcoin Cash)
   version: "1.0"
   description: >
-    REST API for UTXO-based chains, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
-    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on Bitcoin,
-    Bitcoin Cash, Litecoin, and Dogecoin networks. The same paths are available across all supported
-    UTXO networks — switch networks by changing the `{network}` server variable.
+    REST API for Bitcoin Cash, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
+    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on the
+    Bitcoin Cash networks. The same paths are available on every UTXO chain Alchemy supports —
+    switch chains using the chain-specific overview pages or by changing the host.
 servers:
   - url: https://{network}.g.alchemy.com/v2
     variables:
       network:
-        default: bitcoin-mainnet
+        default: bitcoincash-mainnet
         enum:
-          - bitcoin-mainnet
-          - bitcoin-testnet4
           - bitcoincash-mainnet
           - bitcoincash-testnet
-          - litecoin-mainnet
-          - litecoin-testnet
-          - dogecoin-mainnet
 paths:
   "/{apiKey}/api/v2/block-index/{block_height}":
     get:
@@ -39,7 +34,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/BlockIndexResponse"
               example:
-                blockHash: "0000000000000000000b7b8574bc6fd285825ec2dbcbeca149121fc05b0c828c"
+                blockHash: "000000000000000001b4642b21d69e5ebfe640dc86beff246597bbe2dcd1d5c9"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -64,32 +59,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Tx"
               example:
-                txid: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
-                version: 2
-                lockTime: 860729
+                txid: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
+                version: 1
                 vin:
-                  - txid: "0eb7b574373de2c88d0dc1444f49947c681d0437d21361f9ebb4dd09c62f2a66"
-                    vout: 1
-                    sequence: 4294967293
+                  - txid: "9a3a10888fb4e8b6ecc83a5add5c5bc8db33650feeaac9a2a94fe114d4e311fd"
+                    vout: 2
+                    sequence: 4294967295
                     n: 0
-                    addresses: ["bc1qmgwnfjlda4ns3g6g3yz74w6scnn9yu2ts82yyc"]
+                    addresses:
+                      ["bitcoincash:qzk7vrrk3x87psq5x8kateumge0crzsd3g6r84k0ef"]
                     isAddress: true
-                    value: "10106300"
+                    value: "546"
                 vout:
-                  - value: "175000"
-                    n: 0
-                    hex: "76a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac"
-                    addresses: ["1Nb1ykSD7J5k4RFjJQGsrD9gxBE6jzfNa9"]
+                  - value: "546"
+                    n: 1
+                    hex: "76a91462e9075c5cbf27d50a539e7afbe1f6a1d772479e88ac"
+                    addresses:
+                      ["bitcoincash:qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"]
                     isAddress: true
-                blockHash: "00000000000000000000effeb0c4460480e6a347deab95332c63007a68646ee5"
-                blockHeight: 860730
-                confirmations: 1
-                blockTime: 1725956288
-                size: 225
-                vsize: 144
-                value: "10063100"
-                valueIn: "10106300"
-                fees: "43200"
+                blockHash: "000000000000000000b9cc8d1b01604a308f872fae0408045466e82ec6ae9ac1"
+                blockHeight: 941680
+                confirmations: 9484
+                blockTime: 1773119738
+                size: 479
+                value: "45484"
+                valueIn: "45965"
+                fees: "481"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -125,8 +120,8 @@ paths:
       operationId: getAddress
       summary: Get Address
       description: >
-        Returns balances and transactions for the given address. Transactions are sorted newest-first
-        by block height.
+        Returns balances and transactions for the given Bitcoin Cash address. Transactions are sorted
+        newest-first by block height. Bitcoin Cash addresses use the `bitcoincash:` CashAddr prefix.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -185,18 +180,18 @@ paths:
                 $ref: "#/components/schemas/AddressInfo"
               example:
                 page: 1
-                totalPages: 1
+                totalPages: 2
                 itemsOnPage: 1000
-                address: "bc1q0wd209cv5k9pd9mhk7nspacywcj038xxdhnt5u"
-                balance: "4225100"
-                totalReceived: "4225100"
+                address: "bitcoincash:qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"
+                balance: "7671258180"
+                totalReceived: "7671258180"
                 totalSent: "0"
                 unconfirmedBalance: "0"
                 unconfirmedTxs: 0
-                txs: 2
+                txs: 1228
                 txids:
-                  - "0db6010dc0815a4bdaa505bd1ccc851056b0d53c7e4ea7af39c4d648a2c0c019"
-                  - "7532920ddc506218337cceac978cce9c7f98e27ad3226dee55f3e934e0b32e80"
+                  - "20063eb8ae04c6449ea397ca609db09522e316795d96eb47d3e4c50591fb3679"
+                  - "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -207,9 +202,9 @@ paths:
       operationId: getXpub
       summary: Get Xpub
       description: >
-        Returns balances and transactions for an xpub or output descriptor. Supports BIP44, BIP49,
-        BIP84, and BIP86 (Taproot) derivation schemes. The BIP version is determined by the xpub
-        prefix or by an explicit output descriptor.
+        Returns balances and transactions for an xpub or output descriptor on Bitcoin Cash. Supports
+        BIP44 and BIP49 derivation schemes. The BIP version is determined by the xpub prefix or by an
+        explicit output descriptor.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -285,19 +280,19 @@ paths:
       operationId: getUtxo
       summary: Get UTXOs
       description: >
-        Returns the unspent transaction outputs for an address, xpub, or output descriptor. Includes
-        confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to limit to confirmed only.
-        UTXOs are sorted newest-first.
+        Returns the unspent transaction outputs for a Bitcoin Cash address, xpub, or output
+        descriptor. Includes confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to
+        limit to confirmed only. UTXOs are sorted newest-first.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - in: path
           name: descriptor
           required: true
-          description: Address, xpub, or output descriptor.
+          description: Bitcoin Cash address, xpub, or output descriptor.
           schema:
             type: string
-          example: "bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0"
+          example: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
         - in: query
           name: confirmed
           required: false
@@ -315,16 +310,16 @@ paths:
                 items:
                   $ref: "#/components/schemas/Utxo"
               example:
-                - txid: "8dcad3625c620d2c54b4adc06a80990362c80728e40dc3c7db0cd1940c91a277"
+                - txid: "20063eb8ae04c6449ea397ca609db09522e316795d96eb47d3e4c50591fb3679"
                   vout: 1
-                  value: "72922678"
-                  height: 949623
-                  confirmations: 454
-                - txid: "f08b10f4c244a8bf543c984cda29c204436307f2adde1e1044f8a2e3d13bcf1d"
+                  value: "600"
+                  height: 949568
+                  confirmations: 1591
+                - txid: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
                   vout: 1
-                  value: "37862950"
-                  height: 949623
-                  confirmations: 454
+                  value: "546"
+                  height: 941680
+                  confirmations: 9479
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -335,8 +330,8 @@ paths:
       operationId: getBlock
       summary: Get Block
       description: >
-        Returns information about a block, including transactions, by block hash or block height.
-        Results are paginated.
+        Returns information about a block on Bitcoin Cash, including transactions, by block hash or
+        block height. Results are paginated.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -369,6 +364,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Block"
+              example:
+                page: 1
+                totalPages: 1
+                itemsOnPage: 1000
+                hash: "000000000000000001b4642b21d69e5ebfe640dc86beff246597bbe2dcd1d5c9"
+                previousBlockHash: "000000000000000000ec5ff3da7aa8064ddb9fc0630a9f5859ad8e2d6e07de78"
+                nextBlockHash: "000000000000000002247a19f9f7b69fc1a5d330455c82a7f37efd8deee6f64a"
+                height: 860730
+                confirmations: 90434
+                size: 95372
+                time: 1724718072
+                version: 1040187392
+                merkleRoot: "fd9773cd0359a8ba3ef62e542ad86a38536b6a81d7cdcf2f25d494264dd55a55"
+                nonce: "3293742657"
+                bits: "18025986"
+                difficulty: "467929700151.3096"
+                txCount: 196
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -379,12 +391,11 @@ paths:
       operationId: sendTransactionGet
       summary: Send Transaction (GET)
       description: >
-        Broadcasts a signed raw Bitcoin transaction encoded as a hex string in the path. Returns
-        the transaction ID on success. The example value below is the hex of a confirmed Bitcoin
-        transaction; re-sending it will respond with a Bitcoin-Core RPC error (e.g.
-        `-25: bad-txns-inputs-missingorspent` once the inputs are spent, or
-        `-27: transaction already in block chain` for unspent re-broadcasts). Substitute your own
-        signed raw-transaction hex to broadcast. For larger payloads, use the POST variant.
+        Broadcasts a signed raw Bitcoin Cash transaction encoded as a hex string in the path. Returns
+        the transaction ID on success. The example value below is the hex of an already-confirmed
+        Bitcoin Cash transaction; re-sending it will respond with the Bitcoin-Core
+        `-27: transaction already in block chain` error. Substitute your own signed raw-transaction
+        hex to broadcast. For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -394,7 +405,7 @@ paths:
           description: Hex-encoded raw transaction bytes.
           schema:
             type: string
-          example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
+          example: "0100000002fd11e3d414e14fa9a2c9aaee0f6533dbc85b5cdd5a3ac8ecb6e8b48f88103a9a020000006a473044022067fc686b4fe5dcae65ec721d47faf9312634f7087d3bb9924f2f4e5c3d55e2b302206c403b098b62b648ef329a23184b0b9320745b1227463aeeafcbfb7f5563218d412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff3051fba1337c0898f3cbf87e9bdb0efa5beab0bef8d32f0deb8d1d29326ea4eb010000006a47304402204ef4b516abac3d419c5dae87c4f5da412ad159b9288c35034a044433109c4355022002cd568e69f2490bc45f71f7cbe3a29124548057ed625b286616e590e45f87a8412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff040000000000000000406a04534c500001010453454e4420c4c788a1664de4213b9bcb806e3fb47f786d53f6f63220deb6719b2c087b457308000000174876e80008000775d6bd84740022020000000000001976a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac22020000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac68ad0000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -403,7 +414,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+                result: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -412,8 +423,8 @@ paths:
       operationId: sendTransactionPost
       summary: Send Transaction (POST)
       description: >
-        Broadcasts a signed raw Bitcoin transaction by sending hex bytes in the request body. The
-        trailing slash on the path is mandatory; see the [Blockbook API
+        Broadcasts a signed raw Bitcoin Cash transaction by sending hex bytes in the request body.
+        The trailing slash on the path is mandatory; see the [Blockbook API
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
 
@@ -431,7 +442,7 @@ paths:
             schema:
               type: string
               description: Hex-encoded raw transaction bytes.
-              example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
+              example: "0100000002fd11e3d414e14fa9a2c9aaee0f6533dbc85b5cdd5a3ac8ecb6e8b48f88103a9a020000006a473044022067fc686b4fe5dcae65ec721d47faf9312634f7087d3bb9924f2f4e5c3d55e2b302206c403b098b62b648ef329a23184b0b9320745b1227463aeeafcbfb7f5563218d412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff3051fba1337c0898f3cbf87e9bdb0efa5beab0bef8d32f0deb8d1d29326ea4eb010000006a47304402204ef4b516abac3d419c5dae87c4f5da412ad159b9288c35034a044433109c4355022002cd568e69f2490bc45f71f7cbe3a29124548057ed625b286616e590e45f87a8412102870b87cdbc930db3b8cbef3b4d72cce0ce2817bfef15aab28abe61fb064930f5ffffffff040000000000000000406a04534c500001010453454e4420c4c788a1664de4213b9bcb806e3fb47f786d53f6f63220deb6719b2c087b457308000000174876e80008000775d6bd84740022020000000000001976a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac22020000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac68ad0000000000001976a914ade60c76898fe0c01431edd5e79b465f818a0d8a88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -440,7 +451,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+                result: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -449,8 +460,8 @@ paths:
       operationId: getTickersList
       summary: Get Tickers List
       description: >
-        Returns the list of available currency rate tickers (secondary currencies) for a given
-        timestamp, along with the actual data timestamp.
+        Returns the list of available currency rate tickers (secondary currencies) for Bitcoin Cash at
+        a given timestamp, along with the actual data timestamp.
 
 
         > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
@@ -465,7 +476,7 @@ paths:
           description: Unix timestamp to query availability for. Defaults to the latest available.
           schema:
             type: integer
-            example: 1574346615
+            example: 1578391200
       responses:
         "200":
           description: Available tickers.
@@ -474,7 +485,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/TickersListResponse"
               example:
-                ts: 1574346615
+                ts: 1578391200
                 available_currencies: ["eur", "usd"]
         "400":
           $ref: "#/components/responses/BadRequest"
@@ -484,8 +495,8 @@ paths:
       operationId: getTickers
       summary: Get Tickers
       description: >
-        Returns the currency rate for the specified currency and timestamp. If the requested
-        currency is unavailable for that timestamp, the closest rate is returned with the
+        Returns the Bitcoin Cash currency rate for the specified currency and timestamp. If the
+        requested currency is unavailable for that timestamp, the closest rate is returned with the
         actual rate timestamp.
 
 
@@ -508,7 +519,7 @@ paths:
           description: Unix timestamp. Omit to return the latest.
           schema:
             type: integer
-            example: 1574346615
+            example: 1578391200
       responses:
         "200":
           description: Currency rate response.
@@ -517,9 +528,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/TickerRates"
               example:
-                ts: 1574346615
+                ts: 1578391200
                 rates:
-                  usd: 7914.5
+                  usd: 240.13
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -528,8 +539,8 @@ paths:
       operationId: getBalanceHistory
       summary: Get Balance History
       description: >
-        Returns the balance history for the specified address. Optionally enrich each bucket with
-        secondary (fiat) currency rates at the time of the transaction.
+        Returns the balance history for the specified Bitcoin Cash address. Optionally enrich each
+        bucket with secondary (fiat) currency rates at the time of the transaction.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -540,14 +551,14 @@ paths:
           description: Start of the history range as a Unix timestamp.
           schema:
             type: integer
-            example: 1578391200
+            example: 1501545600
         - in: query
           name: to
           required: true
           description: End of the history range as a Unix timestamp.
           schema:
             type: integer
-            example: 1578488400
+            example: 1757280000
         - in: query
           name: fiatcurrency
           required: false
@@ -572,20 +583,20 @@ paths:
                 items:
                   $ref: "#/components/schemas/BalanceHistoryEntry"
               example:
-                - time: 1578391200
-                  txs: 5
-                  received: "5000000"
-                  sent: "0"
-                  sentToSelf: "100000"
-                  rates:
-                    usd: 7855.9
-                - time: 1578488400
+                - time: 1724720400
                   txs: 1
-                  received: "0"
-                  sent: "5000000"
+                  received: "100000"
+                  sent: "0"
                   sentToSelf: "0"
                   rates:
-                    usd: 8283.11
+                    usd: 322.7
+                - time: 1724724000
+                  txs: 1
+                  received: "0"
+                  sent: "100000"
+                  sentToSelf: "0"
+                  rates:
+                    usd: 323.1
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -615,15 +626,15 @@ components:
       description: Hex-encoded transaction ID.
       schema:
         type: string
-      example: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+      example: "0ddda32c1004ba0cdb6544ac4622f7affc895b8f582b27f202d9745186f72d0a"
     address:
       in: path
       name: address
       required: true
-      description: Coin-specific address string.
+      description: Bitcoin Cash CashAddr address (`bitcoincash:` prefixed).
       schema:
         type: string
-      example: "bc1q0wd209cv5k9pd9mhk7nspacywcj038xxdhnt5u"
+      example: "bitcoincash:qp3wjpa3tjlj042z2wv7hahsldgwhwy0rq9sywjpyy"
   responses:
     BadRequest:
       description: Malformed request.
