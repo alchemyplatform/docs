@@ -43,13 +43,6 @@ jobs:
           LYCHEE_STATUS: ${{ steps.lychee.outcome }}
         run: pnpm exec tsx scripts/link-check-slack.ts ./broken-links.json
 
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: broken-links
-          path: ./broken-links.json
-
       - name: Fail if broken links found
         run: |
           ERRORS=$(jq -r '.errors // 0' broken-links.json)

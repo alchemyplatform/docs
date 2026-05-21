@@ -56,6 +56,19 @@ const SUMMARY_ROWS: ReadonlyArray<[string, keyof LycheeReport]> = [
 const SLACK_CHANNEL = "#dx-developer-relations";
 const SLACK_API = "https://slack.com/api/chat.postMessage";
 
+// Slack user ID for the docs-agent bot. Uses the literal `<@U...>` form so
+// the mention triggers a real notification (plain `@docs-agent` text does
+// not).
+const DOCS_AGENT_MENTION = "<@U0AHN61NBGA>";
+
+const DOCS_AGENT_PROMPT = [
+  `${DOCS_AGENT_MENTION} please fix the broken links above. For each one:`,
+  "• If the URL points to the wrong page on a domain we control, update it to the correct path.",
+  "• If the page is gone, replace the link with the best current equivalent (prefer official docs).",
+  "• If the failure is a 403/429/SSL/bot-block from a third-party domain, add the URL pattern to the `exclude` list in `lychee.toml` with a one-line comment explaining why.",
+  "Open a single PR with the fixes and link this thread in the description.",
+].join("\n");
+
 // Slack hard-caps chat.postMessage text at 40k chars. Stay well under so the
 // payload fits with the surrounding JSON envelope.
 const MAX_THREAD_CHARS = 30_000;
@@ -83,16 +96,18 @@ const formatSummary = (stats: LycheeReport): string =>
   ).join("\n");
 
 /**
- * Nested-bullet error list. Top-level bullet is the source file; indented
- * sub-bullets are the broken links inside it, with the bracketed status code
- * folded into the Slack link label so each line stays compact.
+ * Builds the thread body: nested-bullet error list followed by a prompt to
+ * @docs-agent. Each broken link sub-bullet includes the status code, the
+ * shortened URL, and the lychee status text — the agent uses the reason
+ * (Network error, Rejected status code, etc.) to decide between updating the
+ * URL, finding a replacement, or adding a bot-block exception in lychee.toml.
  */
 const formatErrorLines = (
   errorMap: Record<string, LycheeError[]>,
 ): string => {
   const lines: string[] = [];
   let truncated = false;
-  let charBudget = MAX_THREAD_CHARS;
+  let charBudget = MAX_THREAD_CHARS - DOCS_AGENT_PROMPT.length;
 
   const push = (line: string): boolean => {
     if (charBudget - line.length < 0) {
@@ -109,8 +124,10 @@ const formatErrorLines = (
     if (!push(`• \`${file}\``)) break;
     for (const error of errors) {
       const code = error.status?.code ?? "ERR";
+      const reason = error.status?.text ?? "Unknown error";
       const label = `[${code}] ${shortenUrl(error.url)}`;
       if (!push(`    ◦ <${error.url}|${label}>`)) break;
+      if (!push(`        ▪︎ ${reason}`)) break;
     }
     if (truncated) break;
   }
@@ -118,9 +135,10 @@ const formatErrorLines = (
   if (truncated) {
     lines.push("");
     lines.push(
-      "_…output truncated. See the workflow artifact for the full report._",
+      "_…output truncated. Re-run the workflow to regenerate the full report._",
     );
   }
+  lines.push("", DOCS_AGENT_PROMPT);
   return lines.join("\n");
 };
 
