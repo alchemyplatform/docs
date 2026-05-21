@@ -35,7 +35,8 @@ jobs:
 
       - name: Post results to Slack
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DOCS_WEBHOOK_URL }}
+          # Same AutoBot token the dashboard backend uses (slackConfig.token).
+          SLACK_API_KEY: ${{ secrets.SLACK_API_KEY }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           LYCHEE_STATUS: ${{ steps.lychee.outcome }}
         run: node scripts/link-check-slack.js ./broken-links.json

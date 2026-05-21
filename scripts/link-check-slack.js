@@ -1,7 +1,9 @@
-// Formats a Lychee JSON report as a Slack mrkdwn message and POSTs it to
-// $SLACK_WEBHOOK_URL. Mirrors the layout of scripts/link-check-comment.js,
-// adapted for Slack (no tables, no <details>). Used by the scheduled
-// link-check workflow (.github/workflows/link-check-scheduled.yml).
+// Formats a Lychee JSON report as a Slack mrkdwn message and posts it via
+// chat.postMessage using the AutoBot token in $SLACK_API_KEY — same
+// credentials the dashboard backend uses. Mirrors the layout of the old
+// scripts/link-check-comment.js, adapted for Slack (no tables, no
+// <details>). Used by the scheduled link-check workflow
+// (.github/workflows/link-check-scheduled.yml).
 
 import { readFileSync, existsSync } from "node:fs";
 
@@ -16,8 +18,10 @@ const SUMMARY_ROWS = [
   ["⛔ Unsupported", "unsupported"],
 ];
 
-// Slack hard-caps message text at 40k chars. Stay well under so the payload
-// fits with the surrounding JSON envelope.
+const SLACK_CHANNEL = "#dx-developer-relations";
+
+// Slack hard-caps chat.postMessage text at 40k chars. Stay well under so the
+// payload fits with the surrounding JSON envelope.
 const MAX_ERRORS_SECTION_CHARS = 30_000;
 
 const formatSummary = (stats) =>
@@ -102,9 +106,9 @@ const main = async () => {
     console.error("Usage: link-check-slack.js <path-to-report.json>");
     process.exit(1);
   }
-  const webhookUrl = process.env.SLACK_WEBHOOK_URL;
-  if (!webhookUrl) {
-    console.error("SLACK_WEBHOOK_URL is not set");
+  const token = process.env.SLACK_API_KEY;
+  if (!token) {
+    console.error("SLACK_API_KEY is not set");
     process.exit(1);
   }
 
@@ -118,18 +122,30 @@ const main = async () => {
     lycheeStatus: process.env.LYCHEE_STATUS,
   });
 
-  const res = await fetch(webhookUrl, {
+  const res = await fetch("https://slack.com/api/chat.postMessage", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, mrkdwn: true }),
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      channel: SLACK_CHANNEL,
+      text,
+      mrkdwn: true,
+      unfurl_links: false,
+      unfurl_media: false,
+    }),
   });
 
-  if (!res.ok) {
-    const body = await res.text();
-    console.error(`Slack webhook failed: ${res.status} ${res.statusText} — ${body}`);
+  // Slack returns HTTP 200 even on logical errors — check `ok` in the body.
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || !body.ok) {
+    console.error(
+      `chat.postMessage failed: HTTP ${res.status} ${res.statusText} — ${JSON.stringify(body)}`,
+    );
     process.exit(1);
   }
-  console.log("Posted link-check summary to Slack.");
+  console.log(`Posted link-check summary to ${SLACK_CHANNEL}.`);
 };
 
 main().catch((err) => {
