@@ -1,8 +1,5 @@
 // Formats a Lychee JSON report as a Slack mrkdwn message and posts it via
-// chat.postMessage using the AutoBot token in $SLACK_API_KEY — same
-// credentials the dashboard backend uses. Mirrors the layout of the old
-// scripts/link-check-comment.js, adapted for Slack (no tables, no
-// <details>). Used by the scheduled link-check workflow
+// chat.postMessage. Used by the scheduled link-check workflow
 // (.github/workflows/link-check-scheduled.yml).
 
 import { readFileSync, existsSync } from "node:fs";
@@ -69,15 +66,15 @@ const formatErrors = (errorMap = {}) => {
   return lines.join("\n").trim();
 };
 
+const getStatus = ({ errorCount, lycheeStatus }) => {
+  if (lycheeStatus === "cancelled") return "⚠️ Cancelled";
+  if (lycheeStatus === "failure" || errorCount > 0) return "❌ Failed";
+  return "✅ Passed";
+};
+
 const buildMessage = ({ report, runUrl, lycheeStatus }) => {
   const errorCount = Number(report?.errors ?? 0);
-  const lycheeFailed = lycheeStatus === "failure";
-  const status =
-    lycheeStatus === "cancelled"
-      ? "⚠️ Cancelled"
-      : errorCount === 0 && !lycheeFailed
-        ? "✅ Passed"
-        : "❌ Failed";
+  const status = getStatus({ errorCount, lycheeStatus });
 
   const sections = [
     `*🔍 Weekly Link Check* — ${status}`,
@@ -145,7 +142,7 @@ const main = async () => {
     );
     process.exit(1);
   }
-  console.log(`Posted link-check summary to ${SLACK_CHANNEL}.`);
+  console.info(`Posted link-check summary to ${SLACK_CHANNEL}.`);
 };
 
 main().catch((err) => {
