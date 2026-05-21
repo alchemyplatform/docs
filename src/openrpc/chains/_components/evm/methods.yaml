@@ -4,6 +4,7 @@ components:
     eth_getBlockByHash:
       name: eth_getBlockByHash
       description: Returns information about a block by its hash.
+      x-compute-units: 20
       params:
         - name: Block hash
           required: true
@@ -69,6 +70,7 @@ components:
     eth_getBlockByNumber:
       name: eth_getBlockByNumber
       description: Returns information about a block by its number.
+      x-compute-units: 20
       params:
         - name: Block number or tag
           required: true
@@ -134,6 +136,7 @@ components:
     eth_getBlockTransactionCountByHash:
       name: eth_getBlockTransactionCountByHash
       description: Returns the number of transactions in a block from a block matching the given block hash.
+      x-compute-units: 20
       params:
         - name: Block hash
           required: true
@@ -160,6 +163,7 @@ components:
     eth_getBlockTransactionCountByNumber:
       name: eth_getBlockTransactionCountByNumber
       description: Returns the number of transactions in a block matching the given block number.
+      x-compute-units: 20
       params:
         - name: Block number or tag
           required: true
@@ -187,6 +191,8 @@ components:
     eth_chainId:
       name: eth_chainId
       description: Returns the chain ID of the current network as a hexadecimal string.
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: Chain ID
@@ -205,6 +211,7 @@ components:
       description: >
         Retrieve account details (code hash, storage root, balance, nonce) for a given
         address at a specified block number or tag.
+      x-compute-units: 20
       params:
         - name: address
           required: true
@@ -258,6 +265,7 @@ components:
         Submit a proof-of-work solution (Ethash) consisting of a nonce, the header
         PoW hash, and the mix digest. **Not supported on post-Merge Ethereum clients**;
         many nodes will return JSON-RPC error -32601 (method not found).
+      x-compute-units: 20
       params:
         - name: nonce
           required: true
@@ -295,6 +303,7 @@ components:
     eth_blockNumber:
       name: eth_blockNumber
       description: Returns the number of the most recent block.
+      x-compute-units: 10
       params: []
       result:
         name: Block number
@@ -311,6 +320,8 @@ components:
     net_version:
       name: net_version
       description: Returns the network ID that the client is connected to.
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: Network ID
@@ -328,6 +339,7 @@ components:
     web3_clientVersion:
       name: web3_clientVersion
       description: Returns the current client version.
+      x-compute-units: 20
       params: []
       result:
         name: Client Version
@@ -346,6 +358,7 @@ components:
     eth_call:
       name: eth_call
       description: Executes a new message call immediately without creating a transaction on the blockchain.
+      x-compute-units: 26
       params:
         - name: Transaction
           required: true
@@ -383,7 +396,7 @@ components:
         each bundle are executed sequentially: state changes from earlier transactions
         in the bundle are visible to later ones. You can optionally override selected
         block header fields per bundle.
-
+      x-compute-units: 20
       params:
         - name: Bundles
           required: true
@@ -572,6 +585,7 @@ components:
     eth_estimateGas:
       name: eth_estimateGas
       description: Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
+      x-compute-units: 20
       params:
         - name: Transaction
           required: true
@@ -603,6 +617,7 @@ components:
     web3_sha3:
       name: web3_sha3
       description: Returns Keccak-256 (not the standardized SHA3-256) hash of the given data.
+      x-compute-units: 20
       params:
         - name: Data
           required: true
@@ -627,6 +642,7 @@ components:
     eth_gasPrice:
       name: eth_gasPrice
       description: Returns the current price per gas in wei.
+      x-compute-units: 20
       params: []
       result:
         name: Gas price
@@ -645,6 +661,7 @@ components:
     eth_newFilter:
       name: eth_newFilter
       description: Creates a filter object based on filter options to notify when state changes (logs).
+      x-compute-units: 20
       params:
         - name: Filter
           required: true
@@ -672,6 +689,7 @@ components:
     eth_newBlockFilter:
       name: eth_newBlockFilter
       description: Creates a filter in the node to notify when new blocks arrive.
+      x-compute-units: 20
       params: []
       result:
         name: Filter identifier
@@ -688,6 +706,7 @@ components:
     eth_uninstallFilter:
       name: eth_uninstallFilter
       description: Uninstalls a filter with the given ID.
+      x-compute-units: 10
       params:
         - name: Filter identifier
           required: true
@@ -711,6 +730,7 @@ components:
     eth_getFilterChanges:
       name: eth_getFilterChanges
       description: Polls for changes in the filter with the given ID (created using `eth_newFilter`). Returns an array of logs which occurred since the last poll.
+      x-compute-units: 20
       params:
         - name: Filter identifier
           required: true
@@ -754,6 +774,7 @@ components:
     eth_getFilterLogs:
       name: eth_getFilterLogs
       description: Returns an array of all logs matching the filter with the given ID (created using `eth_newFilter`).
+      x-compute-units: 60
       params:
         - name: Filter identifier
           required: true
@@ -817,6 +838,7 @@ components:
         | All Other Chains | 10 | 10,000 | 10,000*** |
 
         *** Note: Querying block ranges wider than 10k for these chains is possible but less likely to succeed. Try splitting large queries into smaller parts to boost performance and reduce the likelihood of failure.
+      x-compute-units: 60
       params:
         - name: Filter
           required: true
@@ -865,6 +887,7 @@ components:
     eth_getBalance:
       name: eth_getBalance
       description: Returns the balance of the account of a given address.
+      x-compute-units: 20
       params:
         - name: Address
           required: true
@@ -895,6 +918,7 @@ components:
     eth_getStorageAt:
       name: eth_getStorageAt
       description: Returns the value from a storage position at a given address.
+      x-compute-units: 20
       params:
         - name: Address
           required: true
@@ -932,6 +956,7 @@ components:
     eth_getTransactionCount:
       name: eth_getTransactionCount
       description: Returns the number of transactions sent from an address.
+      x-compute-units: 20
       params:
         - name: Address
           required: true
@@ -962,6 +987,7 @@ components:
     eth_getCode:
       name: eth_getCode
       description: Returns the code at a given address.
+      x-compute-units: 20
       params:
         - name: Address
           required: true
@@ -1001,6 +1027,7 @@ components:
         > This method REQUIRES a WebSocket connection using `wss://` protocol. It will NOT work with standard HTTP/HTTPS requests or `curl`.
         > See the [WebSocket documentation](https://alchemy.com/docs/reference/subscription-api) for examples.
       x-api-explorer: false
+      x-compute-units: 10
       params:
         - name: Subscription Type
           description: The type of event to subscribe to (e.g., "newHeads", "logs", "newPendingTransactions", "syncing").
@@ -1036,6 +1063,7 @@ components:
         > This method REQUIRES a WebSocket connection using `wss://` protocol. It will NOT work with standard HTTP/HTTPS requests or `curl`.
         > See the [WebSocket documentation](https://alchemy.com/docs/reference/subscription-api) for examples.
       x-api-explorer: false
+      x-compute-units: 10
       params:
         - name: Subscription ID
           description: The identifier of the subscription to cancel.
@@ -1063,6 +1091,8 @@ components:
         Submits a raw transaction (serialized and signed) for broadcasting to the network. The transaction data should be encoded as a hexadecimal string starting with `0x`. You can create and sign a transaction externally using libraries like [web3.js](https://web3js.readthedocs.io/) or [ethers.js](https://docs.ethers.org/). 
 
         **Note:** For [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) transactions, the raw form must be in the network format, which includes blobs, KZG commitments, and KZG proofs.
+      x-compute-units: 40
+      x-rate-limit-cus: 50
       params:
         - name: Transaction
           required: true
@@ -1087,6 +1117,7 @@ components:
     eth_getTransactionByHash:
       name: eth_getTransactionByHash
       description: Returns information about a transaction requested by transaction hash.
+      x-compute-units: 20
       params:
         - name: Transaction hash
           required: true
@@ -1127,6 +1158,7 @@ components:
     eth_getRawTransactionByHash:
       name: eth_getRawTransactionByHash
       description: Returns the raw transaction data (RLP-encoded) for a transaction by its hash.
+      x-compute-units: 20
       params:
         - name: Transaction hash
           required: true
@@ -1153,6 +1185,7 @@ components:
     eth_getTransactionByBlockHashAndIndex:
       name: eth_getTransactionByBlockHashAndIndex
       description: Returns information about a transaction by block hash and transaction index position.
+      x-compute-units: 20
       params:
         - name: Block hash
           required: true
@@ -1200,6 +1233,7 @@ components:
     eth_getTransactionByBlockNumberAndIndex:
       name: eth_getTransactionByBlockNumberAndIndex
       description: Returns information about a transaction by block number and transaction index position.
+      x-compute-units: 20
       params:
         - name: Block
           required: true
@@ -1247,6 +1281,7 @@ components:
     eth_getTransactionReceipt:
       name: eth_getTransactionReceipt
       description: Returns the receipt of a transaction by transaction hash.
+      x-compute-units: 20
       params:
         - name: Transaction hash
           required: true

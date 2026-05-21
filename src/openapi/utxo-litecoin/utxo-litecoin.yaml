@@ -1,26 +1,21 @@
 # yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
 openapi: 3.1.0
 info:
-  title: 🪙 UTXO API
+  title: 🪙 UTXO API (Litecoin)
   version: "1.0"
   description: >
-    REST API for UTXO-based chains, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
-    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on Bitcoin,
-    Bitcoin Cash, Litecoin, and Dogecoin networks. The same paths are available across all supported
-    UTXO networks — switch networks by changing the `{network}` server variable.
+    REST API for Litecoin, powered by [Trezor Blockbook](https://github.com/trezor/blockbook).
+    Use these endpoints to query indexed block, transaction, address, xpub, and UTXO data on the
+    Litecoin networks. The same paths are available on every UTXO chain Alchemy supports —
+    switch chains using the chain-specific overview pages or by changing the host.
 servers:
   - url: https://{network}.g.alchemy.com/v2
     variables:
       network:
-        default: bitcoin-mainnet
+        default: litecoin-mainnet
         enum:
-          - bitcoin-mainnet
-          - bitcoin-testnet4
-          - bitcoincash-mainnet
-          - bitcoincash-testnet
           - litecoin-mainnet
           - litecoin-testnet
-          - dogecoin-mainnet
 paths:
   "/{apiKey}/api/v2/block-index/{block_height}":
     get:
@@ -39,7 +34,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/BlockIndexResponse"
               example:
-                blockHash: "0000000000000000000b7b8574bc6fd285825ec2dbcbeca149121fc05b0c828c"
+                blockHash: "91ccb5ed8ad6ecfef1347511fa09436a191ea07c93c9c03397a617ade19f8b04"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -64,32 +59,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/Tx"
               example:
-                txid: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+                txid: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
                 version: 2
-                lockTime: 860729
                 vin:
-                  - txid: "0eb7b574373de2c88d0dc1444f49947c681d0437d21361f9ebb4dd09c62f2a66"
-                    vout: 1
-                    sequence: 4294967293
+                  - txid: "3e004412be5d56b1e0fefcf73f5010a49e498c728e5097e8f09278b7b389dff7"
+                    vout: 21
+                    sequence: 4294967295
                     n: 0
-                    addresses: ["bc1qmgwnfjlda4ns3g6g3yz74w6scnn9yu2ts82yyc"]
+                    addresses: ["LNqEYhSgarC9gY6AAdBHyVJvEikQth3eNj"]
                     isAddress: true
-                    value: "10106300"
+                    value: "2868006"
                 vout:
-                  - value: "175000"
+                  - value: "100000"
                     n: 0
-                    hex: "76a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac"
-                    addresses: ["1Nb1ykSD7J5k4RFjJQGsrD9gxBE6jzfNa9"]
+                    spent: true
+                    hex: "76a914be7846a7ac1fa99117c8ea7472f240c68f01eb8f88ac"
+                    addresses: ["Lcb4jao9XQ9WQGBW4hcBf7kVUSe5Ze6bsf"]
                     isAddress: true
-                blockHash: "00000000000000000000effeb0c4460480e6a347deab95332c63007a68646ee5"
-                blockHeight: 860730
-                confirmations: 1
-                blockTime: 1725956288
+                  - value: "2718006"
+                    n: 1
+                    hex: "76a914815d8e3e2dd0fc88de37e0bf16b8af5a64055f4188ac"
+                    addresses: ["Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"]
+                    isAddress: true
+                blockHash: "6d1a8eedc9ce9055366efdb8260c8d4ea0a8fa01905d3ecf92716a8940a0d06e"
+                blockHeight: 2981901
+                confirmations: 125935
+                blockTime: 1759937639
                 size: 225
-                vsize: 144
-                value: "10063100"
-                valueIn: "10106300"
-                fees: "43200"
+                vsize: 225
+                value: "2818006"
+                valueIn: "2868006"
+                fees: "50000"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -125,8 +125,8 @@ paths:
       operationId: getAddress
       summary: Get Address
       description: >
-        Returns balances and transactions for the given address. Transactions are sorted newest-first
-        by block height.
+        Returns balances and transactions for the given Litecoin address. Transactions are sorted
+        newest-first by block height.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -187,16 +187,16 @@ paths:
                 page: 1
                 totalPages: 1
                 itemsOnPage: 1000
-                address: "bc1q0wd209cv5k9pd9mhk7nspacywcj038xxdhnt5u"
-                balance: "4225100"
-                totalReceived: "4225100"
-                totalSent: "0"
+                address: "Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"
+                balance: "2728006"
+                totalReceived: "218883700604"
+                totalSent: "218880972598"
                 unconfirmedBalance: "0"
                 unconfirmedTxs: 0
-                txs: 2
+                txs: 247
                 txids:
-                  - "0db6010dc0815a4bdaa505bd1ccc851056b0d53c7e4ea7af39c4d648a2c0c019"
-                  - "7532920ddc506218337cceac978cce9c7f98e27ad3226dee55f3e934e0b32e80"
+                  - "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
+                  - "c5826af541034211d27483996160f6c5467adc9de7fd6045afe3b0957ac7ddb7"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -207,9 +207,9 @@ paths:
       operationId: getXpub
       summary: Get Xpub
       description: >
-        Returns balances and transactions for an xpub or output descriptor. Supports BIP44, BIP49,
-        BIP84, and BIP86 (Taproot) derivation schemes. The BIP version is determined by the xpub
-        prefix or by an explicit output descriptor.
+        Returns balances and transactions for an xpub or output descriptor on Litecoin. Supports
+        BIP44, BIP49, BIP84, and BIP86 (Taproot) derivation schemes. The BIP version is determined
+        by the xpub prefix or by an explicit output descriptor.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -285,19 +285,19 @@ paths:
       operationId: getUtxo
       summary: Get UTXOs
       description: >
-        Returns the unspent transaction outputs for an address, xpub, or output descriptor. Includes
-        confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to limit to confirmed only.
-        UTXOs are sorted newest-first.
+        Returns the unspent transaction outputs for a Litecoin address, xpub, or output descriptor.
+        Includes confirmed and unconfirmed UTXOs by default; pass `confirmed=true` to limit to
+        confirmed only. UTXOs are sorted newest-first.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - in: path
           name: descriptor
           required: true
-          description: Address, xpub, or output descriptor.
+          description: Litecoin address, xpub, or output descriptor.
           schema:
             type: string
-          example: "bc1qwfgdjyy95aay2686fn74h6a4nu9eev6np7q4fn204dkj3274frlqrskvx0"
+          example: "Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"
         - in: query
           name: confirmed
           required: false
@@ -315,16 +315,16 @@ paths:
                 items:
                   $ref: "#/components/schemas/Utxo"
               example:
-                - txid: "8dcad3625c620d2c54b4adc06a80990362c80728e40dc3c7db0cd1940c91a277"
+                - txid: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
                   vout: 1
-                  value: "72922678"
-                  height: 949623
-                  confirmations: 454
-                - txid: "f08b10f4c244a8bf543c984cda29c204436307f2adde1e1044f8a2e3d13bcf1d"
-                  vout: 1
-                  value: "37862950"
-                  height: 949623
-                  confirmations: 454
+                  value: "2718006"
+                  height: 2981901
+                  confirmations: 125929
+                - txid: "c5826af541034211d27483996160f6c5467adc9de7fd6045afe3b0957ac7ddb7"
+                  vout: 0
+                  value: "10000"
+                  height: 2876920
+                  confirmations: 230910
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -335,8 +335,8 @@ paths:
       operationId: getBlock
       summary: Get Block
       description: >
-        Returns information about a block, including transactions, by block hash or block height.
-        Results are paginated.
+        Returns information about a block on Litecoin, including transactions, by block hash or
+        block height. Results are paginated.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -369,6 +369,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Block"
+              example:
+                page: 1
+                totalPages: 1
+                itemsOnPage: 1000
+                hash: "91ccb5ed8ad6ecfef1347511fa09436a191ea07c93c9c03397a617ade19f8b04"
+                previousBlockHash: "688543ada7bc18b23a9b4db0d11233d1a1d4380d97801ff0c66506f99bba9aa8"
+                nextBlockHash: "2b7697a2567aa93e3e4261d58a660fde5e7e552d0b13b39a753cfc4cbb741819"
+                height: 860730
+                confirmations: 2247106
+                size: 266
+                time: 1443630565
+                version: 3
+                merkleRoot: "e596d7458fa44d83e22210c8d00ef3e80ee6eb2b36d9008b9ddbb44cbc566575"
+                nonce: "324698247"
+                bits: "1b01697d"
+                difficulty: "46410.79910526145"
+                txCount: 1
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -379,12 +396,11 @@ paths:
       operationId: sendTransactionGet
       summary: Send Transaction (GET)
       description: >
-        Broadcasts a signed raw Bitcoin transaction encoded as a hex string in the path. Returns
-        the transaction ID on success. The example value below is the hex of a confirmed Bitcoin
-        transaction; re-sending it will respond with a Bitcoin-Core RPC error (e.g.
-        `-25: bad-txns-inputs-missingorspent` once the inputs are spent, or
-        `-27: transaction already in block chain` for unspent re-broadcasts). Substitute your own
-        signed raw-transaction hex to broadcast. For larger payloads, use the POST variant.
+        Broadcasts a signed raw Litecoin transaction encoded as a hex string in the path. Returns
+        the transaction ID on success. The example value below is the hex of an already-confirmed
+        Litecoin transaction; re-sending it will respond with the Bitcoin-Core `-27: Transaction
+        already in block chain` error. Substitute your own signed raw-transaction hex to broadcast.
+        For larger payloads, use the POST variant.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -394,7 +410,7 @@ paths:
           description: Hex-encoded raw transaction bytes.
           schema:
             type: string
-          example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
+          example: "0200000001f7df89b3b77892f0e897508e728c499ea410503ff7fcfee0b1565dbe1244003e150000006a47304402200d49aa9e5e883f600a0d21c5258d731b8b5c10e521fcae83284d0bfd81a73857022051cee4e2cdaa29535a52b0dbb6e540882f52a09f73bbaa738dbeeb3ae8e3bca101210318d87bcd93c083e8ff34d4321280f04d4e43c585a1320688982fae054f398ba0ffffffff02a0860100000000001976a914be7846a7ac1fa99117c8ea7472f240c68f01eb8f88ac36792900000000001976a914d73e63c04a6cbad8d5dc94fdbef5175d2364e32f88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -403,7 +419,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+                result: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -412,8 +428,8 @@ paths:
       operationId: sendTransactionPost
       summary: Send Transaction (POST)
       description: >
-        Broadcasts a signed raw Bitcoin transaction by sending hex bytes in the request body. The
-        trailing slash on the path is mandatory; see the [Blockbook API
+        Broadcasts a signed raw Litecoin transaction by sending hex bytes in the request body.
+        The trailing slash on the path is mandatory; see the [Blockbook API
         reference](https://github.com/trezor/blockbook/blob/master/docs/api.md#send-transaction).
         Use this for larger payloads (request body limit 8 MiB). Returns the transaction ID on success.
 
@@ -431,7 +447,7 @@ paths:
             schema:
               type: string
               description: Hex-encoded raw transaction bytes.
-              example: "02000000000101662a2fc609ddb4ebf96113d237041d687c94494f44c10d8dc8e23d3774b5b70e0100000000fdffffff0298ab0200000000001976a914ecc999d554eaa3efa5e871c28f58b549c36ec51788ac64e196000000000016001496f152a0919487624bf4f13f46f0d20fa10d9acc0247304402202bb0591180cdbbe0f639af6eb21abdb993fc5a667b09e6392d5c11b025a9187102201ef2e84fc91a5d2c6fbbc9f943482d230256a3640f8ecb83c1f3f17242cf011001210314f03889e1667feb696ee280625943195189cfabe46d54204d987f631fe6892739220d00"
+              example: "0200000001f7df89b3b77892f0e897508e728c499ea410503ff7fcfee0b1565dbe1244003e150000006a47304402200d49aa9e5e883f600a0d21c5258d731b8b5c10e521fcae83284d0bfd81a73857022051cee4e2cdaa29535a52b0dbb6e540882f52a09f73bbaa738dbeeb3ae8e3bca101210318d87bcd93c083e8ff34d4321280f04d4e43c585a1320688982fae054f398ba0ffffffff02a0860100000000001976a914be7846a7ac1fa99117c8ea7472f240c68f01eb8f88ac36792900000000001976a914d73e63c04a6cbad8d5dc94fdbef5175d2364e32f88ac00000000"
       responses:
         "200":
           description: Transaction broadcast result.
@@ -440,7 +456,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendTxResponse"
               example:
-                result: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+                result: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -449,8 +465,8 @@ paths:
       operationId: getTickersList
       summary: Get Tickers List
       description: >
-        Returns the list of available currency rate tickers (secondary currencies) for a given
-        timestamp, along with the actual data timestamp.
+        Returns the list of available currency rate tickers (secondary currencies) for Litecoin at
+        a given timestamp, along with the actual data timestamp.
 
 
         > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
@@ -465,7 +481,7 @@ paths:
           description: Unix timestamp to query availability for. Defaults to the latest available.
           schema:
             type: integer
-            example: 1574346615
+            example: 1578391200
       responses:
         "200":
           description: Available tickers.
@@ -474,7 +490,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/TickersListResponse"
               example:
-                ts: 1574346615
+                ts: 1578391200
                 available_currencies: ["eur", "usd"]
         "400":
           $ref: "#/components/responses/BadRequest"
@@ -484,9 +500,9 @@ paths:
       operationId: getTickers
       summary: Get Tickers
       description: >
-        Returns the currency rate for the specified currency and timestamp. If the requested
-        currency is unavailable for that timestamp, the closest rate is returned with the
-        actual rate timestamp.
+        Returns the Litecoin currency rate for the specified currency and timestamp. If the
+        requested currency is unavailable for that timestamp, the closest rate is returned with
+        the actual rate timestamp.
 
 
         > **Heads up**: this endpoint currently returns HTTP 503 `Unable to complete request at this
@@ -508,7 +524,7 @@ paths:
           description: Unix timestamp. Omit to return the latest.
           schema:
             type: integer
-            example: 1574346615
+            example: 1578391200
       responses:
         "200":
           description: Currency rate response.
@@ -517,9 +533,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/TickerRates"
               example:
-                ts: 1574346615
+                ts: 1578391200
                 rates:
-                  usd: 7914.5
+                  usd: 42.71
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -528,8 +544,8 @@ paths:
       operationId: getBalanceHistory
       summary: Get Balance History
       description: >
-        Returns the balance history for the specified address. Optionally enrich each bucket with
-        secondary (fiat) currency rates at the time of the transaction.
+        Returns the balance history for the specified Litecoin address. Optionally enrich each
+        bucket with secondary (fiat) currency rates at the time of the transaction.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -540,14 +556,14 @@ paths:
           description: Start of the history range as a Unix timestamp.
           schema:
             type: integer
-            example: 1578391200
+            example: 1318325224
         - in: query
           name: to
           required: true
           description: End of the history range as a Unix timestamp.
           schema:
             type: integer
-            example: 1578488400
+            example: 1757280000
         - in: query
           name: fiatcurrency
           required: false
@@ -572,20 +588,20 @@ paths:
                 items:
                   $ref: "#/components/schemas/BalanceHistoryEntry"
               example:
-                - time: 1578391200
-                  txs: 5
-                  received: "5000000"
-                  sent: "0"
-                  sentToSelf: "100000"
-                  rates:
-                    usd: 7855.9
-                - time: 1578488400
+                - time: 1759935600
                   txs: 1
-                  received: "0"
-                  sent: "5000000"
+                  received: "2718006"
+                  sent: "0"
                   sentToSelf: "0"
                   rates:
-                    usd: 8283.11
+                    usd: 76.42
+                - time: 1759939200
+                  txs: 1
+                  received: "0"
+                  sent: "2718006"
+                  sentToSelf: "0"
+                  rates:
+                    usd: 76.55
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -615,15 +631,15 @@ components:
       description: Hex-encoded transaction ID.
       schema:
         type: string
-      example: "8c1e3dec662d1f2a5e322ccef5eca263f98eb16723c6f990be0c88c1db113fb1"
+      example: "d9a5e3a3cb19be98a2ed6a205a22d207892e1c0ba8faf0301abcd94d5f545545"
     address:
       in: path
       name: address
       required: true
-      description: Coin-specific address string.
+      description: Litecoin address.
       schema:
         type: string
-      example: "bc1q0wd209cv5k9pd9mhk7nspacywcj038xxdhnt5u"
+      example: "Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2"
   responses:
     BadRequest:
       description: Malformed request.

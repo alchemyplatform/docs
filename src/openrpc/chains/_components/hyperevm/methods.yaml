@@ -4,6 +4,7 @@ components:
       name: eth_bigBlockGasPrice
       summary: Get big block gas price
       description: Returns the base fee for the next big block. HyperEVM uses a dual-block architecture with fast blocks (1-second interval, 2M gas limit) and big blocks (1-minute interval, 30M gas limit). This method returns the base fee specifically for big blocks, as opposed to eth_gasPrice which returns the base fee for the next fast block.
+      x-compute-units: 20
       params: []
       result:
         name: gasPrice
@@ -16,6 +17,7 @@ components:
       name: eth_getBlockReceiptsWithSystemTx
       summary: Get block receipts including system transactions
       description: Returns all transaction receipts for a given block, including receipts for system transactions that originate from HyperCore. System transactions are created by the system address and are not included in the regular receipt list returned by eth_getBlockReceipts.
+      x-compute-units: 20
       params:
         - name: blockNumberOrTag
           required: true
@@ -42,6 +44,7 @@ components:
       name: eth_getSystemTxsByBlockHash
       summary: Get system transactions by block hash
       description: Returns the system transactions for a block identified by hash. System transactions originate from HyperCore and are sent from the system address 0x2222222222222222222222222222222222222222. They represent operations such as HyperCore-to-HyperEVM transfers and have gasPrice of 0x0.
+      x-compute-units: 20
       params:
         - name: blockHash
           required: true
@@ -77,6 +80,7 @@ components:
       name: eth_getSystemTxsByBlockNumber
       summary: Get system transactions by block number
       description: Returns the system transactions for a block identified by number or tag. System transactions originate from HyperCore and are sent from the system address 0x2222222222222222222222222222222222222222.
+      x-compute-units: 20
       params:
         - name: blockNumber
           required: true
@@ -112,6 +116,7 @@ components:
       name: eth_usingBigBlocks
       summary: Check if an address uses big blocks
       description: Returns whether the specified address has opted into using big blocks. In HyperEVM's dual-block architecture, users can set an usingBigBlocks flag via the evmUserModify L1 action to direct their transactions to big blocks instead of fast blocks.
+      x-compute-units: 20
       params:
         - name: address
           required: true

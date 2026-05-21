@@ -8,7 +8,7 @@ slug: docs/alchemy-cli
 The Alchemy CLI wraps Alchemy's node, Data API, wallet, transaction, webhook, and account management surfaces. Use it to:
 
 * Live query onchain data without writing a script
-* Send transactions with a session wallet or local wallet
+* Send EVM transactions with an [Agent Wallet session](docs/agent-wallets) or local wallet
 * Run admin tasks like creating apps, rotating allowlists, and managing webhooks
 * Automate workflows in shell scripts, cron jobs, and CI pipelines
 
@@ -161,6 +161,8 @@ All four accept an optional `--block-tag` (defaults to `latest`).
 
 Wallet-signed EVM actions return a smart wallet call ID and, once confirmed, a transaction hash. Use `alchemy evm status <id-or-hash>` to check either value.
 
+To use the `session` signer, connect an [Agent Wallet session](docs/agent-wallets) approved through the Alchemy Dashboard.
+
 ```bash
 alchemy wallet connect
 alchemy wallet use session
@@ -182,22 +184,24 @@ Use `--gas-sponsored` and `--gas-policy-id <id>` on supported EVM actions to req
 
 Use `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` as the native token address for swap and bridge commands.
 
-Most wallet-signed EVM commands accept `--signer session|local` to override the active signer for that invocation. If both session and local EVM wallets are configured and you have not chosen one, the CLI defaults to the session wallet and prints a warning with the command to switch.
+Most wallet-signed EVM commands accept `--signer session|local` to override the active signer for that invocation. In this flag, `session` refers to your Agent Wallet session signer. If both an Agent Wallet session and local EVM wallet are configured and you have not chosen one, the CLI defaults to the Agent Wallet session and prints a warning with the command to switch.
 
 ### Wallets and signing
 
-Use `alchemy wallet` to connect the signer used by onchain actions. EVM commands can use a browser-approved session wallet or a local private key. Solana transaction commands currently use a local Solana wallet.
+Use `alchemy wallet` to connect the signer used by onchain actions. EVM commands can use an [Agent Wallet session](docs/agent-wallets) approved through the Alchemy Dashboard or a local private key. The `session` signer refers to an Agent Wallet session, not an arbitrary browser wallet connection. Solana transaction commands currently use a local Solana wallet.
+
+Create, view, and revoke Agent Wallet sessions in the [Agent Wallets dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet).
 
 | Command | Description |
 |---|---|
-| `alchemy wallet connect` | Connect a wallet. Use `--mode session` or `--mode local`. Local mode supports `--chain evm\|solana\|both` and defaults to both. |
+| `alchemy wallet connect` | Connect a wallet. Use `--mode session` for an Agent Wallet session or `--mode local` for a local wallet. Local mode supports `--chain evm\|solana\|both` and defaults to both. |
 | `alchemy wallet connect --mode local --chain evm --import <path>` | Import a local EVM private key file |
 | `alchemy wallet connect --mode local --chain solana` | Create or configure a local Solana wallet |
-| `alchemy wallet status` | Show session, local EVM, local Solana, and active signer status. Add `--verify` to check the backend session. |
+| `alchemy wallet status` | Show Agent Wallet session, local EVM, local Solana, and active signer status. Add `--verify` to check the backend session. |
 | `alchemy wallet address` | Display configured wallet addresses |
 | `alchemy wallet qr` | Display an EVM or Solana wallet address as a QR code |
-| `alchemy wallet use <session\|local>` | Set the active signer for EVM transactions |
-| `alchemy wallet disconnect` | Revoke the current wallet session and clear it locally |
+| `alchemy wallet use <session\|local>` | Set the active signer for EVM transactions. Use `session` to select your Agent Wallet session signer. |
+| `alchemy wallet disconnect` | Revoke the current Agent Wallet session and clear it locally |
 
 ### Solana
 
@@ -358,6 +362,7 @@ alchemy completions fish > ~/.config/fish/completions/alchemy.fish
 ## Next steps
 
 * [Agent Skills](docs/alchemy-agent-skills)
+* [Agent Wallets](docs/agent-wallets)
 * [Alchemy MCP Server](docs/alchemy-mcp-server)
 * [Agent Authentication and Payment](docs/alchemy-for-agents)
 * [Alchemy Dashboard](https://dashboard.alchemy.com/)

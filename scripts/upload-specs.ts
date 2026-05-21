@@ -84,9 +84,7 @@ const main = async () => {
   );
 
   // 4. Find deleted spec IDs (in old but not in new)
-  const deletedIds = Object.keys(oldHashes).filter(
-    (id) => !(id in newHashes),
-  );
+  const deletedIds = Object.keys(oldHashes).filter((id) => !(id in newHashes));
 
   const allAffectedIds = [...changedIds, ...deletedIds];
 
