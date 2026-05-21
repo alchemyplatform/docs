@@ -788,6 +788,7 @@ methods:
                                   errorMessage: "Must be a valid hex string starting with '0x'"
                               description: "r, s, v"
                       description: "ECDSA signature (alias for secp256k1)"
+              description: "EVM request"
             - type: "object"
               required:
                 - "calls"
@@ -893,6 +894,7 @@ methods:
                             prefundRent:
                               type: "boolean"
                               description: "Opt-in: ask the paymaster to simulate the transaction and prefund any lamports needed for CPI-created accounts (e.g. SystemProgram.createAccount)."
+              description: "Solana request"
 
     result:
       name: prepareCallsResponse
@@ -1361,7 +1363,7 @@ methods:
                                       errorMessage: "Must be a valid hex string starting with '0x'"
                                       description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                               description: "Prepared EIP-7702 Authorization. Returned as part of an array response for 7702 accounts requiring delegation, or at the top level for BSO-sponsored undelegation."
-                    description: "Returned for EIP-7702 accounts that require both an authorization signature and a user operation."
+                    description: "Array of Prepared Calls. Returned for EIP-7702 accounts that require both an authorization signature and a user operation."
                   - type: "object"
                     required:
                       - "type"
@@ -2513,7 +2515,7 @@ methods:
                             errorMessage: "Must be a valid hex string starting with '0x'"
                             description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                         description: "Typed data"
-                    description: "Returned when the account's paymaster policy requires an ERC-20 token permit signature. The client must sign the permit and resubmit the request with the permit signature before the user operation can be prepared."
+                    description: "Paymaster permit. Returned when the account's paymaster policy requires an ERC-20 token permit signature. The client must sign the permit and resubmit the request with the permit signature before the user operation can be prepared."
               - type: "object"
                 properties:
                   details:
@@ -2555,6 +2557,7 @@ methods:
                                   type: "string"
                                   pattern: "^0x.*$"
                                   errorMessage: "Must be a valid hex string starting with '0x'"
+            description: "EVM response"
           - type: "object"
             required:
               - "type"
@@ -8745,7 +8748,7 @@ methods:
                                           errorMessage: "Must be a valid hex string starting with '0x'"
                                           description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                                   description: "Prepared EIP-7702 Authorization. Returned as part of an array response for 7702 accounts requiring delegation, or at the top level for BSO-sponsored undelegation."
-                        description: "Returned for EIP-7702 accounts that require both an authorization signature and a user operation."
+                        description: "Array of Prepared Calls. Returned for EIP-7702 accounts that require both an authorization signature and a user operation."
                       - type: "object"
                         required:
                           - "type"
@@ -9879,7 +9882,7 @@ methods:
                                 errorMessage: "Must be a valid hex string starting with '0x'"
                                 description: "Raw payload that can be signed if using a signer that supports signing raw bytes (such as an Alchemy Signer)"
                             description: "Typed data"
-                        description: "Returned when the account's paymaster policy requires an ERC-20 token permit signature. The client must sign the permit and resubmit the request with the permit signature before the user operation can be prepared."
+                        description: "Paymaster permit. Returned when the account's paymaster policy requires an ERC-20 token permit signature. The client must sign the permit and resubmit the request with the permit signature before the user operation can be prepared."
                   - type: "object"
                     properties:
                       details:
