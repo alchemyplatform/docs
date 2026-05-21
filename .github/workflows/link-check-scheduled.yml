@@ -1,0 +1,59 @@
+name: Scheduled link check
+
+# Runs Lychee against the live docs site once a week and posts results to
+# #dx-developer-relations. Replaces the per-PR link check (DX-2947).
+on:
+  schedule:
+    # Mondays 17:00 UTC = 12pm EST / 1pm EDT. Cron is UTC and does not follow DST.
+    - cron: "0 17 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: link-check-scheduled
+  cancel-in-progress: false
+
+jobs:
+  link-check:
+    name: Link Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Link Checker
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          format: json
+          output: ./broken-links.json
+          args: "--config ./lychee.toml --base-url https://www.alchemy.com --no-progress ./content"
+          fail: false
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Post results to Slack
+        env:
+          SLACK_API_KEY: ${{ secrets.SLACK_API_KEY }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          LYCHEE_STATUS: ${{ steps.lychee.outcome }}
+        run: pnpm exec tsx scripts/link-check-slack.ts ./broken-links.json
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broken-links
+          path: ./broken-links.json
+
+      - name: Fail if broken links found
+        run: |
+          ERRORS=$(jq -r '.errors // 0' broken-links.json)
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "::error::Lychee reported $ERRORS broken link(s)."
+            exit 1
+          fi
