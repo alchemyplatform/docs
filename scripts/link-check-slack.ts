@@ -83,9 +83,9 @@ const formatSummary = (stats: LycheeReport): string =>
   ).join("\n");
 
 /**
- * Flat one-line-per-error list. Each line: `• <file> — <[code] short.url>`
- * where the bracketed code is folded into the Slack link label so the line
- * stays scannable on narrow panes.
+ * Nested-bullet error list. Top-level bullet is the source file; indented
+ * sub-bullets are the broken links inside it, with the bracketed status code
+ * folded into the Slack link label so each line stays compact.
  */
 const formatErrorLines = (
   errorMap: Record<string, LycheeError[]>,
@@ -94,18 +94,23 @@ const formatErrorLines = (
   let truncated = false;
   let charBudget = MAX_THREAD_CHARS;
 
+  const push = (line: string): boolean => {
+    if (charBudget - line.length < 0) {
+      truncated = true;
+      return false;
+    }
+    lines.push(line);
+    charBudget -= line.length + 1;
+    return true;
+  };
+
   for (const [input, errors] of Object.entries(errorMap)) {
     const file = input.replace(/^\.\//, "");
+    if (!push(`• \`${file}\``)) break;
     for (const error of errors) {
       const code = error.status?.code ?? "ERR";
       const label = `[${code}] ${shortenUrl(error.url)}`;
-      const line = `• ${file} — <${error.url}|${label}>`;
-      if (charBudget - line.length < 0) {
-        truncated = true;
-        break;
-      }
-      lines.push(line);
-      charBudget -= line.length + 1;
+      if (!push(`    ◦ <${error.url}|${label}>`)) break;
     }
     if (truncated) break;
   }
