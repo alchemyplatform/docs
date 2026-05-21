@@ -126,7 +126,8 @@ const formatErrorLines = (
       const code = error.status?.code ?? "ERR";
       const reason = error.status?.text ?? "Unknown error";
       const label = `[${code}] ${shortenUrl(error.url)}`;
-      if (!push(`    ◦ <${error.url}|${label}> — ${reason}`)) break;
+      if (!push(`    ◦ <${error.url}|${label}>`)) break;
+      if (!push(`        ▪︎ ${reason}`)) break;
     }
     if (truncated) break;
   }
