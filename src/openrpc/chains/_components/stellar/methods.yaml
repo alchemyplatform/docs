@@ -109,6 +109,29 @@ components:
             title: xdrFormat
             type: string
             description: Specifies whether XDR should be encoded as Base64 (default or 'base64') or JSON ('json').
+      examples:
+        - name: Native XLM transfer events
+          description: |
+            Returns up to 2 native XLM `transfer` contract events emitted from the Stellar Asset Contract
+            (`CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA`) starting near the current head.
+            Stellar RPC retains roughly the last 7 days of events, so `startLedger` may need to be bumped
+            forward over time. The first topic `AAAADwAAAAh0cmFuc2Zlcg==` is the SCV-encoded `transfer` symbol.
+          params:
+            - name: startLedger
+              value: 62463000
+            - name: filters
+              value:
+                - type: contract
+                  contractIds:
+                    - CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA
+                  topics:
+                    - - AAAADwAAAAh0cmFuc2Zlcg==
+                      - "*"
+                      - "*"
+                      - "**"
+            - name: pagination
+              value:
+                limit: 2
       result:
         name: getEventsResult
         schema:
@@ -194,6 +217,9 @@ components:
         url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getFeeStats
       paramStructure: by-name
       params: []
+      examples:
+        - name: getFeeStats example
+          params: []
       result:
         name: getFeeStatsResult
         schema:
@@ -316,6 +342,9 @@ components:
         url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getLatestLedger
       paramStructure: by-name
       params: []
+      examples:
+        - name: getLatestLedger example
+          params: []
       result:
         name: getLatestLedgerResponse
         schema:
@@ -376,6 +405,20 @@ components:
             title: xdrFormat
             type: string
             description: Specifies whether XDR should be encoded as Base64 (default or 'base64') or JSON ('json').
+      examples:
+        - name: Account and contract instance entries
+          description: |
+            Looks up two stable mainnet ledger entries: the **Account** entry for the Circle USDC issuer
+            (`GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN`) and the
+            **ContractInstance** entry for the native XLM Stellar Asset Contract
+            (`CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA`). Both are permanent ledger
+            entries, so this example is stable indefinitely. To build your own `LedgerKey`s see
+            [Building ledger keys](https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getLedgerEntries#building-ledger-keys).
+          params:
+            - name: keys
+              value:
+                - "AAAAAAAAAAA7mRE4Dv6Yi6CokA6xz+RPNm99vpRr7QdyQPf2JN8VxQ=="
+                - "AAAABgAAAAEltPzYWa7C+mNIQ4xImzw8EMmLbSG+T9PLMMtolT75dwAAABQAAAAB"
       result:
         name: getLedgerEntriesResult
         schema:
@@ -447,6 +490,19 @@ components:
             title: xdrFormat
             type: string
             description: Specifies whether XDR should be encoded as Base64 (default or 'base64') or JSON ('json').
+      examples:
+        - name: Two ledgers from a stable historical sequence
+          description: |
+            Returns two consecutive ledger summaries starting at sequence 60,000,000.
+            Unlike `getEvents` and `getTransactions` (which retain ~7 and ~14 days respectively),
+            Alchemy's Stellar mainnet RPC retains full ledger history back to genesis (ledger 2),
+            so this example is stable indefinitely.
+          params:
+            - name: startLedger
+              value: 60000000
+            - name: pagination
+              value:
+                limit: 2
       result:
         name: getLedgersResult
         schema:
@@ -503,6 +559,9 @@ components:
         url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getNetwork
       paramStructure: by-name
       params: []
+      examples:
+        - name: getNetwork example
+          params: []
       result:
         name: getNetworkResult
         schema:
@@ -651,6 +710,9 @@ components:
         url: https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getVersionInfo
       paramStructure: by-name
       params: []
+      examples:
+        - name: getVersionInfo example
+          params: []
       result:
         name: getVersionInfoResult
         schema:
