@@ -22,6 +22,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
       - name: Link Checker
         id: lychee
         uses: lycheeverse/lychee-action@v2
@@ -38,7 +41,7 @@ jobs:
           SLACK_API_KEY: ${{ secrets.SLACK_API_KEY }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           LYCHEE_STATUS: ${{ steps.lychee.outcome }}
-        run: node scripts/link-check-slack.js ./broken-links.json
+        run: pnpm exec tsx scripts/link-check-slack.ts ./broken-links.json
 
       - name: Upload report
         if: always()
