@@ -3,6 +3,7 @@ components:
     starknet_blockHashAndNumber:
       name: starknet_blockHashAndNumber
       description: Get the most recent accepted block hash and number
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -22,6 +23,7 @@ components:
     starknet_blockNumber:
       name: starknet_blockNumber
       description: Get the most recent accepted block number
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -33,6 +35,7 @@ components:
     starknet_getBlockWithTxHashes:
       name: starknet_getBlockWithTxHashes
       description: Get block information with transaction hashes given the block id
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -56,6 +59,7 @@ components:
     starknet_getBlockWithTxs:
       name: starknet_getBlockWithTxs
       description: Get block information with full transactions given the block id
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -80,6 +84,7 @@ components:
       name: starknet_getBlockTransactionCount
       summary: Get the number of transactions in a block given a block id
       description: Returns the number of transactions in the designated block.
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -101,6 +106,8 @@ components:
     starknet_chainId:
       name: starknet_chainId
       description: Return the currently configured StarkNet chain id
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: result
@@ -112,6 +119,8 @@ components:
     starknet_syncing:
       name: starknet_syncing
       description: Returns an object about the sync status, or false if the node is not syncing
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: syncing
@@ -137,6 +146,7 @@ components:
       description: >
         Calls a function in a contract and returns the return value. Using this
         call will not create a transaction; hence, will not change the state
+      x-compute-units: 20
       params:
         - name: request
           description: The details of the function call
@@ -172,6 +182,7 @@ components:
         to any reason (e.g., validation failure or an internal error), a
         TRANSACTION_EXECUTION_ERROR is returned. Fees for account transactions
         are expressed in fri.
+      x-compute-units: 20
       params:
         - name: request
           description: The transaction to estimate
@@ -217,6 +228,7 @@ components:
       name: starknet_getEvents
       summary: Returns all events matching the given filter
       description: Returns all event objects matching the conditions in the provided filter
+      x-compute-units: 20
       params:
         - name: filter
           description: The conditions used to filter the returned events
@@ -239,6 +251,7 @@ components:
     starknet_getStorageAt:
       name: starknet_getStorageAt
       description: Get the value of the storage at the given address and key
+      x-compute-units: 20
       params:
         - name: contract_address
           description: The address of the contract to read from
@@ -270,6 +283,7 @@ components:
     starknet_getStateUpdate:
       name: starknet_getStateUpdate
       description: Get the information about the result of executing the requested block
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -293,6 +307,7 @@ components:
     starknet_getNonce:
       name: starknet_getNonce
       description: Get the nonce associated with the given address in the given block
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -318,6 +333,7 @@ components:
     starknet_getClassHashAt:
       name: starknet_getClassHashAt
       description: Get the contract class hash in the given block for the contract deployed at the given address
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -343,6 +359,7 @@ components:
     starknet_getClass:
       name: starknet_getClass
       description: Get the contract class definition in the given block associated with the given hash
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -372,6 +389,7 @@ components:
     starknet_getClassAt:
       name: starknet_getClassAt
       description: Get the contract class definition in the given block at the given address
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -405,6 +423,7 @@ components:
       description: >
         Get the details of the transaction given by the identified block and index
         in that block. If no transaction is found, null is returned.
+      x-compute-units: 20
       params:
         - name: block_id
           description: >
@@ -437,6 +456,7 @@ components:
     starknet_getTransactionByHash:
       name: starknet_getTransactionByHash
       description: Get the details and status of a submitted transaction
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: transaction_hash
@@ -461,6 +481,7 @@ components:
     starknet_getTransactionReceipt:
       name: starknet_getTransactionReceipt
       description: Get the transaction receipt by the transaction hash
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: transaction_hash
@@ -478,6 +499,7 @@ components:
     starknet_addDeclareTransaction:
       name: starknet_addDeclareTransaction
       description: Submits a class declaration transaction to the Starknet network. The transaction includes details about the new class to be added.
+      x-compute-units: 160
       paramStructure: by-name
       params:
         - name: declare_transaction
@@ -504,6 +526,7 @@ components:
     starknet_pendingTransactions:
       name: starknet_pendingTransactions
       description: Returns the transactions currently in the transaction pool that have been recognized by this sequencer but not yet included in a block.
+      x-compute-units: 20
       paramStructure: by-name
       params: []
       result:
@@ -518,6 +541,7 @@ components:
     starknet_addDeployAccountTransaction:
       name: starknet_addDeployAccountTransaction
       description: Submits a new deploy account transaction to the Starknet network. This transaction initializes a new account contract on-chain with an associated address and class hash.
+      x-compute-units: 160
       paramStructure: by-name
       params:
         - name: deploy_account_transaction
@@ -544,6 +568,7 @@ components:
     starknet_addInvokeTransaction:
       name: starknet_addInvokeTransaction
       description: Submits an invoke transaction to the Starknet network to execute smart contract functions.
+      x-compute-units: 160
       paramStructure: by-name
       params:
         - name: invoke_transaction
@@ -569,6 +594,7 @@ components:
       name: starknet_estimateMessageFee
       summary: Estimates the resources required by the l1_handler transaction induced by the message.
       description: Estimates the resources required by the l1_handler transaction induced by the message.
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: MSG_FROM_L1
@@ -634,6 +660,8 @@ components:
     starknet_getBlockWithReceipts:
       name: starknet_getBlockWithReceipts
       description: Returns detailed block information, including full transactions and receipts, corresponding to the provided block ID.
+      x-compute-units: 20
+      x-rate-limit-cus: 500
       paramStructure: by-name
       params:
         - name: block_id
@@ -875,6 +903,7 @@ components:
     starknet_traceTransaction:
       name: starknet_traceTransaction
       description: Returns the trace of a specific transaction, including internal calls and execution details.
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: transaction_hash
@@ -920,6 +949,8 @@ components:
     starknet_traceBlockTransactions:
       name: starknet_traceBlockTransactions
       description: Returns the trace of the transactions in the block.
+      x-compute-units: 80
+      x-rate-limit-cus: 3000
       paramStructure: by-name
       params:
         - name: block_id
@@ -949,6 +980,7 @@ components:
     starknet_specVersion:
       name: starknet_specVersion
       description: Return the active version of the Starknet JSON-RPC specification in use.
+      x-compute-units: 10
       paramStructure: by-name
       params: []
       result:
@@ -961,6 +993,7 @@ components:
     starknet_getTransactionStatus:
       name: starknet_getTransactionStatus
       description: Gets the transaction status (possibly reflecting that the tx is still in the mempool, or dropped from it).
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: transaction_hash
@@ -988,6 +1021,7 @@ components:
     starknet_simulateTransactions:
       name: starknet_simulateTransactions
       description: Simulates the execution of the specified transactions at the specified block.
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: transactions
@@ -1037,6 +1071,7 @@ components:
     pathfinder_getTransactionStatus:
       name: pathfinder_getTransactionStatus
       description: Returns a Pathfinder-style overall transaction status string for the given transaction hash.
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: transaction_hash
@@ -1065,6 +1100,7 @@ components:
     pathfinder_lastL1AcceptedBlockHashAndNumber:
       name: pathfinder_lastL1AcceptedBlockHashAndNumber
       description: Get the most recent block hash and number whose state is accepted on L1
+      x-compute-units: 20
       params: []
       result:
         name: result
@@ -1084,6 +1120,7 @@ components:
     starknet_getCompiledCasm:
       name: starknet_getCompiledCasm
       description: Get the Cairo assembly (CASM) compiled contract class for the given class hash
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: class_hash
@@ -1156,6 +1193,7 @@ components:
     starknet_getMessagesStatus:
       name: starknet_getMessagesStatus
       description: Return statuses for L1↔L2 messages identified by message hashes and/or related transaction hashes
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: filter
@@ -1212,6 +1250,7 @@ components:
     starknet_getStorageProof:
       name: starknet_getStorageProof
       description: Returns Merkle inclusion proofs for selected elements of the Starknet state at a given block
+      x-compute-units: 20
       paramStructure: by-name
       params:
         - name: block_id

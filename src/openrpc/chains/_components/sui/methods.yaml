@@ -6,6 +6,7 @@ components:
       summary: Return a checkpoint
       description: >
         Retrieves a checkpoint by its digest or sequence number.
+      x-compute-units: 20
       params:
         - name: id
           required: true
@@ -46,6 +47,7 @@ components:
       summary: Get Events by Transaction Digest
       description: >
         Returns all events emitted during the execution of a transaction, identified by its digest.
+      x-compute-units: 20
       params:
         - name: transaction_digest
           required: true
@@ -156,6 +158,7 @@ components:
       summary: Return paginated list of checkpoints
       description: >
         Retrieves a paginated list of checkpoints. Results can be ordered ascending or descending by sequence number.
+      x-compute-units: 20
       params:
         - name: cursor
           required: false
@@ -227,6 +230,7 @@ components:
       summary: Return the sequence number of the latest checkpoint
       description: >
         Retrieves the sequence number of the most recently executed checkpoint.
+      x-compute-units: 20
       params: []
       result:
         name: result
@@ -245,6 +249,7 @@ components:
       summary: Return the total number of transactions
       description: >
         Returns the total number of transaction blocks known to the server.
+      x-compute-units: 20
       params: []
       result:
         name: result
@@ -263,6 +268,7 @@ components:
       summary: Return the transaction response object.
       description: >
         Returns detailed information about a transaction block by digest, including input, effects, events, and timestamp.
+      x-compute-units: 20
       params:
         - name: digest
           required: true
@@ -394,6 +400,7 @@ components:
       description: >
         Returns an ordered list of transaction block responses for the provided digests.
         The method throws an error if the input contains duplicates or exceeds the maximum allowed size.
+      x-compute-units: 20
       params:
         - name: digests
           required: true
@@ -487,6 +494,7 @@ components:
         Returns the list of argument types for a specified Move function within a Move module.
         The response is based on the normalized types, and includes descriptors like "Pure" or
         "Object" with reference semantics.
+      x-compute-units: 20
       params:
         - name: package
           required: true
@@ -530,6 +538,7 @@ components:
       summary: Get the chain identifier
       description: >
         Return the first four bytes of the chain's genesis checkpoint digest.
+      x-compute-units: 20
       params: []
       result:
         name: result
@@ -551,6 +560,7 @@ components:
         Returns a paginated list of objects owned by the specified Sui address.
         Use filters and options to refine the returned data.
         For better pagination consistency, use `suix_queryObjects`.
+      x-compute-units: 20
       params:
         - name: address
           required: true
@@ -641,6 +651,7 @@ components:
       description: >
         Returns a paginated list of dynamic field objects owned by a specified parent object ID.
         Dynamic fields allow objects to store flexible, extensible key-value mappings.
+      x-compute-units: 20
       params:
         - name: parent_object_id
           required: true
@@ -684,6 +695,7 @@ components:
       description: >
         Returns the latest SUI system state object from the blockchain, including information such as current epoch, gas price,
         validator set, and various protocol-level configuration values.
+      x-compute-units: 20
       params: []
       result:
         name: result
@@ -733,6 +745,7 @@ components:
       description: >
         Returns a structured and fully resolved representation of the specified Move function, including its
         visibility, entry status, parameter and return types, and type parameter constraints.
+      x-compute-units: 20
       params:
         - name: package
           required: true
@@ -789,6 +802,7 @@ components:
       description: >
         Returns a structured representation of a Move module, including all functions, structs,
         type parameters, visibility, and associated metadata.
+      x-compute-units: 20
       params:
         - name: package
           required: true
@@ -859,6 +873,7 @@ components:
       description: >
         Returns a mapping of module names to their normalized structured representations for all modules 
         contained within the specified package.
+      x-compute-units: 20
       params:
         - name: package
           required: true
@@ -918,6 +933,7 @@ components:
       description: >
         Returns the normalized, structured representation of a specified Move struct within a module
         of a given package. This includes information about type parameters, abilities, and field types.
+      x-compute-units: 20
       params:
         - name: package
           required: true
@@ -973,6 +989,7 @@ components:
         Runs a transaction in dev-inspect mode. This allows testing nearly any transaction with any arguments.
         Detailed results are provided, including execution effects and return values. 
         Note: gas is not charged, but usage is calculated.
+      x-compute-units: 20
       params:
         - name: sender_address
           required: true
@@ -1131,6 +1148,7 @@ components:
       description: >
         Executes a transaction in dry-run mode, which simulates transaction execution and returns expected effects, gas cost summary,
         object changes, and events — without actually committing to chain.
+      x-compute-units: 20
       params:
         - name: tx_bytes
           required: true
@@ -1289,6 +1307,7 @@ components:
       description: >
         Executes a BCS-serialized transaction on-chain and waits for the result. Supports
         different execution modes such as waiting for local execution or just effects.
+      x-compute-units: 20
       params:
         - name: tx_bytes
           required: true
@@ -1416,6 +1435,7 @@ components:
       description: >
         Returns object details for a specified version. Note that nodes may prune older
         versions depending on their configuration, and retrieval is not guaranteed.
+      x-compute-units: 20
       params:
         - name: object_id
           required: true
@@ -1542,6 +1562,7 @@ components:
       description: >
         Returns the object data for each requested version. No guarantee is provided that
         historical versions will be available due to node-specific pruning behavior.
+      x-compute-units: 20
       params:
         - name: past_objects
           required: true
@@ -1696,6 +1717,7 @@ components:
       description: >
         Fetches on-chain data for a single object using its object ID. You can control the level
         of detail returned by passing additional options like showing content, type, or owner.
+      x-compute-units: 20
       params:
         - name: object_id
           required: true
@@ -1814,6 +1836,7 @@ components:
       description: >
         Retrieves on-chain metadata and content for multiple object IDs. The request may include display,
         owner, and type information as specified via options.
+      x-compute-units: 20
       params:
         - name: object_ids
           required: true
@@ -1932,6 +1955,7 @@ components:
       summary: Get the protocol configuration
       description: >
         Return the protocol config table for the given version number. If the version number is not specified, the node uses the version of the latest epoch it has processed.
+      x-compute-units: 20
       params:
         - name: version
           required: false
