@@ -6,6 +6,7 @@ components:
       summary: Get block details by block hash
       description: >
         Returns information about a block, based on the provided block hash.
+      x-compute-units: 10
       params:
         - name: blockhash
           required: true
@@ -66,6 +67,7 @@ components:
       summary: Get block hash by block height
       description: >
         Returns the hash of the block at a given height (index) in the active Bitcoin blockchain.
+      x-compute-units: 10
       params:
         - name: height
           required: true
@@ -91,6 +93,7 @@ components:
       summary: Get block header by block hash
       description: >
         Returns the block header for the specified block hash.
+      x-compute-units: 10
       params:
         - name: blockhash
           required: true
@@ -143,6 +146,7 @@ components:
       summary: Get the current block count
       description: >
         Returns the number of blocks in the longest fully validated blockchain.
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -161,6 +165,7 @@ components:
       summary: Get the best (tip) block hash of the longest valid chain
       description: >
         Returns the hash of the most-work fully-validated tip block in the active Bitcoin blockchain.
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -179,6 +184,7 @@ components:
       summary: Get per-block statistics
       description: >
         Calculates various statistics for a given block by hash or height.
+      x-compute-units: 10
       params:
         - name: hash_or_height
           required: true
@@ -247,6 +253,7 @@ components:
       summary: Get the current proof-of-work difficulty
       description: >
         Returns the proof-of-work difficulty as a multiple of the minimum difficulty.
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -266,6 +273,7 @@ components:
       description: >
         Returns the estimated network hashes per second based on the last n blocks.
         Pass in nblocks to override the default number of blocks, or -1 to get the value since the last difficulty change.
+      x-compute-units: 10
       params:
         - name: nblocks
           required: false
@@ -303,6 +311,7 @@ components:
       description: >
         Returns an object containing various state info regarding P2P networking,
         including version information, network status, connections, and relay fees.
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -436,6 +445,7 @@ components:
       summary: Get information about all known tips in the block tree
       description: >
         Returns information about all known tips in the block tree, including the active chain tip and orphaned branches.
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -464,6 +474,7 @@ components:
       summary: Get chain transaction statistics
       description: >
         Calculates statistics about the overall transaction rate and volume of the blockchain over a window of blocks.
+      x-compute-units: 10
       params:
         - name: nblocks
           required: false
@@ -503,6 +514,7 @@ components:
       description: >
         Returns data needed to construct a block to mine. This method is used by miners to request a block template 
         for mining new blocks. It can be customized with various parameters to specify the desired mining capabilities and rules.
+      x-compute-units: 10
       params:
         - name: template_request
           required: false
@@ -620,6 +632,7 @@ components:
       summary: Retrieve general information about the blockchain.
       description: >
         Returns an object containing state details related to blockchain processing, network, and storage information.
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -653,6 +666,7 @@ components:
       summary: Get the number of connections to other nodes
       description: >
         Returns the number of connections to other nodes (both inbound and outbound).
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -671,6 +685,7 @@ components:
       summary: Get memory usage information
       description: >
         Returns information about memory usage, either general statistics ("stats") or heap information ("mallocinfo").
+      x-compute-units: 10
       params:
         - name: mode
           required: false
@@ -732,6 +747,7 @@ components:
       summary: Validate a Bitcoin address
       description: >
         Verifies the validity of a given Bitcoin address and provides additional metadata about it.
+      x-compute-units: 10
       params:
         - name: address
           required: true
@@ -785,6 +801,7 @@ components:
       description: >
         Verifies a message signature using the corresponding Bitcoin address.
         Returns true if the signature is valid and matches the given address.
+      x-compute-units: 10
       params:
         - name: address
           required: true
@@ -826,6 +843,7 @@ components:
       description: >
         Broadcasts a raw transaction (hex-encoded) to the network.
         Useful for rebroadcasting transactions not originating from your wallet.
+      x-compute-units: 10
       params:
         - name: hexstring
           required: true
@@ -862,6 +880,7 @@ components:
       summary: Submit a set of serialized raw transactions
       description: >
         Submits a package containing multiple raw transactions to the mempool for validation and acceptance.
+      x-compute-units: 10
       params:
         - name: package
           required: true
@@ -916,6 +935,7 @@ components:
       summary: Submit a new block to the network
       description: >
         Attempts to submit a new block to the network. The block data must be hex-encoded.
+      x-compute-units: 10
       params:
         - name: hexdata
           required: true
@@ -953,6 +973,7 @@ components:
         Decodes the given hex-encoded block header and submits it as a candidate chain tip if valid.
         Throws an error if the header is invalid. This can be used to mine on top of a particular block without 
         having the full block data.
+      x-compute-units: 10
       params:
         - name: hexdata
           required: true
@@ -986,6 +1007,7 @@ components:
       description: >
         Estimates the approximate fee per kilobyte required for a transaction to begin confirmation
         within `conf_target` blocks. Uses BIP 141 virtual transaction size.
+      x-compute-units: 10
       params:
         - name: conf_target
           required: true
@@ -1033,6 +1055,7 @@ components:
       summary: Retrieve a BIP 157 content filter for a particular block
       description: >
         Returns the BIP 157 content filter for a specified block. Requires the blockfilterindex to be enabled.
+      x-compute-units: 10
       params:
         - name: blockhash
           required: true
@@ -1077,6 +1100,7 @@ components:
       description: >
         Returns the state of one or all available indices currently running. 
         You can optionally filter the results by a specific index name.
+      x-compute-units: 10
       params:
         - name: index_name
           required: false
@@ -1118,6 +1142,7 @@ components:
       summary: Get mempool ancestors of a transaction
       description: >
         Returns the in-mempool ancestors of a given transaction.
+      x-compute-units: 10
       params:
         - name: txid
           required: true
@@ -1202,6 +1227,7 @@ components:
       summary: Get mempool descendants of a transaction
       description: >
         Returns the in-mempool descendants of a given transaction.
+      x-compute-units: 10
       params:
         - name: txid
           required: true
@@ -1286,6 +1312,7 @@ components:
       description: >
         Returns either a list of transaction IDs currently in the mempool or detailed metadata
         for each transaction, depending on the verbosity level.
+      x-compute-units: 10
       params:
         - name: verbose
           required: false
@@ -1417,6 +1444,7 @@ components:
       description: >
         Provides information about the TX memory pool's current state, including memory usage, transaction count,
         and relay fee settings.
+      x-compute-units: 10
       params: []
       result:
         name: result
@@ -1496,6 +1524,7 @@ components:
       summary: Test if raw transactions would be accepted by the mempool
       description: >
         Indicates whether one or more raw transactions (serialized, hex-encoded) would be accepted by the mempool.
+      x-compute-units: 10
       params:
         - name: rawtxs
           required: true
@@ -1553,6 +1582,7 @@ components:
       description: >
         Returns statistics about the unspent transaction output (UTXO) set.
         Only the current chain tip is supported; querying specific blocks is not available.
+      x-compute-units: 10
       params:
         - name: use_index
           required: false
@@ -1618,6 +1648,7 @@ components:
         Returns the raw transaction representation for a given transaction ID (`txid`). 
         If `verbose` is true, returns a JSON object with detailed information; 
         otherwise, returns a serialized hex-encoded string.
+      x-compute-units: 10
       params:
         - name: txid
           required: true
@@ -1682,6 +1713,7 @@ components:
       summary: Get details about an unspent transaction output
       description: >
         Returns details about an unspent transaction output (UTXO), optionally including mempool data.
+      x-compute-units: 10
       params:
         - name: txid
           required: true
@@ -1762,6 +1794,7 @@ components:
       description: >
         Returns a hex-encoded proof that the specified transaction(s) were included in a block.
         This proof can be used to verify the inclusion of transactions without relying on a full node.
+      x-compute-units: 10
       params:
         - name: txids
           required: true
@@ -1797,6 +1830,7 @@ components:
       summary: Decode a raw transaction hex string
       description: >
         Decodes a serialized, hex-encoded Bitcoin transaction. Returns detailed information about inputs, outputs, size, witness data, etc.
+      x-compute-units: 10
       params:
         - name: hexstring
           required: true
@@ -1921,6 +1955,7 @@ components:
       summary: Decode a hex-encoded script
       description: >
         Decodes a hex-encoded script and provides detailed information about it.
+      x-compute-units: 10
       params:
         - name: hexstring
           required: true
@@ -1969,6 +2004,7 @@ components:
         Creates a transaction spending the given inputs and creating new outputs.
         Outputs can be addresses or data. Returns hex-encoded raw transaction.
         Note that the transaction's inputs are not signed, and it is not stored in the wallet or transmitted to the network.
+      x-compute-units: 10
       params:
         - name: inputs
           required: true

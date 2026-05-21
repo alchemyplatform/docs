@@ -123,6 +123,8 @@ methods:
   - name: "alchemy_requestGasAndPaymasterAndData"
     description: |
       Requests gas coverage for a `UserOperation`. Optionally accepts fee parameter overrides to be used in the `UserOperation`.
+    x-compute-units: 1250
+    x-rate-limit-cus: 125
     params:
       - name: "params[0]"
         required: true
@@ -352,6 +354,8 @@ methods:
 
         To simplify this process, we introduced alchemy_requestGasAndPaymasterAndData. This function both estimates gas and provides signed `paymaster` and `paymasterData` fields, therefore resolving the circular dependency.
       </Warning>
+    x-compute-units: 1000
+    x-rate-limit-cus: 100
 
     params:
       - name: "params[0]"
@@ -445,6 +449,8 @@ methods:
 
   - name: "pm_getPaymasterData"
     description: Returns values to be used in paymaster-related fields of a signed userOperation. These values are not stubs and will be included in a signed userOperation as part of an `eth_sendUserOperation` call.
+    x-compute-units: 1000
+    x-rate-limit-cus: 100
     params:
       - name: "userOperation"
         description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData)."
@@ -539,6 +545,8 @@ methods:
 
   - name: "pm_getPaymasterStubData"
     description: "Returns stub values to be used in paymaster-related fields of an unsigned userOperation for gas estimation."
+    x-compute-units: 250
+    x-rate-limit-cus: 100
     params:
       - name: "userOperation"
         description: "Partial UserOperation object (either v0.6 or v0.7, missing signature and paymasterData)."
@@ -655,6 +663,8 @@ methods:
       <Note>
         CPI rent prefunding is allowlisted. Contact [support@alchemy.com](mailto:support@alchemy.com) for access.
       </Note>
+    x-compute-units: 1000
+    x-rate-limit-cus: 100
 
     params:
       - name: "params[0]"
@@ -798,6 +808,8 @@ methods:
   - name: "alchemy_requestPaymasterTokenQuote"
     description: |
       Requests ERC20 fee quote for a `UserOperation`. Optionally accepts fee parameter overrides to be used in the `UserOperation`.
+    x-compute-units: 1000
+    x-rate-limit-cus: 100
     params:
       - name: "params[0]"
         required: true

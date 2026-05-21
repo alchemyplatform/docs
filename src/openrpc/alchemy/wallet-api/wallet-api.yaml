@@ -11,6 +11,7 @@ servers:
 methods:
   - name: wallet_requestAccount
     description: This method is used to get the smart account address and relevant info for a given signer. If an account does not already exist for a given signer, this method will create one before returning the counterfactual address.
+    x-compute-units: 50
     params:
       - name: params[0]
         required: true
@@ -212,6 +213,8 @@ methods:
 
   - name: wallet_prepareCalls
     description: This method is used to prepare a user operation for submission. It will return a built user operation and a signature request which needs to be signed by the user before submitting to wallet_sendPreparedCalls
+    x-compute-units: 1750
+    x-rate-limit-cus: 50
     params:
       - name: params[0]
         required: true
@@ -2487,6 +2490,8 @@ methods:
 
   - name: wallet_sendPreparedCalls
     description: This method is used after signing the signatureRequest returned from prepareCalls to submit a user operation
+    x-compute-units: 3000
+    x-rate-limit-cus: 100
     params:
       - name: params[0]
         required: true
@@ -3768,6 +3773,7 @@ methods:
 
   - name: wallet_createSession
     description: This method is used to create a session for a given address with specified permissions.
+    x-compute-units: 50
     params:
       - name: params[0]
         required: true
@@ -4123,6 +4129,7 @@ methods:
 
   - name: wallet_formatSign
     description: This method is used to format ECDSA signatures
+    x-compute-units: 15
     params:
       - name: params[0]
         required: true
@@ -4311,6 +4318,7 @@ methods:
 
   - name: wallet_getCallsStatus
     description: This method is used to get the status of calls IDs returned from wallet_sendPreparedCalls.
+    x-compute-units: 20
     params:
       - name: callId
         required: true
@@ -4572,6 +4580,7 @@ methods:
 
   - name: wallet_getCapabilities
     description: This method is used to request capabilities from a wallet
+    x-compute-units: 10
     params:
       - name: Wallet Address
         required: true
@@ -4630,6 +4639,7 @@ methods:
 
   - name: wallet_getCrossChainStatus_v0
     description: This method is used to get the status of a transaction (same-chain or cross-chain).
+    x-compute-units: 40
     params:
       - name: callId
         required: true
@@ -5152,6 +5162,7 @@ methods:
 
   - name: wallet_listAccounts
     description: This method is used to list all smart accounts for a given signer.
+    x-compute-units: 10
     params:
       - name: params[0]
         required: true
@@ -5235,6 +5246,7 @@ methods:
 
   - name: wallet_prepareSign
     description: This method is used to translate raw data into a signature request
+    x-compute-units: 15
     params:
       - name: params[0]
         required: true
@@ -5502,6 +5514,8 @@ methods:
 
   - name: wallet_requestQuote_v0
     description: This method is used to request swap quotes
+    x-compute-units: 800
+    x-rate-limit-cus: 50
     params:
       - name: params[0]
         required: true

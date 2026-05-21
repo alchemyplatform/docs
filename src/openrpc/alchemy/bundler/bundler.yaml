@@ -122,6 +122,7 @@ servers:
 methods:
   - name: rundler_maxPriorityFeePerGas
     description: Returns a fee per gas that is an estimate of how much users should set as a priority fee in userOperations for Rundler endpoints.
+    x-compute-units: 10
     params: []
     result:
       name: Estimated priority fee
@@ -138,6 +139,7 @@ methods:
   - name: rundler_getUserOperationGasPrice
     description: |
       Returns gas price recommendations for setting fees in your user operations. The response includes current required fees and suggested fees with buffers for faster inclusion.
+    x-compute-units: 10
     params: []
     result:
       name: Gas price recommendation
@@ -195,6 +197,7 @@ methods:
         - Worldchain
         - Arbitrum
       </Note>
+    x-compute-units: 20
     params:
       - name: userOpHash
         required: true
@@ -402,7 +405,7 @@ methods:
   - name: eth_supportedEntryPoints
     description: |
       Returns an array of the `entryPoint` addresses supported by the client.
-
+    x-compute-units: 10
     params: []
     result:
       name: Supported entryPoints
@@ -436,6 +439,7 @@ methods:
         - Worldchain
         - Arbitrum
       </Note>
+    x-compute-units: 20
     params:
       - name: userOpHash
         required: true
@@ -586,6 +590,8 @@ methods:
   - name: eth_sendUserOperation
     description: |
       Sends a `UserOperation` to the given EVM network.
+    x-compute-units: 1000
+    x-rate-limit-cus: 100
 
     params:
       - name: UserOperation
@@ -625,6 +631,8 @@ methods:
       <Note>
         This endpoint requires a dummy signature in the `userOp`. Check our [FAQs](/docs/reference/bundler-faqs#what-is-a-dummy-signature) to learn what a dummy signature is.
       </Note>
+    x-compute-units: 500
+    x-rate-limit-cus: 50
     params:
       - name: UserOperation
         required: true
