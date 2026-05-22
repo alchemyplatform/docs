@@ -1,37 +1,48 @@
 ---
-title: Third party chains
-description: Learn how to use a 3rd party chain
+title: Non-Alchemy chains
+description: Learn how to run the v5 stack on a chain Alchemy doesn't support
 slug: wallets/low-level-infra/third-party-infrastructure/chains
 ---
 
-<Markdown src="../../../shared/v4-code-banner.mdx" />
+To use the v5 stack on a chain that Alchemy doesn't support, define the chain with viem's `defineChain` and point your public client and bundler client at your own RPC and bundler URLs.
 
-If you're using a chain that isn't supported or only smart account methods are available for those chains, use `createSmartAccountClient` or one of the non-alchemy `create*Client` methods from `@account-kit/smart-contracts`
-with a `split` transport to route your traffic accordingly.
-
-## Smart account only chains example
-
-For smart account only chains, the `alchemyTransport` allows you to specify both the connection object as well as pass in a Node RPC URL, allowing you to split traffic between the Bundler and Paymaster RPC and your Node RPC provider.
+## Usage
 
 ```ts twoslash
-import { zora, alchemy } from "@account-kit/infra";
-import { createLightAccountAlchemyClient } from "@account-kit/smart-contracts";
-import { LocalAccountSigner } from "@aa-sdk/core";
+import { createBundlerClient } from "viem/account-abstraction";
+import { createPublicClient, defineChain, http } from "viem";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { toLightAccount } from "@alchemy/smart-accounts";
 
-const smartAccountClient = createLightAccountAlchemyClient({
-  transport: alchemy({
-    alchemyConnection: {
-      apiKey: "ALCHEMY_API_KEY",
-    },
-    nodeRpcUrl: "ZORA_NODE_RPC_URL",
-  }),
-  chain: zora,
-  signer: LocalAccountSigner.generatePrivateKeySigner(),
+// 1. Define your chain.
+const myChain = defineChain({
+  id: 12345,
+  name: "MyChain",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://rpc.mychain.example.com"] },
+  },
+});
+
+// 2. Public client + smart account against that chain.
+const publicClient = createPublicClient({ chain: myChain, transport: http() });
+const owner = privateKeyToAccount(generatePrivateKey());
+const account = await toLightAccount({
+  client: publicClient,
+  owner,
+  version: "v2.0.0",
+});
+
+// 3. Bundler client at the third-party bundler RPC.
+const bundlerClient = createBundlerClient({
+  account,
+  chain: myChain,
+  transport: http("https://bundler.mychain.example.com"),
+});
+
+const hash = await bundlerClient.sendUserOperation({
+  calls: [{ to: "0x0000000000000000000000000000000000000000", value: 0n, data: "0x" }],
 });
 ```
 
-## Non-Alchemy chains example
-
-To use non-Alchemy supported chains, use the `createSmartAccountClient` method from `@aa-sdk/core` or any of the non-Alchemy `create*Client` methods exported from `@account-kit/smart-contracts` with a `chain` definition for your chain and a `transport` pointing to your RPC provider.
-
-See [`createSmartAccountClient`](/docs/wallets/reference/aa-sdk/core/functions/createSmartAccountClient) for more information.
+To add gas sponsorship via a third-party paymaster on this chain, see [Third Party Paymasters](/docs/wallets/low-level-infra/third-party-infrastructure/paymasters).

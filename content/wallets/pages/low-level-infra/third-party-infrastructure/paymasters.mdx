@@ -1,37 +1,91 @@
 ---
 title: Third Party Paymasters
-description: Learn how to use a 3rd party Paymaster with Wallet APIs
+description: Learn how to use a non-Alchemy paymaster with the v5 stack
 slug: wallets/low-level-infra/third-party-infrastructure/paymasters
 ---
 
-<Markdown src="../../../shared/v4-code-banner.mdx" />
+You can sponsor user operations with any paymaster by passing a `paymaster` option to viem's bundler client. Two approaches:
 
-The `SmartAccountClient` within `@aa-sdk/core` is unopinionated about which paymaster you use, so you can connect to any paymaster. Configure it using the `paymasterAndData` config option when you call `createSmartAccountClient`.
+- **Custom paymaster object** — supply your own `getPaymasterData` / `getPaymasterStubData` callbacks that call your provider's API.
+- **ERC-7677 paymaster** — if your provider speaks the [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) RPC, use viem's `createPaymasterClient` directly.
 
-## Usage
+## Custom paymaster
 
 ```ts twoslash
-import { createSmartAccountClient } from "@aa-sdk/core";
-import { http } from "viem";
+import { createBundlerClient } from "viem/account-abstraction";
+import { createPublicClient, http } from "viem";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { sepolia } from "viem/chains";
+import { toLightAccount } from "@alchemy/smart-accounts";
 
-const chain = sepolia;
-const client = createSmartAccountClient({
-  chain,
-  transport: http("RPC_URL"),
-  // sets the dummy paymasterAndData with paymaster address appended with some dummy paymasterData
-  // that looks like a valid paymasterData
-  dummyPaymasterAndData: async (userop) => ({
-    ...userop,
-    paymasterAndData: `0x<PAYMASTER_ADDRESS><PAYMASTER_DUMMY_DATA>`,
-  }),
-  paymasterAndData: async (userop, opts) => {
-    // call your paymaster here to sponsor the userop
-    // leverage the `opts` field to apply any overrides
-    return {
-      ...userop,
-      paymasterAndData: "0xresponsefromprovider",
-    };
+const publicClient = createPublicClient({ chain: sepolia, transport: http() });
+const owner = privateKeyToAccount(generatePrivateKey());
+const account = await toLightAccount({
+  client: publicClient,
+  owner,
+  version: "v2.0.0",
+});
+
+const bundlerClient = createBundlerClient({
+  account,
+  chain: sepolia,
+  transport: http("https://your-bundler.example.com"),
+  paymaster: {
+    async getPaymasterData(_parameters) {
+      // Call your third-party paymaster's API here.
+      return {
+        paymaster: "0xabc123...",
+        paymasterData: "0x",
+        paymasterVerificationGasLimit: 100000n,
+        paymasterPostOpGasLimit: 50000n,
+      };
+    },
+    async getPaymasterStubData(_parameters) {
+      // Stub values used during gas estimation; same shape as above.
+      return {
+        paymaster: "0xabc123...",
+        paymasterData: "0x",
+        paymasterVerificationGasLimit: 100000n,
+        paymasterPostOpGasLimit: 50000n,
+      };
+    },
   },
+});
+
+const hash = await bundlerClient.sendUserOperation({
+  calls: [{ to: "0x0000000000000000000000000000000000000000", value: 0n, data: "0x" }],
+});
+```
+
+## ERC-7677 paymaster
+
+```ts twoslash
+import { createBundlerClient, createPaymasterClient } from "viem/account-abstraction";
+import { createPublicClient, http } from "viem";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { sepolia } from "viem/chains";
+import { toLightAccount } from "@alchemy/smart-accounts";
+
+const publicClient = createPublicClient({ chain: sepolia, transport: http() });
+const owner = privateKeyToAccount(generatePrivateKey());
+const account = await toLightAccount({
+  client: publicClient,
+  owner,
+  version: "v2.0.0",
+});
+
+const paymasterClient = createPaymasterClient({
+  transport: http("https://your-erc7677-paymaster.example.com"),
+});
+
+const bundlerClient = createBundlerClient({
+  account,
+  chain: sepolia,
+  transport: http("https://your-bundler.example.com"),
+  paymaster: paymasterClient,
+});
+
+const hash = await bundlerClient.sendUserOperation({
+  calls: [{ to: "0x0000000000000000000000000000000000000000", value: 0n, data: "0x" }],
 });
 ```
