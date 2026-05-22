@@ -17,12 +17,14 @@ A `MultiOwnerLightAccount` (returned by `toMultiOwnerLightAccount` from `@alchem
 Call `getOwnerAddresses()` directly on the account.
 
 ```ts example.ts
-import { createClient, http } from "viem";
+import { createClient } from "viem";
 import { sepolia } from "viem/chains";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
 import { toMultiOwnerLightAccount } from "@alchemy/smart-accounts";
 
-const rpcClient = createClient({ chain: sepolia, transport: http() });
+const transport = alchemyTransport({ apiKey: "your-api-key" });
+const rpcClient = createClient({ chain: sepolia, transport });
 
 const account = await toMultiOwnerLightAccount({
   client: rpcClient,
@@ -38,15 +40,16 @@ Encode an `updateOwners` call with `encodeUpdateOwners`, then send it from the a
 
 ```ts example.ts
 import { createBundlerClient } from "viem/account-abstraction";
-import { createClient, http, type Address } from "viem";
+import { createClient, type Address } from "viem";
 import { sepolia } from "viem/chains";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
 import { toMultiOwnerLightAccount } from "@alchemy/smart-accounts";
 import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
 const ALCHEMY_API_KEY = "your-api-key";
-const rpcUrl = `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-const rpcClient = createClient({ chain: sepolia, transport: http(rpcUrl) });
+const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
+const rpcClient = createClient({ chain: sepolia, transport });
 
 const account = await toMultiOwnerLightAccount({
   client: rpcClient,
@@ -57,7 +60,7 @@ const bundlerClient = createBundlerClient({
   account,
   client: rpcClient,
   chain: sepolia,
-  transport: http(rpcUrl),
+  transport,
   userOperation: { estimateFeesPerGas },
 });
 

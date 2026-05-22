@@ -19,16 +19,17 @@ export const PRIVATE_KEY = "<YOUR_PRIVATE_KEY>";
 
 ```ts title="estimateAndSendUserOperation.ts"
 import { createBundlerClient } from "viem/account-abstraction";
-import { createClient, http, type Hex } from "viem";
+import { createClient, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
 import { toModularAccountV2 } from "@alchemy/smart-accounts";
 import { estimateFeesPerGas } from "@alchemy/aa-infra";
 import { chain, ALCHEMY_API_KEY, PRIVATE_KEY } from "./config";
 
-const rpcUrl = `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
 
 export async function estimateAndSendUserOperation() {
-  const rpcClient = createClient({ chain, transport: http(rpcUrl) });
+  const rpcClient = createClient({ chain, transport });
 
   const account = await toModularAccountV2({
     client: rpcClient,
@@ -39,7 +40,7 @@ export async function estimateAndSendUserOperation() {
     account,
     client: rpcClient,
     chain,
-    transport: http(rpcUrl),
+    transport,
     userOperation: { estimateFeesPerGas },
   });
 
@@ -60,17 +61,18 @@ export async function estimateAndSendUserOperation() {
 
 ```ts title="getUserOperationByHash.ts"
 import { createBundlerClient } from "viem/account-abstraction";
-import { createClient, http, type Hash } from "viem";
+import { createClient, type Hash } from "viem";
+import { alchemyTransport } from "@alchemy/common";
 import { chain, ALCHEMY_API_KEY } from "./config";
 
-const rpcUrl = `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
 
 export async function getUserOperationByHash(uoHash: Hash) {
-  const rpcClient = createClient({ chain, transport: http(rpcUrl) });
+  const rpcClient = createClient({ chain, transport });
   const bundlerClient = createBundlerClient({
     client: rpcClient,
     chain,
-    transport: http(rpcUrl),
+    transport,
   });
 
   try {

@@ -9,15 +9,16 @@
 
   ```ts title="client.ts"
   import { createBundlerClient } from "viem/account-abstraction";
-  import { createClient, http } from "viem";
+  import { createClient } from "viem";
   import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+  import { alchemyTransport } from "@alchemy/common";
   import { toModularAccountV2 } from "@alchemy/smart-accounts";
   import { estimateFeesPerGas } from "@alchemy/aa-infra";
   import { chain, ALCHEMY_API_KEY } from "./config";
 
-  const rpcUrl = `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+  const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
 
-  const rpcClient = createClient({ chain, transport: http(rpcUrl) });
+  const rpcClient = createClient({ chain, transport });
 
   export async function getClient() {
     const owner = privateKeyToAccount(generatePrivateKey());
@@ -27,7 +28,7 @@
       account,
       client: rpcClient,
       chain,
-      transport: http(rpcUrl),
+      transport,
       userOperation: { estimateFeesPerGas },
     });
   }
