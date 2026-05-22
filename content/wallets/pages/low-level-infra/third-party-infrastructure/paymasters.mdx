@@ -13,21 +13,22 @@ You can sponsor user operations with any paymaster by passing a `paymaster` opti
 
 ```ts twoslash
 import { createBundlerClient } from "viem/account-abstraction";
-import { createPublicClient, http } from "viem";
+import { createClient, http } from "viem";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { toLightAccount } from "@alchemy/smart-accounts";
 
-const publicClient = createPublicClient({ chain: sepolia, transport: http() });
+const rpcClient = createClient({ chain: sepolia, transport: http() });
 const owner = privateKeyToAccount(generatePrivateKey());
 const account = await toLightAccount({
-  client: publicClient,
+  client: rpcClient,
   owner,
   version: "v2.0.0",
 });
 
 const bundlerClient = createBundlerClient({
   account,
+  client: rpcClient,
   chain: sepolia,
   transport: http("https://your-bundler.example.com"),
   paymaster: {
@@ -61,15 +62,15 @@ const hash = await bundlerClient.sendUserOperation({
 
 ```ts twoslash
 import { createBundlerClient, createPaymasterClient } from "viem/account-abstraction";
-import { createPublicClient, http } from "viem";
+import { createClient, http } from "viem";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { toLightAccount } from "@alchemy/smart-accounts";
 
-const publicClient = createPublicClient({ chain: sepolia, transport: http() });
+const rpcClient = createClient({ chain: sepolia, transport: http() });
 const owner = privateKeyToAccount(generatePrivateKey());
 const account = await toLightAccount({
-  client: publicClient,
+  client: rpcClient,
   owner,
   version: "v2.0.0",
 });
@@ -80,6 +81,7 @@ const paymasterClient = createPaymasterClient({
 
 const bundlerClient = createBundlerClient({
   account,
+  client: rpcClient,
   chain: sepolia,
   transport: http("https://your-bundler.example.com"),
   paymaster: paymasterClient,

@@ -10,13 +10,13 @@ You can use any ERC-4337 bundler with the v5 stack by combining viem's bundler c
 
 ```ts twoslash
 import { createBundlerClient } from "viem/account-abstraction";
-import { createPublicClient, http } from "viem";
+import { createClient, http } from "viem";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { toLightAccount } from "@alchemy/smart-accounts";
 
-// 1. Public client for chain reads — uses any RPC provider.
-const publicClient = createPublicClient({
+// 1. RPC client for chain reads — uses any RPC provider.
+const rpcClient = createClient({
   chain: sepolia,
   transport: http("https://your-rpc-provider.example.com"),
 });
@@ -24,7 +24,7 @@ const publicClient = createPublicClient({
 // 2. Smart account implementation from @alchemy/smart-accounts.
 const owner = privateKeyToAccount(generatePrivateKey());
 const account = await toLightAccount({
-  client: publicClient,
+  client: rpcClient,
   owner,
   version: "v2.0.0",
 });
@@ -32,6 +32,7 @@ const account = await toLightAccount({
 // 3. Bundler client pointed at any third-party bundler URL.
 const bundlerClient = createBundlerClient({
   account,
+  client: rpcClient,
   chain: sepolia,
   transport: http("https://your-third-party-bundler.example.com"),
 });
@@ -44,6 +45,6 @@ const hash = await bundlerClient.sendUserOperation({
 
 ## Splitting bundler traffic and node RPC traffic
 
-The `publicClient` (chain reads) and `bundlerClient` (user-operation RPCs) use independent transports, so you can already point them at different providers. Use one provider's URL for `publicClient` and another for `bundlerClient` and you're done — no special `split` transport needed.
+The `rpcClient` (chain reads) and `bundlerClient` (user-operation RPCs) use independent transports, so you can already point them at different providers. Use one provider's URL for `rpcClient` and another for `bundlerClient` and you're done — no special `split` transport needed.
 
 If you'd rather route a single client across multiple providers (e.g. fall back to a different RPC on certain methods), use viem's [`fallback`](https://viem.sh/docs/clients/transports/fallback) transport.

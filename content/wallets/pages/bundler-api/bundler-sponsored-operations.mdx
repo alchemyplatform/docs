@@ -80,7 +80,7 @@ import { createBundlerClient } from "viem/account-abstraction";
 import { privateKeyToAccount } from "viem/accounts";
 import { worldchain } from "viem/chains";
 import { toModularAccountV2 } from "@alchemy/smart-accounts";
-import { estimateFeesPerGas as alchemyEstimateFeesPerGas } from "@alchemy/aa-infra";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
 const POLICY_ID = process.env.POLICY_ID!;
@@ -107,7 +107,7 @@ const bundlerClient = createBundlerClient({
   client: rpcClient,
   chain: worldchain,
   transport: bundlerTransport,
-  userOperation: { estimateFeesPerGas: alchemyEstimateFeesPerGas },
+  userOperation: { estimateFeesPerGas },
 });
 
 // Zero ALL three gas fields — the bundler fills them in.

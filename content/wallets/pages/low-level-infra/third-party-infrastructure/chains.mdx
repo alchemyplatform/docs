@@ -10,7 +10,7 @@ To use the v5 stack on a chain that Alchemy doesn't support, define the chain wi
 
 ```ts twoslash
 import { createBundlerClient } from "viem/account-abstraction";
-import { createPublicClient, defineChain, http } from "viem";
+import { createClient, defineChain, http } from "viem";
 import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 import { toLightAccount } from "@alchemy/smart-accounts";
 
@@ -24,11 +24,11 @@ const myChain = defineChain({
   },
 });
 
-// 2. Public client + smart account against that chain.
-const publicClient = createPublicClient({ chain: myChain, transport: http() });
+// 2. RPC client + smart account against that chain.
+const rpcClient = createClient({ chain: myChain, transport: http() });
 const owner = privateKeyToAccount(generatePrivateKey());
 const account = await toLightAccount({
-  client: publicClient,
+  client: rpcClient,
   owner,
   version: "v2.0.0",
 });
@@ -36,6 +36,7 @@ const account = await toLightAccount({
 // 3. Bundler client at the third-party bundler RPC.
 const bundlerClient = createBundlerClient({
   account,
+  client: rpcClient,
   chain: myChain,
   transport: http("https://bundler.mychain.example.com"),
 });
