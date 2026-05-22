@@ -29,7 +29,7 @@ slug: wallets/resources/faqs
   Your smart wallet deploys when the first `UserOperation` (UO) is
   sent from the account. The first UO must be sent with a non-zero `initCode`.
   aa-sdk handles generation of this `initCode` for you using
-  [`getAccountInitCode`](/docs/wallets/reference/aa-sdk/core/functions/toSmartContractAccount).
+  [`getAccountInitCode`](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/account/smartContractAccount.ts).
 </Accordion>
 
 ### How do I upgrade a Light Account?
@@ -86,9 +86,9 @@ slug: wallets/resources/faqs
 <Accordion title="Answer">
   This can happen when `UserOperation`s (UOs) become underpriced, frequently due to fee market movement between when gas and fees are estimations and when the UO is actually submitted.
 
-  You may experience this when calling the [`waitForUserOperationTransaction`](/docs/wallets/reference/aa-sdk/core/variables/waitForUserOperationTransaction) method. It may throw an error if it does not find the UO in a mined Transaction within its retry limits.
+  You may experience this when calling the [`waitForUserOperationTransaction`](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/actions/smartAccount/waitForUserOperationTransacation.ts) method. It may throw an error if it does not find the UO in a mined Transaction within its retry limits.
 
-  You can mitigate this by defining a more flexible retry period when constructing a [`Client`](/docs/wallets/reference/aa-sdk/core/functions/createSmartAccountClient) (i.e. `txMaxRetries`, `txRetryIntervalMs`, `txRetryMultiplier` in `opts`). If your UO continues to be delayed beyond a limit you are willing to wait, you can resubmit it using [`dropAndReplaceUserOperation`](/docs/wallets/reference/aa-sdk/core/functions/dropAndReplaceUserOperation).
+  You can mitigate this by defining a more flexible retry period when constructing a [`Client`](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/client/smartAccountClient.ts) (i.e. `txMaxRetries`, `txRetryIntervalMs`, `txRetryMultiplier` in `opts`). If your UO continues to be delayed beyond a limit you are willing to wait, you can resubmit it using [`dropAndReplaceUserOperation`](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/actions/smartAccount/dropAndReplaceUserOperation.ts).
 </Accordion>
 
 ### Are `UserOperation`s protected from MEV bots?
@@ -192,7 +192,7 @@ slug: wallets/resources/faqs
 
   Use this flow when you need to verify user sessions created by SCAs via Wallet APIs.
 
-  1. The frontend generates a stamped request using [signer.inner.stampWhoAmI](https://www.alchemy.com/docs/wallets/reference/account-kit/signer/classes/BaseSignerClient#stampwhoami).
+  1. The frontend generates a stamped request using [signer.inner.stampWhoAmI](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/account-kit/signer/src/client/base.ts).
   2. It sends the stamp to your backend.
   3. The backend calls the [/signer/v1/whoami](https://www.alchemy.com/docs/node/smart-wallets/signer-api-endpoints/auth-user) endpoint to verify the identity.
   4. If you need to make subsequent requests, you can avoid calling the whoami endpoint on every request. After verifying the `whoami`, the backend can issue its own session token (e.g. an HTTP-only cookie or access token). If the token is present, you can safely skip the `whoami` check.
@@ -253,11 +253,11 @@ slug: wallets/resources/faqs
 ### `waitForUserOperationTransaction` timeout
 
 <Accordion title="Answer">
-  [`waitForUserOperationTransaction`](/docs/wallets/reference/aa-sdk/core/variables/waitForUserOperationTransaction) may throw this error if it does not find the mined User Operation within its retry limits.
+  [`waitForUserOperationTransaction`](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/actions/smartAccount/waitForUserOperationTransacation.ts) may throw this error if it does not find the mined User Operation within its retry limits.
 
-  You can mitigate this by defining a more flexible retry period when constructing a [`Client`](/docs/wallets/reference/aa-sdk/core/functions/createSmartAccountClient) (i.e. `txMaxRetries`, `txRetryIntervalMs`, `txRetryMultiplier` in `opts`).
+  You can mitigate this by defining a more flexible retry period when constructing a [`Client`](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/client/smartAccountClient.ts) (i.e. `txMaxRetries`, `txRetryIntervalMs`, `txRetryMultiplier` in `opts`).
 
-  If your `UserOperation` continues to be delayed beyond a limit you are willing to wait, you can resubmit the user operation using [`dropAndReplaceUserOperation`](/docs/wallets/reference/aa-sdk/core/functions/dropAndReplaceUserOperation#usage).
+  If your `UserOperation` continues to be delayed beyond a limit you are willing to wait, you can resubmit the user operation using [`dropAndReplaceUserOperation`](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/aa-sdk/core/src/actions/smartAccount/dropAndReplaceUserOperation.ts).
 </Accordion>
 
 ### `Although one or more Error Occurred [execution reverted] Contract Execution Completed` on etherscan
@@ -358,7 +358,7 @@ createConfig({
 })
 ```
 
-[Reference: createConfig](https://www.alchemy.com/docs/wallets/reference/account-kit/react/functions/createConfig)
+[Reference: createConfig](https://github.com/alchemyplatform/aa-sdk/blob/v4.x.x/account-kit/react/src/createConfig.ts)
 
 ***
 
