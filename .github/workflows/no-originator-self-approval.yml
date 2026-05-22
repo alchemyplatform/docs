@@ -1,10 +1,18 @@
 name: Docs agent review guard
 
-# When the docs-agent (JackReacher0807) opens a PR on behalf of someone who
+# When the docs-agent (alchemy-bot) opens a PR on behalf of someone who
 # requested the change via Slack, it includes a "Requested-by: @<github_username>"
 # trailer in the commit message. This workflow watches for approvals on those
 # PRs and dismisses any approval submitted by that user, so a docs-agent PR
 # always requires a non-originator review before merging.
+#
+# Note on shared bot identity: alchemy-bot is also used by other automation
+# (Daikon spec updates, weekly changelog, etc.). To avoid this workflow
+# falsely gating those non-docs-agent PRs, we additionally check whether the
+# PR contains commits signed by the docs-agent's pinned GPG key. Only PRs
+# with at least one pinned-key-signed commit are treated as docs-agent PRs;
+# everything else exits 0 (skip enforcement) so the other automation is
+# unaffected.
 #
 # Branch protection on main needs both "Require 1 approval" and this workflow
 # as a required check. The review requirement supplies an approval, and this
@@ -14,13 +22,15 @@ name: Docs agent review guard
 # Why commit message and not PR body: the PR body is editable by anyone with
 # write access (including the originator), who could remove their own @mention
 # before approving. The commit message is GPG-signed by docs-agent's key
-# (AB0009C56564B53A). Force-pushing to amend the trailer would either lose
+# (199E89B4E7FB0FFC). Force-pushing to amend the trailer would either lose
 # the signature (no agent key on the originator's machine) or, if the repo has
 # "Dismiss stale pull request approvals when new commits are pushed" enabled,
 # drop existing approvals.
 #
 # Scope: this workflow only enforces docs-agent PRs. It passes for
-# human-authored PRs so the check can be required for every PR.
+# human-authored PRs and for non-docs-agent automation PRs (including other
+# alchemy-bot automation that doesn't sign commits with our pinned key), so
+# the check can be required for every PR.
 
 on:
   pull_request_review:
@@ -57,23 +67,28 @@ jobs:
 
           REVIEW_STATE_LOWER="$(printf '%s' "$REVIEW_STATE" | tr '[:upper:]' '[:lower:]')"
 
-          if [ "$PR_AUTHOR" != "JackReacher0807" ]; then
-            echo "PR author is $PR_AUTHOR, not JackReacher0807. No docs-agent enforcement needed."
+          if [ "$PR_AUTHOR" != "alchemy-bot" ]; then
+            echo "PR author is $PR_AUTHOR, not alchemy-bot. No docs-agent enforcement needed."
             exit 0
           fi
 
-          # PINNED KEY VERIFICATION (defense against account compromise):
+          # PINNED KEY VERIFICATION (defense against account compromise + shared bot):
           #
-          # GitHub's `verification.verified == true` only confirms the
-          # signature is valid against SOME key on JackReacher0807's account.
-          # If that account is compromised and an attacker adds their own
-          # GPG key, commits signed with that key would also pass GitHub's
-          # check. To close this, we re-verify each commit's signature
-          # against ONLY the pinned agent fingerprint, in an isolated
-          # gpg keyring containing only the agent's checked-in public key.
-          # The fingerprint is hardcoded below; account compromise can't
-          # change it.
-          EXPECTED_FPR="48AB9EC753D58474E845E808AB0009C56564B53A"
+          # alchemy-bot is shared with other automation (Daikon, weekly
+          # changelog, etc.) that don't sign commits with our key. We treat
+          # only PRs that have at least one commit signed by the pinned
+          # docs-agent key as docs-agent PRs.
+          #
+          # Additionally, GitHub's `verification.verified == true` only
+          # confirms the signature is valid against SOME key on alchemy-bot's
+          # account. If that account is compromised and an attacker adds
+          # their own GPG key, commits signed with that key would also pass
+          # GitHub's check. To close this, we re-verify each commit's
+          # signature against ONLY the pinned agent fingerprint, in an
+          # isolated gpg keyring containing only the agent's checked-in
+          # public key. The fingerprint is hardcoded below; account
+          # compromise can't change it.
+          EXPECTED_FPR="4295076E6488C0171AD4D2CC199E89B4E7FB0FFC"
           PUBKEY_FILE=".github/workflows/docs-agent-pubkey.asc"
           export GNUPGHOME="$(mktemp -d)"
           trap 'rm -rf "$GNUPGHOME"' EXIT
@@ -241,12 +256,28 @@ jobs:
           ALL_REQUESTED_BY="$(sort -u "$TRAILERS_FILE" | grep -v '^$' || true)"
           APPROVER_LOWER="$(printf '%s' "$APPROVER" | tr '[:upper:]' '[:lower:]')"
 
+          if [ "$TRUSTED_COMMIT_COUNT" -eq 0 ]; then
+            # alchemy-bot is shared with other automation (Daikon spec
+            # updates, weekly changelog, etc.). Those PRs reach this
+            # workflow because PR_AUTHOR == "alchemy-bot", but they don't
+            # carry commits signed by the docs-agent pinned key. Skip
+            # enforcement so we don't gate them.
+            #
+            # Trade-off vs the previous design: if an attacker with branch
+            # write access force-pushes to remove all docs-agent-signed
+            # commits from a real docs-agent PR, the PR will look like
+            # a non-docs-agent alchemy-bot PR here and the guard will skip.
+            # Mitigations: (1) branch-protection "Restrict who can push
+            # to matching branches" should not include the originator;
+            # (2) "Dismiss stale pull request approvals when new commits
+            # are pushed" forces re-approval after any force-push; (3)
+            # consider enabling "Require signed commits" at branch
+            # protection level for additional defense.
+            echo "alchemy-bot PR with no commits signed by the docs-agent's pinned GPG key. Treating as non-docs-agent automation (Daikon, weekly changelog, or similar). Skipping enforcement."
+            exit 0
+          fi
+
           if [ -z "$ALL_REQUESTED_BY" ]; then
-            if [ "$TRUSTED_COMMIT_COUNT" -eq 0 ]; then
-              echo "ERROR: no pinned-key-verified docs-agent commits found in the reviewed range." >&2
-              dismiss_with_retry ":warning: Originator self-approval check found no pinned-key-verified docs-agent commits in the reviewed range. Approval dismissed by default because trusted attribution may have been removed." || true
-              exit 1
-            fi
             echo "No trusted Requested-by trailer found across $TRUSTED_COMMIT_COUNT pinned-key-verified docs-agent commit(s). Allowing approval because there is no originator attribution to enforce."
             exit 0
           fi

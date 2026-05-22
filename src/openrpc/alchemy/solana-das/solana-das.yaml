@@ -13,6 +13,8 @@ servers:
 methods:
   - name: getAsset
     description: Returns information about a single digital asset.
+    x-compute-units: 80
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: id
@@ -22,7 +24,7 @@ methods:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
       - name: displayOptions
         required: false
-        description: Options for display formatting.
+        description: Optional response shaping flags. The server also accepts `options` as an alias of this field, but only one of `displayOptions` or `options` may be present per request.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
@@ -38,6 +40,8 @@ methods:
 
   - name: getAssets
     description: Returns information about multiple digital assets.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: ids
@@ -49,7 +53,7 @@ methods:
             $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/AssetId
       - name: displayOptions
         required: false
-        description: Options for display formatting.
+        description: Optional response shaping flags. The server also accepts `options` as an alias of this field, but only one of `displayOptions` or `options` may be present per request.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
@@ -67,6 +71,8 @@ methods:
 
   - name: getAssetProof
     description: Returns the merkle proof for a compressed digital asset.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: id
@@ -87,6 +93,8 @@ methods:
 
   - name: getAssetProofs
     description: Returns merkle proofs for multiple compressed digital assets.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: ids
@@ -111,6 +119,8 @@ methods:
 
   - name: getAssetsByAuthority
     description: Returns assets filtered by their authority.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: authorityAddress
@@ -161,6 +171,11 @@ methods:
         description: Retrieve assets after this cursor.
         schema:
           type: string
+      - name: options
+        required: false
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
+        schema:
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
       - name: getAssetsByAuthority example
         params:
@@ -180,6 +195,8 @@ methods:
 
   - name: getAssetsByOwner
     description: Returns assets owned by the specified address.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: ownerAddress
@@ -236,7 +253,7 @@ methods:
           type: string
       - name: options
         required: false
-        description: Options for display formatting.
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
         schema:
           $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
@@ -266,6 +283,8 @@ methods:
 
   - name: getAssetsByGroup
     description: Returns assets filtered by their group information.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: groupKey
@@ -321,6 +340,11 @@ methods:
         description: Retrieve assets after this cursor.
         schema:
           type: string
+      - name: options
+        required: false
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
+        schema:
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
       - name: getAssetsByGroup example
         params:
@@ -342,6 +366,8 @@ methods:
 
   - name: getAssetsByCreator
     description: Returns assets created by the specified address.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: creatorAddress
@@ -398,6 +424,11 @@ methods:
         description: Retrieve assets after this cursor.
         schema:
           type: string
+      - name: options
+        required: false
+        description: Optional response shaping flags. The server also accepts `displayOptions` as an alias of this field, but only one of `options` or `displayOptions` may be present per request.
+        schema:
+          $ref: ../../chains/_components/solana/asset.yaml#/components/schemas/DisplayOptions
     examples:
       - name: getAssetsByCreator example
         params:
@@ -425,6 +456,8 @@ methods:
       `royaltyAmount` (basis-points integer match), `supply` (exact integer match), and
       `grouping` (strict 2-tuple of `[groupKey, groupValue]`, e.g. `["collection", "<address>"]`).
       Pass these directly when calling the API from your own client.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: ownerAddress
@@ -619,6 +652,8 @@ methods:
 
   - name: getAssetSignatures
     description: Returns signatures for transactions that have interacted with the given asset.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: id
@@ -667,6 +702,8 @@ methods:
 
   - name: getNftEditions
     description: Returns all editions of a given master NFT.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: mintAddress
@@ -710,6 +747,8 @@ methods:
 
   - name: getTokenAccounts
     description: Returns token accounts based on the specified filters. At least one of `ownerAddress` or `mintAddress` is required.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
     paramStructure: by-name
     params:
       - name: ownerAddress

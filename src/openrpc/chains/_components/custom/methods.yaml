@@ -6,6 +6,7 @@ components:
     eth_getUncleCountByBlockHash:
       name: eth_getUncleCountByBlockHash
       description: Returns the number of uncles in a block matching the given block hash.
+      x-compute-units: 20
       params:
         - name: Block hash
           required: true
@@ -32,6 +33,7 @@ components:
     eth_getUncleCountByBlockNumber:
       name: eth_getUncleCountByBlockNumber
       description: Returns the number of uncles in a block matching the given block number.
+      x-compute-units: 20
       params:
         - name: Block number or tag
           required: true
@@ -58,6 +60,8 @@ components:
     eth_getBlockReceipts:
       name: eth_getBlockReceipts
       description: Returns the receipts of a block by number or hash.
+      x-compute-units: 20
+      x-rate-limit-cus: 500
       params:
         - name: Block number or tag or hash
           required: true
@@ -131,6 +135,7 @@ components:
     eth_getUncleByBlockHashAndIndex:
       name: eth_getUncleByBlockHashAndIndex
       description: Returns information about an uncle of a block by hash and uncle index.
+      x-compute-units: 20
       params:
         - name: Block hash
           required: true
@@ -182,6 +187,7 @@ components:
     eth_getUncleByBlockNumberAndIndex:
       name: eth_getUncleByBlockNumberAndIndex
       description: Returns information about an uncle of a block by number and uncle index.
+      x-compute-units: 20
       params:
         - name: Block number or tag
           required: true
@@ -234,6 +240,8 @@ components:
     eth_syncing:
       name: eth_syncing
       description: Returns an object with data about the sync status or `false` if not syncing.
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: Syncing status
@@ -261,6 +269,7 @@ components:
     eth_accounts:
       name: eth_accounts
       description: Returns a list of addresses owned by the client.
+      x-compute-units: 10
       params: []
       result:
         name: Accounts
@@ -281,6 +290,8 @@ components:
     eth_protocolVersion:
       name: eth_protocolVersion
       description: Returns the current protocol version used by the client.
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: Protocol Version
@@ -298,6 +309,8 @@ components:
     net_listening:
       name: net_listening
       description: Returns `true` if the client is actively listening for network connections.
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: Listening
@@ -318,6 +331,7 @@ components:
         Fills in default values for a transaction object. This method populates missing fields such as `gas`, `gasPrice`, `nonce`, and `chainId` based on the current network state and transaction parameters. It returns both the filled transaction object and the RLP-encoded raw transaction data.
 
         This is useful for preparing transactions before signing, as it ensures all required fields are present with appropriate values.
+      x-compute-units: 20
       params:
         - name: Transaction
           required: true
@@ -364,6 +378,7 @@ components:
     eth_simulateV1:
       name: eth_simulateV1
       description: Enables simulation of complex transactions and state changes without modifying the blockchain.
+      x-compute-units: 40
       params:
         - name: Simulation object
           required: true
@@ -466,6 +481,7 @@ components:
     eth_createAccessList:
       name: eth_createAccessList
       description: Generates an access list for a transaction.
+      x-compute-units: 10
       params:
         - name: Transaction
           required: true
@@ -519,6 +535,7 @@ components:
     eth_maxPriorityFeePerGas:
       name: eth_maxPriorityFeePerGas
       description: Returns the current maximum priority fee per gas in wei.
+      x-compute-units: 10
       params: []
       result:
         name: Max priority fee per gas
@@ -537,6 +554,7 @@ components:
       name: eth_feeHistory
       summary: Returns historical base fee per gas and priority fee per gas data for a range of blocks.
       description: Returns transaction base fee per gas and effective priority fee per gas for the requested block range.
+      x-compute-units: 10
       params:
         - name: blockCount
           description: The number of blocks in the requested range. Must be greater than zero. Clients may return fewer blocks if not all blocks are available.
@@ -662,6 +680,7 @@ components:
     eth_newPendingTransactionFilter:
       name: eth_newPendingTransactionFilter
       description: Creates a filter in the node to notify when new pending transactions arrive.
+      x-compute-units: 20
       params: []
       result:
         name: Filter identifier
@@ -679,6 +698,7 @@ components:
     eth_getProof:
       name: eth_getProof
       description: Returns the Merkle proof for a given account and optionally some storage keys.
+      x-compute-units: 20
       params:
         - name: Address
           required: true
@@ -739,6 +759,7 @@ components:
         `0x4200000000000000000000000000000000000016`; this method returns the
         account/storage proof needed to prove and finalize a withdrawal on L1.
         The parameter and result shape match `eth_getProof`.
+      x-compute-units: 20
       params:
         - name: Address
           required: true
@@ -805,6 +826,7 @@ components:
     eth_getAccountInfo:
       name: eth_getAccountInfo
       description: Retrieves account information including balance, code, and nonce for a given address at a specified block.
+      x-compute-units: 60
       params:
         - name: Address
           required: true
@@ -851,6 +873,7 @@ components:
     eth_blobBaseFee:
       name: eth_blobBaseFee
       description: Returns the base fee per blob gas in wei for the current block.
+      x-compute-units: 10
       params: []
       result:
         name: Blob Base Fee
@@ -867,6 +890,7 @@ components:
     eth_getBlobSidecars:
       name: eth_getBlobSidecars
       description: Returns the blob sidecars for a given block, identified by block hash or block number.
+      x-compute-units: 20
       params:
         - name: Block Identifier
           description: A block hash or block number to retrieve blob sidecars for.
@@ -912,6 +936,7 @@ components:
         shortcuts: `-1` (≥ 1/2 validators), `-2` (≥ 2/3 validators), `-3`
         (all validators). The method returns the block header at the height
         equal to `max(fastFinalizedHeight, probabilisticFinalizedHeight)`.
+      x-compute-units: 20
       params:
         - name: verifiedValidatorNum
           required: true
@@ -1040,6 +1065,8 @@ components:
     eth_getTransactionReceiptsByBlock:
       name: eth_getTransactionReceiptsByBlock
       description: Returns the transaction receipts for all transactions in a given block.
+      x-compute-units: 20
+      x-rate-limit-cus: 1500
       params:
         - name: Block Identifier
           description: The block hash or block number.
@@ -1074,6 +1101,7 @@ components:
       # Polygon specific method
       name: eth_getRootHash
       description: Returns the root hash for a specified block range.
+      x-compute-units: 20
       params:
         - name: fromBlock
           required: true
@@ -1104,6 +1132,7 @@ components:
     eth_getTdByNumber:
       name: eth_getTdByNumber
       description: Returns the total difficulty for a given block number. This method is primarily used by Heimdall to query the total difficulty of a produced block when building a milestone.
+      x-compute-units: 20
       params:
         - name: Block number
           required: true
@@ -1212,6 +1241,7 @@ components:
     eth_baseFee:
       name: eth_baseFee
       description: Returns the base fee for the next block.
+      x-compute-units: 10
       params: []
       result:
         name: Base fee
@@ -1228,6 +1258,7 @@ components:
     eth_getAssetBalance:
       name: eth_getAssetBalance
       description: Get an account's non-AVAX balance.
+      x-compute-units: 10
       params:
         - name: address
           required: true
@@ -1265,6 +1296,7 @@ components:
     eth_getChainConfig:
       name: eth_getChainConfig
       description: Returns the chain config of the blockchain.
+      x-compute-units: 10
       params: []
       result:
         name: Chain config
@@ -1330,6 +1362,7 @@ components:
         Simulates a bundle of signed transactions against a specific block number,
         including simulating a bundle at the top of the next block. This method allows
         you to test transaction bundles before submitting them to the network.
+      x-compute-units: 40
       params:
         - name: Bundle parameters
           required: true
@@ -1495,6 +1528,8 @@ components:
     eth_sendRawTransactionSync:
       name: eth_sendRawTransactionSync
       description: Sends a raw transaction to the network and waits for the transaction to be mined.
+      x-compute-units: 40
+      x-rate-limit-cus: 125
       params:
         - name: Transaction data
           required: true
@@ -1540,6 +1575,7 @@ components:
         Submits a signed transaction and returns the transaction receipt without polling. This method combines submission and receipt retrieval into one call, returning the receipt as soon as the transaction is executed in a mini block.
 
         If the transaction is not executed within 10 seconds, the method returns a `realtime transaction expired` error.
+      x-compute-units: 40
       params:
         - name: Transaction
           required: true
@@ -1577,6 +1613,7 @@ components:
         This method is particularly useful for simulating transactions to understand their potential
         outcomes. It supports simulating transactions at an intermediate state of a block, simulating
         multiple transactions with sequential dependencies, and overwriting block headers.
+      x-compute-units: 20
       params:
         - name: Bundles
           required: true
@@ -1758,6 +1795,7 @@ components:
       name: erigon_forks
       summary: Get forks
       description: Returns the genesis hash and lists of all height-based and time-based forks that the node is aware of.
+      x-compute-units: 20
       params: []
       result:
         name: forks
@@ -1795,6 +1833,7 @@ components:
       name: erigon_getHeaderByHash
       summary: Get header by hash
       description: Returns the block header for the given block hash.
+      x-compute-units: 20
       params:
         - name: hash
           required: true
@@ -1811,6 +1850,7 @@ components:
       name: erigon_getHeaderByNumber
       summary: Get header by number
       description: Returns the block header for the given block number.
+      x-compute-units: 20
       params:
         - name: blockNumber
           required: true
@@ -1827,6 +1867,7 @@ components:
       name: erigon_getLogsByHash
       summary: Get logs by block hash
       description: Returns all logs generated by transactions in the block with the given hash, grouped by transaction.
+      x-compute-units: 20
       params:
         - name: hash
           required: true
@@ -1846,6 +1887,7 @@ components:
       name: erigon_issuance
       summary: Get issuance
       description: Returns the issuance and burn information for the given block, including block reward, uncle reward, total issuance, total burned, and tips.
+      x-compute-units: 20
       params:
         - name: blockNumber
           required: true
@@ -1871,6 +1913,8 @@ components:
       name: net_peerCount
       summary: Get peer count
       description: Returns the number of peers currently connected to the client.
+      x-compute-units: 0
+      x-rate-limit-cus: 5
       params: []
       result:
         name: peerCount
@@ -1889,6 +1933,7 @@ components:
       name: txpool_content
       summary: Get transaction pool content
       description: Returns a list of the exact details of all transactions currently pending for inclusion in the next blocks, as well as ones that are being scheduled for future execution.
+      x-compute-units: 500
       params: []
       result:
         name: content
@@ -1904,6 +1949,7 @@ components:
       name: parlia_getSnapshot
       summary: Get Parlia snapshot
       description: Returns the consensus snapshot at the given block number for the BNB Smart Chain Parlia consensus engine. If omitted, returns the snapshot at the latest block.
+      x-compute-units: 20
       params:
         - name: blockNumber
           required: false
@@ -1921,6 +1967,8 @@ components:
       name: debug_executionWitness
       summary: Get execution witness
       description: Returns the execution witness for the given block number.
+      x-compute-units: 40
+      x-rate-limit-cus: 1000
       params:
         - name: blockNumber
           required: true
@@ -1937,6 +1985,8 @@ components:
       name: debug_executionWitnessByHash
       summary: Get execution witness by hash
       description: Returns the execution witness for the given block hash.
+      x-compute-units: 40
+      x-rate-limit-cus: 1000
       params:
         - name: blockHash
           required: true
@@ -1954,6 +2004,7 @@ components:
       name: getHealth
       summary: Get health
       description: Returns the health status of the node.
+      x-compute-units: 20
       params: []
       result:
         name: health
@@ -1979,6 +2030,7 @@ components:
       summary: Send transaction
       description: Submits a signed transaction to the network.
       paramStructure: by-name
+      x-compute-units: 20
       params:
         - name: transaction
           required: true
@@ -2006,6 +2058,7 @@ components:
       summary: Get transaction
       description: Returns the details and status of a submitted transaction by its hash.
       paramStructure: by-name
+      x-compute-units: 40
       params:
         - name: hash
           required: true
@@ -2042,6 +2095,7 @@ components:
       summary: Get transactions
       description: Returns a paginated list of transactions from the network.
       paramStructure: by-name
+      x-compute-units: 50
       params:
         - name: startLedger
           required: false
@@ -2088,6 +2142,7 @@ components:
       summary: Simulate transaction
       description: Simulates a transaction invocation to estimate resource fees, required authorizations, and return values without submitting to the network.
       paramStructure: by-name
+      x-compute-units: 20
       params:
         - name: transaction
           required: true
