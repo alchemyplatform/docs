@@ -4,47 +4,60 @@ description: Using session keys with your Modular Account V2
 slug: wallets/smart-contracts/modular-account-v2/session-keys/using-session-keys
 ---
 
-<Markdown src="../../../../shared/v4-code-banner.mdx" />
-
-Once session keys are added, using them is straightforward -- create another client instance with the session key connected along with properties of the session key (session key entityId and global validation). These properties were set during the installValidation call.
+Once a session key is installed, you can use it by creating a second `ModularAccountV2` whose **owner** is the session key signer and whose `accountAddress` points to the original account. Pass the session key's `entityId` and global-validation flag via `signerEntity` — these were set when you called [`encodeInstallValidation`](/docs/wallets/smart-contracts/modular-account-v2/session-keys/adding-session-keys).
 
 ```ts twoslash
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { generatePrivateKey } from "viem/accounts";
-import { type SmartAccountSigner } from "@aa-sdk/core";
-import { parseEther } from "viem";
-import { sepolia, alchemy } from "@account-kit/infra";
+import { createBundlerClient } from "viem/account-abstraction";
+import { createClient, parseEther } from "viem";
+import { sepolia } from "viem/chains";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
+import { toModularAccountV2 } from "@alchemy/smart-accounts";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
-const client = await createModularAccountV2Client({
-  chain: sepolia,
-  transport: alchemy({ apiKey: "your-api-key" }),
-  signer: LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey()),
+const transport = alchemyTransport({ apiKey: "your-api-key" });
+const rpcClient = createClient({ chain: sepolia, transport });
+
+// Owner-side account (already created and used to install the session key).
+const ownerAccount = await toModularAccountV2({
+  client: rpcClient,
+  owner: privateKeyToAccount(generatePrivateKey()),
 });
 
-let sessionKeyEntityId = 1;
-const sessionKeySigner: SmartAccountSigner =
-  LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey());
+// Session-key signer + the validation entity id you installed it under.
+const sessionKeySigner = privateKeyToAccount(generatePrivateKey());
+const sessionKeyEntityId = 1;
 
-const sessionKeyClient = await createModularAccountV2Client({
-  chain: sepolia,
-  transport: alchemy({ apiKey: "your-api-key" }),
-  signer: sessionKeySigner,
-  accountAddress: client.getAddress(client.account),
-  initCode: await client.account.getInitCode(),
+// Reconnect to the SAME account address, but with the session-key signer as owner
+// and the session key's signerEntity. If the account isn't deployed yet, also pass
+// factoryArgs from `ownerAccount.getFactoryArgs()` so the UO can deploy it.
+const sessionKeyAccount = await toModularAccountV2({
+  client: rpcClient,
+  owner: sessionKeySigner,
+  accountAddress: ownerAccount.address,
   signerEntity: {
     entityId: sessionKeyEntityId,
     isGlobalValidation: true,
   },
 });
 
+const sessionKeyClient = createBundlerClient({
+  account: sessionKeyAccount,
+  client: rpcClient,
+  chain: sepolia,
+  transport,
+  userOperation: { estimateFeesPerGas },
+});
+
 await sessionKeyClient.sendUserOperation({
-  uo: {
-    target: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // The address to call in the UO
-    data: "0x", // The calldata to send in the UO
-    value: parseEther("1"), // The value to send in the UO
-  },
+  calls: [
+    {
+      to: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      data: "0x",
+      value: parseEther("1"),
+    },
+  ],
 });
 ```
 
-Note that you have to pass in `accountAddress` and `initCode` to session key clients. By default, the client uses an account address counterfactual that assumes that the connected signer is the owner.
+You must pass `accountAddress` — without it, `toModularAccountV2` would derive a counterfactual address from the session-key signer instead of pointing at the original account.

@@ -4,94 +4,91 @@ description: Removing session keys from your Modular Account V2
 slug: wallets/smart-contracts/modular-account-v2/session-keys/removing-session-keys
 ---
 
-<Markdown src="../../../../shared/v4-code-banner.mdx" />
-
-Removing session keys is done with the `uninstallValidation` method.
+To remove a session key, extend the bundler client with `installValidationActions` and call `encodeUninstallValidation`. It returns calldata; send it as a user operation from the account.
 
 ```ts twoslash
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
+import { createBundlerClient } from "viem/account-abstraction";
+import { createClient } from "viem";
+import { sepolia } from "viem/chains";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
 import {
+  toModularAccountV2,
   installValidationActions,
-  getDefaultSingleSignerValidationModuleAddress,
   SingleSignerValidationModule,
-  modularAccountAbi,
-} from "@account-kit/smart-contracts/experimental";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { sepolia, alchemy } from "@account-kit/infra";
-import { generatePrivateKey } from "viem/accounts";
+  DefaultModuleAddress,
+} from "@alchemy/smart-accounts";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
-const client = (
-  await createModularAccountV2Client({
-    chain: sepolia,
-    transport: alchemy({ apiKey: "your-api-key" }),
-    signer: LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey()),
-  })
-).extend(installValidationActions);
+const transport = alchemyTransport({ apiKey: "your-api-key" });
+const rpcClient = createClient({ chain: sepolia, transport });
 
-let sessionKeyEntityId = 1;
+const account = await toModularAccountV2({
+  client: rpcClient,
+  owner: privateKeyToAccount(generatePrivateKey()),
+});
 
-// Removing a basic session key
-await client.uninstallValidation({
-  moduleAddress: getDefaultSingleSignerValidationModuleAddress(client.chain),
+const bundlerClient = createBundlerClient({
+  account,
+  client: rpcClient,
+  chain: sepolia,
+  transport,
+  userOperation: { estimateFeesPerGas },
+}).extend(installValidationActions);
+
+const sessionKeyEntityId = 1;
+
+const callData = await bundlerClient.encodeUninstallValidation({
+  moduleAddress: DefaultModuleAddress.SINGLE_SIGNER_VALIDATION,
   entityId: sessionKeyEntityId,
   uninstallData: SingleSignerValidationModule.encodeOnUninstallData({
     entityId: sessionKeyEntityId,
   }),
   hookUninstallDatas: [],
 });
-
-// Removing a session key with hooks
-await client.uninstallValidation({
-  moduleAddress: getDefaultSingleSignerValidationModuleAddress(client.chain),
-  entityId: sessionKeyEntityId,
-  uninstallData: SingleSignerValidationModule.encodeOnUninstallData({
-    entityId: sessionKeyEntityId,
-  }),
-  hookUninstallDatas: [],
-});
+await bundlerClient.sendUserOperation({ callData });
 ```
 
-If there are hooks on the validation, you have to provide the hook uninstallation data to uninstall them too. Each module provides an `encodeOnUninstallData` helper function to generate the uninstallation hook for that module.
+If the validation has hooks installed, you have to provide uninstall data for each one. Every module exports an `encodeOnUninstallData` helper.
 
 ```ts twoslash
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
+import { createBundlerClient } from "viem/account-abstraction";
+import { createClient } from "viem";
+import { sepolia } from "viem/chains";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
 import {
+  toModularAccountV2,
   installValidationActions,
-  getDefaultSingleSignerValidationModuleAddress,
   SingleSignerValidationModule,
-  modularAccountAbi,
   AllowlistModule,
-} from "@account-kit/smart-contracts/experimental";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { sepolia, alchemy } from "@account-kit/infra";
-import { generatePrivateKey } from "viem/accounts";
+  DefaultModuleAddress,
+} from "@alchemy/smart-accounts";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
-const client = (
-  await createModularAccountV2Client({
-    chain: sepolia,
-    transport: alchemy({ apiKey: "your-api-key" }),
-    signer: LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey()),
-  })
-).extend(installValidationActions);
+const transport = alchemyTransport({ apiKey: "your-api-key" });
+const rpcClient = createClient({ chain: sepolia, transport });
 
-let sessionKeyEntityId = 1;
-
-// Removing a basic session key
-await client.uninstallValidation({
-  moduleAddress: getDefaultSingleSignerValidationModuleAddress(client.chain),
-  entityId: sessionKeyEntityId,
-  uninstallData: SingleSignerValidationModule.encodeOnUninstallData({
-    entityId: sessionKeyEntityId,
-  }),
-  hookUninstallDatas: [],
+const account = await toModularAccountV2({
+  client: rpcClient,
+  owner: privateKeyToAccount(generatePrivateKey()),
 });
 
+const bundlerClient = createBundlerClient({
+  account,
+  client: rpcClient,
+  chain: sepolia,
+  transport,
+  userOperation: { estimateFeesPerGas },
+}).extend(installValidationActions);
+
+const sessionKeyEntityId = 1;
 const hookEntityId = 1;
 const target = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
 
 // Removing a session key with an allowlist hook
-await client.uninstallValidation({
-  moduleAddress: getDefaultSingleSignerValidationModuleAddress(client.chain),
+const callData = await bundlerClient.encodeUninstallValidation({
+  moduleAddress: DefaultModuleAddress.SINGLE_SIGNER_VALIDATION,
   entityId: sessionKeyEntityId,
   uninstallData: SingleSignerValidationModule.encodeOnUninstallData({
     entityId: sessionKeyEntityId,
@@ -111,4 +108,5 @@ await client.uninstallValidation({
     }),
   ],
 });
+await bundlerClient.sendUserOperation({ callData });
 ```
