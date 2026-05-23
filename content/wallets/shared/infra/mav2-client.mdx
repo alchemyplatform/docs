@@ -8,13 +8,13 @@
   ```
 
   ```ts title="client.ts"
-  import { createBundlerClient } from "viem/account-abstraction";
+  import { createBundlerClient, createPaymasterClient } from "viem/account-abstraction";
   import { createClient } from "viem";
   import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
   import { alchemyTransport } from "@alchemy/common";
   import { toModularAccountV2 } from "@alchemy/smart-accounts";
   import { estimateFeesPerGas } from "@alchemy/aa-infra";
-  import { chain, ALCHEMY_API_KEY } from "./config";
+  import { chain, ALCHEMY_API_KEY, policyId } from "./config";
 
   const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
 
@@ -29,6 +29,9 @@
       client: rpcClient,
       chain,
       transport,
+      // Drop the next two lines if you don't want gas sponsorship.
+      paymaster: createPaymasterClient({ transport }),
+      paymasterContext: { policyId },
       userOperation: { estimateFeesPerGas },
     });
   }
