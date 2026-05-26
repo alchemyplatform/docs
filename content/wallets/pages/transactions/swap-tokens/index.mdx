@@ -31,15 +31,17 @@ Swaps work like any other Smart Wallet transaction, so you can sponsor gas for g
 When requesting a swap quote, specify either an amount in, or a minimum amount out.
 
 ```tsx
+import { parseUnits, parseEther } from "viem";
+
 // Mode 1: Swap exact input amount
 {
-  fromAmount: "0x2710";
-} // Swap exactly 0.01 USDC (10000 in hex, 6 decimals)
+  fromAmount: parseUnits("0.01", 6);
+} // Swap exactly 0.01 USDC
 
 // Mode 2: Get minimum output amount
 {
-  minimumToAmount: "0x5AF3107A4000";
-} // Get at least 0.0001 ETH (18 decimals). We calculate how much USDC you need to spend to get at least your desired ETH amount.
+  minimumToAmount: parseEther("0.0001");
+} // Get at least 0.0001 ETH. We calculate how much USDC you need to spend to get at least your desired ETH amount.
 ```
 
 ## Prerequisites
@@ -76,10 +78,11 @@ Currently, the Swap API supports only single-chain swaps. Cross-chain swaps are 
 
 ## How do you encode values?
 
-Values are passed as hexadecimal strings. The Swap API does not add complexity to consider decimals, so 0x01 is always the smallest amount of a given asset.
+**JavaScript SDK**: amounts are passed as `bigint` values. For example, 1 ETH is `1_000_000_000_000_000_000n` and 1 USDC is `1_000_000n`.
+
+**Raw API**: values are passed as hexadecimal strings. The Swap API does not add complexity to consider decimals, so `0x01` is always the smallest amount of a given asset.
 1 ETH, or DAI (18 decimals) is `0xDE0B6B3A7640000`
 1 USDC (6 decimals) is `0xF4240`
-This removes any ambiguity— if it’s numerical, it’s a hex.
 
 ## What is the expiry?
 
