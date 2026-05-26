@@ -67,77 +67,68 @@ For more details, see the [Compute Unit Costs documentation](/docs/reference/com
 To enable bundler sponsorship, you need to:
 
 1. **Create a Bundler Sponsored Operations policy** in your dashboard with the required Max Spend Per UO configuration
-2. **Include the policy ID** in your requests via the `x-alchemy-policy-id` header
-3. **Set gas fees to zero** in your user operation overrides
+2. **Include the policy ID** in your requests via the `x-alchemy-policy-id` header on the bundler transport
+3. **Zero out `maxFeePerGas`, `maxPriorityFeePerGas`, and `preVerificationGas`** on the user operation
 
 ### Example implementation
 
-Here's a complete example using Wallet APIs to send a sponsored user operation:
+Below is the low-level (viem) pattern. The policy ID rides on the bundler transport's `fetchOptions.headers`; the bundler fills in the actual gas values server-side when it sees the zeroed fields.
 
-```typescript
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { alchemy, worldChain } from "@account-kit/infra";
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
+```ts
+import { createClient, type Hex } from "viem";
+import { createBundlerClient } from "viem/account-abstraction";
+import { privateKeyToAccount } from "viem/accounts";
+import { worldchain } from "viem/chains";
+import { alchemyTransport } from "@alchemy/common";
+import { toModularAccountV2 } from "@alchemy/smart-accounts";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
-const RPC_URL = process.env.RPC_URL!;
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
 const POLICY_ID = process.env.POLICY_ID!;
-const PRIVATE_KEY = process.env.PRIVATE_KEY!;
+const PRIVATE_KEY = process.env.PRIVATE_KEY! as Hex;
 
-(async () => {
-  try {
-    const chain = worldChain;
+// The policy ID rides on the transport's fetch options.
+const transport = alchemyTransport({
+  apiKey: ALCHEMY_API_KEY,
+  fetchOptions: {
+    headers: { "x-alchemy-policy-id": POLICY_ID },
+  },
+});
 
-    // Configure transport with bundler sponsorship header
-    const transport = alchemy({
-      rpcUrl: RPC_URL,
-      fetchOptions: {
-        headers: {
-          "x-alchemy-policy-id": POLICY_ID
-        }
-      }
-    });
+const rpcClient = createClient({ chain: worldchain, transport });
 
-    const signer = LocalAccountSigner.privateKeyToAccountSigner(
-      PRIVATE_KEY as `0x${string}`
-    );
+const account = await toModularAccountV2({
+  client: rpcClient,
+  owner: privateKeyToAccount(PRIVATE_KEY),
+});
 
-    const client = await createModularAccountV2Client({
-      chain,
-      transport,
-      signer,
-    });
+const bundlerClient = createBundlerClient({
+  account,
+  client: rpcClient,
+  chain: worldchain,
+  transport,
+  userOperation: { estimateFeesPerGas },
+});
 
-    // Send user operation with bundler sponsorship
-    const uo = await client.sendUserOperation({
-      overrides: {
-        maxFeePerGas: "0x0",
-        maxPriorityFeePerGas: "0x0",
-      },
-      uo: {
-        target: "0x0000000000000000000000000000000000000000",
-        data: "0x",
-      },
-    });
+// Zero ALL three gas fields — the bundler fills them in.
+const hash = await bundlerClient.sendUserOperation({
+  calls: [{ to: "0x000000000000000000000000000000000000dEaD", data: "0x" }],
+  maxFeePerGas: 0n,
+  maxPriorityFeePerGas: 0n,
+  preVerificationGas: 0n,
+});
 
-    const txHash = await client.waitForUserOperationTransaction({
-      hash: uo.hash,
-    });
-
-    console.log("Tx Hash: ", txHash);
-
-  } catch (err) {
-    console.error("Error:", err);
-  }
-})();
+const receipt = await bundlerClient.waitForUserOperationReceipt({ hash });
+console.log("Tx:", receipt.receipt.transactionHash);
 ```
 
 ### Key configuration points
 
 1. **Policy Type**: Ensure you've created a policy of type "Bundler Sponsored Operations" with Max Spend Per UO configured.
 
-2. **Transport Configuration**: The `x-alchemy-policy-id` header must be included in the transport configuration's `fetchOptions.headers`.
+2. **Transport Configuration**: The `x-alchemy-policy-id` header must be included on the **bundler** transport via `fetchOptions.headers`. No `createPaymasterClient` needed — BSO does not use a paymaster contract.
 
-3. **Gas Fee Overrides**: Set both `maxFeePerGas` and `maxPriorityFeePerGas` to `"0x0"` to indicate that the bundler should sponsor all gas costs.
+3. **Gas Fee Overrides**: Set `maxFeePerGas`, `maxPriorityFeePerGas`, **and** `preVerificationGas` to `0n` on the user operation. All three must be zero — the bundler treats that as the signal to cover gas under the BSO policy.
 
 ## Requirements
 

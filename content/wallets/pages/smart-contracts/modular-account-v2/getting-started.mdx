@@ -4,7 +4,11 @@ description: Getting started with Modular Account V2 in Wallet APIs
 slug: wallets/smart-contracts/modular-account-v2/getting-started
 ---
 
-Getting started with Modular Account v2 is straightforward. Below, you create a new Modular Account v2 client to send transactions. Your MAv2 smart account deploys onchain when you send the first transaction from a unique owner.
+Getting started with Modular Account V2 is straightforward. Below, you'll create a Modular Account V2 from a signer and send a transaction through viem's bundler client. Your MAv2 deploys onchain on the first user operation.
+
+<Tip title="Most projects should use @alchemy/wallet-apis">
+  [`@alchemy/wallet-apis`](/docs/wallets/quickstart) already uses Modular Account V2 as its default smart account — `createSmartWalletClient` gives you MAv2 plus account creation, gas estimation, and the bundler client behind a single call. This page covers the lower-level path: instantiating MAv2 directly from `@alchemy/smart-accounts` and pairing it with viem's bundler client. Use it when you need fine-grained control over the wiring.
+</Tip>
 
 ## Install packages
 
@@ -14,84 +18,86 @@ Getting started with Modular Account v2 is straightforward. Below, you create a 
 
 **Installation**
 
-First, install the `@account-kit/smart-contracts` package.
-
 <CodeBlocks>
   ```bash yarn
-  yarn add @account-kit/smart-contracts
-  yarn add @account-kit/infra
+  yarn add @alchemy/smart-accounts @alchemy/aa-infra viem
   ```
 
   ```bash npm
-  npm install @account-kit/smart-contracts
-  npm install @account-kit/infra
+  npm install @alchemy/smart-accounts @alchemy/aa-infra viem
   ```
 </CodeBlocks>
 
 <Tip title="Address calculation">
-  For Modular Account V2, the address of the smart account will be calculated as a combination of [the owner and the salt](https://github.com/alchemyplatform/modular-account/blob/v2.0.x/src/factory/AccountFactory.sol#L98-L104). You will get the same smart account address each time you supply the same `owner`, the signer(s) used to create the account for the first time. You can also optionally supply `salt` if you want a different address for the same `owner` param (the default salt is `0n`).
-
-  If you want to use a signer to connect to an account whose address does not map to the contract-generated address, you can supply the `accountAddress` to connect with the account of interest. In that case, the `signer` address is not used for address calculation, but only for signing the operation.
+  For Modular Account V2, the address is derived from the owner and an optional `salt` (default `0n`). Same owner + same salt → same address. Pass `accountAddress` to connect to an existing account whose contract-derived address doesn't match the signer (e.g. the original owner is no longer in your control).
 </Tip>
 
-## Creating a Modular Account V2 client
+## Create a Modular Account V2
 
 ```ts twoslash modular-account-v2.ts
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { sepolia, alchemy } from "@account-kit/infra";
-import { generatePrivateKey } from "viem/accounts";
+import { createClient } from "viem";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { sepolia } from "viem/chains";
+import { alchemyTransport } from "@alchemy/common";
+import { toModularAccountV2 } from "@alchemy/smart-accounts";
 
-const accountClient = await createModularAccountV2Client({
-  mode: "default", // optional param to specify the MAv2 variant (either "default" or "7702")
-  chain: sepolia,
-  transport: alchemy({ apiKey: "your-api-key" }), // Get your API key at https://dashboard.alchemy.com/apps or http("RPC_URL") for non-alchemy infra
-  signer: LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey()),
+const ALCHEMY_API_KEY = "your-api-key"; // https://dashboard.alchemy.com/apps
+const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
+
+const rpcClient = createClient({ chain: sepolia, transport });
+
+const account = await toModularAccountV2({
+  client: rpcClient,
+  owner: privateKeyToAccount(generatePrivateKey()),
+  // mode: "7702", // optional — defaults to "default"
 });
 ```
 
 **Choosing which mode to use**
-Two variants of Modular Account v2 are available: `default` and `7702`.
+Two variants of Modular Account V2 are available: `default` and `7702`.
 
-* (Recommended) `default` provides you with the cheapest, most flexible and advanced smart wallet
-* `7702` if you are looking for 7702 support, learn about how to set up and take advantage of the EIP-7702 compliant account [here](/docs/wallets/transactions/using-eip-7702)
+* (Recommended) `default` provides the cheapest, most flexible smart wallet.
+* `7702` if you want EIP-7702 support — see the [EIP-7702 guide](/docs/wallets/transactions/using-eip-7702).
 
-Want to enable social login methods? Set up your [authentication provider](/docs/wallets/signer/quickstart).
-
-Alternatively, you can [bring a 3rd party authentication provider](/docs/wallets/third-party/signers/privy) as the owner of your new account.
-
-Not sure what authentication provider to use? [Learn more](/docs/wallets/signer/what-is-a-signer).
+Want to enable social login methods? [Use Privy as your signer](/docs/wallets/wallet-integrations/privy).
 
 ## Sending a transaction
 
-Now that you have a client, you can send a transaction. The first transaction also deploys the new Modular Account v2.
+Pair the account with viem's bundler client (and `@alchemy/aa-infra`'s fee estimator) to submit user operations.
 
 ```ts twoslash
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { sepolia, alchemy } from "@account-kit/infra";
-import { generatePrivateKey } from "viem/accounts";
-import { parseEther } from "viem";
+import { createBundlerClient } from "viem/account-abstraction";
+import { createClient, parseEther } from "viem";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { sepolia } from "viem/chains";
+import { alchemyTransport } from "@alchemy/common";
+import { toModularAccountV2 } from "@alchemy/smart-accounts";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
-const accountClient = await createModularAccountV2Client({
+const ALCHEMY_API_KEY = "your-api-key";
+const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
+const rpcClient = createClient({ chain: sepolia, transport });
+
+const account = await toModularAccountV2({
+  client: rpcClient,
+  owner: privateKeyToAccount(generatePrivateKey()),
+});
+
+const bundlerClient = createBundlerClient({
+  account,
+  client: rpcClient,
   chain: sepolia,
-  transport: alchemy({ apiKey: "your-api-key" }),
-  signer: LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey()),
+  transport,
+  userOperation: { estimateFeesPerGas },
 });
 
-const operation = await accountClient.sendUserOperation({
-  // simple UO sending no data or value to vitalik's address
-  uo: {
-    target: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // The address to call in the UO
-    data: "0x", // The calldata to send in the UO
-    value: parseEther("0"), // The value to send in the UO
-  },
+const hash = await bundlerClient.sendUserOperation({
+  calls: [{
+    to: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // vitalik
+    data: "0x",
+    value: parseEther("0"),
+  }],
 });
 
-console.log(
-  "User operation sent! \nUO hash: ",
-  operation.hash,
-  "\nModular Account v2 Address: ",
-  operation.request.sender,
-);
+console.log("UO hash:", hash, "\nMAv2 address:", account.address);
 ```

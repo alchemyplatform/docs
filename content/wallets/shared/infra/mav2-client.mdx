@@ -1,32 +1,39 @@
 <CodeBlocks>
-```ts title="config.ts"
-import { alchemy, sepolia } from "@account-kit/infra";
+  ```ts title="config.ts"
+  import { sepolia } from "viem/chains";
 
-const YOUR_API_KEY = "<YOUR_API_KEY>";
+  export const chain = sepolia;
+  export const ALCHEMY_API_KEY = "<YOUR_API_KEY>";
+  export const policyId = "<POLICY_ID>";
+  ```
 
-export const chain = sepolia;
+  ```ts title="client.ts"
+  import { createBundlerClient, createPaymasterClient } from "viem/account-abstraction";
+  import { createClient } from "viem";
+  import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+  import { alchemyTransport } from "@alchemy/common";
+  import { toModularAccountV2 } from "@alchemy/smart-accounts";
+  import { estimateFeesPerGas } from "@alchemy/aa-infra";
+  import { chain, ALCHEMY_API_KEY, policyId } from "./config";
 
-export const policyId = "<POLICY_ID>";
+  const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
 
-export const transport = alchemy({
-  apiKey: YOUR_API_KEY,
-});
-```
+  const rpcClient = createClient({ chain, transport });
 
-```ts title="client.ts"
-import { createModularAccountV2Client } from "@account-kit/smart-contracts";
-import { chain, transport, policyId } from "./config";
-import { LocalAccountSigner } from "@aa-sdk/core";
-import { generatePrivateKey } from "viem/accounts";
+  export async function getClient() {
+    const owner = privateKeyToAccount(generatePrivateKey());
+    const account = await toModularAccountV2({ client: rpcClient, owner });
 
-export async function createClient() {
-  return createModularAccountV2Client({
-    chain,
-    transport,
-    signer: LocalAccountSigner.privateKeyToAccountSigner(generatePrivateKey()),
-    policyId,
-  });
-}
-```
-
+    return createBundlerClient({
+      account,
+      client: rpcClient,
+      chain,
+      transport,
+      // Drop the next two lines if you don't want gas sponsorship.
+      paymaster: createPaymasterClient({ transport }),
+      paymasterContext: { policyId },
+      userOperation: { estimateFeesPerGas },
+    });
+  }
+  ```
 </CodeBlocks>

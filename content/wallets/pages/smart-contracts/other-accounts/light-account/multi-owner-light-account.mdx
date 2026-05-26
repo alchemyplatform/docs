@@ -1,61 +1,77 @@
 ---
 title: How to manage ownership of a Multi-Owner Light Account
-description: Follow this guide to manage ownership of a Multi-Owner Light
+description: Manage owners on a Multi-Owner Light Account
 slug: wallets/smart-contracts/other-accounts/light-account/multi-owner-light-account
 ---
 
-A `MultiOwnerLightAccount` has one or more ECDSA or SCA owners. This lets your account integrate with multiple owners at once, and supports recovering your account if one owner is lost.
+A `MultiOwnerLightAccount` has one or more ECDSA or smart-contract owners. This lets your account integrate with multiple owners at once, and supports recovering the account if one owner is lost.
 
-The `MultiOwnerLightAccount` is able to:
+A `MultiOwnerLightAccount` (returned by `toMultiOwnerLightAccount` from `@alchemy/smart-accounts`) lets you:
 
-* Update (add or remove) owners for an account.
-* Show all owners of an account.
-* Validate signed signatures of ERC-4337 enabled transactions as well as regular transactions.
+* Add or remove owners.
+* Read the current set of owners.
+* Validate ERC-4337 user operations and 1271 signatures from any owner.
 
-When you connect your `MultiOwnerLightAccount` to `SmartAccountClient` you can extend the client with `multiOwnerLightAccountClientActions`, which exposes a set of methods available to call the `MultiOwnerLightAccount` with the client connected to the account.
+### 1. Read all current owners
 
-<Note>
-  When using `createMultiOwnerLightAccountAlchemyClient` in
-  `@account-kit/smart-contracts`, the `SmartAccountClient` comes automatically
-  extended with `multiOwnerLightAccountClientActions` as defaults available for
-  use.
-</Note>
+Call `getOwnerAddresses()` directly on the account.
 
-### 1. Get all current owners of a `MultiOwnerLightAccount`
+```ts example.ts
+import { createClient } from "viem";
+import { sepolia } from "viem/chains";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
+import { toMultiOwnerLightAccount } from "@alchemy/smart-accounts";
 
-You can use the `getOwnerAddresses` method on the `MultiOwnerLightAccount` object, which can be accessed from a connected client.
+const transport = alchemyTransport({ apiKey: "your-api-key" });
+const rpcClient = createClient({ chain: sepolia, transport });
 
-<CodeBlocks>
-  ```ts example.ts
-  import { multiOwnerLightAccountClient } from "./client";
+const account = await toMultiOwnerLightAccount({
+  client: rpcClient,
+  owners: [privateKeyToAccount(generatePrivateKey())],
+});
 
-  const owners = await multiOwnerLightAccountClient.account.getOwnerAddresses();
-  ```
+const owners = await account.getOwnerAddresses();
+```
 
-  <Markdown src="../../../../shared/smart-contracts/multi-owner-light-account-client.mdx" />
-</CodeBlocks>
+### 2. Add or remove owners
 
-### 2. Add or remove owners for a `MultiOwnerLightAccount`
+Encode an `updateOwners` call with `encodeUpdateOwners`, then send it from the account through viem's bundler client.
 
-You can use the `updateOwners` method on the `multiOwnerLightAccountClientActions` extended smart account client to add or remove owners from the `MultiOwnerLightAccount`.
+```ts example.ts
+import { createBundlerClient } from "viem/account-abstraction";
+import { createClient, type Address } from "viem";
+import { sepolia } from "viem/chains";
+import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
+import { alchemyTransport } from "@alchemy/common";
+import { toMultiOwnerLightAccount } from "@alchemy/smart-accounts";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
 
-<CodeBlocks>
-  ```ts example.ts
-  import { multiOwnerLightAccountClient } from "./client";
+const ALCHEMY_API_KEY = "your-api-key";
+const transport = alchemyTransport({ apiKey: ALCHEMY_API_KEY });
+const rpcClient = createClient({ chain: sepolia, transport });
 
-  const ownersToAdd = []; // the addresses of owners to be added
-  const ownersToRemove = []; // the addresses of owners to be removed
+const account = await toMultiOwnerLightAccount({
+  client: rpcClient,
+  owners: [privateKeyToAccount(generatePrivateKey())],
+});
 
-  const opHash = await multiOwnerLightAccountClient.updateOwners({
-    ownersToAdd,
-    ownersToRemove,
-  });
+const bundlerClient = createBundlerClient({
+  account,
+  client: rpcClient,
+  chain: sepolia,
+  transport,
+  userOperation: { estimateFeesPerGas },
+});
 
-  const txHash =
-    await multiOwnerLightAccountClient.waitForUserOperationTransaction({
-      hash: opHash,
-    });
-  ```
+const ownersToAdd: Address[] = []; // addresses to add
+const ownersToRemove: Address[] = []; // addresses to remove
 
-  <Markdown src="../../../../shared/smart-contracts/multi-owner-light-account-client.mdx" />
-</CodeBlocks>
+const updateData = account.encodeUpdateOwners(ownersToAdd, ownersToRemove);
+
+const hash = await bundlerClient.sendUserOperation({
+  calls: [{ to: account.address, data: updateData }],
+});
+
+const receipt = await bundlerClient.waitForUserOperationReceipt({ hash });
+```

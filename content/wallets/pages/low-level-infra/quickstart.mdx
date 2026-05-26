@@ -4,46 +4,40 @@ description: Get started with Wallet APIs infrastructure
 slug: wallets/low-level-infra/quickstart
 ---
 
-In this guide, learn how to get started with `@account-kit/infra` and send a transaction. For smart contracts, the guide leverages `@account-kit/smart-contracts` to use `ModularAccountV2`,
-but you're free to use any smart contract you'd like.
+In this guide, you'll wire up viem's bundler client to Alchemy's bundler with a Modular Account V2 from `@alchemy/smart-accounts` and send a user operation. This is the advanced path; if you don't need this level of control, use [`@alchemy/wallet-apis`](/docs/wallets/quickstart) instead.
 
 ## Prerequisites
 
 * API key from your [dashboard](https://dashboard.alchemy.com/apps)
-* minimum Typescript version of 5 and the packages below from aa-sdk
+* TypeScript 5+ and the packages below
 
 **Installation**
 
 <CodeBlocks>
   ```bash yarn
-  yarn add @account-kit/infra @account-kit/smart-contracts @aa-sdk/core viem
+  yarn add @alchemy/common @alchemy/aa-infra @alchemy/smart-accounts viem
   ```
 
   ```bash npm
-  npm i -s @account-kit/infra @account-kit/smart-contracts @aa-sdk/core viem
+  npm i @alchemy/common @alchemy/aa-infra @alchemy/smart-accounts viem
   ```
 </CodeBlocks>
 
 ## Create a Gas Manager policy
 
-If you want to sponsor gas, then you'll also want to create a gas policy in the Gas Manager dashboard.
+If you want to sponsor gas, create a policy in the Gas Manager dashboard.
 
 <Markdown src="../../shared/create-gas-policy.mdx" />
 
 ## Create a client
 
-Now that you have an API key and a Policy ID, you can create a [Smart Account Client](/docs/wallets/concepts/smart-account-client) to interact with the infrastructure.
-
 <Warning>
-  Replace `YOUR_API_KEY` and `POLICY_ID` with the key and Policy ID created
-  above.
+  Replace `YOUR_API_KEY` and `POLICY_ID` with the values from the steps above.
 </Warning>
 
 <Markdown src="../../shared/infra/mav2-client.mdx" />
 
-## Send a transaction
-
-The last step is to send a transaction using the client you created.
+## Send a user operation
 
 <CodeBlocks>
   ```ts example.ts
@@ -51,12 +45,17 @@ The last step is to send a transaction using the client you created.
 
   const client = await getClient();
 
-  const { hash } = await client.sendUserOperation({
-    uo: {
-      target: "0xTARGET_ADDRESS",
-      data: "0x",
-      value: 0n,
-    },
+  const hash = await client.sendUserOperation({
+    calls: [
+      {
+        to: "0x0000000000000000000000000000000000000000",
+        value: 0n,
+        data: "0x",
+      },
+    ],
   });
+
+  const receipt = await client.waitForUserOperationReceipt({ hash });
+  console.log("Mined:", receipt.receipt.transactionHash);
   ```
 </CodeBlocks>
