@@ -11,7 +11,7 @@ This guide covers how to send EVM and Solana transactions with Wallet APIs.
 * API key from your [dashboard](https://dashboard.alchemy.com/apps)
 * `@alchemy/wallet-apis` installed in your project
 * For EVM: a funded Smart Wallet to cover gas fees ([or a gas manager policy to sponsor gas](/docs/wallets/transactions/sponsor-gas))
-* For Solana: a Solana signer ([see Solana signer adapters](/docs/wallets/third-party/signers/solana-signers)) and a funded wallet to cover fees, or a Solana gas sponsorship policy
+* For Solana: a Solana signer ([see Solana signer adapters](/docs/wallets/solana/signers)) and a funded wallet to cover fees, or a Solana gas sponsorship policy
 
 ## EVM transactions
 
@@ -62,125 +62,30 @@ The EVM client defaults to using [EIP-7702](/docs/wallets/transactions/using-eip
 
 ## Solana transactions
 
-Solana uses the same Wallet API client action model as EVM, but with Solana chain IDs, Ed25519 signers, and Solana-shaped instruction calls.
-
-Use `createSmartWalletClient` with a Solana chain ID like `"solana:devnet"` or `"solana:mainnet"`. The client exposes `sendCalls`, `prepareCalls`, `signPreparedCalls`, `sendPreparedCalls`, `getCallsStatus`, and `waitForCallsStatus`.
-
-### Install Solana dependencies
-
-<CodeGroup>
-```shell npm
-npm install @alchemy/wallet-apis @solana/kit @solana/web3.js viem
-```
-
-```shell pnpm
-pnpm add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
-```
-
-```shell yarn
-yarn add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
-```
-
-```shell bun
-bun add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
-```
-</CodeGroup>
-
-### Send Solana instructions
-
-The `calls` array contains Solana instructions. Each instruction has a `programId`, hex-encoded `data`, and the accounts required by the instruction.
-
-```ts title="send-solana-transaction.ts"
-import {
-  alchemyWalletTransport,
-  createSmartWalletClient,
-} from "@alchemy/wallet-apis";
-import {
-  fromKitSigner,
-  type SolanaTransactionPartialSigner,
-} from "@alchemy/wallet-apis/solana";
-import {
-  PublicKey,
-  SystemProgram,
-  type TransactionInstruction,
-} from "@solana/web3.js";
-import { bytesToHex } from "viem";
-
-const ALCHEMY_API_KEY = "YOUR_ALCHEMY_API_KEY";
-declare const yourKitSigner: SolanaTransactionPartialSigner;
-
-function toSolanaCall(instruction: TransactionInstruction) {
-  return {
-    programId: instruction.programId.toBase58(),
-    accounts: instruction.keys.map((account) => ({
-      pubkey: account.pubkey.toBase58(),
-      isSigner: account.isSigner,
-      isWritable: account.isWritable,
-    })),
-    data: bytesToHex(instruction.data),
-  };
-}
-
-function transferCall(from: string, to: string, lamports: number) {
-  return toSolanaCall(
-    SystemProgram.transfer({
-      fromPubkey: new PublicKey(from),
-      toPubkey: new PublicKey(to),
-      lamports,
-    }),
-  );
-}
-
-const signer = fromKitSigner(yourKitSigner);
-
-const client = createSmartWalletClient({
-  transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
-  chain: "solana:devnet",
-  signer,
-});
-
-const { id } = await client.sendCalls({
-  calls: [transferCall(client.solanaAccount, client.solanaAccount, 0)],
-});
-
-const result = await client.waitForCallsStatus({ id });
-
-console.log("Solana transaction status:", result.status);
-```
+Solana transactions use the same client actions as EVM, but `calls` contain Solana instructions: `programId`, hex-encoded `data`, and account metadata. For signer setup, see [Solana signer adapters](/docs/wallets/solana/signers).
 
 `client.solanaAccount` defaults to the signer's address. If you pass `account` to `createSmartWalletClient` or `sendCalls`, it must be an account that the configured signer can sign for.
 
-<Note>
-  For local devnet testing, you can create a signer with
-  `generateKeyPairSigner()` from `@solana/kit`, but you must fund that address
-  before sending an unsponsored transaction.
-</Note>
+### Implementation
 
-### Advanced: prepare, sign, and send
+<Markdown src="solana/client.mdx" />
 
-Use the prepared call flow when you need to inspect the compiled Solana transaction before signing.
+### Advanced
 
-```ts title="prepare-solana-transaction.ts"
-const prepared = await client.prepareCalls({
-  calls: [transferCall(client.solanaAccount, client.solanaAccount, 0)],
-});
+<Accordion title="Usage with prepare calls">
+  Use the prepared call flow when you need to inspect the compiled Solana transaction before signing.
 
-console.log(prepared.type); // "solana-transaction-v0"
-console.log(prepared.signatureRequest.type); // "solana_signTransaction"
-
-const signed = await client.signPreparedCalls(prepared);
-const { id } = await client.sendPreparedCalls(signed);
-
-const result = await client.waitForCallsStatus({ id });
-```
+  <Markdown src="solana/prepare-calls/client.mdx" />
+</Accordion>
 
 ## Next steps
 
 Build more:
 
 * [Sponsor gas for users](/docs/wallets/transactions/sponsor-gas)
+* [Sponsor Solana fees](/docs/wallets/transactions/sponsor-gas/solana)
 * [Send batch transactions](/docs/wallets/transactions/send-batch-transactions)
-* [Use Solana signer adapters](/docs/wallets/third-party/signers/solana-signers)
+* [Use Solana signer adapters](/docs/wallets/solana/signers)
 
 Troubleshooting:
 

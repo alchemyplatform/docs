@@ -1,0 +1,83 @@
+Use `paymaster` on the smart wallet client to apply a Solana sponsorship policy to all `sendCalls` and `prepareCalls` requests from that client.
+
+<CodeBlocks>
+  ```ts title="sendCalls.ts"
+  import { client } from "./client.ts";
+  import { transferSolCall } from "./utils.ts";
+
+  const { id } = await client.sendCalls({
+    calls: [
+      transferSolCall({
+        from: client.solanaAccount,
+        to: client.solanaAccount,
+        lamports: 0n,
+      }),
+    ],
+  });
+
+  const result = await client.waitForCallsStatus({ id });
+
+  console.log(result);
+  ```
+
+  ```ts title="client.ts"
+  import {
+    alchemyWalletTransport,
+    createSmartWalletClient,
+    type SolanaSigner,
+  } from "@alchemy/wallet-apis";
+
+  export const config = {
+    policyId: "YOUR_SOLANA_POLICY_ID",
+  };
+
+  function getYourSolanaSigner(): SolanaSigner {
+    // Load this from your app's signer integration.
+    throw new Error("Implement getYourSolanaSigner for your app");
+  }
+
+  export const client = createSmartWalletClient({
+    signer: getYourSolanaSigner(),
+    transport: alchemyWalletTransport({
+      apiKey: "YOUR_API_KEY",
+    }),
+    chain: "solana:devnet",
+    paymaster: { policyId: config.policyId },
+  });
+  ```
+
+  ```ts title="utils.ts"
+  import type { Hex } from "viem";
+
+  const SYSTEM_PROGRAM_ID = "11111111111111111111111111111111";
+
+  function toLittleEndianHex(value: bigint, byteLength: number) {
+    let hex = "";
+
+    for (let i = 0; i < byteLength; i++) {
+      const byte = Number((value >> BigInt(i * 8)) & 0xffn);
+      hex += byte.toString(16).padStart(2, "0");
+    }
+
+    return hex;
+  }
+
+  export function transferSolCall(args: {
+    from: string;
+    to: string;
+    lamports: bigint;
+  }) {
+    return {
+      programId: SYSTEM_PROGRAM_ID,
+      accounts: [
+        { pubkey: args.from, isSigner: true, isWritable: true },
+        { pubkey: args.to, isSigner: false, isWritable: true },
+      ],
+      data: `0x${toLittleEndianHex(2n, 4)}${toLittleEndianHex(
+        args.lamports,
+        8,
+      )}` as Hex,
+    };
+  }
+  ```
+</CodeBlocks>

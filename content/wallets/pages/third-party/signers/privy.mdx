@@ -1,6 +1,6 @@
 ---
 title: Privy
-description: Use Privy with Wallet APIs for EIP-7702, sponsorship, and batching
+description: Use Privy with Wallet APIs for EIP-7702, Solana, sponsorship, and batching
 slug: wallets/third-party/signers/privy
 ---
 
@@ -21,19 +21,19 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
 
     <CodeGroup>
     ```shell npm
-    npm install @alchemy/wallet-apis @privy-io/react-auth viem
+    npm install @alchemy/wallet-apis @privy-io/react-auth @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js viem
     ```
 
     ```shell bun
-    bun add @alchemy/wallet-apis @privy-io/react-auth viem
+    bun add @alchemy/wallet-apis @privy-io/react-auth @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js viem
     ```
 
     ```shell yarn
-    yarn add @alchemy/wallet-apis @privy-io/react-auth viem
+    yarn add @alchemy/wallet-apis @privy-io/react-auth @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js viem
     ```
 
     ```shell pnpm
-    pnpm add @alchemy/wallet-apis @privy-io/react-auth viem
+    pnpm add @alchemy/wallet-apis @privy-io/react-auth @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js viem
     ```
     </CodeGroup>
 
@@ -76,6 +76,24 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
         </PrivyProvider>
       );
     }
+    ```
+
+    To create Solana embedded wallets on login, include the Solana embedded wallet configuration:
+
+    ```tsx
+    <PrivyProvider
+      appId="your-privy-app-id"
+      config={{
+        embeddedWallets: {
+          solana: {
+            createOnLogin: "all-users",
+          },
+          showWalletUIs: false,
+        },
+      }}
+    >
+      <YourApp />
+    </PrivyProvider>
     ```
 
     ### 2. Get a signer from Privy
@@ -170,9 +188,84 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
     }
     ```
 
+    ### 5. Send a sponsored Solana transaction
+
+    Use `useWallets` from `@privy-io/react-auth/solana` to get the connected Solana wallet. The returned wallet can be passed directly as the Wallet APIs Solana signer.
+
+    ```tsx title="privy-sponsored-solana.tsx"
+    import {
+      alchemyWalletTransport,
+      createSmartWalletClient,
+    } from "@alchemy/wallet-apis";
+    import { useWallets } from "@privy-io/react-auth/solana";
+    import {
+      PublicKey,
+      SystemProgram,
+      type TransactionInstruction,
+    } from "@solana/web3.js";
+    import { useCallback, useMemo } from "react";
+    import { bytesToHex } from "viem";
+
+    function toSolanaCall(instruction: TransactionInstruction) {
+      return {
+        programId: instruction.programId.toBase58(),
+        accounts: instruction.keys.map((account) => ({
+          pubkey: account.pubkey.toBase58(),
+          isSigner: account.isSigner,
+          isWritable: account.isWritable,
+        })),
+        data: bytesToHex(instruction.data),
+      };
+    }
+
+    function transferCall(from: string, to: string, lamports: number) {
+      return toSolanaCall(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(from),
+          toPubkey: new PublicKey(to),
+          lamports,
+        }),
+      );
+    }
+
+    function SendSponsoredSolanaTransaction() {
+      const { wallets } = useWallets();
+      const signer = wallets[0];
+
+      const client = useMemo(() => {
+        if (!signer) return undefined;
+
+        return createSmartWalletClient({
+          transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+          chain: "solana:devnet",
+          signer,
+          paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
+        });
+      }, [signer]);
+
+      const handleSend = useCallback(async () => {
+        if (!client) return;
+
+        const { id } = await client.sendCalls({
+          calls: [transferCall(client.solanaAccount, client.solanaAccount, 0)],
+        });
+
+        const result = await client.waitForCallsStatus({ id });
+        console.log("Sponsored Solana transaction status:", result.status);
+      }, [client]);
+
+      return (
+        <button onClick={handleSend} disabled={!client}>
+          Send sponsored Solana transaction
+        </button>
+      );
+    }
+    ```
+
     ### Notes
 
-    * The client defaults to [EIP-7702](/docs/wallets/transactions/using-eip-7702), which delegates the Privy wallet to a smart wallet at send time. No deployment or wallet migration needed. See the [EIP-7702 guide](/docs/wallets/transactions/using-eip-7702) for non-7702 mode.
+    * The EVM client defaults to [EIP-7702](/docs/wallets/transactions/using-eip-7702), which delegates the Privy wallet to a smart wallet at send time. No deployment or wallet migration needed. See the [EIP-7702 guide](/docs/wallets/transactions/using-eip-7702) for non-7702 mode.
+    * Solana sponsorship requires a Solana gas sponsorship policy.
     * See the [Sponsor gas](/docs/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
   </Tab>
 

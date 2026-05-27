@@ -1,7 +1,7 @@
 ---
 title: Solana signers
 description: Use Solana signers with Wallet APIs
-slug: wallets/third-party/signers/solana-signers
+slug: wallets/solana/signers
 ---
 
 Solana Wallet APIs use an Ed25519 signer that can sign serialized Solana transactions. The `signer` parameter of `createSmartWalletClient` accepts a `SolanaSigner` when you use a Solana chain ID such as `"solana:devnet"` or `"solana:mainnet"`.
@@ -15,31 +15,152 @@ type SolanaSigner = {
 };
 ```
 
-Most apps do not need to implement this interface directly. Use one of the adapters from `@alchemy/wallet-apis/solana` to convert your Solana signer into the shape expected by Wallet APIs.
+Most apps do not need to implement this interface directly. Some providers already return this shape. For the rest, use an adapter from `@alchemy/wallet-apis/solana`.
 
 ## Install
 
 <CodeGroup>
 ```shell npm
-npm install @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+npm install @alchemy/wallet-apis
 ```
 
 ```shell pnpm
-pnpm add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+pnpm add @alchemy/wallet-apis
 ```
 
 ```shell yarn
-yarn add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+yarn add @alchemy/wallet-apis
 ```
 
 ```shell bun
-bun add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+bun add @alchemy/wallet-apis
 ```
 </CodeGroup>
 
-`@solana/kit` and `@solana/web3.js` are optional peer dependencies. Install the one that matches the adapter you use.
+Install the optional package that matches your signer source:
 
-## `@solana/kit` signers
+* Privy: `@privy-io/react-auth`
+* Privy Solana peer dependencies: `@solana/kit @solana-program/memo @solana-program/system @solana-program/token`
+* `@solana/wallet-adapter-react`: `@solana/wallet-adapter-react @solana/web3.js`
+* Injected providers such as Phantom: `@solana/web3.js`
+* `@solana/kit` signers: `@solana/kit`
+* Wallet Standard discovery: `@wallet-standard/app`
+
+## Choose a signer source
+
+| What you have | What to use |
+| --- | --- |
+| Privy Solana wallet from `@privy-io/react-auth/solana` | No adapter needed |
+| `useWallet()` from `@solana/wallet-adapter-react` | `fromWalletAdapter` |
+| Injected provider such as `window.phantom.solana` | `fromWalletAdapter` |
+| `@solana/kit` `KeyPairSigner` or `TransactionPartialSigner` | `fromKitSigner` |
+| Raw Ed25519 keypair or key management service | `fromKeypair` |
+| Low-level Wallet Standard wallet | `fromWalletStandard` |
+
+## Privy
+
+Use `useWallets` from `@privy-io/react-auth/solana` to get connected Solana wallets. The returned wallet can be passed directly to `createSmartWalletClient`.
+
+```tsx title="privy-solana-signer.tsx"
+import {
+  alchemyWalletTransport,
+  createSmartWalletClient,
+} from "@alchemy/wallet-apis";
+import { useWallets } from "@privy-io/react-auth/solana";
+import { useMemo } from "react";
+
+function usePrivySolanaClient() {
+  const { wallets } = useWallets();
+  const signer = wallets[0];
+
+  return useMemo(() => {
+    if (!signer) return undefined;
+
+    return createSmartWalletClient({
+      signer,
+      transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+      chain: "solana:devnet",
+      paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
+    });
+  }, [signer]);
+}
+```
+
+## `@solana/wallet-adapter-react`
+
+Use `fromWalletAdapter` for wallets returned by `useWallet()`. This adapter handles the `Uint8Array` to `VersionedTransaction` conversion required by the wallet adapter API.
+
+```tsx title="wallet-adapter-signer.tsx"
+import {
+  alchemyWalletTransport,
+  createSmartWalletClient,
+} from "@alchemy/wallet-apis";
+import { fromWalletAdapter } from "@alchemy/wallet-apis/solana";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useMemo } from "react";
+
+function useWalletAdapterSolanaClient() {
+  const wallet = useWallet();
+
+  return useMemo(() => {
+    if (!wallet.publicKey || !wallet.signTransaction) return undefined;
+
+    return createSmartWalletClient({
+      signer: fromWalletAdapter({
+        publicKey: wallet.publicKey,
+        signTransaction: wallet.signTransaction,
+      }),
+      transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+      chain: "solana:devnet",
+      paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
+    });
+  }, [wallet.publicKey, wallet.signTransaction]);
+}
+```
+
+## Phantom injected provider
+
+Use the same `fromWalletAdapter` adapter for injected providers that expose `publicKey` and `signTransaction(VersionedTransaction)`, such as `window.phantom.solana`.
+
+```ts title="phantom-signer.ts"
+import {
+  alchemyWalletTransport,
+  createSmartWalletClient,
+} from "@alchemy/wallet-apis";
+import { fromWalletAdapter } from "@alchemy/wallet-apis/solana";
+import type { VersionedTransaction } from "@solana/web3.js";
+
+interface PhantomSolanaProvider {
+  publicKey?: { toBase58(): string };
+  connect(): Promise<{ publicKey: { toBase58(): string } }>;
+  signTransaction<T extends VersionedTransaction>(transaction: T): Promise<T>;
+}
+
+declare global {
+  interface Window {
+    phantom?: { solana?: PhantomSolanaProvider };
+  }
+}
+
+const phantom = window.phantom?.solana;
+if (!phantom) {
+  throw new Error("Install Phantom to use the injected Solana provider");
+}
+
+const { publicKey } = await phantom.connect();
+
+const client = createSmartWalletClient({
+  signer: fromWalletAdapter({
+    publicKey,
+    signTransaction: (transaction) => phantom.signTransaction(transaction),
+  }),
+  transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+  chain: "solana:devnet",
+  paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
+});
+```
+
+## `@solana/kit`
 
 Use `fromKitSigner` for `@solana/kit` signers that implement `signTransactions`, including `KeyPairSigner` and `TransactionPartialSigner`.
 
@@ -52,70 +173,59 @@ import { fromKitSigner } from "@alchemy/wallet-apis/solana";
 import { generateKeyPairSigner } from "@solana/kit";
 
 const kitSigner = await generateKeyPairSigner();
-const signer = fromKitSigner(kitSigner);
 
 const client = createSmartWalletClient({
+  signer: fromKitSigner(kitSigner),
   transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
   chain: "solana:devnet",
-  signer,
+  paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
 });
 ```
 
-## Raw Ed25519 keypair signers
+## Raw Ed25519 keypair
 
-Use `fromKeypair` when your signer exposes an `address` and a `signMessage(bytes)` method that returns a 64-byte Ed25519 signature.
+Use `fromKeypair` when your signer exposes an `address` and a `signMessage(bytes)` method that returns a 64-byte Ed25519 signature. This is the right adapter for a bare Ed25519 keypair or a key management service.
 
 ```ts title="keypair-signer.ts"
 import {
   alchemyWalletTransport,
   createSmartWalletClient,
 } from "@alchemy/wallet-apis";
-import {
-  fromKeypair,
-  type SolanaKeypairSigner,
-} from "@alchemy/wallet-apis/solana";
+import { fromKeypair } from "@alchemy/wallet-apis/solana";
 
-declare const yourKeypairSigner: SolanaKeypairSigner;
+interface Ed25519Keypair {
+  address: string;
+  privateKey: CryptoKey;
+}
 
-const signer = fromKeypair(yourKeypairSigner);
+async function loadEd25519Keypair(): Promise<Ed25519Keypair> {
+  // Load this from your app's key storage or KMS.
+  throw new Error("Implement loadEd25519Keypair for your app");
+}
+
+const { address, privateKey } = await loadEd25519Keypair();
 
 const client = createSmartWalletClient({
+  signer: fromKeypair({
+    address,
+    async signMessage(message) {
+      const messageBytes = Uint8Array.from(message);
+      return new Uint8Array(
+        await crypto.subtle.sign("Ed25519", privateKey, messageBytes),
+      );
+    },
+  }),
   transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
   chain: "solana:devnet",
-  signer,
+  paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
 });
 ```
 
 Your `signMessage` implementation must return a valid 64-byte Ed25519 signature for the message bytes. Do not return placeholder bytes; Wallet APIs rejects missing or all-zero signatures.
 
-## Wallet Adapter signers
+## Wallet Standard
 
-Use `fromWalletAdapter` for wallets that sign `VersionedTransaction` objects, including `useWallet()` from `@solana/wallet-adapter-react` and injected providers such as Phantom.
-
-```ts title="wallet-adapter-signer.ts"
-import {
-  alchemyWalletTransport,
-  createSmartWalletClient,
-} from "@alchemy/wallet-apis";
-import {
-  fromWalletAdapter,
-  type WalletAdapterSigner,
-} from "@alchemy/wallet-apis/solana";
-
-export function createClientWithWalletAdapter(wallet: WalletAdapterSigner) {
-  const signer = fromWalletAdapter(wallet);
-
-  return createSmartWalletClient({
-    transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
-    chain: "solana:devnet",
-    signer,
-  });
-}
-```
-
-## Wallet Standard signers
-
-Use `fromWalletStandard` for wallets that implement the Wallet Standard `solana:signTransaction` feature.
+Use `fromWalletStandard` when you are working directly with the low-level Wallet Standard API. Most app developers should use Privy or `@solana/wallet-adapter-react` instead.
 
 ```ts title="wallet-standard-signer.ts"
 import {
@@ -127,19 +237,48 @@ import {
   type WalletStandardAccount,
   type WalletStandardWallet,
 } from "@alchemy/wallet-apis/solana";
+import { getWallets } from "@wallet-standard/app";
 
-export function createClientWithWalletStandard(
+type ConnectableWalletStandardWallet = Omit<
+  WalletStandardWallet,
+  "features"
+> & {
+  features: {
+    readonly [name: string]: unknown;
+    readonly "standard:connect": {
+      connect(): Promise<{ accounts: readonly WalletStandardAccount[] }>;
+    };
+    readonly "solana:signTransaction": unknown;
+  };
+};
+
+function isSolanaStandardWallet(
   wallet: WalletStandardWallet,
-  account: WalletStandardAccount,
-) {
-  const signer = fromWalletStandard(wallet, account);
-
-  return createSmartWalletClient({
-    transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
-    chain: "solana:devnet",
-    signer,
-  });
+): wallet is ConnectableWalletStandardWallet {
+  return (
+    "standard:connect" in wallet.features &&
+    "solana:signTransaction" in wallet.features
+  );
 }
+
+const wallets: readonly WalletStandardWallet[] = getWallets().get();
+const wallet = wallets.find(isSolanaStandardWallet);
+if (!wallet) {
+  throw new Error("Connect a wallet that supports solana:signTransaction");
+}
+
+const { accounts } = await wallet.features["standard:connect"].connect();
+const account = accounts[0];
+if (!account) {
+  throw new Error("No Solana account returned by the wallet");
+}
+
+const client = createSmartWalletClient({
+  signer: fromWalletStandard(wallet, account),
+  transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+  chain: "solana:devnet",
+  paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
+});
 ```
 
 ## Next steps
@@ -147,4 +286,4 @@ export function createClientWithWalletStandard(
 Use your Solana signer to:
 
 * [Send Solana transactions](/docs/wallets/transactions/send-transactions#solana-transactions)
-* [Sponsor Solana transaction fees](/docs/wallets/transactions/sponsor-gas#solana-sponsorship)
+* [Sponsor Solana transaction fees](/docs/wallets/transactions/sponsor-gas/solana)

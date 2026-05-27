@@ -1,10 +1,10 @@
 ---
 title: Sponsor gas
-description: Sponsor EVM gas and Solana transaction fees for your users.
+description: Sponsor EVM gas for your users.
 slug: wallets/transactions/sponsor-gas
 ---
 
-Gas fees are a significant barrier to entry for new users. With Gas Sponsorship, you can eliminate this friction by covering EVM gas or Solana transaction fees for your users.
+Gas fees are a significant barrier to entry for new users. With Gas Sponsorship, you can eliminate this friction by covering EVM gas for your users.
 
 ## How it works
 
@@ -17,11 +17,7 @@ and bills in fiat.
 * API key from your [dashboard](https://dashboard.alchemy.com/apps)
 * [A gas sponsorship policy](https://dashboard.alchemy.com/gas-manager/policy/create).
 
-## EVM sponsorship
-
-Use EVM sponsorship when sending EVM calls with the smart wallet client.
-
-### Implementation
+## Implementation
 
 <Tabs>
   <Tab title="JavaScript" language="typescript">
@@ -35,7 +31,7 @@ Use EVM sponsorship when sending EVM calls with the smart wallet client.
 
 <Markdown src="../../../shared/v4-accordion.mdx" />
 
-### Advanced
+## Advanced
 
 <Accordion title="Usage with prepare calls">
   EVM gas sponsorship also works with the prepare calls methods in the various frameworks. Usage of the capability is the same as when using send calls. Use prepare calls if you want to inspect the prepared call before prompting for signature.
@@ -62,129 +58,9 @@ Use EVM sponsorship when sending EVM calls with the smart wallet client.
   for reference to the `paymasterService.policyIds` parameter.
 </Accordion>
 
-## Solana sponsorship
-
-Use Solana sponsorship to cover transaction fees and rent for Solana calls submitted through `@alchemy/wallet-apis`. Solana sponsorship uses the same client actions as standard Solana transactions: `sendCalls`, `prepareCalls`, `signPreparedCalls`, and `sendPreparedCalls`.
-
-For Solana signer setup, see [Solana signer adapters](/docs/wallets/third-party/signers/solana-signers).
-
-### Client-level policy
-
-Pass `paymaster: { policyId }` when creating the Solana smart wallet client to apply the policy to all `sendCalls` and `prepareCalls` requests from that client.
-
-```ts title="sponsor-solana-client.ts"
-import {
-  alchemyWalletTransport,
-  createSmartWalletClient,
-} from "@alchemy/wallet-apis";
-import { fromKitSigner } from "@alchemy/wallet-apis/solana";
-import { generateKeyPairSigner } from "@solana/kit";
-import {
-  PublicKey,
-  SystemProgram,
-  type TransactionInstruction,
-} from "@solana/web3.js";
-import { bytesToHex } from "viem";
-
-const ALCHEMY_API_KEY = "YOUR_ALCHEMY_API_KEY";
-const SOLANA_POLICY_ID = "YOUR_SOLANA_POLICY_ID";
-
-function toSolanaCall(instruction: TransactionInstruction) {
-  return {
-    programId: instruction.programId.toBase58(),
-    accounts: instruction.keys.map((account) => ({
-      pubkey: account.pubkey.toBase58(),
-      isSigner: account.isSigner,
-      isWritable: account.isWritable,
-    })),
-    data: bytesToHex(instruction.data),
-  };
-}
-
-function transferCall(from: string, to: string, lamports: number) {
-  return toSolanaCall(
-    SystemProgram.transfer({
-      fromPubkey: new PublicKey(from),
-      toPubkey: new PublicKey(to),
-      lamports,
-    }),
-  );
-}
-
-const kitSigner = await generateKeyPairSigner();
-const signer = fromKitSigner(kitSigner);
-
-const client = createSmartWalletClient({
-  transport: alchemyWalletTransport({ apiKey: ALCHEMY_API_KEY }),
-  chain: "solana:devnet",
-  signer,
-  paymaster: { policyId: SOLANA_POLICY_ID },
-});
-
-const { id } = await client.sendCalls({
-  calls: [transferCall(client.solanaAccount, client.solanaAccount, 0)],
-});
-
-const result = await client.waitForCallsStatus({ id });
-
-console.log("Sponsored Solana transaction status:", result.status);
-```
-
-### Per-request policy
-
-Pass `capabilities.paymaster` to override the client-level policy for a single `sendCalls` or `prepareCalls` request. Request-level `capabilities.paymaster.policyId` takes priority over the client-level policy.
-
-```ts title="sponsor-solana-request.ts"
-const { id } = await client.sendCalls({
-  calls: [transferCall(client.solanaAccount, client.solanaAccount, 0)],
-  capabilities: {
-    paymaster: {
-      policyId: SOLANA_POLICY_ID,
-      webhookData: "checkout-session-123",
-    },
-  },
-});
-
-const result = await client.waitForCallsStatus({ id });
-```
-
-The SDK maps the client-facing `paymaster` capability to `paymasterService` on `wallet_prepareCalls`. Solana client-level sponsorship currently accepts a single `policyId`.
-
-### Rent sponsorship
-
-Solana sponsorship can also cover rent for account creation.
-
-Top-level rent sponsorship applies automatically when a sponsored transaction includes top-level `SystemProgram.createAccount` or Associated Token Program `Create` / `CreateIdempotent` instructions. No extra request parameter is required for those top-level instructions.
-
-For accounts created inside a cross-program invocation (CPI), opt in per request with `prefundRent: true`. This asks the service to simulate the transaction, estimate the CPI rent requirement, and prefund the user's wallet before the transaction is submitted.
-
-```ts title="sponsor-solana-cpi-rent.ts"
-const { id } = await client.sendCalls({
-  calls: [transferCall(client.solanaAccount, client.solanaAccount, 0)],
-  capabilities: {
-    paymaster: {
-      policyId: SOLANA_POLICY_ID,
-      prefundRent: true,
-    },
-  },
-});
-
-const result = await client.waitForCallsStatus({ id });
-```
-
-<Warning>
-  CPI rent prefunding is allowlisted. Contact
-  [support@alchemy.com](mailto:support@alchemy.com) to request access. Policies
-  used with `prefundRent` must set `maxSpendPerTxnUsd`, and the transaction
-  payer must be the user's wallet: the same account your program's CPI will
-  debit for rent.
-</Warning>
-
 <Info>
-  If you are not using the Wallet APIs client and need to sponsor a serialized
-  Solana transaction directly, use the lower-level
-  [`alchemy_requestFeePayer`](/docs/wallets/transactions/solana/sponsor-gas)
-  flow.
+  Sponsoring Solana fees and rent uses Solana-specific policy configuration and
+  request options. See [Sponsor Solana fees](/docs/wallets/transactions/sponsor-gas/solana).
 </Info>
 
 ## Next steps
@@ -192,8 +68,7 @@ const result = await client.waitForCallsStatus({ id });
 Build more:
 
 * [Pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token)
-* [Send Solana transactions](/docs/wallets/transactions/send-transactions#solana-transactions)
-* [Use Solana signer adapters](/docs/wallets/third-party/signers/solana-signers)
+* [Sponsor Solana fees](/docs/wallets/transactions/sponsor-gas/solana)
 
 Troubleshooting:
 
