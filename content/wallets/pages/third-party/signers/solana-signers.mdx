@@ -1,0 +1,150 @@
+---
+title: Solana signers
+description: Use Solana signers with Wallet APIs
+slug: wallets/third-party/signers/solana-signers
+---
+
+Solana Wallet APIs use an Ed25519 signer that can sign serialized Solana transactions. The `signer` parameter of `createSmartWalletClient` accepts a `SolanaSigner` when you use a Solana chain ID such as `"solana:devnet"` or `"solana:mainnet"`.
+
+```ts
+type SolanaSigner = {
+  address: string;
+  signTransaction(input: {
+    transaction: Uint8Array;
+  }): Promise<{ signedTransaction: Uint8Array }>;
+};
+```
+
+Most apps do not need to implement this interface directly. Use one of the adapters from `@alchemy/wallet-apis/solana` to convert your Solana signer into the shape expected by Wallet APIs.
+
+## Install
+
+<CodeGroup>
+```shell npm
+npm install @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+```
+
+```shell pnpm
+pnpm add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+```
+
+```shell yarn
+yarn add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+```
+
+```shell bun
+bun add @alchemy/wallet-apis @solana/kit @solana/web3.js viem
+```
+</CodeGroup>
+
+`@solana/kit` and `@solana/web3.js` are optional peer dependencies. Install the one that matches the adapter you use.
+
+## `@solana/kit` signers
+
+Use `fromKitSigner` for `@solana/kit` signers that implement `signTransactions`, including `KeyPairSigner` and `TransactionPartialSigner`.
+
+```ts title="kit-signer.ts"
+import {
+  alchemyWalletTransport,
+  createSmartWalletClient,
+} from "@alchemy/wallet-apis";
+import { fromKitSigner } from "@alchemy/wallet-apis/solana";
+import { generateKeyPairSigner } from "@solana/kit";
+
+const kitSigner = await generateKeyPairSigner();
+const signer = fromKitSigner(kitSigner);
+
+const client = createSmartWalletClient({
+  transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+  chain: "solana:devnet",
+  signer,
+});
+```
+
+## Raw Ed25519 keypair signers
+
+Use `fromKeypair` when your signer exposes an `address` and a `signMessage(bytes)` method that returns a 64-byte Ed25519 signature.
+
+```ts title="keypair-signer.ts"
+import {
+  alchemyWalletTransport,
+  createSmartWalletClient,
+} from "@alchemy/wallet-apis";
+import {
+  fromKeypair,
+  type SolanaKeypairSigner,
+} from "@alchemy/wallet-apis/solana";
+
+declare const yourKeypairSigner: SolanaKeypairSigner;
+
+const signer = fromKeypair(yourKeypairSigner);
+
+const client = createSmartWalletClient({
+  transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+  chain: "solana:devnet",
+  signer,
+});
+```
+
+Your `signMessage` implementation must return a valid 64-byte Ed25519 signature for the message bytes. Do not return placeholder bytes; Wallet APIs rejects missing or all-zero signatures.
+
+## Wallet Adapter signers
+
+Use `fromWalletAdapter` for wallets that sign `VersionedTransaction` objects, including `useWallet()` from `@solana/wallet-adapter-react` and injected providers such as Phantom.
+
+```ts title="wallet-adapter-signer.ts"
+import {
+  alchemyWalletTransport,
+  createSmartWalletClient,
+} from "@alchemy/wallet-apis";
+import {
+  fromWalletAdapter,
+  type WalletAdapterSigner,
+} from "@alchemy/wallet-apis/solana";
+
+export function createClientWithWalletAdapter(wallet: WalletAdapterSigner) {
+  const signer = fromWalletAdapter(wallet);
+
+  return createSmartWalletClient({
+    transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+    chain: "solana:devnet",
+    signer,
+  });
+}
+```
+
+## Wallet Standard signers
+
+Use `fromWalletStandard` for wallets that implement the Wallet Standard `solana:signTransaction` feature.
+
+```ts title="wallet-standard-signer.ts"
+import {
+  alchemyWalletTransport,
+  createSmartWalletClient,
+} from "@alchemy/wallet-apis";
+import {
+  fromWalletStandard,
+  type WalletStandardAccount,
+  type WalletStandardWallet,
+} from "@alchemy/wallet-apis/solana";
+
+export function createClientWithWalletStandard(
+  wallet: WalletStandardWallet,
+  account: WalletStandardAccount,
+) {
+  const signer = fromWalletStandard(wallet, account);
+
+  return createSmartWalletClient({
+    transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+    chain: "solana:devnet",
+    signer,
+  });
+}
+```
+
+## Next steps
+
+Use your Solana signer to:
+
+* [Send Solana transactions](/docs/wallets/transactions/send-transactions#solana-transactions)
+* [Sponsor Solana transaction fees](/docs/wallets/transactions/sponsor-gas#solana-sponsorship)
