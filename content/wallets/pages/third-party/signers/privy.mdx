@@ -183,33 +183,27 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
 
     Privy's Solana embedded wallet plugs into Wallet APIs without an adapter — `useWallets()` from `@privy-io/react-auth/solana` returns wallets that satisfy the `SolanaSigner` interface directly.
 
-    ### Solana peer dependencies
+    ### Install Solana deps
 
-    Privy's Solana wallet uses `@solana/kit` internally, so install it alongside the `@solana-program/*` packages Privy needs to build transactions:
+    The example below uses `@solana/kit` and `@solana-program/system` to build the transfer instruction:
 
     <CodeGroup>
     ```shell npm
-    npm install @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    npm install @solana/kit @solana-program/system
     ```
 
     ```shell bun
-    bun add @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    bun add @solana/kit @solana-program/system
     ```
 
     ```shell yarn
-    yarn add @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    yarn add @solana/kit @solana-program/system
     ```
 
     ```shell pnpm
-    pnpm add @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    pnpm add @solana/kit @solana-program/system
     ```
     </CodeGroup>
-
-    The example below builds its transfer instruction with `@solana/web3.js` because it's the most familiar API. You only need it if you use that pattern — equivalent instructions can be built with `@solana/kit` or any library that produces a `programId`, account metas, and instruction `data` bytes.
-
-    ```shell
-    npm install @solana/web3.js
-    ```
 
     ### Configure PrivyProvider for Solana
 
@@ -234,75 +228,97 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
 
     Use `useWallets` from `@privy-io/react-auth/solana` to get the connected Solana wallet. The returned wallet can be passed directly as the Wallet APIs Solana signer.
 
-    ```tsx title="privy-sponsored-solana.tsx"
-    import {
-      alchemyWalletTransport,
-      createSmartWalletClient,
-    } from "@alchemy/wallet-apis";
-    import { useWallets } from "@privy-io/react-auth/solana";
-    import {
-      PublicKey,
-      SystemProgram,
-      type TransactionInstruction,
-    } from "@solana/web3.js";
-    import { useCallback, useMemo } from "react";
-    import { bytesToHex } from "viem";
+    <CodeBlocks>
+      ```tsx title="SendSponsoredSolanaTransaction.tsx"
+      import {
+        alchemyWalletTransport,
+        createSmartWalletClient,
+      } from "@alchemy/wallet-apis";
+      import { useWallets } from "@privy-io/react-auth/solana";
+      import { useCallback, useMemo } from "react";
+      import { transferSolCall } from "./utils";
 
-    function toSolanaCall(instruction: TransactionInstruction) {
-      return {
-        programId: instruction.programId.toBase58(),
-        accounts: instruction.keys.map((account) => ({
-          pubkey: account.pubkey.toBase58(),
-          isSigner: account.isSigner,
-          isWritable: account.isWritable,
-        })),
-        data: bytesToHex(instruction.data),
-      };
-    }
+      export function SendSponsoredSolanaTransaction() {
+        const { wallets } = useWallets();
+        const signer = wallets[0];
 
-    function transferCall(from: string, to: string, lamports: number) {
-      return toSolanaCall(
-        SystemProgram.transfer({
-          fromPubkey: new PublicKey(from),
-          toPubkey: new PublicKey(to),
-          lamports,
-        }),
-      );
-    }
+        const client = useMemo(() => {
+          if (!signer) return undefined;
 
-    function SendSponsoredSolanaTransaction() {
-      const { wallets } = useWallets();
-      const signer = wallets[0];
+          return createSmartWalletClient({
+            transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+            chain: "solana:devnet",
+            signer,
+            paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
+          });
+        }, [signer]);
 
-      const client = useMemo(() => {
-        if (!signer) return undefined;
+        const handleSend = useCallback(async () => {
+          if (!client) return;
 
-        return createSmartWalletClient({
-          transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
-          chain: "solana:devnet",
-          signer,
-          paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
-        });
-      }, [signer]);
+          const { id } = await client.sendCalls({
+            calls: [
+              transferSolCall({
+                from: client.solanaAccount,
+                to: client.solanaAccount,
+                lamports: 0n,
+              }),
+            ],
+          });
 
-      const handleSend = useCallback(async () => {
-        if (!client) return;
+          const result = await client.waitForCallsStatus({ id });
+          console.log("Sponsored Solana transaction status:", result.status);
+        }, [client]);
 
-        const { id } = await client.sendCalls({
-          calls: [transferCall(client.solanaAccount, client.solanaAccount, 0)],
-        });
+        return (
+          <button onClick={handleSend} disabled={!client}>
+            Send sponsored Solana transaction
+          </button>
+        );
+      }
+      ```
 
-        const result = await client.waitForCallsStatus({ id });
-        console.log("Sponsored Solana transaction status:", result.status);
-      }, [client]);
+      ```ts title="utils.ts"
+      import { getTransferSolInstruction } from "@solana-program/system";
+      import {
+        AccountRole,
+        address,
+        createNoopSigner,
+        type IInstruction,
+      } from "@solana/kit";
+      import { bytesToHex } from "viem";
 
-      return (
-        <button onClick={handleSend} disabled={!client}>
-          Send sponsored Solana transaction
-        </button>
-      );
-    }
-    ```
+      function toSolanaCall(instruction: IInstruction) {
+        return {
+          programId: instruction.programAddress,
+          accounts: (instruction.accounts ?? []).map((account) => ({
+            pubkey: account.address,
+            isSigner:
+              account.role === AccountRole.READONLY_SIGNER ||
+              account.role === AccountRole.WRITABLE_SIGNER,
+            isWritable:
+              account.role === AccountRole.WRITABLE ||
+              account.role === AccountRole.WRITABLE_SIGNER,
+          })),
+          data: bytesToHex(instruction.data ?? new Uint8Array()),
+        };
+      }
+
+      export function transferSolCall(args: {
+        from: string;
+        to: string;
+        lamports: bigint;
+      }) {
+        return toSolanaCall(
+          getTransferSolInstruction({
+            source: createNoopSigner(address(args.from)),
+            destination: address(args.to),
+            amount: args.lamports,
+          }),
+        );
+      }
+      ```
+    </CodeBlocks>
 
     ### Notes
 

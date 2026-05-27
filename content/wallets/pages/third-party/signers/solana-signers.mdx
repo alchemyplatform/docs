@@ -39,8 +39,6 @@ bun add @alchemy/wallet-apis
 
 Install the optional package that matches your signer source:
 
-* Privy: `@privy-io/react-auth`
-* Privy Solana peer dependencies: `@solana/kit @solana-program/memo @solana-program/system @solana-program/token`
 * `@solana/wallet-adapter-react`: `@solana/wallet-adapter-react @solana/web3.js`
 * Injected providers such as Phantom: `@solana/web3.js`
 * `@solana/kit` signers: `@solana/kit`
@@ -50,41 +48,12 @@ Install the optional package that matches your signer source:
 
 | What you have | What to use |
 | --- | --- |
-| Privy Solana wallet from `@privy-io/react-auth/solana` | No adapter needed |
+| Privy Solana wallet from `@privy-io/react-auth/solana` | No adapter — see the [Privy guide](/docs/wallets/third-party/signers/privy#send-solana-transactions) |
 | `useWallet()` from `@solana/wallet-adapter-react` | `fromWalletAdapter` |
 | Injected provider such as `window.phantom.solana` | `fromWalletAdapter` |
 | `@solana/kit` `KeyPairSigner` or `TransactionPartialSigner` | `fromKitSigner` |
 | Raw Ed25519 keypair or key management service | `fromKeypair` |
 | Low-level Wallet Standard wallet | `fromWalletStandard` |
-
-## Privy
-
-Use `useWallets` from `@privy-io/react-auth/solana` to get connected Solana wallets. The returned wallet can be passed directly to `createSmartWalletClient`.
-
-```tsx title="privy-solana-signer.tsx"
-import {
-  alchemyWalletTransport,
-  createSmartWalletClient,
-} from "@alchemy/wallet-apis";
-import { useWallets } from "@privy-io/react-auth/solana";
-import { useMemo } from "react";
-
-function usePrivySolanaClient() {
-  const { wallets } = useWallets();
-  const signer = wallets[0];
-
-  return useMemo(() => {
-    if (!signer) return undefined;
-
-    return createSmartWalletClient({
-      signer,
-      transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
-      chain: "solana:devnet",
-      paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
-    });
-  }, [signer]);
-}
-```
 
 ## `@solana/wallet-adapter-react`
 

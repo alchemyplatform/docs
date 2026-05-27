@@ -10,7 +10,7 @@ You can use smart wallet client actions to prepare, sign, and send Solana transa
       transferSolCall({
         from: client.solanaAccount,
         to: client.solanaAccount,
-        lamports: 0,
+        lamports: 0n,
       }),
     ],
   });
@@ -47,35 +47,41 @@ You can use smart wallet client actions to prepare, sign, and send Solana transa
   ```
 
   ```ts title="utils.ts"
+  import { getTransferSolInstruction } from "@solana-program/system";
   import {
-    PublicKey,
-    SystemProgram,
-    type TransactionInstruction,
-  } from "@solana/web3.js";
+    AccountRole,
+    address,
+    createNoopSigner,
+    type IInstruction,
+  } from "@solana/kit";
   import { bytesToHex } from "viem";
 
-  function toSolanaCall(instruction: TransactionInstruction) {
+  function toSolanaCall(instruction: IInstruction) {
     return {
-      programId: instruction.programId.toBase58(),
-      accounts: instruction.keys.map((account) => ({
-        pubkey: account.pubkey.toBase58(),
-        isSigner: account.isSigner,
-        isWritable: account.isWritable,
+      programId: instruction.programAddress,
+      accounts: (instruction.accounts ?? []).map((account) => ({
+        pubkey: account.address,
+        isSigner:
+          account.role === AccountRole.READONLY_SIGNER ||
+          account.role === AccountRole.WRITABLE_SIGNER,
+        isWritable:
+          account.role === AccountRole.WRITABLE ||
+          account.role === AccountRole.WRITABLE_SIGNER,
       })),
-      data: bytesToHex(instruction.data),
+      data: bytesToHex(instruction.data ?? new Uint8Array()),
     };
   }
 
   export function transferSolCall(args: {
     from: string;
     to: string;
-    lamports: number;
+    lamports: bigint;
   }) {
     return toSolanaCall(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(args.from),
-        toPubkey: new PublicKey(args.to),
-        lamports: args.lamports,
+      getTransferSolInstruction({
+        source: createNoopSigner(address(args.from)),
+        destination: address(args.to),
+        amount: args.lamports,
       }),
     );
   }

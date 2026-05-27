@@ -1,4 +1,4 @@
-Sponsorship is applied by passing `capabilities.paymasterService` to `wallet_prepareCalls`. The rest of the flow (sign with Ed25519, send, poll status) is identical to the unsponsored Solana raw API flow.
+Sponsorship is applied by passing `capabilities.paymasterService` to `wallet_prepareCalls`. The rest of the flow (sign with Ed25519 via `@solana/kit`, send, poll status) is identical to the unsponsored Solana raw API flow.
 
 See the [`wallet_prepareCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-prepare-calls), [`wallet_sendPreparedCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-send-prepared-calls), and [`wallet_getCallsStatus`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-get-calls-status) API references for full parameter descriptions.
 
@@ -7,8 +7,17 @@ See the [`wallet_prepareCalls`](/docs/wallets/api-reference/smart-wallets/wallet
 <Step title="Declare your secrets and helpers">
 
 ```ts twoslash
-import { Keypair, PublicKey, SystemProgram, VersionedTransaction } from "@solana/web3.js";
-import bs58 from "bs58";
+import { getTransferSolInstruction } from "@solana-program/system";
+import {
+  AccountRole,
+  address,
+  createKeyPairSignerFromBytes,
+  createNoopSigner,
+  getBase58Decoder,
+  getTransactionDecoder,
+  partiallySignTransaction,
+  type IInstruction,
+} from "@solana/kit";
 import { bytesToHex } from "viem";
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
@@ -19,8 +28,8 @@ const CHAIN_ID = "solana:devnet";
 const secretKey = new Uint8Array(
   Buffer.from(process.env.SOLANA_SECRET_KEY!, "base64"),
 );
-const userKeypair = Keypair.fromSecretKey(secretKey);
-const SIGNER_ADDRESS = userKeypair.publicKey.toBase58();
+const userSigner = await createKeyPairSignerFromBytes(secretKey);
+const SIGNER_ADDRESS = userSigner.address;
 
 async function rpc<T>(method: string, params: unknown[]): Promise<T> {
   const response = await fetch(RPC_URL, {
@@ -32,6 +41,22 @@ async function rpc<T>(method: string, params: unknown[]): Promise<T> {
   if (body.error) throw new Error(JSON.stringify(body.error));
   return body.result as T;
 }
+
+function toSolanaCall(instruction: IInstruction) {
+  return {
+    programId: instruction.programAddress,
+    accounts: (instruction.accounts ?? []).map((a) => ({
+      pubkey: a.address,
+      isSigner:
+        a.role === AccountRole.READONLY_SIGNER ||
+        a.role === AccountRole.WRITABLE_SIGNER,
+      isWritable:
+        a.role === AccountRole.WRITABLE ||
+        a.role === AccountRole.WRITABLE_SIGNER,
+    })),
+    data: bytesToHex(instruction.data ?? new Uint8Array()),
+  };
+}
 ```
 
 </Step>
@@ -41,10 +66,10 @@ async function rpc<T>(method: string, params: unknown[]): Promise<T> {
 Attach `capabilities.paymasterService.policyId` to apply your Solana sponsorship policy. Add `prefundRent: true` to opt in to CPI rent prefunding, and `webhookData` to pass extra context to custom rules.
 
 ```ts twoslash
-const transferIx = SystemProgram.transfer({
-  fromPubkey: userKeypair.publicKey,
-  toPubkey: userKeypair.publicKey,
-  lamports: 0,
+const transferIx = getTransferSolInstruction({
+  source: createNoopSigner(address(SIGNER_ADDRESS)),
+  destination: address(SIGNER_ADDRESS),
+  amount: 0n,
 });
 
 const prepared = await rpc<{
@@ -54,17 +79,7 @@ const prepared = await rpc<{
   feePayment: { sponsored: boolean; feePayer: string };
 }>("wallet_prepareCalls", [
   {
-    calls: [
-      {
-        programId: transferIx.programId.toBase58(),
-        accounts: transferIx.keys.map((a) => ({
-          pubkey: a.pubkey.toBase58(),
-          isSigner: a.isSigner,
-          isWritable: a.isWritable,
-        })),
-        data: bytesToHex(transferIx.data),
-      },
-    ],
+    calls: [toSolanaCall(transferIx)],
     from: SIGNER_ADDRESS,
     chainId: CHAIN_ID,
     capabilities: {
@@ -87,14 +102,15 @@ console.log(prepared.feePayment); // { sponsored: true, feePayer: "<paymaster>" 
 `signatureRequest.data` already contains the paymaster signature embedded; the user only needs to add their Ed25519 signature.
 
 ```ts twoslash
-const txBytes = Buffer.from(prepared.signatureRequest.data.slice(2), "hex");
-const tx = VersionedTransaction.deserialize(txBytes);
-tx.sign([userKeypair]);
-
-const signerIndex = tx.message.staticAccountKeys.findIndex(
-  (key) => key.toBase58() === SIGNER_ADDRESS,
+const txBytes = new Uint8Array(
+  Buffer.from(prepared.signatureRequest.data.slice(2), "hex"),
 );
-const signatureBase58 = bs58.encode(tx.signatures[signerIndex]!);
+const tx = getTransactionDecoder().decode(txBytes);
+const signed = await partiallySignTransaction([userSigner.keyPair], tx);
+
+const userSignatureBytes = signed.signatures[SIGNER_ADDRESS];
+if (!userSignatureBytes) throw new Error("Missing user signature");
+const signatureBase58 = getBase58Decoder().decode(userSignatureBytes);
 ```
 
 </Step>
