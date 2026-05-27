@@ -1,0 +1,131 @@
+Sponsorship is applied by passing `capabilities.paymasterService` to `wallet_prepareCalls`. The rest of the flow (sign with Ed25519, send, poll status) is identical to the unsponsored Solana raw API flow.
+
+See the [`wallet_prepareCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-prepare-calls), [`wallet_sendPreparedCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-send-prepared-calls), and [`wallet_getCallsStatus`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-get-calls-status) API references for full parameter descriptions.
+
+<Steps>
+
+<Step title="Declare your secrets and helpers">
+
+```ts twoslash
+import { Keypair, PublicKey, SystemProgram, VersionedTransaction } from "@solana/web3.js";
+import bs58 from "bs58";
+import { bytesToHex } from "viem";
+
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
+const SOLANA_POLICY_ID = process.env.SOLANA_POLICY_ID!;
+const RPC_URL = `https://api.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+const CHAIN_ID = "solana:devnet";
+
+const secretKey = new Uint8Array(
+  Buffer.from(process.env.SOLANA_SECRET_KEY!, "base64"),
+);
+const userKeypair = Keypair.fromSecretKey(secretKey);
+const SIGNER_ADDRESS = userKeypair.publicKey.toBase58();
+
+async function rpc<T>(method: string, params: unknown[]): Promise<T> {
+  const response = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ id: 1, jsonrpc: "2.0", method, params }),
+  });
+  const body = (await response.json()) as { result?: T; error?: unknown };
+  if (body.error) throw new Error(JSON.stringify(body.error));
+  return body.result as T;
+}
+```
+
+</Step>
+
+<Step title="Prepare calls with sponsorship">
+
+Attach `capabilities.paymasterService.policyId` to apply your Solana sponsorship policy. Add `prefundRent: true` to opt in to CPI rent prefunding, and `webhookData` to pass extra context to custom rules.
+
+```ts twoslash
+const transferIx = SystemProgram.transfer({
+  fromPubkey: userKeypair.publicKey,
+  toPubkey: userKeypair.publicKey,
+  lamports: 0,
+});
+
+const prepared = await rpc<{
+  type: "solana-transaction-v0";
+  signatureRequest: { type: "solana_signTransaction"; data: `0x${string}` };
+  data: unknown;
+  feePayment: { sponsored: boolean; feePayer: string };
+}>("wallet_prepareCalls", [
+  {
+    calls: [
+      {
+        programId: transferIx.programId.toBase58(),
+        accounts: transferIx.keys.map((a) => ({
+          pubkey: a.pubkey.toBase58(),
+          isSigner: a.isSigner,
+          isWritable: a.isWritable,
+        })),
+        data: bytesToHex(transferIx.data),
+      },
+    ],
+    from: SIGNER_ADDRESS,
+    chainId: CHAIN_ID,
+    capabilities: {
+      paymasterService: {
+        policyId: SOLANA_POLICY_ID,
+        // prefundRent: true,             // opt in for CPI rent
+        // webhookData: "session-123",    // optional, for custom-rule webhooks
+      },
+    },
+  },
+]);
+
+console.log(prepared.feePayment); // { sponsored: true, feePayer: "<paymaster>" }
+```
+
+</Step>
+
+<Step title="Sign the prepared transaction">
+
+`signatureRequest.data` already contains the paymaster signature embedded; the user only needs to add their Ed25519 signature.
+
+```ts twoslash
+const txBytes = Buffer.from(prepared.signatureRequest.data.slice(2), "hex");
+const tx = VersionedTransaction.deserialize(txBytes);
+tx.sign([userKeypair]);
+
+const signerIndex = tx.message.staticAccountKeys.findIndex(
+  (key) => key.toBase58() === SIGNER_ADDRESS,
+);
+const signatureBase58 = bs58.encode(tx.signatures[signerIndex]!);
+```
+
+</Step>
+
+<Step title="Send and poll">
+
+```ts twoslash
+const { id } = await rpc<{ id: string }>("wallet_sendPreparedCalls", [
+  {
+    type: prepared.type,
+    chainId: CHAIN_ID,
+    data: prepared.data,
+    signature: { type: "ed25519", data: signatureBase58 },
+  },
+]);
+
+const status = await rpc<{
+  status: number;
+  receipts?: Array<{ signature: string }>;
+}>("wallet_getCallsStatus", [id]);
+
+console.log(status.status, status.receipts?.[0]?.signature);
+```
+
+</Step>
+
+</Steps>
+
+<Warning>
+  CPI rent prefunding (`prefundRent: true`) is allowlisted. Contact
+  [support@alchemy.com](mailto:support@alchemy.com) to request access. Policies
+  used with `prefundRent` must set `maxSpendPerTxnUsd`, and the transaction
+  payer must be the user's wallet.
+</Warning>

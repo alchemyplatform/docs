@@ -37,25 +37,7 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
     ```
     </CodeGroup>
 
-    If you also want to send Solana transactions (step 5), install the Solana peer dependencies:
-
-    <CodeGroup>
-    ```shell npm
-    npm install @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js
-    ```
-
-    ```shell bun
-    bun add @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js
-    ```
-
-    ```shell yarn
-    yarn add @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js
-    ```
-
-    ```shell pnpm
-    pnpm add @solana/kit @solana-program/memo @solana-program/system @solana-program/token @solana/web3.js
-    ```
-    </CodeGroup>
+    For Solana support, see [Send Solana transactions](#send-solana-transactions) below for the additional peer dependencies.
 
     ### Prerequisites: Get your keys (API key, Policy ID, Privy App ID)
 
@@ -96,24 +78,6 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
         </PrivyProvider>
       );
     }
-    ```
-
-    To create Solana embedded wallets on login, include the Solana embedded wallet configuration:
-
-    ```tsx
-    <PrivyProvider
-      appId="your-privy-app-id"
-      config={{
-        embeddedWallets: {
-          solana: {
-            createOnLogin: "all-users",
-          },
-          showWalletUIs: false,
-        },
-      }}
-    >
-      <YourApp />
-    </PrivyProvider>
     ```
 
     ### 2. Get a signer from Privy
@@ -208,7 +172,63 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
     }
     ```
 
-    ### 5. Send a sponsored Solana transaction
+    ### Notes
+
+    * The client defaults to [EIP-7702](/docs/wallets/transactions/using-eip-7702), which delegates the Privy wallet to a smart wallet at send time. No deployment or wallet migration needed. See the [EIP-7702 guide](/docs/wallets/transactions/using-eip-7702) for non-7702 mode.
+    * See the [Sponsor gas](/docs/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
+
+    ## Send Solana transactions
+
+    Privy's Solana embedded wallet plugs into Wallet APIs without an adapter — `useWallets()` from `@privy-io/react-auth/solana` returns wallets that satisfy the `SolanaSigner` interface directly.
+
+    ### Solana peer dependencies
+
+    Privy's Solana wallet uses `@solana/kit` internally, so install it alongside the `@solana-program/*` packages Privy needs to build transactions:
+
+    <CodeGroup>
+    ```shell npm
+    npm install @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    ```
+
+    ```shell bun
+    bun add @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    ```
+
+    ```shell yarn
+    yarn add @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    ```
+
+    ```shell pnpm
+    pnpm add @solana/kit @solana-program/memo @solana-program/system @solana-program/token
+    ```
+    </CodeGroup>
+
+    The example below builds its transfer instruction with `@solana/web3.js` because it's the most familiar API. You only need it if you use that pattern — equivalent instructions can be built with `@solana/kit` or any library that produces a `programId`, account metas, and instruction `data` bytes.
+
+    ```shell
+    npm install @solana/web3.js
+    ```
+
+    ### Configure PrivyProvider for Solana
+
+    Enable Solana embedded wallets in your `PrivyProvider` config:
+
+    ```tsx
+    <PrivyProvider
+      appId="your-privy-app-id"
+      config={{
+        embeddedWallets: {
+          ethereum: { createOnLogin: "all-users" },
+          solana: { createOnLogin: "all-users" },
+          showWalletUIs: false,
+        },
+      }}
+    >
+      <YourApp />
+    </PrivyProvider>
+    ```
+
+    ### Send a sponsored Solana transaction
 
     Use `useWallets` from `@privy-io/react-auth/solana` to get the connected Solana wallet. The returned wallet can be passed directly as the Wallet APIs Solana signer.
 
@@ -284,9 +304,8 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
 
     ### Notes
 
-    * The EVM client defaults to [EIP-7702](/docs/wallets/transactions/using-eip-7702), which delegates the Privy wallet to a smart wallet at send time. No deployment or wallet migration needed. See the [EIP-7702 guide](/docs/wallets/transactions/using-eip-7702) for non-7702 mode.
-    * Solana sponsorship requires a Solana gas sponsorship policy.
-    * See the [Sponsor gas](/docs/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
+    * Solana sponsorship requires a Solana gas sponsorship policy. See [Sponsor Solana fees](/docs/wallets/transactions/sponsor-gas/solana).
+    * For non-Privy Solana signer sources (Phantom, `@solana/wallet-adapter-react`, raw keypairs, Wallet Standard), see [Solana signer adapters](/docs/wallets/solana/signers).
   </Tab>
 
   <Tab title="JavaScript" language="typescript">

@@ -1,0 +1,122 @@
+Solana signatures are Ed25519, so the raw JSON-RPC flow uses a small TypeScript helper for signing instead of `cast`. The transport URL and method names are identical to the EVM flow.
+
+See the [`wallet_prepareCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-prepare-calls), [`wallet_sendPreparedCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-send-prepared-calls), and [`wallet_getCallsStatus`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-get-calls-status) API references for full parameter descriptions.
+
+<Steps>
+
+<Step title="Declare your secrets and helpers">
+
+```ts twoslash
+import { Keypair, PublicKey, SystemProgram, VersionedTransaction } from "@solana/web3.js";
+import bs58 from "bs58";
+import { bytesToHex } from "viem";
+
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
+const RPC_URL = `https://api.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+const CHAIN_ID = "solana:devnet";
+
+// 64-byte Solana secret key, base64-encoded. Keep this in a secret manager or .env.
+const secretKey = new Uint8Array(
+  Buffer.from(process.env.SOLANA_SECRET_KEY!, "base64"),
+);
+const userKeypair = Keypair.fromSecretKey(secretKey);
+const SIGNER_ADDRESS = userKeypair.publicKey.toBase58();
+
+async function rpc<T>(method: string, params: unknown[]): Promise<T> {
+  const response = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ id: 1, jsonrpc: "2.0", method, params }),
+  });
+  const body = (await response.json()) as { result?: T; error?: unknown };
+  if (body.error) throw new Error(JSON.stringify(body.error));
+  return body.result as T;
+}
+```
+
+</Step>
+
+<Step title="Prepare calls">
+
+Build the Solana call (a 0-lamport self-transfer in this example) and call `wallet_prepareCalls` with the user's address as `from`.
+
+```ts twoslash
+const transferIx = SystemProgram.transfer({
+  fromPubkey: userKeypair.publicKey,
+  toPubkey: userKeypair.publicKey,
+  lamports: 0,
+});
+
+const prepared = await rpc<{
+  type: "solana-transaction-v0";
+  signatureRequest: { type: "solana_signTransaction"; data: `0x${string}` };
+  data: unknown;
+}>("wallet_prepareCalls", [
+  {
+    calls: [
+      {
+        programId: transferIx.programId.toBase58(),
+        accounts: transferIx.keys.map((a) => ({
+          pubkey: a.pubkey.toBase58(),
+          isSigner: a.isSigner,
+          isWritable: a.isWritable,
+        })),
+        data: bytesToHex(transferIx.data),
+      },
+    ],
+    from: SIGNER_ADDRESS,
+    chainId: CHAIN_ID,
+  },
+]);
+```
+
+</Step>
+
+<Step title="Sign the prepared transaction">
+
+`signatureRequest.data` is the full v0 transaction wire-format bytes, hex-encoded. Deserialize it, sign with the user's keypair, then base58-encode the resulting signature.
+
+```ts twoslash
+const txBytes = Buffer.from(prepared.signatureRequest.data.slice(2), "hex");
+const tx = VersionedTransaction.deserialize(txBytes);
+tx.sign([userKeypair]);
+
+const signerIndex = tx.message.staticAccountKeys.findIndex(
+  (key) => key.toBase58() === SIGNER_ADDRESS,
+);
+const signatureBase58 = bs58.encode(tx.signatures[signerIndex]!);
+```
+
+</Step>
+
+<Step title="Send the prepared calls">
+
+```ts twoslash
+const { id } = await rpc<{ id: string }>("wallet_sendPreparedCalls", [
+  {
+    type: prepared.type,
+    chainId: CHAIN_ID,
+    data: prepared.data,
+    signature: { type: "ed25519", data: signatureBase58 },
+  },
+]);
+```
+
+</Step>
+
+<Step title="Check the calls status">
+
+Poll `wallet_getCallsStatus` until the status leaves the pending range. Solana receipts return a base58 `signature` instead of `transactionHash`.
+
+```ts twoslash
+const status = await rpc<{
+  status: number;
+  receipts?: Array<{ signature: string }>;
+}>("wallet_getCallsStatus", [id]);
+
+console.log(status.status, status.receipts?.[0]?.signature);
+```
+
+</Step>
+
+</Steps>

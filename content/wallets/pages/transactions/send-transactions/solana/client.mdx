@@ -10,7 +10,7 @@ You can send Solana instructions using the smart wallet client [`sendCalls`](/do
       transferSolCall({
         from: client.solanaAccount,
         to: client.solanaAccount,
-        lamports: 0n,
+        lamports: 0,
       }),
     ],
   });
@@ -26,55 +26,59 @@ You can send Solana instructions using the smart wallet client [`sendCalls`](/do
   import {
     alchemyWalletTransport,
     createSmartWalletClient,
-    type SolanaSigner,
   } from "@alchemy/wallet-apis";
+  import { fromKitSigner } from "@alchemy/wallet-apis/solana";
+  import { createKeyPairSignerFromBytes } from "@solana/kit";
 
-  function getYourSolanaSigner(): SolanaSigner {
-    // Load this from your app's signer integration.
-    throw new Error("Implement getYourSolanaSigner for your app");
-  }
+  // 64-byte Solana secret key, base64-encoded. Keep this in a secret manager or .env.
+  const secretKeyBytes = new Uint8Array(
+    Buffer.from(process.env.SOLANA_SECRET_KEY!, "base64"),
+  );
+  const kitSigner = await createKeyPairSignerFromBytes(secretKeyBytes);
 
   export const client = createSmartWalletClient({
-    signer: getYourSolanaSigner(),
+    signer: fromKitSigner(kitSigner),
     transport: alchemyWalletTransport({
-      apiKey: "YOUR_API_KEY",
+      apiKey: process.env.ALCHEMY_API_KEY!,
     }),
     chain: "solana:devnet",
   });
   ```
 
   ```ts title="utils.ts"
-  import type { Hex } from "viem";
+  import {
+    PublicKey,
+    SystemProgram,
+    type TransactionInstruction,
+  } from "@solana/web3.js";
+  import { bytesToHex } from "viem";
 
-  const SYSTEM_PROGRAM_ID = "11111111111111111111111111111111";
-
-  function toLittleEndianHex(value: bigint, byteLength: number) {
-    let hex = "";
-
-    for (let i = 0; i < byteLength; i++) {
-      const byte = Number((value >> BigInt(i * 8)) & 0xffn);
-      hex += byte.toString(16).padStart(2, "0");
-    }
-
-    return hex;
+  function toSolanaCall(instruction: TransactionInstruction) {
+    return {
+      programId: instruction.programId.toBase58(),
+      accounts: instruction.keys.map((account) => ({
+        pubkey: account.pubkey.toBase58(),
+        isSigner: account.isSigner,
+        isWritable: account.isWritable,
+      })),
+      data: bytesToHex(instruction.data),
+    };
   }
 
   export function transferSolCall(args: {
     from: string;
     to: string;
-    lamports: bigint;
+    lamports: number;
   }) {
-    return {
-      programId: SYSTEM_PROGRAM_ID,
-      accounts: [
-        { pubkey: args.from, isSigner: true, isWritable: true },
-        { pubkey: args.to, isSigner: false, isWritable: true },
-      ],
-      data: `0x${toLittleEndianHex(2n, 4)}${toLittleEndianHex(
-        args.lamports,
-        8,
-      )}` as Hex,
-    };
+    return toSolanaCall(
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey(args.from),
+        toPubkey: new PublicKey(args.to),
+        lamports: args.lamports,
+      }),
+    );
   }
   ```
 </CodeBlocks>
+
+This example loads a raw Ed25519 keypair from an environment variable for simplicity. For wallet-connect-style signers (Privy, Phantom, `@solana/wallet-adapter-react`, Wallet Standard), see [Solana signer adapters](/docs/wallets/solana/signers).
