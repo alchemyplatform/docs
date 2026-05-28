@@ -1,6 +1,6 @@
 ---
 title: Privy
-description: Use Privy with Wallet APIs for EIP-7702, sponsorship, and batching
+description: Use Privy with Wallet APIs for EIP-7702, Solana, sponsorship, and batching
 slug: wallets/third-party/signers/privy
 ---
 
@@ -15,7 +15,7 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
   <Tab title="React" language="react">
     ## Setup
 
-    Follow these steps to use Privy signers with the Wallet Client SDK.
+    Follow these steps to use Privy signers with the Wallet Client SDK. EVM and Solana share the same setup; each chain family has its own send-transaction flow below.
 
     ### Installation
 
@@ -37,6 +37,8 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
     ```
     </CodeGroup>
 
+    For Solana support, see [Send Solana transactions](#send-solana-transactions) below for the additional peer dependencies.
+
     ### Prerequisites: Get your keys (API key, Policy ID, Privy App ID)
 
     * Alchemy API key:
@@ -52,7 +54,9 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
       The gas sponsorship policy must be linked to the application behind your Alchemy API key for sponsorship to work.
     </Warning>
 
-    ### 1. Configure PrivyProvider
+    ## Send EVM transactions
+
+    ### Configure PrivyProvider
 
     Wrap your app with `PrivyProvider` from `@privy-io/react-auth`:
 
@@ -78,7 +82,7 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
     }
     ```
 
-    ### 2. Get a signer from Privy
+    ### Get a signer from Privy
 
     Use `toViemAccount` and `useWallets` from `@privy-io/react-auth` to convert a Privy embedded wallet into a viem `LocalAccount`:
 
@@ -103,7 +107,7 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
     };
     ```
 
-    ### 3. Handle login
+    ### Handle login
 
     Use `usePrivy` to manage authentication state and conditionally render your wallet UI once the user is logged in:
 
@@ -129,7 +133,7 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
     }
     ```
 
-    ### 4. Create the client and send a transaction
+    ### Create the client and send a transaction
 
     Pass the Privy signer to `createSmartWalletClient` and use it to send transactions:
 
@@ -174,6 +178,141 @@ Upgrade existing Privy wallets to Wallet APIs to enable gasless transactions, ba
 
     * The client defaults to [EIP-7702](/docs/wallets/transactions/using-eip-7702), which delegates the Privy wallet to a smart wallet at send time. No deployment or wallet migration needed. See the [EIP-7702 guide](/docs/wallets/transactions/using-eip-7702) for non-7702 mode.
     * See the [Sponsor gas](/docs/wallets/transactions/sponsor-gas) guide for more on gas sponsorship configuration.
+
+    ## Send Solana transactions
+
+    ### Install Solana deps
+
+    The example below uses `@solana/kit` and `@solana-program/system` to build the transfer call:
+
+    <CodeGroup>
+    ```shell npm
+    npm install @solana/kit @solana-program/system
+    ```
+
+    ```shell bun
+    bun add @solana/kit @solana-program/system
+    ```
+
+    ```shell yarn
+    yarn add @solana/kit @solana-program/system
+    ```
+
+    ```shell pnpm
+    pnpm add @solana/kit @solana-program/system
+    ```
+    </CodeGroup>
+
+    ### Configure PrivyProvider for Solana
+
+    Enable Solana embedded wallets in your `PrivyProvider` config:
+
+    ```tsx
+    <PrivyProvider
+      appId="your-privy-app-id"
+      config={{
+        embeddedWallets: {
+          ethereum: { createOnLogin: "all-users" },
+          solana: { createOnLogin: "all-users" },
+          showWalletUIs: false,
+        },
+      }}
+    >
+      <YourApp />
+    </PrivyProvider>
+    ```
+
+    ### Send a sponsored Solana transaction
+
+    Use `useWallets` from `@privy-io/react-auth/solana` to get the connected Solana wallet. The returned wallet can be passed directly as the Wallet APIs Solana signer.
+
+    <CodeBlocks>
+      ```tsx title="SendSponsoredSolanaTransaction.tsx"
+      import {
+        alchemyWalletTransport,
+        createSmartWalletClient,
+      } from "@alchemy/wallet-apis";
+      import { useWallets } from "@privy-io/react-auth/solana";
+      import { useCallback, useMemo } from "react";
+      import { transferSolCall } from "./utils";
+
+      export function SendSponsoredSolanaTransaction() {
+        const { wallets } = useWallets();
+        const signer = wallets[0];
+
+        const client = useMemo(() => {
+          if (!signer) return undefined;
+
+          return createSmartWalletClient({
+            transport: alchemyWalletTransport({ apiKey: "YOUR_ALCHEMY_API_KEY" }),
+            chain: "solana:devnet",
+            signer,
+            paymaster: { policyId: "YOUR_SOLANA_POLICY_ID" },
+          });
+        }, [signer]);
+
+        const handleSend = useCallback(async () => {
+          if (!client) return;
+
+          const { id } = await client.sendCalls({
+            calls: [
+              transferSolCall({
+                from: client.solanaAccount,
+                to: client.solanaAccount,
+                lamports: 0n,
+              }),
+            ],
+          });
+
+          const result = await client.waitForCallsStatus({ id });
+          console.log("Sponsored Solana transaction status:", result.status);
+        }, [client]);
+
+        return (
+          <button onClick={handleSend} disabled={!client}>
+            Send sponsored Solana transaction
+          </button>
+        );
+      }
+      ```
+
+      ```ts title="utils.ts"
+      import {
+        getTransferSolInstructionDataEncoder,
+        SYSTEM_PROGRAM_ADDRESS,
+      } from "@solana-program/system";
+      import { address } from "@solana/kit";
+      import { bytesToHex } from "viem";
+
+      export function transferSolCall(args: {
+        from: string;
+        to: string;
+        lamports: bigint;
+      }) {
+        const source = address(args.from);
+        const destination = address(args.to);
+        const data = bytesToHex(
+          getTransferSolInstructionDataEncoder().encode({
+            amount: args.lamports,
+          }),
+        );
+
+        return {
+          programId: SYSTEM_PROGRAM_ADDRESS,
+          accounts: [
+            { pubkey: source, isSigner: true, isWritable: true },
+            { pubkey: destination, isSigner: false, isWritable: true },
+          ],
+          data,
+        };
+      }
+      ```
+    </CodeBlocks>
+
+    ### Notes
+
+    * Solana sponsorship requires a Solana gas sponsorship policy. See [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana).
+    * For non-Privy Solana signer sources (Phantom, `@solana/wallet-adapter-react`, raw keypairs, Wallet Standard), see [Solana signer adapters](/docs/wallets/solana/signers).
   </Tab>
 
   <Tab title="JavaScript" language="typescript">

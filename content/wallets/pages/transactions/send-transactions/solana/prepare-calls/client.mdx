@@ -1,0 +1,82 @@
+You can use smart wallet client actions to prepare, sign, and send Solana transactions.
+
+<CodeBlocks>
+  ```ts title="sendCalls.ts" focus={4-24}
+  import { client } from "./client.ts";
+  import { transferSolCall } from "./utils.ts";
+
+  const preparedCalls = await client.prepareCalls({
+    calls: [
+      transferSolCall({
+        from: client.solanaAccount,
+        to: client.solanaAccount,
+        lamports: 0n,
+      }),
+    ],
+  });
+
+  console.log(preparedCalls.type); // "solana-transaction-v0"
+  console.log(preparedCalls.signatureRequest.type); // "solana_signTransaction"
+
+  const signedCalls = await client.signPreparedCalls(preparedCalls);
+  const sentCalls = await client.sendPreparedCalls(signedCalls);
+
+  console.log(sentCalls);
+  ```
+
+  ```ts title="client.ts"
+  import {
+    alchemyWalletTransport,
+    createSmartWalletClient,
+  } from "@alchemy/wallet-apis";
+  import { fromKitSigner } from "@alchemy/wallet-apis/solana";
+  import { createKeyPairSignerFromBytes } from "@solana/kit";
+
+  const secretKeyBytes = new Uint8Array(
+    Buffer.from(process.env.SOLANA_SECRET_KEY!, "base64"),
+  );
+  const kitSigner = await createKeyPairSignerFromBytes(secretKeyBytes);
+
+  export const client = createSmartWalletClient({
+    signer: fromKitSigner(kitSigner),
+    transport: alchemyWalletTransport({
+      apiKey: process.env.ALCHEMY_API_KEY!,
+    }),
+    chain: "solana:devnet",
+  });
+  ```
+
+  ```ts title="utils.ts"
+  import {
+    getTransferSolInstructionDataEncoder,
+    SYSTEM_PROGRAM_ADDRESS,
+  } from "@solana-program/system";
+  import { address } from "@solana/kit";
+  import { bytesToHex } from "viem";
+
+  export function transferSolCall(args: {
+    from: string;
+    to: string;
+    lamports: bigint;
+  }) {
+    const source = address(args.from);
+    const destination = address(args.to);
+    const data = bytesToHex(
+      getTransferSolInstructionDataEncoder().encode({
+        amount: args.lamports,
+      }),
+    );
+
+    return {
+      programId: SYSTEM_PROGRAM_ADDRESS,
+      accounts: [
+        { pubkey: source, isSigner: true, isWritable: true },
+        { pubkey: destination, isSigner: false, isWritable: true },
+      ],
+      data,
+    };
+  }
+  ```
+</CodeBlocks>
+
+See the [`prepareCalls`](/docs/wallets/reference/wallet-apis/solana/functions/prepareCalls), [`signPreparedCalls`](/docs/wallets/reference/wallet-apis/solana/functions/signPreparedCalls), and [`sendPreparedCalls`](/docs/wallets/reference/wallet-apis/solana/functions/sendPreparedCalls) SDK references for full parameter descriptions.
