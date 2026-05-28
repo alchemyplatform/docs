@@ -1,0 +1,69 @@
+---
+title: Solana sponsorship
+description: Sponsor Solana transaction fees and rent with Wallet APIs
+slug: wallets/transactions/sponsor-gas/solana
+---
+
+Use Solana sponsorship to cover transaction fees and rent for Solana calls submitted through `@alchemy/wallet-apis`.
+
+## Prerequisites
+
+* API key from your [dashboard](https://dashboard.alchemy.com/apps)
+* Solana gas sponsorship policy from the [Gas Manager dashboard](https://dashboard.alchemy.com/gas-manager/policy/create)
+* Solana signer configured in your app. See [Solana signer adapters](/docs/wallets/solana/signers).
+
+## Implementation
+
+<Tabs>
+  <Tab title="JavaScript" language="typescript">
+    <Markdown src="client.mdx" />
+  </Tab>
+
+  <Tab title="API" language="bash">
+    <Markdown src="api.mdx" />
+  </Tab>
+</Tabs>
+
+## Advanced
+
+<Accordion title="Per-request policy">
+  Pass `capabilities.paymaster` to override the client-level policy for a single `sendCalls` or `prepareCalls` request. Request-level `capabilities.paymaster.policyId` takes priority over the client-level policy.
+
+  <Markdown src="request-policy.mdx" />
+</Accordion>
+
+<Accordion title="Rent sponsorship">
+  Solana sponsorship can also cover rent for account creation.
+
+  Top-level rent sponsorship applies automatically when a sponsored transaction includes top-level `SystemProgram.createAccount` or Associated Token Program `Create` / `CreateIdempotent` instructions. No extra request parameter is required for those top-level instructions.
+
+  For accounts created inside a cross-program invocation (CPI), opt in per request with `prefundRent: true`. This asks the service to simulate the transaction, estimate the CPI rent requirement, and prefund the user's wallet before the transaction is submitted.
+
+  <Markdown src="prefund-rent.mdx" />
+
+  <Warning>
+    CPI rent prefunding is allowlisted. Contact
+    [support@alchemy.com](mailto:support@alchemy.com) to request access. Policies
+    used with `prefundRent` must set `maxSpendPerTxnUsd`, and the transaction
+    payer must be the user's wallet: the same account your program's CPI will
+    debit for rent.
+  </Warning>
+</Accordion>
+
+<Info>
+  If you are not using the Wallet APIs client and need to sponsor a serialized
+  Solana transaction directly, use the lower-level
+  [`alchemy_requestFeePayer`](/docs/wallets/transactions/solana/sponsor-gas)
+  flow.
+</Info>
+
+## Next steps
+
+Build more:
+
+* [Send Solana transactions](/docs/wallets/transactions/send-transactions#solana-transactions)
+* [Use Solana signer adapters](/docs/wallets/solana/signers)
+
+Troubleshooting:
+
+* [Gas manager errors](/docs/reference/gas-manager-errors)

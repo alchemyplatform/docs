@@ -1,0 +1,162 @@
+Sponsorship is applied by passing `capabilities.paymasterService` to
+`wallet_prepareCalls`. The examples below use `curl` and `jq`; signing is
+wallet-dependent because Solana signatures are Ed25519.
+
+See the [`wallet_prepareCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-prepare-calls), [`wallet_sendPreparedCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-send-prepared-calls), and [`wallet_getCallsStatus`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-get-calls-status) API references for full parameter descriptions.
+
+<Steps>
+
+<Step title="Declare your secrets and call data">
+
+The call below is a 0-lamport System Program self-transfer. Its instruction data
+is `SystemInstruction::Transfer` (`2`) plus a little-endian `u64` lamport amount.
+
+```bash twoslash
+ALCHEMY_API_KEY=your-alchemy-api-key
+SOLANA_POLICY_ID=your-solana-policy-id
+CHAIN_ID=solana:devnet
+SIGNER_ADDRESS=your-solana-address
+
+RPC_URL="https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY"
+SYSTEM_PROGRAM_ID=11111111111111111111111111111111
+TRANSFER_0_LAMPORT_DATA=0x020000000000000000000000
+```
+
+</Step>
+
+<Step title="Prepare calls with sponsorship">
+
+Attach `capabilities.paymasterService.policyId` to apply your Solana sponsorship
+policy. Add `prefundRent: true` to opt in to CPI rent prefunding, and
+`webhookData` to pass extra context to custom rules.
+
+```bash twoslash
+PREPARE_CALLS_RESPONSE=$(jq -n \
+  --arg signer "$SIGNER_ADDRESS" \
+  --arg chain_id "$CHAIN_ID" \
+  --arg policy_id "$SOLANA_POLICY_ID" \
+  --arg system_program "$SYSTEM_PROGRAM_ID" \
+  --arg transfer_data "$TRANSFER_0_LAMPORT_DATA" \
+  '{
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "wallet_prepareCalls",
+    "params": [
+      {
+        "calls": [
+          {
+            "programId": $system_program,
+            "accounts": [
+              {
+                "pubkey": $signer,
+                "isSigner": true,
+                "isWritable": true
+              },
+              {
+                "pubkey": $signer,
+                "isSigner": false,
+                "isWritable": true
+              }
+            ],
+            "data": $transfer_data
+          }
+        ],
+        "from": $signer,
+        "chainId": $chain_id,
+        "capabilities": {
+          "paymasterService": {
+            "policyId": $policy_id
+          }
+        }
+      }
+    ]
+  }' | curl --request POST \
+    --url "$RPC_URL" \
+    --header 'accept: application/json' \
+    --header 'content-type: application/json' \
+    --data @-)
+
+echo "$PREPARE_CALLS_RESPONSE" | jq '.result.feePayment'
+```
+
+</Step>
+
+<Step title="Sign the prepared transaction">
+
+`signatureRequest.data` already contains the paymaster signature embedded; the
+user only needs to add their Ed25519 signature.
+
+For a raw Kit keypair, decode `signatureRequest.data` with
+`getTransactionDecoder()`, sign with
+`partiallySignTransaction([signer.keyPair], transaction)`, and base58-encode the
+entry in `signed.signatures[signer.address]` with `getBase58Decoder()`.
+
+```bash twoslash
+SIGNATURE_REQUEST_HEX=$(echo "$PREPARE_CALLS_RESPONSE" | jq -r '.result.signatureRequest.data')
+
+# Sign SIGNATURE_REQUEST_HEX with your Solana wallet.
+# The signature must be the user's base58 Ed25519 signature.
+SIGNATURE_BASE58=your-base58-solana-signature
+```
+
+</Step>
+
+<Step title="Send and poll">
+
+```bash twoslash
+CALL_TYPE=$(echo "$PREPARE_CALLS_RESPONSE" | jq -r '.result.type')
+CALL_DATA=$(echo "$PREPARE_CALLS_RESPONSE" | jq -c '.result.data')
+
+SEND_CALLS_RESPONSE=$(jq -n \
+  --arg call_type "$CALL_TYPE" \
+  --arg chain_id "$CHAIN_ID" \
+  --argjson call_data "$CALL_DATA" \
+  --arg signature "$SIGNATURE_BASE58" \
+  '{
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "wallet_sendPreparedCalls",
+    "params": [
+      {
+        "type": $call_type,
+        "chainId": $chain_id,
+        "data": $call_data,
+        "signature": {
+          "type": "ed25519",
+          "data": $signature
+        }
+      }
+    ]
+  }' | curl --request POST \
+    --url "$RPC_URL" \
+    --header 'accept: application/json' \
+    --header 'content-type: application/json' \
+    --data @-)
+
+CALL_ID=$(echo "$SEND_CALLS_RESPONSE" | jq -r '.result.id')
+
+curl --request POST \
+  --url "$RPC_URL" \
+  --header 'accept: application/json' \
+  --header 'content-type: application/json' \
+  --data '
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "wallet_getCallsStatus",
+  "params": [
+    "'$CALL_ID'"
+  ]
+}'
+```
+
+</Step>
+
+</Steps>
+
+<Warning>
+  CPI rent prefunding (`prefundRent: true`) is allowlisted. Contact
+  [support@alchemy.com](mailto:support@alchemy.com) to request access. Policies
+  used with `prefundRent` must set `maxSpendPerTxnUsd`, and the transaction
+  payer must be the user's wallet.
+</Warning>

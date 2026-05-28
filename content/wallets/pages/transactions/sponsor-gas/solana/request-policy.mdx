@@ -1,0 +1,21 @@
+```ts title="sponsor-solana-request.ts"
+import { client } from "./client.ts";
+import { transferSolCall } from "./utils.ts";
+
+const { id } = await client.sendCalls({
+  calls: [
+    transferSolCall({
+      from: client.solanaAccount,
+      to: client.solanaAccount,
+      lamports: 0n,
+    }),
+  ],
+  capabilities: {
+    paymaster: {
+      policyId: "OTHER_SOLANA_POLICY_ID",
+    },
+  },
+});
+
+const result = await client.waitForCallsStatus({ id });
+```

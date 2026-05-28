@@ -1,19 +1,22 @@
 ---
 title: Send transactions
-description: Execute a single transaction
+description: Execute EVM and Solana transactions
 slug: wallets/transactions/send-transactions
 ---
 
-This guide covers how to send a single EVM transaction.
-
-The client defaults to using [EIP-7702](/docs/wallets/transactions/using-eip-7702), so your EOA will be delegated to a smart wallet to enable gas sponsorship, batching, and more. The SDK handles delegation automatically on the first transaction.
+This guide covers how to send EVM and Solana transactions with Wallet APIs.
 
 ## Prerequisites
 
 * API key from your [dashboard](https://dashboard.alchemy.com/apps)
-* A funded Smart Wallet to cover gas fees ([or a gas manager policy to sponsor gas](/docs/wallets/transactions/sponsor-gas))
+* `@alchemy/wallet-apis` installed in your project
+* A signer with funds to cover gas (or a sponsorship policy — see [Sponsor gas](/docs/wallets/transactions/sponsor-gas) for EVM and [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana) for Solana)
 
-## Implementation
+## EVM transactions
+
+The EVM client defaults to using [EIP-7702](/docs/wallets/transactions/using-eip-7702), so your EOA will be delegated to a smart wallet to enable gas sponsorship, batching, and more. The SDK handles delegation automatically on the first transaction.
+
+### Implementation
 
 <Tabs>
   <Tab title="JavaScript" language="typescript">
@@ -26,7 +29,7 @@ The client defaults to using [EIP-7702](/docs/wallets/transactions/using-eip-770
   </Tab>
 </Tabs>
 
-## Advanced
+### Advanced
 
 <Accordion title="Encoding function data">
   If you need to encode function data (instead of sending value), do so using Viem or Foundry.
@@ -43,7 +46,7 @@ The client defaults to using [EIP-7702](/docs/wallets/transactions/using-eip-770
 </Accordion>
 
 <Accordion title="Usage with prepare calls">
-  Instead of using the `sendCalls` abstraction, you can prepare and send calls using underlying methods. Usage of the capability will be the same as when using send calls. It is recommended to use `prepareCalls` if you want to inspect the prepared call prior to prompting the user for signature.
+  Instead of using the `sendCalls` abstraction, you can prepare and send EVM calls using underlying methods. Usage of the capability will be the same as when using send calls. It is recommended to use `prepareCalls` if you want to inspect the prepared call prior to prompting the user for signature.
 
   <Tabs>
     <Tab title="JavaScript" language="typescript">
@@ -56,12 +59,48 @@ The client defaults to using [EIP-7702](/docs/wallets/transactions/using-eip-770
   </Tabs>
 </Accordion>
 
+## Solana transactions
+
+Solana transactions use the same client actions as EVM, but `calls` contain Solana instructions: `programId`, hex-encoded `data`, and account metadata. For signer setup, see [Solana signer adapters](/docs/wallets/solana/signers).
+
+By default, the client uses the signer's address.
+
+### Implementation
+
+<Tabs>
+  <Tab title="JavaScript" language="typescript">
+    <Markdown src="solana/client.mdx" />
+  </Tab>
+
+  <Tab title="API" language="bash">
+    <Markdown src="solana/api.mdx" />
+  </Tab>
+</Tabs>
+
+### Advanced
+
+<Accordion title="Usage with prepare calls">
+  Use the prepared call flow when you need to inspect the compiled Solana transaction before signing.
+
+  <Tabs>
+    <Tab title="JavaScript" language="typescript">
+      <Markdown src="solana/prepare-calls/client.mdx" />
+    </Tab>
+
+    <Tab title="API" language="bash">
+      The Solana raw API flow already uses `wallet_prepareCalls` and `wallet_sendPreparedCalls` directly — see the API tab under [Solana transactions](#solana-transactions).
+    </Tab>
+  </Tabs>
+</Accordion>
+
 ## Next steps
 
 Build more:
 
 * [Sponsor gas for users](/docs/wallets/transactions/sponsor-gas)
 * [Send batch transactions](/docs/wallets/transactions/send-batch-transactions)
+* [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana)
+* [Use Solana signer adapters](/docs/wallets/solana/signers)
 
 Troubleshooting:
 
