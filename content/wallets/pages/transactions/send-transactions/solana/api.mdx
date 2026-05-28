@@ -1,136 +1,152 @@
-Solana signatures are Ed25519, so the raw JSON-RPC flow uses `@solana/kit` to sign instead of `cast`. The transport URL and method names are identical to the EVM flow.
+Solana raw API calls use the same JSON-RPC endpoints as EVM. The examples
+below use `curl` and `jq`; signing is wallet-dependent because Solana signatures
+are Ed25519.
 
 See the [`wallet_prepareCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-prepare-calls), [`wallet_sendPreparedCalls`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-send-prepared-calls), and [`wallet_getCallsStatus`](/docs/wallets/api-reference/smart-wallets/wallet-api-endpoints/wallet-get-calls-status) API references for full parameter descriptions.
 
 <Steps>
 
-<Step title="Declare your secrets and helpers">
+<Step title="Declare your secrets and call data">
 
-```ts twoslash
-import { getTransferSolInstruction } from "@solana-program/system";
-import {
-  AccountRole,
-  address,
-  createKeyPairSignerFromBytes,
-  createNoopSigner,
-  getBase58Decoder,
-  getTransactionDecoder,
-  partiallySignTransaction,
-  type IInstruction,
-} from "@solana/kit";
-import { bytesToHex } from "viem";
+The call below is a 0-lamport System Program self-transfer. Its instruction data
+is `SystemInstruction::Transfer` (`2`) plus a little-endian `u64` lamport amount.
 
-const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
-const RPC_URL = `https://api.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-const CHAIN_ID = "solana:devnet";
+```bash twoslash
+ALCHEMY_API_KEY=your-alchemy-api-key
+CHAIN_ID=solana:devnet
+SIGNER_ADDRESS=your-solana-address
 
-// 64-byte Solana secret key, base64-encoded. Keep this in a secret manager or .env.
-const secretKey = new Uint8Array(
-  Buffer.from(process.env.SOLANA_SECRET_KEY!, "base64"),
-);
-const userSigner = await createKeyPairSignerFromBytes(secretKey);
-const SIGNER_ADDRESS = userSigner.address;
-
-async function rpc<T>(method: string, params: unknown[]): Promise<T> {
-  const response = await fetch(RPC_URL, {
-    method: "POST",
-    headers: { accept: "application/json", "content-type": "application/json" },
-    body: JSON.stringify({ id: 1, jsonrpc: "2.0", method, params }),
-  });
-  const body = (await response.json()) as { result?: T; error?: unknown };
-  if (body.error) throw new Error(JSON.stringify(body.error));
-  return body.result as T;
-}
-
-function toSolanaCall(instruction: IInstruction) {
-  return {
-    programId: instruction.programAddress,
-    accounts: (instruction.accounts ?? []).map((a) => ({
-      pubkey: a.address,
-      isSigner:
-        a.role === AccountRole.READONLY_SIGNER ||
-        a.role === AccountRole.WRITABLE_SIGNER,
-      isWritable:
-        a.role === AccountRole.WRITABLE ||
-        a.role === AccountRole.WRITABLE_SIGNER,
-    })),
-    data: bytesToHex(instruction.data ?? new Uint8Array()),
-  };
-}
+RPC_URL="https://api.g.alchemy.com/v2/$ALCHEMY_API_KEY"
+SYSTEM_PROGRAM_ID=11111111111111111111111111111111
+TRANSFER_0_LAMPORT_DATA=0x020000000000000000000000
 ```
 
 </Step>
 
 <Step title="Prepare calls">
 
-Build the Solana call (a 0-lamport self-transfer in this example) and call `wallet_prepareCalls` with the user's address as `from`.
+Call `wallet_prepareCalls` with the user's Solana address as `from`.
 
-```ts twoslash
-const transferIx = getTransferSolInstruction({
-  source: createNoopSigner(address(SIGNER_ADDRESS)),
-  destination: address(SIGNER_ADDRESS),
-  amount: 0n,
-});
-
-const prepared = await rpc<{
-  type: "solana-transaction-v0";
-  signatureRequest: { type: "solana_signTransaction"; data: `0x${string}` };
-  data: unknown;
-}>("wallet_prepareCalls", [
-  {
-    calls: [toSolanaCall(transferIx)],
-    from: SIGNER_ADDRESS,
-    chainId: CHAIN_ID,
-  },
-]);
+```bash twoslash
+PREPARE_CALLS_RESPONSE=$(jq -n \
+  --arg signer "$SIGNER_ADDRESS" \
+  --arg chain_id "$CHAIN_ID" \
+  --arg system_program "$SYSTEM_PROGRAM_ID" \
+  --arg transfer_data "$TRANSFER_0_LAMPORT_DATA" \
+  '{
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "wallet_prepareCalls",
+    "params": [
+      {
+        "calls": [
+          {
+            "programId": $system_program,
+            "accounts": [
+              {
+                "pubkey": $signer,
+                "isSigner": true,
+                "isWritable": true
+              },
+              {
+                "pubkey": $signer,
+                "isSigner": false,
+                "isWritable": true
+              }
+            ],
+            "data": $transfer_data
+          }
+        ],
+        "from": $signer,
+        "chainId": $chain_id
+      }
+    ]
+  }' | curl --request POST \
+    --url "$RPC_URL" \
+    --header 'accept: application/json' \
+    --header 'content-type: application/json' \
+    --data @-)
 ```
 
 </Step>
 
 <Step title="Sign the prepared transaction">
 
-`signatureRequest.data` is the full v0 transaction wire-format bytes, hex-encoded. Decode it with kit, partially sign with the user's keypair, and base58-encode the resulting signature.
+`signatureRequest.data` is the full v0 transaction wire-format bytes,
+hex-encoded. Ask your Solana wallet to sign this transaction and return the
+user's Ed25519 signature as base58.
 
-```ts twoslash
-const txBytes = new Uint8Array(
-  Buffer.from(prepared.signatureRequest.data.slice(2), "hex"),
-);
-const tx = getTransactionDecoder().decode(txBytes);
-const signed = await partiallySignTransaction([userSigner.keyPair], tx);
+For a raw Kit keypair, decode `signatureRequest.data` with
+`getTransactionDecoder()`, sign with
+`partiallySignTransaction([signer.keyPair], transaction)`, and base58-encode the
+entry in `signed.signatures[signer.address]` with `getBase58Decoder()`.
 
-const userSignatureBytes = signed.signatures[SIGNER_ADDRESS];
-if (!userSignatureBytes) throw new Error("Missing user signature");
-const signatureBase58 = getBase58Decoder().decode(userSignatureBytes);
+```bash twoslash
+SIGNATURE_REQUEST_HEX=$(echo "$PREPARE_CALLS_RESPONSE" | jq -r '.result.signatureRequest.data')
+
+# Sign SIGNATURE_REQUEST_HEX with your Solana wallet.
+# The signature must be the user's base58 Ed25519 signature.
+SIGNATURE_BASE58=your-base58-solana-signature
 ```
 
 </Step>
 
 <Step title="Send the prepared calls">
 
-```ts twoslash
-const { id } = await rpc<{ id: string }>("wallet_sendPreparedCalls", [
-  {
-    type: prepared.type,
-    chainId: CHAIN_ID,
-    data: prepared.data,
-    signature: { type: "ed25519", data: signatureBase58 },
-  },
-]);
+```bash twoslash
+CALL_TYPE=$(echo "$PREPARE_CALLS_RESPONSE" | jq -r '.result.type')
+CALL_DATA=$(echo "$PREPARE_CALLS_RESPONSE" | jq -c '.result.data')
+
+SEND_CALLS_RESPONSE=$(jq -n \
+  --arg call_type "$CALL_TYPE" \
+  --arg chain_id "$CHAIN_ID" \
+  --argjson call_data "$CALL_DATA" \
+  --arg signature "$SIGNATURE_BASE58" \
+  '{
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "wallet_sendPreparedCalls",
+    "params": [
+      {
+        "type": $call_type,
+        "chainId": $chain_id,
+        "data": $call_data,
+        "signature": {
+          "type": "ed25519",
+          "data": $signature
+        }
+      }
+    ]
+  }' | curl --request POST \
+    --url "$RPC_URL" \
+    --header 'accept: application/json' \
+    --header 'content-type: application/json' \
+    --data @-)
+
+CALL_ID=$(echo "$SEND_CALLS_RESPONSE" | jq -r '.result.id')
 ```
 
 </Step>
 
 <Step title="Check the calls status">
 
-Poll `wallet_getCallsStatus` until the status leaves the pending range. Solana receipts return a base58 `signature` instead of `transactionHash`.
+Poll `wallet_getCallsStatus` until the status leaves the pending range. Solana
+receipts return a base58 `signature` instead of an EVM `transactionHash`.
 
-```ts twoslash
-const status = await rpc<{
-  status: number;
-  receipts?: Array<{ signature: string }>;
-}>("wallet_getCallsStatus", [id]);
-
-console.log(status.status, status.receipts?.[0]?.signature);
+```bash twoslash
+curl --request POST \
+  --url "$RPC_URL" \
+  --header 'accept: application/json' \
+  --header 'content-type: application/json' \
+  --data '
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "wallet_getCallsStatus",
+  "params": [
+    "'$CALL_ID'"
+  ]
+}'
 ```
 
 </Step>

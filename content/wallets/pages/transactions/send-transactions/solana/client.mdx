@@ -46,43 +46,34 @@ You can send Solana instructions using the smart wallet client [`sendCalls`](/do
   ```
 
   ```ts title="utils.ts"
-  import { getTransferSolInstruction } from "@solana-program/system";
   import {
-    AccountRole,
-    address,
-    createNoopSigner,
-    type IInstruction,
-  } from "@solana/kit";
+    getTransferSolInstructionDataEncoder,
+    SYSTEM_PROGRAM_ADDRESS,
+  } from "@solana-program/system";
+  import { address } from "@solana/kit";
   import { bytesToHex } from "viem";
-
-  function toSolanaCall(instruction: IInstruction) {
-    return {
-      programId: instruction.programAddress,
-      accounts: (instruction.accounts ?? []).map((account) => ({
-        pubkey: account.address,
-        isSigner:
-          account.role === AccountRole.READONLY_SIGNER ||
-          account.role === AccountRole.WRITABLE_SIGNER,
-        isWritable:
-          account.role === AccountRole.WRITABLE ||
-          account.role === AccountRole.WRITABLE_SIGNER,
-      })),
-      data: bytesToHex(instruction.data ?? new Uint8Array()),
-    };
-  }
 
   export function transferSolCall(args: {
     from: string;
     to: string;
     lamports: bigint;
   }) {
-    return toSolanaCall(
-      getTransferSolInstruction({
-        source: createNoopSigner(address(args.from)),
-        destination: address(args.to),
+    const source = address(args.from);
+    const destination = address(args.to);
+    const data = bytesToHex(
+      getTransferSolInstructionDataEncoder().encode({
         amount: args.lamports,
       }),
     );
+
+    return {
+      programId: SYSTEM_PROGRAM_ADDRESS,
+      accounts: [
+        { pubkey: source, isSigner: true, isWritable: true },
+        { pubkey: destination, isSigner: false, isWritable: true },
+      ],
+      data,
+    };
   }
   ```
 </CodeBlocks>
