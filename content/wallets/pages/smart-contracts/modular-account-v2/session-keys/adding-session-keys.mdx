@@ -4,6 +4,10 @@ description: Adding session keys to your Modular Account V2
 slug: wallets/smart-contracts/modular-account-v2/session-keys/adding-session-keys
 ---
 
+<Tip title="Most projects should use @alchemy/wallet-apis">
+  [`@alchemy/wallet-apis`](/docs/wallets/quickstart) supports session keys through [`wallet_createSession`](/docs/wallets/reference/wallet-apis-session-keys/api) and the [`grantPermissions`](/docs/wallets/reference/wallet-apis-session-keys/sdk) SDK flow. This page covers the lower-level path: installing Modular Account V2 session-key validations directly with `@alchemy/smart-accounts` and viem's bundler client. Use it when you need fine-grained control over onchain validations and permissions.
+</Tip>
+
 To add a session key: 1) decide what permissions you want to grant the new key, and 2) call the [`installValidation`](#install-validation-parameters) function on the account. In v5 you do this by extending the bundler client with `installValidationActions`, encoding the install call via `encodeInstallValidation`, then sending it as a user operation. The bundler client returns a calldata hex; `sendUserOperation` wraps it in an `execute` call from the account.
 
 Scoped permissions are layered on as **hooks** that you pass into `installValidation`. Hooks can be combined — e.g. a session key that can only spend 10 USDC within the next 24 hours from the account.
