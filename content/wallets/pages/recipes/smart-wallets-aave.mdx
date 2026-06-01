@@ -1,15 +1,15 @@
 ---
-title: Account Kit v4 with Aave
+title: Wallet APIs with Aave
 description: >-
-  Learn how to build DeFi applications that interact with Aave using Account
-  Kit v4. This recipe covers supplying and withdrawing assets with both Core
-  and the v4 wallet client.
+  Learn how to build DeFi applications that interact with Aave using Alchemy
+  Wallet APIs. This recipe covers supplying and withdrawing assets with both
+  Core and Wallets API.
 slug: wallets/recipes/smart-wallets-aave
 ---
 
 <Markdown src="../../shared/v4-code-banner.mdx" />
 
-Learn how to build DeFi applications that interact with Aave using Account Kit v4. This recipe covers supplying and withdrawing assets with both the [`@aa-sdk/core`](https://github.com/alchemyplatform/aa-sdk/tree/v4.x.x/aa-sdk/core) library and the [`@account-kit/wallet-client`](https://github.com/alchemyplatform/aa-sdk/tree/v4.x.x/account-kit/wallet-client) package.
+Learn how to build DeFi applications that interact with Aave using Wallet APIs. This recipe covers supplying and withdrawing assets with both the [`@aa-sdk/core`](https://github.com/alchemyplatform/aa-sdk/tree/v4.x.x/aa-sdk/core) library and the [Wallet APIs](/docs/wallets/quickstart) for seamless user experiences.
 
 ## Prerequisites
 
@@ -253,24 +253,20 @@ Check out this video walkthrough, and follow along with the quick start below:
         ```
       </Tab>
 
-      <Tab title="Wallet client (@account-kit/wallet-client)">
-        This approach uses the v4 wallet-client API with explicit prepare/sign/send workflow for Aave interactions.
+      <Tab title="Wallet APIs (@alchemy/wallet-apis)">
+        This approach uses the higher-level wallet-client API with explicit prepare/sign/send workflow for Aave interactions.
 
         ```typescript
-        import { createSmartWalletClient } from "@account-kit/wallet-client";
-        import { alchemy, arbitrum } from "@account-kit/infra";
-        import { LocalAccountSigner } from "@aa-sdk/core";
-
-        const signer = LocalAccountSigner.privateKeyToAccountSigner(privateKey);
+        import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+        import { arbitrum } from "viem/chains";
+        import { privateKeyToAccount } from "viem/accounts";
 
         // Setup smart wallet client
         const smartWalletClient = createSmartWalletClient({
-          signer,
+          signer: privateKeyToAccount(privateKey),
           chain: arbitrum,
-          transport: alchemy({ apiKey: alchemyApiKey }),
+          transport: alchemyWalletTransport({ apiKey: alchemyApiKey }),
         });
-
-        const account = await smartWalletClient.requestAccount();
 
         // Get Aave operation data (supply/withdraw)
         const aaveData = await getAaveOperationData(); // implementation same as Core approach
@@ -300,19 +296,15 @@ Check out this video walkthrough, and follow along with the quick start below:
         // Prepare, sign, and send with gas sponsorship
         const preparedCalls = await smartWalletClient.prepareCalls({
           calls,
-          from: account.address,
           capabilities: {
-            paymasterService: {
-              policyId,
+            paymaster: {
+              policyId: policyId, // Gas sponsorship
             },
           },
         });
 
-        const signedCalls = await smartWalletClient.signPreparedCalls(preparedCalls);
-        const preparedCallIds = await smartWalletClient.sendPreparedCalls(signedCalls);
-        const result = await smartWalletClient.waitForCallsStatus({
-          id: preparedCallIds.preparedCallIds[0]!,
-        });
+        const signedCalls = await smartWalletClient.signPreparedCalls(preparedCalls); // signed by the signer on the client
+        const result = await smartWalletClient.sendPreparedCalls(signedCalls);
 
         console.log(
           "Aave operation completed! Hash:",
@@ -332,7 +324,7 @@ Check out this video walkthrough, and follow along with the quick start below:
     npm run core:supply    # Supply to Aave
     npm run core:withdraw  # Withdraw from Aave
 
-    # Wallet client implementation
+    # Wallet APIs implementation
     npm run wallet:account   # Initialize account
     npm run wallet:supply    # Supply to Aave
     npm run wallet:withdraw  # Withdraw from Aave
@@ -352,6 +344,6 @@ You can now interact with Aave protocol through smart wallets with sponsored gas
 ## Resources
 
 * [Aave V3 Documentation](https://docs.aave.com/developers/)
-* [`@account-kit/wallet-client` source](https://github.com/alchemyplatform/aa-sdk/tree/v4.x.x/account-kit/wallet-client)
+* [Alchemy Wallet APIs Quickstart](/docs/wallets/quickstart)
 * [Gas Manager Setup](https://www.alchemy.com/docs/setup-a-gas-manager-policy)
 * [Aave Contract Addresses](https://aave.com/docs/resources/addresses)
