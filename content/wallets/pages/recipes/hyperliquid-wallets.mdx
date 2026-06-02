@@ -81,9 +81,22 @@ export function usePrivySigner() {
   const [signer, setSigner] = useState<LocalAccount>();
 
   useEffect(() => {
-    if (!wallet || signer) return;
-    toViemAccount({ wallet }).then(setSigner);
-  }, [wallet, signer]);
+    let isCurrentWallet = true;
+
+    if (!wallet) {
+      setSigner(undefined);
+      return;
+    }
+
+    setSigner(undefined);
+    toViemAccount({ wallet }).then((account) => {
+      if (isCurrentWallet) setSigner(account);
+    });
+
+    return () => {
+      isCurrentWallet = false;
+    };
+  }, [wallet]);
 
   return signer;
 }
