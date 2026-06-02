@@ -81,22 +81,9 @@ export function usePrivySigner() {
   const [signer, setSigner] = useState<LocalAccount>();
 
   useEffect(() => {
-    let isCurrentWallet = true;
-
-    if (!wallet) {
-      setSigner(undefined);
-      return;
-    }
-
-    setSigner(undefined);
-    toViemAccount({ wallet }).then((account) => {
-      if (isCurrentWallet) setSigner(account);
-    });
-
-    return () => {
-      isCurrentWallet = false;
-    };
-  }, [wallet]);
+    if (!wallet || signer) return;
+    toViemAccount({ wallet }).then(setSigner);
+  }, [wallet, signer]);
 
   return signer;
 }
@@ -153,20 +140,12 @@ export function SendTransaction({ signer }: { signer: LocalAccount }) {
   const [status, setStatus] = useState<string>();
 
   useEffect(() => {
-    let isCurrentClient = true;
-
     setAccountAddress(undefined);
     client
       .requestAccount({
         creationHint: { accountType: "sma-b" },
       })
-      .then(({ address }) => {
-        if (isCurrentClient) setAccountAddress(address);
-      });
-
-    return () => {
-      isCurrentClient = false;
-    };
+      .then(({ address }) => setAccountAddress(address));
   }, [client]);
 
   const sendTransaction = useCallback(async () => {
