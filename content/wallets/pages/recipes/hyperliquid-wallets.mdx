@@ -136,12 +136,12 @@ export function createHyperliquidWalletClient(signer: LocalAccount) {
 
 HyperEVM currently uses [non-7702 mode](/docs/wallets/transactions/using-eip-7702#how-to-use-non-7702-mode) with Wallet APIs. Request a smart account first, then pass the returned smart account address to `sendCalls`.
 
-`requestAccount` returns a stable address for the signer and request parameters. The client caches the result, so you can keep this call in the send handler for a compact example or store the address in your app state if you prefer.
+`requestAccount` returns a stable address for the signer and request parameters. The example below stores it in React state, so each send can pass the same address to `sendCalls` without requesting the account again.
 
 ```tsx title="SendTransaction.tsx"
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { zeroAddress } from "viem";
-import type { LocalAccount } from "viem";
+import type { Address, LocalAccount } from "viem";
 import { createHyperliquidWalletClient } from "./walletClient";
 
 export function SendTransaction({ signer }: { signer: LocalAccount }) {
@@ -149,17 +149,31 @@ export function SendTransaction({ signer }: { signer: LocalAccount }) {
     () => createHyperliquidWalletClient(signer),
     [signer],
   );
+  const [accountAddress, setAccountAddress] = useState<Address>();
   const [status, setStatus] = useState<string>();
 
+  useEffect(() => {
+    let isCurrentClient = true;
+
+    setAccountAddress(undefined);
+    client
+      .requestAccount({
+        creationHint: { accountType: "sma-b" },
+      })
+      .then(({ address }) => {
+        if (isCurrentClient) setAccountAddress(address);
+      });
+
+    return () => {
+      isCurrentClient = false;
+    };
+  }, [client]);
+
   const sendTransaction = useCallback(async () => {
+    if (!accountAddress) return;
     setStatus("sending");
-
-    const { address } = await client.requestAccount({
-      creationHint: { accountType: "sma-b" },
-    });
-
     const { id } = await client.sendCalls({
-      account: address,
+      account: accountAddress,
       calls: [
         {
           to: zeroAddress,
@@ -169,18 +183,24 @@ export function SendTransaction({ signer }: { signer: LocalAccount }) {
       ],
     });
 
+    console.log("HyperEVM call ID:", id);
     setStatus("waiting");
 
     const result = await client.waitForCallsStatus({ id });
-    const transactionHash = result.receipts?.[0]?.transactionHash;
-
     setStatus(result.status);
-    console.log("HyperEVM transaction hash:", transactionHash);
-  }, [client]);
+  }, [accountAddress, client]);
+
+  const isPending = status === "sending" || status === "waiting";
 
   return (
-    <button onClick={sendTransaction} disabled={status === "sending"}>
-      {status === "sending" ? "Sending..." : "Send transaction"}
+    <button onClick={sendTransaction} disabled={!accountAddress || isPending}>
+      {!accountAddress
+        ? "Loading account..."
+        : status === "sending"
+          ? "Sending..."
+          : status === "waiting"
+            ? "Waiting..."
+            : "Send transaction"}
     </button>
   );
 }
@@ -279,7 +299,7 @@ export const HYPERLIQUID_CALLDATA = (() => {
 })();
 ```
 
-Then request the user's smart account and pass the encoded call to `sendCalls`:
+Then reuse the stored smart account address and pass the encoded call to `sendCalls`:
 
 ```ts title="sendHyperliquidOrder.ts"
 import { createHyperliquidWalletClient } from "./walletClient";
@@ -287,17 +307,19 @@ import {
   CORE_WRITER_ADDRESS,
   HYPERLIQUID_CALLDATA,
 } from "./hyperliquidOrder";
-import type { LocalAccount } from "viem";
+import type { Address, LocalAccount } from "viem";
 
-export async function sendHyperliquidOrder(signer: LocalAccount) {
+export async function sendHyperliquidOrder({
+  signer,
+  accountAddress,
+}: {
+  signer: LocalAccount;
+  accountAddress: Address;
+}) {
   const client = createHyperliquidWalletClient(signer);
 
-  const { address } = await client.requestAccount({
-    creationHint: { accountType: "sma-b" },
-  });
-
   const { id } = await client.sendCalls({
-    account: address,
+    account: accountAddress,
     calls: [
       {
         to: CORE_WRITER_ADDRESS,
@@ -308,8 +330,8 @@ export async function sendHyperliquidOrder(signer: LocalAccount) {
   });
 
   const result = await client.waitForCallsStatus({ id });
+  console.log("Hyperliquid order call ID:", id);
   console.log("Hyperliquid order status:", result.status);
-  console.log("Transaction hash:", result.receipts?.[0]?.transactionHash);
 
   return result;
 }
