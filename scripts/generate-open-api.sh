@@ -71,11 +71,13 @@ done
 
 # --- Remote specs ---
 # Specs hosted externally that should be included alongside local specs.
-# Config lives in content/remote-specs.json as an array of { name, url } objects.
+# Config lives in content/remote-specs.json as an array of { name, url, type? } objects.
+# Only OpenAPI entries are processed here; entries with "type": "openrpc" are
+# handled by the RPC generator. A missing type defaults to OpenAPI.
 remote_specs_file="content/remote-specs.json"
 
 if [ -f "$remote_specs_file" ]; then
-  for entry in $(jq -c '.[]' "$remote_specs_file"); do
+  for entry in $(jq -c '.[] | select((.type // "openapi") == "openapi")' "$remote_specs_file"); do
     name=$(echo "$entry" | jq -r '.name')
     url=$(echo "$entry" | jq -r '.url')
     filename="${output_dir}/alchemy/rest/${name}.json"
