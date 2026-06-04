@@ -8,19 +8,18 @@ import { validateRpcSpec } from "./validateRpcSpec.ts";
 const SERVER_URL_FINAL_KEY = "x-alchemy-server-url-final" as const;
 
 /**
- * Generates an OpenRPC specification for the Alchemy JSON-RPC API.
- * @param srcDir - The source directory containing the Alchemy OpenRPC schema
+ * Generates an OpenRPC specification from a source (local file path or remote URL)
+ * and writes it to `{outputDir}/{name}.json`.
+ * @param source - Path or URL to the OpenRPC schema to dereference
  * @param outputDir - The output directory where the generated OpenRPC specification will be saved
- * @param filename - The name of the Alchemy OpenRPC schema file
+ * @param name - The output spec name; wallet-api preserves its curated method order
  */
-export const generateOpenRpcSpec = async (
-  srcDir: string,
+const generateOpenRpcSpecFromSource = async (
+  source: string,
   outputDir: string,
-  filename: string,
+  name: string,
 ) => {
-  const schemaDir = `${srcDir}/${filename}`;
-
-  const spec = (await dereference(`${schemaDir}/${filename}.yaml`, {
+  const spec = (await dereference(source, {
     dereference: {
       preservedProperties: ["title", "description", "type", "pattern"],
     },
@@ -50,12 +49,45 @@ export const generateOpenRpcSpec = async (
         }),
   };
 
-  // wallet api sorts by method popularity
-  const shouldSort = !schemaDir.includes("wallet-api");
+  // wallet-api's source order is curated by method popularity, so preserve it.
+  const shouldSort = !name.includes("wallet-api");
 
   const formattedSpec = await formatOpenRpcDoc(fullSpec, shouldSort);
 
   validateRpcSpec(formattedSpec);
 
-  writeOpenRpcDoc(outputDir, filename, formattedSpec);
+  writeOpenRpcDoc(outputDir, name, formattedSpec);
+};
+
+/**
+ * Generates an OpenRPC specification for a local Alchemy JSON-RPC schema.
+ * @param srcDir - The source directory containing the Alchemy OpenRPC schema
+ * @param outputDir - The output directory where the generated OpenRPC specification will be saved
+ * @param filename - The name of the Alchemy OpenRPC schema file (also the output name)
+ */
+export const generateOpenRpcSpec = async (
+  srcDir: string,
+  outputDir: string,
+  filename: string,
+) => {
+  const schemaDir = `${srcDir}/${filename}`;
+  await generateOpenRpcSpecFromSource(
+    `${schemaDir}/${filename}.yaml`,
+    outputDir,
+    filename,
+  );
+};
+
+/**
+ * Generates an OpenRPC specification from a remote URL.
+ * @param url - URL to the remote OpenRPC schema
+ * @param outputDir - The output directory where the generated OpenRPC specification will be saved
+ * @param name - The output spec name (used for the filename)
+ */
+export const generateRemoteOpenRpcSpec = async (
+  url: string,
+  outputDir: string,
+  name: string,
+) => {
+  await generateOpenRpcSpecFromSource(url, outputDir, name);
 };

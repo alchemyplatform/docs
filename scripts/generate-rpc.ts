@@ -1,10 +1,18 @@
 import { mkdirSync, readdirSync } from "fs";
 
-import { generateOpenRpcSpec } from "../src/utils/generateRpcSpecs.ts";
+import {
+  generateOpenRpcSpec,
+  generateRemoteOpenRpcSpec,
+} from "../src/utils/generateRpcSpecs.ts";
 import {
   type DerefErrorGroup,
   handleDerefErrors,
 } from "../src/utils/generationHelpers.js";
+import {
+  filterRemoteSpecsByType,
+  getOverriddenNames,
+  readRemoteSpecs,
+} from "../src/utils/remoteSpecs.ts";
 
 const isHiddenDir = (file: string) =>
   !file.startsWith("_") && !file.startsWith(".");
@@ -31,10 +39,20 @@ const main = async () => {
     }
   });
 
+  // Remote OpenRPC specs win over local specs that share the same name, so
+  // wallet-api (and others) can move remote with only a config change.
+  const remoteOpenRpcSpecs = filterRemoteSpecsByType(
+    readRemoteSpecs(),
+    "openrpc",
+  );
+  const overriddenNames = getOverriddenNames(remoteOpenRpcSpecs);
+
   // generate alchemy API OpenRPC specs
   const alchemyApisDir = `${SCHEMAS_ROOT}/alchemy`;
   const alchemyOutputDir = `${OUTPUT_ROOT}/alchemy/json-rpc`;
-  const allAlchemyApiFiles = readdirSync(alchemyApisDir).filter(isHiddenDir);
+  const allAlchemyApiFiles = readdirSync(alchemyApisDir)
+    .filter(isHiddenDir)
+    .filter((api) => !overriddenNames.has(api));
 
   mkdirSync(alchemyOutputDir, { recursive: true });
 
@@ -46,10 +64,20 @@ const main = async () => {
     }
   });
 
+  // generate remote alchemy OpenRPC specs into the same json-rpc spec path
+  const remotePromises = remoteOpenRpcSpecs.map(async (spec) => {
+    try {
+      await generateRemoteOpenRpcSpec(spec.url, alchemyOutputDir, spec.name);
+    } catch (err: unknown) {
+      handleDerefErrors(err, spec.name, missingTokens, genErrors);
+    }
+  });
+
   // Wait for all promises to complete
   const results = await Promise.allSettled([
     ...chainPromises,
     ...alchemyPromises,
+    ...remotePromises,
   ]);
 
   // Report all errors at once
