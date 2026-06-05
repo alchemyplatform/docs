@@ -11,20 +11,77 @@ The session is approved in the Alchemy Dashboard, expires automatically, and can
 
 ## Capabilities
 
-| Area | Supported today | Discovery |
-|---|---|---|
-| Chains | EVM wallet operations on supported Alchemy wallet networks. Solana sends on supported Solana networks. Swaps and bridges are EVM mainnet-only. | `alchemy evm network list`, `alchemy solana network list` |
-| EVM sends | Native token and ERC-20 sends with `alchemy evm send`. ENS recipients work where the selected network/client can resolve them. | `alchemy evm send --help` |
-| Contract writes | State-changing EVM calls with inline signatures, ABI files, JSON args, and optional ETH value. | `alchemy evm contract call --help` |
-| Approvals | ERC-20 approve, reset, and revoke flows. Unlimited approvals require confirmation or `--yes`. | `alchemy evm approve --help` |
-| Swaps | Same-chain EVM mainnet swap quotes and execution with slippage controls. | `alchemy evm swap quote --help`, `alchemy evm swap execute --help` |
-| Bridges | EVM mainnet bridge quotes and execution from `-n, --network` to `--to-network`. Source and destination networks must differ. | `alchemy xchain bridge quote --help`, `alchemy xchain bridge execute --help` |
-| Solana sends | SOL and SPL token sends, dry runs, associated token account handling, and optional session signing. | `alchemy solana send --help` |
-| Status | EVM smart-wallet call IDs, EVM transaction hashes, and Solana signatures. | `alchemy evm status --help`, `alchemy solana status --help` |
-| Sponsorship | EVM gas sponsorship with `--gas-sponsored --gas-policy-id <id>`. Solana fee sponsorship with `--fee-sponsored --fee-policy-id <id>`. | CLI help and Gas Manager policies in the Dashboard |
-| Session capabilities | `evm.signMessage`, `evm.signTypedData`, `evm.signAuthorization`, `evm.prepareCalls`, `evm.sendCalls`, and `solana.signTransaction`. | `alchemy --json --no-interactive wallet status --verify` |
-| Limits | The session signer does not support direct raw EVM transaction signing. Use CLI commands that execute through Alchemy smart-wallet calls. Gas and fee sponsorship policies are not wallet spend limits. | Command help and `wallet status --verify` |
-| Revocation | `alchemy wallet disconnect` clears local session state and revokes remote sessions when the CLI is authenticated. Dashboard revocation is also supported. | `alchemy --json --no-interactive wallet disconnect` |
+<CardGroup cols={2}>
+  <Card title="EVM actions" icon="code">
+    Send native tokens or ERC-20s, execute contract calls, manage ERC-20 approvals,
+    swap on EVM mainnets, and bridge between EVM mainnets.
+  </Card>
+  <Card title="Solana sends" icon="bolt">
+    Send SOL or SPL tokens, run dry runs, handle associated token accounts, and use
+    session signing for supported CLI flows.
+  </Card>
+  <Card title="Sponsorship" icon="wallet">
+    Request EVM gas sponsorship with `--gas-sponsored --gas-policy-id <id>` or
+    Solana fee sponsorship with `--fee-sponsored --fee-policy-id <id>`.
+  </Card>
+  <Card title="Session control" icon="shield">
+    Approve sessions in the Dashboard, inspect capabilities with `wallet status
+    --verify`, and revoke access from the CLI or Dashboard.
+  </Card>
+</CardGroup>
+
+<AccordionGroup>
+  <Accordion title="Detailed capability reference">
+    **Chains:** EVM wallet operations run on supported Alchemy wallet networks.
+    Solana sends run on supported Solana networks. Swaps and bridges are EVM
+    mainnet-only.
+
+    **EVM sends:** `alchemy evm send` supports native token and ERC-20 sends. ENS
+    recipients work where the selected network/client can resolve them.
+
+    **Contract writes:** `alchemy evm contract call` supports state-changing EVM
+    calls with inline signatures, ABI files, JSON args, and optional ETH value.
+
+    **Approvals:** `alchemy evm approve` supports ERC-20 approve, reset, and
+    revoke flows. Unlimited approvals require confirmation or `--yes`.
+
+    **Swaps:** `alchemy evm swap quote` and `alchemy evm swap execute` support
+    same-chain EVM mainnet swaps with slippage controls.
+
+    **Bridges:** `alchemy xchain bridge quote` and `alchemy xchain bridge execute`
+    support EVM mainnet bridges from `-n, --network` to `--to-network`.
+
+    **Status:** `alchemy evm status` checks smart-wallet call IDs and EVM
+    transaction hashes. `alchemy solana status` checks Solana signatures.
+  </Accordion>
+  <Accordion title="Session capabilities and limits">
+    A session can include `evm.signMessage`, `evm.signTypedData`,
+    `evm.signAuthorization`, `evm.prepareCalls`, `evm.sendCalls`, and
+    `solana.signTransaction`.
+
+    The session signer does not support direct raw EVM transaction signing. Use
+    CLI commands that execute through Alchemy smart-wallet calls.
+
+    Gas and fee sponsorship policies control transaction fees. They are not
+    wallet spend limits.
+  </Accordion>
+  <Accordion title="Discovery commands">
+    Use these commands when an agent needs the current wallet contract:
+
+    ```bash
+    alchemy --json --no-interactive wallet status --verify
+    alchemy --json --no-interactive agent-prompt --scope wallet
+    alchemy evm network list
+    alchemy solana network list
+    ```
+
+    For the latest published CLI surface, use:
+
+    ```bash
+    npx -y @alchemy/cli@latest --json --no-interactive agent-prompt --scope wallet
+    ```
+  </Accordion>
+</AccordionGroup>
 
 ## Connect a session
 
@@ -45,51 +102,57 @@ alchemy --json --no-interactive wallet status --verify
 
 The response includes the active signer, session expiry, chain-specific session metadata, backend status, and enabled signer capabilities.
 
-## End-to-end EVM example
+## Examples
 
-This workflow checks funding, previews a send, broadcasts it, checks status, and revokes the session.
+<Tabs>
+  <Tab title="EVM">
+    This workflow checks funding, previews a send, broadcasts it, checks status,
+    and revokes the session.
 
-```bash
-alchemy auth
-alchemy wallet connect --mode session --instance-name codex-terminal
-alchemy wallet use session
+    ```bash
+    alchemy auth
+    alchemy wallet connect --mode session --instance-name codex-terminal
+    alchemy wallet use session
 
-alchemy --json --no-interactive wallet address
-alchemy --json --no-interactive evm data balance <session_evm_address> -n base-mainnet
+    alchemy --json --no-interactive wallet address
+    alchemy --json --no-interactive evm data balance <session_evm_address> -n base-mainnet
 
-alchemy --json --no-interactive evm send <recipient> 0.001 \
-  -n base-mainnet \
-  --dry-run
+    alchemy --json --no-interactive evm send <recipient> 0.001 \
+      -n base-mainnet \
+      --dry-run
 
-alchemy --json --no-interactive evm send <recipient> 0.001 \
-  -n base-mainnet \
-  --signer session
+    alchemy --json --no-interactive evm send <recipient> 0.001 \
+      -n base-mainnet \
+      --signer session
 
-alchemy --json --no-interactive evm status <call-id-or-tx-hash> -n base-mainnet
-alchemy --json --no-interactive wallet disconnect
-```
+    alchemy --json --no-interactive evm status <call-id-or-tx-hash> -n base-mainnet
+    alchemy --json --no-interactive wallet disconnect
+    ```
 
-For sponsored gas, pass a Gas Manager policy:
+    For sponsored gas, pass a Gas Manager policy:
 
-```bash
-alchemy --json --no-interactive evm send <recipient> 0.001 \
-  -n base-mainnet \
-  --signer session \
-  --gas-sponsored \
-  --gas-policy-id <gas-policy-id>
-```
+    ```bash
+    alchemy --json --no-interactive evm send <recipient> 0.001 \
+      -n base-mainnet \
+      --signer session \
+      --gas-sponsored \
+      --gas-policy-id <gas-policy-id>
+    ```
+  </Tab>
 
-## Solana example
+  <Tab title="Solana">
+    Use the same session signer for SOL or SPL token sends.
 
-Use the same session signer for SOL or SPL token sends:
+    ```bash
+    alchemy --json --no-interactive solana send <recipient_pubkey> 0.01 \
+      -n solana-mainnet \
+      --signer session
+    ```
 
-```bash
-alchemy --json --no-interactive solana send <recipient_pubkey> 0.01 \
-  -n solana-mainnet \
-  --signer session
-```
-
-Add `--token <mint>` for SPL tokens. Add `--fee-sponsored --fee-policy-id <fee-policy-id>` to request Solana fee sponsorship.
+    Add `--token <mint>` for SPL tokens. Add `--fee-sponsored
+    --fee-policy-id <fee-policy-id>` to request Solana fee sponsorship.
+  </Tab>
+</Tabs>
 
 ## Machine-readable contract
 
@@ -106,83 +169,95 @@ alchemy --json --no-interactive agent-prompt --scope wallet
 alchemy --json --no-interactive wallet status --verify
 ```
 
-You can also include this compact manifest in an agent skill or system prompt:
+<Accordion title="Compact capability manifest">
+  Include this in an agent skill or system prompt when the agent cannot call
+  `agent-prompt` at runtime.
 
-```json
-{
-  "alchemyAgentWallets": {
-    "sourceOfTruth": {
-      "latestCli": "npx -y @alchemy/cli@latest --json --no-interactive agent-prompt --scope wallet",
-      "installedCli": "alchemy --json --no-interactive agent-prompt --scope wallet",
-      "sessionStatus": "alchemy --json --no-interactive wallet status --verify"
-    },
-    "session": {
-      "approval": "dashboard",
-      "privateKeyExposure": "never_exposed_to_agent",
-      "revocation": ["alchemy wallet disconnect", "dashboard"],
-      "expiryField": "expiresAt",
-      "capabilities": [
-        "evm.signMessage",
-        "evm.signTypedData",
-        "evm.signAuthorization",
-        "evm.prepareCalls",
-        "evm.sendCalls",
-        "solana.signTransaction"
+  ```json
+  {
+    "alchemyAgentWallets": {
+      "sourceOfTruth": {
+        "latestCli": "npx -y @alchemy/cli@latest --json --no-interactive agent-prompt --scope wallet",
+        "installedCli": "alchemy --json --no-interactive agent-prompt --scope wallet",
+        "sessionStatus": "alchemy --json --no-interactive wallet status --verify"
+      },
+      "session": {
+        "approval": "dashboard",
+        "privateKeyExposure": "never_exposed_to_agent",
+        "revocation": ["alchemy wallet disconnect", "dashboard"],
+        "expiryField": "expiresAt",
+        "capabilities": [
+          "evm.signMessage",
+          "evm.signTypedData",
+          "evm.signAuthorization",
+          "evm.prepareCalls",
+          "evm.sendCalls",
+          "solana.signTransaction"
+        ]
+      },
+      "evm": {
+        "operations": [
+          "native_send",
+          "erc20_send",
+          "contract_call",
+          "erc20_approve_reset_revoke",
+          "swap_quote",
+          "swap_execute",
+          "bridge_quote",
+          "bridge_execute",
+          "status"
+        ],
+        "sponsorshipFlags": ["--gas-sponsored", "--gas-policy-id <id>"],
+        "directRawTransactionSigning": false,
+        "limits": ["swaps_evm_mainnet_only", "bridges_evm_mainnet_only"]
+      },
+      "solana": {
+        "operations": ["sol_send", "spl_token_send", "status"],
+        "sponsorshipFlags": ["--fee-sponsored", "--fee-policy-id <id>"]
+      },
+      "agentRules": [
+        "Use --json --no-interactive in automation.",
+        "Run wallet status --verify before state-changing wallet actions.",
+        "Run balance, allowance, or quote checks before spending.",
+        "Use --dry-run where available before broadcast.",
+        "Treat sponsorship policies as fee controls, not wallet spend limits.",
+        "Disconnect or revoke the session after the workflow."
       ]
-    },
-    "evm": {
-      "operations": [
-        "native_send",
-        "erc20_send",
-        "contract_call",
-        "erc20_approve_reset_revoke",
-        "swap_quote",
-        "swap_execute",
-        "bridge_quote",
-        "bridge_execute",
-        "status"
-      ],
-      "sponsorshipFlags": ["--gas-sponsored", "--gas-policy-id <id>"],
-      "directRawTransactionSigning": false,
-      "limits": ["swaps_evm_mainnet_only", "bridges_evm_mainnet_only"]
-    },
-    "solana": {
-      "operations": ["sol_send", "spl_token_send", "status"],
-      "sponsorshipFlags": ["--fee-sponsored", "--fee-policy-id <id>"]
-    },
-    "agentRules": [
-      "Use --json --no-interactive in automation.",
-      "Run wallet status --verify before state-changing wallet actions.",
-      "Run balance, allowance, or quote checks before spending.",
-      "Use --dry-run where available before broadcast.",
-      "Treat sponsorship policies as fee controls, not wallet spend limits.",
-      "Disconnect or revoke the session after the workflow."
-    ]
+    }
   }
-}
-```
+  ```
+</Accordion>
 
-## Dashboard controls
+## Operational details
 
-Use the [Agent Wallets dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet) to create wallets, approve terminal sessions, fund wallets through onramps, send from the wallet, and revoke sessions.
+<AccordionGroup>
+  <Accordion title="Dashboard controls">
+    Use the [Agent Wallets dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet)
+    to create wallets, approve terminal sessions, fund wallets through onramps,
+    send from the wallet, and revoke sessions.
+  </Accordion>
+  <Accordion title="How sessions execute">
+    EVM session actions execute through Alchemy smart-wallet calls such as
+    `wallet_prepareCalls` and `wallet_sendCalls`. The CLI uses those calls for
+    nonce handling, preflight behavior, call IDs, status polling, batch-call
+    support where the command uses it, and optional paymaster capabilities.
 
-## How sessions execute
+    Solana session actions sign transactions for supported CLI flows such as SOL
+    and SPL token sends.
+  </Accordion>
+  <Accordion title="Local wallet fallback">
+    Use a local wallet only when you intentionally want local key material:
 
-EVM session actions execute through Alchemy smart-wallet calls such as `wallet_prepareCalls` and `wallet_sendCalls`. The CLI uses those calls for nonce handling, preflight behavior, call IDs, status polling, batch-call support where the command uses it, and optional paymaster capabilities.
+    ```bash
+    alchemy wallet connect --mode local
+    alchemy wallet connect --mode local --import ./evm-private-key.txt
+    alchemy wallet use local
+    ```
 
-Solana session actions sign transactions for supported CLI flows such as SOL and SPL token sends.
-
-## Local wallet fallback
-
-Use a local wallet only when you intentionally want local key material:
-
-```bash
-alchemy wallet connect --mode local
-alchemy wallet connect --mode local --import ./evm-private-key.txt
-alchemy wallet use local
-```
-
-If both a session signer and a local EVM signer are configured, the CLI defaults to the session signer and prints a warning.
+    If both a session signer and a local EVM signer are configured, the CLI
+    defaults to the session signer and prints a warning.
+  </Accordion>
+</AccordionGroup>
 
 ## Next steps
 
