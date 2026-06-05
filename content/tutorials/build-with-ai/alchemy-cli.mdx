@@ -188,15 +188,15 @@ Most wallet-signed EVM commands accept `--signer session|local` to override the 
 
 ### Wallets and signing
 
-Use `alchemy wallet` to connect the signer used by onchain actions. EVM commands can use an [Agent Wallet session](docs/agent-wallets) approved through the Alchemy Dashboard or a local private key. The `session` signer refers to an Agent Wallet session, not an arbitrary browser wallet connection. Solana transaction commands currently use a local Solana wallet.
+Use `alchemy wallet` to connect the signer used by onchain actions. EVM commands can use an [Agent Wallet session](docs/agent-wallets) approved through the Alchemy Dashboard or a local private key. Solana send commands can use an Agent Wallet session or a local Solana wallet. The `session` signer refers to an Agent Wallet session, not an arbitrary browser wallet connection.
 
 Create, view, and revoke Agent Wallet sessions in the [Agent Wallets dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet).
 
 | Command | Description |
 |---|---|
-| `alchemy wallet connect` | Connect a wallet. Use `--mode session` for an Agent Wallet session or `--mode local` for a local wallet. Local mode supports `--chain evm\|solana\|both` and defaults to both. |
-| `alchemy wallet connect --mode local --chain evm --import <path>` | Import a local EVM private key file |
-| `alchemy wallet connect --mode local --chain solana` | Create or configure a local Solana wallet |
+| `alchemy wallet connect` | Connect a wallet. Use `--mode session` for an Agent Wallet session or `--mode local` for local wallets. Session mode requests EVM and Solana capabilities. Local mode creates both EVM and Solana wallets. |
+| `alchemy wallet connect --mode session --instance-name <name>` | Name the CLI instance shown during Dashboard approval |
+| `alchemy wallet connect --mode local --import <path>` | Import a local EVM private key file |
 | `alchemy wallet status` | Show Agent Wallet session, local EVM, local Solana, and active signer status. Add `--verify` to check the backend session. |
 | `alchemy wallet address` | Display configured wallet addresses |
 | `alchemy wallet qr` | Display an EVM or Solana wallet address as a QR code |
@@ -205,17 +205,17 @@ Create, view, and revoke Agent Wallet sessions in the [Agent Wallets dashboard](
 
 ### Solana
 
-Solana transaction commands use a local Solana wallet. Use `--fee-sponsored` and `--fee-policy-id <id>` on supported Solana actions to request fee sponsorship.
+Solana send commands can use an Agent Wallet session or a local Solana wallet. Use `--fee-sponsored` and `--fee-policy-id <id>` on supported Solana actions to request fee sponsorship.
 
 ```bash
-alchemy wallet connect --mode local --chain solana
+alchemy wallet connect --mode session
 alchemy solana send <recipient> 0.1 -n solana-mainnet
 alchemy solana status <signature>
 ```
 
 | Command | Description |
 |---|---|
-| `alchemy solana send <to> <amount>` | Send native SOL. SPL token transfers are not yet supported. |
+| `alchemy solana send <to> <amount>` | Send native SOL. Add `--token <mint>` for SPL token transfers. |
 | `alchemy solana delegate approve --token-account <addr> --mint <addr> --delegate <addr> --amount <n> --decimals <n>` | Approve an SPL token delegate |
 | `alchemy solana delegate revoke --token-account <addr>` | Revoke an SPL token delegate |
 | `alchemy solana status [id]` | Check a Solana transaction signature; reads from stdin when omitted |
