@@ -1,0 +1,26 @@
+# Minimal OpenRPC fixture used to exercise remote spec generation.
+# The $ref below verifies that the generator dereferences before writing.
+openrpc: 1.2.4
+info:
+  title: Test Remote OpenRPC API
+  version: 0.0.0
+servers:
+  - url: https://example.com/v2
+    name: Test
+methods:
+  - name: test_getThing
+    params:
+      - name: address
+        required: true
+        schema:
+          $ref: "#/components/schemas/Address"
+    result:
+      name: thing
+      schema:
+        type: string
+components:
+  schemas:
+    Address:
+      title: Address
+      type: string
+      pattern: "^0x[a-fA-F0-9]{40}$"
