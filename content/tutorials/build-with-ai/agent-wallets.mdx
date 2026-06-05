@@ -91,7 +91,6 @@ Install the CLI, log in, and start a Dashboard approval flow:
 npm i -g @alchemy/cli@latest
 alchemy auth
 alchemy wallet connect --mode session --instance-name codex-terminal
-alchemy wallet use session
 ```
 
 Verify the approved session before running a state-changing workflow:
@@ -106,14 +105,10 @@ The response includes the active signer, session expiry, chain-specific session 
 
 <Tabs>
   <Tab title="EVM">
-    This workflow checks funding, previews a send, broadcasts it, checks status,
-    and revokes the session.
+    This workflow assumes you already approved a session. It checks funding,
+    previews a send, broadcasts it, and checks status.
 
     ```bash
-    alchemy auth
-    alchemy wallet connect --mode session --instance-name codex-terminal
-    alchemy wallet use session
-
     alchemy --json --no-interactive wallet address
     alchemy --json --no-interactive evm data balance <session_evm_address> -n base-mainnet
 
@@ -122,11 +117,9 @@ The response includes the active signer, session expiry, chain-specific session 
       --dry-run
 
     alchemy --json --no-interactive evm send <recipient> 0.001 \
-      -n base-mainnet \
-      --signer session
+      -n base-mainnet
 
     alchemy --json --no-interactive evm status <call-id-or-tx-hash> -n base-mainnet
-    alchemy --json --no-interactive wallet disconnect
     ```
 
     For sponsored gas, pass a Gas Manager policy:
@@ -134,25 +127,35 @@ The response includes the active signer, session expiry, chain-specific session 
     ```bash
     alchemy --json --no-interactive evm send <recipient> 0.001 \
       -n base-mainnet \
-      --signer session \
       --gas-sponsored \
       --gas-policy-id <gas-policy-id>
     ```
   </Tab>
 
   <Tab title="Solana">
-    Use the same session signer for SOL or SPL token sends.
+    This workflow assumes you already approved a session. It checks funding,
+    previews a send, broadcasts it, and checks status.
 
     ```bash
+    alchemy --json --no-interactive wallet address
+    alchemy --json --no-interactive solana rpc getBalance <session_solana_address> -n solana-mainnet
+
     alchemy --json --no-interactive solana send <recipient_pubkey> 0.01 \
       -n solana-mainnet \
-      --signer session
+      --dry-run
+
+    alchemy --json --no-interactive solana send <recipient_pubkey> 0.01 \
+      -n solana-mainnet
+
+    alchemy --json --no-interactive solana status <signature> -n solana-mainnet
     ```
 
     Add `--token <mint>` for SPL tokens. Add `--fee-sponsored
     --fee-policy-id <fee-policy-id>` to request Solana fee sponsorship.
   </Tab>
 </Tabs>
+
+Run `alchemy --json --no-interactive wallet disconnect` when the session is no longer needed.
 
 ## Machine-readable contract
 
