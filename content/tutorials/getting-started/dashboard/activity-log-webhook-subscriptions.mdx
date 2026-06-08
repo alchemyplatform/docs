@@ -48,44 +48,31 @@ Alchemy attaches the credential you configure as a header on every request to yo
 
 | Method | Header Alchemy sends | Typical use |
 | --- | --- | --- |
-| **Bearer token** | `Authorization: Bearer <token>` | Generic; most log pipelines and transform layers. |
-| **Basic** | `Authorization: Basic <base64(username:password)>` | Generic; endpoints behind basic auth. |
-| **Custom header** | `<name>: <value>` | Splunk HEC (`Authorization: Splunk <token>`), Datadog (`DD-API-KEY: <key>`), and other proprietary destinations. |
-
-<Warning>
-  **Payloads are not signed.** Alchemy does not add an HMAC or signature header to webhook deliveries. Authenticity is established by the auth header you configure above, so:
-
-  * Always use an `https://` endpoint.
-  * Treat the configured credential as a shared secret: have your endpoint reject any request that does not present it.
-  * Rotate the credential by editing the subscription if it's ever exposed.
-</Warning>
+| **Bearer token** | `Authorization: Bearer <token>` | Standard token-based authentication. |
+| **Basic** | `Authorization: Basic <base64(username:password)>` | Authenticates with a username and password. |
+| **Custom header** | `<name>: <value>` | Used when your endpoint requires a custom header name for authentication, for example Splunk HEC (`Authorization: Splunk <token>`) or Datadog (`DD-API-KEY: <key>`). |
 
 ***
 
 ## Payload
 
-Each delivery is a single JSON event sent with `Content-Type: application/json`. Field names are `snake_case`. Every identifier is an external ID (SID); internal numeric IDs are never exposed.
+Each delivery is a single JSON event sent with `Content-Type: application/json`.
 
 ```json
 {
-  "id": "aa_log_3f9c8b2a",
-  "timestamp": "2026-05-27T21:00:00.000Z",
-  "action": "APP_APP_CREATED",
-  "action_display_name": "App created",
+  "id": "aa_log_a7b1fcc6114820b7e15f",
+  "timestamp": "2026-06-08T21:32:29.413Z",
+  "action": "AUTH_LOGIN_SUCCESS",
+  "action_display_name": "Login success",
   "actor": {
-    "id": "usr_8a21f0c4",
+    "id": "u_JDR4PP",
     "display_name": "Jane Doe",
     "type": "user"
   },
-  "message": "Created app \"Mainnet Production\"",
-  "source_ip": "203.0.113.42",
-  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ...",
-  "request_id": "req_b1c2d3e4",
-  "target": {
-    "kind": "app",
-    "id": "app_9d4f7a10",
-    "name": "Mainnet Production"
-  }
+  "message": "User logged in successfully.",
+  "source_ip": "2a09:bac0:1000:318::4d0:4b",
+  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0",
+  "request_id": "de66c060-79ae-4063-b8c3-479ae9a8dc89"
 }
 ```
 
@@ -116,7 +103,7 @@ Each delivery is a single JSON event sent with `Content-Type: application/json`.
 
 ## Filtering events
 
-Use the **Event types** selector to forward only the actions you need. For example, route authentication and access-key events to your security SIEM, and billing events to a separate destination. You can change the filter at any time by editing the subscription.
+Use the **Event types** selector to forward only the actions you need. For example, route authentication and access-key events to your security SIEM, and billing events to a separate destination. The event filter is set when you create the subscription; to change it, create a new subscription with the updated filter and delete the old one.
 
 ***
 
@@ -135,14 +122,17 @@ The **Test event** button sends a **synthetic** event to your endpoint using the
 
 ## Managing subscriptions
 
-From the **Webhook subscriptions** tab you can:
+A subscription's settings (name, URL, authentication, and event filter) are fixed once it's created. From the **Webhook subscriptions** tab you can:
 
-* **Edit** a subscription's name, URL, authentication, or event filter.
 * **Pause / resume** delivery without deleting the subscription.
 * **Delete** a subscription.
 * **Test** the endpoint again at any time.
 
 Each subscription card shows its recent delivery health, including the last successful and last failed delivery.
+
+<Note>
+  Subscriptions can't be edited after they're created. To change a subscription's name, URL, authentication, or event filter, create a new subscription with the updated settings and delete the old one.
+</Note>
 
 ***
 
