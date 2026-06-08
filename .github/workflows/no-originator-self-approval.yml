@@ -19,6 +19,17 @@ name: Docs agent review guard
 # check ensures that the PR has been approved at least once by someone who did
 # not originate the docs-agent request.
 #
+# Why a re-run step exists: the required "Self-approval guard" status check is
+# satisfied only by the pull_request-event run of this workflow. GitHub does
+# NOT update that gate from the pull_request_review-event run, even though the
+# review run computes the same pass/fail. The pull_request run executes at
+# open/push (before any approval exists), so it fails by design and stays
+# failed until it runs again. Without intervention the merge box keeps the
+# stale failure even after a valid non-originator approval, which previously
+# forced a manual "Re-run" of the check. To fix that, the pull_request_review
+# run re-triggers the latest pull_request run for the head commit so the gate
+# re-evaluates with the current review state (needs `actions: write`).
+#
 # Why commit message and not PR body: the PR body is editable by anyone with
 # write access (including the originator), who could remove their own @mention
 # before approving. The commit message is GPG-signed by docs-agent's key
@@ -45,6 +56,9 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
+      # Needed so the pull_request_review run can re-trigger the gating
+      # pull_request run (see the "Re-evaluate gating check" step below).
+      actions: write
     steps:
       - name: Checkout to access pinned agent public key
         uses: actions/checkout@v4
@@ -346,3 +360,66 @@ jobs:
 
           echo "No non-requester approvals found in review history. Failing required check."
           exit 1
+      - name: Re-evaluate gating check on review submission
+        # The required "Self-approval guard" gate is the pull_request-event run
+        # of this workflow; GitHub does not honor this pull_request_review run's
+        # conclusion for the gate. Re-running the pull_request run forces it to
+        # re-evaluate with the review just submitted (a new approval added, or
+        # an originator approval that the step above just dismissed). Scoped to
+        # docs-agent (alchemy-bot) PRs because every other PR already passes the
+        # pull_request run immediately, so there is nothing stale to refresh.
+        # Best-effort: a failure here never fails the workflow.
+        if: ${{ always() && github.event_name == 'pull_request_review' && github.event.pull_request.user.login == 'alchemy-bot' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          WORKFLOW_FILE: no-originator-self-approval.yml
+        run: |
+          set -uo pipefail
+
+          # Latest pull_request run of this workflow for the head commit,
+          # printed as "<id> <status>" (blank when none exists yet).
+          latest_run() {
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$WORKFLOW_FILE/runs?event=pull_request&head_sha=$HEAD_SHA&per_page=1" \
+              --jq '(.workflow_runs[0] // {}) | "\(.id // "") \(.status // "")"' 2>/tmp/runs-err || true
+          }
+
+          # The gating run may currently be queued/in_progress and may have
+          # already read the PRE-approval review state, in which case it would
+          # finish red and nothing else would reschedule it. The rerun endpoint
+          # only accepts a COMPLETED run, and a rerun started now is guaranteed
+          # to observe this just-submitted review. So wait for the current run
+          # to finish, then rerun it (with retries) so the gate re-evaluates.
+          run_id=""; status=""
+          for i in $(seq 1 30); do
+            read -r run_id status <<< "$(latest_run)"
+            if [ -z "${run_id:-}" ]; then
+              echo "No pull_request run for $HEAD_SHA yet (poll $i); waiting..."
+            elif [ "$status" = "completed" ]; then
+              echo "pull_request run $run_id is completed; proceeding to rerun."
+              break
+            else
+              echo "pull_request run $run_id status=$status (poll $i); waiting for completion before rerun..."
+            fi
+            sleep 10
+          done
+
+          if [ -z "${run_id:-}" ]; then
+            echo "No pull_request run found for $HEAD_SHA after polling; nothing to re-run."
+            cat /tmp/runs-err >&2 || true
+            exit 0
+          fi
+
+          for attempt in 1 2 3; do
+            read -r run_id status <<< "$(latest_run)"
+            if [ "$status" = "completed" ] && gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/rerun" >/dev/null 2>/tmp/rerun-err; then
+              echo "Re-run requested for run $run_id so the required gate re-evaluates with the current review state."
+              exit 0
+            fi
+            echo "Re-run attempt $attempt for run $run_id (status=$status) not yet successful; retrying..." >&2
+            cat /tmp/rerun-err >&2 || true
+            sleep $((attempt * 10))
+          done
+
+          echo "Could not schedule a rerun of the gating pull_request run after retries (non-fatal); a manual re-run may be needed." >&2
+          exit 0
