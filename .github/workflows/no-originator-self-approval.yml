@@ -377,21 +377,49 @@ jobs:
         run: |
           set -uo pipefail
 
-          # Most recent pull_request run of this workflow for the head commit.
-          run_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$WORKFLOW_FILE/runs?event=pull_request&head_sha=$HEAD_SHA&per_page=1" \
-            --jq '.workflow_runs[0].id // empty' 2>/tmp/runs-err || true)"
+          # Latest pull_request run of this workflow for the head commit,
+          # printed as "<id> <status>" (blank when none exists yet).
+          latest_run() {
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$WORKFLOW_FILE/runs?event=pull_request&head_sha=$HEAD_SHA&per_page=1" \
+              --jq '(.workflow_runs[0] // {}) | "\(.id // "") \(.status // "")"' 2>/tmp/runs-err || true
+          }
+
+          # The gating run may currently be queued/in_progress and may have
+          # already read the PRE-approval review state, in which case it would
+          # finish red and nothing else would reschedule it. The rerun endpoint
+          # only accepts a COMPLETED run, and a rerun started now is guaranteed
+          # to observe this just-submitted review. So wait for the current run
+          # to finish, then rerun it (with retries) so the gate re-evaluates.
+          run_id=""; status=""
+          for i in $(seq 1 30); do
+            read -r run_id status <<< "$(latest_run)"
+            if [ -z "${run_id:-}" ]; then
+              echo "No pull_request run for $HEAD_SHA yet (poll $i); waiting..."
+            elif [ "$status" = "completed" ]; then
+              echo "pull_request run $run_id is completed; proceeding to rerun."
+              break
+            else
+              echo "pull_request run $run_id status=$status (poll $i); waiting for completion before rerun..."
+            fi
+            sleep 10
+          done
+
           if [ -z "${run_id:-}" ]; then
-            echo "No pull_request run found for $HEAD_SHA yet; nothing to re-run." 
+            echo "No pull_request run found for $HEAD_SHA after polling; nothing to re-run."
             cat /tmp/runs-err >&2 || true
             exit 0
           fi
 
-          echo "Re-running pull_request run $run_id so the required gate re-evaluates with the current review state."
-          if gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/rerun" >/dev/null 2>/tmp/rerun-err; then
-            echo "Re-run requested for run $run_id."
-          else
-            # An in-progress run can't be re-run; that's fine because the run
-            # already in flight will pick up the current review state itself.
-            echo "Re-run request for run $run_id did not succeed (non-fatal):" >&2
+          for attempt in 1 2 3; do
+            read -r run_id status <<< "$(latest_run)"
+            if [ "$status" = "completed" ] && gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/rerun" >/dev/null 2>/tmp/rerun-err; then
+              echo "Re-run requested for run $run_id so the required gate re-evaluates with the current review state."
+              exit 0
+            fi
+            echo "Re-run attempt $attempt for run $run_id (status=$status) not yet successful; retrying..." >&2
             cat /tmp/rerun-err >&2 || true
-          fi
+            sleep $((attempt * 10))
+          done
+
+          echo "Could not schedule a rerun of the gating pull_request run after retries (non-fatal); a manual re-run may be needed." >&2
+          exit 0
