@@ -4,7 +4,7 @@ subtitle: Stream your team's activity events to a SIEM or log destination over H
 slug: docs/activity-log-webhook-subscriptions
 ---
 
-Activity Log webhook subscriptions forward your team's [Activity Log](/docs/activity-log) events to an endpoint you control — typically a SIEM (Splunk, Datadog, Panther, Microsoft Sentinel, etc.) or a log pipeline. Each time a matching event occurs, Alchemy sends an HTTPS `POST` with a JSON body to your endpoint, usually within a minute of the event.
+Activity Log webhook subscriptions forward your team's [Activity Log](/docs/activity-log) events to an endpoint you control, typically a SIEM (Splunk, Datadog, Panther, Microsoft Sentinel, etc.) or a log pipeline. Each time a matching event occurs, Alchemy sends an HTTPS `POST` with a JSON body to your endpoint, usually within a minute of the event.
 
 <Info>
   Webhook subscriptions are available to **select teams** and are enabled by Alchemy on request. If you don't see the **Webhook subscriptions** tab on the Activity Log page, contact your Alchemy account team to have it enabled. The [Activity Log](/docs/activity-log) and webhook subscriptions are enabled together.
@@ -31,11 +31,11 @@ Activity Log webhook subscriptions forward your team's [Activity Log](/docs/acti
 1. Open the [Alchemy Dashboard](https://dashboard.alchemy.com) and go to **Activity Log** → **Webhook subscriptions** tab.
 2. Click **New subscription**.
 3. Fill in the form:
-   * **Name** — a label to identify this subscription (up to 100 characters). You can create multiple subscriptions, e.g. one for security events and one for billing events.
-   * **Endpoint URL** — the HTTPS URL Alchemy will `POST` events to. Must use `https://`.
-   * **Authentication** — how Alchemy authenticates to your endpoint. See [Authentication](#authentication).
-   * **Event types** — which actions to forward. All event types are selected by default; narrow this to only the events you care about. At least one must be selected.
-4. Click **Test event** to send a synthetic event to your endpoint. You must receive a successful (`2xx`) response before you can create the subscription — see [Testing](#testing-your-endpoint).
+   * **Name**: a label to identify this subscription (up to 100 characters). You can create multiple subscriptions, e.g. one for security events and one for billing events.
+   * **Endpoint URL**: the HTTPS URL Alchemy will `POST` events to. Must use `https://`.
+   * **Authentication**: how Alchemy authenticates to your endpoint. See [Authentication](#authentication).
+   * **Event types**: which actions to forward. All event types are selected by default; narrow this to only the events you care about. At least one must be selected.
+4. Click **Test event** to send a synthetic event to your endpoint. You must receive a successful (`2xx`) response before you can create the subscription. See [Testing](#testing-your-endpoint).
 5. Click **Create**.
 
 {/* SCREENSHOT: The "New webhook subscription" modal showing Name, Endpoint URL, Authentication selector, and Event types, with the Test event and Create buttons. Suggested filename: activity-log-webhooks-create-modal.png */}
@@ -109,7 +109,7 @@ Each delivery is a single JSON event sent with `Content-Type: application/json`.
 | `target.name` | string | The target's display name. |
 
 <Tip>
-  The payload shape is stable — build your ingest pipeline against these field names. Map the `action` value to your SIEM's schema using the [OCSF Mapping](/docs/activity-log-ocsf-mapping) reference.
+  The payload shape is stable, so build your ingest pipeline against these field names. Map the `action` value to your SIEM's schema using the [OCSF Mapping](/docs/activity-log-ocsf-mapping) reference.
 </Tip>
 
 ***
@@ -163,4 +163,4 @@ Each subscription card shows its recent delivery health, including the last succ
 
 ## Next steps
 
-* [OCSF Mapping](/docs/activity-log-ocsf-mapping) — map the `action` field to OCSF event classes for your SIEM, plus the full list of action values.
+* [OCSF Mapping](/docs/activity-log-ocsf-mapping): map the `action` field to OCSF event classes for your SIEM, plus the full list of action values.
