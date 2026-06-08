@@ -140,7 +140,8 @@ Each subscription card shows its recent delivery health, including the last succ
 ## Delivery & reliability
 
 * Deliveries are made per team and are isolated from other teams.
-* Alchemy automatically **retries failed deliveries** with backoff. Transient errors on your endpoint generally recover without intervention.
+* Alchemy automatically **retries failed deliveries** with backoff, at least 3 times over the span of an hour. Transient errors on your endpoint generally recover without intervention.
+* If all retry attempts are exhausted, the event is **dropped** and Alchemy sends an **email notification** to let you know about the failure.
 * If an endpoint **keeps failing**, the subscription is flagged in the dashboard with a *"failing delivery"* warning and its last failure reason. Fix your endpoint to resume delivery; a persistently failing subscription may be paused.
 * Because events stream in near real-time, your endpoint should respond quickly (return `2xx` as soon as you've accepted the event) and do heavier processing asynchronously.
 
