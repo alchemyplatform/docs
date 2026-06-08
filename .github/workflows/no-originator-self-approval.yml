@@ -11,6 +11,16 @@ name: Docs agent review guard
 # check ensures that approval did not come from the person who originated the
 # docs-agent request.
 #
+# Why this triggers on BOTH pull_request and pull_request_review: a required
+# status check only passes once the check reports a conclusion on the PR's
+# head commit. A pull_request_review-only workflow never runs when a PR is
+# opened or when new commits are pushed, so GitHub leaves the required check
+# stuck on "Expected — Waiting for status to be reported" and blocks the merge
+# until someone manually re-runs it. The pull_request trigger makes the guard
+# report a conclusion on every commit (evaluating the current review history),
+# while the pull_request_review trigger re-evaluates and dismisses the moment
+# an approval is submitted.
+#
 # Why commit message and not PR body: the PR body is editable by anyone with
 # write access (including the originator), who could remove their own @mention
 # before approving. The commit message is GPG-signed by docs-agent's key
@@ -23,6 +33,8 @@ name: Docs agent review guard
 # human-authored PRs so the check can be required for every PR.
 
 on:
+  pull_request:
+    types: [opened, reopened, synchronize]
   pull_request_review:
     types: [submitted]
 
@@ -42,20 +54,32 @@ jobs:
           sparse-checkout: |
             .github/workflows/docs-agent-pubkey.asc
           sparse-checkout-cone-mode: false
-      - name: Compare approver to originator and dismiss if same
+      - name: Evaluate originator approval guard
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPROVER: ${{ github.event.review.user.login }}
-          REVIEW_STATE: ${{ github.event.review.state }}
-          REVIEW_ID: ${{ github.event.review.id }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          APPROVER: ${{ github.event.review.user.login || '' }}
+          REVIEW_STATE: ${{ github.event.review.state || '' }}
+          REVIEW_ID: ${{ github.event.review.id || '' }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          REVIEW_COMMIT_SHA: ${{ github.event.review.commit_id }}
+          # On pull_request events there is no review payload, so fall back to
+          # the current PR head commit. This is the exact range the required
+          # check needs to report a conclusion against on every push.
+          TARGET_COMMIT_SHA: ${{ github.event.review.commit_id || github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
 
           REVIEW_STATE_LOWER="$(printf '%s' "$REVIEW_STATE" | tr '[:upper:]' '[:lower:]')"
+
+          # Only pull_request_review submissions that are approvals point at a
+          # specific review we can dismiss. pull_request events (open/push)
+          # just evaluate the current review history and report a conclusion.
+          IS_APPROVAL_REVIEW=false
+          if [ "$GITHUB_EVENT_NAME" = "pull_request_review" ] && [ "$REVIEW_STATE_LOWER" = "approved" ]; then
+            IS_APPROVAL_REVIEW=true
+          fi
 
           if [ "$PR_AUTHOR" != "JackReacher0807" ]; then
             echo "PR author is $PR_AUTHOR, not JackReacher0807. No docs-agent enforcement needed."
@@ -84,6 +108,12 @@ jobs:
           # logic says it should be dismissed.
           dismiss_with_retry() {
             local message="$1"
+            # No review payload (pull_request event) means there is nothing to
+            # dismiss; the conclusion of this run is what gates the merge.
+            if [ -z "${REVIEW_ID:-}" ]; then
+              echo "No submitted review to dismiss for $GITHUB_EVENT_NAME event."
+              return 0
+            fi
             for attempt in 1 2 3; do
               if gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" \
                   -f message="$message" \
@@ -138,7 +168,9 @@ jobs:
 
           # Collect ALL Requested-by trailers from commits in this PR that
           # are BOTH:
-          #   1. In the exact commit range approved by this review, AND
+          #   1. In the exact commit range being evaluated (the reviewed
+          #      commit for approval events, or the current PR head for
+          #      pull_request open/push events), AND
           #   2. Cryptographically signed by the pinned agent GPG key
           #      (verified locally in the workflow, not just trusting
           #      GitHub's flag)
@@ -173,30 +205,31 @@ jobs:
           # Fetch and inspect commits locally instead of using the REST pull
           # request commits endpoint. That endpoint is capped at 250 commits,
           # which is not acceptable for an enforcement decision. Local git
-          # history also lets us evaluate the exact commit SHA that the
-          # approval was submitted against, avoiding live-PR drift.
-          if [ -z "${BASE_SHA:-}" ] || [ -z "${REVIEW_COMMIT_SHA:-}" ]; then
-            echo "ERROR: missing base or reviewed commit SHA from event payload" >&2
+          # history also lets us evaluate the exact commit SHA under review:
+          # the reviewed commit for approval events, or the current PR head
+          # for pull_request open/push events.
+          if [ -z "${BASE_SHA:-}" ] || [ -z "${TARGET_COMMIT_SHA:-}" ]; then
+            echo "ERROR: missing base or target commit SHA from event payload" >&2
             dismiss_with_retry ":warning: Originator self-approval check could not run (missing review commit metadata). Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
             exit 1
           fi
 
-          if ! git fetch --no-tags --filter=blob:none origin "$REVIEW_COMMIT_SHA" 2>/tmp/git-fetch-err; then
-            echo "ERROR: failed to fetch reviewed commit $REVIEW_COMMIT_SHA:" >&2
+          if ! git fetch --no-tags --filter=blob:none origin "$TARGET_COMMIT_SHA" 2>/tmp/git-fetch-err; then
+            echo "ERROR: failed to fetch target commit $TARGET_COMMIT_SHA:" >&2
             cat /tmp/git-fetch-err >&2 || true
             dismiss_with_retry ":warning: Originator self-approval check could not fetch the reviewed commit. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
             exit 1
           fi
 
-          if ! git cat-file -e "$REVIEW_COMMIT_SHA^{commit}" 2>/dev/null; then
-            echo "ERROR: reviewed commit $REVIEW_COMMIT_SHA is not available after fetch" >&2
+          if ! git cat-file -e "$TARGET_COMMIT_SHA^{commit}" 2>/dev/null; then
+            echo "ERROR: target commit $TARGET_COMMIT_SHA is not available after fetch" >&2
             dismiss_with_retry ":warning: Originator self-approval check could not inspect the reviewed commit. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
             exit 1
           fi
 
           COMMITS_FILE="$(mktemp)"
-          if ! git rev-list --reverse "$BASE_SHA..$REVIEW_COMMIT_SHA" > "$COMMITS_FILE" 2>/tmp/rev-list-err; then
-            echo "ERROR: failed to enumerate PR commits from $BASE_SHA to $REVIEW_COMMIT_SHA:" >&2
+          if ! git rev-list --reverse "$BASE_SHA..$TARGET_COMMIT_SHA" > "$COMMITS_FILE" 2>/tmp/rev-list-err; then
+            echo "ERROR: failed to enumerate PR commits from $BASE_SHA to $TARGET_COMMIT_SHA:" >&2
             cat /tmp/rev-list-err >&2 || true
             dismiss_with_retry ":warning: Originator self-approval check could not enumerate PR commits. Approval dismissed by default per fail-closed policy; please re-approve once the workflow check passes." || true
             exit 1
@@ -253,7 +286,7 @@ jobs:
 
           if ! REVIEWS_JSON="$(fetch_reviews)"; then
             echo "ERROR: could not fetch PR reviews after 3 retries." >&2
-            if [ "$REVIEW_STATE_LOWER" = "approved" ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+            if [ "$IS_APPROVAL_REVIEW" = true ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
               dismiss_with_retry ":warning: Originator self-approval check could not fetch current PR reviews. Approval dismissed by default because you are listed as the docs request originator." || true
             fi
             exit 1
@@ -274,7 +307,7 @@ jobs:
 
           echo "Approver=$APPROVER_LOWER, AllRequestedBy=$(printf '%s' "$ALL_REQUESTED_BY" | tr '\n' ',' | sed 's/,$//'), NonRequesterApprovals=$NON_REQUESTER_APPROVAL_COUNT"
 
-          if [ "$REVIEW_STATE_LOWER" = "approved" ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
+          if [ "$IS_APPROVAL_REVIEW" = true ] && printf '%s\n' "$ALL_REQUESTED_BY" | grep -qFx "$APPROVER_LOWER"; then
             echo "Approver matches a Requested-by trailer. Dismissing approval $REVIEW_ID."
             if ! dismiss_with_retry "@$APPROVER you are listed as the originator of this docs request (via the Requested-by trailer on a docs-agent commit). Per the docs-agent self-review policy, the originator can't approve their own request. Please ask another team member to review."; then
               echo "ERROR: dismissal of originator approval failed after 3 retries, exiting 1 to surface the failure" >&2
