@@ -1,0 +1,171 @@
+---
+title: OCSF Mapping
+subtitle: Suggested mapping from Alchemy activity actions to OCSF event classes.
+slug: activity-log-ocsf-mapping
+---
+
+When you stream Activity Log events to a SIEM via [webhook subscriptions](/docs/activity-log-webhook-subscriptions), each event carries an `action` field (e.g. `APP_APP_CREATED`). Many SIEMs normalize events into the [Open Cybersecurity Schema Framework (OCSF)](https://schema.ocsf.io). This page provides a **suggested** mapping from each Alchemy `action` value to an OCSF event class, plus the complete list of actions Alchemy emits.
+
+<Info>
+  This is a **suggested reference mapping**, not a contract. OCSF classes evolve and your detection model may differ, so adapt the mapping to your environment. Alchemy delivers its own payload shape (see [Webhook Subscriptions → Payload](/docs/activity-log-webhook-subscriptions#payload)); the mapping is applied in your SIEM's ingest pipeline.
+</Info>
+
+***
+
+## How to use this mapping
+
+1. Read the `action` field from each webhook event.
+2. Look it up in the tables below to find the suggested OCSF class and `class_uid`.
+3. In your SIEM ingest pipeline, set the OCSF `class_uid` (and a sensible `activity_id`) accordingly, and map the Alchemy fields onto OCSF attributes, for example:
+
+| Alchemy field | OCSF attribute |
+| --- | --- |
+| `timestamp` | `time` |
+| `actor.id` / `actor.display_name` | `actor.user.uid` / `actor.user.name` |
+| `source_ip` | `src_endpoint.ip` |
+| `message` | `message` |
+| `action` | `metadata.product.feature.name` (or a custom field) |
+| `request_id` | `metadata.correlation_uid` |
+
+### OCSF classes used below
+
+| OCSF class | `class_uid` |
+| --- | --- |
+| Authentication | 3002 |
+| Account Change | 3001 |
+| User Access Management | 3005 |
+| Entity Management | 3004 |
+| API Activity | 6003 |
+
+***
+
+## Authentication → Authentication (3002)
+
+| `action` | Description |
+| --- | --- |
+| `AUTH_LOGIN_SUCCESS` | Login success |
+| `AUTH_LOGIN_FAILED` | Login failed |
+
+## Credential & account lifecycle → Account Change (3001)
+
+| `action` | Description |
+| --- | --- |
+| `AUTH_PASSWORD_RESET_REQUESTED` | Password reset requested |
+| `AUTH_PASSWORD_RESET_COMPLETED` | Password reset completed |
+| `ACCOUNT_TEAM_NAME_UPDATED` | Team name updated |
+| `ACCOUNT_TEAM_USER_INVITE_SENT` | User invited to team |
+| `ACCOUNT_TEAM_USER_INVITE_ACCEPTED` | User accepted team invite |
+| `ACCOUNT_TEAM_USER_REMOVED` | User removed from team |
+| `ACCOUNT_TEAM_USER_DETAILS_UPDATED` | User details updated |
+| `ACCOUNT_TEAM_USER_ADDED` | User invited to team (legacy) |
+| `ACCOUNT_TEAM_ONBOARDING_NETWORK_UPDATED` | Onboarding network updated |
+
+## Role changes → User Access Management (3005)
+
+| `action` | Description |
+| --- | --- |
+| `ACCOUNT_TEAM_USER_ROLE_UPDATED` | User role updated |
+
+## Apps, keys & app configuration → Entity Management (3004)
+
+| `action` | Description |
+| --- | --- |
+| `APP_APP_CREATED` | App created |
+| `APP_APP_DELETED` | App deleted |
+| `APP_APP_NAME_UPDATED` | App name updated |
+| `APP_APP_DESCRIPTION_UPDATED` | App description updated |
+| `APP_APP_KEY_ROTATED` | API key rotated |
+| `APP_API_KEY_ACCESS_UPDATED` | API key access updated |
+| `APP_JWT_CREATED` | JWT created |
+| `APP_JWT_DELETED` | JWT deleted |
+| `ACCOUNT_ACCESS_KEY_CREATED` | Access key created |
+| `ACCOUNT_ACCESS_KEY_DELETED` | Access key deleted |
+| `APP_ALERT_CREATED` | Alert created |
+| `APP_ALERT_UPDATED` | Alert updated |
+| `APP_ALERT_DELETED` | Alert deleted |
+| `APP_ALERT_ENABLED` | Alert enabled |
+| `APP_ALERT_DISABLED` | Alert disabled |
+| `APP_INITIALIZE_GAS_POLICY` | Gas policy initialized |
+| `APP_INITIALIZE_WALLET_CONFIG` | Wallet config initialized |
+| `APP_GAS_POLICY_CREATED` | Gas policy created |
+| `APP_GAS_POLICY_UPDATED` | Gas policy updated |
+| `APP_GAS_POLICY_DELETED` | Gas policy deleted |
+| `APP_GAS_POLICY_ACTIVATED` | Gas policy activated |
+| `APP_GAS_POLICY_DEACTIVATED` | Gas policy deactivated |
+| `APP_GAS_PUMP_PROGRAM_CREATED` | Gas program created |
+| `APP_GAS_PUMP_PROGRAM_UPDATED` | Gas program updated |
+| `APP_GAS_PUMP_PROGRAM_DELETED` | Gas program deleted |
+| `APP_GAS_PUMP_PROGRAM_BUILDER_APPROVED` | Gas program builder approved |
+| `APP_GAS_PUMP_PROGRAM_BUILDER_REJECTED` | Gas program builder rejected |
+| `WALLET_KEY_QUORUM_CREATED` | Wallet key quorum created |
+| `WALLET_KEY_QUORUM_UPDATED` | Wallet key quorum updated |
+| `WALLET_KEY_QUORUM_DELETED` | Wallet key quorum deleted |
+
+## Network & security configuration → Entity Management (3004)
+
+These are security-relevant configuration changes. Some teams prefer to route them to a dedicated "configuration change" detection pipeline.
+
+| `action` | Description |
+| --- | --- |
+| `APP_NETWORK_ENABLED` | Network enabled |
+| `APP_NETWORK_DISABLED` | Network disabled |
+| `APP_NETWORK_ALL_ENABLED` | All networks enabled |
+| `APP_NETWORK_ALL_DISABLED` | All networks disabled |
+| `APP_ALLOWLIST_RESTRICTED_ADDRESS_ADDED` | Allowlist restricted address added |
+| `APP_ALLOWLIST_RESTRICTED_ADDRESS_REMOVED` | Allowlist restricted address removed |
+| `APP_ALLOWLIST_RESTRICTED_DOMAIN_ADDED` | Allowlist restricted domain added |
+| `APP_ALLOWLIST_RESTRICTED_DOMAIN_REMOVED` | Allowlist restricted domain removed |
+| `APP_ALLOWLIST_RESTRICTED_IP_ADDED` | Allowlist restricted IP added |
+| `APP_ALLOWLIST_RESTRICTED_IP_REMOVED` | Allowlist restricted IP removed |
+| `ACCOUNT_TEAM_IP_ALLOWLIST_IP_ADDED` | IP allowlist address added |
+| `ACCOUNT_TEAM_IP_ALLOWLIST_IP_REMOVED` | IP allowlist address removed |
+| `ACCOUNT_TEAM_IP_ALLOWLIST_IP_UPDATED` | IP allowlist address updated |
+
+## Billing & account administration → Account Change (3001)
+
+| `action` | Description |
+| --- | --- |
+| `BILLING_PLAN_UPDATED` | Billing plan updated |
+| `BILLING_PLAN_SPEND_LIMIT_UPDATED` | Spend limit updated |
+| `BILLING_USAGE_LIMIT_UPDATED` | Usage limit updated |
+| `BILLING_USAGE_LIMIT_BY_APP_UPDATED` | App usage limit updated |
+| `BILLING_PAYMENT_METHOD_ADDED` | Payment method added |
+| `BILLING_PAYMENT_METHOD_REMOVED` | Payment method removed |
+| `BILLING_PAYMENT_METHOD_UPDATED` | Payment method updated (legacy) |
+| `BILLING_INVOICE_EMAIL_ADDED` | Invoice email added |
+| `BILLING_INVOICE_EMAIL_REMOVED` | Invoice email removed |
+| `BILLING_INVOICE_EMAIL_UPDATED` | Invoice email updated (legacy) |
+| `BILLING_PAYMENT_ADDRESS_UPDATED` | Payment address updated |
+| `BILLING_TAX_DETAILS_UPDATED` | Tax details updated |
+| `BILLING_APP_USAGE_CAP_CREATED` | Usage cap created |
+| `BILLING_APP_USAGE_CAP_UPDATED` | Usage cap updated |
+| `BILLING_APP_USAGE_CAP_DELETED` | Usage cap deleted |
+| `BILLING_USAGE_AUTOSCALE_ENABLED` | Autoscale enabled |
+| `BILLING_USAGE_AUTOSCALE_DISABLED` | Autoscale disabled |
+| `ACCOUNT_ACTIVITY_LOG_EXPORTED` | Activity log exported |
+| `ACCOUNT_ACTIVITY_LOG_WEBHOOK_SUBSCRIPTION_CREATED` | Webhook subscription created |
+| `ACCOUNT_ACTIVITY_LOG_WEBHOOK_SUBSCRIPTION_UPDATED` | Webhook subscription updated |
+| `ACCOUNT_ACTIVITY_LOG_WEBHOOK_SUBSCRIPTION_DELETED` | Webhook subscription deleted |
+
+## Wallet activity → Authentication (3002) / API Activity (6003)
+
+Smart-wallet events are product-specific. Map session lifecycle to **Authentication (3002)** and signing/sync activity to **API Activity (6003)**, or to a custom class that fits your detection model.
+
+| `action` | Description | Suggested class |
+| --- | --- | --- |
+| `WALLET_SESSION_CREATED` | Wallet session created | Authentication (3002) |
+| `WALLET_SESSION_DISCONNECTED` | Wallet session disconnected | Authentication (3002) |
+| `WALLET_SESSION_APPROVED` | Wallet session approved | Authentication (3002) |
+| `WALLET_SESSION_DENIED` | Wallet session denied | Authentication (3002) |
+| `WALLET_SESSION_REVOKED` | Wallet session revoked | Authentication (3002) |
+| `WALLET_SIGNATURE_REQUESTED` | Wallet signature requested | API Activity (6003) |
+| `WALLET_SIGNATURE_COMPLETED` | Wallet signature completed | API Activity (6003) |
+| `WALLET_SIGNATURE_REJECTED` | Wallet signature rejected | API Activity (6003) |
+| `WALLET_SYNCED` | Wallet synced | API Activity (6003) |
+
+***
+
+## Notes
+
+* New `action` values may be added over time. Handle unknown actions gracefully in your pipeline (e.g. fall back to a generic OCSF class such as **API Activity (6003)**) rather than dropping the event.
+* Actions marked *(legacy)* are retained for backward compatibility and may appear in historical data.
