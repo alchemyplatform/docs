@@ -1,0 +1,86 @@
+---
+title: Alchemy Claude Plugin
+description: Query blockchain data across 100+ chains and manage Alchemy apps directly in Claude Code and Cowork with the official Alchemy plugin.
+subtitle: Query blockchain data across 100+ chains and manage Alchemy apps directly in Claude Code and Cowork with the official Alchemy plugin.
+slug: docs/alchemy-claude-plugin
+---
+
+The Alchemy plugin for [Claude Code](https://code.claude.com/) and Cowork bundles everything Claude needs to work with Alchemy in one install: the hosted [Alchemy MCP Server](docs/alchemy-mcp-server), slash commands for common workflows, and [Agent Skills](docs/alchemy-agent-skills) that teach Claude how to use Alchemy APIs in code.
+
+The plugin is open source at [alchemyplatform/alchemy-claude-plugin](https://github.com/alchemyplatform/alchemy-claude-plugin).
+
+## Install the plugin
+
+<Steps>
+  <Step title="Add the marketplace and install">
+
+In Claude Code, run:
+
+```text
+/plugin marketplace add alchemyplatform/alchemy-claude-plugin
+/plugin install alchemy@alchemy
+```
+
+  </Step>
+  <Step title="Authenticate with Alchemy">
+
+The first time Claude calls an Alchemy tool, a browser window opens to sign in with your Alchemy account (OAuth). No API key or local install required. If you don't have an account, create one for free at the [Alchemy Dashboard](https://dashboard.alchemy.com/).
+
+  </Step>
+  <Step title="Select an app">
+
+Run `/alchemy:setup` to list your Alchemy apps and select one. This caches the app's API key for the rest of the session — most data tools require it.
+
+```text
+/alchemy:setup
+```
+
+  </Step>
+</Steps>
+
+You're set. Ask Claude things like *"What's the current price of ETH?"* or *"Show me the NFTs owned by vitalik.eth"*, or use the slash commands below.
+
+## Slash commands
+
+| Command | Description |
+| --- | --- |
+| `/alchemy:setup` | Connect and select an Alchemy app for the session |
+| `/alchemy:balance <address> [network]` | Native + ERC-20 balances with USD values |
+| `/alchemy:nfts <address> [network]` | NFTs owned by a wallet |
+| `/alchemy:token <symbol or address> [network]` | Token price + metadata |
+| `/alchemy:tx <hash> [network]` | Transaction details + receipt |
+| `/alchemy:portfolio <address> [networks]` | Multi-chain tokens + NFTs |
+| `/alchemy:gas [network]` | Current gas and fee estimates |
+| `/alchemy:solana <pubkey>` | SOL balance + SPL token accounts |
+| `/alchemy:create-app <name> <networks>` | Create a new Alchemy app |
+
+Networks default to `eth-mainnet` when you don't specify one.
+
+## What's included
+
+* **160+ MCP tools** from the hosted Alchemy MCP Server (`mcp.alchemy.com`): EVM JSON-RPC, Token, NFT, Prices, and Portfolio APIs, transaction simulation and tracing, account abstraction, and Solana (RPC + Digital Asset Standard). See the [full tool list](docs/alchemy-mcp-server#available-tools).
+* **Slash commands** for the workflows above, so common queries are one command away.
+* **Agent Skills** (`alchemy-mcp`, `alchemy-api`, `alchemy-cli`, `agentic-gateway`) that teach Claude how to use Alchemy correctly — both for live queries in the conversation and when writing application code against Alchemy APIs.
+
+## Plugin vs. MCP server vs. skills
+
+| | Best for |
+|---|---|
+| **Claude Plugin** | Claude Code and Cowork — one install that bundles the MCP server, slash commands, and skills |
+| **[MCP Server](docs/alchemy-mcp-server)** | Any MCP-compatible client (Cursor, Codex, Claude Desktop, VS Code Copilot) — live blockchain data as tool calls |
+| **[Agent Skills](docs/alchemy-agent-skills)** | Any agent that writes code against Alchemy APIs — endpoint knowledge without tool calls |
+
+If you use Claude Code, install the plugin and you get all three.
+
+## Privacy and support
+
+The plugin connects to Alchemy's hosted MCP server and APIs. Data collection, usage, retention, and sharing practices are described in the [Alchemy Privacy Policy](https://www.alchemy.com/policies/privacy-policy). The plugin stores no data locally beyond what Claude Code persists for the connection; the API key for a selected app is cached server-side for the session.
+
+For help, contact [support@alchemy.com](mailto:support@alchemy.com) or open an issue on [GitHub](https://github.com/alchemyplatform/alchemy-claude-plugin/issues).
+
+## Next steps
+
+* [GitHub: alchemyplatform/alchemy-claude-plugin](https://github.com/alchemyplatform/alchemy-claude-plugin)
+* [Alchemy MCP Server](docs/alchemy-mcp-server)
+* [Agent Skills](docs/alchemy-agent-skills)
+* [Alchemy CLI](docs/alchemy-cli)
