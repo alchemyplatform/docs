@@ -50,37 +50,37 @@ Post-operation mode is recommended for most use cases. If the token approval is 
   </Tabs>
 </Accordion>
 
-<Accordion title="Token gas payment modes">
-  The configured mode determines when the user’s token payment occurs.
+### Token gas payment modes
 
-  **\[Recommended] Post-Operation**
+The configured mode determines when the user’s token payment occurs.
 
-  * No upfront allowance is required.
-  * If the paymaster does not already have a sufficient allowance, a token approval is injected into the same atomic calls batch as your operations. The paymaster contract pulls the token after execution.
-  * When an approval is injected into the batch, if any call reverts, the approval is also reverted. The paymaster cannot collect the token payment and you (the policy owner) pay the gas cost without receiving token compensation.
-  * If a sufficient allowance already exists (e.g., from threshold mode or a prior approval), no approval is injected and the paymaster can collect payment even if the batch reverts.
+**\[Recommended] Post-Operation**
 
-  **Pre-Operation:**
+* No upfront allowance is required.
+* If the paymaster does not already have a sufficient allowance, a token approval is injected into the same atomic calls batch as your operations. The paymaster contract pulls the token after execution.
+* When an approval is injected into the batch, if any call reverts, the approval is also reverted. The paymaster cannot collect the token payment and you (the policy owner) pay the gas cost without receiving token compensation.
+* If a sufficient allowance already exists (e.g., from threshold mode or a prior approval), no approval is injected and the paymaster can collect payment even if the batch reverts.
 
-  * The paymaster contract must have an allowance prior to the operation.
-  * This can be done either through a prior call to `approve()` or by using an [ERC-7597 Permit](https://eips.ethereum.org/EIPS/eip-7597) signature.
-  * Because the token transfer occurs during validation (before execution), the paymaster collects payment regardless of whether the operation reverts.
-  * If the required allowance isn’t in place when the transaction is submitted, it will be rejected.
+**Pre-Operation:**
 
-  **Choosing a mode:**
+* The paymaster contract must have an allowance prior to the operation.
+* This can be done either through a prior call to `approve()` or by using an [ERC-7597 Permit](https://eips.ethereum.org/EIPS/eip-7597) signature.
+* Because the token transfer occurs during validation (before execution), the paymaster collects payment regardless of whether the operation reverts.
+* If the required allowance isn’t in place when the transaction is submitted, it will be rejected.
 
-  Use **post-operation** mode when your operations are unlikely to revert. This mode:
+**Choosing a mode:**
 
-  * Is the most gas efficient as it requires a single transfer.
-  * Works with all ERC-20 tokens.
-  * Requires a single signature from the user.
+Use **post-operation** mode when your operations are unlikely to revert. This mode:
 
-  Use **pre-operation** mode when your operations may revert. Because the token transfer happens before execution, the paymaster is always compensated regardless of the execution outcome. This is the safer choice for:
+* Is the most gas efficient as it requires a single transfer.
+* Works with all ERC-20 tokens.
+* Requires a single signature from the user.
 
-  * Swaps or other operations with dynamic outcomes
-  * Any operation where revert conditions are difficult to predict ahead of time
-  * High-value gas operations where uncompensated gas costs are unacceptable
-</Accordion>
+Use **pre-operation** mode when your operations may revert. Because the token transfer happens before execution, the paymaster is always compensated regardless of the execution outcome. This is the safer choice for:
+
+* Swaps or other operations with dynamic outcomes
+* Any operation where revert conditions are difficult to predict ahead of time
+* High-value gas operations where uncompensated gas costs are unacceptable
 
 <Accordion title="Pre-operation mode implementation">
   <Markdown src="api-preop.mdx" />
