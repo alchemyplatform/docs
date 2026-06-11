@@ -523,63 +523,6 @@ components:
               transactionPosition: 0
               type: "call"
 
-    arbtrace_rawTransaction:
-      name: arbtrace_rawTransaction
-      summary: Traces a call to eth_sendRawTransaction without making the call.
-      description: >
-        Returns the trace of a signed raw transaction without broadcasting it
-        to the network. Useful for inspecting the execution of a transaction
-        before sending it. This is an Arbitrum-specific tracing method that
-        works for pre-Nitro blocks (before block 22,207,815). For post-Nitro
-        blocks, use Geth debug_* methods.
-      x-compute-units: 40
-      params:
-        - name: Raw transaction data
-          required: true
-          description: >
-            The signed raw transaction data as a hexadecimal string, encoded
-            the same way it would be passed to eth_sendRawTransaction.
-          schema:
-            type: string
-        - name: Trace types
-          required: true
-          description: >
-            Array of trace types to return. Valid values: "trace", "vmTrace", "stateDiff".
-          schema:
-            $ref: "#/components/schemas/TraceTypeArray"
-      result:
-        name: Trace result
-        description: The trace result object containing output, traces, and optional state diff and VM trace.
-        schema:
-          $ref: "#/components/schemas/TraceCallResult"
-      examples:
-        - name: arbtrace_rawTransaction example
-          params:
-            - name: Raw transaction data
-              value: "0xf86f808504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008083014985a06c51ef262267b3af8f218ac7f119963030c9594f054b1694f86cdbb0eb8fcb63a02ff5e4a577d2ea1e0a8cbf5a376f72cf9917f91e5eec117a467626a0c253e6a5"
-            - name: Trace types
-              value: ["trace"]
-          result:
-            name: Trace result
-            value:
-              output: "0x"
-              stateDiff: null
-              trace:
-                - action:
-                    callType: "call"
-                    from: "0x9d8a62f656a8d1615c1294fd71e9cfb3e4855a4f"
-                    gas: "0x0"
-                    input: "0x"
-                    to: "0x3535353535353535353535353535353535353535"
-                    value: "0xde0b6b3a7640000"
-                  result:
-                    gasUsed: "0x0"
-                    output: "0x"
-                  subtraces: 0
-                  traceAddress: []
-                  type: "call"
-              vmTrace: null
-
     arbtrace_replayBlockTransactions:
       name: arbtrace_replayBlockTransactions
       summary: Replays all transactions in a block returning requested traces.
