@@ -13,6 +13,7 @@ export interface SectionConfig {
   slug?: string;
   "skip-slug"?: boolean;
   hidden?: boolean;
+  collapsed?: boolean;
   contents: NavigationItem[];
   path?: string; // Optional overview page
 }
@@ -48,13 +49,15 @@ export interface TabConfig {
   "display-name": string;
   slug?: string;
   "skip-slug"?: boolean;
+  changelog?: string;
 }
 
 export interface DocsYml {
+  instances?: Array<{ url: string }>;
   tabs?: Record<string, TabConfig>;
   navigation: Array<{
     tab: string;
-    layout: NavigationItem[];
+    layout?: NavigationItem[];
   }>;
 }
 
