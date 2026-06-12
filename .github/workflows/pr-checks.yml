@@ -30,6 +30,19 @@ jobs:
       - name: Validate RPC specs
         run: pnpm run generate:rpc
 
+  docs-yml:
+    name: docs.yml Schema
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+      - name: Validate docs.yml against schema
+        run: pnpm run validate:docs-yml
+
   lint:
     name: Lint Files
     runs-on: ubuntu-latest

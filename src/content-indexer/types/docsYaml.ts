@@ -5,7 +5,6 @@ export interface PageConfig {
   path: string;
   slug?: string;
   hidden?: boolean;
-  noindex?: boolean;
 }
 
 export interface SectionConfig {
@@ -29,7 +28,6 @@ export interface ApiConfig {
   "skip-slug"?: boolean;
   hidden?: boolean;
   flattened?: boolean;
-  paginated?: boolean;
 }
 
 export interface ChangelogConfig {
@@ -54,7 +52,7 @@ export interface DocsYml {
   tabs?: Record<string, TabConfig>;
   navigation: Array<{
     tab: string;
-    layout: NavigationItem[];
+    layout?: NavigationItem[];
   }>;
 }
 

@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Alchemy docs.yml",
+  "description": "Navigation configuration for the Alchemy docs site. Allows only the options supported by the content indexer (src/content-indexer/types/docsYaml.ts), including Alchemy-specific extensions (skip-slug, flattened).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["navigation"],
+  "properties": {
+    "tabs": {
+      "description": "Top-level tabs shown in the docs header. Keys are tab identifiers referenced by navigation[].tab.",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/tabConfig"
+      }
+    },
+    "navigation": {
+      "description": "Sidebar navigation layout for each tab.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tab"],
+        "properties": {
+          "tab": {
+            "description": "Tab identifier; must match a key under tabs.",
+            "type": "string"
+          },
+          "layout": {
+            "description": "Navigation items for this tab. Omit for tabs whose content is generated elsewhere (e.g. the changelog tab).",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/navigationItem"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "tabConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["display-name"],
+      "properties": {
+        "display-name": {
+          "description": "Human-readable tab label shown in the header.",
+          "type": "string"
+        },
+        "slug": {
+          "description": "URL segment for the tab. Defaults to the kebab-cased tab key.",
+          "type": "string"
+        },
+        "skip-slug": {
+          "description": "Alchemy extension: omit this tab's slug from descendant URL paths.",
+          "type": "boolean"
+        }
+      }
+    },
+    "navigationItem": {
+      "oneOf": [
+        { "$ref": "#/definitions/pageItem" },
+        { "$ref": "#/definitions/sectionItem" },
+        { "$ref": "#/definitions/linkItem" },
+        { "$ref": "#/definitions/apiItem" }
+      ]
+    },
+    "mdxPath": {
+      "type": "string",
+      "pattern": "\\.mdx$"
+    },
+    "pageItem": {
+      "description": "A single docs page backed by an MDX file.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page", "path"],
+      "properties": {
+        "page": {
+          "description": "Page title shown in the sidebar.",
+          "type": "string"
+        },
+        "path": {
+          "description": "Path to the page's .mdx file, relative to the content directory.",
+          "$ref": "#/definitions/mdxPath"
+        },
+        "slug": {
+          "description": "URL segment for the page. Defaults to the kebab-cased page title. May contain slashes to override the full path.",
+          "type": "string"
+        },
+        "hidden": {
+          "description": "Hide this page from the sidebar and search indexing.",
+          "type": "boolean"
+        }
+      }
+    },
+    "sectionItem": {
+      "description": "A collapsible group of navigation items, optionally with an overview page.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section", "contents"],
+      "properties": {
+        "section": {
+          "description": "Section title shown in the sidebar.",
+          "type": "string"
+        },
+        "contents": {
+          "description": "Child navigation items.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/navigationItem"
+          }
+        },
+        "path": {
+          "description": "Optional overview page for the section: path to an .mdx file, relative to the content directory.",
+          "$ref": "#/definitions/mdxPath"
+        },
+        "slug": {
+          "description": "URL segment for the section. Defaults to the kebab-cased section title.",
+          "type": "string"
+        },
+        "skip-slug": {
+          "description": "Alchemy extension: omit this section's slug from descendant URL paths.",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hide this section and its contents from the sidebar and search indexing.",
+          "type": "boolean"
+        }
+      }
+    },
+    "linkItem": {
+      "description": "A sidebar entry linking to an internal path or external URL.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["link", "href"],
+      "properties": {
+        "link": {
+          "description": "Link text shown in the sidebar.",
+          "type": "string"
+        },
+        "href": {
+          "description": "Destination: an internal path (e.g. /docs/...) or an external URL.",
+          "type": "string"
+        }
+      }
+    },
+    "apiItem": {
+      "description": "An auto-generated API reference section backed by an uploaded API spec.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["api", "api-name"],
+      "properties": {
+        "api": {
+          "description": "Title for the API reference section.",
+          "type": "string"
+        },
+        "api-name": {
+          "description": "Identifier of the API spec to render (must match an uploaded spec name).",
+          "type": "string"
+        },
+        "slug": {
+          "description": "URL segment for the API section. Defaults to the kebab-cased title.",
+          "type": "string"
+        },
+        "skip-slug": {
+          "description": "Alchemy extension: omit this section's slug from endpoint URL paths.",
+          "type": "boolean"
+        },
+        "hidden": {
+          "description": "Hide the endpoints from the sidebar and search indexing.",
+          "type": "boolean"
+        },
+        "flattened": {
+          "description": "Alchemy extension: render endpoints as a flat list instead of grouped by spec hierarchy.",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
