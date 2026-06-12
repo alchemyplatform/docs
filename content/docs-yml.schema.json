@@ -1,26 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Alchemy docs.yml",
-  "description": "Navigation configuration for the Alchemy docs site. Based on Fern's docs.yml format, restricted to the options supported by the content indexer (src/content-indexer/types/docsYaml.ts) plus Alchemy-specific extensions (skip-slug, noindex, flattened, paginated).",
+  "description": "Navigation configuration for the Alchemy docs site. Based on Fern's docs.yml format, restricted to the options supported by the content indexer (src/content-indexer/types/docsYaml.ts) plus Alchemy-specific extensions (skip-slug, flattened).",
   "type": "object",
   "additionalProperties": false,
   "required": ["navigation"],
   "properties": {
-    "instances": {
-      "description": "Deployed instances of the docs site.",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["url"],
-        "properties": {
-          "url": {
-            "description": "Base URL where the docs are served.",
-            "type": "string"
-          }
-        }
-      }
-    },
     "tabs": {
       "description": "Top-level tabs shown in the docs header. Keys are tab identifiers referenced by navigation[].tab.",
       "type": "object",
@@ -68,10 +53,6 @@
         "skip-slug": {
           "description": "Alchemy extension: omit this tab's slug from descendant URL paths.",
           "type": "boolean"
-        },
-        "changelog": {
-          "description": "Path to a changelog directory, relative to the content directory (e.g. ./changelog).",
-          "type": "string"
         }
       }
     },
@@ -80,8 +61,7 @@
         { "$ref": "#/definitions/pageItem" },
         { "$ref": "#/definitions/sectionItem" },
         { "$ref": "#/definitions/linkItem" },
-        { "$ref": "#/definitions/apiItem" },
-        { "$ref": "#/definitions/changelogItem" }
+        { "$ref": "#/definitions/apiItem" }
       ]
     },
     "mdxPath": {
@@ -108,10 +88,6 @@
         },
         "hidden": {
           "description": "Hide this page from the sidebar and search indexing.",
-          "type": "boolean"
-        },
-        "noindex": {
-          "description": "Alchemy extension: exclude this page from search indexing while keeping it in the sidebar.",
           "type": "boolean"
         }
       }
@@ -147,10 +123,6 @@
         },
         "hidden": {
           "description": "Hide this section and its contents from the sidebar and search indexing.",
-          "type": "boolean"
-        },
-        "collapsed": {
-          "description": "Render the section initially collapsed in the sidebar.",
           "type": "boolean"
         }
       }
@@ -200,26 +172,6 @@
         "flattened": {
           "description": "Alchemy extension: render endpoints as a flat list instead of grouped by spec hierarchy.",
           "type": "boolean"
-        },
-        "paginated": {
-          "description": "Alchemy extension: paginate large endpoint lists.",
-          "type": "boolean"
-        }
-      }
-    },
-    "changelogItem": {
-      "description": "A changelog feed generated from a directory of changelog entries.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["changelog"],
-      "properties": {
-        "changelog": {
-          "description": "Path to a changelog directory, relative to the content directory.",
-          "type": "string"
-        },
-        "slug": {
-          "description": "URL segment for the changelog.",
-          "type": "string"
         }
       }
     }

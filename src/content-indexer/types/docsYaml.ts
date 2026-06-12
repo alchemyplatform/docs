@@ -5,7 +5,6 @@ export interface PageConfig {
   path: string;
   slug?: string;
   hidden?: boolean;
-  noindex?: boolean;
 }
 
 export interface SectionConfig {
@@ -13,7 +12,6 @@ export interface SectionConfig {
   slug?: string;
   "skip-slug"?: boolean;
   hidden?: boolean;
-  collapsed?: boolean;
   contents: NavigationItem[];
   path?: string; // Optional overview page
 }
@@ -30,7 +28,6 @@ export interface ApiConfig {
   "skip-slug"?: boolean;
   hidden?: boolean;
   flattened?: boolean;
-  paginated?: boolean;
 }
 
 export interface ChangelogConfig {
@@ -49,11 +46,9 @@ export interface TabConfig {
   "display-name": string;
   slug?: string;
   "skip-slug"?: boolean;
-  changelog?: string;
 }
 
 export interface DocsYml {
-  instances?: Array<{ url: string }>;
   tabs?: Record<string, TabConfig>;
   navigation: Array<{
     tab: string;
