@@ -1,6 +1,5 @@
 /**
  * Frontmatter for a documentation page
- * @see https://buildwithfern.com/learn/docs/configuration/page-level-settings
  */
 export interface DocPageFrontmatter {
   title?: string;

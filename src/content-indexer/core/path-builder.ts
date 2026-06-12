@@ -1,8 +1,7 @@
 /**
- * PathBuilder mimics Fern's slug generation logic to build full URL paths.
+ * PathBuilder mimics the prior docs provider's slug generation logic to build full URL paths.
  * Maintains an array of path segments and provides methods to build paths hierarchically.
- * @note Fern incorrectly refers to full paths as "slugs" in their terminology
- * @see https://buildwithfern.com/learn/docs/seo/configuring-slugs
+ * @note The prior docs provider incorrectly referred to full paths as "slugs" in its terminology
  */
 export class PathBuilder {
   private segments: string[];
