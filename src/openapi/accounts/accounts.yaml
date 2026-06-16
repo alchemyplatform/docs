@@ -11,9 +11,10 @@ security:
 paths:
   /signup:
     post:
-      summary: Create Wallet
+      summary: Create Wallet (deprecated)
+      deprecated: true
       description: >
-        Enables the creation of a Smart Wallet using Alchemy Signer. It allows applications to authenticate users and facilitate signature operations on their behalf. A Smart Wallet is either an on-chain Modular Account with Alchemy Signer as the owner, a standalone EOA signer managed through Alchemy Signer, or a standalone Solana Wallet managed through the Alchemy Signer.
+        Alchemy Signer APIs are being sunset. As of June 16, 2026, Alchemy Signer no longer supports new user signups. Existing users can still log in to be migrated. For new users, use [Privy](/docs/wallets/third-party/signers/privy) with [Wallet APIs](/docs/wallets/quickstart).
       security:
         - apiKey: []
       x-readme:
@@ -311,7 +312,7 @@ paths:
     post:
       summary: Authenticate with JWT
       description: >
-        Authenticates a user using a JSON Web Token (JWT) for secure access to their Smart Wallet functionalities. This endpoint validates the provided JWT token and can be used for authenticating an existing user or to pregenerate a wallet.
+        Authenticates an existing user using a JSON Web Token (JWT) for secure access to their Smart Wallet functionality. New user signup and wallet pregeneration are no longer supported as of June 16, 2026 because Alchemy Signer APIs are being sunset.
       security:
         - apiKey: []
       x-readme:
@@ -367,7 +368,7 @@ paths:
                 properties:
                   isSignup:
                     type: boolean
-                    description: If true, indicates a new wallet was created.
+                    description: Deprecated. New signups are no longer supported.
                     default: false
                   orgId:
                     $ref: "#/components/schemas/orgId"
