@@ -27,7 +27,6 @@ paths:
                 - policyName
                 - policyType
                 - appId
-                - networks
               properties:
                 policyName:
                   type: string
@@ -35,7 +34,7 @@ paths:
                   default: "My Policy"
                 policyType:
                   $ref: "#/components/schemas/PolicyType"
-                  description: Type of the policy. Currently we support `sponsorship` (for sponsoring gas on EVM networks), `erc20` (for enabling users to pay gas with any ERC-20 token on EVM networks), and `solana` (for sponsoring fees and rent on Solana).
+                  description: Type of the policy. Supported values are `sponsorship` and `bundler_sponsorship` for sponsoring gas on EVM networks, `erc20` for enabling users to pay gas with any ERC-20 token on EVM networks, and `solana` for sponsoring fees and rent on Solana.
                 appId:
                   type: string
                   description: |
@@ -43,19 +42,19 @@ paths:
                   default: "6d834x9k1yh4dx6z"
                 networks:
                   description: |
-                    Networks to be enabled for the policy. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`.
+                    Networks to be enabled for the policy. Required for `sponsorship`, `bundler_sponsorship`, and `solana` policy types. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`. For `erc20` policies, networks are specified in `erc20Rules.tokens` and this field is ignored.
                   type: array
                   items:
                     type: string
                 rules:
-                  description: Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.
+                  description: Rules for `sponsorship` and `bundler_sponsorship` policy types. Omit for other policy types.
                   $ref: "#/components/schemas/Rules"
-                solana_rules:
+                solanaRules:
                   $ref: "#/components/schemas/SolanaRules"
-                  description: Rules for `solana` policy type. Empty if `policyType` is not `solana`.
-                erc20_rules:
+                  description: Rules for `solana` policy type. Omit for other policy types.
+                erc20Rules:
                   $ref: "#/components/schemas/Erc20Rules"
-                  description: Rules for `erc20` policy type. Empty if `policyType` is not `erc20`.
+                  description: Rules for `erc20` policy type. Omit for other policy types.
 
       responses:
         "200":
@@ -66,18 +65,12 @@ paths:
                 type: object
                 required:
                   - data
-                  - error
                 properties:
                   data:
                     type: object
                     properties:
                       policy:
                         $ref: "#/components/schemas/Policy"
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
 
   "/api/gasManager/policy/{id}":
     get:
@@ -112,11 +105,6 @@ paths:
                     properties:
                       policy:
                         $ref: "#/components/schemas/Policy"
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
 
     delete:
       summary: Delete Policy
@@ -140,22 +128,6 @@ paths:
       responses:
         "200":
           description: "`200` - Policy deleted successfully"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      success:
-                        type: boolean
-                        default: true
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
 
     put:
       summary: Replace Policy
@@ -188,19 +160,19 @@ paths:
                   default: "My Policy"
                 rules:
                   $ref: "#/components/schemas/Rules"
-                  description: Rules for "sponsorship" policy type. Empty if `policyType` is not "sponsorship".
+                  description: Rules for `sponsorship` and `bundler_sponsorship` policy types. Omit for other policy types.
                 networks:
                   description: |
-                    Networks for the policy. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`.
+                    Networks for the policy. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`. For `erc20` policies, networks are specified in `erc20Rules.tokens`.
                   type: array
                   items:
                     type: string
-                solana_rules:
+                solanaRules:
                   $ref: "#/components/schemas/SolanaRules"
-                  description: Rules for `solana` policy type. Empty if `policyType` is not `solana`.
-                erc20_rules:
+                  description: Rules for `solana` policy type. Omit for other policy types.
+                erc20Rules:
                   $ref: "#/components/schemas/Erc20Rules"
-                  description: Rules for `erc20` policy type. Empty if `policyType` is not `erc20`.
+                  description: Rules for `erc20` policy type. Omit for other policy types.
       responses:
         "200":
           description: Policy rules replaced successfully
@@ -214,11 +186,6 @@ paths:
                     properties:
                       policy:
                         $ref: "#/components/schemas/Policy"
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
 
   "/api/gasManager/policies":
     get:
@@ -246,6 +213,7 @@ paths:
           schema:
             type: integer
             default: 10
+            maximum: 50
         - name: before
           in: query
           description: String - used for pagination. If there are previous results, `before` field is returned in the response and can be passed in the request to fetch the previous page.
@@ -254,6 +222,11 @@ paths:
         - name: after
           in: query
           description: String - used for pagination. If more results are available `after` field is returned in the response and can be passed in the request to fetch the next page.
+          schema:
+            type: string
+        - name: nameFilter
+          in: query
+          description: Optional case-insensitive policy name filter.
           schema:
             type: string
       responses:
@@ -277,11 +250,6 @@ paths:
                       after:
                         type: string
                         description: String - used for pagination. If more results are available `after` field is returned in the response and can be passed in the request to fetch the next page. Can be null if there are no more results.
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
 
   "/api/gasManager/policy/{id}/status":
     put:
@@ -329,13 +297,8 @@ paths:
                     properties:
                       policy:
                         $ref: "#/components/schemas/Policy"
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
 
-  "/api/gasManager/policy/{id}/stats/details":
+  "/api/gasManager/policy/{id}/stats/detailed":
     get:
       summary: Get Policy Stats
       description: |
@@ -379,11 +342,11 @@ paths:
                             type: integer
                             default: 0
                           usdPending:
-                            type: string
-                            default: "0.0"
+                            type: number
+                            default: 0.0
                           usdMined:
-                            type: string
-                            default: "0.0"
+                            type: number
+                            default: 0.0
                       policyNetworkStats:
                         type: array
                         items:
@@ -402,25 +365,24 @@ paths:
                               type: integer
                               default: 0
                             usdPending:
-                              type: string
-                              default: "0.0"
-                            usdMined:
-                              type: string
-                              default: "0.0"
-                            pendingNativeToken:
                               type: number
+                              default: 0.0
+                            usdMined:
+                              type: number
+                              default: 0.0
+                            pendingNativeToken:
+                              type: integer
                               default: 0
                             minedNativeToken:
-                              type: number
+                              type: integer
                               default: 0
                             currency:
                               type: string
                               default: "ETH"
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
+                            erc20Stats:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/Erc20NetworkStats"
 
   "/api/gasManager/policy/{id}/sponsorships":
     get:
@@ -447,7 +409,18 @@ paths:
           description: Limits the number of sponsorships returned.
           schema:
             type: integer
-            default: 5
+            default: 15
+            maximum: 100
+        - name: before
+          in: query
+          description: String - used for pagination. If there are previous results, `before` field is returned in the response and can be passed in the request to fetch the previous page.
+          schema:
+            type: string
+        - name: after
+          in: query
+          description: String - used for pagination. If more results are available, `after` field is returned in the response and can be passed in the request to fetch the next page.
+          schema:
+            type: string
       responses:
         "200":
           description: Sponsorships fetched successfully
@@ -469,11 +442,6 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Sponsorship"
-                  error:
-                    type: object
-                    properties:
-                      msg:
-                        type: string
 
 components:
   securitySchemes:
@@ -486,25 +454,25 @@ components:
       type: object
       properties:
         maxSpendUsd:
-          type: string
+          type: number
           description: Maximum amount of USD that can be sponsored
-          default: "5000.00"
+          default: 5000.0
         maxSpendPerSenderUsd:
-          type: string
+          type: number
           description: Maximum amount of USD that can be sponsored for a single sender (not enforced on testnets)
-          default: "100.00"
+          default: 100.0
         maxSpendPerUoUsd:
-          type: string
+          type: number
           description: Maximum amount of USD that can be sponsored for a single userOperation (not enforced on testnets)
-          default: "20.00"
+          default: 20.0
         maxCount:
-          type: string
+          type: integer
           description: Maximum number of userOperations that can be sponsored
-          default: "100"
+          default: 100
         maxCountPerSender:
-          type: string
+          type: integer
           description: Maximum number of userOperations that can be sponsored for a single sender
-          default: "2"
+          default: 2
         senderAllowlist:
           type: array
           items:
@@ -548,23 +516,22 @@ components:
             - approveOnFailure
       required:
         - startTimeUnix
-        - sponsorshipExpiryMs
 
     SolanaRules:
       type: object
       properties:
         maxSpendUsd:
-          type: string
+          type: number
           description: Maximum amount of USD that can be sponsored
-          default: "6500.00"
+          default: 6500.0
         maxSpendPerTxnUsd:
-          type: string
+          type: number
           description: Maximum amount of USD that can be sponsored per transaction (not enforced on testnet)
-          default: "30.00"
+          default: 30.0
         maxCount:
-          type: string
+          type: integer
           description: Maximum number of transactions that can be sponsored
-          default: "200"
+          default: 200
         startTimeUnix:
           type: string
           description: Unix timestamp of when the policy starts
@@ -573,12 +540,19 @@ components:
           type: string
           description: Unix timestamp of when the policy ends
           default: "1679340742"
+      required:
+        - startTimeUnix
 
     PolicyType:
       type: string
-      enum: [sponsorship, erc20, solana]
-      description: Type of the policy. Currently we support `sponsorship` (for sponsoring gas on EVM networks), `erc20` (for enabling users to pay gas with any ERC-20 token on EVM networks), and `solana` (for sponsoring fees and rent on Solana).
+      enum: [sponsorship, bundler_sponsorship, erc20, solana]
+      description: Type of the policy. Supported values are `sponsorship` and `bundler_sponsorship` for sponsoring gas on EVM networks, `erc20` for enabling users to pay gas with any ERC-20 token on EVM networks, and `solana` for sponsoring fees and rent on Solana.
       default: "sponsorship"
+
+    PolicyStatus:
+      type: string
+      enum: [active, inactive, pending_approval, rejected]
+      description: Status of the policy.
 
     Erc20Token:
       type: object
@@ -586,45 +560,49 @@ components:
         network:
           type: string
           description: Network of the Erc20 token
-        token_address:
+        tokenAddress:
           type: string
           description: Erc20 token contract address
-        price_reference_network:
+        priceReferenceNetwork:
           type: string
           description: Network to be used to calculate conversion rate (required for testnet ERC-20 tokens)
-        price_reference_token_address:
+        priceReferenceTokenAddress:
           type: string
-          description: Erc20 token contract address (on `price_reference_network`) to be used to calculate conversion rate (required for testnet ERC-20 tokens)
+          description: Erc20 token contract address (on `priceReferenceNetwork`) to be used to calculate conversion rate (required for testnet ERC-20 tokens)
       required:
         - network
-        - token_address
+        - tokenAddress
 
     Erc20Rules:
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            $ref: "#/components/schemas/Erc20Token"
-          description: Erc20 tokens allowed under this policy
-        recipient_address:
-          type: string
-          description: Wallet address that will receive the tokens paid by users. Please ensure that you own this address across all networks enabled under this policy
-        use_post_op:
-          type: boolean
-          description: |
-            Erc20 transfer mode
-            - [Recommended] True: The user pays for the gas after the userOp execution. Enables the user to allow the paymaster contract to spend the ERC-20 token on their behalf (`approve()`) without a separate tx, improving ux. If the transfer fails, the userOp will revert but you’ll remain liable for the gas costs.
-            - False: The user pays for the gas before the userOp execution. Requires the paymaster contract to have allowance onchain before the userOp gets submitted. If the allowance doesn’t exist, the userOp will fail immediately.
-        price_multiplier:
-          type: number
-          description: |
-            Adjust the Erc20 amount the user pays. For example: 
-            - `1.1` means that they user pays 10% more (you monetize gas payments)
-            - `0.95` means that the user pays 5% less (you partially sponsor gas)
-        rules:
-          $ref: "#/components/schemas/Rules"
-          description: Rules for `erc20` policy type.
+      allOf:
+        - $ref: "#/components/schemas/Rules"
+        - type: object
+          properties:
+            tokens:
+              type: array
+              items:
+                $ref: "#/components/schemas/Erc20Token"
+              description: Erc20 tokens allowed under this policy.
+            recipientAddress:
+              type: string
+              description: Wallet address that will receive the tokens paid by users. Please ensure that you own this address across all networks enabled under this policy.
+            usePostOp:
+              type: boolean
+              description: |
+                Erc20 transfer mode
+                - [Recommended] True: The user pays for the gas after the userOp execution. Enables the user to allow the paymaster contract to spend the ERC-20 token on their behalf (`approve()`) without a separate tx, improving ux. If the transfer fails, the userOp will revert but you’ll remain liable for the gas costs.
+                - False: The user pays for the gas before the userOp execution. Requires the paymaster contract to have allowance onchain before the userOp gets submitted. If the allowance doesn’t exist, the userOp will fail immediately.
+            priceMultiplier:
+              type: number
+              default: 1.0
+              description: |
+                Adjust the Erc20 amount the user pays. For example:
+                - `1.1` means that the user pays 10% more (you monetize gas payments)
+                - `0.95` means that the user pays 5% less (you partially sponsor gas)
+          required:
+            - tokens
+            - recipientAddress
+            - usePostOp
 
     Policy:
       type: object
@@ -638,12 +616,10 @@ components:
           description: String ID of the app
           default: "0x1234567890abcdef"
         status:
-          type: string
-          description: Status of the policy
-          default: active
+          $ref: "#/components/schemas/PolicyStatus"
         rules:
           $ref: "#/components/schemas/Rules"
-          description: Rules for `sponsorship` policy type. Empty if `policyType` is not `sponsorship`.
+          description: Rules for `sponsorship` and `bundler_sponsorship` policy types. Empty if `policyType` is not `sponsorship` or `bundler_sponsorship`.
         policyName:
           type: string
           description: Name of the policy
@@ -653,7 +629,7 @@ components:
           description: Unix timestamp of when the policy was last updated
           default: "1674228753"
         policyVersion:
-          type: number
+          type: integer
           description: Version of the policy
           default: 0
         policyType:
@@ -668,13 +644,13 @@ components:
           items:
             type: string
           description: List of networks the policy is active on
-        gas_pump_id:
+        gasPumpId:
           type: string
           description: Gas pump id
-        erc20_rules:
+        erc20Rules:
           $ref: "#/components/schemas/Erc20Rules"
           description: Erc20 rules for policy. Empty if `policyType` is not `erc20`.
-        solana_rules:
+        solanaRules:
           $ref: "#/components/schemas/SolanaRules"
           description: Solana rules for policy. Empty if `policyType` is not `solana`.
 
@@ -693,10 +669,11 @@ components:
           type: string
           description: Unix timestamp of when the sponsorship was granted.
         confirmedTotalUsd:
-          type: string
+          type: number
           description: Total amount of USD that was sponsored. Can be null if the userOp has not been mined.
         status:
           type: string
+          enum: [PENDING, MINED, EXPIRED]
           description: Status of the sponsorship. Can be PENDING, MINED or EXPIRED.
         uoHash:
           type: string
@@ -713,6 +690,12 @@ components:
         network:
           type: string
           description: Network where the userOperation was submitted.
+        tokenAddress:
+          type: string
+          description: ERC-20 token contract address. Present only for ERC-20 sponsorships.
+        tokenAmount:
+          type: string
+          description: ERC-20 token amount paid. Present only for ERC-20 sponsorships.
       required:
         - sender
         - grantedAt
@@ -720,3 +703,13 @@ components:
         - uoHash
         - uoExplorerUrl
         - network
+
+    Erc20NetworkStats:
+      type: object
+      properties:
+        tokenAddress:
+          type: string
+          description: ERC-20 token contract address.
+        tokenAmount:
+          type: string
+          description: ERC-20 token amount collected for this policy and network.
