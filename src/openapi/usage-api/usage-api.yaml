@@ -1,0 +1,472 @@
+openapi: 3.0.0
+components:
+  examples: {}
+  headers: {}
+  parameters: {}
+  requestBodies: {}
+  responses: {}
+  schemas:
+    UsageAmount:
+      properties:
+        amount:
+          type: string
+          description: Product-native amount in the associated MoneyUnit.
+        unit:
+          type: string
+          description: Billing service MoneyUnit enum name.
+          example: ALCHEMY_COMPUTE_UNIT
+        usd:
+          type: string
+          description: Estimated fiat equivalent in USD.
+      required:
+        - amount
+        - unit
+      type: object
+      additionalProperties: false
+    UsageLimitUnit:
+      enum:
+        - CU
+        - USD
+      type: string
+    UsageLimit:
+      properties:
+        unit:
+          $ref: "#/components/schemas/UsageLimitUnit"
+        limit:
+          type: string
+        used:
+          type: string
+        remaining:
+          type: string
+        percentUsed:
+          type: number
+          format: double
+      required:
+        - unit
+        - limit
+        - used
+      type: object
+      additionalProperties: false
+    UsageUpdateCadence.Minute:
+      enum:
+        - minute
+      type: string
+    UsageFreshness:
+      properties:
+        dataThrough:
+          type: string
+        containsPartialToday:
+          type: boolean
+        updateCadence:
+          $ref: "#/components/schemas/UsageUpdateCadence.Minute"
+      required:
+        - dataThrough
+        - containsPartialToday
+        - updateCadence
+      type: object
+      additionalProperties: false
+    UsageSummaryResponse:
+      properties:
+        billingPeriod:
+          properties:
+            endTime:
+              type: string
+            startTime:
+              type: string
+          required:
+            - endTime
+            - startTime
+          type: object
+        totals:
+          properties:
+            last30Days:
+              $ref: "#/components/schemas/UsageAmount"
+            last7Days:
+              $ref: "#/components/schemas/UsageAmount"
+            monthToDate:
+              $ref: "#/components/schemas/UsageAmount"
+          required:
+            - last30Days
+            - last7Days
+            - monthToDate
+          type: object
+        usageLimit:
+          $ref: "#/components/schemas/UsageLimit"
+        freshness:
+          $ref: "#/components/schemas/UsageFreshness"
+      required:
+        - billingPeriod
+        - totals
+        - freshness
+      type: object
+      additionalProperties: false
+    StandardResponse_UsageSummaryResponse_:
+      description: |-
+        Standard API response wrapper.
+        All API responses are wrapped in this format for consistency.
+      properties:
+        data:
+          $ref: "#/components/schemas/UsageSummaryResponse"
+      required:
+        - data
+      type: object
+      additionalProperties: false
+    ErrorCode:
+      enum:
+        - 500
+        - 400
+        - 401
+        - 403
+        - 404
+        - 200
+        - 201
+        - 1000
+      type: number
+    ErrorContext:
+      description: |-
+        Additional context information for error responses.
+        Contains key-value pairs with details about what caused the error.
+      properties: {}
+      type: object
+      additionalProperties: {}
+    ErrorResponse:
+      properties:
+        message:
+          type: string
+        code:
+          anyOf:
+            - type: integer
+              format: int32
+            - $ref: "#/components/schemas/ErrorCode"
+        status:
+          type: integer
+          format: int32
+        context:
+          $ref: "#/components/schemas/ErrorContext"
+          description: Additional information about the error specific to the endpoint.
+      required:
+        - message
+        - code
+        - status
+      type: object
+      additionalProperties: false
+    StandardErrorResponse:
+      description: |-
+        Standard error response wrapper.
+        All error responses are wrapped in this format for consistency.
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorResponse"
+      required:
+        - error
+      type: object
+      additionalProperties: false
+    UsageGranularity:
+      enum:
+        - hour
+        - day
+      type: string
+    UsageMetric:
+      enum:
+        - amount
+        - usd
+      type: string
+    UsageTimeSeriesFilters:
+      properties:
+        appIds:
+          items:
+            type: string
+          type: array
+        networks:
+          items:
+            type: string
+          type: array
+        methods:
+          items:
+            type: string
+          type: array
+        requestTypes:
+          items:
+            type: string
+          type: array
+      type: object
+      additionalProperties: false
+    UsageGroupBy:
+      enum:
+        - requestType
+        - app
+        - network
+        - method
+      type: string
+    UsageTimeSeriesQuery:
+      properties:
+        startTime:
+          type: string
+        endTime:
+          type: string
+        granularity:
+          $ref: "#/components/schemas/UsageGranularity"
+        products:
+          items:
+            type: string
+          type: array
+        metrics:
+          items:
+            $ref: "#/components/schemas/UsageMetric"
+          type: array
+        filters:
+          $ref: "#/components/schemas/UsageTimeSeriesFilters"
+        groupBy:
+          items:
+            $ref: "#/components/schemas/UsageGroupBy"
+          type: array
+      required:
+        - startTime
+        - endTime
+        - granularity
+        - products
+        - metrics
+        - groupBy
+      type: object
+      additionalProperties: false
+    UsagePointDimensions:
+      properties:
+        requestType:
+          type: string
+        app:
+          type: string
+        network:
+          type: string
+        method:
+          type: string
+      type: object
+      additionalProperties: false
+    UsageTimeSeriesPoint:
+      properties:
+        startTime:
+          type: string
+        endTime:
+          type: string
+        isPartial:
+          type: boolean
+        dimensions:
+          $ref: "#/components/schemas/UsagePointDimensions"
+        amount:
+          type: string
+        unit:
+          type: string
+        usd:
+          type: string
+      required:
+        - startTime
+        - endTime
+        - isPartial
+        - dimensions
+      type: object
+      additionalProperties: false
+    UsageTimeSeriesResponse:
+      properties:
+        query:
+          $ref: "#/components/schemas/UsageTimeSeriesQuery"
+        freshness:
+          $ref: "#/components/schemas/UsageFreshness"
+        data:
+          items:
+            $ref: "#/components/schemas/UsageTimeSeriesPoint"
+          type: array
+      required:
+        - query
+        - freshness
+        - data
+      type: object
+      additionalProperties: false
+    StandardResponse_UsageTimeSeriesResponse_:
+      description: |-
+        Standard API response wrapper.
+        All API responses are wrapped in this format for consistency.
+      properties:
+        data:
+          $ref: "#/components/schemas/UsageTimeSeriesResponse"
+      required:
+        - data
+      type: object
+      additionalProperties: false
+    UsageTimeSeriesRequest:
+      properties:
+        startTime:
+          type: string
+        endTime:
+          type: string
+          description: Defaults to now when omitted.
+        products:
+          items:
+            type: string
+          type: array
+          description: BillingProduct enum names.
+          example:
+            - SUPERNODE_CU
+        metrics:
+          items:
+            $ref: "#/components/schemas/UsageMetric"
+          type: array
+        filters:
+          $ref: "#/components/schemas/UsageTimeSeriesFilters"
+        groupBy:
+          items:
+            $ref: "#/components/schemas/UsageGroupBy"
+          type: array
+        granularity:
+          $ref: "#/components/schemas/UsageGranularity"
+      required:
+        - startTime
+      type: object
+      additionalProperties: false
+  securitySchemes:
+    user_auth:
+      type: http
+      scheme: bearer
+info:
+  title: Usage API
+  version: 1.0.0
+  description: Alchemy API to inspect usage for your team
+  contact: {}
+paths:
+  /v1/usage/summary:
+    get:
+      operationId: GetUsageSummary
+      responses:
+        "200":
+          description: Retrieved usage summary successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardResponse_UsageSummaryResponse_"
+        "401":
+          description: Requires authentication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+              examples:
+                Example 1:
+                  value:
+                    error:
+                      code: 401
+                      status: 401
+                      message: Requires authentication
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+              examples:
+                Example 1:
+                  value:
+                    error:
+                      code: 403
+                      status: 403
+                      message: Forbidden
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+              examples:
+                Example 1:
+                  value:
+                    error:
+                      code: 404
+                      status: 404
+                      message: Path not found
+      description:
+        Retrieves usage totals for the current billing period and recent
+        rolling windows.
+      summary: Get usage summary
+      security:
+        - user_auth:
+            - viewer
+            - developer
+            - admin
+      parameters: []
+  /v1/usage/time-series:
+    post:
+      operationId: GetUsageTimeSeries
+      responses:
+        "200":
+          description: Retrieved usage time series successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardResponse_UsageTimeSeriesResponse_"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+              examples:
+                Example 1:
+                  value:
+                    error:
+                      code: 400
+                      status: 400
+                      message: Invalid input
+        "401":
+          description: Requires authentication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+              examples:
+                Example 1:
+                  value:
+                    error:
+                      code: 401
+                      status: 401
+                      message: Requires authentication
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+              examples:
+                Example 1:
+                  value:
+                    error:
+                      code: 403
+                      status: 403
+                      message: Forbidden
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+              examples:
+                Example 1:
+                  value:
+                    error:
+                      code: 404
+                      status: 404
+                      message: Path not found
+      description:
+        Retrieves daily usage over time with optional product, metric,
+        filter, and dimension controls.
+      summary: Get usage time series
+      security:
+        - user_auth:
+            - viewer
+            - developer
+            - admin
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsageTimeSeriesRequest"
+servers:
+  - url: https://usage-api.alchemy.com
