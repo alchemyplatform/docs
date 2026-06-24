@@ -452,19 +452,33 @@ methods:
               $ref: "../_shared/components.yaml#/components/schemas/tracer"
             stateOverrides:
               type: object
-              description: Address-to-state mapping that allows overriding account state
+              description: Address-to-state mapping that allows overriding account state. Keys are 20-byte account addresses (hex). Each value provides per-account overrides applied before the call executes.
               additionalProperties:
                 type: object
+                description: Per-account state overrides, matching geth's `OverrideAccount` struct. Note that `state` and `stateDiff` are mutually exclusive; `state` replaces the account's entire storage, while `stateDiff` only patches the listed slots.
                 properties:
+                  balance:
+                    $ref: "../_shared/components.yaml#/components/schemas/uint256"
+                    description: Hex-encoded balance to set for the account.
+                  nonce:
+                    $ref: "../_shared/components.yaml#/components/schemas/uint64"
+                    description: Hex-encoded nonce to set for the account.
+                  code:
+                    $ref: "../_shared/components.yaml#/components/schemas/bytes"
+                    description: Hex-encoded bytecode to inject as the account's code.
+                  state:
+                    type: object
+                    description: Replaces the account's entire storage. Map of 32-byte storage slot key to 32-byte storage value. Mutually exclusive with `stateDiff`.
+                    additionalProperties:
+                      $ref: "../_shared/components.yaml#/components/schemas/bytes32"
                   stateDiff:
                     type: object
-                    description: Storage slot overrides for the account
-                    properties:
-                      balance:
-                        type: string
-                        description: The balance to override for the account
+                    description: Patches individual storage slots without clearing the rest of storage. Map of 32-byte storage slot key to 32-byte storage value. Mutually exclusive with `state`.
                     additionalProperties:
-                      type: string
+                      $ref: "../_shared/components.yaml#/components/schemas/bytes32"
+                  movePrecompileToAddress:
+                    $ref: "../_shared/components.yaml#/components/schemas/address"
+                    description: Optional. Move the precompile residing at this account's address to the address specified here.
     result:
       name: Call traces
       description: Array of call traces.
@@ -571,19 +585,33 @@ methods:
               description: The type of tracer to use.
             stateOverrides:
               type: object
-              description: Address-to-state mapping that allows overriding account state.
+              description: Address-to-state mapping that allows overriding account state. Keys are 20-byte account addresses (hex). Each value provides per-account overrides applied before the call executes.
               additionalProperties:
                 type: object
+                description: Per-account state overrides, matching geth's `OverrideAccount` struct. Note that `state` and `stateDiff` are mutually exclusive; `state` replaces the account's entire storage, while `stateDiff` only patches the listed slots.
                 properties:
+                  balance:
+                    $ref: "../_shared/components.yaml#/components/schemas/uint256"
+                    description: Hex-encoded balance to set for the account.
+                  nonce:
+                    $ref: "../_shared/components.yaml#/components/schemas/uint64"
+                    description: Hex-encoded nonce to set for the account.
+                  code:
+                    $ref: "../_shared/components.yaml#/components/schemas/bytes"
+                    description: Hex-encoded bytecode to inject as the account's code.
+                  state:
+                    type: object
+                    description: Replaces the account's entire storage. Map of 32-byte storage slot key to 32-byte storage value. Mutually exclusive with `stateDiff`.
+                    additionalProperties:
+                      $ref: "../_shared/components.yaml#/components/schemas/bytes32"
                   stateDiff:
                     type: object
-                    description: Storage slot overrides for the account.
-                    properties:
-                      balance:
-                        type: string
-                        description: The balance to override for the account.
+                    description: Patches individual storage slots without clearing the rest of storage. Map of 32-byte storage slot key to 32-byte storage value. Mutually exclusive with `state`.
                     additionalProperties:
-                      type: string
+                      $ref: "../_shared/components.yaml#/components/schemas/bytes32"
+                  movePrecompileToAddress:
+                    $ref: "../_shared/components.yaml#/components/schemas/address"
+                    description: Optional. Move the precompile residing at this account's address to the address specified here.
             timeout:
               type: string
               description: A duration string that overrides the default timeout for the trace (e.g., "5s", "300ms").
