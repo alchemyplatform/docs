@@ -269,6 +269,44 @@ The CLI uses your browser login automatically for Admin API commands. It also ca
 | `alchemy app select [id]` | Select an app to use as the default for subsequent commands |
 | `alchemy app chains` | List Admin API chain identifiers (e.g. `ETH_MAINNET`) for app configuration |
 
+### Usage (alpha)
+
+<Note>
+  The Usage API is in early access. The response shape may change, and access is limited to teams enrolled in the alpha. These commands use your browser login automatically, like the Admin API commands above.
+</Note>
+
+Track and visualize your account's API usage with summaries and time-series reports.
+
+| Command | Description |
+|---|---|
+| `alchemy usage summary` | Get an account usage summary |
+| `alchemy usage timeseries` | Get account usage time-series data. Alias: `time-series`. |
+
+```bash
+alchemy --json usage summary
+alchemy usage timeseries --start-date 2026-06-01 --granularity day
+alchemy usage timeseries --start-date 2026-06-01 --group-by network --metrics usd
+```
+
+`timeseries` accepts a date or time range, optional filters, and a single group-by dimension.
+
+| Flag | Description |
+|---|---|
+| `--start-date <date>` | Start date (`YYYY-MM-DD`). Required unless `--start-time` is set. |
+| `--end-date <date>` | End date (`YYYY-MM-DD`). Defaults to now. |
+| `--start-time <datetime>` | Start time as an ISO datetime with a timezone |
+| `--end-time <datetime>` | End time as an ISO datetime with a timezone |
+| `--granularity <granularity>` | `hour` or `day` (default `day`) |
+| `--products <products>` | Comma-separated billing product names |
+| `--metrics <metrics>` | Comma-separated metrics: `amount`, `usd` |
+| `--app-ids <ids>` | Filter by app IDs (comma-separated) |
+| `--networks <networks>` | Filter by networks (comma-separated), e.g. `eth-mainnet,base-mainnet` |
+| `--methods <methods>` | Filter by methods (comma-separated), e.g. `eth_getLogs` |
+| `--request-types <types>` | Filter by request types (comma-separated): `http`, `websocket`, `webhook`, `grpc` |
+| `--group-by <dimension>` | Group by one dimension: `requestType`, `app`, `network`, `method` |
+
+Filters are optional and combined with AND. `--group-by` accepts at most one dimension.
+
 ### Auth and config
 
 | Command | Description |
