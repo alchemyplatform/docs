@@ -452,7 +452,7 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
-  "/{apiKey}/api/v2/tickers-list":
+  "/{apiKey}/api/v2/tickers-list/":
     get:
       operationId: getTickersList
       summary: Get Tickers List
@@ -469,11 +469,17 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - in: query
           name: timestamp
-          required: false
-          description: Unix timestamp to query availability for. Defaults to the latest available.
+          required: true
+          description: Unix timestamp for the requested currency list.
           schema:
             type: integer
             example: 1578391200
+        - in: query
+          name: token
+          required: false
+          description: Token symbol or contract/address key for token-specific rates.
+          schema:
+            type: string
       responses:
         "200":
           description: Available tickers.
@@ -487,7 +493,7 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
-  "/{apiKey}/api/v2/tickers":
+  "/{apiKey}/api/v2/tickers/":
     get:
       operationId: getTickers
       summary: Get Tickers
@@ -517,6 +523,18 @@ paths:
           schema:
             type: integer
             example: 1578391200
+        - in: query
+          name: block
+          required: false
+          description: Block height or hash whose timestamp should be used for historical rates.
+          schema:
+            type: string
+        - in: query
+          name: token
+          required: false
+          description: Token symbol or contract/address key for token-specific rates.
+          schema:
+            type: string
       responses:
         "200":
           description: Currency rate response.
@@ -640,8 +658,7 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            error:
-              message: "invalid request"
+            error: "invalid request"
     NotFound:
       description: Resource not found on the requested network.
       content:
@@ -649,17 +666,15 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            error:
-              message: "not found"
+            error: "not found"
   schemas:
     Error:
       type: object
+      required: [error]
       properties:
         error:
-          type: object
-          properties:
-            message:
-              type: string
+          type: string
+          description: Human-readable error message.
     BlockIndexResponse:
       type: object
       required: [blockHash]
