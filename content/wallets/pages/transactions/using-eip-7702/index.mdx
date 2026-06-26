@@ -44,6 +44,32 @@ Pass the `accountType` value inside `creationHint` when calling `wallet_requestA
 For new integrations, we recommend **Modular Account v2** — either via EIP-7702 (the default) or as a smart contract account (`"sma-b"`). The other account types below are supported for backwards compatibility with existing deployments.
 </Note>
 
+#### Existing accounts and `createAdditional`
+
+`creationHint.accountType` selects the account type to create for a signer, but `wallet_requestAccount` preserves existing accounts by default.
+
+When you call `wallet_requestAccount` with a `signerAddress` and an `accountType` hint:
+
+* If an account matching that requested type already exists for the signer, Wallet APIs return it.
+* If it does not exist, and the signer already has another account for your team, Wallet APIs return the signer's oldest existing account.
+* If no account exists, Wallet APIs create an account using the requested `accountType`.
+
+This default behavior lets teams migrate new users to a newer account type while preserving existing accounts for existing users.
+
+If you want the response to return or create the requested account type even when the signer already has another account, pass `createAdditional: true`:
+
+```json
+{
+  "signerAddress": "0x...",
+  "creationHint": {
+    "accountType": "la-v2",
+    "createAdditional": true
+  }
+}
+```
+
+Use `createAdditional: true` when you need every request to resolve to the account type specified in `creationHint`.
+
 | `accountType` value | Account | Notes |
 |---|---|---|
 | `"sma-b"` | Modular Account v2 (MAv2) | **Recommended.** Default. Single owner. |
@@ -85,6 +111,8 @@ Call `requestAccount` with the desired `accountType`, then pass the returned add
   </Tab>
 
   <Tab title="API">
+    Add `"createAdditional": true` inside `creationHint` when the request must return or create the requested account type even if the signer already has another account.
+
     ```bash
     # First, request a Smart Contract Account
     ACCOUNT_ADDRESS=$(curl --request POST \
@@ -94,7 +122,10 @@ Call `requestAccount` with the desired `accountType`, then pass the returned add
         "id": 1,
         "jsonrpc": "2.0",
         "method": "wallet_requestAccount",
-        "params": [{ "signerAddress": "'$SIGNER_ADDRESS'", "creationHint": { "accountType": "sma-b" } }]
+        "params": [{
+          "signerAddress": "'$SIGNER_ADDRESS'",
+          "creationHint": { "accountType": "sma-b" }
+        }]
       }' | jq -r '.result.accountAddress')
 
     # Use the SCA address (not the signer address) in subsequent calls
