@@ -13,9 +13,11 @@ tabs:
   build-with-ai:
     display-name: Build with AI
     slug: build-with-ai
-  # Former "get-started" tab. Keeps the "tutorials" slug so existing URLs
-  # under /docs/tutorials/... keep working.
-  resources:
+  # Former "Get Started" tab, renamed "Tools & Resources". Keeps the
+  # "get-started" key (the frontend header matches its active tab against it)
+  # and the "tutorials" slug so existing URLs under /docs/tutorials/... keep
+  # working.
+  get-started:
     display-name: Tools & Resources
     slug: tutorials
   changelog:
@@ -28,7 +30,13 @@ navigation:
   # are where those endpoints live, so they now share one tab.
   - tab: chains
     layout:
+      # The cross-chain sections (WebSockets, Yellowstone gRPC, Trace API,
+      # Debug API, Rollups) are nested inside this first section: the docs
+      # site renders every later top-level section of this tab as a chain in
+      # the chain selector. skip-slug keeps their endpoint URLs at
+      # /chains/<section>/... .
       - section: Introduction
+        skip-slug: true
         contents:
           - page: Chain APIs Overview
             path: api-reference/node-api/chain-apis-overview.mdx
@@ -40,131 +48,153 @@ navigation:
             path: api-reference/node-api/mev-protection.mdx
           - link: Pricing
             href: /docs/reference/pricing-plans
-        slug: introduction
 
-      - section: WebSockets
-        contents:
-          - page: Subscription API Overview
-            path: api-reference/websockets/subscription-api.mdx
-          - page: Best Practices for Using WebSockets in Web3
-            path: >-
-              api-reference/websockets/best-practices-for-using-websockets-in-web3.mdx
-          - section: Subscription API Endpoints
-            path: >-
-              api-reference/websockets/subscription-api-endpoints/subscription-api-endpoints.mdx
+          - section: WebSockets
             contents:
-              - page: alchemy_minedTransactions
+              - page: Subscription API Overview
+                path: api-reference/websockets/subscription-api.mdx
+              - page: Best Practices for Using WebSockets in Web3
                 path: >-
-                  api-reference/websockets/subscription-api-endpoints/alchemy-minedtransactions.mdx
-              - page: alchemy_pendingTransactions
+                  api-reference/websockets/best-practices-for-using-websockets-in-web3.mdx
+              - section: Subscription API Endpoints
                 path: >-
-                  api-reference/websockets/subscription-api-endpoints/alchemy-pendingtransactions.mdx
-              - page: newPendingTransactions
+                  api-reference/websockets/subscription-api-endpoints/subscription-api-endpoints.mdx
+                contents:
+                  - page: alchemy_minedTransactions
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/alchemy-minedtransactions.mdx
+                  - page: alchemy_pendingTransactions
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/alchemy-pendingtransactions.mdx
+                  - page: newPendingTransactions
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/newpendingtransactions.mdx
+                  - page: newHeads
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/newheads.mdx
+                  - page: logs
+                    path: api-reference/websockets/subscription-api-endpoints/logs.mdx
+                  - page: monadNewHeads
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/monadnewheads.mdx
+                  - page: monadLogs
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/monadlogs.mdx
+                slug: subscription-api-endpoints
+              - section: Solana Subscription API Endpoints
                 path: >-
-                  api-reference/websockets/subscription-api-endpoints/newpendingtransactions.mdx
-              - page: newHeads
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/newheads.mdx
-              - page: logs
-                path: api-reference/websockets/subscription-api-endpoints/logs.mdx
-              - page: monadNewHeads
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/monadnewheads.mdx
-              - page: monadLogs
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/monadlogs.mdx
-            slug: subscription-api-endpoints
-          - section: Solana Subscription API Endpoints
-            path: >-
-              api-reference/websockets/solana-subscription-api-endpoints/solana-subscription-api-endpoints.mdx
-            contents:
-              - page: accountSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/account-subscribe.mdx
-              - page: programSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/program-subscribe.mdx
-              - page: logsSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/logs-subscribe.mdx
-              - page: signatureSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/signature-subscribe.mdx
-              - page: rootSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/root-subscribe.mdx
-              - page: slotSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/slot-subscribe.mdx
-            slug: solana-subscription-api-endpoints
-        slug: websockets
+                  api-reference/websockets/solana-subscription-api-endpoints/solana-subscription-api-endpoints.mdx
+                contents:
+                  - page: accountSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/account-subscribe.mdx
+                  - page: programSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/program-subscribe.mdx
+                  - page: logsSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/logs-subscribe.mdx
+                  - page: signatureSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/signature-subscribe.mdx
+                  - page: rootSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/root-subscribe.mdx
+                  - page: slotSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/slot-subscribe.mdx
+                slug: solana-subscription-api-endpoints
+            slug: websockets
 
-      - section: Yellowstone gRPC
-        contents:
-          - section: Getting Started
+          - section: Yellowstone gRPC
             contents:
-              - page: Overview
-                path: api-reference/yellowstone/overview.mdx
-              - page: Quickstart
-                path: api-reference/yellowstone/quickstart.mdx
-            slug: getting-started
-          - section: API Reference
-            path: api-reference/yellowstone/api-reference-overview.mdx
-            contents:
-              - page: Subscribe Request
-                path: api-reference/yellowstone/subscribe-request.mdx
-              - page: Subscribe to Slots
-                path: api-reference/yellowstone/subscribe-slots.mdx
-              - page: Subscribe to Transactions
-                path: api-reference/yellowstone/subscribe-transactions.mdx
-              - page: Subscribe to Accounts
-                path: api-reference/yellowstone/subscribe-accounts.mdx
-              - page: Subscribe to Blocks
-                path: api-reference/yellowstone/subscribe-blocks.mdx
-            slug: api-reference
-          - section: Resources
-            contents:
-              - page: Code Examples
-                path: api-reference/yellowstone/examples.mdx
-              - page: Best Practices
-                path: api-reference/yellowstone/best-practices.mdx
-            slug: resources
-        slug: yellowstone-grpc
+              - section: Getting Started
+                contents:
+                  - page: Overview
+                    path: api-reference/yellowstone/overview.mdx
+                  - page: Quickstart
+                    path: api-reference/yellowstone/quickstart.mdx
+                slug: getting-started
+              - section: API Reference
+                path: api-reference/yellowstone/api-reference-overview.mdx
+                contents:
+                  - page: Subscribe Request
+                    path: api-reference/yellowstone/subscribe-request.mdx
+                  - page: Subscribe to Slots
+                    path: api-reference/yellowstone/subscribe-slots.mdx
+                  - page: Subscribe to Transactions
+                    path: api-reference/yellowstone/subscribe-transactions.mdx
+                  - page: Subscribe to Accounts
+                    path: api-reference/yellowstone/subscribe-accounts.mdx
+                  - page: Subscribe to Blocks
+                    path: api-reference/yellowstone/subscribe-blocks.mdx
+                slug: api-reference
+              - section: Resources
+                contents:
+                  - page: Code Examples
+                    path: api-reference/yellowstone/examples.mdx
+                  - page: Best Practices
+                    path: api-reference/yellowstone/best-practices.mdx
+                slug: resources
+            slug: yellowstone-grpc
 
-      - section: Trace API
-        contents:
-          - page: Trace API Overview
-            path: api-reference/trace-api/trace-api-quickstart.mdx
-          - api: Trace API Endpoints
-            api-name: trace
-          - section: Trace API Resources
-            path: >-
-              api-reference/trace-api/trace-api-resources/what-are-evm-traces.mdx
+          - section: Trace API
             contents:
-              - page: Trace API vs. Debug API
+              - page: Trace API Overview
+                path: api-reference/trace-api/trace-api-quickstart.mdx
+              - api: Trace API Endpoints
+                api-name: trace
+              - section: Trace API Resources
                 path: >-
-                  api-reference/trace-api/trace-api-resources/trace-api-vs-debug-api.mdx
-              - page: What is trace_transaction?
-                path: >-
-                  api-reference/trace-api/trace-api-resources/what-is-trace-transaction.mdx
-              - page: What is trace_block?
-                path: >-
-                  api-reference/trace-api/trace-api-resources/what-is-trace-block.mdx
-              - page: What is trace_filter?
-                path: >-
-                  api-reference/trace-api/trace-api-resources/what-is-trace-filter.mdx
-              - page: trace_call vs debug_traceCall
-                path: >-
-                  api-reference/trace-api/trace-api-resources/trace-call-vs-debug-tracecall.mdx
-            slug: trace-api-resources
-        slug: trace-api
-      - section: Debug API
-        contents:
-          - page: Debug API Overview
-            path: api-reference/debug-api/debug-api-quickstart.mdx
-          - api: Debug API Endpoints
-            api-name: debug
-        slug: debug-api
+                  api-reference/trace-api/trace-api-resources/what-are-evm-traces.mdx
+                contents:
+                  - page: Trace API vs. Debug API
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/trace-api-vs-debug-api.mdx
+                  - page: What is trace_transaction?
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/what-is-trace-transaction.mdx
+                  - page: What is trace_block?
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/what-is-trace-block.mdx
+                  - page: What is trace_filter?
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/what-is-trace-filter.mdx
+                  - page: trace_call vs debug_traceCall
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/trace-call-vs-debug-tracecall.mdx
+                slug: trace-api-resources
+            slug: trace-api
+          - section: Debug API
+            contents:
+              - page: Debug API Overview
+                path: api-reference/debug-api/debug-api-quickstart.mdx
+              - api: Debug API Endpoints
+                api-name: debug
+            slug: debug-api
+
+          # Temporary home for Rollups: self-serve is deprecated (no new rollups
+          # are being created; existing ones are still supported), so it is no
+          # longer a top-level tab. Framed for customers who want to launch their
+          # own L2 chain. Remove entirely once deprecation is communicated to all
+          # customers.
+          - section: Launch Your Own Chain (Rollups)
+            contents:
+              - page: Rollups Overview
+                path: api-reference/alchemy-rollups/rollups-quickstart.mdx
+              - page: Supported Frameworks
+                path: api-reference/alchemy-rollups/supported-stacks.mdx
+              - page: Using your Rollup
+                path: api-reference/alchemy-rollups/using-your-rollup.mdx
+              - page: Operating your Rollup
+                path: api-reference/alchemy-rollups/operating-your-rollup.mdx
+              - page: Customizing & Integrations
+                path: api-reference/alchemy-rollups/customizations-integrations.mdx
+              - page: Bridging Assets
+                path: api-reference/alchemy-rollups/bridge-contract-address.mdx
+              - page: Rollups FAQ
+                path: api-reference/alchemy-rollups/rollups-faq.mdx
+            slug: rollups
 
       - section: Ethereum
         contents:
@@ -1222,29 +1252,6 @@ navigation:
             api-name: kaia
         slug: kaia
 
-      # Temporary home for Rollups: self-serve is deprecated (no new rollups
-      # are being created; existing ones are still supported), so it is no
-      # longer a top-level tab. Framed for customers who want to launch their
-      # own L2 chain. Remove entirely once deprecation is communicated to all
-      # customers.
-      - section: Launch Your Own Chain (Rollups)
-        contents:
-          - page: Rollups Overview
-            path: api-reference/alchemy-rollups/rollups-quickstart.mdx
-          - page: Supported Frameworks
-            path: api-reference/alchemy-rollups/supported-stacks.mdx
-          - page: Using your Rollup
-            path: api-reference/alchemy-rollups/using-your-rollup.mdx
-          - page: Operating your Rollup
-            path: api-reference/alchemy-rollups/operating-your-rollup.mdx
-          - page: Customizing & Integrations
-            path: api-reference/alchemy-rollups/customizations-integrations.mdx
-          - page: Bridging Assets
-            path: api-reference/alchemy-rollups/bridge-contract-address.mdx
-          - page: Rollups FAQ
-            path: api-reference/alchemy-rollups/rollups-faq.mdx
-        slug: rollups
-
   - tab: data
     layout:
       - section: Introduction
@@ -1855,7 +1862,7 @@ navigation:
   # pricing, dashboard tooling, and learning material that doesn't belong to a
   # single product area. The "Get Started" page in Introduction is slated to
   # become the docs homepage/landing page and move out of this tab.
-  - tab: resources
+  - tab: get-started
     layout:
       - section: Introduction
         contents:
