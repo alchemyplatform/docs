@@ -5,7 +5,10 @@ import type { PathBuilder } from "@/content-indexer/core/path-builder.ts";
 import type { NavItem } from "@/content-indexer/types/navigation.ts";
 import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
 import type { OpenRpcSpec } from "@/content-indexer/types/specs.ts";
-import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.ts";
+import {
+  createBreadcrumbNavItem,
+  getChainNameFromAncestors,
+} from "@/content-indexer/utils/navigation-helpers.ts";
 import { isValidOpenRpcSpec } from "@/content-indexer/utils/openrpc.ts";
 import type {
   VisitorConfig,
@@ -54,6 +57,12 @@ export const processOpenRpcSpec = ({
       ? createBreadcrumbNavItem(apiTitle, "api-section")
       : undefined;
 
+  // For chain API method reference pages the same JSON-RPC method
+  // (e.g. `eth_getBlockByNumber`) is duplicated across every EVM chain that
+  // references the `eth` spec. Append the chain name to the Algolia title so
+  // search results disambiguate which chain each entry links to.
+  const chainName = getChainNameFromAncestors(tab, navigationAncestors);
+
   // Process each RPC method
   spec.methods.forEach((method) => {
     const slug = kebabCase(method.name);
@@ -83,10 +92,14 @@ export const processOpenRpcSpec = ({
         ? [...navigationAncestors, apiSectionBreadcrumb]
         : navigationAncestors;
 
+      const algoliaTitle = chainName
+        ? `${method.name} - ${chainName}`
+        : method.name;
+
       context.addAlgoliaRecord({
         pageType: "API Method",
         path: finalPath,
-        title: method.name,
+        title: algoliaTitle,
         content: description,
         httpMethod: "POST",
         breadcrumbs,

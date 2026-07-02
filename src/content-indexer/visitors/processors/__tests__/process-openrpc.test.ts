@@ -269,6 +269,174 @@ describe("processOpenRpcSpec", () => {
     expect(results.algoliaRecords[0].title).toBe("customMethodName");
   });
 
+  test("should append chain name to Algolia title on the chains tab", () => {
+    const context = new ProcessingContext("docs");
+
+    processOpenRpcSpec({
+      spec: openRpcSpecFactory({
+        methods: [
+          {
+            name: "eth_getBlockByNumber",
+            description: "Returns information about a block by its number.",
+            params: [],
+            result: { name: "result", schema: {} },
+          },
+        ],
+      }),
+      specId: "chains/eth.json",
+      visitorConfig: {
+        item: { api: "Ethereum API Endpoints", "api-name": "eth" },
+        parentPath: PathBuilder.init(),
+        tab: "chains",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [
+          {
+            title: "Ethereum",
+            path: "/chains/ethereum",
+            type: "section",
+            children: [],
+          },
+        ],
+      },
+      apiPathBuilder: PathBuilder.init(
+        "chains/ethereum/ethereum-api-endpoints",
+      ),
+      apiTitle: "Ethereum API Endpoints",
+      isHidden: false,
+      isFlattened: false,
+    });
+
+    const results = context.getResults();
+    expect(results.algoliaRecords).toHaveLength(1);
+    expect(results.algoliaRecords[0].title).toBe(
+      "eth_getBlockByNumber - Ethereum",
+    );
+  });
+
+  test("should not modify the sidebar nav item title when appending chain name", () => {
+    const context = new ProcessingContext("docs");
+
+    const result = processOpenRpcSpec({
+      spec: openRpcSpecFactory({
+        methods: [
+          {
+            name: "eth_getBlockByNumber",
+            params: [],
+            result: { name: "result", schema: {} },
+          },
+        ],
+      }),
+      specId: "chains/base.json",
+      visitorConfig: {
+        item: { api: "Base API Endpoints", "api-name": "base" },
+        parentPath: PathBuilder.init(),
+        tab: "chains",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [
+          {
+            title: "Base",
+            path: "/chains/base",
+            type: "section",
+            children: [],
+          },
+        ],
+      },
+      apiPathBuilder: PathBuilder.init("chains/base/base-api-endpoints"),
+      apiTitle: "Base API Endpoints",
+      isHidden: false,
+      isFlattened: false,
+    });
+
+    if (
+      result.navItem &&
+      !Array.isArray(result.navItem) &&
+      result.navItem.type === "api-section"
+    ) {
+      const child = result.navItem.children[0];
+      expect(child.type).toBe("endpoint");
+      expect(child.title).toBe("eth_getBlockByNumber");
+    }
+  });
+
+  test("should leave Algolia title unchanged on non-chains tabs", () => {
+    const context = new ProcessingContext("docs");
+
+    processOpenRpcSpec({
+      spec: openRpcSpecFactory({
+        methods: [
+          {
+            name: "eth_getBlockByNumber",
+            params: [],
+            result: { name: "result", schema: {} },
+          },
+        ],
+      }),
+      specId: "chains/eth.json",
+      visitorConfig: {
+        item: { api: "Node API", "api-name": "eth" },
+        parentPath: PathBuilder.init(),
+        tab: "node",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [
+          {
+            title: "Node API",
+            path: "/node",
+            type: "section",
+            children: [],
+          },
+        ],
+      },
+      apiPathBuilder: PathBuilder.init("node/api"),
+      apiTitle: "Node API",
+      isHidden: false,
+      isFlattened: false,
+    });
+
+    const results = context.getResults();
+    expect(results.algoliaRecords[0].title).toBe("eth_getBlockByNumber");
+  });
+
+  test("should leave Algolia title unchanged on chains tab when no ancestor exists", () => {
+    const context = new ProcessingContext("docs");
+
+    processOpenRpcSpec({
+      spec: openRpcSpecFactory({
+        methods: [
+          {
+            name: "eth_getBlockByNumber",
+            params: [],
+            result: { name: "result", schema: {} },
+          },
+        ],
+      }),
+      specId: "chains/eth.json",
+      visitorConfig: {
+        item: { api: "Ethereum API Endpoints", "api-name": "eth" },
+        parentPath: PathBuilder.init(),
+        tab: "chains",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [],
+      },
+      apiPathBuilder: PathBuilder.init(
+        "chains/ethereum/ethereum-api-endpoints",
+      ),
+      apiTitle: "Ethereum API Endpoints",
+      isHidden: false,
+      isFlattened: false,
+    });
+
+    const results = context.getResults();
+    expect(results.algoliaRecords[0].title).toBe("eth_getBlockByNumber");
+  });
+
   test("should use description over summary for Algolia content", () => {
     const context = new ProcessingContext("docs");
 

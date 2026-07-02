@@ -1,6 +1,11 @@
 import { describe, expect, test } from "vitest";
 
-import { createBreadcrumbNavItem } from "../navigation-helpers.ts";
+import type { NavItem } from "@/content-indexer/types/navigation.ts";
+
+import {
+  createBreadcrumbNavItem,
+  getChainNameFromAncestors,
+} from "../navigation-helpers.ts";
 
 describe("navigation-helpers", () => {
   describe("createBreadcrumbNavItem", () => {
@@ -28,6 +33,52 @@ describe("navigation-helpers", () => {
       const result = createBreadcrumbNavItem(title, "api-section");
 
       expect(result.title).toBe(title);
+    });
+  });
+
+  describe("getChainNameFromAncestors", () => {
+    const ethereumAncestor: NavItem = {
+      title: "Ethereum",
+      path: "/chains/ethereum",
+      type: "section",
+      children: [],
+    };
+
+    test("returns the first ancestor title on the chains tab", () => {
+      expect(getChainNameFromAncestors("chains", [ethereumAncestor])).toBe(
+        "Ethereum",
+      );
+    });
+
+    test("returns the first ancestor title even when nested deeper", () => {
+      const nested: NavItem = {
+        title: "Solana Photon API",
+        path: "/chains/solana/solana-photon-api",
+        type: "section",
+        children: [],
+      };
+      const solana: NavItem = {
+        title: "Solana",
+        path: "/chains/solana",
+        type: "section",
+        children: [],
+      };
+      expect(getChainNameFromAncestors("chains", [solana, nested])).toBe(
+        "Solana",
+      );
+    });
+
+    test("returns undefined on non-chains tabs", () => {
+      expect(
+        getChainNameFromAncestors("data", [ethereumAncestor]),
+      ).toBeUndefined();
+      expect(
+        getChainNameFromAncestors("node", [ethereumAncestor]),
+      ).toBeUndefined();
+    });
+
+    test("returns undefined when no ancestors are provided", () => {
+      expect(getChainNameFromAncestors("chains", [])).toBeUndefined();
     });
   });
 });
