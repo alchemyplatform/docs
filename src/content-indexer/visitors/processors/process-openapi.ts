@@ -3,7 +3,10 @@ import type { PathBuilder } from "@/content-indexer/core/path-builder.ts";
 import type { NavItem } from "@/content-indexer/types/navigation.ts";
 import type { PathIndex } from "@/content-indexer/types/pathIndex.ts";
 import type { OpenApiSpec } from "@/content-indexer/types/specs.ts";
-import { createBreadcrumbNavItem } from "@/content-indexer/utils/navigation-helpers.ts";
+import {
+  createBreadcrumbNavItem,
+  getChainNameFromAncestors,
+} from "@/content-indexer/utils/navigation-helpers.ts";
 import {
   buildOperationPath,
   extractOpenApiOperations,
@@ -46,6 +49,10 @@ interface BuildOpenApiNavigationConfig {
   navigationAncestors: NavItem[];
   apiSectionBreadcrumb: NavItem | undefined;
   isHidden: boolean;
+  /** When set (chain API method reference pages), appended to the Algolia
+   * record title as `{operationTitle} - {chainName}` to disambiguate identical
+   * method names across chains in search results. */
+  chainName?: string;
 }
 
 /**
@@ -89,6 +96,7 @@ const buildOpenApiNavigation = ({
   navigationAncestors,
   apiSectionBreadcrumb,
   isHidden,
+  chainName,
 }: BuildOpenApiNavigationConfig): NavItem[] => {
   // Group operations by tag
   const operationsByTag = new Map<string | undefined, ExtractedOperation[]>();
@@ -125,10 +133,12 @@ const buildOpenApiNavigation = ({
           ? [...navigationAncestors, apiSectionBreadcrumb]
           : navigationAncestors;
 
+        const algoliaTitle = chainName ? `${title} - ${chainName}` : title;
+
         context.addAlgoliaRecord({
           pageType: "API Method",
           path: finalPath,
-          title,
+          title: algoliaTitle,
           content: description,
           httpMethod: operation.method,
           breadcrumbs,
@@ -190,6 +200,12 @@ export const processOpenApiSpec = ({
       ? undefined
       : createBreadcrumbNavItem(apiTitle, "api-section");
 
+  // Chain API method reference pages (tab = "chains") share the same OpenAPI
+  // specs across every chain that references them (e.g. UTXO endpoints reused
+  // on BTC / BCH / LTC / DOGE). Append the chain name to Algolia titles so
+  // search results disambiguate.
+  const chainName = getChainNameFromAncestors(tab, navigationAncestors);
+
   // Build navigation items
   const tagSections = buildOpenApiNavigation({
     operations,
@@ -199,6 +215,7 @@ export const processOpenApiSpec = ({
     navigationAncestors,
     apiSectionBreadcrumb,
     isHidden,
+    chainName,
   });
 
   // Return flattened or wrapped navigation (marked hidden if applicable)

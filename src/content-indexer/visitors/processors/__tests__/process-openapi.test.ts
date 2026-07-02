@@ -285,6 +285,137 @@ describe("processOpenApiSpec", () => {
     expect(results.algoliaRecords).toHaveLength(0);
   });
 
+  test("should append chain name to Algolia title on the chains tab", () => {
+    const context = new ProcessingContext("docs");
+
+    processOpenApiSpec({
+      spec: openApiSpecFactory({
+        paths: {
+          "/tx/{txid}": {
+            get: {
+              operationId: "getTransaction",
+              summary: "Get Transaction",
+              responses: { "200": { description: "Success" } },
+            },
+          },
+        },
+      }),
+      specId: "alchemy/rest/utxo.json",
+      visitorConfig: {
+        item: { api: "UTXO API Endpoints", "api-name": "utxo" },
+        parentPath: PathBuilder.init(),
+        tab: "chains",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [
+          {
+            title: "Bitcoin",
+            path: "/chains/bitcoin",
+            type: "section",
+            children: [],
+          },
+        ],
+      },
+      apiPathBuilder: PathBuilder.init("chains/bitcoin/utxo-api-endpoints"),
+      apiTitle: "UTXO API Endpoints",
+      isHidden: false,
+      isFlattened: true,
+    });
+
+    const results = context.getResults();
+    expect(results.algoliaRecords).toHaveLength(1);
+    expect(results.algoliaRecords[0].title).toBe("Get Transaction - Bitcoin");
+  });
+
+  test("should not modify the sidebar nav item title when appending chain name", () => {
+    const context = new ProcessingContext("docs");
+
+    const result = processOpenApiSpec({
+      spec: openApiSpecFactory({
+        paths: {
+          "/tx/{txid}": {
+            get: {
+              operationId: "getTransaction",
+              summary: "Get Transaction",
+              responses: { "200": { description: "Success" } },
+            },
+          },
+        },
+      }),
+      specId: "alchemy/rest/utxo.json",
+      visitorConfig: {
+        item: { api: "UTXO API Endpoints", "api-name": "utxo" },
+        parentPath: PathBuilder.init(),
+        tab: "chains",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [
+          {
+            title: "Bitcoin",
+            path: "/chains/bitcoin",
+            type: "section",
+            children: [],
+          },
+        ],
+      },
+      apiPathBuilder: PathBuilder.init("chains/bitcoin/utxo-api-endpoints"),
+      apiTitle: "UTXO API Endpoints",
+      isHidden: false,
+      isFlattened: true,
+    });
+
+    // Flattened APIs return an array of endpoint nav items directly
+    if (Array.isArray(result.navItem)) {
+      const endpoint = result.navItem[0];
+      expect(endpoint.type).toBe("endpoint");
+      expect(endpoint.title).toBe("Get Transaction");
+    }
+  });
+
+  test("should leave Algolia title unchanged on non-chains tabs", () => {
+    const context = new ProcessingContext("docs");
+
+    processOpenApiSpec({
+      spec: openApiSpecFactory({
+        paths: {
+          "/balance": {
+            get: {
+              operationId: "getBalance",
+              summary: "Get Account Balance",
+              responses: { "200": { description: "Success" } },
+            },
+          },
+        },
+      }),
+      specId: "alchemy/rest/nft.json",
+      visitorConfig: {
+        item: { api: "NFT API", "api-name": "nft" },
+        parentPath: PathBuilder.init(),
+        tab: "data",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [
+          {
+            title: "Data",
+            path: "/data",
+            type: "section",
+            children: [],
+          },
+        ],
+      },
+      apiPathBuilder: PathBuilder.init("data/nft"),
+      apiTitle: "NFT API",
+      isHidden: false,
+      isFlattened: false,
+    });
+
+    const results = context.getResults();
+    expect(results.algoliaRecords[0].title).toBe("Get Account Balance");
+  });
+
   test("should handle operations without tags", () => {
     const context = new ProcessingContext("docs");
 
