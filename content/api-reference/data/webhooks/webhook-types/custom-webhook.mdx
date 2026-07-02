@@ -115,6 +115,71 @@ Below you can find descriptions for select response fields. Note that this is no
 | `block`          | Nested object under each block                                | `N/A`                      |
 | `sequenceNumber` | An incrementing integer used for client-side re-org handling. | `10000000000578619000`     |
 
+# Payload size limit
+
+Custom Webhook payloads are capped at **10 MB**. If your GraphQL query's result for a block exceeds this limit, we still deliver the webhook, but with the result truncated to fit:
+
+* List fields (such as `logs`) are cut to the elements that fit within the limit.
+* Once the limit is reached, every list resolved after that point — including nested lists like a log's `transaction.logs` and scalar lists like `topics` — is returned as an empty array (`[]`).
+* Non-list fields are never altered, so every object present in a truncated payload is complete, and the payload is always structurally valid JSON.
+
+A truncated payload carries three extra fields inside `event` so you can tell an incomplete result apart from a genuinely small block. All three are omitted when the payload is complete, so untruncated payloads are unchanged.
+
+| Field              | Description                                                                                    | Value                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `truncated`        | `true` when the result was truncated to fit the size limit.                                     | `true`                                                            |
+| `truncatedFields`  | The query field paths whose lists lost elements — exactly which parts of `data` are incomplete. | `["block.logs", "block.logs.transaction.logs"]`                   |
+| `truncationReason` | A human-readable explanation naming the size limit.                                             | `Result exceeded the 10485760-byte size limit and was truncated`  |
+
+<CodeGroup>
+  ```shell Truncated Custom Webhooks Response
+  {
+    "webhookId": "wh_a55wfsvq5h8n8u3z",
+    "id": "whevt_ttg388dp5vjcnahd",
+    "createdAt": "2024-01-23T07:51:07.945953790Z",
+    "type": "GRAPHQL",
+    "event": {
+      "data": {
+        "block": {
+          "logs": [
+            {
+              "transaction": {
+                "hash": "0x8a179038d909c1906fddf0a2d38e4d3ef76eba30c1c26f758451e3b69a64f5a6",
+                "index": 105,
+                "from": {
+                  "address": "0xeeda051ab883d52923bc0951dd2edcbc7c0da597"
+                },
+                "to": {
+                  "address": "0xdafce4acc2703a24f29d1321adaadf5768f54642"
+                },
+                "logs": [],
+                "type": 2,
+                "status": 1
+              }
+            }
+          ]
+        }
+      },
+      "sequenceNumber": "10000000000578619000",
+      "truncated": true,
+      "truncatedFields": [
+        "block.logs",
+        "block.logs.transaction.logs"
+      ],
+      "truncationReason": "Result exceeded the 10485760-byte size limit and was truncated"
+    }
+  }
+  ```
+</CodeGroup>
+
+In this example, `block.logs` was cut to the entries that fit and each remaining log's nested `transaction.logs` came back empty — the block had more matching data than the payload shows.
+
+<Warning>
+  Truncated payloads are always delivered, even if `skip_empty_messages` is enabled. An empty list in a truncated payload means the data was cut to fit the size limit, not that the block had no matching activity.
+</Warning>
+
+If you receive truncated payloads, narrow your query so the full result fits under the limit — `truncatedFields` shows exactly which selections to trim. The most common cause is re-embedding each matched log's full transaction log list, for example `block { logs { transaction { logs } } }`, which multiplies the payload size on log-dense blocks.
+
 # How to Set Up Custom Webhooks
 
 1. Navigate to the [Webhooks page](https://dashboard.alchemy.com/apps/latest/webhooks) in your Alchemy Dashboard.

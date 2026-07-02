@@ -77,6 +77,20 @@ If you're seeing 5xx error codes when creating webhooks, please ensure that you 
 
 While logs and transactions can be self-referential entities, we only allow for a single-layer nested data structure to bound GraphQL queries. This helps us to to maintain a tidy API surface area.
 
+## Why does my webhook payload have `truncated: true`?
+
+Custom Webhook payloads are capped at 10 MB. If your query's result for a block exceeds the limit, we still deliver the webhook, but with the result truncated to fit: list fields are cut to the elements that fit, and any list resolved after the limit is reached comes back as an empty array. The payload stays structurally valid JSON and includes three extra fields inside `event`:
+
+* `truncated` — `true` when the result is incomplete
+* `truncatedFields` — the query field paths whose lists lost elements, for example `["block.logs", "block.logs.transaction.logs"]`
+* `truncationReason` — a message naming the size limit that was exceeded
+
+Truncated payloads are always delivered, even with `skip_empty_messages` enabled, so an empty list in a truncated payload means the data was cut, not that the block had no matching activity.
+
+To stop receiving truncated payloads, narrow your GraphQL query so the full result fits under the limit — `truncatedFields` shows exactly which selections to trim. The most common cause is nesting `transaction { logs }` under `block.logs`, which re-embeds every matched log's full transaction log list and blows up the payload on log-dense blocks.
+
+See [Payload size limit](/docs/reference/custom-webhook#payload-size-limit) for a full example response.
+
 ## How do I use the topic filter?
 
 * Currently, our log/event filter leverages the same semantics as a traditional topic filter for an *eth\_getLogs* RPC call. If you're not familiar with how topic filters work for *eth\_getLogs*, here's [an article](/docs/deep-dive-into-eth_getlogs) to get you up to speed.
