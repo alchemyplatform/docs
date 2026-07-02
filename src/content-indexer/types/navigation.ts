@@ -22,6 +22,8 @@ interface SectionNavItem extends BaseNavItem {
   type: "section" | "api-section";
   path?: string;
   children: NavItem[];
+  /** True for skip-slug sections: structural groupings that contribute no URL segment. */
+  skipSlug?: boolean;
 }
 
 interface LinkNavItem extends BaseNavItem {

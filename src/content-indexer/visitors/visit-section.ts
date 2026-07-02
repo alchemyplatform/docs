@@ -110,6 +110,7 @@ export const visitSection = (
     path: sectionPath, // undefined if no overview page
     type: "section",
     children: [],
+    ...(skipSlug && { skipSlug: true }),
   };
 
   // Update ancestors to include current section (using breadcrumb copy)
