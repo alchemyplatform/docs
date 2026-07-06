@@ -32,6 +32,18 @@ Sign in via browser. The CLI saves a token and prompts you to pick an app, then 
 alchemy auth
 ```
 
+### Headless and remote environments
+
+If the CLI runs where a browser can't reach it — GitHub Codespaces, SSH sessions, sandboxes, CI — use the device authorization flow. The CLI prints a short code and a verification link; open the link in a browser on any device, check the code matches the one in your terminal, and approve.
+
+```bash
+alchemy auth login --device-code
+```
+
+Plain `alchemy auth` also auto-detects remote and non-interactive environments and switches to this flow on its own, so remote sessions usually don't need the flag.
+
+### Selecting an app
+
 To change the selected app later, list your apps and select one:
 
 ```bash
@@ -318,6 +330,7 @@ Filters are optional and combined with AND. `--group-by` accepts at most one dim
 | Command | Description |
 |---|---|
 | `alchemy auth` | Sign in via browser. Use `alchemy auth login --force` to re-authenticate and `-y` to skip the confirmation prompt. |
+| `alchemy auth login --device-code` | Sign in from headless or remote environments (Codespaces, sandboxes, SSH, CI) by approving a short code in a browser on any device. Auto-detected for remote and non-interactive sessions. |
 | `alchemy auth status` | Show whether you're signed in |
 | `alchemy auth logout` | Clear the saved authentication token |
 | `alchemy doctor` | Run setup checks and print remediation commands |
