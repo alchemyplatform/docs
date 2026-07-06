@@ -34,13 +34,19 @@ alchemy auth
 
 ### Headless and remote environments
 
-If the CLI runs somewhere a browser can't reach it, like GitHub Codespaces, SSH sessions, sandboxes, or CI, use the device authorization flow. The CLI prints a short code and a verification link. Open the link in a browser on any device, check the code matches the one in your terminal, and approve.
+If the CLI runs somewhere a browser can't reach it, use the device authorization flow. The CLI prints a short code and a verification link. Open the link in a browser on any device, check the code matches the one in your terminal, and approve.
 
 ```bash
 alchemy auth login --device-code
 ```
 
-Plain `alchemy auth` also auto-detects remote and non-interactive environments and switches to this flow on its own, so remote sessions usually don't need the flag.
+The flag works in every environment. Plain `alchemy auth` also switches to this flow on its own when it detects one of the following, so these don't need the flag:
+
+* GitHub Codespaces, Gitpod, Replit, Google Cloud Shell, and Coder workspaces
+* SSH sessions
+* Non-interactive sessions like CI and piped output, where the browser flow can't prompt
+
+If auto-detection misses your environment, the browser login times out after two minutes and its error points you to the same command.
 
 ### Selecting an app
 
