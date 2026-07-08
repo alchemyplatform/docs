@@ -83,9 +83,36 @@ const runTargetedGeneration = (changedFile?: string): void => {
   }
 };
 
+/**
+ * The indexer uploads the CURRENT checkout's content under `--branch`'s
+ * Redis keys. Running it while a different branch is checked out silently
+ * clobbers that branch's shared preview data, so refuse the mismatch.
+ * Detached HEAD is allowed: CI checks out merge refs while passing the PR's
+ * head branch name. Set PREVIEW_ALLOW_BRANCH_MISMATCH=1 to override.
+ */
+const assertBranchMatchesCheckout = (branch: string): void => {
+  if (process.env.PREVIEW_ALLOW_BRANCH_MISMATCH) {
+    return;
+  }
+  const checkedOut = execSync("git rev-parse --abbrev-ref HEAD", {
+    stdio: ["ignore", "pipe", "ignore"],
+  })
+    .toString()
+    .trim();
+  if (checkedOut !== "HEAD" && checkedOut !== branch) {
+    throw new Error(
+      `--branch=${branch} but this checkout is on '${checkedOut}'. ` +
+        "Indexing would overwrite that branch's shared preview data with " +
+        "this checkout's content. Check out the branch (or a worktree of " +
+        "it) first, or set PREVIEW_ALLOW_BRANCH_MISMATCH=1 to override.",
+    );
+  }
+};
+
 const main = async () => {
   try {
     const { branch, uploadFile, reindex, reindexFile } = parseArgs();
+    assertBranchMatchesCheckout(branch);
 
     // Mode: upload single file (fast path watcher)
     if (uploadFile) {
