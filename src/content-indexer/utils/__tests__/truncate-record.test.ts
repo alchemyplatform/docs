@@ -22,6 +22,31 @@ describe("truncateRecord", () => {
     expect(result.content).toBe("Short content");
   });
 
+  test("should strip non-rendered MDX comments from indexed content", () => {
+    const record: AlgoliaRecord = {
+      objectID: "abc123",
+      indexerType: "docs",
+      path: "reference/feature-support-by-chain",
+      pageType: "Guide",
+      title: "Feature Support By Chain",
+      content: [
+        "Visible intro.",
+        "{/*\n  Data freshness: operational note that never renders.\n*/}",
+        "{/* feature-support:auto */}",
+        "| Product | Chains |",
+        "{/* feature-support:auto end */}",
+        "Visible outro.",
+      ].join("\n\n"),
+      breadcrumbs: ["Reference"],
+    };
+
+    const result = truncateRecord(record);
+    expect(result.content).toContain("Visible intro.");
+    expect(result.content).toContain("Visible outro.");
+    expect(result.content).not.toContain("Data freshness");
+    expect(result.content).not.toContain("feature-support:auto");
+  });
+
   test("should truncate content for oversized record", () => {
     // Create a record with content exceeding 100KB
     const largeContent = "x".repeat(150_000);

@@ -7,12 +7,22 @@ const BUFFER_BYTES = 1_000;
 const MAX_ITERATIONS = 5;
 
 /**
+ * MDX expression comments never render on the page, but remove-markdown
+ * leaves them intact, so implementation notes and generator markers
+ * (cu:auto, feature-support:auto, data-freshness notes) would otherwise be
+ * uploaded into public search records and snippets.
+ */
+const stripMdxComments = (content: string): string =>
+  content.replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+
+/**
  * Truncate record content to ensure entire JSON payload fits within Algolia limit.
  * Also strips markdown formatting from content for better search experience.
  */
 export const truncateRecord = (rawRecord: AlgoliaRecord): AlgoliaRecord => {
-  // Strip markdown formatting to get clean, searchable text
-  const cleanedContent = removeMd(rawRecord.content);
+  // Strip non-rendered MDX comments and markdown formatting to get clean,
+  // searchable text
+  const cleanedContent = removeMd(stripMdxComments(rawRecord.content));
   const record = { ...rawRecord, content: cleanedContent };
 
   const fullRecordJson = JSON.stringify(record);
