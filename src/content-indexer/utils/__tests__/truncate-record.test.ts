@@ -47,6 +47,29 @@ describe("truncateRecord", () => {
     expect(result.content).not.toContain("feature-support:auto");
   });
 
+  test("should preserve JSX comments inside fenced code examples", () => {
+    const record: AlgoliaRecord = {
+      objectID: "abc123",
+      indexerType: "docs",
+      path: "wallets/react/mfa/email-otp",
+      pageType: "Guide",
+      title: "Email OTP",
+      content: [
+        "{/* operational note that never renders */}",
+        "```tsx\nreturn (\n  <div>\n    {/* OTP input component */}\n    <OtpInput />\n  </div>\n);\n```",
+        "After the example.",
+      ].join("\n\n"),
+      breadcrumbs: ["Wallets"],
+    };
+
+    const result = truncateRecord(record);
+    // The comment in the rendered code block is real page content...
+    expect(result.content).toContain("OTP input component");
+    // ...while the non-rendered MDX comment outside it is stripped.
+    expect(result.content).not.toContain("operational note");
+    expect(result.content).toContain("After the example.");
+  });
+
   test("should truncate content for oversized record", () => {
     // Create a record with content exceeding 100KB
     const largeContent = "x".repeat(150_000);
