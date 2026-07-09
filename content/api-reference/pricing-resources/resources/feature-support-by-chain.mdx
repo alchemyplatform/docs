@@ -6,10 +6,27 @@ slug: reference/feature-support-by-chain
 ---
 
 {/*
-  The summary block below is intentionally wrapped in a hidden div: it
-  exists for search engines, LLMs, and markdown consumers, while the
-  interactive widget (added with the generated data) is the human-facing
-  view. The h4 keeps it out of the page table of contents.
+  Data freshness: the widget's data is server-rendered, not fetched by the
+  browser and not baked into this MDX. The docs-site renders
+  <FeatureSupportMatrix /> on the server from content/feature-support.json
+  in this repo, cached under the "feature-support" Next.js cache tag. When
+  that file changes on main — the daily Daikon bot PR merge — the
+  revalidate-content workflow calls the docs-site
+  /api/revalidate/feature-support endpoint to invalidate the tag, so the
+  statically generated page re-renders with fresh data (an hourly TTL
+  backstops a missed webhook). JSON-only daily updates therefore reach
+  readers without this MDX being edited.
+
+  The summary table below cannot drift from the JSON: the daily workflow
+  regenerates both from the same resolved data and commits them together,
+  so any change that affects the table is itself an MDX edit and
+  revalidates through the markdown path. A JSON-only commit means the
+  table's coarser product-by-chain view genuinely did not change.
+
+  The summary block is intentionally wrapped in a hidden div: it exists for
+  search engines, LLMs, and markdown consumers, while the interactive
+  <FeatureSupportMatrix /> widget is the human-facing view. The h4 keeps it
+  out of the page table of contents.
 */}
 
 <div hidden>
