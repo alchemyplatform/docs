@@ -3154,10 +3154,10 @@ paths:
               example:
                 parameter: "contract_param"
 
-  /wallet/createspendauthsig:
+  /wallet/createspendsauthsig:
     post:
       summary: Create spend authorization signature
-      description: Creates a spend authorization signature for a shielded transaction from the spend authorizing key, the transaction hash, and the random scalar alpha.
+      description: Creates a spend authorization signature for a shielded transaction using a secret key and message data.
       tags:
         - Tron HTTP API Endpoints
       requestBody:
@@ -3167,23 +3167,20 @@ paths:
             schema:
               type: object
               properties:
-                ask:
+                sk:
                   type: string
-                tx_hash:
-                  type: string
-                alpha:
+                data:
                   type: string
             example:
-              ask: "spend_authorizing_key"
-              tx_hash: "transaction_hash"
-              alpha: "random_scalar"
+              sk: "secret_key"
+              data: "message_to_sign"
       responses:
         "200":
           description: Spend authorization signature created
           content:
             application/json:
               example:
-                value: "signature_bytes"
+                signature: "signed_data"
 
   /wallet/gettriggerinputforshieldedtrc20contract:
     post:
