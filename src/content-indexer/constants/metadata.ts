@@ -20,7 +20,7 @@ export const DEFAULT_OG_IMAGE = {
 export const DEFAULT_OPEN_GRAPH: Metadata["openGraph"] = {
   title: "Alchemy Documentation - Build anything onchain",
   description:
-    "Learn how to use Node APIs, Data APIs, Webhooks, Smart Wallets and Rollups to create powerful onchain experiences.",
+    "Learn how to use Chain APIs, Data APIs, Webhooks, Smart Wallets and AI developer tools to create powerful onchain experiences.",
   siteName: "Alchemy Documentation",
   url: DOCS_BASE_URL,
   locale: "en_US",
@@ -32,7 +32,7 @@ const DEFAULT_TWITTER: Metadata["twitter"] = {
   card: "summary_large_image",
   title: "Alchemy Documentation - Build anything onchain",
   description:
-    "Learn how to use Node APIs, Data APIs, Webhooks, Smart Wallets and Rollups to create powerful onchain experiences.",
+    "Learn how to use Chain APIs, Data APIs, Webhooks, Smart Wallets and AI developer tools to create powerful onchain experiences.",
   site: "@alchemy",
   images: [DEFAULT_OG_IMAGE.url],
 };
@@ -43,7 +43,7 @@ export const DEFAULT_METADATA: Metadata = {
     default: "Alchemy Documentation - Build anything onchain",
   },
   description:
-    "Learn how to use Node APIs, Data APIs, Webhooks, Smart Wallets and Rollups to create powerful onchain experiences.",
+    "Learn how to use Chain APIs, Data APIs, Webhooks, Smart Wallets and AI developer tools to create powerful onchain experiences.",
   robots: {
     index: true,
     follow: true,

@@ -80,5 +80,22 @@ describe("navigation-helpers", () => {
     test("returns undefined when no ancestors are provided", () => {
       expect(getChainNameFromAncestors("chains", [])).toBeUndefined();
     });
+
+    test("returns undefined under a skip-slug grouping section", () => {
+      const introduction: NavItem = {
+        title: "Introduction",
+        type: "section",
+        children: [],
+        skipSlug: true,
+      };
+      const traceApi: NavItem = {
+        title: "Trace API",
+        type: "section",
+        children: [],
+      };
+      expect(
+        getChainNameFromAncestors("chains", [introduction, traceApi]),
+      ).toBeUndefined();
+    });
   });
 });

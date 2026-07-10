@@ -333,14 +333,14 @@ export function updateChainApisOverview(
   for (let i = 0; i < methods.length; i += 2) {
     const method1 = methods[i];
     const urlPart1 = methodToUrlFormat(method1);
-    const url1 = `https://www.alchemy.com/docs/node/${chainName}/${chainName}-api-endpoints/${urlPart1}`;
+    const url1 = `https://www.alchemy.com/docs/chains/${chainName}/${chainName}-api-endpoints/${urlPart1}`;
 
     let row = `| [${method1}](${url1}) |`;
 
     if (i + 1 < methods.length) {
       const method2 = methods[i + 1];
       const urlPart2 = methodToUrlFormat(method2);
-      const url2 = `https://www.alchemy.com/docs/node/${chainName}/${chainName}-api-endpoints/${urlPart2}`;
+      const url2 = `https://www.alchemy.com/docs/chains/${chainName}/${chainName}-api-endpoints/${urlPart2}`;
       row += ` [${method2}](${url2}) |`;
     } else {
       row += ` |`;
