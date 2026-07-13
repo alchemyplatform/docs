@@ -119,6 +119,81 @@ components:
         encoding:
           $ref: "./base-types.yaml#/components/schemas/Encoding"
           description: Encoding format for account data.
+    GetTokenAccountsByOwnerAtSlotFilter:
+      title: GetTokenAccountsByOwnerAtSlot Filter
+      type: object
+      description: >-
+        Restricts results to a single mint or a single token program.
+        Include either `mint` or `programId`, never both. Omit the whole
+        object to return all token accounts.
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: >-
+            Return only accounts of this token mint (base58 pubkey).
+        programId:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: >-
+            Return only accounts owned by this token program. Must be
+            `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` (SPL Token) or
+            `TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb` (Token-2022).
+    GetTokenAccountsByOwnerAtSlotConfig:
+      title: GetTokenAccountsByOwnerAtSlot Configuration
+      type: object
+      description: Optional point-in-time and pagination options.
+      properties:
+        slot:
+          type: integer
+          description: >-
+            The slot to reconstruct the wallet's holdings at. Omit for the
+            wallet's current holdings (as of the latest available slot).
+        pageKey:
+          type: string
+          default: ""
+          description: >-
+            Cursor for the next page. Use the `pageKey` from the previous
+            response; omit or send an empty string for the first page.
+        pageLimit:
+          type: integer
+          default: 1000
+          maximum: 10000
+          description: >-
+            Maximum number of token accounts per page. Values above `10000`
+            are reduced to `10000`.
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          description: >-
+            Accepted for compatibility; responses are always `jsonParsed`.
+    GetTokenAccountsByOwnerAtSlotResult:
+      title: GetTokenAccountsByOwnerAtSlot Result
+      type: object
+      description: >-
+        A paginated set of token accounts held by the owner at the
+        requested slot.
+      properties:
+        context:
+          type: object
+          description: The slot the result was computed at.
+          properties:
+            slot:
+              type: integer
+              description: >-
+                The slot the result was computed at (the `slot` you
+                requested, or the latest slot).
+            apiVersion:
+              type: string
+              description: API version string.
+        value:
+          type: array
+          description: The token accounts the wallet held at that slot.
+          items:
+            $ref: "#/components/schemas/TokenAccount"
+        pageKey:
+          type: string
+          nullable: true
+          description: >-
+            Cursor for the next page, or `null` on the last page. Send it
+            back in `config.pageKey` to continue paging.
     LargestAccountsConfig:
       title: LargestAccounts Configuration
       type: object
