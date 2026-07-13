@@ -164,6 +164,92 @@ components:
           $ref: "./base-types.yaml#/components/schemas/Encoding"
           description: >-
             Accepted for compatibility; responses are always `jsonParsed`.
+    ParsedSplTokenAccountInfo:
+      title: Parsed SPL Token Account Info
+      type: object
+      description: >-
+        `jsonParsed` decoding of an SPL Token or Token-2022 account's data.
+      properties:
+        isNative:
+          type: boolean
+          description: >-
+            `true` when this token account is the native SOL mint wrapper.
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The mint associated with this token account.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The wallet that owns this token account.
+        state:
+          type: string
+          description: >-
+            Account state, typically `initialized`, `uninitialized`, or
+            `frozen`.
+        tokenAmount:
+          $ref: "#/components/schemas/TokenBalance"
+          description: The token balance held by this account.
+    ParsedSplTokenAccountData:
+      title: Parsed SPL Token Account Data
+      type: object
+      description: >-
+        `jsonParsed` decoding of a token account's on-chain data. The
+        outer envelope carries the parser identity; the actual account
+        fields live under `parsed.info`.
+      properties:
+        program:
+          type: string
+          description: >-
+            The program the parser used to decode this account
+            (`spl-token` or `spl-token-2022`).
+        space:
+          type: integer
+          description: On-chain data size in bytes.
+        parsed:
+          type: object
+          description: The parsed account payload.
+          properties:
+            type:
+              type: string
+              description: The parsed record type (e.g., `account`).
+            info:
+              $ref: "#/components/schemas/ParsedSplTokenAccountInfo"
+    ParsedTokenAccountInfo:
+      title: Parsed Token Account Info
+      type: object
+      description: >-
+        Account metadata plus the `jsonParsed` token account payload.
+      properties:
+        lamports:
+          type: integer
+          description: Number of lamports assigned to this account.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: >-
+            The token program that owns this account (SPL Token or
+            Token-2022).
+        executable:
+          type: boolean
+          description: Indicates if the account contains a program.
+        rentEpoch:
+          type: integer
+          description: The epoch at which this account will next owe rent.
+        space:
+          type: integer
+          description: On-chain data size in bytes.
+        data:
+          $ref: "#/components/schemas/ParsedSplTokenAccountData"
+    ParsedTokenAccount:
+      title: Parsed Token Account
+      type: object
+      description: >-
+        A single SPL Token or Token-2022 account with its data decoded in
+        `jsonParsed` form.
+      properties:
+        pubkey:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The token account Pubkey as a base-58 encoded string.
+        account:
+          $ref: "#/components/schemas/ParsedTokenAccountInfo"
     GetTokenAccountsByOwnerAtSlotResult:
       title: GetTokenAccountsByOwnerAtSlot Result
       type: object
@@ -185,9 +271,11 @@ components:
               description: API version string.
         value:
           type: array
-          description: The token accounts the wallet held at that slot.
+          description: >-
+            The token accounts the wallet held at that slot, decoded in
+            `jsonParsed` form.
           items:
-            $ref: "#/components/schemas/TokenAccount"
+            $ref: "#/components/schemas/ParsedTokenAccount"
         pageKey:
           type: string
           nullable: true
