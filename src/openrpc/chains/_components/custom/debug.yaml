@@ -1,0 +1,136 @@
+components:
+  schemas:
+    ExecutionWitness:
+      title: Execution witness
+      type: object
+      description: >-
+        Preimages and headers required to re-execute a payload independently.
+        Used by fault-proof provers and stateless clients.
+      additionalProperties: false
+      properties:
+        state:
+          title: Trie node preimages
+          description: >-
+            The preimages of every hashed trie node that was required during
+            execution of the payload, including during state root
+            recomputation. Each entry is an RLP-encoded trie node.
+          type: array
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+        codes:
+          title: Contract code preimages
+          description: >-
+            The preimages (deployed bytecode) of every contract that was
+            created or accessed during execution of the payload.
+          type: array
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+        keys:
+          title: Key preimages
+          description: >-
+            The unhashed preimages of every account address and storage slot
+            that was required during execution of the payload. Used to
+            reconstruct the trie paths from their hashes.
+          type: array
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+        headers:
+          title: RLP-encoded block headers
+          description: >-
+            RLP-encoded block headers required for stateless verification.
+            Includes at minimum the parent header (so the pre-state root can
+            be verified) plus any additional headers referenced by the
+            `BLOCKHASH` opcode during execution.
+          type: array
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+
+    OpPayloadAttributes:
+      title: Optimism payload attributes
+      type: object
+      description: >-
+        Payload attributes for building or re-executing an OP Stack block.
+        The fields of the underlying Engine API `PayloadAttributes` object
+        (`timestamp`, `prevRandao`, `suggestedFeeRecipient`, `withdrawals`,
+        `parentBeaconBlockRoot`) are flattened onto this object; the
+        rollup-specific fields (`transactions`, `noTxPool`, `gasLimit`,
+        `eip1559Params`, `minBaseFee`) are siblings.
+      additionalProperties: false
+      required:
+        - timestamp
+        - prevRandao
+        - suggestedFeeRecipient
+      properties:
+        timestamp:
+          title: Block timestamp
+          description: The block timestamp in seconds since the Unix epoch.
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        prevRandao:
+          title: prevRandao
+          description: >-
+            The `prevRandao` value for the block, sourced from the L1 beacon
+            chain's `RANDAO` output. 32 bytes.
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        suggestedFeeRecipient:
+          title: Suggested fee recipient
+          description: >-
+            The address to receive the coinbase reward. On OP Stack chains
+            this is typically `0x4200000000000000000000000000000000000011`
+            (`SequencerFeeVault`).
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+        withdrawals:
+          title: Withdrawals
+          description: >-
+            Post-Shanghai validator withdrawals list. On OP Stack chains this
+            is always an empty array.
+          type: array
+          items:
+            $ref: "../evm/withdrawal.yaml#/components/schemas/Withdrawal"
+        parentBeaconBlockRoot:
+          title: Parent beacon block root
+          description: >-
+            The parent beacon block root, from the Cancun-Deneb fork. 32
+            bytes. Omit or set to `null` on chains where this fork is not
+            active.
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+            - type: "null"
+        transactions:
+          title: Forced transactions
+          description: >-
+            Transactions to force-include at the top of the block, as raw
+            EIP-2718 encoded bytes. On OP Stack this is used for deposit
+            transactions and sequencer-inserted L1 attributes calls.
+          type: array
+          items:
+            $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+        noTxPool:
+          title: Skip transaction pool
+          description: >-
+            If `true`, only the transactions in the `transactions` field are
+            included in the block; the mempool is not consulted. Verifiers
+            replaying batch transactions from L1 set this to `true`; the
+            sequencer sets it to `false` while producing blocks.
+          type: boolean
+        gasLimit:
+          title: Gas limit
+          description: >-
+            Exact block gas limit. If unset the block uses the chain's
+            configured default.
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        eip1559Params:
+          title: EIP-1559 parameters
+          description: >-
+            Holocene-era EIP-1559 parameters, encoded as an 8-byte value
+            where the high 4 bytes are the base fee update denominator and
+            the low 4 bytes are the elasticity multiplier. Required once the
+            Holocene hardfork is active; before then, omit or set to `null`.
+          $ref: "../evm/base-types.yaml#/components/schemas/bytes8"
+        minBaseFee:
+          title: Minimum base fee
+          description: >-
+            Jovian-era minimum base fee (in wei) for the block. Required
+            once the Jovian hardfork is active on the chain; before then,
+            omit or set to `null`.
+          type: integer
+          minimum: 0
