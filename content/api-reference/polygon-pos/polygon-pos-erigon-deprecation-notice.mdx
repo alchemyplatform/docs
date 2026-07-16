@@ -1,0 +1,30 @@
+---
+title: Polygon PoS Erigon Client Deprecation Notice
+description: Important notice about the migration of Polygon Mainnet and Amoy from Erigon to Bor on August 1, 2026, and the impact on the trace_* and erigon_* namespaces
+slug: reference/polygon-pos-erigon-deprecation-notice
+---
+
+## ⚠️ Deprecation Notice
+
+**Polygon Labs is [sunsetting Erigon support on Polygon PoS on August 1, 2026](https://forum.polygon.technology/t/sunsetting-erigon-support/21872).** To align with that change, Alchemy is migrating our Polygon Mainnet and Amoy infrastructure from Erigon to [Bor](https://github.com/0xPolygon/bor), the recommended Polygon client, on the same date.
+
+Because Bor is a Geth-based client, it does not support Erigon-specific RPC namespaces. Beginning August 1, 2026, the following methods will no longer be available on Polygon Mainnet (`polygon-mainnet`) or Polygon Amoy (`polygon-amoy`):
+
+* The entire `trace_*` namespace — for example, `trace_filter`, `trace_block`, `trace_replayBlockTransactions`, `trace_transaction`, and `trace_call`.
+* The entire `erigon_*` namespace — for example, `erigon_getHeaderByNumber`.
+
+## Action required: update your code before August 1, 2026
+
+Migrate to methods supported by Bor before August 1, 2026 to avoid disruption:
+
+1. **Replace `trace_*` calls with the corresponding `debug_trace*` methods**, such as [`debug_traceBlockByNumber`](/docs/reference/debug-traceblockbynumber), [`debug_traceTransaction`](/docs/reference/debug-tracetransaction), and [`debug_traceCall`](/docs/reference/debug-tracecall).
+2. **For range-based `trace_filter` use cases**, use [`eth_getLogs`](/docs/reference/eth-getlogs) against indexed event logs.
+3. **Replace `erigon_*` calls with standard Ethereum RPC equivalents.** For example, replace `erigon_getHeaderByNumber` with [`eth_getBlockByNumber`](/docs/reference/eth-getblockbynumber).
+
+## `eth_getProof` on Bor
+
+Bor currently supports [`eth_getProof`](/docs/reference/eth-getproof) only for the **latest 128 blocks**. Requests for proofs from older historical blocks are not currently supported by the Bor client.
+
+## Need help?
+
+If you have any questions or need assistance migrating, contact us at support@alchemy.com or open a ticket in the [Alchemy Dashboard](https://dashboard.alchemy.com/).
