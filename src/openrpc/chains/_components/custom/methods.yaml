@@ -1999,6 +1999,152 @@ components:
         schema:
           type: object
 
+    debug_executePayload:
+      name: debug_executePayload
+      summary: Re-execute a payload and return the execution witness
+      description: >-
+        Re-executes a payload on top of the state at `parent_block_hash` and
+        returns the resulting execution witness. The witness comprises the
+        preimages of every hashed trie node, contract code, and unhashed
+        account/storage key that was required during execution, plus any block
+        headers referenced by the `BLOCKHASH` opcode. Together they are the
+        minimum data needed to prove that the payload executes correctly
+        against the parent state, without access to a full node.
+
+
+        This method is used by fault-proof provers and stateless clients on OP
+        Stack chains. On Base it is served from the historical proofs
+        execution extension (`ExEx`); the currently indexed block range can be
+        queried via `debug_proofsSyncStatus`.
+      x-compute-units: 40
+      x-rate-limit-cus: 1000
+      params:
+        - name: Parent block hash
+          required: true
+          description: >-
+            The 32-byte hash of the parent block. The payload is executed on
+            top of the post-state of this parent.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        - name: Payload attributes
+          required: true
+          description: >-
+            The Optimism-style payload attributes describing the block to
+            re-execute on top of the parent. The base Engine API
+            `PayloadAttributes` fields (`timestamp`, `prevRandao`,
+            `suggestedFeeRecipient`, `withdrawals`, `parentBeaconBlockRoot`)
+            are flattened onto this object; the rollup-specific fields
+            (`transactions`, `noTxPool`, `gasLimit`, `eip1559Params`,
+            `minBaseFee`) are siblings.
+          schema:
+            $ref: "./debug.yaml#/components/schemas/OpPayloadAttributes"
+      result:
+        name: Execution witness
+        description: >-
+          The execution witness of the payload. Contains hashed-trie-node
+          preimages, contract-code preimages, unhashed key preimages, and any
+          block headers required for stateless verification.
+        schema:
+          $ref: "./debug.yaml#/components/schemas/ExecutionWitness"
+      examples:
+        - name: debug_executePayload example
+          params:
+            - name: Parent block hash
+              value: "0x63db51ce4d0ed91c956090d8b413abb85f113442c6a4d8c89fbe1bd535f011ba"
+            - name: Payload attributes
+              value:
+                timestamp: "0x6a569479"
+                prevRandao: "0x6c6ae66debdd034422a41803af19c8855938f8cca2805d858dc17679cef58c26"
+                suggestedFeeRecipient: "0x4200000000000000000000000000000000000011"
+                withdrawals: []
+                parentBeaconBlockRoot: "0xb61925b723172852becabbd1ae58da86f59598aedde6983a5ec4144fc5d33eaa"
+                transactions: []
+                noTxPool: true
+                gasLimit: "0x17d78400"
+                eip1559Params: "0x000000fa00000006"
+                minBaseFee: 0
+          result:
+            name: Execution witness
+            value:
+              state:
+                - "0xf90211a0..."
+              codes:
+                - "0x60806040..."
+              keys:
+                - "0x0000000000000000000000004200000000000000000000000000000000000011"
+              headers: []
+      errors:
+        - code: -32602
+          message: >-
+            Invalid params. Common causes include a missing or malformed
+            `parent_block_hash`, or missing/mistyped payload attribute fields.
+            Note that after the Jovian hardfork activates on the chain,
+            `minBaseFee` is required; before then it must be omitted.
+        - code: -32603
+          message: >-
+            Internal error. Examples include `no header found for
+            Hash(<parent hash>)` when the parent block is not indexed by the
+            historical proofs store (see `debug_proofsSyncStatus` for the
+            current coverage window), and execution failures while producing
+            the witness.
+
+    debug_proofsSyncStatus:
+      name: debug_proofsSyncStatus
+      summary: Get the historical proofs store sync status
+      description: >-
+        Returns the currently indexed block range of the node's historical
+        proofs execution extension (`ExEx`). Once `latest` tracks chain tip,
+        `eth_getProof`, `debug_executePayload`, and `debug_executionWitness`
+        calls for any block within `[earliest, latest]` are served directly
+        from this versioned proof store rather than by reverting in-memory
+        state diffs.
+
+
+        Both fields can be `null` if the proofs store has not yet indexed any
+        blocks (for example, immediately after the node starts and before the
+        first block is committed).
+      x-compute-units: 0
+      x-rate-limit-cus: 5
+      params: []
+      result:
+        name: Proofs sync status
+        description: >-
+          Object describing the range of blocks currently served from the
+          historical proofs store.
+        schema:
+          title: ProofsSyncStatus
+          type: object
+          additionalProperties: false
+          properties:
+            earliest:
+              title: Earliest indexed block
+              description: >-
+                The earliest block number for which proofs are available in
+                the historical proofs store, or `null` if the store is empty.
+                Serialized as a JSON number, not a hex-encoded string.
+              oneOf:
+                - type: integer
+                  minimum: 0
+                - type: "null"
+            latest:
+              title: Latest indexed block
+              description: >-
+                The latest block number for which proofs are available in the
+                historical proofs store, or `null` if the store is empty.
+                Serialized as a JSON number, not a hex-encoded string.
+              oneOf:
+                - type: integer
+                  minimum: 0
+                - type: "null"
+      examples:
+        - name: debug_proofsSyncStatus example
+          params: []
+          result:
+            name: Proofs sync status
+            value:
+              earliest: 47338810
+              latest: 48634815
+
     # Stellar Soroban RPC methods
     getHealth:
       name: getHealth
