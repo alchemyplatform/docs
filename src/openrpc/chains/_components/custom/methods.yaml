@@ -2332,3 +2332,154 @@ components:
           params:
             - name: transaction
               value: "AAAAAgAAAAA7mRE4Dv6Yi6CokA6xz+RPNm99vpRr7QdyQPf2JN8VxQAAAGQAAAAAAAAAZQAAAAEAAAAAAAAAAAAAAABp/P05AAAAAAAAAAEAAAAAAAAAGAAAAAAAAAABJbT82FmuwvpjSEOMSJs8PBDJi20hvk/TyzDLaJU++XcAAAAEbmFtZQAAAAAAAAAAAAAAAAAAAAA="
+
+    eth_getCodeByHash:
+      name: eth_getCodeByHash
+      description: >-
+        Returns the contract bytecode associated with a given code hash
+        (the keccak256 hash of the bytecode). Unlike `eth_getCode`, which
+        looks up code via an account address at a specific block, this
+        method resolves code directly from its hash, letting callers
+        deduplicate bytecode fetches when multiple accounts share the
+        same implementation (e.g., minimal proxies, upgradeable proxies,
+        EIP-7702 delegators). Used by MegaETH's stateless validator to
+        fetch witness-referenced contract code on demand.
+      x-compute-units: 20
+      params:
+        - name: Code hash
+          required: true
+          description: >-
+            The 32-byte keccak256 hash of the contract bytecode
+            (`codeHash` field from an account).
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Bytecode
+        description: >-
+          The bytecode associated with the given code hash, as a
+          hexadecimal string. Returns `"0x"` if no code is stored under
+          this hash.
+        schema:
+          $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+      examples:
+        - name: eth_getCodeByHash example
+          params:
+            - name: Code hash
+              value: "0xfa8c9db6c6cab7108dea276f4cd09d575674eb0852c0fa3187e59e98ef977998"
+          result:
+            name: Bytecode
+            value: "0x60806040526004361061005e5760003560e01c80635c60da1b116100435780635c60da1b146100be5780638f283970146100f8578063f851a440146101185761006d565b80633659cfe6146100755780634f1ef286146100955761006d565b3661006d5761006b61012d565b005b61006b61012d565b34801561008157600080fd5b5061006b6100903660046106dd565b610224565b6100a86100a33660046106f8565b610296565b6040516100b5919061077b565b60405180910390f35b3480156100ca57600080fd5b506100d3610419565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016100b5565b34801561010457600080fd5b5061006b6101133660046106dd565b6104b0565b34801561012457600080fd5b506100d3610517565b60006101577f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc5490565b905073ffffffffffffffffffffffffffffffffffffffff8116610201576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602560248201527f50726f78793a20696d706c656d656e746174696f6e206e6f7420696e6974696160448201527f6c697a656400000000000000000000000000000000000000000000000000000060648201526084015b60405180910390fd5b3660008037600080366000845af43d6000803e8061021e573d6000fd5b503d6000f35b7fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61035473ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16148061027d575033155b1561028e5761028b816105a3565b50565b61028b61012d565b60606102c07fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61035490565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614806102f7575033155b1561040a57610305846105a3565b6000808573ffffffffffffffffffffffffffffffffffffffff16858560405161032f9291906107ee565b600060405180830381855af49150503d806000811461036a576040519150601f19603f3d011682016040523d82523d6000602084013e61036f565b606091505b509150915081610401576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603960248201527f50726f78793a2064656c656761746563616c6c20746f206e657720696d706c6560448201527f6d656e746174696f6e20636f6e7472616374206661696c65640000000000000060648201526084016101f8565b91506104129050565b61041261012d565b9392505050565b60006104437fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61035490565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16148061047a575033155b156104a557507f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc5490565b6104ad61012d565b90565b7fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61035473ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161480610509575033155b1561028e5761028b8161060c565b60006105417fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61035490565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161480610578575033155b156104a557507fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61035490565b7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc81815560405173ffffffffffffffffffffffffffffffffffffffff8316907fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b90600090a25050565b60006106367fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61035490565b7fb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d61038381556040805173ffffffffffffffffffffffffffffffffffffffff80851682528616602082015292935090917f7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f910160405180910390a1505050565b803573ffffffffffffffffffffffffffffffffffffffff811681146106d857600080fd5b919050565b6000602082840312156106ef57600080fd5b610412826106b4565b60008060006040848603121561070d57600080fd5b610716846106b4565b9250602084013567ffffffffffffffff8082111561073357600080fd5b818601915086601f83011261074757600080fd5b81358181111561075657600080fd5b87602082850101111561076857600080fd5b6020830194508093505050509250925092565b600060208083528351808285015260005b818110156107a85785810183015185820160400152820161078c565b818111156107ba576000604083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016929092016040019392505050565b818382376000910190815291905056fea164736f6c634300080f000a"
+
+    eth_getHeaderByHash:
+      name: eth_getHeaderByHash
+      description: >-
+        Returns the block header identified by the given block hash.
+        Structurally identical to `eth_getBlockByHash` but omits body-level
+        fields (`size`, `transactions`, `uncles`, `withdrawals`), making it
+        cheaper to fetch when only consensus fields are needed (e.g.,
+        chain-tip anchoring for light clients or stateless validators).
+      x-compute-units: 20
+      params:
+        - name: Block hash
+          required: true
+          description: The 32-byte hash of the block to retrieve.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Block header
+        description: >-
+          The block header object, or `null` if no block with the given
+          hash is known.
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "./components.yaml#/components/schemas/BlockHeader"
+      examples:
+        - name: eth_getHeaderByHash example
+          params:
+            - name: Block hash
+              value: "0xec3c34973b6ba593643668f2279a715e241fc0ffe95f593b2d49fda556f1c512"
+          result:
+            name: Block header
+            value:
+              hash: "0xec3c34973b6ba593643668f2279a715e241fc0ffe95f593b2d49fda556f1c512"
+              parentHash: "0x85b055abc1eab8d988d160dd8ae9a2c07d6548f9609746348c53077cebd80262"
+              sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+              miner: "0x4200000000000000000000000000000000000011"
+              stateRoot: "0x80d2e1ad2720c9f9f3fd25a7312e0c9e158c792a37f0ce37f7f6ba2d5a8cfa04"
+              transactionsRoot: "0x92e3342c97eba7aaf7da9d96755ddda67c00574b4d90518a3ab051e5d05d7886"
+              receiptsRoot: "0x42d0fd6b9b85b2da166fb9cf8b73d6f0325b14d676a2913fd7e3c8876d7430b7"
+              logsBloom: "0x0000000100000040001000000000000000200000020080008000000000200500000002000200008000000001000000000000000020000800000040000840008000000000000000000000010840040010001000000000000000010000000100000000000002000000000000000000880080004400000000000004001000000000000000000068000000000001000000001000000000004102000000000040000010080000000000000200000000000004402000402000000000008002000201000000000200a2000000000000000440000000000000000000400000000000a0000400000000008000000000000000000000000080080440000000000000000000"
+              difficulty: "0x0"
+              number: "0x14855a6"
+              gasLimit: "0x2540be400"
+              gasUsed: "0x855371"
+              timestamp: "0x6a5a7b79"
+              extraData: "0x00000000fa00000001"
+              mixHash: "0xcb1f34415ed865cc2a378d1dd767225c8f594560dd39fbf92c29aadec3a4ab78"
+              nonce: "0x0000000000000000"
+              baseFeePerGas: "0xf4240"
+              withdrawalsRoot: "0xcd9d73e1502e68817b06212100d7529fc71d1e8741d712ef8e68310e3600cc26"
+              blobGasUsed: "0x0"
+              excessBlobGas: "0x0"
+              parentBeaconBlockRoot: "0x602625e5c228d3ea1c71f2c9a596ce93c7c9a9e2f2a1c733c832e3a0369cb31c"
+              requestsHash: "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+    eth_getHeaderByNumber:
+      name: eth_getHeaderByNumber
+      description: >-
+        Returns the block header identified by the given block number or
+        tag. Structurally identical to `eth_getBlockByNumber` but omits
+        body-level fields (`size`, `transactions`, `uncles`,
+        `withdrawals`). Accepts the standard block tags (`earliest`,
+        `latest`, `safe`, `finalized`, `pending`) in addition to a
+        hex-encoded block number.
+      x-compute-units: 20
+      params:
+        - name: Block number or tag
+          required: true
+          description: >-
+            The block number as a hex-encoded quantity, or one of the
+            named tags `earliest`, `latest`, `safe`, `finalized`,
+            `pending`.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+      result:
+        name: Block header
+        description: >-
+          The block header object, or `null` if the block does not
+          exist (for example, a future block number).
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "./components.yaml#/components/schemas/BlockHeader"
+      examples:
+        - name: eth_getHeaderByNumber example
+          params:
+            - name: Block number or tag
+              value: "finalized"
+          result:
+            name: Block header
+            value:
+              hash: "0xec3c34973b6ba593643668f2279a715e241fc0ffe95f593b2d49fda556f1c512"
+              parentHash: "0x85b055abc1eab8d988d160dd8ae9a2c07d6548f9609746348c53077cebd80262"
+              sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+              miner: "0x4200000000000000000000000000000000000011"
+              stateRoot: "0x80d2e1ad2720c9f9f3fd25a7312e0c9e158c792a37f0ce37f7f6ba2d5a8cfa04"
+              transactionsRoot: "0x92e3342c97eba7aaf7da9d96755ddda67c00574b4d90518a3ab051e5d05d7886"
+              receiptsRoot: "0x42d0fd6b9b85b2da166fb9cf8b73d6f0325b14d676a2913fd7e3c8876d7430b7"
+              logsBloom: "0x0000000100000040001000000000000000200000020080008000000000200500000002000200008000000001000000000000000020000800000040000840008000000000000000000000010840040010001000000000000000010000000100000000000002000000000000000000880080004400000000000004001000000000000000000068000000000001000000001000000000004102000000000040000010080000000000000200000000000004402000402000000000008002000201000000000200a2000000000000000440000000000000000000400000000000a0000400000000008000000000000000000000000080080440000000000000000000"
+              difficulty: "0x0"
+              number: "0x14855a6"
+              gasLimit: "0x2540be400"
+              gasUsed: "0x855371"
+              timestamp: "0x6a5a7b79"
+              extraData: "0x00000000fa00000001"
+              mixHash: "0xcb1f34415ed865cc2a378d1dd767225c8f594560dd39fbf92c29aadec3a4ab78"
+              nonce: "0x0000000000000000"
+              baseFeePerGas: "0xf4240"
+              withdrawalsRoot: "0xcd9d73e1502e68817b06212100d7529fc71d1e8741d712ef8e68310e3600cc26"
+              blobGasUsed: "0x0"
+              excessBlobGas: "0x0"
+              parentBeaconBlockRoot: "0x602625e5c228d3ea1c71f2c9a596ce93c7c9a9e2f2a1c733c832e3a0369cb31c"
+              requestsHash: "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
