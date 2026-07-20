@@ -16,14 +16,14 @@ servers:
     name: Solana Devnet (endpoint subject to change)
 
 methods:
-  - name: getAsset
+  - name: getAsset_v2
     description: >
       Returns detailed information for a single Solana NFT, compressed NFT, or
       token including metadata, ownership, price data, and on-chain attributes.
       **Price data caching:** `token_info.price_info` values are cached and may
       be up to 600 seconds old. Coverage is limited to the top 10,000 tokens by
       24-hour volume.
-    x-compute-units: 80
+    x-compute-units: 160
     x-rate-limit-cus: 200
     paramStructure: by-name
     params:
@@ -38,7 +38,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetAsset
     examples:
-      - name: getAsset example
+      - name: getAsset_v2 example
         params:
           - name: id
             value: "F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk"
@@ -122,7 +122,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/Asset
 
-  - name: getAssetBatch
+  - name: getAssetBatch_v2
     description: >
       Returns detailed information for up to 1,000 Solana NFTs, compressed NFTs,
       or tokens in a single efficient batch request. Results are returned in the
@@ -144,7 +144,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetAsset
     examples:
-      - name: getAssetBatch example
+      - name: getAssetBatch_v2 example
         params:
           - name: ids
             value:
@@ -197,7 +197,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetBatch
 
-  - name: getAssetProof
+  - name: getAssetProof_v2
     description: >
       Returns the cryptographic merkle proof for a compressed Solana NFT. The
       proof is required to validate a compressed asset's existence and data
@@ -213,7 +213,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetId
     examples:
-      - name: getAssetProof example
+      - name: getAssetProof_v2 example
         params:
           - name: id
             value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
@@ -247,7 +247,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/MerkleProof
 
-  - name: getAssetProofBatch
+  - name: getAssetProofBatch_v2
     description: >
       Returns merkle proofs for multiple compressed Solana NFTs in a single
       batch request. The response is an object keyed by asset ID, where each
@@ -264,7 +264,7 @@ methods:
           items:
             $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetId
     examples:
-      - name: getAssetProofBatch example
+      - name: getAssetProofBatch_v2 example
         params:
           - name: ids
             value:
@@ -301,7 +301,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/MerkleProofBatch
 
-  - name: getAssetsByAuthority
+  - name: getAssetsByAuthority_v2
     description: >
       Returns all Solana NFTs, compressed NFTs, and tokens controlled by a
       specific authority address, with pagination support.
@@ -345,7 +345,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsAssetList
     examples:
-      - name: getAssetsByAuthority example
+      - name: getAssetsByAuthority_v2 example
         params:
           - name: authorityAddress
             value: "2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW"
@@ -410,7 +410,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
 
-  - name: getAssetsByCreator
+  - name: getAssetsByCreator_v2
     description: >
       Returns all Solana NFTs and compressed NFTs where the specified wallet is
       listed as a creator, with optional verified-only filtering and pagination
@@ -455,7 +455,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsAssetList
     examples:
-      - name: getAssetsByCreator example
+      - name: getAssetsByCreator_v2 example
         params:
           - name: creatorAddress
             value: "D3XrkNZz6wx6cofot7Zohsf2KSsu2ArngNk8VqU9cTY3"
@@ -516,7 +516,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
 
-  - name: getAssetsByGroup
+  - name: getAssetsByGroup_v2
     description: >
       Returns all Solana NFTs and compressed NFTs belonging to a specific group
       identified by `groupKey` and `groupValue` (for example, all assets in a
@@ -568,7 +568,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsAssetList
     examples:
-      - name: getAssetsByGroup example
+      - name: getAssetsByGroup_v2 example
         params:
           - name: groupKey
             value: "collection"
@@ -629,7 +629,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
 
-  - name: getAssetsByOwner
+  - name: getAssetsByOwner_v2
     description: >
       Returns all Solana NFTs, compressed NFTs, and (optionally) fungible tokens
       owned by a specific wallet address, with sorting and pagination options.
@@ -675,7 +675,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetAssetsByOwner
     examples:
-      - name: getAssetsByOwner example
+      - name: getAssetsByOwner_v2 example
         params:
           - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
@@ -745,7 +745,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
 
-  - name: getNftEditions
+  - name: getNftEditions_v2
     description: >
       Returns all editions and prints of a Solana master edition NFT, including
       edition numbers and metadata, with pagination support.
@@ -769,7 +769,7 @@ methods:
         schema:
           type: integer
     examples:
-      - name: getNftEditions example
+      - name: getNftEditions_v2 example
         params:
           - name: mint
             value: "Ey2Qb8kLctbchQsMnhZs5DjY32To2QtPuXNwWvk4NosL"
@@ -803,7 +803,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/NftEditionList
 
-  - name: getSignaturesForAsset
+  - name: getSignaturesForAsset_v2
     description: >
       Returns all historical transaction signatures for a Solana NFT or
       compressed NFT (mint, transfers, burns, and other state changes), with
@@ -843,7 +843,7 @@ methods:
         schema:
           type: string
     examples:
-      - name: getSignaturesForAsset example
+      - name: getSignaturesForAsset_v2 example
         params:
           - name: id
             value: "FNt6A9Mfnqbwc1tY7uwAguKQ1JcpBrxmhczDgbdJy5AC"
@@ -868,7 +868,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetSignatureList
 
-  - name: getTokenAccounts
+  - name: getTokenAccounts_v2
     description: >
       Returns all SPL token accounts for a given `mint` and/or `owner`,
       including token balances, mint addresses, and account metadata. At least
@@ -918,7 +918,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetTokenAccounts
     examples:
-      - name: getTokenAccounts example
+      - name: getTokenAccounts_v2 example
         params:
           - name: owner
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
@@ -952,7 +952,7 @@ methods:
       schema:
         $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/TokenAccountList
 
-  - name: searchAssets
+  - name: searchAssets_v2
     description: >
       Search and filter Solana NFTs, compressed NFTs, and tokens using flexible
       criteria including ownership, creators, collections, and custom
@@ -1116,7 +1116,7 @@ methods:
         schema:
           $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsSearchAssets
     examples:
-      - name: searchAssets example
+      - name: searchAssets_v2 example
         params:
           - name: ownerAddress
             value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
