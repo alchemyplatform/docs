@@ -60,7 +60,12 @@ To do so, follow the next steps:
 
    1. Use [`eth_maxPriorityFeePerGas`](/docs/chains/ethereum/ethereum-api-endpoints/eth-max-priority-fee-per-gas) to obtain `maxPriorityFeePerGas`. This method is also available on web3 libraries like `ethers.js` and can be accessed through the provider as `provider.getFeeData()`.
 
-2. **Choose the suitable increase values**: Once you have the re-estimated gas fees, choose the maximum of a 10% increase or the re-estimated values. This ensures that your new gas fee is competitively priced to be included in a block.
+2. **Choose the suitable increase values**: Once you have the re-estimated gas fees, choose the maximum of a 10% increase or the re-estimated values. This ensures that your new gas fee is competitively priced to be included in a block. Apply this comparison separately to each field:
+
+   * `maxFeePerGas`: `max(current maxFeePerGas * 1.1, re-estimated maxFeePerGas)`
+   * `maxPriorityFeePerGas`: `max(current maxPriorityFeePerGas * 1.1, re-estimated maxPriorityFeePerGas)`
+
+   For example, if your stuck userOp was sent with `maxFeePerGas: 2 gwei` and `maxPriorityFeePerGas: 0.1 gwei`, and re-estimating returns `maxFeePerGas: 1.8 gwei` and `maxPriorityFeePerGas: 0.12 gwei` (fees eased since your last submission), a straight 10% bump beats the re-estimate for `maxFeePerGas` but not for `maxPriorityFeePerGas`. You'd resend with `maxFeePerGas: 2.2 gwei` (2 &times; 1.1) and `maxPriorityFeePerGas: 0.12 gwei` (the higher re-estimated value).
 
 3. **Account for Rundler's service tip**: Rundler requires a small tip for its services via `maxPriorityFeePerGas`. Detailed information about this can be found [below](/docs/reference/bundler-faqs#fees).
 
