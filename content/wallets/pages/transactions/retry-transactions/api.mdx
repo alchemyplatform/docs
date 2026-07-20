@@ -102,6 +102,13 @@ If `status` remains 100 (Pending) for too long, proceed to retry.
 
 To replace the stuck transaction, re-prepare the same call. This will automatically use the same nonce as the pending transaction as long as you don't override the nonce!
 
+<Info>
+  You don't need to set higher gas fees yourself. When re-preparing a stuck
+  call, the Wallet APIs automatically bump the gas fees by 10% over the pending
+  transaction (or to the current network minimum, whichever is higher) so the
+  replacement is priced high enough to evict the original from the mempool.
+</Info>
+
 ```bash
 curl -X POST https://api.g.alchemy.com/v2/{API_KEY} \
   -H "Content-Type: application/json" \
