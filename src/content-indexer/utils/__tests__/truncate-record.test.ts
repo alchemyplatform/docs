@@ -14,6 +14,7 @@ describe("truncateRecord", () => {
       title: "Quickstart",
       content: "Short content",
       breadcrumbs: ["Guides"],
+      pageRank: 0,
     };
 
     const result = truncateRecord(record);
@@ -32,6 +33,7 @@ describe("truncateRecord", () => {
       title: "Large Page",
       content: largeContent,
       breadcrumbs: ["Guides"],
+      pageRank: 0,
     };
 
     const result = truncateRecord(record);
@@ -54,6 +56,7 @@ describe("truncateRecord", () => {
       content: largeContent,
       breadcrumbs: ["API", "Ethereum"],
       httpMethod: "POST",
+      pageRank: 0,
     };
 
     const result = truncateRecord(record);
@@ -74,6 +77,7 @@ describe("truncateRecord", () => {
       title: "Test",
       content: "Content",
       breadcrumbs: Array(50_000).fill("B"), // Many breadcrumbs = huge overhead
+      pageRank: 0,
     };
 
     expect(() => truncateRecord(record)).toThrow(
@@ -93,6 +97,7 @@ describe("truncateRecord", () => {
       title: "Large Page",
       content: largeContent,
       breadcrumbs: [],
+      pageRank: 0,
     };
 
     truncateRecord(record);
@@ -118,6 +123,7 @@ describe("truncateRecord", () => {
       title: "Title",
       content,
       breadcrumbs: [],
+      pageRank: 0,
     };
 
     const result = truncateRecord(record);
