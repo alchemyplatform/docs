@@ -1,0 +1,674 @@
+components:
+  schemas:
+    AssetId:
+      title: Asset ID
+      type: string
+      description: The ID of the asset, typically a base-58 encoded string (mint address).
+
+    OptionsGetAsset:
+      title: getAsset options
+      type: object
+      description: Optional display and formatting flags accepted by the Alchemy DAS proxy on `getAsset` and `getAssetBatch`.
+      properties:
+        showUnverifiedCollections:
+          type: boolean
+          description: Displays grouping information for unverified collections instead of skipping them.
+          default: false
+        showCollectionMetadata:
+          type: boolean
+          description: Displays metadata for the collection.
+          default: false
+        showFungible:
+          type: boolean
+          description: Displays fungible tokens held by the owner.
+          default: false
+
+    OptionsAssetList:
+      title: Asset list options
+      type: object
+      description: >
+        Optional display and formatting flags accepted by list-style DAS v2 methods
+        (`getAssetsByAuthority`, `getAssetsByCreator`, `getAssetsByGroup`).
+      properties:
+        showUnverifiedCollections:
+          type: boolean
+          description: Displays grouping information for unverified collections instead of skipping them.
+          default: false
+        showCollectionMetadata:
+          type: boolean
+          description: Displays metadata for the collection.
+          default: false
+        showGrandTotal:
+          type: boolean
+          description: Shows the total number of assets that matched the query. This will make the request slower.
+          default: false
+
+    OptionsGetAssetsByOwner:
+      title: getAssetsByOwner options
+      type: object
+      description: Optional display and formatting flags for `getAssetsByOwner`.
+      properties:
+        showUnverifiedCollections:
+          type: boolean
+          description: Include grouping information for unverified NFT collections.
+          default: false
+        showCollectionMetadata:
+          type: boolean
+          description: Include detailed metadata for NFT collections.
+          default: false
+        showGrandTotal:
+          type: boolean
+          description: Include the total count of all assets owned by the address (slower).
+          default: false
+        showFungible:
+          type: boolean
+          description: Include SPL tokens and fungible assets held by the wallet.
+          default: false
+        showNativeBalance:
+          type: boolean
+          description: Include native SOL balance held by the wallet.
+          default: false
+        showZeroBalance:
+          type: boolean
+          description: Include assets with zero balance in the ownership list.
+          default: false
+
+    OptionsSearchAssets:
+      title: searchAssets options
+      type: object
+      description: Advanced display options for the `searchAssets` response.
+      properties:
+        showUnverifiedCollections:
+          type: boolean
+          description: Show unverified collections instead of skipping them.
+          default: false
+        showCollectionMetadata:
+          type: boolean
+          description: Show metadata for the collection.
+          default: false
+        showGrandTotal:
+          type: boolean
+          description: Show total number of matching assets (slower request).
+          default: false
+        showNativeBalance:
+          type: boolean
+          description: Show the native SOL balance of the owner.
+          default: false
+        showZeroBalance:
+          type: boolean
+          description: Display assets with zero balance.
+          default: false
+
+    OptionsGetTokenAccounts:
+      title: getTokenAccounts options
+      type: object
+      description: Optional display flags for `getTokenAccounts`.
+      properties:
+        showZeroBalance:
+          type: boolean
+          description: If true, show accounts with empty token balances.
+          default: false
+
+    SortBy:
+      title: Sort criteria
+      type: object
+      description: Sorting configuration for ordering the returned assets.
+      properties:
+        sortBy:
+          type: string
+          description: The criteria by which the retrieved assets will be sorted.
+          enum:
+            - created
+            - recent_action
+            - updated
+            - none
+        sortDirection:
+          type: string
+          description: The direction by which the retrieved assets will be sorted.
+          enum:
+            - asc
+            - desc
+
+    AssetInterface:
+      title: Asset interface
+      type: string
+      description: >
+        The interface type of the Solana digital asset, indicating its token
+        standard and implementation. v2 adds MPL Core interfaces (`MplCoreAsset`,
+        `MplCoreCollection`, `MplCoreGroup`) and `MplBubblegumV2` for the newer
+        Bubblegum V2 compressed-NFT program.
+      enum:
+        - V1_NFT
+        - V1_PRINT
+        - LEGACY_NFT
+        - V2_NFT
+        - FungibleAsset
+        - FungibleToken
+        - Custom
+        - Identity
+        - Executable
+        - ProgrammableNFT
+        - MplCoreAsset
+        - MplBubblegumV2
+        - MplCoreCollection
+        - MplCoreGroup
+
+    AssetContent:
+      title: Asset content
+      type: object
+      description: Content and off-chain metadata for the asset.
+      properties:
+        $schema:
+          type: string
+          description: The schema URL for the asset metadata.
+        json_uri:
+          type: string
+          description: URI pointing to the JSON metadata, typically hosted on Arweave or other decentralized storage.
+        files:
+          type: array
+          description: Files associated with the asset (images, videos, etc.).
+          items:
+            type: object
+            properties:
+              uri:
+                type: string
+              cdn_uri:
+                type: string
+              mime:
+                type: string
+        metadata:
+          type: object
+          description: Complete metadata for the asset.
+          properties:
+            name:
+              type: string
+            symbol:
+              type: string
+            description:
+              type: string
+            token_standard:
+              type: string
+            attributes:
+              type: array
+              items:
+                type: object
+                properties:
+                  trait_type:
+                    type: string
+                  value:
+                    type: string
+        links:
+          type: object
+          description: External links related to the asset.
+
+    AssetAuthority:
+      title: Asset authority
+      type: object
+      description: An update-authority entry for the asset.
+      properties:
+        address:
+          type: string
+          description: The authority's address.
+        scopes:
+          type: array
+          description: The scopes of authority.
+          items:
+            type: string
+
+    AssetCompression:
+      title: Asset compression
+      type: object
+      description: State-compression details for the asset.
+      properties:
+        eligible:
+          type: boolean
+          description: Whether the asset is eligible for compression.
+        compressed:
+          type: boolean
+          description: Whether the asset is currently compressed using Solana's state compression.
+        data_hash:
+          type: string
+          description: Hash of the asset data.
+        creator_hash:
+          type: string
+          description: Hash of the creator data.
+        asset_hash:
+          type: string
+          description: Hash of the entire asset.
+        tree:
+          type: string
+          description: Merkle tree address.
+        seq:
+          type: integer
+          description: Sequence number.
+        leaf_id:
+          type: integer
+          description: Leaf identifier in the merkle tree.
+
+    AssetGrouping:
+      title: Asset grouping
+      type: object
+      description: A grouping entry (for example, a collection membership).
+      properties:
+        group_key:
+          type: string
+          description: The key identifying the group (e.g., `collection`).
+        group_value:
+          type: string
+          description: The value associated with the group.
+
+    AssetRoyalty:
+      title: Asset royalty
+      type: object
+      description: Royalty configuration for marketplace sales.
+      properties:
+        royalty_model:
+          type: string
+          description: The model used for royalties.
+        target:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: The target address for royalties (nullable).
+        percent:
+          type: number
+          description: Royalty percentage.
+        basis_points:
+          type: integer
+          description: Royalty basis points.
+        primary_sale_happened:
+          type: boolean
+          description: Whether the primary sale has occurred.
+        locked:
+          type: boolean
+          description: Whether the royalty is locked.
+
+    AssetCreator:
+      title: Asset creator
+      type: object
+      description: A creator entry for the asset.
+      properties:
+        address:
+          type: string
+          description: The creator's address.
+        share:
+          type: integer
+          description: The creator's share percentage.
+        verified:
+          type: boolean
+          description: Whether the creator is verified.
+
+    AssetOwnership:
+      title: Asset ownership
+      type: object
+      description: Current ownership details for the asset.
+      required: [frozen, delegated, ownership_model, owner]
+      properties:
+        frozen:
+          type: boolean
+          description: Whether the asset is frozen.
+        delegated:
+          type: boolean
+          description: Whether the asset is delegated.
+        delegate:
+          oneOf:
+            - type: string
+            - type: "null"
+          description: The delegate's address if delegated (nullable).
+        ownership_model:
+          type: string
+          description: The model of ownership.
+        owner:
+          type: string
+          description: The owner's address.
+
+    AssetSupply:
+      title: Asset supply
+      type: object
+      description: Supply information for editioned assets.
+      properties:
+        print_max_supply:
+          type: integer
+          description: Maximum supply that can be printed.
+        print_current_supply:
+          type: integer
+          description: Current printed supply.
+        edition_nonce:
+          type: integer
+          description: Edition nonce.
+
+    TokenInfo:
+      title: Token info
+      type: object
+      description: Token-specific information, including cached price data for the top 10k tokens by 24h volume.
+      properties:
+        supply:
+          type: integer
+          description: Total token supply.
+        decimals:
+          type: integer
+          description: Number of decimals.
+        token_program:
+          type: string
+          description: Token program ID.
+        mint_authority:
+          type: string
+          description: Mint authority address.
+        freeze_authority:
+          type: string
+          description: Freeze authority address.
+        symbol:
+          type: string
+          description: The symbol of the token.
+        price_info:
+          type: object
+          description: Cached price information for the token (up to 600 seconds old).
+          properties:
+            price_per_token:
+              type: number
+              description: The price per individual token.
+            currency:
+              type: string
+              description: The currency in which the token's price is denoted.
+
+    Plugins:
+      title: MPL Core plugins
+      type: object
+      description: MPL Core plugin payload. May include a `groups` plugin (MIP-11) on assets and collections.
+      additionalProperties: true
+      properties:
+        groups:
+          type: object
+          description: MIP-11 Groups plugin with membership metadata.
+          properties:
+            authority:
+              type: object
+              description: Plugin authority (for example, `UpdateAuthority`).
+              additionalProperties: true
+            data:
+              type: object
+              properties:
+                groups:
+                  type: array
+                  description: Group memberships for this asset or collection.
+                  items:
+                    type: object
+                    properties:
+                      group_address:
+                        type: string
+                        description: Base58 address of the MPL Core group account.
+                      member_number:
+                        type: integer
+                        description: Member number within the group.
+
+    Asset:
+      title: Asset
+      type: object
+      description: A DAS v2 digital asset entry.
+      properties:
+        last_indexed_slot:
+          type: integer
+          description: All on-chain data up to and including this slot is guaranteed to have been indexed.
+        interface:
+          $ref: "#/components/schemas/AssetInterface"
+        is_agent:
+          type: boolean
+          description: >
+            Whether this asset has an Agent Identity. Only true for MPL Core assets
+            that use the AgentIdentity external plugin adapter. Defaults to false and
+            is omitted from the response when false.
+        agent_token:
+          type: string
+          description: Base58-encoded mint address of the agent token from the Agent Registry program. Omitted when the asset has no corresponding registry entry.
+        asset_signer:
+          type: string
+          description: Base58-encoded PDA used for signing on behalf of the asset. Omitted when not applicable.
+        id:
+          type: string
+          description: The unique identifier of the asset.
+        content:
+          $ref: "#/components/schemas/AssetContent"
+        authorities:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetAuthority"
+        compression:
+          $ref: "#/components/schemas/AssetCompression"
+        grouping:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetGrouping"
+        royalty:
+          $ref: "#/components/schemas/AssetRoyalty"
+        creators:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetCreator"
+        ownership:
+          $ref: "#/components/schemas/AssetOwnership"
+        supply:
+          oneOf:
+            - $ref: "#/components/schemas/AssetSupply"
+            - type: "null"
+        mutable:
+          type: boolean
+          description: Whether the asset is mutable.
+        burnt:
+          type: boolean
+          description: Whether the asset has been burnt.
+        token_info:
+          $ref: "#/components/schemas/TokenInfo"
+        plugins:
+          $ref: "#/components/schemas/Plugins"
+
+    AssetBatch:
+      title: Asset batch
+      type: array
+      description: An array of assets returned by `getAssetBatch` (one per requested ID, in the same order).
+      items:
+        $ref: "#/components/schemas/Asset"
+
+    AssetPage:
+      title: Asset page
+      type: object
+      description: >
+        A paginated page of assets. Returned by list-style methods:
+        `getAssetsByAuthority`, `getAssetsByCreator`, `getAssetsByGroup`,
+        `getAssetsByOwner`.
+      properties:
+        last_indexed_slot:
+          type: integer
+          description: All on-chain data up to and including this slot is guaranteed to have been indexed.
+        total:
+          type: integer
+          description: The total number of assets found.
+        limit:
+          type: integer
+          description: The maximum number of assets requested.
+        page:
+          type: integer
+          description: The current page of results.
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+
+    MerkleProof:
+      title: Merkle proof
+      type: object
+      description: Merkle proof information for a compressed asset.
+      properties:
+        last_indexed_slot:
+          type: integer
+          description: All on-chain data up to and including this slot is guaranteed to have been indexed.
+        root:
+          type: string
+          description: The root hash of the state-compression merkle tree containing this compressed NFT.
+        proof:
+          type: array
+          description: The array of merkle proof hashes needed to cryptographically verify this compressed NFT exists in the tree.
+          items:
+            type: string
+        node_index:
+          type: integer
+          description: The position index of this compressed NFT in the merkle tree structure.
+        leaf:
+          type: string
+          description: The leaf hash representing this compressed NFT's data in the merkle tree.
+        tree_id:
+          type: string
+          description: The unique identifier of the merkle tree where this compressed NFT is stored.
+        burnt:
+          type: boolean
+          description: Whether the asset has been burnt.
+
+    MerkleProofBatch:
+      title: Merkle proof batch
+      type: object
+      description: >
+        A batch of merkle proofs keyed by asset ID. The response is an object where
+        each key is a requested asset ID and each value is the corresponding
+        `MerkleProof` (or null if not found).
+      additionalProperties:
+        $ref: "#/components/schemas/MerkleProof"
+
+    AssetSignatureList:
+      title: Asset signature list
+      type: object
+      description: A paginated list of transaction signatures affecting a compressed asset.
+      properties:
+        last_indexed_slot:
+          type: integer
+          description: All on-chain data up to and including this slot is guaranteed to have been indexed.
+        total:
+          type: integer
+          description: The total number of transactions found in this asset's history.
+        limit:
+          type: integer
+          description: The maximum number of signatures requested per page.
+        items:
+          type: array
+          description: An array of `[signature, operation_type]` tuples, one per transaction.
+          items:
+            type: array
+            description: A 2-element tuple of `[signature, operation]`.
+            items:
+              type: string
+
+    NftEdition:
+      title: NFT edition
+      type: object
+      description: An individual NFT edition minted from a master edition.
+      properties:
+        mint:
+          type: string
+          description: The unique mint address of this individual NFT edition.
+        edition_address:
+          type: string
+          description: The blockchain address of this edition account.
+        edition:
+          type: integer
+          description: The sequential edition number of this NFT in the print series.
+
+    NftEditionList:
+      title: NFT edition list
+      type: object
+      description: A paginated list of editions minted from a master edition NFT.
+      properties:
+        last_indexed_slot:
+          type: integer
+          description: All on-chain data up to and including this slot is guaranteed to have been indexed.
+        total:
+          type: integer
+          description: The total number of limited-edition NFTs minted from this master edition.
+        limit:
+          type: integer
+          description: The maximum number of NFT editions requested.
+        page:
+          type: integer
+          description: The current page of results.
+        master_edition_address:
+          type: string
+          description: The address of the master edition NFT that controls the print editions.
+        supply:
+          type: integer
+          description: Current supply of minted NFT editions from this master edition.
+        max_supply:
+          type: integer
+          description: Maximum possible supply of NFT editions that can be minted from this master.
+        editions:
+          type: array
+          description: An array of individual NFT editions minted from this master edition.
+          items:
+            $ref: "#/components/schemas/NftEdition"
+
+    TokenAccount:
+      title: Token account
+      type: object
+      description: An SPL token account.
+      properties:
+        address:
+          type: string
+          description: The address of the token account.
+        mint:
+          type: string
+          description: The address of the mint account.
+        owner:
+          type: string
+          description: The address of the token account owner.
+        amount:
+          type: integer
+          description: Number of tokens in the account.
+        delegated_amount:
+          type: integer
+          description: Number of delegated tokens in the account.
+        frozen:
+          type: boolean
+          description: Whether the account is frozen.
+
+    TokenAccountList:
+      title: Token account list
+      type: object
+      description: A paginated list of SPL token accounts for a mint and/or owner.
+      properties:
+        last_indexed_slot:
+          type: integer
+          description: All on-chain data up to and including this slot is guaranteed to have been indexed.
+        total:
+          type: integer
+          description: The number of results found for the request.
+        limit:
+          type: integer
+          description: The maximum number of results requested.
+        cursor:
+          type: string
+          description: The cursor used for pagination.
+        token_accounts:
+          type: array
+          description: An array of token accounts.
+          items:
+            $ref: "#/components/schemas/TokenAccount"
+
+    SearchAssetsResult:
+      title: searchAssets result
+      type: object
+      description: >
+        The result envelope for `searchAssets`. The `assets` field holds a
+        paginated page of matching assets; `nativeBalance` is present only when
+        `options.showNativeBalance` was set.
+      properties:
+        assets:
+          $ref: "#/components/schemas/AssetPage"
+        nativeBalance:
+          type: object
+          description: The native SOL balance of the queried wallet in lamports and USD value.
+          properties:
+            lamports:
+              type: integer
+              description: The number of lamports in the account.
+            price_per_sol:
+              type: number
+              description: The current price of SOL.
+            total_price:
+              type: number
+              description: The total SOL value in this account.
