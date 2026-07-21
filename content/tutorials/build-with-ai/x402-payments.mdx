@@ -5,7 +5,7 @@ subtitle: Pay compatible x402 v2 APIs in USDC from the Alchemy CLI. Decode 402 P
 slug: docs/x402-payments
 ---
 
-`alchemy x402 request <url>` is curl that can pay. When a compatible x402 v2 endpoint returns `402 Payment Required`, the CLI selects a supported EVM payment option and applies your spend cap or asks for confirmation. It signs with your [Agent Wallet session](docs/agent-wallets) or a local EVM wallet, retries the request once, and returns the resource with a payment receipt.
+`alchemy x402 request <url>` is curl that can pay. When a compatible x402 v2 endpoint returns `402 Payment Required`, the CLI selects a supported EVM payment option and applies your spend cap or asks for confirmation. It signs with your [Agent Wallet session](docs/agent-wallets), retries the request once, and returns the resource with a payment receipt.
 
 Automated capped payments support recognized USDC. In an uncapped interactive terminal, the CLI may also present another compatible `exact`-scheme asset for manual confirmation.
 
@@ -20,7 +20,7 @@ This command is available in `@alchemy/cli` 0.22.0 and later. Run `alchemy help 
 1. The CLI sends your request with no payment attached.
 2. If the resource is free, the server responds normally and the CLI returns it — nothing else happens.
 3. If payment is required, the server responds `402 Payment Required` with a machine-readable quote (price, network, and accepted payment schemes).
-4. The CLI checks your authorization (a spend cap or your confirmation), verifies the quote, and signs the selected payment with your Agent Wallet session or a local key.
+4. The CLI checks your authorization (a spend cap or your confirmation), verifies the quote, and signs the selected payment with your configured signer.
 5. The CLI retries the request with the signed payment attached and returns the resource along with a payment receipt.
 
 This is the open [x402 protocol](https://www.x402.org/). The CLI supports x402 v2 endpoints that offer compatible EVM `exact` payments, including Circle Gateway batched payments. It does not support x402 v1, Solana payment options, or other payment schemes.
@@ -29,7 +29,6 @@ This is the open [x402 protocol](https://www.x402.org/). The CLI supports x402 v
 
 * Install the CLI: `npm i -g @alchemy/cli@latest`
 * For session signing, run `alchemy auth` and connect an [Agent Wallet session](docs/agent-wallets) with `alchemy wallet connect --mode session`
-* For local signing, configure local wallets with `alchemy wallet connect --mode local` or use the [CLI wallet configuration](docs/alchemy-cli#wallets-and-signing) (`--wallet-key-file` or `ALCHEMY_WALLET_KEY`)
 * Fund the [payment path](#how-payment-schemes-work) the server offers. Capped payments use wallet-held USDC for direct settlement or a Gateway balance. An uncapped interactive quote for another asset requires that asset in the signing wallet.
 
 <Tip>
