@@ -1,0 +1,350 @@
+---
+title: x402 Payments
+description: Pay any x402-enabled API in USDC from the Alchemy CLI. Decode 402 Payment Required quotes, set a spend cap, pay with an Agent Wallet session, and get a payment receipt.
+subtitle: Pay any x402-enabled API in USDC from the Alchemy CLI. Decode 402 Payment Required quotes, set a spend cap, pay with an Agent Wallet session, and get a payment receipt.
+slug: docs/x402-payments
+---
+
+`alchemy x402 request <url>` is curl that can pay. It makes an HTTP request, and if the server responds `402 Payment Required`, the CLI decodes the payment quote, pays in USDC — signed by your [Agent Wallet session](docs/agent-wallets), with no private key or API key handled by the agent — retries the request, and returns the resource plus a payment receipt. It works against any server that speaks the x402 v2 protocol, not just Alchemy endpoints.
+
+This guide reflects `@alchemy/cli` 0.22.0 and later, at the time of writing. Run `alchemy help x402` for the current command surface.
+
+<Note>
+  This page is about paying **third-party** x402-enabled APIs. It is not the global `--x402` flag or `alchemy config set x402`, which use **x402 gateway auth** to pay Alchemy for Alchemy API access — see [Wallet Auth for Alchemy APIs](docs/alchemy-for-agents).
+</Note>
+
+```bash
+alchemy x402 request https://nano.blockrun.ai/api/v1/pm/matching-markets/pairs --estimate
+```
+
+## How it works
+
+1. The CLI sends your request with no payment attached.
+2. If the resource is free, the server responds normally and the CLI returns it — nothing else happens.
+3. If payment is required, the server responds `402 Payment Required` with a machine-readable quote (price, network, and accepted payment schemes).
+4. The CLI checks your authorization (a spend cap or your confirmation), verifies the quote, and signs a USDC payment with your Agent Wallet session or a local key.
+5. The CLI retries the request with the signed payment attached and returns the resource along with a payment receipt.
+
+This is the open [x402 protocol](https://www.x402.org/) — the CLI is a generic buyer for any compliant server, not just Alchemy's own APIs.
+
+## Before you begin
+
+* Install the CLI and sign in: `npm i -g @alchemy/cli@latest` and `alchemy auth`
+* Connect an [Agent Wallet session](docs/agent-wallets) (`alchemy wallet connect --mode session`), or use a local EVM wallet with `--signer local`
+* USDC funding — how much depends on which [payment scheme](#how-payment-schemes-work) the server offers; see [funding Circle Gateway](#fund-circle-gateway-for-batched-payments) below
+
+<Tip>
+  `--estimate` needs none of this. It decodes the quote and pays nothing, so it's the best first command to run against any x402 URL.
+</Tip>
+
+## Decode a quote with --estimate
+
+`--estimate` sends the request, decodes the `402` quote, and prints it. It never signs or pays, so it's always free to run.
+
+```bash
+alchemy x402 request https://nano.blockrun.ai/api/v1/pm/matching-markets/pairs --estimate
+```
+
+```text
+  Provider  nano.blockrun.ai
+  Resource  Get all active exact-matched market pairs
+  Scheme    exact (Circle Gateway batched)
+  Network   eip155:137 (polygon-mainnet)
+  Amount    0.005 USDC
+  Decision  estimate only
+```
+
+The price, scheme, and network are set by the server and may change — this is what BlockRun advertised at the time of writing.
+
+<Check>
+  If you see a decoded quote, the CLI handled a live `402` end to end. Nothing was signed and nothing was spent.
+</Check>
+
+## Authorize payments: cap or confirm
+
+The CLI never pays on its own authority. Every payment needs an explicit authorization:
+
+* **Interactive terminal:** the CLI prints the quote and asks you to confirm before signing.
+* **Non-interactive runs** — scripts, `--json`, piped output, `--no-interactive`, or `-y/--yes` — require `--max-payment <usdc>`, a hard ceiling on what this invocation may spend. `--yes` without a cap fails by design:
+
+  ```bash
+  alchemy x402 request https://nano.blockrun.ai/api/v1/pm/matching-markets/pairs --yes
+  ```
+
+  ```json
+  {
+    "error": {
+      "code": "INVALID_ARGS",
+      "message": "--yes requires --max-payment <usdc> to set an explicit payment limit.",
+      "retryable": false
+    }
+  }
+  ```
+
+A quote priced above your cap is never paid — the command exits with code `9` instead:
+
+```json
+{
+  "error": {
+    "code": "PAYMENT_REQUIRED",
+    "message": "Payment of 0.005 USDC is required.",
+    "hint": "Re-run with --max-payment <usdc> to authorize payment non-interactively.",
+    "retryable": false
+  }
+}
+```
+
+| Mode | What authorizes payment |
+|---|---|
+| Interactive terminal | A confirmation prompt showing the exact quote |
+| `--yes`, `--json`, `--no-interactive`, scripts | `--max-payment <usdc>` — required, a hard ceiling |
+
+<Warning>
+  These commands spend real USDC. Treat `--max-payment` as the authorization boundary, and set it to the smallest value that gets the job done.
+</Warning>
+
+The CLI also never pays twice for the same request — if a paid retry itself comes back `402`, the CLI stops rather than sign and send a second payment.
+
+## Make a paid request
+
+The commands below spend real USDC. The URLs are placeholders — replace them with the x402 endpoint you're actually calling.
+
+<Steps>
+  <Step title="Check funding">
+    Confirm your signer and, for Circle Gateway payments, your Gateway balance:
+
+    ```bash
+    alchemy wallet status
+    alchemy x402 balance
+    ```
+  </Step>
+  <Step title="Estimate first">
+    Decode the quote before paying anything:
+
+    ```bash
+    alchemy x402 request https://api.example.com/paid-endpoint --estimate
+    ```
+  </Step>
+  <Step title="Pay with a cap">
+    ```bash
+    alchemy x402 request https://api.example.com/paid-endpoint --max-payment 0.01
+    ```
+
+    curl-style flags work the same way. `-d` sets the method to `POST` automatically when you don't pass `-X`:
+
+    ```bash
+    alchemy x402 request https://api.example.com/reports \
+      -H "content-type: application/json" \
+      -d '{"query":"latest"}' \
+      --max-payment 0.05 \
+      -o report.json
+    ```
+
+    Passing `-X GET` (or `-X HEAD`) together with `-d` fails fast instead of sending a malformed request:
+
+    ```json
+    {
+      "error": {
+        "code": "INVALID_ARGS",
+        "message": "--data cannot be sent with a GET request. Use -X POST, or omit -X to default to POST when --data is set.",
+        "retryable": false
+      }
+    }
+    ```
+  </Step>
+  <Step title="Read the receipt">
+    A successful paid request returns the resource plus a receipt. In `--json` mode, `payment` carries every field:
+
+    ```json
+    {
+      "url": "https://api.example.com/paid-endpoint",
+      "status": 200,
+      "ok": true,
+      "body": { "...": "the resource you paid for" },
+      "bodyEncoding": "json",
+      "payment": {
+        "paid": true,
+        "scheme": "exact",
+        "gateway": true,
+        "network": "eip155:137",
+        "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        "amount": "5000",
+        "amountUSDC": "0.005",
+        "payTo": "0x6E007731870EDe419CfB31889Cd5C4493CEcb04c",
+        "payer": "0xYourSignerAddress",
+        "transaction": "0xillustrative-transaction-id",
+        "settled": true,
+        "signerAddress": "0xYourSignerAddress",
+        "signerKind": "session",
+        "recovered": true
+      }
+    }
+    ```
+
+    `settled` reflects whether the payment cleared: for Circle Gateway payments it may briefly be `null` if the server hasn't returned a settlement receipt yet, or `false` if settlement failed even though `status` is `200` — the resource is still delivered either way, since the payment was already accepted. `signerKind` tells you whether the session or a local key signed.
+  </Step>
+</Steps>
+
+### Request flags
+
+| Flag | Description |
+|---|---|
+| `-X, --method <method>` | HTTP method. Defaults to `POST` when `--data` is set. |
+| `-H, --header <header>` | Request header as `"Name: value"`, repeatable |
+| `-d, --data <body>` | Request body |
+| `-o, --output <file>` | Write the response body to a file |
+| `--estimate` | Decode the payment quote without signing or paying |
+| `--max-payment <usdc>` | Maximum USDC to pay, e.g. `0.01`. Required for non-interactive payment. |
+| `-y, --yes` | Skip the confirmation prompt. Requires `--max-payment`. |
+| `--scheme <gateway\|exact\|any>` | Restrict to a payment scheme. Default `any` — cheapest eligible option wins. |
+| `--signer <session\|local>` | Override the active signer for this request |
+| `-n, --network <id>` | Filter which payment networks the CLI will pay on |
+
+Run `alchemy help x402 request` for the current flag surface.
+
+## How payment schemes work
+
+A server can offer more than one way to pay. With `--scheme any` (the default), the CLI picks the cheapest eligible option — Circle Gateway wins ties. Force one scheme with `--scheme gateway` or `--scheme exact`.
+
+| | Circle Gateway (`gateway`) | Exact (`exact`) |
+|---|---|---|
+| Settlement | Batched nanopayments through Circle Gateway | Direct EIP-3009 signed USDC transfer |
+| Funding source | A prior USDC deposit to Circle Gateway | USDC held in the signing wallet |
+| Gas for you | None | None — the server or facilitator settles the signed authorization |
+| Best for | Repeated micro-payments, down to fractions of a cent | One-off payments with no Gateway setup |
+| Prerequisite | A one-time Gateway deposit | USDC on the payment network |
+
+Which schemes are eligible also depends on what the server offers and where you hold funds — see [Troubleshooting](#troubleshooting) if nothing is eligible.
+
+## Fund Circle Gateway for batched payments
+
+Circle Gateway payments draw on a one-time USDC deposit you make to Circle Gateway, using [Circle's own deposit flow](https://developers.circle.com/gateway/nanopayments/howtos/x402-buyer) — the Alchemy CLI does not perform deposits.
+
+<Warning>
+  Do not send USDC to the Circle Gateway contract with a plain ERC-20 transfer. Circle does not credit funds sent that way, and they cannot be recovered. Always deposit through Circle's Gateway deposit flow.
+</Warning>
+
+Check your balance any time — no wallet or API key required:
+
+```bash
+alchemy x402 balance
+alchemy x402 balance --address 0xYourAddress --testnet
+```
+
+```json
+{
+  "address": "0xYourAddress",
+  "environment": "mainnet",
+  "token": "USDC",
+  "balances": [
+    { "chain": "base", "domain": 6, "balance": "0", "pendingBatch": "0" },
+    { "chain": "polygon", "domain": 7, "balance": "0", "pendingBatch": "0" }
+  ],
+  "totalAvailable": "0"
+}
+```
+
+`--address` checks a specific depositor; without it, the CLI checks your active signer's address.
+
+## Use it from agents and scripts
+
+Always pass `--json --no-interactive` and set `--max-payment` explicitly:
+
+```bash
+alchemy --json --no-interactive x402 request https://nano.blockrun.ai/api/v1/pm/matching-markets/pairs --estimate
+```
+
+```json
+{
+  "url": "https://nano.blockrun.ai/api/v1/pm/matching-markets/pairs",
+  "status": 402,
+  "payment": {
+    "required": true,
+    "x402Version": 2,
+    "resource": {
+      "url": "https://nano.blockrun.ai/api/v1/pm/matching-markets/pairs",
+      "description": "Get all active exact-matched market pairs",
+      "mimeType": "application/json"
+    },
+    "options": [
+      {
+        "scheme": "exact",
+        "network": "eip155:137",
+        "asset": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        "amount": "5000",
+        "amountUSDC": "0.005",
+        "payTo": "0x6E007731870EDe419CfB31889Cd5C4493CEcb04c",
+        "maxTimeoutSeconds": 691200,
+        "gateway": true,
+        "eligible": true
+      }
+    ],
+    "selected": { "...": "same shape as the option above" },
+    "cap": null
+  }
+}
+```
+
+<Accordion title="JSON envelope reference">
+  Every `x402 request` response — paid or not — shares one shape on stdout:
+
+  ```json
+  {
+    "url": "string",
+    "status": 0,
+    "ok": true,
+    "headers": { "content-type": "application/json" },
+    "body": "parsed JSON, text, or null",
+    "bodyEncoding": "json | text | base64 | file | null",
+    "bodyBytes": 0,
+    "payment": null
+  }
+  ```
+
+  `payment` is `null` when no payment was required. When a payment was made, it carries `paid`, `scheme`, `gateway`, `network`, `asset`, `amount`, `amountUSDC`, `payTo`, `payer`, `transaction`, `settled`, `signerAddress`, `signerKind`, and `recovered` — see the [receipt example above](#make-a-paid-request). `--estimate` uses a different shape: `payment.required`, `payment.options` (every option the server offered, each annotated `eligible`), `payment.selected`, and `payment.cap`.
+</Accordion>
+
+Exit code **`9` (`PAYMENT_REQUIRED`)** means the target demanded payment the CLI wasn't authorized to make — no cap set non-interactively, or the quote exceeded `--max-payment`. Treat it as "raise the cap or ask a human," not something to retry blindly.
+
+A few rules for agent code:
+
+* Estimate before paying anything you haven't seen priced before.
+* Always set `--max-payment` — it's the only thing standing between your agent and an unbounded spend.
+* Read `payment.settled`, not just the HTTP status — a `200` can still carry `settled: false`.
+* Never loop on exit code `9`. Escalate or raise the cap deliberately.
+
+Run `alchemy --json --no-interactive agent-prompt` for the full command tree and error catalog — it's the source of truth; this page doesn't duplicate it.
+
+## Security and trust model
+
+* The spend cap or your interactive confirmation is the only thing that authorizes a payment. Nothing in a server's response can raise it.
+* Payment quotes from servers are **untrusted input**. The CLI validates a quote before ever signing against it.
+* Every payment signature is verified locally, before it's sent.
+* USDC is recognized only by known per-chain asset addresses — a quote naming an unrecognized asset is rejected rather than paid.
+* The CLI never pays twice for one request.
+* With `--signer session`, your Agent Wallet session signs the payment. No private key or API key is ever exposed to the agent — see [Agent Wallets](docs/agent-wallets).
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Exit code 9: payment required">
+    The server priced the request above what you authorized. Non-interactively, this means no `--max-payment` was set, or the quote exceeded it. Re-run with a higher `--max-payment`, or use `--estimate` to see the exact price first.
+  </Accordion>
+  <Accordion title="No eligible payment option">
+    The server didn't offer a scheme or network you allowed. Check the `options` array from `--estimate` for each option's `excludedBy` reason, try `--scheme any`, or remove a `-n/--network` filter.
+  </Accordion>
+  <Accordion title="Circle Gateway balance too low">
+    Gateway payments need funds already deposited to Circle Gateway. Check `alchemy x402 balance` and [top up through Circle](#fund-circle-gateway-for-batched-payments) — never with a raw ERC-20 transfer.
+  </Accordion>
+  <Accordion title="Quote rejected as invalid">
+    A server response with a missing header, an unsupported x402 version, or an asset the CLI can't recognize as USDC is rejected before anything is signed. This is the CLI protecting your funds, not a bug.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+* [Agent Wallets](docs/agent-wallets)
+* [Alchemy CLI x402 reference](docs/alchemy-cli#x402)
+* [Wallet Auth for Alchemy APIs](docs/alchemy-for-agents) — the other x402: authenticating and paying Alchemy itself
+* [x402.org](https://www.x402.org/)
+* [Circle Gateway documentation](https://developers.circle.com/gateway/nanopayments/howtos/x402-buyer)

@@ -9,6 +9,7 @@ The Alchemy CLI wraps Alchemy's node, Data API, wallet, transaction, webhook, an
 
 * Live query onchain data without writing a script
 * Send EVM transactions with an [Agent Wallet session](docs/agent-wallets) or local wallet
+* Pay x402-enabled third-party APIs in USDC with [x402 Payments](docs/x402-payments)
 * Run admin tasks like creating apps, rotating allowlists, and managing webhooks
 * Automate workflows in shell scripts, cron jobs, and CI pipelines
 
@@ -255,6 +256,25 @@ alchemy solana status <signature>
 
 Bridge currently supports EVM mainnets. Use `alchemy evm swap` for same-chain token exchanges.
 
+### x402
+
+Use `alchemy x402` to call x402-enabled third-party APIs and pay `402 Payment Required` quotes in USDC, signed by your Agent Wallet session or a local key. See [x402 Payments](docs/x402-payments) for the full guide, payment schemes, and Circle Gateway funding.
+
+<Note>
+  The `alchemy x402` command group pays third-party APIs. It is unrelated to the global `--x402` flag and `alchemy config set x402`, which authenticate to Alchemy's own APIs — see [Wallet Auth for Alchemy APIs](docs/alchemy-for-agents).
+</Note>
+
+| Command | Description |
+|---|---|
+| `alchemy x402 request <url>` | Make an HTTP request and pay an x402 quote in USDC. `--estimate` decodes the quote without paying. `--max-payment <usdc>` caps spend and is required for non-interactive payment. Supports curl-style `-X`, `-H`, `-d` (defaults the method to POST), `-o`, plus `--scheme gateway\|exact\|any` and `--signer session\|local`. |
+| `alchemy x402 balance` | Show Circle Gateway USDC balance per chain plus total, keyless. Supports `--address <addr>` and `--testnet`. |
+
+```bash
+alchemy x402 request https://nano.blockrun.ai/api/v1/pm/matching-markets/pairs --estimate
+```
+
+`-n, --network` filters which payment networks the CLI will pay on.
+
 ### Webhook (Notify)
 
 Requires a webhook API key. Pass `--webhook-api-key <key>` on the `webhook` command, set `ALCHEMY_WEBHOOK_API_KEY`, or run `alchemy config set webhook-api-key <key>`.
@@ -345,8 +365,8 @@ Filters are optional and combined with AND. `--group-by` accepts at most one dim
 | `alchemy config set webhook-api-key <key>` | Save the Notify webhook API key |
 | `alchemy config set network <id>` | Set the default network |
 | `alchemy config set verbose <true\|false>` | Set default verbose output |
-| `alchemy config set wallet-key-file <path>` | Set the local EVM wallet key file used for x402 wallet auth |
-| `alchemy config set x402 <true\|false>` | Enable or disable x402 wallet auth by default |
+| `alchemy config set wallet-key-file <path>` | Set the local EVM wallet key file used for x402 gateway auth to Alchemy APIs |
+| `alchemy config set x402 <true\|false>` | Enable or disable x402 gateway auth to Alchemy APIs by default |
 | `alchemy config set evm-gas-sponsored <true\|false>` | Enable or disable EVM gas sponsorship by default |
 | `alchemy config set evm-gas-policy-id <id>` | Save the EVM gas policy ID |
 | `alchemy config set solana-fee-sponsored <true\|false>` | Enable or disable Solana fee sponsorship by default |
@@ -375,8 +395,8 @@ These flags work on every command.
 |---|---|
 | `--api-key <key>` | API key for RPC and Data API requests (env: `ALCHEMY_API_KEY`) |
 | `-n, --network <id>` | Target network, defaults to `eth-mainnet` (env: `ALCHEMY_NETWORK`) |
-| `--x402` | Use x402 wallet-based gateway auth |
-| `--wallet-key-file <path>` | Path to an EVM wallet private key file for x402 |
+| `--x402` | Use x402 wallet-based gateway auth for Alchemy API requests |
+| `--wallet-key-file <path>` | Path to an EVM wallet private key file for x402 gateway auth |
 | `--solana-wallet-key-file <path>` | Path to a Solana wallet key file |
 | `--json` | Force JSON output (auto-enabled when piped) |
 | `-q, --quiet` | Suppress non-essential output |
@@ -426,6 +446,7 @@ alchemy completions fish > ~/.config/fish/completions/alchemy.fish
 
 * [Agent Skills](docs/alchemy-agent-skills)
 * [Agent Wallets](docs/agent-wallets)
+* [x402 Payments](docs/x402-payments)
 * [Alchemy MCP Server](docs/alchemy-mcp-server)
-* [Agent Authentication and Payment](docs/alchemy-for-agents)
+* [Wallet Auth for Alchemy APIs](docs/alchemy-for-agents)
 * [Alchemy Dashboard](https://dashboard.alchemy.com/)
