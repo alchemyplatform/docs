@@ -1,0 +1,262 @@
+---
+title: Yellowstone gRPC Historical Replay
+description: Backfill missing Solana blockchain data with Yellowstone gRPC's historical replay
+slug: reference/yellowstone-grpc-historical-replay
+---
+
+# Historical replay
+
+<Info>
+  **Never miss a beat**: Yellowstone gRPC's historical replay lets you recover from disconnections and backfill missing data from the last \~40 minutes of Solana blockchain activity.
+</Info>
+
+## What is historical replay?
+
+Historical replay is a Yellowstone gRPC feature that lets you resume streaming from any slot within the last **6000 slots** (approximately 40 minutes of blockchain activity). This is useful for handling brief disconnections and keeping data continuous in real-time apps without opening a separate backfill pipeline.
+
+<Warning>
+  **Limited time window**: Historical replay is limited to the last 6000 slots (\~40 minutes) of blockchain activity. You cannot replay data from arbitrary points further in the past.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Handle disconnections" icon="clock-rotate-left">
+    Recover data lost during brief disconnections (up to \~40 minutes).
+  </Card>
+
+  <Card title="Bootstrap applications" icon="rocket">
+    Start applications with recent context from the last few minutes.
+  </Card>
+
+  <Card title="Analyze recent events" icon="magnifying-glass">
+    Review recent transactions and account changes.
+  </Card>
+
+  <Card title="Test with recent data" icon="flask">
+    Use real recent data for testing and development.
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Specify a starting point">
+    Set the `from_slot` field on `SubscribeRequest` to your replay starting slot. It must fall within the last \~6000 slots.
+  </Step>
+
+  <Step title="Stream historical data">
+    Yellowstone gRPC delivers all matching events from your specified slot forward.
+  </Step>
+
+  <Step title="Catch up to real time">
+    Historical data streams until you reach the current slot.
+  </Step>
+
+  <Step title="Continue live streaming">
+    The connection transitions seamlessly into real-time streaming; no reconnect required.
+  </Step>
+</Steps>
+
+## Quickstart
+
+Pick a slot within the last \~6000 slots (\~40 minutes). In production, call [`getSlot`](/docs/chains/solana/solana-api-endpoints/get-slot) on the Solana RPC first and subtract however far back you want to replay.
+
+```rust
+use anyhow::Result;
+use futures::{sink::SinkExt, stream::StreamExt};
+use std::collections::HashMap;
+use yellowstone_grpc_client::{ClientTlsConfig, GeyserGrpcClient};
+use yellowstone_grpc_proto::geyser::{
+    CommitmentLevel, SubscribeRequest, SubscribeRequestFilterTransactions,
+};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let endpoint = "https://solana-mainnet.g.alchemy.com";
+    let x_token = "ALCHEMY_API_KEY"; // Replace with your Alchemy API key
+
+    let mut client = GeyserGrpcClient::build_from_shared(endpoint)?
+        .tls_config(ClientTlsConfig::new().with_native_roots())?
+        .x_token(Some(x_token))? // API key passed as X-Token header
+        .connect()
+        .await?;
+
+    let (mut tx, mut stream) = client.subscribe().await?;
+
+    // Pick a slot inside the ~6000 slot replay window.
+    // In production, fetch the current slot via getSlot and subtract however
+    // many slots back you want to replay (for example, current_slot - 1000
+    // rewinds ~7 minutes).
+    let from_slot: u64 = 419_800_000;
+
+    tx.send(SubscribeRequest {
+        transactions: HashMap::from([(
+            "all_transactions".to_string(),
+            SubscribeRequestFilterTransactions {
+                vote: Some(false),   // Exclude vote transactions
+                failed: Some(false), // Exclude failed transactions
+                ..Default::default()
+            },
+        )]),
+        commitment: Some(CommitmentLevel::Confirmed as i32),
+        from_slot: Some(from_slot), // Start streaming from this historical slot
+        ..Default::default()
+    })
+    .await?;
+
+    while let Some(Ok(update)) = stream.next().await {
+        println!("Received update: {:?}", update);
+    }
+
+    Ok(())
+}
+```
+
+## Configuration
+
+### `from_slot`
+
+The slot number to start replaying from, as a `u64`. Must be within the replay window (last \~6000 slots from the current slot).
+
+**Type**: `optional uint64`
+
+**Example**: `current_slot - 1000` (replays roughly the last 7 minutes)
+
+**Behavior**:
+
+* If specified, streaming begins from this slot number.
+* All matching data from `from_slot` onwards is sent, then the connection transitions to real-time.
+* If not specified, streaming begins from the current slot.
+* If the requested slot is older than the \~6000 slot window, the server rejects the request.
+
+See the [Subscribe request](/docs/reference/yellowstone-grpc-subscribe-request) reference for the full `SubscribeRequest` message definition.
+
+## Use cases
+
+<AccordionGroup>
+  <Accordion title="Reconnection after a brief disconnection">
+    When your application reconnects after a short disconnection (under \~40 minutes), historical replay makes sure no data is missed. The example below tracks the last processed slot in a `RwLock`; persist it however suits your app (Redis, Postgres, a file, etc.) so the next reconnect can pick up where you left off.
+
+    ```rust
+    use anyhow::Result;
+    use serde_json::json;
+
+    async fn get_current_slot(api_key: &str) -> Result<u64> {
+        let body = json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getSlot",
+            "params": [{ "commitment": "confirmed" }],
+        });
+
+        let res = reqwest::Client::new()
+            .post(format!("https://solana-mainnet.g.alchemy.com/v2/{}", api_key))
+            .json(&body)
+            .send()
+            .await?
+            .json::<serde_json::Value>()
+            .await?;
+
+        Ok(res["result"].as_u64().unwrap_or_default())
+    }
+
+    // Load the last slot you processed from wherever you store it.
+    let mut last_processed_slot: u64 = load_from_persistent_store().unwrap_or(0);
+
+    // Check whether it's still within the replay window.
+    let current_slot = get_current_slot("ALCHEMY_API_KEY").await?;
+    let max_replay_slot = current_slot.saturating_sub(6_000);
+
+    if last_processed_slot < max_replay_slot {
+        eprintln!("Disconnection too long, some data may be lost");
+        last_processed_slot = max_replay_slot;
+    }
+
+    tx.send(SubscribeRequest {
+        // ... your subscription config
+        from_slot: Some(last_processed_slot),
+        ..Default::default()
+    })
+    .await?;
+    ```
+  </Accordion>
+
+  <Accordion title="Bootstrap with recent context">
+    Start your application with recent context from the last few minutes:
+
+    ```rust
+    let current_slot = get_current_slot("ALCHEMY_API_KEY").await?;
+    let start_slot = current_slot.saturating_sub(1_500); // ~10 minutes ago
+
+    tx.send(SubscribeRequest {
+        // ... your subscription config
+        from_slot: Some(start_slot),
+        ..Default::default()
+    })
+    .await?;
+    ```
+  </Accordion>
+
+  <Accordion title="Testing with recent data">
+    Use recent historical data for testing (limited to the last \~40 minutes):
+
+    ```rust
+    use yellowstone_grpc_proto::geyser::subscribe_update::UpdateOneof;
+
+    let current_slot = get_current_slot("ALCHEMY_API_KEY").await?;
+    let test_start_slot = current_slot.saturating_sub(750); // ~5 minutes ago
+    let test_end_slot = current_slot.saturating_sub(150);   // ~1 minute ago
+
+    tx.send(SubscribeRequest {
+        // ... your subscription config
+        from_slot: Some(test_start_slot),
+        ..Default::default()
+    })
+    .await?;
+
+    while let Some(Ok(update)) = stream.next().await {
+        // Extract the slot from whichever update variant is present.
+        let slot = match &update.update_oneof {
+            Some(UpdateOneof::Transaction(t)) => t.slot,
+            Some(UpdateOneof::Account(a)) => a.slot,
+            Some(UpdateOneof::Slot(s)) => s.slot,
+            _ => continue,
+        };
+
+        // Stop processing once we reach the test end slot.
+        if slot >= test_end_slot {
+            break;
+        }
+
+        // your test handler here
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Handling duplicates
+
+When you use `from_slot` for gap recovery, you may receive updates you've already processed. Use a time-bounded cache or database unique constraints to deduplicate efficiently. See [Handle duplicate updates](/docs/reference/yellowstone-grpc-best-practices#handle-duplicate-updates) in the best practices guide for more.
+
+<Tip>
+  For a complete production-ready client that combines automatic reconnection, gap recovery with `from_slot`, and separate ingress and processing tasks, see the [durable client example](/docs/reference/yellowstone-grpc-examples#durable-client).
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Subscribe request" icon="code" href="/docs/reference/yellowstone-grpc-subscribe-request">
+    Detailed reference for `SubscribeRequest` and every field it supports.
+  </Card>
+
+  <Card title="Best practices" icon="star" href="/docs/reference/yellowstone-grpc-best-practices">
+    Production patterns including gap recovery and reconnection.
+  </Card>
+
+  <Card title="Code examples" icon="book-open" href="/docs/reference/yellowstone-grpc-examples">
+    Complete working examples, including a durable client with gap recovery.
+  </Card>
+
+  <Card title="Quickstart" icon="bolt" href="/docs/reference/yellowstone-grpc-quickstart">
+    Make your first Yellowstone gRPC connection.
+  </Card>
+</CardGroup>
