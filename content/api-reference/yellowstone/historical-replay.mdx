@@ -58,35 +58,55 @@ Historical replay is a Yellowstone gRPC feature that lets you resume streaming f
 
 ## Quickstart
 
-Pick a slot within the last \~6000 slots (\~40 minutes). In production, call [`getSlot`](/docs/chains/solana/solana-api-endpoints/get-slot) on the Solana RPC first and subtract however far back you want to replay.
+`from_slot` must fall within the last \~6000 slots (\~40 minutes), so the example below derives it dynamically by calling [`getSlot`](/docs/chains/solana/solana-api-endpoints/get-slot) on the Solana RPC and rewinding \~1000 slots (\~7 minutes). Do not hard-code an absolute slot number, since any fixed value ages out of the replay window almost immediately.
 
 ```rust
 use anyhow::Result;
 use futures::{sink::SinkExt, stream::StreamExt};
+use serde_json::json;
 use std::collections::HashMap;
 use yellowstone_grpc_client::{ClientTlsConfig, GeyserGrpcClient};
 use yellowstone_grpc_proto::geyser::{
     CommitmentLevel, SubscribeRequest, SubscribeRequestFilterTransactions,
 };
 
+async fn get_current_slot(api_key: &str) -> Result<u64> {
+    let body = json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "getSlot",
+        "params": [{ "commitment": "confirmed" }],
+    });
+
+    let res = reqwest::Client::new()
+        .post(format!("https://solana-mainnet.g.alchemy.com/v2/{}", api_key))
+        .json(&body)
+        .send()
+        .await?
+        .json::<serde_json::Value>()
+        .await?;
+
+    Ok(res["result"].as_u64().unwrap_or_default())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let endpoint = "https://solana-mainnet.g.alchemy.com";
-    let x_token = "ALCHEMY_API_KEY"; // Replace with your Alchemy API key
+    let api_key = "ALCHEMY_API_KEY"; // Replace with your Alchemy API key
 
     let mut client = GeyserGrpcClient::build_from_shared(endpoint)?
         .tls_config(ClientTlsConfig::new().with_native_roots())?
-        .x_token(Some(x_token))? // API key passed as X-Token header
+        .x_token(Some(api_key))? // API key passed as X-Token header
         .connect()
         .await?;
 
     let (mut tx, mut stream) = client.subscribe().await?;
 
-    // Pick a slot inside the ~6000 slot replay window.
-    // In production, fetch the current slot via getSlot and subtract however
-    // many slots back you want to replay (for example, current_slot - 1000
-    // rewinds ~7 minutes).
-    let from_slot: u64 = 419_800_000;
+    // Derive from_slot from the current slot so it always sits inside the
+    // ~6000 slot replay window. Here we rewind ~1000 slots (~7 minutes);
+    // tune the offset to how much history you want to replay.
+    let current_slot = get_current_slot(api_key).await?;
+    let from_slot = current_slot.saturating_sub(1_000);
 
     tx.send(SubscribeRequest {
         transactions: HashMap::from([(
