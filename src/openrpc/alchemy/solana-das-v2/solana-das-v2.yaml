@@ -1,0 +1,1173 @@
+$schema: https://meta.open-rpc.org/
+openrpc: 1.2.4
+info:
+  title: Alchemy Solana DAS API v2 JSON-RPC Specification
+  description: >
+    v2 of the Solana Digital Asset Standard (DAS) API. This spec mirrors the
+    canonical Helius DAS API upstream (method names and response shapes) and is
+    served alongside the existing DAS API.
+  version: 0.0.0
+servers:
+  - url: https://solana-mainnet.g.alchemy.com/v2
+    name: Solana Mainnet
+  - url: https://solana-devnet.g.alchemy.com/v2
+    name: Solana Devnet
+
+methods:
+  - name: getAsset_v2
+    description: >
+      Returns detailed information for a single Solana NFT, compressed NFT, or
+      token including metadata, ownership, price data, and on-chain attributes.
+      **Price data caching:** `token_info.price_info` values are cached and may
+      be up to 600 seconds old. Coverage is limited to the top 10,000 tokens by
+      24-hour volume.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: id
+        required: true
+        description: The unique identifier (typically the mint address) of the asset to retrieve.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetId
+      - name: options
+        required: false
+        description: Display and formatting options for the asset data response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetAsset
+    examples:
+      - name: getAsset_v2 example
+        params:
+          - name: id
+            value: "F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk"
+        result:
+          name: Asset
+          value:
+            last_indexed_slot: 365749093
+            interface: ProgrammableNFT
+            id: F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk
+            content:
+              $schema: https://schema.metaplex.com/nft1.0.json
+              json_uri: https://madlads.s3.us-west-2.amazonaws.com/json/8420.json
+              files:
+                - uri: https://madlads.s3.us-west-2.amazonaws.com/images/8420.png
+                  cdn_uri: https://cdn.helius-rpc.com/cdn-cgi/image//https://madlads.s3.us-west-2.amazonaws.com/images/8420.png
+                  mime: image/png
+              metadata:
+                attributes:
+                  - value: Male
+                    trait_type: Gender
+                  - value: King
+                    trait_type: Type
+                description: Fock it.
+                name: "Mad Lads #8420"
+                symbol: MAD
+                token_standard: ProgrammableNonFungible
+              links:
+                image: https://madlads.s3.us-west-2.amazonaws.com/images/8420.png
+                external_url: https://madlads.com
+            authorities:
+              - address: 2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW
+                scopes:
+                  - full
+            compression:
+              eligible: false
+              compressed: false
+              data_hash: ""
+              creator_hash: ""
+              asset_hash: ""
+              tree: ""
+              seq: 0
+              leaf_id: 0
+            grouping:
+              - group_key: collection
+                group_value: J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w
+            royalty:
+              royalty_model: creators
+              target: null
+              percent: 0.042
+              basis_points: 420
+              primary_sale_happened: true
+              locked: false
+            creators:
+              - address: 5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv
+                share: 0
+                verified: true
+              - address: 2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW
+                share: 100
+                verified: true
+            ownership:
+              frozen: true
+              delegated: false
+              delegate: null
+              ownership_model: single
+              owner: 4zdNGgAtFsW1cQgHqkiWyRsxaAgxrSRRynnuunxzjxue
+            supply:
+              print_max_supply: 0
+              print_current_supply: 0
+              edition_nonce: 254
+            mutable: true
+            burnt: false
+            token_info:
+              supply: 1
+              decimals: 0
+              token_program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+              mint_authority: TdMA45ZnakQCBt5XUvm7ib2htKuTWdcgGKu1eUGrDyJ
+              freeze_authority: TdMA45ZnakQCBt5XUvm7ib2htKuTWdcgGKu1eUGrDyJ
+    result:
+      name: Asset
+      description: Returns detailed information about the specified digital asset.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/Asset
+
+  - name: getAssetBatch_v2
+    description: >
+      Returns detailed information for up to 1,000 Solana NFTs, compressed NFTs,
+      or tokens in a single efficient batch request. Results are returned in the
+      same order as the input `ids` array.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: ids
+        required: true
+        description: An array of asset IDs (typically mint addresses) to retrieve. Up to 1,000 per request.
+        schema:
+          type: array
+          items:
+            $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetId
+      - name: options
+        required: false
+        description: Display and formatting options for the batch response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetAsset
+    examples:
+      - name: getAssetBatch_v2 example
+        params:
+          - name: ids
+            value:
+              - "F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk"
+              - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
+        result:
+          name: Asset batch
+          value:
+            - last_indexed_slot: 365750752
+              interface: ProgrammableNFT
+              id: F9Lw3ki3hJ7PF9HQXsBzoY8GyE6sPoEZZdXJBsTTD2rk
+              content:
+                $schema: https://schema.metaplex.com/nft1.0.json
+                json_uri: https://madlads.s3.us-west-2.amazonaws.com/json/8420.json
+                metadata:
+                  name: "Mad Lads #8420"
+                  symbol: MAD
+              authorities:
+                - address: 2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW
+                  scopes:
+                    - full
+              grouping:
+                - group_key: collection
+                  group_value: J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w
+              ownership:
+                frozen: true
+                delegated: false
+                delegate: null
+                ownership_model: single
+                owner: 4zdNGgAtFsW1cQgHqkiWyRsxaAgxrSRRynnuunxzjxue
+              burnt: false
+            - last_indexed_slot: 365750752
+              interface: V1_NFT
+              id: 8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo
+              content:
+                $schema: https://schema.metaplex.com/nft1.0.json
+                metadata:
+                  name: "Second asset"
+                  symbol: NFT
+              ownership:
+                frozen: false
+                delegated: false
+                delegate: null
+                ownership_model: single
+                owner: 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+              burnt: false
+    result:
+      name: Asset batch
+      description: Returns an ordered array of asset entries, one per requested ID.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetBatch
+
+  - name: getAssetProof_v2
+    description: >
+      Returns the cryptographic merkle proof for a compressed Solana NFT. The
+      proof is required to validate a compressed asset's existence and data
+      integrity on-chain (for transfers, burns, and other operations) without
+      storing the full asset data.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: id
+        required: true
+        description: The unique identifier (mint address) of the compressed NFT to retrieve the merkle proof for.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetId
+    examples:
+      - name: getAssetProof_v2 example
+        params:
+          - name: id
+            value: "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+        result:
+          name: Merkle proof
+          value:
+            last_indexed_slot: 365750752
+            root: 2o6Y6EiY3WXhoaEpei2pHmHLYnHDcEQVhgD89GrGHDBH
+            proof:
+              - EmJXiXEAhEN3FfNQtBa5hwR8LC5kHvdLsaGCoERosZjK
+              - 7NEfhcNPAwbw3L87fjsPqTz2fQdd1CjoLE138SD58FDQ
+              - 6dM3VyeQoYkRFZ74G53EwvUPbQC6LsMZge6c7S1Ds4ks
+              - A9AACJ5m7UtaVz4HxzhDxGjYaY88rc2XPoFvnoTvgYBj
+              - 2VG5cKeBZdqozwhHGGzs13b9tzy9TXt9kPfN8MzSJ1Sm
+              - 3E1uFze4pi6BnTZXMsQbeh3jQCeDi966Zax9aMbYgg2D
+              - Bx9PdctdWCeC1WfU6dwP49idsXCYhqyxbRLyLwwGhr61
+              - HSbJ8quT4vuXFgf5FnjzeUuFfAtLKsq6W1Frj8y1qrif
+              - GJMLzL4F4hY9yFHY1EY6XRmW4wpuNGeBZTiv7vM2mYra
+              - FYPtEiqmRx6JprHQvWeEWEuVp3WA7DPRCE4VbhFRVuAj
+              - 6MJKrpnK1GbYsnEzwMRWStNGkTjAZF23NhzTQSQVXsD3
+              - HjnrJn5vBUUzpCxzjjM9ZnCPuXei2cXKJjX468B9yWD7
+              - 4YCF1CSyTXm1Yi9W9JeYevawupkomdgy2dLxEBHL9euq
+              - E3oMtCuPEauftdZLX8EZ8YX7BbFzpBCVRYEiLxwPJLY2
+            node_index: 16384
+            leaf: 6YdZXw49M97mfFTwgQb6kxM2c6eqZkHSaW9XhhoZXtzv
+            tree_id: 2kuTFCcjbV22wvUmtmgsFR7cas7eZUzAu96jzJUvUcb7
+            burnt: false
+    result:
+      name: Merkle proof
+      description: Returns the merkle proof for the specified compressed asset.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/MerkleProof
+
+  - name: getAssetProofBatch_v2
+    description: >
+      Returns merkle proofs for multiple compressed Solana NFTs in a single
+      batch request. The response is an object keyed by asset ID, where each
+      value is the corresponding merkle proof.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: ids
+        required: true
+        description: An array of compressed asset IDs (mint addresses) to retrieve merkle proofs for.
+        schema:
+          type: array
+          items:
+            $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetId
+    examples:
+      - name: getAssetProofBatch_v2 example
+        params:
+          - name: ids
+            value:
+              - "Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss"
+              - "8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo"
+        result:
+          name: Merkle proof batch
+          value:
+            Bu1DEKeawy7txbnCEJE4BU3BKLXaNAKCYcHR4XhndGss:
+              last_indexed_slot: 365750752
+              root: 2o6Y6EiY3WXhoaEpei2pHmHLYnHDcEQVhgD89GrGHDBH
+              proof:
+                - EmJXiXEAhEN3FfNQtBa5hwR8LC5kHvdLsaGCoERosZjK
+                - 7NEfhcNPAwbw3L87fjsPqTz2fQdd1CjoLE138SD58FDQ
+                - 6dM3VyeQoYkRFZ74G53EwvUPbQC6LsMZge6c7S1Ds4ks
+              node_index: 16384
+              leaf: 6YdZXw49M97mfFTwgQb6kxM2c6eqZkHSaW9XhhoZXtzv
+              tree_id: 2kuTFCcjbV22wvUmtmgsFR7cas7eZUzAu96jzJUvUcb7
+              burnt: false
+            8vw7tdLGE3FBjaetsJrZAbbyssUrXai1aBJbUnj5S5uo:
+              last_indexed_slot: 365750752
+              root: 3wUvxFmVdX5rEcHNM8vT4bnZjQyaXvBzUWnyKfg9SVep
+              proof:
+                - AbF4iXEAhEN3FfNQtBa5hwR8LC5kHvdLsaGCoERosXyZ
+                - 8NEfhcNPAwbw3L87fjsPqTz2fQdd1CjoLE138SD58FDQ
+                - 7dM3VyeQoYkRFZ74G53EwvUPbQC6LsMZge6c7S1Ds4ks
+              node_index: 16385
+              leaf: 7YdZXw49M97mfFTwgQb6kxM2c6eqZkHSaW9XhhoZXtzv
+              tree_id: 2kuTFCcjbV22wvUmtmgsFR7cas7eZUzAu96jzJUvUcb7
+              burnt: false
+    result:
+      name: Merkle proof batch
+      description: Returns an object keyed by asset ID, with each value being the corresponding merkle proof.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/MerkleProofBatch
+
+  - name: getAssetsByAuthority_v2
+    description: >
+      Returns all Solana NFTs, compressed NFTs, and tokens controlled by a
+      specific authority address, with pagination support.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: authorityAddress
+        required: true
+        description: The base-58 address of the authority whose assets to retrieve.
+        schema:
+          type: string
+      - name: page
+        required: false
+        description: The page of results to return (1-based).
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of assets to return per page (up to 1000).
+        schema:
+          type: integer
+      - name: sortBy
+        required: false
+        description: Sorting configuration for ordering the returned assets.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/SortBy
+      - name: before
+        required: false
+        description: The cursor for paginating backwards through the assets. Only supported when `sortBy.sortBy` is `id` (default cursor mode).
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: The cursor for paginating forwards through the assets. Only supported when `sortBy.sortBy` is `id` (default cursor mode).
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Display and formatting options for the response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsAssetList
+    examples:
+      - name: getAssetsByAuthority_v2 example
+        params:
+          - name: authorityAddress
+            value: "2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW"
+          - name: page
+            value: 1
+          - name: limit
+            value: 10
+          - name: sortBy
+            value:
+              sortBy: "created"
+        result:
+          name: Asset page
+          value:
+            last_indexed_slot: 365750752
+            total: 1
+            limit: 10
+            page: 1
+            items:
+              - interface: ProgrammableNFT
+                id: JEGruwYE13mhX2wi2MGrPmeLiVyZtbBptmVy9vG3pXRC
+                content:
+                  $schema: https://schema.metaplex.com/nft1.0.json
+                  json_uri: https://madlads.s3.us-west-2.amazonaws.com/json/6867.json
+                  files:
+                    - uri: https://madlads.s3.us-west-2.amazonaws.com/images/6867.png
+                      cdn_uri: https://cdn.helius-rpc.com/cdn-cgi/image//https://madlads.s3.us-west-2.amazonaws.com/images/6867.png
+                      mime: image/png
+                authorities:
+                  - address: 2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW
+                    scopes:
+                      - full
+                compression:
+                  eligible: false
+                  compressed: false
+                  data_hash: ""
+                  creator_hash: ""
+                  asset_hash: ""
+                  tree: ""
+                  seq: 0
+                  leaf_id: 0
+                grouping:
+                  - group_key: collection
+                    group_value: J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w
+                royalty:
+                  royalty_model: creators
+                  target: null
+                  percent: 0.042
+                  basis_points: 420
+                  primary_sale_happened: true
+                  locked: false
+                creators:
+                  - address: 5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv
+                    share: 0
+                    verified: true
+                ownership:
+                  frozen: true
+                  delegated: false
+                  delegate: null
+                  ownership_model: single
+                  owner: 3F21SJs4FMpsakrxmd8GjgfQZG6BN6MVsvXcm5Yc6Jcf
+                burnt: false
+    result:
+      name: Asset page
+      description: A paginated list of assets controlled by the specified authority.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
+
+  - name: getAssetsByCreator_v2
+    description: >
+      Returns all Solana NFTs and compressed NFTs where the specified wallet is
+      listed as a creator, with optional verified-only filtering and pagination
+      support.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: creatorAddress
+        required: true
+        description: The base-58 wallet address of the creator whose assets to retrieve.
+        schema:
+          type: string
+      - name: page
+        required: false
+        description: The page of results to return (1-based).
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of assets to return per page.
+        schema:
+          type: integer
+      - name: sortBy
+        required: false
+        description: Sorting configuration for ordering the returned assets.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/SortBy
+      - name: before
+        required: false
+        description: The cursor for paginating backwards through the assets.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: The cursor for paginating forwards through the assets.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Display and formatting options for the response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsAssetList
+    examples:
+      - name: getAssetsByCreator_v2 example
+        params:
+          - name: creatorAddress
+            value: "D3XrkNZz6wx6cofot7Zohsf2KSsu2ArngNk8VqU9cTY3"
+          - name: page
+            value: 1
+          - name: limit
+            value: 10
+          - name: sortBy
+            value:
+              sortBy: "created"
+        result:
+          name: Asset page
+          value:
+            last_indexed_slot: 365750752
+            total: 1
+            limit: 10
+            page: 1
+            items:
+              - interface: Custom
+                id: JEH7cJxAKdprFG5AvdsY2c4ZqojxLBjFmw19zADV6oK5
+                content:
+                  $schema: https://schema.metaplex.com/nft1.0.json
+                  json_uri: https://arweave.net/example-json-uri
+                  metadata:
+                    name: "Sample asset"
+                    symbol: SMPL
+                authorities:
+                  - address: D3XrkNZz6wx6cofot7Zohsf2KSsu2ArngNk8VqU9cTY3
+                    scopes:
+                      - full
+                compression:
+                  eligible: false
+                  compressed: false
+                  data_hash: ""
+                  creator_hash: ""
+                  asset_hash: ""
+                  tree: ""
+                  seq: 0
+                  leaf_id: 0
+                grouping: []
+                royalty:
+                  royalty_model: creators
+                  target: null
+                  percent: 0.05
+                  basis_points: 500
+                  primary_sale_happened: false
+                  locked: false
+                creators:
+                  - address: D3XrkNZz6wx6cofot7Zohsf2KSsu2ArngNk8VqU9cTY3
+                    share: 100
+                    verified: true
+                ownership:
+                  frozen: false
+                  delegated: false
+                  delegate: null
+                  ownership_model: single
+                  owner: 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+    result:
+      name: Asset page
+      description: A paginated list of assets created by the specified wallet.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
+
+  - name: getAssetsByGroup_v2
+    description: >
+      Returns all Solana NFTs and compressed NFTs belonging to a specific group
+      identified by `groupKey` and `groupValue` (for example, all assets in a
+      given collection).
+    x-compute-units: 480
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: groupKey
+        required: true
+        description: >
+          The group classification type to search by (for example,
+          `collection`, `community`, `creator`).
+        schema:
+          type: string
+      - name: groupValue
+        required: true
+        description: The collection address or group identifier to retrieve all matching NFTs for.
+        schema:
+          type: string
+      - name: page
+        required: false
+        description: The page of results to return (1-based).
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of assets to return per page.
+        schema:
+          type: integer
+      - name: sortBy
+        required: false
+        description: Sorting configuration for ordering the returned assets.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/SortBy
+      - name: before
+        required: false
+        description: The cursor for paginating backwards through the assets.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: The cursor for paginating forwards through the assets.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Display and formatting options for the response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsAssetList
+    examples:
+      - name: getAssetsByGroup_v2 example
+        params:
+          - name: groupKey
+            value: "collection"
+          - name: groupValue
+            value: "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w"
+          - name: page
+            value: 1
+          - name: limit
+            value: 10
+          - name: sortBy
+            value:
+              sortBy: "created"
+        result:
+          name: Asset page
+          value:
+            last_indexed_slot: 365750752
+            total: 1
+            limit: 10
+            page: 1
+            items:
+              - interface: ProgrammableNFT
+                id: JEGruwYE13mhX2wi2MGrPmeLiVyZtbBptmVy9vG3pXRC
+                authorities:
+                  - address: 2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW
+                    scopes:
+                      - full
+                compression:
+                  eligible: false
+                  compressed: false
+                  data_hash: ""
+                  creator_hash: ""
+                  asset_hash: ""
+                  tree: ""
+                  seq: 0
+                  leaf_id: 0
+                grouping:
+                  - group_key: collection
+                    group_value: J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w
+                royalty:
+                  royalty_model: creators
+                  target: null
+                  percent: 0.042
+                  basis_points: 420
+                  primary_sale_happened: true
+                  locked: false
+                creators:
+                  - address: 5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv
+                    share: 0
+                    verified: true
+                ownership:
+                  frozen: true
+                  delegated: false
+                  delegate: null
+                  ownership_model: single
+                  owner: 3F21SJs4FMpsakrxmd8GjgfQZG6BN6MVsvXcm5Yc6Jcf
+                mutable: true
+                burnt: false
+    result:
+      name: Asset page
+      description: A paginated list of assets in the specified group.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
+
+  - name: getAssetsByOwner_v2
+    description: >
+      Returns all Solana NFTs, compressed NFTs, and (optionally) fungible tokens
+      owned by a specific wallet address, with sorting and pagination options.
+      Enable `options.showFungible` to include SPL tokens and
+      `options.showNativeBalance` to include native SOL balance.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: ownerAddress
+        required: true
+        description: The base-58 wallet address to retrieve all owned digital assets for.
+        schema:
+          type: string
+      - name: page
+        required: false
+        description: The page of results to return (1-based).
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of assets to return per page (up to 1000).
+        schema:
+          type: integer
+      - name: sortBy
+        required: false
+        description: Sorting configuration for ordering the returned assets.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/SortBy
+      - name: before
+        required: false
+        description: The cursor for paginating backwards through the assets.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: The cursor for paginating forwards through the assets.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Display and formatting options for the response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetAssetsByOwner
+    examples:
+      - name: getAssetsByOwner_v2 example
+        params:
+          - name: ownerAddress
+            value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: page
+            value: 1
+          - name: limit
+            value: 10
+          - name: sortBy
+            value:
+              sortBy: "created"
+        result:
+          name: Asset page
+          value:
+            last_indexed_slot: 365750752
+            total: 1
+            limit: 10
+            page: 1
+            items:
+              - interface: V1_NFT
+                id: JCfTS6dmJZY4NXhjMwHqayGGHUwxp59pzcYhZrYqMBce
+                content:
+                  $schema: https://schema.metaplex.com/nft1.0.json
+                  json_uri: https://www.hi-hi.vip/json/5000wif.json
+                  files:
+                    - uri: https://img.hi-hi.vip/json/img/5000wif.png
+                      cdn_uri: https://cdn.helius-rpc.com/cdn-cgi/image//https://img.hi-hi.vip/json/img/5000wif.png
+                      mime: image/png
+                authorities:
+                  - address: 2iVwwSHr7hGR6wxNuQM8ArQYnX6Mzy2yeFnhBGgQetRw
+                    scopes:
+                      - full
+                compression:
+                  eligible: false
+                  compressed: true
+                  data_hash: 7zquDVS1VKu9HDh4WS4ray5ozLThiK6xrnFNhJtusj65
+                  creator_hash: 6v7GeYRiVML5mG1kJqi6eujN9sPB3ziCZJF4Vartj1qd
+                  asset_hash: 8gQZkgZ1L91qkNPtsiRGkRzpNcEfhBABEQr1D3wquB8H
+                  tree: BZNn9zX1MysbSvqyGZ33Seb8bvimaiE9fxmLKwX2Euae
+                  seq: 251133
+                  leaf_id: 250758
+                grouping:
+                  - group_key: collection
+                    group_value: 723Vxwr6aYZHNqc8dVQVwchDHUR3cEwZA8zkejdYWKaS
+                royalty:
+                  royalty_model: creators
+                  target: null
+                  percent: 0
+                  basis_points: 0
+                  primary_sale_happened: false
+                  locked: false
+                creators:
+                  - address: GVKwqsEC5YQZX4hG7Fdy6m7cJUi4DA3ezYx1CC9wkj34
+                    share: 100
+                    verified: true
+                ownership:
+                  frozen: false
+                  delegated: true
+                  delegate: GVKwqsEC5YQZX4hG7Fdy6m7cJUi4DA3ezYx1CC9wkj34
+                  ownership_model: single
+                  owner: 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+                supply:
+                  print_max_supply: 0
+                  print_current_supply: 0
+                  edition_nonce: 0
+                mutable: true
+                burnt: false
+    result:
+      name: Asset page
+      description: A paginated list of assets owned by the specified wallet.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetPage
+
+  - name: getNftEditions_v2
+    description: >
+      Returns all editions and prints of a Solana master edition NFT, including
+      edition numbers and metadata, with pagination support.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: mint
+        required: true
+        description: The mint address of the master edition NFT to retrieve all editions for.
+        schema:
+          type: string
+      - name: page
+        required: false
+        description: The page of results to return (1-based).
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of NFT editions to return per page.
+        schema:
+          type: integer
+    examples:
+      - name: getNftEditions_v2 example
+        params:
+          - name: mint
+            value: "Ey2Qb8kLctbchQsMnhZs5DjY32To2QtPuXNwWvk4NosL"
+          - name: page
+            value: 1
+          - name: limit
+            value: 10
+        result:
+          name: NFT edition list
+          value:
+            last_indexed_slot: 365750752
+            total: 61
+            limit: 10
+            page: 1
+            master_edition_address: 8SHfqzJYABeGfiG1apwiEYt6TvfGQiL1pdwEjvTKsyiZ
+            supply: 61
+            max_supply: 69
+            editions:
+              - mint: GJvFDcBWf6aDncd1TBzx2ou1rgLFYaMBdbYLBa9oTAEw
+                edition_address: 3PfEsMd1Mv5wUR9K4jhZa5o2gQ8CZ7HHrDf5Q9zGF7bV
+                edition: 1
+              - mint: 5MnBpuF5Br4rL9jm9Aji4RmLPTHqTGYuxmDydCkgAtay
+                edition_address: 6HrLQxrKcxwvKt7RhQ9jm4M2u1UyC5G2Kw7DhKzUvJmp
+                edition: 2
+              - mint: 4RGpV1SewJnAqM1BeF3vB8QeqQE31zHTKzMdyeMkNAv6
+                edition_address: BbvA1oMv4nzHQxRUAe3xNbUxfB3jgy9zZ21fj6C5vApV
+                edition: 3
+    result:
+      name: NFT edition list
+      description: A paginated list of NFT editions minted from the specified master edition.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/NftEditionList
+
+  - name: getSignaturesForAsset_v2
+    description: >
+      Returns all historical transaction signatures for a Solana NFT or
+      compressed NFT (mint, transfers, burns, and other state changes), with
+      pagination.
+
+      **Note:** this method is designed for compressed NFTs. For regular NFTs,
+      use the standard Solana `getSignaturesForAddress` method instead. This
+      DAS-specific endpoint exists because `getSignaturesForAddress` does not
+      work with compressed NFTs.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: id
+        required: true
+        description: The unique identifier (mint address) of the compressed asset to retrieve transaction history for.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetId
+      - name: page
+        required: true
+        description: The page of results to return (1-based). Required.
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of transaction signatures to return per page.
+        schema:
+          type: integer
+      - name: before
+        required: false
+        description: The cursor for paginating backwards through the signatures.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: The cursor for paginating forwards through the signatures.
+        schema:
+          type: string
+    examples:
+      - name: getSignaturesForAsset_v2 example
+        params:
+          - name: id
+            value: "FNt6A9Mfnqbwc1tY7uwAguKQ1JcpBrxmhczDgbdJy5AC"
+          - name: page
+            value: 1
+        result:
+          name: Asset signature list
+          value:
+            last_indexed_slot: 365750752
+            total: 3
+            limit: 1000
+            items:
+              - - 5nLi8m72bU6PBcz4Xrk23P6KTGy9ufF92kZiQXjTv9ELgkUxrNaiCGhMF4vh6RAcisw9DEQWJt9ogM3G2uCuwwV7
+                - MintToCollectionV1
+              - - 323Ag4J69gagBt3neUvajNauMydiXZTmXYSfdK5swWcK1iwCUypcXv45UFcy5PTt136G9gtQ45oyPJRs1f2zFZ3v
+                - Transfer
+              - - 3TbybyYRtNjVMhhahTNbd4bbpiEacZn2qkwtH7ByL7tCHmwi2g4YapPidSRGs1gjaseKbs7RjNmUKWmU6xbf3wUT
+                - Transfer
+    result:
+      name: Asset signature list
+      description: A paginated list of `[signature, operation]` tuples affecting this compressed asset.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetSignatureList
+
+  - name: getTokenAccounts_v2
+    description: >
+      Returns all SPL token accounts for a given `mint` and/or `owner`,
+      including token balances, mint addresses, and account metadata. At least
+      one of `mint` or `owner` must be provided.
+    x-compute-units: 160
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: owner
+        required: false
+        description: The base-58 owner (wallet) address whose token accounts to list. Either `owner` or `mint` must be provided.
+        schema:
+          type: string
+      - name: mint
+        required: false
+        description: The base-58 mint address to filter token accounts by. Either `owner` or `mint` must be provided.
+        schema:
+          type: string
+      - name: page
+        required: false
+        description: The page of results to return (1-based).
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of token accounts to return per page.
+        schema:
+          type: integer
+      - name: cursor
+        required: false
+        description: The cursor used for pagination.
+        schema:
+          type: string
+      - name: before
+        required: false
+        description: Returns results before the specified cursor.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Returns results after the specified cursor.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Display and formatting options for the response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsGetTokenAccounts
+    examples:
+      - name: getTokenAccounts_v2 example
+        params:
+          - name: owner
+            value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: page
+            value: 1
+          - name: limit
+            value: 10
+        result:
+          name: Token account list
+          value:
+            last_indexed_slot: 365750752
+            total: 2
+            limit: 10
+            cursor: null
+            token_accounts:
+              - address: 9vGjxu6E5xQnycvY6dS8CyD2wPKa1cAaxRzHnCvGY8Bh
+                mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                owner: 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+                amount: 125000000
+                delegated_amount: 0
+                frozen: false
+              - address: 8yhX9AR6bLXJT4NqZTqTKAXY7g3vJfxV3D6h4YunKxjc
+                mint: DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263
+                owner: 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+                amount: 5000000000
+                delegated_amount: 0
+                frozen: false
+    result:
+      name: Token account list
+      description: A paginated list of SPL token accounts matching the query.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/TokenAccountList
+
+  - name: searchAssets_v2
+    description: >
+      Search and filter Solana NFTs, compressed NFTs, and tokens using flexible
+      criteria including ownership, creators, collections, and custom
+      attributes. Both `ownerAddress` and `tokenType` are required. The `tree`
+      parameter is Helius-specific and not part of the official DAS
+      specification.
+    x-compute-units: 480
+    x-rate-limit-cus: 200
+    paramStructure: by-name
+    params:
+      - name: ownerAddress
+        required: true
+        description: The base-58 wallet address to filter search results by owner.
+        schema:
+          type: string
+      - name: tokenType
+        required: true
+        description: Filter for specific token types.
+        schema:
+          type: string
+          enum:
+            - fungible
+            - nonFungible
+            - regularNft
+            - compressedNft
+            - all
+      - name: page
+        required: false
+        description: The page of results to return (1-based).
+        schema:
+          type: integer
+      - name: limit
+        required: false
+        description: The maximum number of assets to return per page.
+        schema:
+          type: integer
+      - name: authorityAddress
+        required: false
+        description: Filter by program authority for assets controlled by a specific protocol or update authority.
+        schema:
+          type: string
+      - name: creatorAddress
+        required: false
+        description: Filter by the creator wallet address.
+        schema:
+          type: string
+      - name: creatorVerified
+        required: false
+        description: Filter by whether the creator is verified.
+        schema:
+          type: boolean
+      - name: grouping
+        required: false
+        description: >
+          Collection grouping tuple `[groupKey, groupValue]` for filtering by
+          collection membership. For example: `["collection", "<collectionKey>"]`.
+        schema:
+          type: array
+          items:
+            type: string
+      - name: sortBy
+        required: false
+        description: Sorting configuration for ordering the returned assets.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/SortBy
+      - name: compressed
+        required: false
+        description: Filter for compressed NFTs (cNFTs) that use state compression.
+        schema:
+          type: boolean
+      - name: compressible
+        required: false
+        description: Filter for assets that are eligible for compression but have not yet been compressed.
+        schema:
+          type: boolean
+      - name: delegate
+        required: false
+        description: Delegate criteria for the asset search.
+        schema:
+          type: integer
+      - name: tree
+        required: false
+        description: >
+          Filter compressed NFTs by their merkle tree address. This parameter
+          is Helius-specific and not part of the official DAS specification.
+        schema:
+          type: string
+      - name: supply
+        required: false
+        description: Supply criteria for the asset search.
+        schema:
+          type: integer
+      - name: supplyMint
+        required: false
+        description: Supply mint criteria for the asset search.
+        schema:
+          type: string
+      - name: frozen
+        required: false
+        description: Filter by whether an asset is frozen.
+        schema:
+          type: boolean
+      - name: burnt
+        required: false
+        description: Filter by whether an asset is burnt.
+        schema:
+          type: boolean
+      - name: isAgent
+        required: false
+        description: Filter for assets that have an Agent Identity (MPL Core `AgentIdentity` external plugin).
+        schema:
+          type: boolean
+      - name: agentToken
+        required: false
+        description: Filter by base58 agent token mint address from the Agent Registry program.
+        schema:
+          type: string
+      - name: assetSigner
+        required: false
+        description: Filter by base58 asset-signer PDA (MPL Core).
+        schema:
+          type: string
+      - name: interface
+        required: false
+        description: Filter by the token standard interface type.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/AssetInterface
+      - name: royaltyTargetType
+        required: false
+        description: Royalty target type criteria.
+        schema:
+          type: string
+      - name: royaltyTarget
+        required: false
+        description: Royalty target criteria.
+        schema:
+          type: integer
+      - name: royaltyAmount
+        required: false
+        description: Royalty amount criteria (basis points).
+        schema:
+          type: integer
+      - name: ownerType
+        required: false
+        description: Ownership model criteria.
+        schema:
+          type: integer
+      - name: before
+        required: false
+        description: Cursor for paginating backwards through results.
+        schema:
+          type: string
+      - name: after
+        required: false
+        description: Cursor for paginating forwards through results.
+        schema:
+          type: string
+      - name: options
+        required: false
+        description: Advanced display options for the response.
+        schema:
+          $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/OptionsSearchAssets
+    examples:
+      - name: searchAssets_v2 example
+        params:
+          - name: ownerAddress
+            value: "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"
+          - name: tokenType
+            value: "all"
+          - name: limit
+            value: 10
+          - name: page
+            value: 1
+          - name: options
+            value:
+              showUnverifiedCollections: false
+              showCollectionMetadata: false
+              showGrandTotal: false
+              showNativeBalance: false
+              showZeroBalance: false
+        result:
+          name: searchAssets result
+          value:
+            assets:
+              last_indexed_slot: 365750752
+              total: 80
+              limit: 10
+              page: 1
+              items:
+                - interface: V1_NFT
+                  id: JCfTS6dmJZY4NXhjMwHqayGGHUwxp59pzcYhZrYqMBce
+                  ownership:
+                    frozen: false
+                    delegated: true
+                    delegate: GVKwqsEC5YQZX4hG7Fdy6m7cJUi4DA3ezYx1CC9wkj34
+                    ownership_model: single
+                    owner: 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+                  content:
+                    $schema: https://schema.metaplex.com/nft1.0.json
+                    json_uri: https://www.hi-hi.vip/json/5000wif.json
+                    metadata:
+                      name: "Sample NFT"
+                      symbol: NFT
+    result:
+      name: searchAssets result
+      description: The search result envelope containing matching assets and (optionally) native balance.
+      schema:
+        $ref: ../../chains/_components/solana/asset-v2.yaml#/components/schemas/SearchAssetsResult
