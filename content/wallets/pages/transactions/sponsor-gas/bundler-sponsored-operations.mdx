@@ -1,0 +1,174 @@
+---
+title: Bundler Sponsored Operations
+description: Alchemy's recommended, advanced path for gas sponsorship. BSO settles at the bundler level with faster inclusion and automatic retries.
+subtitle: Alchemy's recommended, advanced path for gas sponsorship. BSO sponsors gas for user operations directly at the bundler level, no onchain paymaster contract, with up to 30% faster execution and automatic retries built in.
+slug: wallets/transactions/sponsor-gas/bundler-sponsored-operations
+---
+
+## What is Bundler Sponsorship?
+
+Bundler Sponsored Operations (BSO) let the bundler cover gas fees for user operations directly, without deploying or funding an onchain paymaster. It's the **recommended default** for new gas sponsorship integrations and an **advanced sponsorship path**: by settling at the bundler level and cutting network round-trips, BSO lands operations faster and retries them automatically.
+
+### Advanced sponsorship features
+
+* **Faster execution** — up to 30% faster inclusion (p99) vs. standard sponsorship, by eliminating paymaster contract calls and reducing network round-trips. *Improvement varies by chain and network conditions.*
+* **Automatic retries** — delayed or failed operations are retried automatically, with no extra integration work. Just tell us how much you're willing to spend per transaction.
+* **No paymaster contract** — nothing to deploy, fund, or manage onchain.
+* **Simplified multi-chain** — the same policy type works across every supported chain.
+* **Centralized control** — manage spend limits and rules from the dashboard.
+
+## Supported chains
+
+BSO is supported on every chain with both bundler and gas sponsorship support, except MegaETH.
+
+See the full [Wallet APIs supported chains](/docs/wallets/supported-chains) matrix to confirm which chains qualify.
+
+## How it differs from paymaster sponsorship
+
+Traditional ERC-4337 sponsorship relies on onchain paymaster contracts, which must be deployed and funded per network, add onchain verification overhead, and require per-chain balance management.
+
+BSO instead operates at the bundler level: it uses your Gas Manager policy to control spend, removes paymaster contract calls (the source of the latency improvement), and works identically across chains.
+
+## Policy setup
+
+Create a Gas Manager policy of type **Bundler Sponsored Operations** in your [dashboard](https://dashboard.alchemy.com/). Configure:
+
+* **Policy Type**: select "Bundler Sponsored Operations"
+* **Max Spend Per UO**: the maximum the bundler can spend per user operation (required)
+
+## Compute unit costs
+
+| Configuration                                     | CU Cost |
+| ------------------------------------------------- | ------- |
+| With BSO sponsorship (`x-alchemy-policy-id`)      | 3000    |
+| Standard (without sponsorship)                    | 1000    |
+
+For more details, see the [Compute Unit Costs documentation](/docs/reference/compute-unit-costs#gas-manager--bundler-apis).
+
+## How to use BSO
+
+To enable bundler sponsorship, you need to:
+
+1. **Create a Bundler Sponsored Operations policy** in your dashboard with the required Max Spend Per UO configuration.
+2. **Include the policy ID** in your requests (via the `paymaster` client option for Wallet APIs, or via the `x-alchemy-policy-id` header on the bundler transport for low-level APIs).
+3. **Zero out `maxFeePerGas`, `maxPriorityFeePerGas`, and `preVerificationGas`** on the user operation when using low-level APIs. The Wallet APIs SDK handles this for you automatically.
+
+### With Wallet APIs (recommended)
+
+The Wallet APIs SDK is the recommended integration path. Pass your BSO policy ID as the `paymaster` option on the smart wallet client, and every call routed through the client is sponsored under that policy.
+
+```ts title="client.ts"
+import type { Hex } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { baseSepolia } from "viem/chains";
+import { createSmartWalletClient, alchemyWalletTransport } from "@alchemy/wallet-apis";
+
+export const client = createSmartWalletClient({
+  transport: alchemyWalletTransport({
+    apiKey: "YOUR_API_KEY",
+  }),
+  chain: baseSepolia,
+  signer: privateKeyToAccount("0xYOUR_PRIVATE_KEY" as Hex),
+  // BSO policy for gas sponsorship
+  paymaster: { policyId: "YOUR_BSO_POLICY_ID" },
+});
+
+// Every call routed through the client is sponsored under the BSO policy.
+const { id } = await client.sendCalls({
+  calls: [{ to: "0x000000000000000000000000000000000000dEaD", data: "0x" }],
+});
+
+const status = await client.waitForCallsStatus({ id });
+console.log(status);
+```
+
+You can also pass the policy ID per-call via `capabilities`:
+
+```ts
+const { id } = await client.sendCalls({
+  calls: [{ to: "0x000000000000000000000000000000000000dEaD", data: "0x" }],
+  capabilities: {
+    paymaster: { policyId: "YOUR_BSO_POLICY_ID" },
+  },
+});
+```
+
+### Low-level APIs
+
+If you're using viem's account-abstraction primitives directly, the policy ID rides on the bundler transport's `fetchOptions.headers`. The bundler fills in the actual gas values server-side when it sees the zeroed fields.
+
+```ts
+import { createClient, type Hex } from "viem";
+import { createBundlerClient } from "viem/account-abstraction";
+import { privateKeyToAccount } from "viem/accounts";
+import { worldchain } from "viem/chains";
+import { alchemyTransport } from "@alchemy/common";
+import { toModularAccountV2 } from "@alchemy/smart-accounts";
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
+
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
+const POLICY_ID = process.env.POLICY_ID!;
+const PRIVATE_KEY = process.env.PRIVATE_KEY! as Hex;
+
+// The policy ID rides on the transport's fetch options.
+const transport = alchemyTransport({
+  apiKey: ALCHEMY_API_KEY,
+  fetchOptions: {
+    headers: { "x-alchemy-policy-id": POLICY_ID },
+  },
+});
+
+const rpcClient = createClient({ chain: worldchain, transport });
+
+const account = await toModularAccountV2({
+  client: rpcClient,
+  owner: privateKeyToAccount(PRIVATE_KEY),
+});
+
+const bundlerClient = createBundlerClient({
+  account,
+  client: rpcClient,
+  chain: worldchain,
+  transport,
+  userOperation: { estimateFeesPerGas },
+});
+
+// Zero ALL three gas fields, the bundler fills them in.
+const hash = await bundlerClient.sendUserOperation({
+  calls: [{ to: "0x000000000000000000000000000000000000dEaD", data: "0x" }],
+  maxFeePerGas: 0n,
+  maxPriorityFeePerGas: 0n,
+  preVerificationGas: 0n,
+});
+
+const receipt = await bundlerClient.waitForUserOperationReceipt({ hash });
+console.log("Tx:", receipt.receipt.transactionHash);
+```
+
+#### Key configuration points
+
+1. **Policy Type**: ensure you've created a policy of type "Bundler Sponsored Operations" with Max Spend Per UO configured.
+2. **Transport configuration**: the `x-alchemy-policy-id` header must be included on the **bundler** transport via `fetchOptions.headers`. No `createPaymasterClient` needed, BSO does not use a paymaster contract.
+3. **Gas fee overrides**: set `maxFeePerGas`, `maxPriorityFeePerGas`, **and** `preVerificationGas` to `0n` on the user operation. All three must be zero, the bundler treats that as the signal to cover gas under the BSO policy.
+
+## How gas costs are calculated
+
+BSO gas is priced as the onchain settlement cost plus a BSO service fee for advanced, prioritized bundling and faster inclusion.
+
+## Requirements
+
+* A valid API key with Bundler API access
+* A configured Gas Manager policy of type **Bundler Sponsored Operations** with Max Spend Per UO set
+* Wallet APIs SDK or equivalent setup for creating and signing user operations
+
+<Warning>
+  Ensure your Bundler Sponsored Operations policy has sufficient balance and that the Max Spend Per UO limit is set appropriately. If the policy balance is insufficient or the operation exceeds the spending limit, the user operation fails.
+</Warning>
+
+## Related documentation
+
+* [Sponsor gas overview](/docs/wallets/transactions/sponsor-gas/overview)
+* [Bundler API Quickstart](/docs/reference/bundler-api-quickstart)
+* [Gas Manager Admin API](/docs/wallets/api-reference/gas-manager-admin-api/admin-api-endpoints/get-policy)
+* [Compute Unit Costs](/docs/reference/compute-unit-costs)
+* [Wallet APIs documentation](/docs/wallets)
