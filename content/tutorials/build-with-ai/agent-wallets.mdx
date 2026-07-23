@@ -27,6 +27,11 @@ The session is approved in the Alchemy Dashboard, expires automatically, and can
     Approve sessions in the Dashboard, inspect the active session, and revoke
     access from the CLI or Dashboard.
   </Card>
+  <Card title="x402 payments" icon="coins">
+    Use the session signer to pay x402 v2 endpoints that offer a supported EVM
+    payment option. The CLI decodes quotes, enforces spend caps, and returns
+    payment receipts. See [x402 payments](docs/x402-payments).
+  </Card>
 </CardGroup>
 
 <AccordionGroup>
@@ -52,6 +57,11 @@ The session is approved in the Alchemy Dashboard, expires automatically, and can
 
     **Status:** `alchemy evm status` checks smart-wallet call IDs and EVM
     transaction hashes. `alchemy solana status` checks Solana signatures.
+
+    **x402 payments:** `alchemy x402 request` pays `402 Payment Required`
+    quotes from third-party APIs in USDC with the session signer, via Circle
+    Gateway batched payments or direct exact settlement. Requires
+    `--max-payment` in automation.
   </Accordion>
   <Accordion title="Session capabilities and limits">
     A session can include `evm.signMessage`, `evm.signTypedData`,
@@ -215,7 +225,8 @@ alchemy --json --no-interactive wallet status --verify
           "swap_execute",
           "bridge_quote",
           "bridge_execute",
-          "status"
+          "status",
+          "x402_request"
         ],
         "sponsorshipFlags": ["--gas-sponsored", "--gas-policy-id <id>"],
         "directRawTransactionSigning": false,
@@ -231,6 +242,7 @@ alchemy --json --no-interactive wallet status --verify
         "Run balance, allowance, or quote checks before spending.",
         "Use --dry-run where available before broadcast.",
         "Treat sponsorship policies as fee controls, not wallet spend limits.",
+        "Set --max-payment on every x402 payment; non-interactive x402 payments fail without it.",
         "Disconnect or revoke the session after the workflow."
       ]
     }
@@ -273,5 +285,6 @@ alchemy --json --no-interactive wallet status --verify
 
 * [Alchemy CLI](docs/alchemy-cli)
 * [Alchemy CLI wallets and signing](docs/alchemy-cli#wallets-and-signing)
+* [x402 payments](docs/x402-payments)
 * [Alchemy Agent Skills](docs/alchemy-agent-skills)
 * [Alchemy Dashboard Agent Wallets](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet)

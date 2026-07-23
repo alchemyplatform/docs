@@ -1,0 +1,35 @@
+---
+title: Polygon PoS Erigon Client Deprecation Notice
+description: Important notice about the migration of Polygon Mainnet and Amoy from Erigon to Bor on August 1, 2026, including which methods are being removed and how to migrate off erigon_*, trace_filter, trace_get, and trace_rawTransaction.
+slug: reference/polygon-pos-erigon-deprecation-notice
+---
+
+## ⚠️ Deprecation Notice
+
+**Polygon Labs is [sunsetting Erigon support on Polygon PoS on August 1, 2026](https://forum.polygon.technology/t/sunsetting-erigon-support/21872).** In line with that change, Alchemy is migrating our Polygon Mainnet and Amoy infrastructure from Erigon to [Bor](https://github.com/0xPolygon/bor), the recommended Polygon client, on the same date.
+
+Because Bor is a Geth-based client, several Erigon-specific RPC methods will no longer be available after the migration. Beginning August 1, 2026, the following methods will no longer be supported on Polygon Mainnet (`polygon-mainnet`) or Polygon Amoy (`polygon-amoy`):
+
+* The entire `erigon_*` namespace, for example `erigon_getHeaderByNumber`.
+* `trace_filter`
+* `trace_get`
+* `trace_rawTransaction`
+
+The remaining `trace_*` methods (`trace_block`, `trace_transaction`, `trace_call`, `trace_callMany`, `trace_replayTransaction`, and `trace_replayBlockTransactions`) will continue to be available after August 1, 2026, but will be served by **Bor instead of Erigon**.
+
+## Action required: update your code before August 1, 2026
+
+Migrate the affected methods before August 1, 2026 to avoid disruption:
+
+* **`erigon_*` methods.** Replace `erigon_*` calls with standard Ethereum RPC equivalents. For example, replace `erigon_getHeaderByNumber` with [`eth_getBlockByNumber`](/docs/reference/eth-getblockbynumber).
+* **`trace_filter`.** There is no direct server-side equivalent in Bor. Call [`debug_traceBlockByNumber`](/docs/reference/debug-traceblockbynumber) with `callTracer` for each block in the desired range and perform `from`/`to` filtering client-side.
+* **`trace_get`.** `trace_get` returns a single subtrace of a transaction by its trace-address path. Call [`debug_traceTransaction`](/docs/reference/debug-tracetransaction) with `callTracer` and index into the returned call tree client-side.
+* **`trace_rawTransaction`.** Use [`debug_traceCall`](/docs/reference/debug-tracecall). Because `debug_traceCall` accepts `TransactionArgs` rather than signed RLP bytes, the client must decode the raw transaction, recover the sender, and rebuild the call arguments.
+
+## `eth_getProof` on Bor
+
+Bor currently supports [`eth_getProof`](/docs/reference/eth-getproof) only for the **latest 128 blocks**. Requests for proofs from older historical blocks are not currently supported by the Bor client.
+
+## Need help?
+
+If you have any questions or need assistance migrating, contact us at support@alchemy.com or open a ticket in the [Alchemy Dashboard](https://dashboard.alchemy.com/).

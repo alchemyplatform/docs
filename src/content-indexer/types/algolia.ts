@@ -12,4 +12,5 @@ export interface AlgoliaRecord {
   breadcrumbs: string[]; // Navigation ancestry titles for context (e.g., ["NFT API", "NFT API Endpoints"])
   httpMethod?: string; // For API methods: "GET" | "POST" | etc.
   content: string; // MDX content or endpoint description
+  pageRank: number; // Custom-ranking signal (desc); 1 for chain API-overview pages, 0 otherwise
 }

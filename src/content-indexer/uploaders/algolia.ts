@@ -66,6 +66,11 @@ export const uploadToAlgolia = async (
   const truncatedRecords = records.map(truncateRecord);
 
   try {
+    await client.setSettings({
+      indexName,
+      indexSettings: { customRanking: ["desc(pageRank)"] },
+    });
+
     // 1. Delete all records with matching indexerType to ensure no orphaned records
     await client.deleteBy({
       indexName,

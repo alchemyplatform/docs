@@ -150,6 +150,111 @@ components:
           items:
             $ref: "./account.yaml#/components/schemas/TokenAccount"
 
+    getTokenAccountsByOwnerAtSlot:
+      name: getTokenAccountsByOwnerAtSlot
+      summary: >-
+        Returns every SPL Token and Token-2022 account owned by a wallet
+        as of a specific slot.
+      description: >-
+        Returns every SPL Token and Token-2022 account owned by a wallet
+        as of a specific slot. It is the historical, point-in-time version
+        of Solana's `getTokenAccountsByOwner`: the same inputs, plus an
+        optional `slot` to look up the past and `pageKey` / `pageLimit` to
+        page through large wallets.
+
+
+        If you omit `slot`, the call returns the wallet's current token
+        accounts (as of the latest available slot). Responses are always
+        `jsonParsed`.
+      x-compute-units: 40
+      params:
+        - name: Token owner Pubkey
+          required: true
+          description: >-
+            The base58-encoded Pubkey of the wallet whose token accounts
+            you want.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: Token filter
+          required: false
+          description: >-
+            Restricts results to a single mint or a single token program.
+            Include either `mint` or `programId`, never both. Omit to
+            return all token accounts.
+          schema:
+            $ref: "./account.yaml#/components/schemas/GetTokenAccountsByOwnerAtSlotFilter"
+        - name: Configuration
+          required: false
+          description: >-
+            Optional point-in-time (`slot`) and pagination (`pageKey`,
+            `pageLimit`) options.
+          schema:
+            $ref: "./account.yaml#/components/schemas/GetTokenAccountsByOwnerAtSlotConfig"
+      examples:
+        - name: getTokenAccountsByOwnerAtSlot example
+          params:
+            - name: Token owner Pubkey
+              value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+            - name: Token filter
+              value:
+                mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            - name: Configuration
+              value:
+                slot: 250000000
+                pageLimit: 1000
+          result:
+            name: Token accounts at slot
+            value:
+              context:
+                apiVersion: "2.3.3"
+                slot: 250000000
+              value:
+                - pubkey: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
+                  account:
+                    lamports: 2039280
+                    owner: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                    executable: false
+                    rentEpoch: 18446744073709551615
+                    space: 165
+                    data:
+                      program: "spl-token"
+                      space: 165
+                      parsed:
+                        type: "account"
+                        info:
+                          isNative: false
+                          mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+                          owner: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+                          state: "initialized"
+                          tokenAmount:
+                            amount: "1500000"
+                            decimals: 6
+                            uiAmount: 1.5
+                            uiAmountString: "1.5"
+              pageKey: null
+      result:
+        name: Token accounts at slot
+        description: >-
+          A paginated set of the token accounts the wallet held at the
+          requested slot, plus the slot the result was computed at and a
+          `pageKey` cursor for the next page (or `null` on the last page).
+        schema:
+          $ref: "./account.yaml#/components/schemas/GetTokenAccountsByOwnerAtSlotResult"
+      errors:
+        - code: -32602
+          message: >-
+            Invalid params. Common causes include a missing or malformed
+            `owner`, sending both `mint` and `programId` in the filter, a
+            `programId` that is not the SPL Token or Token-2022 program,
+            an invalid `pageKey` cursor, or the latest slot being
+            temporarily unavailable when `slot` is omitted.
+        - code: -32601
+          message: Method not found.
+        - code: -32603
+          message: >-
+            Internal error. Retry the request; if it persists, contact
+            support.
+
     getLargestAccounts:
       name: getLargestAccounts
       description: Returns the 20 largest accounts, by lamport balance.
