@@ -1,13 +1,13 @@
 ---
 title: Bundler Sponsored Operations
-description: Recommended advanced path for gas sponsorship, with faster confirmations and automatic retries.
-subtitle: Recommended, advanced path for gas sponsorship. BSO covers gas for your users' transactions with up to 30% faster execution and automatic retries built in.
+description: Advanced gas sponsorship, with faster confirmations and automatic retries.
+subtitle: Advanced gas sponsorship. BSO covers gas for your users' transactions with up to 30% faster execution and automatic retries built in.
 slug: wallets/transactions/sponsor-gas/bundler-sponsored-operations
 ---
 
 ## What is Bundler Sponsorship?
 
-Bundler Sponsored Operations (BSO) are the advanced way to cover gas fees for your users' transactions. It's the **recommended default** for new gas sponsorship integrations: BSO lands transactions faster and retries them automatically.
+Bundler Sponsored Operations (BSO) are the advanced way to cover gas fees for your users' transactions. It's the **recommended integration** for gas sponsorship: BSO lands transactions faster and retries them automatically and removes the need for an onchain paymaster. 
 
 ### Advanced sponsorship features
 
@@ -38,7 +38,7 @@ BSO instead operates at the bundler level: it uses your Gas Manager policy to co
 
 ### With Wallet APIs (recommended)
 
-Pass your BSO policy ID as the `paymaster` option on the smart wallet client. Every call routed through the client is sponsored under that policy, and the SDK takes care of the rest.
+Pass your BSO policy ID as the `paymaster` option on the smart wallet client. Every call routed through the client is sponsored under that policy, and the SDK takes care of the rest. See sponsorship [documentation](/docs/wallets/transactions/sponsor-gas) for more information.
 
 ```ts title="client.ts"
 import type { Hex } from "viem";
@@ -78,7 +78,7 @@ const { id } = await client.sendCalls({
 
 ### Low-level APIs
 
-If you're using viem's account-abstraction primitives directly, two extra steps are required:
+See the [Bundler API Quickstart](/docs/reference/bundler-api-quickstart) for full examples. Two extra steps are required:
 
 * Set the `x-alchemy-policy-id` header on the bundler transport (via `fetchOptions.headers`).
 * Zero out `maxFeePerGas`, `maxPriorityFeePerGas`, and `preVerificationGas` on the user operation. All three must be zero, the bundler treats that as the signal to cover gas under the BSO policy and fills in the actual values server-side.
@@ -134,7 +134,7 @@ console.log("Tx:", receipt.receipt.transactionHash);
 ```
 
 ## Compute unit costs 
-CU cost differ for BSO policies when using low-level APIs.
+When using bundler sponsorship with `eth_sendUserOperation`:
 
 | Configuration                                     | CU Cost |
 | ------------------------------------------------- | ------- |
@@ -160,7 +160,5 @@ BSO gas is priced as the onchain settlement cost plus a BSO service fee for adva
 ## Related documentation
 
 * [Sponsor gas overview](/docs/wallets/transactions/sponsor-gas/overview)
-* [Bundler API Quickstart](/docs/reference/bundler-api-quickstart)
 * [Gas Manager Admin API](/docs/wallets/api-reference/gas-manager-admin-api/admin-api-endpoints/get-policy)
-* [Compute Unit Costs](/docs/reference/compute-unit-costs)
 * [Wallet APIs documentation](/docs/wallets)
