@@ -1,53 +1,39 @@
 ---
 title: Bundler Sponsored Operations
-description: Alchemy's recommended, advanced path for gas sponsorship, with faster confirmations and automatic retries.
-subtitle: Alchemy's recommended, advanced path for gas sponsorship. BSO covers gas for your users' transactions with up to 30% faster execution and automatic retries built in.
+description: Recommended advanced path for gas sponsorship, with faster confirmations and automatic retries.
+subtitle: Recommended, advanced path for gas sponsorship. BSO covers gas for your users' transactions with up to 30% faster execution and automatic retries built in.
 slug: wallets/transactions/sponsor-gas/bundler-sponsored-operations
 ---
 
 ## What is Bundler Sponsorship?
 
-Bundler Sponsored Operations (BSO) are Alchemy's advanced way to cover gas fees for your users' transactions. It's the **recommended default** for new gas sponsorship integrations: BSO lands transactions faster and retries them automatically.
+Bundler Sponsored Operations (BSO) are the advanced way to cover gas fees for your users' transactions. It's the **recommended default** for new gas sponsorship integrations: BSO lands transactions faster and retries them automatically.
 
 ### Advanced sponsorship features
 
-* **Faster execution** — up to 30% faster inclusion (p99) vs. standard sponsorship. *Improvement varies by chain and network conditions.*
-* **Automatic retries** — delayed or failed transactions are retried automatically, with no extra integration work. Just tell us how much you're willing to spend per transaction.
-* **No onchain contracts** — nothing to deploy, fund, or manage onchain.
-* **Simplified multi-chain** — the same policy type works across every supported chain.
+* **Faster execution** — up to 30% faster execution vs. standard sponsorship. *Improvement varies by chain and network conditions.*
+* **Automatic retries** — transactions are retried automatically to handle gas fluctuation, with no extra integration work. Just tell us how much you're willing to spend per transaction and we will gaurunatee submission up to that limit. 
+* **No onchain contracts** — no dependncy on onchain paymaster infrastructure.
+* **Multi-chain** — the same policy type works across every supported chain.
 * **Centralized control** — manage spend limits and rules from the dashboard.
 
 ## Supported chains
 
 BSO is supported on every chain where Alchemy offers gas sponsorship, except MegaETH.
 
-See the full [Wallet APIs supported chains](/docs/wallets/supported-chains) matrix to confirm which chains qualify.
+See the full [Wallet APIs supported chains](/docs/wallets/supported-chains) doc to confirm which chains qualify.
 
-## How it differs from paymaster sponsorship
+## How it differs from onchain paymaster sponsorship
 
-Traditional ERC-4337 sponsorship relies on onchain paymaster contracts, which must be deployed and funded per network, add onchain verification overhead, and require per-chain balance management.
+Traditional ERC-4337 sponsorship relies on onchain paymaster contracts, which must be deployed on every network, add onchain verification overhead, and require per-chain balance management.
 
-BSO instead operates at the bundler level: it uses your Gas Manager policy to control spend, removes paymaster contract calls (the source of the latency improvement), and works identically across chains.
+BSO instead operates at the bundler level: it uses your Gas Manager policy to control spend and removes paymaster contract calls.
 
-## Policy setup
+## How to use BSO sponsorship
 
-Create a Gas Manager policy in your [dashboard](https://dashboard.alchemy.com/). Configure:
-
+1. Create a BSO Gas Manager policy in your [dashboard](https://dashboard.alchemy.com/). Configure:
 * **Policy Type**: select **Bundler Sponsored Operations**
-* **Max Spend Per UO**: the maximum spend per transaction (required)
-
-## Compute unit costs
-
-| Configuration                                     | CU Cost |
-| ------------------------------------------------- | ------- |
-| With BSO sponsorship (`x-alchemy-policy-id`)      | 3000    |
-| Standard (without sponsorship)                    | 1000    |
-
-For more details, see the [Compute Unit Costs documentation](/docs/reference/compute-unit-costs#gas-manager--bundler-apis).
-
-## How to use BSO
-
-1. **Create a policy** in your dashboard, selecting **Bundler Sponsored Operations** as the Policy Type and setting a **Max Spend Per UO**.
+* **Max Spend Per UO**: the maximum spend per transaction - we will retry up to this limit
 2. **Include the policy ID** in your requests when sending transactions.
 
 ### With Wallet APIs (recommended)
@@ -146,6 +132,16 @@ const hash = await bundlerClient.sendUserOperation({
 const receipt = await bundlerClient.waitForUserOperationReceipt({ hash });
 console.log("Tx:", receipt.receipt.transactionHash);
 ```
+
+## Compute unit costs 
+CU cost differ for BSO policies when using low-level APIs.
+
+| Configuration                                     | CU Cost |
+| ------------------------------------------------- | ------- |
+| With BSO sponsorship (`x-alchemy-policy-id`)      | 3000    |
+| Standard (without sponsorship)                    | 1000    |
+
+For more details, see the [Compute Unit Costs documentation](/docs/reference/compute-unit-costs#gas-manager--bundler-apis).
 
 ## How gas costs are calculated
 
