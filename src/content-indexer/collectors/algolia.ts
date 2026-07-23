@@ -18,6 +18,7 @@ type AddRecordBaseParams = {
   description?: string;
   content: string;
   breadcrumbs: NavItem[];
+  pageRank?: number;
 };
 
 type AddGuideRecordParams = AddRecordBaseParams & {
@@ -65,6 +66,7 @@ export class AlgoliaCollector {
       title: params.title,
       content: params.content,
       breadcrumbs: breadcrumbTitles,
+      pageRank: params.pageRank ?? 0,
       ...(params.httpMethod && { httpMethod: params.httpMethod }),
       ...(params.description && { description: params.description }),
     });

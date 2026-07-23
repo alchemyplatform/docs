@@ -155,6 +155,7 @@ export const buildChangelogIndex = async (
         path: fullPath,
         pageType: "Changelog" as const,
         breadcrumbs: ["Changelog", date],
+        pageRank: 0,
       });
 
       return { route, pathIndexEntry, algoliaRecord };
