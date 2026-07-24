@@ -1,13 +1,17 @@
 ---
-title: Agent Authentication and Payment
-description: Authenticate your AI agent with an EVM wallet instead of an API key using SIWE. Your agent can pay with USDC through the x402 payment protocol.
-subtitle: Authenticate your AI agent with an EVM wallet instead of an API key using SIWE. Your agent can pay with USDC through the x402 payment protocol.
+title: Wallet auth for Alchemy APIs
+description: Authenticate your AI agent to Alchemy APIs with an EVM wallet instead of an API key using SIWE, paying Alchemy in USDC through the x402 protocol.
+subtitle: Authenticate your AI agent to Alchemy APIs with an EVM wallet instead of an API key using SIWE, paying Alchemy in USDC through the x402 protocol.
 slug: docs/alchemy-for-agents
 ---
 
+<Note>
+  This page covers **x402 gateway auth** — using a wallet to authenticate and pay for access to **Alchemy APIs**. To pay x402 v2 endpoints that offer a supported EVM payment option from the CLI, see [x402 payments](docs/x402-payments).
+</Note>
+
 ## How it works
 
-x402 wallet authentication in the Alchemy CLI uses two open standards today:
+x402 gateway auth to Alchemy APIs in the Alchemy CLI uses two open standards today:
 
 * **[SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361):** Your agent authenticates by signing a message with an EVM wallet.
 * **[x402](https://www.x402.org/):** An open protocol for HTTP-native payments. When payment is required, the server responds with HTTP 402, the CLI signs the payment challenge with the same EVM wallet, and retries the request. Zero protocol fees.
@@ -22,7 +26,7 @@ When your agent needs to access Alchemy APIs without an API key, it handles the 
 2. **Authentication:** Your agent generates a signed SIWE token and includes it in every x402 gateway request.
 3. **Payment:** When payment is required, the server responds with HTTP 402, and your agent signs the requested USDC payment before retrying automatically.
 
-The x402 wallet only determines authentication and payment. Once authenticated, it can query any chain across [all networks Alchemy supports](docs/reference/node-supported-chains).
+The wallet used for x402 gateway auth only determines authentication and payment. Once authenticated, it can query any chain across [all networks Alchemy supports](docs/reference/node-supported-chains).
 
 ## What your agent can access
 
@@ -43,10 +47,10 @@ These are the same APIs available with a standard API key. The only difference i
 | | EVM wallet | Solana wallet |
 |---|---|---|
 | **CLI use** | x402 gateway auth and EVM transaction signing | Solana transaction signing |
-| **Auth standard** | SIWE (EIP-4361) | Not used for x402 in the CLI today |
+| **Auth standard** | SIWE (EIP-4361) | Not used for x402 gateway auth in the CLI today |
 | **Signature** | secp256k1 | ed25519 |
-| **Payment** | USDC through x402 payment challenges | Not used for x402 in the CLI today |
-| **Queryable chains through x402** | [All supported networks](docs/reference/node-supported-chains) | Not applicable |
+| **Payment** | USDC payments to Alchemy through x402 gateway auth | Not used for x402 gateway auth in the CLI today |
+| **Queryable chains through x402 gateway auth** | [All supported networks](docs/reference/node-supported-chains) | Not applicable |
 
 ## Install as an agent skill
 
@@ -60,10 +64,10 @@ Your agent will walk you through wallet setup and handle authentication and paym
 
 ## Use it from the CLI
 
-The [Alchemy CLI](docs/alchemy-cli) ships the x402 flow built in. Create or import a local EVM wallet, opt into x402, and node and data commands can authenticate and pay from that wallet without an API key.
+The [Alchemy CLI](docs/alchemy-cli) ships the x402 gateway auth flow built in. Create or import a local EVM wallet, opt into x402 gateway auth, and node and data commands can authenticate and pay Alchemy from that wallet without an API key.
 
 ```bash
-alchemy wallet connect --mode local --chain evm
+alchemy wallet connect --mode local
 alchemy config set x402 true
 alchemy evm data balance vitalik.eth
 ```
@@ -78,6 +82,7 @@ You can also point at an existing EVM private key file with `alchemy config set 
 
 ## Next steps
 
+* [x402 payments (pay third-party APIs)](docs/x402-payments)
 * [agents.alchemy.com](https://agents.alchemy.com/)
 * [x402.org](https://www.x402.org/)
 * [EIP-4361: SIWE](https://eips.ethereum.org/EIPS/eip-4361)

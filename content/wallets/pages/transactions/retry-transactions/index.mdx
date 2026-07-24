@@ -18,8 +18,16 @@ Key use cases:
 1. Send the initial transaction
 2. Monitor the transaction status
 3. If the transaction is stuck/pending too long, re-prepare the same call
-4. Send the transaction with higher gas to replace the stuck transaction
+4. Send the replacement transaction. When you re-prepare a call, the Wallet APIs automatically bump the gas fees for you — you don't need to calculate new values yourself
 5. The original transaction gets dropped from mempool
+
+<Info>
+  When you re-prepare a stuck call, the Wallet APIs automatically increase the
+  gas fees by 10% over the pending transaction (or to the current network
+  minimum, whichever is higher). This ensures the replacement is priced high
+  enough to evict the original from the mempool, so you don't need to set fee
+  values manually.
+</Info>
 
 ## Prerequisites
 

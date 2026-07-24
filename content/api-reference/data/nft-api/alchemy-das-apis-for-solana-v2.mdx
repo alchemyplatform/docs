@@ -1,0 +1,51 @@
+---
+title: Solana DAS API v2
+description: Alchemy's Solana DAS API v2 covers all Solana assets that follow the Metaplex Digital Asset Standard with method names and response shapes aligned to the canonical DAS upstream.
+subtitle: Solana DAS API v2
+slug: reference/alchemy-das-apis-for-solana-v2
+---
+
+> ❓ Questions? Contact us in your dedicated Alchemy channel or shoot us an email at data-services-product@alchemy.com
+
+## Background
+
+Alchemy's DAS API v2 follows the [Metaplex Digital Asset Standard](https://developers.metaplex.com/das-api) with method names and response shapes aligned to the canonical DAS upstream. It covers all Solana assets that follow the Metaplex spec: fungible tokens, standard NFTs (including MPL Core assets, collections, and groups), and compressed NFTs.
+
+Compared with the existing [Solana DAS API](/docs/reference/alchemy-das-apis-for-solana), v2:
+
+* Adds batch and paginated-history methods (`getAssetBatch_v2`, `getAssetProofBatch_v2`, `getSignaturesForAsset_v2`) so callers can paginate through large result sets.
+* Adds a `last_indexed_slot` field to every successful response so clients know how fresh the index is.
+* Adds MPL Core fields (`is_agent`, `agent_token`, `asset_signer`, `plugins.groups`) and the `MplCoreAsset`, `MplBubblegumV2`, `MplCoreCollection`, `MplCoreGroup` interface values.
+* Uses `options` (rather than `displayOptions`) as the single canonical name for the response-shaping flags object.
+* Returns `getAssetProofBatch_v2` results as an object keyed by asset ID (instead of an ordered array).
+* All v2 methods carry a `_v2` suffix on the JSON-RPC method name so v1 and v2 can coexist on the same endpoint.
+
+The existing v1 [Solana DAS API](/docs/reference/alchemy-das-apis-for-solana) remains available in parallel.
+
+## Methods
+
+| Method | Function | CU cost | Throughput CUs |
+| --- | --- | --- | --- |
+| [getAsset_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-asset-v-2) | Returns detailed information for a single NFT, compressed NFT, or token. | 160 | 200 |
+| [getAssetBatch_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-asset-batch-v-2) | Returns detailed information for up to 1,000 assets in a single batch request. | 480 | 200 |
+| [getAssetProof_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-asset-proof-v-2) | Returns the merkle proof for a compressed NFT. | 160 | 200 |
+| [getAssetProofBatch_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-asset-proof-batch-v-2) | Returns merkle proofs for multiple compressed NFTs as an object keyed by asset ID. | 480 | 200 |
+| [getAssetsByAuthority_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-assets-by-authority-v-2) | Returns assets controlled by a specific authority address. | 480 | 200 |
+| [getAssetsByCreator_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-assets-by-creator-v-2) | Returns assets created by a specific wallet, with optional verified-only filtering. | 480 | 200 |
+| [getAssetsByGroup_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-assets-by-group-v-2) | Returns assets belonging to a specific group (e.g., a collection). | 480 | 200 |
+| [getAssetsByOwner_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-assets-by-owner-v-2) | Returns assets owned by a specific wallet, with optional fungible and native SOL balances. | 480 | 200 |
+| [getNftEditions_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-nft-editions-v-2) | Returns all editions and prints of a master edition NFT. | 160 | 200 |
+| [getSignaturesForAsset_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-signatures-for-asset-v-2) | Returns the historical transaction signatures for a compressed NFT. | 160 | 200 |
+| [getTokenAccounts_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/get-token-accounts-v-2) | Returns SPL token accounts for a given mint and/or owner. | 160 | 200 |
+| [searchAssets_v2](/docs/reference/alchemy-das-apis-for-solana-v2/solana-das-api-v2-endpoints/search-assets-v-2) | Searches and filters assets by ownership, creators, collections, and other criteria. | 480 | 200 |
+
+## Migration from v1
+
+All v2 methods carry a `_v2` suffix on the JSON-RPC method name. Callers migrating from v1 need to:
+
+1. Append `_v2` to the JSON-RPC `method` name for every DAS call. For example, `getAsset` → `getAsset_v2`, `getAssetsByOwner` → `getAssetsByOwner_v2`.
+2. Update three method names that were also renamed in v2 to match the canonical DAS upstream: `getAssets` → `getAssetBatch_v2`, `getAssetProofs` → `getAssetProofBatch_v2`, `getAssetSignatures` → `getSignaturesForAsset_v2`.
+3. Rename the response-shaping parameter object from `displayOptions` to `options`.
+4. Adjust the `getAssetProofBatch_v2` response handler: results are returned as an object keyed by asset ID, not an ordered array.
+5. Handle the new `last_indexed_slot` field on every successful response.
+6. Handle the new MPL Core fields (`is_agent`, `agent_token`, `asset_signer`, `plugins`) and the new interface values (`MplCoreAsset`, `MplBubblegumV2`, `MplCoreCollection`, `MplCoreGroup`).

@@ -285,6 +285,8 @@ Use consistent terms across docs, code comments, and examples.
 | ERC-20 | ERC20 |
 | ERC-721 | ERC721 |
 | ERC-4337 | ERC4337 |
+| x402 payments (the `alchemy x402` command group; third-party APIs) | "x402" alone for the command group |
+| x402 gateway auth (the `--x402` flag; Alchemy APIs) | "x402 auth", "x402 wallet auth" without the Alchemy scoping |
 
 Additional defaults:
 
