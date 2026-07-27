@@ -6,11 +6,16 @@ on:
       - main
     paths:
       - "content/changelog/**"
+  workflow_dispatch: {}
 
 jobs:
   index-changelog:
     name: Index Changelog
     runs-on: ubuntu-latest
+    # `pnpm index:changelog` hard-codes --branch=main and writes to the
+    # main_alchemy_docs index, so refuse to run against any other ref
+    # (a workflow_dispatch UI can select feature branches or tags).
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
     steps:
