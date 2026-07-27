@@ -10,8 +10,13 @@ jobs:
   index-sdk:
     name: Index SDK References
     runs-on: ubuntu-latest
-    # Allow manual dispatch; restrict repository_dispatch to the aa-sdk repo.
-    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.source == 'alchemyplatform/aa-sdk'
+    # `pnpm index:sdk` hard-codes --branch=main and writes to the
+    # main_alchemy_docs index, so refuse to run against any other ref.
+    # Additionally, restrict repository_dispatch to the aa-sdk repo.
+    if: >-
+      github.ref == 'refs/heads/main'
+      && (github.event_name == 'workflow_dispatch'
+        || github.event.client_payload.source == 'alchemyplatform/aa-sdk')
     permissions:
       contents: read
     steps:
