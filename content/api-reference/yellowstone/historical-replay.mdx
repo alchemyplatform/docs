@@ -7,20 +7,20 @@ slug: reference/yellowstone-grpc-historical-replay
 # Historical replay
 
 <Info>
-  **Never miss a beat**: Yellowstone gRPC's historical replay lets you recover from disconnections and backfill missing data from the last \~40 minutes of Solana blockchain activity.
+  **Never miss a beat**: Yellowstone gRPC's historical replay lets you recover from disconnections and backfill missing data from the last \~48 hours of Solana blockchain activity.
 </Info>
 
 ## What is historical replay?
 
-Historical replay is a Yellowstone gRPC feature that lets you resume streaming from any slot within the last **6000 slots** (approximately 40 minutes of blockchain activity). This is useful for handling brief disconnections and keeping data continuous in real-time apps without opening a separate backfill pipeline.
+Historical replay is a Yellowstone gRPC feature that lets you resume streaming from any slot within the last **432,000 slots** (approximately 48 hours of blockchain activity). This is useful for handling brief disconnections and keeping data continuous in real-time apps without opening a separate backfill pipeline.
 
 <Warning>
-  **Limited time window**: Historical replay is limited to the last 6000 slots (\~40 minutes) of blockchain activity. You cannot replay data from arbitrary points further in the past.
+  **Limited time window**: Historical replay is limited to the last 432,000 slots (\~48 hours) of blockchain activity. You cannot replay data from arbitrary points further in the past.
 </Warning>
 
 <CardGroup cols={2}>
   <Card title="Handle disconnections" icon="clock-rotate-left">
-    Recover data lost during brief disconnections (up to \~40 minutes).
+    Recover data lost during brief disconnections (up to \~48 hours).
   </Card>
 
   <Card title="Bootstrap applications" icon="rocket">
@@ -40,7 +40,7 @@ Historical replay is a Yellowstone gRPC feature that lets you resume streaming f
 
 <Steps>
   <Step title="Specify a starting point">
-    Set the `from_slot` field on `SubscribeRequest` to your replay starting slot. It must fall within the last \~6000 slots.
+    Set the `from_slot` field on `SubscribeRequest` to your replay starting slot. It must fall within the last \~432,000 slots.
   </Step>
 
   <Step title="Stream historical data">
@@ -58,7 +58,7 @@ Historical replay is a Yellowstone gRPC feature that lets you resume streaming f
 
 ## Quickstart
 
-`from_slot` must fall within the last \~6000 slots (\~40 minutes), so the example below derives it dynamically by calling [`getSlot`](/docs/chains/solana/solana-api-endpoints/get-slot) on the Solana RPC and rewinding \~1000 slots (\~7 minutes). Do not hard-code an absolute slot number, since any fixed value ages out of the replay window almost immediately.
+`from_slot` must fall within the last \~432,000 slots (\~48 hours), so the example below derives it dynamically by calling [`getSlot`](/docs/chains/solana/solana-api-endpoints/get-slot) on the Solana RPC and rewinding \~1000 slots (\~7 minutes). Do not hard-code an absolute slot number, since any fixed value ages out of the replay window as the chain advances.
 
 ```rust
 use anyhow::Result;
@@ -103,7 +103,7 @@ async fn main() -> Result<()> {
     let (mut tx, mut stream) = client.subscribe().await?;
 
     // Derive from_slot from the current slot so it always sits inside the
-    // ~6000 slot replay window. Here we rewind ~1000 slots (~7 minutes);
+    // ~432,000 slot replay window. Here we rewind ~1000 slots (~7 minutes);
     // tune the offset to how much history you want to replay.
     let current_slot = get_current_slot(api_key).await?;
     let from_slot = current_slot.saturating_sub(1_000);
@@ -135,7 +135,7 @@ async fn main() -> Result<()> {
 
 ### `from_slot`
 
-The slot number to start replaying from, as a `u64`. Must be within the replay window (last \~6000 slots from the current slot).
+The slot number to start replaying from, as a `u64`. Must be within the replay window (last \~432,000 slots from the current slot).
 
 **Type**: `optional uint64`
 
@@ -146,7 +146,7 @@ The slot number to start replaying from, as a `u64`. Must be within the replay w
 * If specified, streaming begins from this slot number.
 * All matching data from `from_slot` onwards is sent, then the connection transitions to real-time.
 * If not specified, streaming begins from the current slot.
-* If the requested slot is older than the \~6000 slot window, the server rejects the request.
+* If the requested slot is older than the \~432,000 slot window, the server rejects the request.
 
 See the [Subscribe request](/docs/reference/yellowstone-grpc-subscribe-request) reference for the full `SubscribeRequest` message definition.
 
@@ -154,7 +154,7 @@ See the [Subscribe request](/docs/reference/yellowstone-grpc-subscribe-request) 
 
 <AccordionGroup>
   <Accordion title="Reconnection after a brief disconnection">
-    When your application reconnects after a short disconnection (under \~40 minutes), historical replay makes sure no data is missed. The example below tracks the last processed slot in a `RwLock`; persist it however suits your app (Redis, Postgres, a file, etc.) so the next reconnect can pick up where you left off.
+    When your application reconnects after a disconnection (under \~48 hours), historical replay makes sure no data is missed. The example below tracks the last processed slot in a `RwLock`; persist it however suits your app (Redis, Postgres, a file, etc.) so the next reconnect can pick up where you left off.
 
     ```rust
     use anyhow::Result;
@@ -184,7 +184,7 @@ See the [Subscribe request](/docs/reference/yellowstone-grpc-subscribe-request) 
 
     // Check whether it's still within the replay window.
     let current_slot = get_current_slot("ALCHEMY_API_KEY").await?;
-    let max_replay_slot = current_slot.saturating_sub(6_000);
+    let max_replay_slot = current_slot.saturating_sub(432_000);
 
     if last_processed_slot < max_replay_slot {
         eprintln!("Disconnection too long, some data may be lost");
@@ -217,7 +217,7 @@ See the [Subscribe request](/docs/reference/yellowstone-grpc-subscribe-request) 
   </Accordion>
 
   <Accordion title="Testing with recent data">
-    Use recent historical data for testing (limited to the last \~40 minutes):
+    Use recent historical data for testing (limited to the last \~48 hours):
 
     ```rust
     use yellowstone_grpc_proto::geyser::subscribe_update::UpdateOneof;
