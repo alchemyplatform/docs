@@ -1,0 +1,29 @@
+---
+title: "StreamBboBook"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../shared/preview-notice-september.mdx" />
+
+# StreamBboBook
+
+## Intended RPC
+
+`rpc StreamBboBook(StreamBboBookRequest) returns (stream BboBookEnvelope);`
+
+Carries best-bid-and-offer book data. For the WebSocket representation, see [bbo](../websockets/hypercore/bbo.mdx).
+
+## Intended message
+
+The envelope below is illustrative and non-binding: its field names, field numbers, scalar types, payload type names, and finality semantics remain provisional. It makes no wire-compatibility promise.
+
+```proto
+message BboBookEnvelope {
+  string checkpoint = 1;
+  uint64 sequence = 2;
+  bool is_final = 3;
+  BboBookPayload best_bid_offer = 4;
+}
+```
+
+The service will publish the request and payload message definitions.

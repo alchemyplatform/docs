@@ -1,0 +1,96 @@
+---
+title: "candles stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# candles stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "candles",
+    "coins": [
+      "BTC"
+    ],
+    "intervals": [
+      "1m"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "candles"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "candles",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "checkpoint": "<opaque checkpoint>",
+  "data": {
+    "coin": "BTC",
+    "interval": "1m",
+    "openTime": 1780000000000,
+    "closeTime": 1780000059999,
+    "open": "100000.0",
+    "high": "100010.0",
+    "low": "99990.0",
+    "close": "100005.0",
+    "volume": "12.4",
+    "isFinal": false
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| coin | string | Market identifier. |
+| interval | string | Candle interval. |
+| openTime | integer | Illustrative openTime value. |
+| closeTime | integer | Illustrative closeTime value. |
+| open | string | Illustrative open value. |
+| high | string | Illustrative high value. |
+| low | string | Illustrative low value. |
+| close | string | Illustrative close value. |
+| volume | string | Illustrative volume value. |
+| isFinal | boolean | Finality indicator. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "candles",
+    "coins": [
+      "BTC"
+    ],
+    "intervals": [
+      "1m"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.

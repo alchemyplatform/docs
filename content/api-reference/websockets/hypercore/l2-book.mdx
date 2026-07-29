@@ -1,0 +1,110 @@
+---
+title: "l2Book stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# l2Book stream
+
+For the corresponding gRPC snapshot stream, see [StreamL2Book](../../hypercore-grpc/stream-l2-book.mdx). For the diff representation and bootstrap procedure, see [l2BookDiff](l2-book-diff.mdx#snapshot-to-diff-bootstrap).
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "l2Book",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "l2Book"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "l2Book",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "checkpoint": "<opaque checkpoint>",
+  "data": {
+    "coin": "BTC",
+    "time": 1780000000000,
+    "levels": [
+      [
+        {
+          "px": "100000.0",
+          "sz": "1.25",
+          "n": 3
+        }
+      ],
+      [
+        {
+          "px": "100001.0",
+          "sz": "0.80",
+          "n": 2
+        }
+      ]
+    ]
+  }
+}
+```
+
+## Filters and behavior
+
+- `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
+- Supply `checkpoint` in the subscription object to request replay after that checkpoint. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+- `l2Book` provides snapshot state. Before applying `l2BookDiff` updates, begin from a compatible `l2Book` snapshot.
+
+## Native aggregation parameters
+
+`nSigFigs` and `mantissa` are native aggregation parameters whose HyperCore support is pending confirmation. In one-off observations of the native endpoint, `nSigFigs` accepted values from 2 through 5. In the same observations, `mantissa` accepted 2 or 5 only when `nSigFigs` was also supplied. These are observed values, not a guaranteed contract. The native endpoint returns up to 20 levels per side.
+
+## Payload fields
+
+This table is a native compatibility target.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| coin | string | Market identifier. |
+| time | integer | Source time. |
+| levels | array | Bid and ask level arrays. |
+| levels[] | array | Bid and ask level arrays. |
+| levels[][] | object | Bid and ask level arrays. |
+| levels[][].px | string | Price value. |
+| levels[][].sz | string | Size value. |
+| levels[][].n | integer | Order-count value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "l2Book",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.

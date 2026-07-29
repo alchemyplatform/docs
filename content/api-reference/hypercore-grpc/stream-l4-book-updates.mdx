@@ -1,0 +1,29 @@
+---
+title: "StreamL4BookUpdates"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../shared/preview-notice-september.mdx" />
+
+# StreamL4BookUpdates
+
+## Intended RPC
+
+`rpc StreamL4BookUpdates(StreamL4BookUpdatesRequest) returns (stream L4BookUpdatesEnvelope);`
+
+Carries order-level book updates. For the WebSocket representation, see [l4BookUpdates](../websockets/hypercore/l4-book-updates.mdx). [StreamL4Book](stream-l4-book.mdx) is the full order-level stream.
+
+## Intended message
+
+Read this as a provisional, non-binding outline: field names, field numbers, scalar types, payload type names, and finality semantics can change, and the outline does not imply wire compatibility.
+
+```proto
+message L4BookUpdatesEnvelope {
+  string checkpoint = 1;
+  uint64 sequence = 2;
+  bool is_final = 3;
+  L4BookUpdatesPayload order_updates = 4;
+}
+```
+
+The request and payload definitions will be published with the service.

@@ -1,0 +1,86 @@
+---
+title: "builderOrderUpdates stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# builderOrderUpdates stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "builderOrderUpdates",
+    "builders": [
+      "0x2222222222222222222222222222222222222222"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "builderOrderUpdates"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "builderOrderUpdates",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "checkpoint": "<opaque checkpoint>",
+  "data": {
+    "orders": [
+      {
+        "builder": "0x2222222222222222222222222222222222222222",
+        "orderId": "12345",
+        "coin": "BTC",
+        "status": "filled",
+        "filledSize": "0.10"
+      }
+    ]
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| orders | array | Order records. |
+| orders[] | object | Order records. |
+| orders[].builder | string | Illustrative builder value. |
+| orders[].orderId | string | Illustrative orderId value. |
+| orders[].coin | string | Market identifier. |
+| orders[].status | string | Illustrative status value. |
+| orders[].filledSize | string | Illustrative filledSize value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "builderOrderUpdates",
+    "builders": [
+      "0x2222222222222222222222222222222222222222"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.

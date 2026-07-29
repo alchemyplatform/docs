@@ -1,0 +1,86 @@
+---
+title: "builderFills stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# builderFills stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "builderFills",
+    "builders": [
+      "0x2222222222222222222222222222222222222222"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "builderFills"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "builderFills",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "checkpoint": "<opaque checkpoint>",
+  "data": {
+    "fills": [
+      {
+        "builder": "0x2222222222222222222222222222222222222222",
+        "coin": "BTC",
+        "px": "100000.0",
+        "sz": "0.01",
+        "tradeId": "trade_03"
+      }
+    ]
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| fills | array | Fill records. |
+| fills[] | object | Fill records. |
+| fills[].builder | string | Illustrative builder value. |
+| fills[].coin | string | Market identifier. |
+| fills[].px | string | Price value. |
+| fills[].sz | string | Size value. |
+| fills[].tradeId | string | Illustrative tradeId value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "builderFills",
+    "builders": [
+      "0x2222222222222222222222222222222222222222"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.

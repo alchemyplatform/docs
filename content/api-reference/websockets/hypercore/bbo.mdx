@@ -1,0 +1,98 @@
+---
+title: "bbo stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# bbo stream
+
+For the corresponding gRPC stream, see [StreamBboBook](../../hypercore-grpc/stream-bbo-book.mdx).
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "bbo",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "bbo"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "bbo",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "checkpoint": "<opaque checkpoint>",
+  "data": {
+    "coin": "BTC",
+    "time": 1780000000000,
+    "levels": [
+      [
+        {
+          "px": "100000.0",
+          "sz": "1.25",
+          "n": 0
+        }
+      ],
+      [
+        {
+          "px": "100001.0",
+          "sz": "0.80",
+          "n": 0
+        }
+      ]
+    ]
+  }
+}
+```
+
+## Payload fields
+
+This table is a native compatibility target.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| coin | string | Market identifier. |
+| time | integer | Source time. |
+| levels | array | Bid and ask level arrays. |
+| levels[] | array | Bid and ask level arrays. |
+| levels[][] | object | Bid and ask level arrays. |
+| levels[][].px | string | Price value. |
+| levels[][].sz | string | Size value. |
+| levels[][].n | integer | Order-count value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "bbo",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.

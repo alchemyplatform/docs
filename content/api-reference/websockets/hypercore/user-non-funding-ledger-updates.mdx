@@ -1,0 +1,80 @@
+---
+title: "userNonFundingLedgerUpdates stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# userNonFundingLedgerUpdates stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "userNonFundingLedgerUpdates",
+    "users": [
+      "0x1111111111111111111111111111111111111111"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "userNonFundingLedgerUpdates"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "userNonFundingLedgerUpdates",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "checkpoint": "<opaque checkpoint>",
+  "data": {
+    "user": "0x1111111111111111111111111111111111111111",
+    "eventType": "deposit",
+    "asset": "USDC",
+    "amount": "100.00",
+    "time": 1780000000000
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| user | string | User identifier. |
+| eventType | string | Illustrative eventType value. |
+| asset | string | Illustrative asset value. |
+| amount | string | Illustrative amount value. |
+| time | integer | Source time. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "userNonFundingLedgerUpdates",
+    "users": [
+      "0x1111111111111111111111111111111111111111"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.

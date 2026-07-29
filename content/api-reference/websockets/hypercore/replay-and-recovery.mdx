@@ -1,0 +1,14 @@
+---
+title: "Replay and recovery"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# Replay and recovery
+
+Each subscription advances through opaque checkpoints. Persist the latest checkpoint after processing a message, then supply it in that subscription's next subscribe frame to request replay. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. Clients store and return the checkpoint unmodified because its format may change.
+
+A replay response indicates whether a gap occurred. When a checkpoint is invalid or a gap is reported, discard the affected local state and resynchronize from a fresh snapshot before trusting subsequent updates. Resume is per subscription, so subscriptions sharing a connection can resume from different checkpoints.
+
+The replay-window length and checkpoint-retention period will be published with the service.

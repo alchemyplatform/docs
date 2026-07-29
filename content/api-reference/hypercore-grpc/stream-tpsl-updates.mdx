@@ -1,0 +1,29 @@
+---
+title: "StreamTpslUpdates"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../shared/preview-notice-september.mdx" />
+
+# StreamTpslUpdates
+
+## Intended RPC
+
+`rpc StreamTpslUpdates(StreamTpslUpdatesRequest) returns (stream TpslUpdatesEnvelope);`
+
+Carries take-profit and stop-loss update data. For the WebSocket representation, see [tpslUpdates](../websockets/hypercore/tpsl-updates.mdx).
+
+## Intended message
+
+This non-binding example is intentionally provisional: field names, field numbers, scalar types, payload type names, and finality semantics have not been fixed, and it implies no wire compatibility.
+
+```proto
+message TpslUpdatesEnvelope {
+  string checkpoint = 1;
+  uint64 sequence = 2;
+  bool is_final = 3;
+  TpslUpdatesPayload tpsl_updates = 4;
+}
+```
+
+The service will publish request and payload message definitions.

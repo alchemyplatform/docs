@@ -1,0 +1,13 @@
+---
+title: "Stream wallet fills"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../shared/preview-notice.mdx" />
+
+# Stream wallet fills
+
+Subscribe to `userFills` with a wallet filter. Persist each checkpoint and trade identifier after processing. Use `userFillsByTime` to recover events if replay cannot satisfy the checkpoint.
+
+## Checkpoint rule
+Advance a durable checkpoint only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.
