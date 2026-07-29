@@ -1,0 +1,86 @@
+---
+title: How to Rotate API Keys
+description: Learn how to rotate an Alchemy API key from the Dashboard.
+subtitle: Learn how to rotate an Alchemy API key from the Dashboard.
+slug: docs/how-to-rotate-api-keys
+---
+
+Rotating an API key replaces the key for an existing app while keeping the app
+itself unchanged. Rotate your API key immediately if it was leaked or might have
+been exposed, and rotate keys periodically as part of your security process.
+
+<Warning>
+  You must be a team admin to rotate API keys. If you don't have permission,
+  contact your team admin.
+</Warning>
+
+## Before you rotate
+
+Rotating a key affects every service, script, and environment that uses the
+current key for the app.
+
+Before starting, identify where the current key is used, such as:
+
+* backend environment variables
+* frontend or mobile app configuration
+* serverless functions and CI/CD secrets
+* monitoring, indexing, or data pipeline jobs
+* local development configuration
+
+<Warning>
+  The previous key stops working within 2 minutes after rotation. Update every
+  integration that depends on the key immediately.
+</Warning>
+
+## Rotate an API key
+
+<Steps>
+  <Step title="Open your app">
+    Go to the [Alchemy Dashboard](https://dashboard.alchemy.com/apps), then
+    select the app whose API key you want to rotate.
+  </Step>
+
+  <Step title="Open Settings">
+    In the app, open the **Settings** tab.
+
+    If you don't see the **Rotate API key** section, API key rotation might not
+    be enabled for your team yet.
+  </Step>
+
+  <Step title="Start rotation">
+    In the **Rotate API key** section, click **Rotate API key**.
+  </Step>
+
+  <Step title="Confirm the warning">
+    Review the warning, then click **Rotate API key** again to confirm.
+
+    This action can't be undone. The app's settings, history, and usage data are
+    unaffected, but the previous key stops working within 2 minutes.
+  </Step>
+
+  <Step title="Copy the new key">
+    Copy the new API key and update every integration that used the previous
+    key.
+  </Step>
+</Steps>
+
+## After you rotate
+
+After replacing the key in your integrations:
+
+* make a test request with the new key
+* remove the previous key from secrets managers, CI/CD settings, and local
+  configuration
+* redeploy or restart services that read the key at startup
+* review recent requests and errors to confirm traffic is using the new key
+
+API key rotations are recorded in the Dashboard activity log as **API key
+rotated**.
+
+## Next steps
+
+* [Send API keys in HTTP headers](/docs/how-to-use-api-keys-in-http-headers) to
+  keep keys out of request URLs.
+* [Add allowlists to your apps](/docs/how-to-add-allowlists-to-your-apps-for-enhanced-security)
+  to restrict where the key can be used.
+* [Review key security best practices](/docs/best-practices-for-key-security-and-management).
