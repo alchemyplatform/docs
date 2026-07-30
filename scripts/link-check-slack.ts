@@ -10,7 +10,6 @@
  * Usage: tsx scripts/link-check-slack.ts <path-to-report.json>
  * Env:   SLACK_API_KEY (required), RUN_URL, LYCHEE_STATUS
  */
-
 import { existsSync, readFileSync } from "node:fs";
 
 interface LycheeStatus {
@@ -91,9 +90,9 @@ const shortenUrl = (url: string): string => {
 };
 
 const formatSummary = (stats: LycheeReport): string =>
-  SUMMARY_ROWS.map(
-    ([label, key]) => `• *${label}:* ${stats[key] ?? 0}`,
-  ).join("\n");
+  SUMMARY_ROWS.map(([label, key]) => `• *${label}:* ${stats[key] ?? 0}`).join(
+    "\n",
+  );
 
 /**
  * Builds the thread body: nested-bullet error list followed by a prompt to
@@ -102,9 +101,7 @@ const formatSummary = (stats: LycheeReport): string =>
  * (Network error, Rejected status code, etc.) to decide between updating the
  * URL, finding a replacement, or adding a bot-block exception in lychee.toml.
  */
-const formatErrorLines = (
-  errorMap: Record<string, LycheeError[]>,
-): string => {
+const formatErrorLines = (errorMap: Record<string, LycheeError[]>): string => {
   const lines: string[] = [];
   let truncated = false;
   let charBudget = MAX_THREAD_CHARS - DOCS_AGENT_PROMPT.length;
@@ -176,10 +173,7 @@ const buildSummaryMessage = ({
   if (errorCount === 0) {
     sections.push("", "No broken links found ✅");
   } else {
-    sections.push(
-      "",
-      `_Broken links (${errorCount}) listed in thread reply._`,
-    );
+    sections.push("", `_Broken links (${errorCount}) listed in thread reply._`);
   }
 
   if (runUrl) {
@@ -202,9 +196,7 @@ const postToSlack = async (
     body: JSON.stringify(payload),
   });
   // Slack returns HTTP 200 even on logical errors — check `ok` in the body.
-  const body = (await res
-    .json()
-    .catch(() => ({}))) as SlackPostMessageResponse;
+  const body = (await res.json().catch(() => ({}))) as SlackPostMessageResponse;
   if (!res.ok || !body.ok) {
     throw new Error(
       `chat.postMessage failed: HTTP ${res.status} ${res.statusText} — ${JSON.stringify(body)}`,
