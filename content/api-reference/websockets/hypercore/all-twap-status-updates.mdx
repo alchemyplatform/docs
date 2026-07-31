@@ -1,0 +1,80 @@
+---
+title: "allTwapStatusUpdates stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# allTwapStatusUpdates stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "allTwapStatusUpdates",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "allTwapStatusUpdates"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "allTwapStatusUpdates",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "cursor": "<opaque cursor>",
+  "data": {
+    "twapId": "twap_01",
+    "coin": "BTC",
+    "status": "active",
+    "executedSize": "0.20",
+    "remainingSize": "0.80"
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| twapId | string | Illustrative twapId value. |
+| coin | string | Market identifier. |
+| status | string | Illustrative status value. |
+| executedSize | string | Illustrative executedSize value. |
+| remainingSize | string | Illustrative remainingSize value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "allTwapStatusUpdates",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

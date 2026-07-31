@@ -1,0 +1,13 @@
+---
+title: "Rebuild a book from diffs"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../shared/preview-notice.mdx" />
+
+# Rebuild a book from diffs
+
+Start from a durable L2 snapshot. Apply ordered diffs one cursor at a time. On a cursor discontinuity, discard local state, fetch a new snapshot or historical cursor, then resume.
+
+## Cursor rule
+Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.

@@ -1,0 +1,92 @@
+---
+title: "userOrderUpdates stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# userOrderUpdates stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "userOrderUpdates",
+    "users": [
+      "0x1111111111111111111111111111111111111111"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "userOrderUpdates"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "userOrderUpdates",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "cursor": "<opaque cursor>",
+  "data": {
+    "orders": [
+      {
+        "user": "0x1111111111111111111111111111111111111111",
+        "orderId": "12345",
+        "coin": "BTC",
+        "side": "B",
+        "limitPrice": "100000.0",
+        "sz": "0.10",
+        "status": "open",
+        "filledSize": "0"
+      }
+    ]
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| orders | array | Order records. |
+| orders[] | object | Order records. |
+| orders[].user | string | User identifier. |
+| orders[].orderId | string | Illustrative orderId value. |
+| orders[].coin | string | Market identifier. |
+| orders[].side | string | Side code: A is ask/sell; B is bid/buy. |
+| orders[].limitPrice | string | Illustrative limitPrice value. |
+| orders[].sz | string | Size value. |
+| orders[].status | string | Illustrative status value. |
+| orders[].filledSize | string | Illustrative filledSize value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "userOrderUpdates",
+    "users": [
+      "0x1111111111111111111111111111111111111111"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
