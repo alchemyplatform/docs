@@ -7,32 +7,12 @@ const BUFFER_BYTES = 1_000;
 const MAX_ITERATIONS = 5;
 
 /**
- * MDX expression comments never render on the page, but remove-markdown
- * leaves them intact, so implementation notes and generator markers
- * (cu:auto, feature-support:auto, data-freshness notes) would otherwise be
- * uploaded into public search records and snippets.
- *
- * Fenced code blocks are skipped: a JSX comment inside a rendered code
- * example (e.g. `{/* OTP input component *\/}` in the wallets MFA guides)
- * is real page content that must stay searchable.
- */
-const stripMdxComments = (content: string): string =>
-  content
-    .split(/(```[\s\S]*?```)/)
-    .map((segment, index) =>
-      // Odd indexes are the captured fenced code blocks.
-      index % 2 === 1 ? segment : segment.replace(/\{\/\*[\s\S]*?\*\/\}/g, ""),
-    )
-    .join("");
-
-/**
  * Truncate record content to ensure entire JSON payload fits within Algolia limit.
  * Also strips markdown formatting from content for better search experience.
  */
 export const truncateRecord = (rawRecord: AlgoliaRecord): AlgoliaRecord => {
-  // Strip non-rendered MDX comments and markdown formatting to get clean,
-  // searchable text
-  const cleanedContent = removeMd(stripMdxComments(rawRecord.content));
+  // Strip markdown formatting to get clean, searchable text
+  const cleanedContent = removeMd(rawRecord.content);
   const record = { ...rawRecord, content: cleanedContent };
 
   const fullRecordJson = JSON.stringify(record);

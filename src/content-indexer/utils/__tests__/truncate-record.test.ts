@@ -22,56 +22,6 @@ describe("truncateRecord", () => {
     expect(result.content).toBe("Short content");
   });
 
-  test("should strip non-rendered MDX comments from indexed content", () => {
-    const record: AlgoliaRecord = {
-      objectID: "abc123",
-      indexerType: "docs",
-      path: "reference/feature-support-by-chain",
-      pageType: "Guide",
-      pageRank: 0,
-      title: "Feature Support By Chain",
-      content: [
-        "Visible intro.",
-        "{/*\n  Data freshness: operational note that never renders.\n*/}",
-        "{/* feature-support:auto */}",
-        "| Product | Chains |",
-        "{/* feature-support:auto end */}",
-        "Visible outro.",
-      ].join("\n\n"),
-      breadcrumbs: ["Reference"],
-    };
-
-    const result = truncateRecord(record);
-    expect(result.content).toContain("Visible intro.");
-    expect(result.content).toContain("Visible outro.");
-    expect(result.content).not.toContain("Data freshness");
-    expect(result.content).not.toContain("feature-support:auto");
-  });
-
-  test("should preserve JSX comments inside fenced code examples", () => {
-    const record: AlgoliaRecord = {
-      objectID: "abc123",
-      indexerType: "docs",
-      path: "wallets/react/mfa/email-otp",
-      pageType: "Guide",
-      pageRank: 0,
-      title: "Email OTP",
-      content: [
-        "{/* operational note that never renders */}",
-        "```tsx\nreturn (\n  <div>\n    {/* OTP input component */}\n    <OtpInput />\n  </div>\n);\n```",
-        "After the example.",
-      ].join("\n\n"),
-      breadcrumbs: ["Wallets"],
-    };
-
-    const result = truncateRecord(record);
-    // The comment in the rendered code block is real page content...
-    expect(result.content).toContain("OTP input component");
-    // ...while the non-rendered MDX comment outside it is stripped.
-    expect(result.content).not.toContain("operational note");
-    expect(result.content).toContain("After the example.");
-  });
-
   test("should truncate content for oversized record", () => {
     // Create a record with content exceeding 100KB
     const largeContent = "x".repeat(150_000);
