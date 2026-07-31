@@ -28,6 +28,7 @@ describe("truncateRecord", () => {
       indexerType: "docs",
       path: "reference/feature-support-by-chain",
       pageType: "Guide",
+      pageRank: 0,
       title: "Feature Support By Chain",
       content: [
         "Visible intro.",
@@ -53,6 +54,7 @@ describe("truncateRecord", () => {
       indexerType: "docs",
       path: "wallets/react/mfa/email-otp",
       pageType: "Guide",
+      pageRank: 0,
       title: "Email OTP",
       content: [
         "{/* operational note that never renders */}",
