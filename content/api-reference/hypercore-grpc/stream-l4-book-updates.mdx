@@ -7,11 +7,13 @@ description: "HyperCore private-preview documentation."
 
 # StreamL4BookUpdates
 
+The L4 delivery model is still being finalized. Candidate models are an initial snapshot followed by incremental updates, or update-only delivery. L4 volumes make a full snapshot per block impractical.
+
 ## Intended RPC
 
 `rpc StreamL4BookUpdates(StreamL4BookUpdatesRequest) returns (stream L4BookUpdatesEnvelope);`
 
-Carries order-level book updates. For the WebSocket representation, see [l4BookUpdates](../websockets/hypercore/l4-book-updates.mdx). [StreamL4Book](stream-l4-book.mdx) is the full order-level stream.
+Carries order-level book updates. For the WebSocket representation, see [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates). [StreamL4Book](/docs/chains/hypercore-grpc/api-reference/stream-l4-book) is the full order-level stream.
 
 ## Intended message
 
@@ -19,7 +21,7 @@ Read this as a provisional, non-binding outline: field names, field numbers, sca
 
 ```proto
 message L4BookUpdatesEnvelope {
-  string checkpoint = 1;
+  string cursor = 1;
   uint64 sequence = 2;
   bool is_final = 3;
   L4BookUpdatesPayload order_updates = 4;

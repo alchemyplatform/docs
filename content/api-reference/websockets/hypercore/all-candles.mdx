@@ -7,6 +7,8 @@ description: "HyperCore private-preview documentation."
 
 # allCandles stream
 
+Multi-interval delivery and per-subscription interval limits are still being finalized to ensure reliable delivery at high event volumes.
+
 ## Subscribe
 > The values below illustrate the intended request shape.
 
@@ -44,7 +46,7 @@ description: "HyperCore private-preview documentation."
   "subscriptionId": "sub_01",
   "blockHeight": 123456,
   "blockTime": 1780000000000,
-  "checkpoint": "<opaque checkpoint>",
+  "cursor": "<opaque cursor>",
   "data": {
     "interval": "1m",
     "candles": [
@@ -91,4 +93,4 @@ The payload shape is proposed.
 ```
 ## Resume
 
-To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

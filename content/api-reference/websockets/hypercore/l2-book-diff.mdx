@@ -7,7 +7,7 @@ description: "HyperCore private-preview documentation."
 
 # l2BookDiff stream
 
-For the corresponding gRPC diff stream, see [StreamL2BookDiff](../../hypercore-grpc/stream-l2-book-diff.mdx). [l2Book](l2-book.mdx) is the snapshot representation.
+For the corresponding gRPC diff stream, see [StreamL2BookDiff](/docs/chains/hypercore-grpc/api-reference/stream-l2-book-diff). [l2Book](/docs/chains/websockets/hypercore/streams/l2-book) is the snapshot representation.
 
 ## Subscribe
 > The values below illustrate the intended request shape.
@@ -44,7 +44,7 @@ For the corresponding gRPC diff stream, see [StreamL2BookDiff](../../hypercore-g
   "subscriptionId": "sub_01",
   "blockHeight": 123456,
   "blockTime": 1780000000000,
-  "checkpoint": "<opaque checkpoint>",
+  "cursor": "<opaque cursor>",
   "data": {
     "coin": "BTC",
     "changes": [
@@ -62,16 +62,16 @@ For the corresponding gRPC diff stream, see [StreamL2BookDiff](../../hypercore-g
 ## Filters and behavior
 
 * `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
-* Supply `checkpoint` in the subscription object to request replay after that checkpoint. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+* Supply `cursor` in the subscription object to request replay after that cursor. The cursor is opaque: clients store and return it unmodified, and its format may change.
 * Start from a compatible `l2Book` snapshot before applying `l2BookDiff` updates.
 
 ## Snapshot-to-diff bootstrap
 
 1. Subscribe to `l2Book` and install the received snapshot as local book state.
-2. Persist the snapshot checkpoint after the snapshot is processed.
+2. Persist the snapshot cursor after the snapshot is processed.
 3. The approved snapshot example does not contain a sequence or other ordering-position field. The position field needed to order the snapshot against later diffs is pending confirmation.
 4. Subscribe to `l2BookDiff` for the same coin scope and apply only diffs that follow the installed snapshot once the ordering contract is confirmed.
-5. If replay reports a gap, or a checkpoint is rejected, discard local state and start again from a fresh snapshot.
+5. If replay reports a gap, or a cursor is rejected, discard local state and start again from a fresh snapshot.
 
 ## Payload fields
 
@@ -101,4 +101,4 @@ The payload shape is proposed.
 ```
 ## Resume
 
-To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

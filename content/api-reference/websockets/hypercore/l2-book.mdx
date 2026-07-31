@@ -7,7 +7,7 @@ description: "HyperCore private-preview documentation."
 
 # l2Book stream
 
-For the corresponding gRPC snapshot stream, see [StreamL2Book](../../hypercore-grpc/stream-l2-book.mdx). For the diff representation and bootstrap procedure, see [l2BookDiff](l2-book-diff.mdx#snapshot-to-diff-bootstrap).
+For the corresponding gRPC snapshot stream, see [StreamL2Book](/docs/chains/hypercore-grpc/api-reference/stream-l2-book). For the diff representation and bootstrap procedure, see [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff#snapshot-to-diff-bootstrap).
 
 ## Subscribe
 > The values below illustrate the intended request shape.
@@ -44,7 +44,7 @@ For the corresponding gRPC snapshot stream, see [StreamL2Book](../../hypercore-g
   "subscriptionId": "sub_01",
   "blockHeight": 123456,
   "blockTime": 1780000000000,
-  "checkpoint": "<opaque checkpoint>",
+  "cursor": "<opaque cursor>",
   "data": {
     "coin": "BTC",
     "time": 1780000000000,
@@ -71,7 +71,7 @@ For the corresponding gRPC snapshot stream, see [StreamL2Book](../../hypercore-g
 ## Filters and behavior
 
 * `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
-* Supply `checkpoint` in the subscription object to request replay after that checkpoint. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+* Supply `cursor` in the subscription object to request replay after that cursor. The cursor is opaque: clients store and return it unmodified, and its format may change.
 * `l2Book` provides snapshot state. Before applying `l2BookDiff` updates, begin from a compatible `l2Book` snapshot.
 
 ## Native aggregation parameters
@@ -87,11 +87,11 @@ This table is a native compatibility target.
 | coin | string | Market identifier. |
 | time | integer | Source time. |
 | levels | array | Bid and ask level arrays. |
-| levels\[] | array | Bid and ask level arrays. |
-| levels\[]\[] | object | Bid and ask level arrays. |
-| levels\[]\[].px | string | Price value. |
-| levels\[]\[].sz | string | Size value. |
-| levels\[]\[].n | integer | Order-count value. |
+| levels\[\] | array | Bid and ask level arrays. |
+| levels\[\]\[\] | object | Bid and ask level arrays. |
+| levels\[\]\[\].px | string | Price value. |
+| levels\[\]\[\].sz | string | Size value. |
+| levels\[\]\[\].n | integer | Order-count value. |
 ## Unsubscribe
 ```json
 {
@@ -107,4 +107,4 @@ This table is a native compatibility target.
 ```
 ## Resume
 
-To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

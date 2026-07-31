@@ -7,7 +7,9 @@ description: "HyperCore private-preview documentation."
 
 # l4BookUpdates stream
 
-For the corresponding gRPC update stream, see [StreamL4BookUpdates](../../hypercore-grpc/stream-l4-book-updates.mdx). For the snapshot-to-diff recovery pattern, see [l2BookDiff](l2-book-diff.mdx#snapshot-to-diff-bootstrap).
+The L4 delivery model is still being finalized. Candidate models are an initial snapshot followed by incremental updates, or update-only delivery. L4 volumes make a full snapshot per block impractical.
+
+For the corresponding gRPC update stream, see [StreamL4BookUpdates](/docs/chains/hypercore-grpc/api-reference/stream-l4-book-updates). For the snapshot-to-diff recovery pattern, see [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff#snapshot-to-diff-bootstrap).
 
 ## Subscribe
 > The values below illustrate the intended request shape.
@@ -44,7 +46,7 @@ For the corresponding gRPC update stream, see [StreamL4BookUpdates](../../hyperc
   "subscriptionId": "sub_01",
   "blockHeight": 123456,
   "blockTime": 1780000000000,
-  "checkpoint": "<opaque checkpoint>",
+  "cursor": "<opaque cursor>",
   "data": {
     "coin": "BTC",
     "orders": [
@@ -62,7 +64,7 @@ For the corresponding gRPC update stream, see [StreamL4BookUpdates](../../hyperc
 ## Filters and behavior
 
 * `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
-* Supply `checkpoint` in the subscription object to request replay after that checkpoint. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+* Supply `cursor` in the subscription object to request replay after that cursor. The cursor is opaque: clients store and return it unmodified, and its format may change.
 
 ## Payload fields
 
@@ -92,4 +94,4 @@ The payload shape is proposed.
 ```
 ## Resume
 
-To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

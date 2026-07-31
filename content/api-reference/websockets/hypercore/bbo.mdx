@@ -7,7 +7,7 @@ description: "HyperCore private-preview documentation."
 
 # bbo stream
 
-For the corresponding gRPC stream, see [StreamBboBook](../../hypercore-grpc/stream-bbo-book.mdx).
+For the corresponding gRPC stream, see [StreamBboBook](/docs/chains/hypercore-grpc/api-reference/stream-bbo-book).
 
 ## Subscribe
 > The values below illustrate the intended request shape.
@@ -43,7 +43,7 @@ For the corresponding gRPC stream, see [StreamBboBook](../../hypercore-grpc/stre
   "subscriptionId": "sub_01",
   "blockHeight": 123456,
   "blockTime": 1780000000000,
-  "checkpoint": "<opaque checkpoint>",
+  "cursor": "<opaque cursor>",
   "data": {
     "coin": "BTC",
     "time": 1780000000000,
@@ -76,11 +76,11 @@ This table is a native compatibility target.
 | coin | string | Market identifier. |
 | time | integer | Source time. |
 | levels | array | Bid and ask level arrays. |
-| levels\[] | array | Bid and ask level arrays. |
-| levels\[]\[] | object | Bid and ask level arrays. |
-| levels\[]\[].px | string | Price value. |
-| levels\[]\[].sz | string | Size value. |
-| levels\[]\[].n | integer | Order-count value. |
+| levels\[\] | array | Bid and ask level arrays. |
+| levels\[\]\[\] | object | Bid and ask level arrays. |
+| levels\[\]\[\].px | string | Price value. |
+| levels\[\]\[\].sz | string | Size value. |
+| levels\[\]\[\].n | integer | Order-count value. |
 ## Unsubscribe
 ```json
 {
@@ -95,4 +95,4 @@ This table is a native compatibility target.
 ```
 ## Resume
 
-To resume a stream, supply `checkpoint` in the subscription object. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption. The checkpoint is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

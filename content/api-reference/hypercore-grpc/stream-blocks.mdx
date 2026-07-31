@@ -7,23 +7,35 @@ description: "HyperCore private-preview documentation."
 
 # StreamBlocks
 
+## What the stream carries
+
+StreamBlocks is intended to carry block data for full-chain indexing, action and response analysis, deposit and transfer monitoring, and reconciliation. `round` identifies a block, and `parent_round` links it to its predecessor. See [raw and normalized HyperCore blocks](/docs/chains/hyperliquid/hypercore/concepts/raw-and-normalized-blocks) for the payload structure.
+
 ## Intended RPC
+
 `rpc StreamBlocks(StreamBlocksRequest) returns (stream BlockEnvelope);`
 
-`StreamBlocksRequest` proposes `start_block_height`, optional `checkpoint`, and an `include` list for commands, actions, events, and fills. `cursor` is an accepted alias for `checkpoint` both when it is received in a message and when it is supplied for resumption.
+The current request sketch is illustrative and pending engineering confirmation. It proposes a starting position, an optional cursor, and inclusion controls for commands, actions, events, and fills. These dimensions are not an approved request contract.
 
 ## Intended message
-> The values below illustrate the intended request shape.
+
+> The envelope below is illustrative and non-binding. Its field names, field numbers, scalar types, payload type names, and semantics are provisional; it establishes no wire compatibility.
 
 ```proto
 message BlockEnvelope {
-  string checkpoint = 1;
+  string cursor = 1;
   uint64 sequence = 2;
   bool is_final = 3;
   BlockData block = 4;
 }
 ```
 
-## Recovery
+The exact request, payload, and `.proto` definitions will be published with the service.
 
-Use [streaming plus backfill recovery](../data/hypercore/guides/combine-streaming-with-backfill.mdx) to reconcile a missed range. The checkpoint is opaque: clients store and return it unmodified, and its format may change. Recovery behavior will be published as the service is finalized.
+## Workflow
+
+Use this as a design pattern: backfill an initial range with `hl_getBlock` or `hl_getBatchBlocks`, consume the live stream, use bounded block lookup to repair a gap, and reconcile against historical lookups when needed. The [JSON-RPC block-method overview](/docs/chains/hyperliquid/hypercore/json-rpc/overview) describes those lookup methods. This does not establish a retention guarantee.
+
+## Message size
+
+Raw HyperCore blocks can be large. Clients should configure receive limits and processing queues appropriate to the service limits published at launch.
