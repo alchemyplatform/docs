@@ -1,19 +1,27 @@
 ---
 title: Snapshotting historical Solana account state
-description: Patterns for capturing Solana account state at regular intervals (hourly, daily, or arbitrary slot cadence) using Alchemy's Yellowstone gRPC streams and archival JSON-RPC methods.
-subtitle: Capture point-in-time Solana account state at any cadence using gRPC subscriptions and archival JSON-RPC
+description: Patterns for reading and capturing historical Solana account state using the Solana Account Archive, Yellowstone gRPC streams, and archival JSON-RPC methods.
+subtitle: Read point-in-time Solana account state directly with the Account Archive, or capture it at any cadence with gRPC subscriptions and archival JSON-RPC
 slug: docs/solana/historical-account-state
 ---
 
-Many Solana workloads need to know what an account looked like at a previous point in time: portfolio analytics, TVL history, vault accounting, oracle audits, treasury reporting, ML feature stores. Standard Solana JSON-RPC does not expose a "read this account as of slot N" primitive. This page covers the two patterns Alchemy supports today for reconstructing historical account state, how to combine them, and how to land at common cadences like hourly snapshots.
+Many Solana workloads need to know what an account looked like at a previous point in time: portfolio analytics, TVL history, vault accounting, oracle audits, treasury reporting, ML feature stores. For reading a specific account at a specific slot, the direct answer is the [Solana Account Archive](/docs/solana/account-archive): pass a `slot` parameter to `getAccountInfo` for point-in-time state, or page with `lastUpdateBeforeSlot` / `firstUpdateAfterSlot` to walk an account's full update history. This page covers when the archive is all you need, and the two capture-it-yourself patterns for the cases it does not answer directly: program-wide account sets with custom filters, and history older than archive coverage.
 
-## Why Solana RPC alone is not enough
+## Start here: the Account Archive
 
-`getAccountInfo` returns the **current** state of an account. The `minContextSlot` parameter is a freshness floor (the read must be evaluated at a slot greater than or equal to `minContextSlot`), not a historical lookup. Solana validators do not retain prior versions of an account's data once the account is updated, so no JSON-RPC method can answer "what did this account hold at slot N" directly.
+On a standard Solana node, `getAccountInfo` returns only the **current** state of an account (the `minContextSlot` parameter is a freshness floor, not a historical lookup), and validators do not retain prior versions of an account's data. Alchemy's [Account Archive](/docs/solana/account-archive) removes that limitation: `getAccountInfo(pubkey, { "slot": S })` returns the account's state as of slot `S`, and the cursor parameters iterate every state transition, full `data` bytes included. Coverage currently extends back to July 2025, is never pruned, and grows over time.
 
-What Solana **does** retain is the full transaction and block history. Alchemy's archival infrastructure exposes that history through `getTransaction`, `getBlock`, and `getSignaturesForAddress`, which means you can reconstruct historical account state by:
+If your workload is "read known accounts at points in time" — snapshots at an hourly cadence, an oracle value at a specific slot, a token account's balance timeline — use the archive and skip the pipelines below entirely. Sampling at a cadence is one `getAccountInfo` call per boundary slot, and walking every update is the cursor loop described in the [archive guide](/docs/solana/account-archive#an-iterator-over-an-accounts-history).
 
-1. **Capturing it forward** as the chain advances, persisting periodic snapshots to your own store.
+You still need the workflows on this page when:
+
+1. **The account set is dynamic or program-wide.** Archive reads are per-pubkey. To capture every account owned by a program, or accounts matching memcmp/data-size filters, stream them with Yellowstone gRPC (workflow A).
+2. **You need history from before archive coverage began** (currently July 2025). Balance history can be reconstructed from transactions (workflow B); full account `data` history generally cannot.
+3. **You want the data resident in your own store** for joins, aggregations, or query patterns an RPC read-path does not serve.
+
+For those cases, the two patterns are:
+
+1. **Capturing state forward** as the chain advances, persisting periodic snapshots to your own store.
 2. **Reconstructing it backward** by replaying the transactions that wrote to the account.
 
 Most production indexers combine both: stream forward from "now" while backfilling history for the period before the stream started.
@@ -133,7 +141,7 @@ What `getTransaction` does **not** return: pre or post account `data` blobs. The
 <Warning>
   Transaction replay can reliably reconstruct three things: **SOL lamport balances** (from pre/post balances), **SPL token balances** (from pre/post token balances), and **events emitted via program logs** (Anchor `emit!` macros, custom `msg!` lines).
 
-  It **cannot** reconstruct arbitrary program account `data` blobs from `getTransaction` alone. To rebuild full account `data` for historical periods, you need either (a) a starting `data` snapshot from before the period of interest, plus program-specific decoding of each touching instruction to derive the new state, or (b) the program emitting comprehensive event logs that cover every state mutation. If neither applies, the supported path is to start workflow A as early as possible and accept that history before the subscription start is not recoverable from transactions alone.
+  It **cannot** reconstruct arbitrary program account `data` blobs from `getTransaction` alone. For slots within [Account Archive](/docs/solana/account-archive) coverage (July 2025 onward), full `data` history is available directly via `getAccountInfo` with a `slot` or cursor parameter — use that instead of replay. For earlier periods, you need either (a) a starting `data` snapshot from before the period of interest, plus program-specific decoding of each touching instruction to derive the new state, or (b) the program emitting comprehensive event logs that cover every state mutation.
 </Warning>
 
 ### Pattern
@@ -148,13 +156,13 @@ Alchemy's Solana archival surface is optimized for this kind of historical scan.
 
 ### When you need program-account state, not just balances
 
-For lending position values, vault share prices, oracle values, market state, and any other field that lives inside a program account's `data` blob, workflow B is not sufficient on its own (see the warning above). The supported path is:
+For lending position values, vault share prices, oracle values, market state, and any other field that lives inside a program account's `data` blob, workflow B is not sufficient on its own (see the warning above).
+
+If the accounts are known and the period is within [Account Archive](/docs/solana/account-archive) coverage, no pipeline is needed: read each account's `data` at the slots you care about with `getAccountInfo` plus `slot`, or walk its transitions with the cursor parameters. For dynamic account sets, or history before archive coverage, the supported path is:
 
 1. Enumerate the account set with paginated [`getProgramAccounts`](/docs/chains/solana/solana-api-endpoints/get-program-accounts) calls using Alchemy's [AccountsDB Infrastructure](/docs/solana/accounts-db-infra) (`pageKey` + `order`). This gives you every account and its **current** `data`.
-2. Start a Yellowstone gRPC subscription (workflow A) filtered by program owner. From that point forward, every state change is captured with the full new `data` bytes.
-3. Treat the moment the subscription starts as your "history begins here" marker. Reads at any slot at or after that marker resolve against the snapshot table; reads before it are not supported by this workflow.
-
-The earlier you start workflow A, the smaller the unsupported window. If a backfill before the subscription start is required, the practical options are to bootstrap from an external historical-snapshot source for the program or to model the program's instructions program-side and replay them against a starting snapshot. Both are out of scope for this guide.
+2. Backfill each enumerated account's `data` history within archive coverage using `lastUpdateBeforeSlot`, and/or start a Yellowstone gRPC subscription (workflow A) filtered by program owner to capture every state change going forward.
+3. For history older than archive coverage, the practical options are to bootstrap from an external historical-snapshot source for the program or to model the program's instructions program-side and replay them against a starting snapshot. Both are out of scope for this guide.
 
 ### Minimal TypeScript example: lamport balance backfill
 
@@ -228,7 +236,7 @@ For SPL token balances, swap `meta.postBalances[index]` for the matching entry i
 
 ## Choosing a sampling cadence
 
-The two workflows above give you per-update granularity. Picking a coarser cadence (hourly, daily) is a query-time concern, not an ingest-time one. Two common approaches:
+Within [Account Archive](/docs/solana/account-archive) coverage, cadence is purely a query-time concern with no ingest at all: map each boundary timestamp to a slot and issue one `getAccountInfo` with `slot` per boundary. For self-hosted stores fed by the workflows above, you have per-update granularity, and picking a coarser cadence (hourly, daily) is likewise a query-time concern, not an ingest-time one. Two common approaches:
 
 * **Store every update, derive snapshots at query time.** Recommended when the account set is small or update volume is moderate. Lets you change cadence later without re-ingesting.
 * **Materialize fixed-cadence rollups.** Run a periodic job that, for each tracked account, writes the latest value at or before each cadence boundary into a separate table. Reduces query cost when you only ever read at fixed intervals.
@@ -236,6 +244,8 @@ The two workflows above give you per-update granularity. Picking a coarser caden
 To map wall-clock timestamps to slots for the boundaries, call [`getBlockTime`](/docs/chains/solana/solana-api-endpoints/get-block-time) on a candidate slot, or use [`getBlocks`](/docs/chains/solana/solana-api-endpoints/get-blocks) to find the slot range that bounds a target timestamp.
 
 ## Workflow comparison
+
+For single-account historical reads within coverage (July 2025 onward), prefer the [Account Archive](/docs/solana/account-archive) over either workflow: no pipeline, no store, full `data` bytes at any covered slot. The table below compares the two capture-it-yourself workflows for the cases the archive does not cover.
 
 | Aspect                | Yellowstone gRPC (Workflow A)                     | Transaction replay (Workflow B)                                                       |
 | --------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -247,10 +257,11 @@ To map wall-clock timestamps to slots for the boundaries, call [`getBlockTime`](
 | Best for              | Ongoing capture of a known account or program set | Backfilling SOL/token balance history; not sufficient for arbitrary program state     |
 | Plan requirement      | PAYG or Enterprise                                | Available on all paid plans                                                           |
 
-Combine the two: turn on the gRPC subscription first, persist its slot as your "snapshot start", then run workflow B in parallel to backfill SOL and SPL token balance history before that slot. For full account `data` history before the subscription start, see the warning under [Workflow B](#workflow-b-historical-backfill-via-transaction-replay): start workflow A as early as possible, or source a starting snapshot from an external historical-data product.
+Combine the two: turn on the gRPC subscription first, persist its slot as your "snapshot start", then run workflow B in parallel to backfill SOL and SPL token balance history before that slot. For full account `data` history before the subscription start, backfill each account from the [Account Archive](/docs/solana/account-archive) with `lastUpdateBeforeSlot` (coverage extends back to July 2025); for earlier periods, see the warning under [Workflow B](#workflow-b-historical-backfill-via-transaction-replay).
 
 ## Related references
 
+* [Solana Account Archive](/docs/solana/account-archive) — historical `getAccountInfo`: point-in-time reads with `slot` and full update-history iteration with `lastUpdateBeforeSlot` / `firstUpdateAfterSlot`.
 * [AccountsDB Infrastructure](/docs/solana/accounts-db-infra) — paginated `getProgramAccounts` and `getTokenLargestAccounts` for enumerating large account sets.
 * [Yellowstone gRPC Overview](/docs/reference/yellowstone-grpc-overview) and [Subscribe to Accounts](/docs/reference/yellowstone-grpc-subscribe-accounts) — full filter reference and protobuf definitions.
 * [Solana API FAQ — Historical Data (Archival)](/docs/solana-api-faq#historical-data-archival) — the full set of archival JSON-RPC methods.

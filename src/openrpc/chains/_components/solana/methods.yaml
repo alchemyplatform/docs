@@ -2,7 +2,18 @@ components:
   methods:
     getAccountInfo:
       name: getAccountInfo
-      description: Returns all information associated with the account of provided Pubkey.
+      description: |-
+        Returns all information associated with the account of provided Pubkey.
+
+        Supports historical lookups via the
+        [Solana Account Archive](/docs/solana/account-archive): set `slot` in
+        the configuration object for the account's state as of that slot, or
+        `lastUpdateBeforeSlot` / `firstUpdateAfterSlot` to walk the account's
+        update history (the response's `context.slot` carries the located
+        write's slot, which is the cursor for the next call). The three are
+        mutually exclusive with each other and with `minContextSlot`; omit
+        all three for a normal latest-state read. A cursor that steps past
+        the edge of archive coverage returns error `-32020`.
       x-compute-units: 10
       params:
         - name: Pubkey
@@ -20,6 +31,14 @@ components:
           params:
             - name: Pubkey
               value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+        - name: Historical read at slot 400,000,000 (Account Archive)
+          params:
+            - name: Pubkey
+              value: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
+            - name: Configuration
+              value:
+                encoding: jsonParsed
+                slot: 400000000
       result:
         name: Account information
         description: Returns details of the account including balance, ownership, and other relevant data.
