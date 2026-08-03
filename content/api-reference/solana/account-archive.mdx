@@ -184,6 +184,10 @@ Everything the archive indexes is compressed, stored with at least 3 replicas fo
 
 Call `getAccountInfo` with the account's pubkey and a `slot` parameter in the config object: `getAccountInfo(pubkey, { "slot": S })`. The response is the standard `getAccountInfo` shape and returns the account's state as of slot `S`, the latest write at or before `S`.
 
+### Is there a getAccountInfoAtSlot method?
+
+No. There is no separate `getAccountInfoAtSlot` method; point-in-time reads are the `slot` parameter of the standard [`getAccountInfo`](/docs/chains/solana/solana-api-endpoints/get-account-info): `getAccountInfo(pubkey, { "slot": S })`. Any Solana JSON-RPC client can call it without changes.
+
 ### How do I get the full update history of a Solana account?
 
 Page with the cursor parameters. `getAccountInfo(pubkey, { "lastUpdateBeforeSlot": S })` returns the most recent write strictly before `S`, with the write's actual slot in `context.slot`; feed that slot back in as the next cursor to walk backward through every state transition. `firstUpdateAfterSlot` walks forward the same way.
