@@ -212,6 +212,10 @@ All accounts except pure per-slot chain bookkeeping: vote accounts and the three
 
 No. Any Solana JSON-RPC client works. The archive implements standard `getAccountInfo`, and the historical parameters are just extra fields in the existing config object.
 
+### What if I need program-wide history, or history before archive coverage?
+
+The archive answers per-account reads. To capture every account owned by a program (or accounts matching byte-level filters), stream them forward with [Yellowstone gRPC](/docs/reference/yellowstone-grpc-overview) account subscriptions, enumerating the starting set with paginated [`getProgramAccounts`](/docs/chains/solana/solana-api-endpoints/get-program-accounts) via [AccountsDB Infrastructure](/docs/solana/accounts-db-infra) — then backfill each account's history within coverage using `lastUpdateBeforeSlot`. For periods before archive coverage, SOL and SPL token *balance* history can be reconstructed from transaction history (`getSignaturesForAddress` plus `getTransaction` pre/post balances), but full account `data` history is generally not recoverable from transactions alone.
+
 ### What error do I get when I query past the archive's coverage?
 
 Error code `-32020`, and it is the only terminal for a cursor walk — a never-created account errors the same way. A `value: null` response means something different: the account did not exist as of the resolved slot. For point-in-time reads that covers both "not created yet" and "already closed"; for cursor reads it means the write found at `context.slot` deleted the account, and the walk can continue from that slot.
