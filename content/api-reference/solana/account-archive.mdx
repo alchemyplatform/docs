@@ -20,7 +20,7 @@ This is a feature, not a bug. It's part of why Solana is fast. But it means a wh
 
 You might think `getBlock` covers this, but it doesn't. It returns a past slot's transactions and their pre/post *balances*, not account *data*. For most applications, the state that matters lives in the data bytes: the order book, price feed, position, or configuration.
 
-Solana Account Archive brings the full history back. It answers `getAccountInfo` for any account at any slot since July 2025, using the same request and response shapes you already use. Two things set it apart. The archive never prunes, so the queryable window only grows over time. And it skips the chain's own per-slot bookkeeping (vote accounts and a handful of sysvars that get rewritten every slot), since that's noise, not useful history for app builders.
+Solana Account Archive brings the full history back. It answers `getAccountInfo` for any account at any slot since July 2025, using the same request and response shapes you already use. The archive never prunes, so the queryable window only grows over time.
 
 ## The API: `getAccountInfo`, extended
 
@@ -32,7 +32,7 @@ We deliberately did not invent a new method. The archive speaks standard JSON-RP
 | `lastUpdateBeforeSlot` | The most recent write *strictly before* `S` | Walking an account's history backward |
 | `firstUpdateAfterSlot` | The first write *strictly after* `S` | Walking an account's history forward |
 
-These three are also mutually exclusive with `minContextSlot`; pairing it with any of them is rejected. Omit all three and you get a normal, latest-state `getAccountInfo`; the archive is a drop-in superset. Here is a complete point-in-time read, a token account's state as of slot 310,000,000:
+These three are also mutually exclusive with `minContextSlot`; pairing it with any of them is rejected. Omit all three and you get a normal, latest-state `getAccountInfo`; the archive is a drop-in superset. Here is a complete point-in-time read, a token account's state as of slot 400,000,000:
 
 ```bash
 curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \
@@ -43,8 +43,8 @@ curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \
     "id": 1,
     "method": "getAccountInfo",
     "params": [
-      "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
-      { "encoding": "jsonParsed", "slot": 310000000 }
+      "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa",
+      { "encoding": "jsonParsed", "slot": 400000000 }
     ]
   }'
 ```
@@ -56,20 +56,41 @@ The response is the standard `getAccountInfo` shape:
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "context": { "slot": 310000000 },
+    "context": {
+      "apiVersion": "4.1.0",
+      "slot": 400000000
+    },
     "value": {
-      "lamports": 2039280,
-      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-      "data": { "program": "spl-token", "parsed": { "...": "..." } },
+      "data": {
+        "parsed": {
+          "info": {
+            "isNative": false,
+            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "owner": "7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE",
+            "state": "initialized",
+            "tokenAmount": {
+              "amount": "1056153754430274",
+              "decimals": 6,
+              "uiAmount": 1056153754.430274,
+              "uiAmountString": "1056153754.430274"
+            }
+          },
+          "type": "account"
+        },
+        "program": "spl-token",
+        "space": 165
+      },
       "executable": false,
-      "rentEpoch": 361,
+      "lamports": 2040821,
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "rentEpoch": 18446744073709551615,
       "space": 165
     }
   }
 }
 ```
 
-Note the semantics: `slot: S` means *state as of S*. If the account was last written at slot `S - 40,000` and untouched since, you get that write, exactly what any program executing at slot `S` would have seen. And `jsonParsed` works on historical state too: the same decoders a standard RPC node uses are applied to the historical bytes, so a token account from early in the coverage window comes back decoded, not opaque.
+Note the semantics: `slot: S` means *state as of S*. If the account was last written at slot `S - 40,000` and untouched since, you get that write, exactly what any program executing at slot `S` would have seen.
 
 ## An iterator over an account's history
 
@@ -87,14 +108,12 @@ while True:
         if e.code == -32020:           # walked past the edge of coverage; done
             break
         raise
-    if result["value"] is None:        # the account had no earlier writes
-        break
     slot = result["context"]["slot"]   # the slot this write landed at
-    handle(slot, result["value"])
+    handle(slot, result["value"])      # value is null if this write closed the account
     cursor = slot                      # strictly-before: no overlap, no gaps
 ```
 
-Iterating through an account's history has two possible stopping points: a `null` value means the account genuinely had no earlier writes, while error `-32020` means the cursor reached the edge of the archive's coverage. Keeping them distinct lets you differentiate between "this account's history begins here" and "history continues below what we've indexed."
+The walk has exactly one stopping point: error `-32020`, meaning the cursor has stepped past the edge of the archive's coverage. A `null` value along the way means what it always means in `getAccountInfo`: the account did not exist as of that slot — here, because the write at `context.slot` deleted it. Feed that slot back in as the cursor and the walk continues through the account's earlier life.
 
 `firstUpdateAfterSlot` does the reverse: instead of stepping back in time, it moves forward, returning the next write at or after a given slot. It's ideal for an indexer catching up from a known slot that wants every intermediate state, not just the latest.
 
@@ -104,7 +123,7 @@ Between the two, you can walk an account's entire lifecycle: every balance chang
 
 The archive listens to the network through a Geyser stream and records account writes as they happen, with two rules that keep the record trustworthy:
 
-**Only finalized slots enter the archive.** Solana forks constantly at the tip, and a block that looks real for a few seconds can simply vanish. The archive holds each slot's updates back until the network finalizes it, so the permanent record contains only what actually happened. Recent unfinalized state is still served for `processed` and `confirmed` queries from a separate short-lived tier.
+**Only finalized slots enter the archive.** Solana forks constantly at the tip, and a block that looks real for a few seconds can simply vanish. The archive holds each slot's updates back until the network finalizes it, so the permanent record contains only what actually happened.
 
 **Nothing is silently lost.** Every Solana block names its parent, so any block the stream misses (a hiccup, a reconnect, a service deploy) is detected immediately and backfilled.
 
@@ -195,4 +214,4 @@ No. Any Solana JSON-RPC client works. The archive implements standard `getAccoun
 
 ### What error do I get when I query past the archive's coverage?
 
-Error code `-32020`. This is distinct from `value: null`, which means the account genuinely had no earlier (or later) writes at all. Handling them separately lets you tell "this account's history begins here" from "history continues below what we've indexed."
+Error code `-32020`, and it is the only terminal for a cursor walk — a never-created account errors the same way. A `value: null` response means something different: the account did not exist as of the resolved slot. For point-in-time reads that covers both "not created yet" and "already closed"; for cursor reads it means the write found at `context.slot` deleted the account, and the walk can continue from that slot.

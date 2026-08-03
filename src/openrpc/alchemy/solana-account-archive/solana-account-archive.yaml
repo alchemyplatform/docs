@@ -69,22 +69,22 @@ methods:
         schema:
           $ref: "#/components/schemas/GetAccountInfoArchiveConfig"
     examples:
-      - name: Point-in-time read at slot 310,000,000
+      - name: Point-in-time read at slot 400,000,000
         params:
           - name: Pubkey
-            value: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+            value: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
           - name: Configuration
             value:
               encoding: jsonParsed
-              slot: 310000000
+              slot: 400000000
         result:
           name: Account information at slot
           value:
             context:
-              apiVersion: "2.3.3"
-              slot: 310000000
+              apiVersion: "4.1.0"
+              slot: 400000000
             value:
-              lamports: 2039280
+              lamports: 2040821
               owner: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
               data:
                 program: "spl-token"
@@ -94,61 +94,61 @@ methods:
                   info:
                     isNative: false
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-                    owner: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+                    owner: "7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE"
                     state: "initialized"
                     tokenAmount:
-                      amount: "1500000"
+                      amount: "1056153754430274"
                       decimals: 6
-                      uiAmount: 1.5
-                      uiAmountString: "1.5"
+                      uiAmount: 1056153754.430274
+                      uiAmountString: "1056153754.430274"
               executable: false
-              rentEpoch: 361
+              rentEpoch: 18446744073709551615
               space: 165
       - name: Walk history backward with lastUpdateBeforeSlot
         params:
           - name: Pubkey
-            value: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+            value: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
           - name: Configuration
             value:
               encoding: base64
-              lastUpdateBeforeSlot: 310000000
+              lastUpdateBeforeSlot: 400000000
         result:
           name: Previous write on the account
           value:
             context:
-              apiVersion: "2.3.3"
-              slot: 309998412
+              apiVersion: "4.1.0"
+              slot: 399988788
             value:
-              lamports: 2039280
+              lamports: 2040821
               owner: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
               data:
-                - "PGJhc2U2NC1lbmNvZGVkIGFjY291bnQgYnl0ZXM+"
+                - "xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWFgZQGzAuGAGJL4Cil59YX4hV0PIDR5CiRV90T6xQPXtUJrXPWQwAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                 - "base64"
               executable: false
-              rentEpoch: 361
+              rentEpoch: 18446744073709551615
               space: 165
       - name: Walk history forward with firstUpdateAfterSlot
         params:
           - name: Pubkey
-            value: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+            value: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
           - name: Configuration
             value:
               encoding: base64
-              firstUpdateAfterSlot: 300000000
+              firstUpdateAfterSlot: 400000000
         result:
           name: Next write on the account
           value:
             context:
-              apiVersion: "2.3.3"
-              slot: 300001527
+              apiVersion: "4.1.0"
+              slot: 400005406
             value:
-              lamports: 2039280
+              lamports: 2040821
               owner: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
               data:
-                - "PGJhc2U2NC1lbmNvZGVkIGFjY291bnQgYnl0ZXM+"
+                - "xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWFgZQGzAuGAGJL4Cil59YX4hV0PIDR5CiRV90T6xQPXtaI/d7WLwAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                 - "base64"
               executable: false
-              rentEpoch: 355
+              rentEpoch: 18446744073709551615
               space: 165
     result:
       name: Account information
@@ -156,17 +156,19 @@ methods:
         Returns the standard `getAccountInfo` shape. `context.slot` reflects
         the actual slot at which the write was found (for cursor queries) or
         the requested `slot` (for point-in-time reads). `value` is `null`
-        when the account has no writes matching the query (for example, a
-        `lastUpdateBeforeSlot` cursor for an account with no earlier writes).
+        when the account did not exist as of the resolved slot: for
+        point-in-time reads, an account not created yet or already closed;
+        for cursor reads, a write that deleted the account (its slot is
+        still returned in `context.slot` and works as the next cursor).
       schema:
         $ref: "#/components/schemas/AccountInfoArchiveResult"
     errors:
       - code: -32020
         message: >-
           Cursor walked past the edge of the archive's coverage window. This
-          is distinct from a `null` value response, which means the account
-          genuinely had no earlier (or later) writes. Coverage currently
-          extends back to July 2025 and grows over time.
+          is the only terminal for a cursor walk; a never-indexed account
+          errors the same way. Coverage currently extends back to July 2025
+          and grows over time.
       - code: -32602
         message: >-
           Invalid params. Common causes include combining more than one of
@@ -250,5 +252,6 @@ components:
             - $ref: ../../chains/_components/solana/account.yaml#/components/schemas/AccountInfo
             - type: "null"
           description: >-
-            The account's state, or `null` when there is no write matching
-            the query.
+            The account's state, or `null` when the account did not exist as
+            of the resolved slot (for cursor reads, the write found at
+            `context.slot` deleted the account).
