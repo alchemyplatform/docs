@@ -2,18 +2,7 @@ components:
   methods:
     getAccountInfo:
       name: getAccountInfo
-      description: |-
-        Returns all information associated with the account of provided Pubkey.
-
-        Supports historical lookups via the
-        [Solana Account Archive](/docs/solana/account-archive): set `slot` in
-        the configuration object for the account's state as of that slot, or
-        `lastUpdateBeforeSlot` / `firstUpdateAfterSlot` to walk the account's
-        update history (the response's `context.slot` carries the located
-        write's slot, which is the cursor for the next call). The three are
-        mutually exclusive with each other and with `minContextSlot`; omit
-        all three for a normal latest-state read. A cursor that steps past
-        the edge of archive coverage returns error `-32020`.
+      description: Returns all information associated with the account of provided Pubkey.
       x-compute-units: 10
       params:
         - name: Pubkey
@@ -44,6 +33,23 @@ components:
         description: Returns details of the account including balance, ownership, and other relevant data.
         schema:
           $ref: "./account.yaml#/components/schemas/AccountInfo"
+      errors:
+        - code: -32020
+          message: >-
+            Out of coverage. The requested historical slot is outside the
+            [Account Archive](/docs/solana/account-archive)'s coverage
+            window: below the earliest indexed slot, above the requested
+            commitment's tip, or a `lastUpdateBeforeSlot` /
+            `firstUpdateAfterSlot` cursor stepped past the edge of coverage
+            (the terminal for a history walk).
+        - code: -32602
+          message: >-
+            Invalid params. `slot`, `lastUpdateBeforeSlot`,
+            `firstUpdateAfterSlot`, and `minContextSlot` are mutually
+            exclusive; specifying more than one returns "More than one of
+            slot / lastUpdateBeforeSlot / firstUpdateAfterSlot /
+            minContextSlot specified". Also returned for a malformed Pubkey
+            or configuration value.
 
     getBalance:
       name: getBalance
