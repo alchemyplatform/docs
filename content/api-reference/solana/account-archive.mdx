@@ -32,7 +32,7 @@ We deliberately did not invent a new method. The archive speaks standard JSON-RP
 | `lastUpdateBeforeSlot` | The most recent write *strictly before* `S` | Walking an account's history backward |
 | `firstUpdateAfterSlot` | The first write *strictly after* `S` | Walking an account's history forward |
 
-These three are also mutually exclusive with `minContextSlot`; pairing it with any of them is rejected. Omit all three and you get a normal, latest-state `getAccountInfo`; the archive is a drop-in superset. Here is a complete point-in-time read, a token account's state as of slot 400,000,000:
+These three are also mutually exclusive with `minContextSlot`; pairing it with any of them is rejected. They work only with `finalized` commitment (the default): combining a historical parameter with `processed` or `confirmed` is rejected as invalid params. Omit all three and you get a normal, latest-state `getAccountInfo`; the archive is a drop-in superset. Here is a complete point-in-time read, a token account's state as of slot 400,000,000:
 
 ```bash
 curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \

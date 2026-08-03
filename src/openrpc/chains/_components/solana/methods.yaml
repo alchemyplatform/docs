@@ -38,8 +38,8 @@ components:
           message: >-
             Out of coverage. The requested historical slot is outside the
             [Account Archive](/docs/solana/account-archive)'s coverage
-            window: below the earliest indexed slot, above the requested
-            commitment's tip, or a `lastUpdateBeforeSlot` /
+            window: below the earliest indexed slot, above the latest
+            finalized slot, or a `lastUpdateBeforeSlot` /
             `firstUpdateAfterSlot` cursor stepped past the edge of coverage
             (the terminal for a history walk).
         - code: -32602
@@ -48,8 +48,10 @@ components:
             `firstUpdateAfterSlot`, and `minContextSlot` are mutually
             exclusive; specifying more than one returns "More than one of
             slot / lastUpdateBeforeSlot / firstUpdateAfterSlot /
-            minContextSlot specified". Also returned for a malformed Pubkey
-            or configuration value.
+            minContextSlot specified". The historical parameters require
+            `finalized` commitment (the default); combining them with
+            `processed` or `confirmed` is rejected. Also returned for a
+            malformed Pubkey or configuration value.
 
     getBalance:
       name: getBalance
