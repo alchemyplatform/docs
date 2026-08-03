@@ -1,0 +1,217 @@
+---
+title: Solana Account Archive
+description: Query the state of any Solana account at any historical slot with a drop-in extension to getAccountInfo that adds slot, lastUpdateBeforeSlot, and firstUpdateAfterSlot cursor parameters.
+subtitle: Answer "what did this account look like at slot N" with a single getAccountInfo call
+slug: docs/solana/account-archive
+---
+
+Solana Account Archive answers `getAccountInfo` for any Solana account at any historical slot (vote accounts and per-slot sysvars excepted), with a deep, ever-growing window of historical coverage that is never pruned. Use the `slot` parameter to read state at a point in time, or `lastUpdateBeforeSlot` and `firstUpdateAfterSlot` to walk an account's update history. Reads are served with median latency in the microseconds.
+
+## Solana only remembers the present
+
+Here's a detail about Solana that surprises even experienced builders: **a validator stores exactly one copy of each account, the latest one.** Every write overwrites the previous state in place, and so the moment an account is touched, whatever it looked like before is gone. Even for a slot the node still has full blocks for, the *account state* at that slot no longer exists anywhere on the machine.
+
+This is a feature, not a bug. It's part of why Solana is fast. But it means a whole class of very reasonable questions have no answer, like:
+
+* **Debugging:** "Our liquidation fired at slot 285,401,337. What was the oracle price account at that exact slot?"
+* **Backtesting:** "Reconstruct this pool's reserves at every point over the last six months."
+* **Audits:** "Prove what this token account held on March 3rd."
+* **Recovery:** "Our indexer was down for four hours. Rebuild exactly the state transitions we missed."
+
+You might think `getBlock` covers this, but it doesn't. It returns a past slot's transactions and their pre/post *balances*, not account *data*. For most applications, the state that matters lives in the data bytes: the order book, price feed, position, or configuration.
+
+Solana Account Archive brings the full history back. It answers `getAccountInfo` for any account at any slot since July 2025, using the same request and response shapes you already use. The archive never prunes, so the queryable window only grows over time.
+
+## The API: `getAccountInfo`, extended
+
+We deliberately did not invent a new method. The archive speaks standard JSON-RPC and implements [`getAccountInfo`](/docs/chains/solana/solana-api-endpoints/get-account-info) with all the config options you already know: `encoding` (`base64`, `base58`, `base64+zstd`, `jsonParsed`), `commitment`, `dataSlice`, and `minContextSlot`, plus three new, mutually exclusive parameters:
+
+| Parameter | Semantics | Use it for |
+| --- | --- | --- |
+| `slot` | State *as of* slot `S` (inclusive: the latest write with `slot <= S`) | Point-in-time snapshots |
+| `lastUpdateBeforeSlot` | The most recent write *strictly before* `S` | Walking an account's history backward |
+| `firstUpdateAfterSlot` | The first write *strictly after* `S` | Walking an account's history forward |
+
+These three are also mutually exclusive with `minContextSlot`; pairing it with any of them is rejected. They work only with `finalized` commitment (the default): combining a historical parameter with `processed` or `confirmed` is rejected as invalid params. Omit all three and you get a normal, latest-state `getAccountInfo`; the archive is a drop-in superset. Here is a complete point-in-time read, a token account's state as of slot 400,000,000:
+
+```bash
+curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "getAccountInfo",
+    "params": [
+      "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa",
+      { "encoding": "jsonParsed", "slot": 400000000 }
+    ]
+  }'
+```
+
+The response is the standard `getAccountInfo` shape:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "context": {
+      "apiVersion": "4.1.0",
+      "slot": 400000000
+    },
+    "value": {
+      "data": {
+        "parsed": {
+          "info": {
+            "isNative": false,
+            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "owner": "7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE",
+            "state": "initialized",
+            "tokenAmount": {
+              "amount": "1056153754430274",
+              "decimals": 6,
+              "uiAmount": 1056153754.430274,
+              "uiAmountString": "1056153754.430274"
+            }
+          },
+          "type": "account"
+        },
+        "program": "spl-token",
+        "space": 165
+      },
+      "executable": false,
+      "lamports": 2040821,
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "rentEpoch": 18446744073709551615,
+      "space": 165
+    }
+  }
+}
+```
+
+Note the semantics: `slot: S` means *state as of S*. If the account was last written at slot `S - 40,000` and untouched since, you get that write, exactly what any program executing at slot `S` would have seen.
+
+## An iterator over an account's history
+
+`lastUpdateBeforeSlot` and `firstUpdateAfterSlot` turn the archive into an *iterator over every state transition of an account*.
+
+`lastUpdateBeforeSlot` returns the *actual slot* of the write it found in `context.slot`, so each response is the cursor for the next request:
+
+```python
+# Walk every state transition of an account, newest to oldest.
+cursor = current_slot + 1
+while True:
+    try:
+        result = rpc("getAccountInfo", [pubkey, {"lastUpdateBeforeSlot": cursor}])
+    except RpcError as e:
+        if e.code == -32020:           # walked past the edge of coverage; done
+            break
+        raise
+    slot = result["context"]["slot"]   # the slot this write landed at
+    handle(slot, result["value"])      # value is null if this write closed the account
+    cursor = slot                      # strictly-before: no overlap, no gaps
+```
+
+The walk has exactly one stopping point: error `-32020`, meaning the cursor has stepped past the edge of the archive's coverage. A `null` value along the way means what it always means in `getAccountInfo`: the account did not exist as of that slot — here, because the write at `context.slot` deleted it. Feed that slot back in as the cursor and the walk continues through the account's earlier life.
+
+`firstUpdateAfterSlot` does the reverse: instead of stepping back in time, it moves forward, returning the next write at or after a given slot. It's ideal for an indexer catching up from a known slot that wants every intermediate state, not just the latest.
+
+Between the two, you can walk an account's entire lifecycle: every balance change, every data mutation, every ownership change, with the exact slot each one landed at.
+
+## How the archive stays trustworthy
+
+The archive listens to the network through a Geyser stream and records account writes as they happen, with two rules that keep the record trustworthy:
+
+**Only finalized slots enter the archive.** Solana forks constantly at the tip, and a block that looks real for a few seconds can simply vanish. The archive holds each slot's updates back until the network finalizes it, so the permanent record contains only what actually happened.
+
+**Nothing is silently lost.** Every Solana block names its parent, so any block the stream misses (a hiccup, a reconnect, a service deploy) is detected immediately and backfilled.
+
+The storage layer underneath is a story of its own. What matters here is the result: point-in-time reads are fast enough to sit in a hot path, with **median latency in the microseconds**, measured at our internal service layer.
+
+## Rebuilding the past year
+
+Ingesting from today onward gets you an archive that's useful *next* year. We wanted the past year too, which means reconstructing account state for tens of millions of slots that had already happened, on a chain that keeps no history. And it's a lot of history: Solana produces a block roughly every 400 ms, about 216,000 slots per day. Over a year that's **~78 million slots, hundreds of billions of account updates, and more than a petabyte of raw account data**, each slot carrying thousands of account writes with the full data payload attached.
+
+### Why "just parse the transactions" doesn't work
+
+There is a tempting shortcut to fetch historical blocks and decode what each transaction did to each account. It fails for a fundamental reason that's worth internalizing: **a Solana transaction is not a description of a state change; it's a program invocation.**
+
+What actually happens to an account depends on the program's execution: CPIs fanning out into other programs, sysvars read mid-flight, compute metering, the precise semantics of the runtime *at that slot*. The block records which accounts a transaction touched and how balances moved, but the data bytes, the part you actually want, are determined only by running the code.
+
+There is only one faithful way to know what a transaction did to an account: **execute it, with the real runtime, against the real state it executed against.**
+
+### Replay: running the chain again
+
+So that's what we do. The backfill pipeline is, in essence, a validator that relives history:
+
+1. **Boot from a trusted snapshot.** The Solana Foundation maintains public archives of historical snapshots: full captures of every account at a given slot. Loading the snapshot at slot `A` gives us the complete, canonical state of several hundred million accounts at that moment.
+2. **Replay every block forward.** From `A + 1`, each historical block runs through the actual validator runtime: real execution, not simulation, not log-parsing. Every transaction executes; the account writes the runtime produces are captured and indexed, slot by slot.
+3. **Stop at the next snapshot and prove it.** This is the step that makes the whole thing trustworthy. When replay reaches slot `B`, where the next canonical snapshot exists, we compare our replayed end-state against it, including the **accounts lattice hash**: a cryptographic commitment to the entire account set that the network itself computes and agrees on. If a single byte of a single account diverged anywhere in the range, the hashes won't match and the range is rejected. We don't *assume* replay is correct; every backfilled range is checked against consensus ground truth before it's trusted.
+
+### Old blocks need the runtime from their era
+
+Here's the wrinkle that makes replay genuinely hard: **Solana's execution semantics are versioned in time.** Feature gates activate at specific epochs, compute budget rules change, syscalls get added, edge-case behaviors get fixed. A transaction from twelve months ago must be replayed by a runtime that behaves exactly as the cluster did *at that slot*. Replay it with today's validator and step 3 will tell you, loudly, that you manufactured a history that never happened.
+
+In practice, the backfill fleet runs several pinned validator lineages, each responsible for the era it can faithfully reproduce, with work chunked along epoch boundaries so that every chunk begins and ends at a verifiable snapshot. Extending the archive further back is largely a matter of standing up the right runtime era and paying the replay compute. And because each epoch-aligned chunk is independent, history is perfectly parallel; backfilling a year is mostly a question of how many replay workers you run at once.
+
+## Trust, continuously verified
+
+Hash-verified backfill covers the past; a separate concern is whether the *serving path* stays honest in production. An independent watchdog continuously cross-validates the archive's answers against live RPC nodes, through the same public API you'd use. Correctness is paramount to us, and so it's re-verified every minute the service runs. A multi-layer approach, consensus-anchored hashes for backfilled history, finalization-gated writes at the tip, and continuous live cross-validation on top, ensures that you can trust a record of truth moving forward in time.
+
+## What you can build with this
+
+Every question from the top of this page is now an API call:
+
+* **"What was the oracle account at that exact slot?"** One `getAccountInfo` with `slot` set. Pull the exact state of every account a failing transaction read, at the slot it executed. No more reconstructing oracle inputs from screenshots and guesswork.
+* **"Reconstruct this pool's reserves over six months."** Sample the pool account at a fixed slot cadence and backtest against what was actually on chain, not an approximation stitched together from trade events.
+* **"Prove what this token account held on March 3rd."** "As of slot S, account X contained exactly these bytes." That is answerable, and anchored to hashes the network itself agreed on.
+* **"Rebuild the state transitions our indexer missed."** Page forward with `firstUpdateAfterSlot` from your last known slot and receive every intermediate state, in order.
+
+And one the intro didn't ask: **balance and position history without running an indexer at all.** Walk a token account backward with `lastUpdateBeforeSlot` and you have its complete timeline.
+
+## Get started
+
+Solana stays fast by keeping validators lean and focused on current state. Historical account state has simply lived elsewhere, and until now the ecosystem has worked around that. Solana Account Archive changes that. With finalization-gated live ingestion and a backfill pipeline that re-executes history through era-faithful runtimes and proves the result against consensus hashes, historical `getAccountInfo` becomes just another RPC call: same method, same response shape, one extra parameter.
+
+Everything the archive indexes is compressed, stored with at least 3 replicas for redundancy, and never pruned, so the queryable window only grows.
+
+[Get started on Solana](/docs/reference/solana-api-quickstart), and [reach out to us](https://www.alchemy.com/contact-sales) if your use case needs deeper history, or you want to explore specialized solutions and pricing at scale.
+
+## FAQ
+
+### How do I get a Solana account's state at a specific slot?
+
+Call `getAccountInfo` with the account's pubkey and a `slot` parameter in the config object: `getAccountInfo(pubkey, { "slot": S })`. The response is the standard `getAccountInfo` shape and returns the account's state as of slot `S`, the latest write at or before `S`.
+
+### How do I get the full update history of a Solana account?
+
+Page with the cursor parameters. `getAccountInfo(pubkey, { "lastUpdateBeforeSlot": S })` returns the most recent write strictly before `S`, with the write's actual slot in `context.slot`; feed that slot back in as the next cursor to walk backward through every state transition. `firstUpdateAfterSlot` walks forward the same way.
+
+### What's the difference between `slot`, `lastUpdateBeforeSlot`, and `firstUpdateAfterSlot`?
+
+`slot` is a point-in-time read: state *as of* slot `S`, inclusive. `lastUpdateBeforeSlot` and `firstUpdateAfterSlot` are exclusive history cursors: the nearest write strictly before or strictly after `S`. The three are mutually exclusive; omit all of them for a normal latest-state read.
+
+### Does `jsonParsed` encoding work for historical account state?
+
+Yes. The same account decoders a standard Solana RPC node uses are applied to the historical bytes, so token accounts, mints, and other known program accounts come back parsed at any slot in coverage. All standard encodings work: `base64`, `base58`, `base64+zstd`, and `jsonParsed`, plus `dataSlice`.
+
+### How far back can I query?
+
+Coverage currently extends back to July 2025, with backfill extending it further back over time. History is never pruned, so everything indexed stays queryable and the window only grows.
+
+### How is the historical data known to be correct?
+
+Backfilled ranges are produced by re-executing every transaction through the validator runtime of the corresponding era, and the resulting state is verified against the network's own consensus artifacts, including the accounts lattice hash from canonical snapshots. Live ingestion commits only finalized slots, and an independent watchdog continuously cross-checks served results against live RPC nodes.
+
+### Are all accounts covered?
+
+All accounts except pure per-slot chain bookkeeping: vote accounts and the three sysvars rewritten every slot (`SlotHashes`, `SlotHistory`, `RecentBlockhashes`) are excluded from the index. Program accounts, token accounts, mints, PDAs, wallets, and the remaining sysvars (Clock, Rent, and so on) are all covered.
+
+### Do I need a new SDK or client?
+
+No. Any Solana JSON-RPC client works. The archive implements standard `getAccountInfo`, and the historical parameters are just extra fields in the existing config object.
+
+### What error do I get when I query past the archive's coverage?
+
+Error code `-32020`, and it is the only terminal for a cursor walk — a never-created account errors the same way. A `value: null` response means something different: the account did not exist as of the resolved slot. For point-in-time reads that covers both "not created yet" and "already closed"; for cursor reads it means the write found at `context.slot` deleted the account, and the walk can continue from that slot.

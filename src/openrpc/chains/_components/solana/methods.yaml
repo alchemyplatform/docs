@@ -20,11 +20,36 @@ components:
           params:
             - name: Pubkey
               value: "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q"
+        - name: Historical read at slot 400,000,000 (Account Archive)
+          params:
+            - name: Pubkey
+              value: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
+            - name: Configuration
+              value:
+                encoding: jsonParsed
+                slot: 400000000
       result:
         name: Account information
         description: Returns details of the account including balance, ownership, and other relevant data.
         schema:
           $ref: "./account.yaml#/components/schemas/AccountInfo"
+      errors:
+        - code: -32020
+          message: >-
+            Out of coverage. The requested historical slot is outside the
+            [Account Archive](/docs/solana/account-archive)'s coverage
+            window: below the earliest indexed slot, above the latest
+            finalized slot, or a `lastUpdateBeforeSlot` /
+            `firstUpdateAfterSlot` cursor stepped past the edge of coverage
+            (the terminal for a history walk).
+        - code: -32602
+          message: >-
+            Invalid params. `slot`, `lastUpdateBeforeSlot`,
+            `firstUpdateAfterSlot`, and `minContextSlot` are mutually
+            exclusive. The historical parameters require `finalized`
+            commitment (the default); combining them with `processed` or
+            `confirmed` is rejected. Also returned for a malformed Pubkey
+            or configuration value.
 
     getBalance:
       name: getBalance
