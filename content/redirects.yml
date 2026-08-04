@@ -449,18 +449,18 @@ redirects:
     destination: /docs/reference/polygon-pos-api-faq
     permanent: true
 
-  # Polygon zkEVM
+  # Polygon zkEVM (deprecated July 1, 2026 — chain sunset by Polygon Labs)
   - source: /reference/polygon-zkevm-endpoints
-    destination: /docs/node/polygon-zkevm/polygon-zkevm-api-endpoints/eth-accounts
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
     permanent: true
   - source: /reference/eth-chainid-polygon-zkevm
-    destination: /docs/node/polygon-zkevm/polygon-zkevm-api-endpoints/eth-chain-id
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
     permanent: true
   - source: /reference/eth-newfilter-polygon-zkevm
-    destination: /docs/node/polygon-zkevm/polygon-zkevm-api-endpoints/eth-new-filter
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
     permanent: true
   - source: /reference/net-version-polygon-zkevm
-    destination: /docs/node/polygon-zkevm/polygon-zkevm-api-endpoints/net-version
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
     permanent: true
 
   # zkSync
@@ -1907,15 +1907,31 @@ redirects:
     destination: /docs/node/polygon-pos/polygon-pos-api-endpoints/:method*
     permanent: true
 
-  # polygon-zkevm endpoints are now served at the pinned slug
-  # "polygon-zkevm-api-endpoints" under /docs/chains. Point both the legacy
-  # /node simple form and the previously-canonical /chains split form there.
+  # polygon-zkevm endpoints were deprecated July 1, 2026 (chain sunset by
+  # Polygon Labs). Point every historic per-method path variant at the
+  # deprecation notice.
   - source: /docs/node/polygon-zkevm/polygon-zkevm-api-endpoints/:method*
-    destination: /docs/chains/polygon-zkevm/polygon-zkevm-api-endpoints/:method*
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
     permanent: true
 
   - source: /docs/chains/polygon-zkevm/polygon-zk-evm-api-endpoints/:method*
-    destination: /docs/chains/polygon-zkevm/polygon-zkevm-api-endpoints/:method*
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
+    permanent: true
+
+  - source: /docs/chains/polygon-zkevm/polygon-zkevm-api-endpoints/:method*
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
+    permanent: true
+
+  # Catch-all: any remaining /docs/(chains|node)/polygon-zkevm/... path lands
+  # on the deprecation notice. The prior /docs/node/polygon-zkevm/:path* →
+  # /docs/chains/polygon-zkevm/:path* rewrite was removed because it would
+  # otherwise mask these redirects.
+  - source: /docs/chains/polygon-zkevm/:path*
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
+    permanent: true
+
+  - source: /docs/node/polygon-zkevm/:path*
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
     permanent: true
 
   - source: /docs/node/zksync/z-ksync-api-endpoints/:method*
@@ -2123,9 +2139,6 @@ redirects:
     permanent: true
   - source: "/docs/node/polygon-pos/:path*"
     destination: "/docs/chains/polygon-pos/:path*"
-    permanent: true
-  - source: "/docs/node/polygon-zkevm/:path*"
-    destination: "/docs/chains/polygon-zkevm/:path*"
     permanent: true
   - source: "/docs/node/arbitrum/:path*"
     destination: "/docs/chains/arbitrum/:path*"
@@ -2413,7 +2426,7 @@ redirects:
     destination: /docs/reference/chain-apis-overview#flux-apis
     permanent: true
   - source: /reference/polygon-zkevm-api-endpoints
-    destination: /docs/reference/chain-apis-overview#polygon-zkevm-apis
+    destination: /docs/reference/polygon-zkevm-deprecation-notice
     permanent: true
   - source: /reference/tron-api-endpoints
     destination: /docs/reference/chain-apis-overview#tron-apis
