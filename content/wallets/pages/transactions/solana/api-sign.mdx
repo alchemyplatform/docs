@@ -11,7 +11,10 @@ const tx = VersionedTransaction.deserialize(
 
 tx.sign([keypair]);
 
-const signature = await connection.sendRawTransaction(tx.serialize());
+const signature = await connection.sendRawTransaction(tx.serialize(), {
+  // Explicit so preflight cannot fall back to the node default of `finalized`.
+  preflightCommitment: "confirmed",
+});
 ```
 
 ```ts title="config.ts"
