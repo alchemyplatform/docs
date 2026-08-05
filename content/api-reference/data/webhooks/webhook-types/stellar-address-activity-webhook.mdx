@@ -13,7 +13,7 @@ slug: reference/stellar-address-activity-webhook
 
 # Introduction
 
-Alchemy's Stellar Address Activity webhook tracks native XLM transfers and Stellar Classic asset transfers (such as USDC) on the Stellar network. This provides your app with real-time state changes when a Stellar account sends or receives value. A maximum of 100,000 addresses can be tracked by a single webhook.
+Alchemy's Stellar Address Activity webhook tracks value movement on the Stellar network for the accounts that you configure: native XLM transfers, Stellar Classic asset transfers, DEX offer fills, claimable balance operations, liquidity pool deposits and withdrawals, Soroban contract events, and V4 protocol fee refunds. This provides your app with real-time state changes whenever one of your tracked accounts is credited or debited. A maximum of 100,000 addresses can be tracked by a single webhook.
 
 <Info>
   If you are looking for historical activity on Stellar, check out the [Stellar Data API](/docs/reference/stellar-data-api-overview).
@@ -21,15 +21,20 @@ Alchemy's Stellar Address Activity webhook tracks native XLM transfers and Stell
 
 # Types of transfers
 
-There are two main categories of transfers that are captured when receiving a Stellar Address Activity webhook response.
+Each activity entry carries a `category` field identifying the kind of Stellar activity it represents. The supported categories are:
 
-| Transfer type | Description                                                                                                                                                    |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Native        | Transfers of the native XLM asset between Stellar accounts. `asset.type` is `native` and `asset.code` is `XLM`.                                                |
-| Classic       | Transfers of Stellar Classic assets issued on the Stellar network (for example, USDC). `asset.type` is `credit_alphanum4` or `credit_alphanum12`, and the issuing account is included as `asset.issuer`. |
+| Category            | What it captures                                                                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `native`            | XLM movement from `Payment`, `CreateAccount`, and `AccountMerge` operations.                                                                                                         |
+| `classic`           | Non-native asset movement from `Payment`, `PathPaymentStrictSend` / `PathPaymentStrictReceive`, and `Clawback` operations.                                                           |
+| `dex`               | Offer fills from `ManageSellOffer` / `ManageBuyOffer` and `CreatePassiveSellOffer`, plus path-payment `ClaimAtoms`. Path-payment claims emit two rows per fill (both legs of the trade). |
+| `claimable_balance` | Balance movement from `CreateClaimableBalance`, `ClaimClaimableBalance`, and `ClawbackClaimableBalance` operations.                                                                  |
+| `liquidity_pool`    | Deposits into and withdrawals from Stellar AMM liquidity pools (`LiquidityPoolDeposit`, `LiquidityPoolWithdraw`), derived from pool reserve diffs.                                    |
+| `soroban`           | Soroban contract events, including `transfer`, `mint`, and `burn` / `clawback`.                                                                                                      |
+| `fee_refund`        | Protocol V4 transaction-stage fee events (unused resource fee refunded to the payer).                                                                                                |
 
 <Info>
-  Stellar transactions can contain multiple operations, and a single operation can emit multiple events. Each activity entry represents one transfer event and is uniquely identified by the combination of `txHash`, `opIndex`, and `eventIndex`.
+  Stellar transactions can contain multiple operations, and a single operation can emit multiple events. Each activity entry represents one such event and is uniquely identified by the combination of `txHash`, `opIndex`, and `eventIndex`.
 </Info>
 
 # Example Response
@@ -108,7 +113,7 @@ Below you can find descriptions for each field of the response.
 | `txHash`          | The hex-encoded Stellar transaction hash.                                                                                                                                                                                                   | `a1b6c0d94e3f27ab5c8d10e4f7b93a62c5d8e1f40b7a5c9e8a2b4c6d8e1f3a2b4` |
 | `opIndex`         | The zero-based index of the operation within the transaction. Stellar transactions may bundle multiple operations, each of which can produce transfer events.                                                                                | `0`                                                          |
 | `eventIndex`      | The zero-based index of the event within the operation. A single operation can emit more than one transfer event.                                                                                                                            | `0`                                                          |
-| `category`        | The category label for the transfer: `native` for XLM transfers, or `classic` for Stellar Classic (issued) asset transfers.                                                                                                                  | `native` or `classic`                                        |
+| `category`        | The category of the underlying Stellar activity. See the [Types of transfers](#types-of-transfers) table above for the full set of values and what each captures.                                                                            | `native`, `classic`, `dex`, `claimable_balance`, `liquidity_pool`, `soroban`, `fee_refund` |
 | `eventSubtype`    | The Stellar event subtype. For account-to-account value movement this is `transfer`.                                                                                                                                                        | `transfer`                                                   |
 | `value`           | The transfer amount, formatted as a decimal string with 7 fractional digits (Stellar assets have a fixed precision of 7).                                                                                                                    | `125.0000000`                                                |
 | `asset`           | The asset object that was transferred. See fields below.                                                                                                                                                                                    | `N/A`                                                        |
