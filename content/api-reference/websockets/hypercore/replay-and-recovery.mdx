@@ -1,0 +1,14 @@
+---
+title: "Replay and recovery"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# Replay and recovery
+
+Each subscription advances through opaque cursors. Persist the latest cursor after processing a message, then supply it in that subscription's next subscribe frame to request replay. Clients store and return the cursor unmodified because its format may change.
+
+A replay response indicates whether a gap occurred. When a cursor is invalid or a gap is reported, discard the affected local state and resynchronize from a fresh snapshot before trusting subsequent updates. Resume is per subscription, so subscriptions sharing a connection can resume from different cursors.
+
+The replay-window length and cursor-retention period will be published with the service.

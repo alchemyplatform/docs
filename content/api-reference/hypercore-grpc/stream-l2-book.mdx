@@ -1,0 +1,29 @@
+---
+title: "StreamL2Book"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../shared/preview-notice-september.mdx" />
+
+# StreamL2Book
+
+## Intended RPC
+
+`rpc StreamL2Book(StreamL2BookRequest) returns (stream L2BookEnvelope);`
+
+Carries L2 order-book snapshots. For the WebSocket representation, see [l2Book](/docs/chains/websockets/hypercore/streams/l2-book). Use [StreamL2BookDiff](/docs/chains/hypercore-grpc/api-reference/stream-l2-book-diff) for the corresponding diff stream.
+
+## Intended message
+
+This is a non-binding illustration: field names, field numbers, scalar types, payload type names, and finality semantics are provisional. It does not imply wire compatibility.
+
+```proto
+message L2BookEnvelope {
+  string cursor = 1;
+  uint64 sequence = 2;
+  bool is_final = 3;
+  L2BookSnapshot snapshot = 4;
+}
+```
+
+The request and payload message definitions will be published with the service.

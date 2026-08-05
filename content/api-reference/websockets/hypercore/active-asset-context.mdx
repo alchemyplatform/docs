@@ -1,0 +1,80 @@
+---
+title: "activeAssetCtx stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# activeAssetCtx stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "activeAssetCtx",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "activeAssetCtx"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "activeAssetCtx",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "cursor": "<opaque cursor>",
+  "data": {
+    "coin": "BTC",
+    "markPrice": "100000.0",
+    "oraclePrice": "99995.0",
+    "fundingRate": "0.00001",
+    "openInterest": "25000000"
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| coin | string | Market identifier. |
+| markPrice | string | Illustrative markPrice value. |
+| oraclePrice | string | Illustrative oraclePrice value. |
+| fundingRate | string | Illustrative fundingRate value. |
+| openInterest | string | Illustrative openInterest value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "activeAssetCtx",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

@@ -1,0 +1,60 @@
+---
+title: "WebSocket streaming"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# WebSocket streaming
+
+## Subscription envelope
+
+Use the native subscription envelope: `{"method":"subscribe","subscription":{...}}`. Use the same subscription object with `"method":"unsubscribe"` to close a stream. Acknowledgements use `"channel":"subscriptionResponse"`; data frames use `{"channel":"<type>","data":{...}}`.
+
+HyperCore retains additive top-level metadata in its illustrative data frames: `subscriptionId`, `blockHeight`, `blockTime`, and `cursor`. The presence and placement of these top-level Alchemy extension fields are pending engineering confirmation. These examples use native naming as a compatibility target; they do not promise byte-for-byte wire compatibility with native clients.
+
+## Envelope fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| channel | string | Subscription-response channel or stream type. |
+| data | object | Stream-specific payload. |
+| subscriptionId | string | Proposed subscription identifier. |
+| blockHeight | integer | Proposed source-block height. |
+| blockTime | integer | Proposed source-block time. |
+| cursor | string | Opaque proposed resume token. |
+
+## Subscription fields
+
+Native subscriptions use singular `coin` and `user` fields. HyperCore's `coins`, `users`, `builders`, `intervals`, and `eventTypes` arrays are proposed Alchemy extensions for multi-entity subscriptions, not native fields. Their support and the expected value form for `users` remain pending confirmation. Candle subscriptions include both a coin dimension and an interval dimension.
+
+## Stream catalog
+
+| Stream | Description |
+| --- | --- |
+| [activeAssetCtx](/docs/chains/websockets/hypercore/streams/active-asset-context) | Active asset context. |
+| [allCandles](/docs/chains/websockets/hypercore/streams/all-candles) | Candle updates across selected coins and intervals. |
+| [allFills](/docs/chains/websockets/hypercore/streams/all-fills) | Fill updates across selected coins. |
+| [allIsolatedMarginUpdates](/docs/chains/websockets/hypercore/streams/all-isolated-margin-updates) | Isolated-margin updates across the available stream scope. |
+| [allLeverageUpdates](/docs/chains/websockets/hypercore/streams/all-leverage-updates) | Leverage-setting updates across the available stream scope. |
+| [allTwapStatusUpdates](/docs/chains/websockets/hypercore/streams/all-twap-status-updates) | TWAP-status updates. |
+| [allUserNonFundingLedgerUpdates](/docs/chains/websockets/hypercore/streams/all-user-non-funding-ledger-updates) | Non-funding ledger updates. |
+| [bbo](/docs/chains/websockets/hypercore/streams/bbo) | Best-bid and offer book updates. |
+| [builderFills](/docs/chains/websockets/hypercore/streams/builder-fills) | Builder fill updates. |
+| [builderLiquidation](/docs/chains/websockets/hypercore/streams/builder-liquidation) | Intended builder-context liquidation updates. |
+| [builderOrderUpdates](/docs/chains/websockets/hypercore/streams/builder-order-updates) | Builder order updates. |
+| [candles](/docs/chains/websockets/hypercore/streams/candles) | Candle updates for selected coins and intervals. |
+| [fundingRates](/docs/chains/websockets/hypercore/streams/funding-rates) | Funding-rate updates. |
+| [l2Book](/docs/chains/websockets/hypercore/streams/l2-book) | L2 book snapshots. |
+| [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff) | L2 book differences. |
+| [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates) | L4 order-level updates. |
+| [liquidationFills](/docs/chains/websockets/hypercore/streams/liquidation-fills) | Liquidation fill updates. |
+| [setOracleUpdates](/docs/chains/websockets/hypercore/streams/set-oracle-updates) | Oracle updates. |
+| [tpslUpdates](/docs/chains/websockets/hypercore/streams/tpsl-updates) | Take-profit and stop-loss updates. |
+| [userFills](/docs/chains/websockets/hypercore/streams/user-fills) | User fill updates. |
+| [userIsolatedMarginUpdates](/docs/chains/websockets/hypercore/streams/user-isolated-margin-updates) | Intended user-context isolated-margin updates. |
+| [userLeverageUpdates](/docs/chains/websockets/hypercore/streams/user-leverage-updates) | Intended user-context leverage updates. |
+| [userNonFundingLedgerUpdates](/docs/chains/websockets/hypercore/streams/user-non-funding-ledger-updates) | User non-funding ledger updates. |
+| [userOrderUpdates](/docs/chains/websockets/hypercore/streams/user-order-updates) | User order updates. |
+
+For connection, resume, and recovery behavior, see [connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle) and [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).

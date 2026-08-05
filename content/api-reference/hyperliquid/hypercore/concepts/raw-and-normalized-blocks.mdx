@@ -1,0 +1,24 @@
+---
+title: "Raw and normalized HyperCore blocks"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../shared/preview-notice.mdx" />
+
+# Raw and normalized HyperCore blocks
+
+The Chain API keeps raw source material distinct from normalized block-oriented objects. It does not force EVM transaction terminology onto HyperCore.
+
+## Raw block structure
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `abci_block.round` | integer | The block identifier. |
+| `parent_round` | integer | Links to the preceding block. |
+| `time` | value | Raw block time value. |
+| `proposer` | value | Raw proposer value. |
+| `hardfork` | object | Protocol version and activation round. |
+| `signed_action_bundles` | array | Pairs of `[tx_hash, bundle]`. Each bundle carries signed actions, including signature, action type, nonce, vault address, and expiry, together with broadcaster and broadcaster nonce. |
+| `resps` | object | Execution results keyed by transaction hash. Each result includes a user address and an `ok` or `err` status. |
+
+For data-product queries over normalized historical material, see [historical data](/docs/data/hypercore/historical-data).

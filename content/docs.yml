@@ -1,60 +1,2051 @@
 # yaml-language-server: $schema=./docs-yml.schema.json
 
 tabs:
-  get-started:
-    display-name: Get Started
-    slug: tutorials
   chains:
     display-name: Chains
     slug: chains
-  node:
-    display-name: Node
-    slug: node
   data:
     display-name: Data
     slug: data
   wallets:
     display-name: Wallets
     slug: wallets
-  rollups:
-    display-name: Rollups
-    slug: rollups
+  build-with-ai:
+    display-name: Build with AI
+    slug: build-with-ai
+  # Former "Get Started" tab, renamed "Tools & Resources". Keeps the
+  # "get-started" key (the frontend header matches its active tab against it)
+  # and the "tutorials" slug so existing URLs under /docs/tutorials/... keep
+  # working.
+  get-started:
+    display-name: Tools & Resources
+    slug: tutorials
   changelog:
     display-name: Changelog
     slug: changelog
 
 navigation:
-  - tab: get-started
+  # The former "Node" tab is merged into Chains: the Node API is our
+  # implementation of the standard JSON-RPC API and the per-chain APIs below
+  # are where those endpoints live, so they now share one tab.
+  #
+  # COUPLING (OMGWINNING/dashboard temporal-worker daikon-docs workflows):
+  # the Daikon bot requires a tab keyed exactly `chains` and inserts new
+  # chain sections before the next "- tab:" line after it — if `chains`
+  # ever becomes the last tab, new chains silently stop being added to the
+  # nav. It only scans top-level sections of this tab for per-chain
+  # api-name entries, so keep those one level deep.
+  - tab: chains
+    layout:
+      # The cross-chain sections (WebSockets, Yellowstone gRPC, Trace API,
+      # Debug API, Rollups) are nested inside this first section: the docs
+      # site renders every later top-level section of this tab as a chain in
+      # the chain selector. skip-slug keeps their endpoint URLs at
+      # /chains/<section>/... .
+      - section: Introduction
+        skip-slug: true
+        contents:
+          - page: API Overview
+            path: api-reference/node-api/chain-apis-overview.mdx
+          - page: Supported Chains
+            path: api-reference/node-api/node-supported-chains.mdx
+          - page: Feature Support by Chain
+            path: >-
+              api-reference/pricing-resources/resources/feature-support-by-chain.mdx
+          - page: MEV Protection
+            path: api-reference/node-api/mev-protection.mdx
+          - link: Pricing
+            href: /docs/reference/pricing-plans
+
+          - section: WebSockets
+            contents:
+              - page: Subscription API Overview
+                path: api-reference/websockets/subscription-api.mdx
+              - page: Best Practices for Using WebSockets in Web3
+                path: >-
+                  api-reference/websockets/best-practices-for-using-websockets-in-web3.mdx
+              - section: Subscription API Endpoints
+                path: >-
+                  api-reference/websockets/subscription-api-endpoints/subscription-api-endpoints.mdx
+                contents:
+                  - page: alchemy_minedTransactions
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/alchemy-minedtransactions.mdx
+                  - page: alchemy_pendingTransactions
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/alchemy-pendingtransactions.mdx
+                  - page: newPendingTransactions
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/newpendingtransactions.mdx
+                  - page: newHeads
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/newheads.mdx
+                  - page: logs
+                    path: api-reference/websockets/subscription-api-endpoints/logs.mdx
+                  - page: monadNewHeads
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/monadnewheads.mdx
+                  - page: monadLogs
+                    path: >-
+                      api-reference/websockets/subscription-api-endpoints/monadlogs.mdx
+                slug: subscription-api-endpoints
+              - section: Solana Subscription API Endpoints
+                path: >-
+                  api-reference/websockets/solana-subscription-api-endpoints/solana-subscription-api-endpoints.mdx
+                contents:
+                  - page: accountSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/account-subscribe.mdx
+                  - page: programSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/program-subscribe.mdx
+                  - page: logsSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/logs-subscribe.mdx
+                  - page: signatureSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/signature-subscribe.mdx
+                  - page: rootSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/root-subscribe.mdx
+                  - page: slotSubscribe
+                    path: >-
+                      api-reference/websockets/solana-subscription-api-endpoints/slot-subscribe.mdx
+                slug: solana-subscription-api-endpoints
+              - section: HyperCore Subscription API Endpoints
+                hidden: true
+                slug: hypercore
+                path: api-reference/websockets/hypercore/overview.mdx
+                contents:
+                  - page: Connection lifecycle
+                    path: api-reference/websockets/hypercore/connection-lifecycle.mdx
+                  - page: Replay and recovery
+                    path: api-reference/websockets/hypercore/replay-and-recovery.mdx
+                  - section: Streams
+                    contents:
+                      - page: activeAssetCtx
+                        slug: active-asset-context
+                        path: api-reference/websockets/hypercore/active-asset-context.mdx
+                      - page: allCandles
+                        path: api-reference/websockets/hypercore/all-candles.mdx
+                      - page: allFills
+                        path: api-reference/websockets/hypercore/all-fills.mdx
+                      - page: allIsolatedMarginUpdates
+                        path: api-reference/websockets/hypercore/all-isolated-margin-updates.mdx
+                      - page: allLeverageUpdates
+                        path: api-reference/websockets/hypercore/all-leverage-updates.mdx
+                      - page: allTwapStatusUpdates
+                        path: api-reference/websockets/hypercore/all-twap-status-updates.mdx
+                      - page: allUserNonFundingLedgerUpdates
+                        path: api-reference/websockets/hypercore/all-user-non-funding-ledger-updates.mdx
+                      - page: bbo
+                        path: api-reference/websockets/hypercore/bbo.mdx
+                      - page: builderFills
+                        path: api-reference/websockets/hypercore/builder-fills.mdx
+                      - page: builderLiquidation
+                        path: api-reference/websockets/hypercore/builder-liquidation.mdx
+                      - page: builderOrderUpdates
+                        path: api-reference/websockets/hypercore/builder-order-updates.mdx
+                      - page: candles
+                        path: api-reference/websockets/hypercore/candles.mdx
+                      - page: fundingRates
+                        path: api-reference/websockets/hypercore/funding-rates.mdx
+                      - page: l2Book
+                        slug: l2-book
+                        path: api-reference/websockets/hypercore/l2-book.mdx
+                      - page: l2BookDiff
+                        slug: l2-book-diff
+                        path: api-reference/websockets/hypercore/l2-book-diff.mdx
+                      - page: l4BookUpdates
+                        slug: l4-book-updates
+                        path: api-reference/websockets/hypercore/l4-book-updates.mdx
+                      - page: liquidationFills
+                        path: api-reference/websockets/hypercore/liquidation-fills.mdx
+                      - page: setOracleUpdates
+                        path: api-reference/websockets/hypercore/set-oracle-updates.mdx
+                      - page: tpslUpdates
+                        path: api-reference/websockets/hypercore/tpsl-updates.mdx
+                      - page: userFills
+                        path: api-reference/websockets/hypercore/user-fills.mdx
+                      - page: userIsolatedMarginUpdates
+                        path: api-reference/websockets/hypercore/user-isolated-margin-updates.mdx
+                      - page: userLeverageUpdates
+                        path: api-reference/websockets/hypercore/user-leverage-updates.mdx
+                      - page: userNonFundingLedgerUpdates
+                        path: api-reference/websockets/hypercore/user-non-funding-ledger-updates.mdx
+                      - page: userOrderUpdates
+                        path: api-reference/websockets/hypercore/user-order-updates.mdx
+            slug: websockets
+
+          - section: HyperCore gRPC
+            hidden: true
+            slug: hypercore-grpc
+            contents:
+              - section: Getting Started
+                contents:
+                  - page: Overview
+                    path: api-reference/hypercore-grpc/overview.mdx
+              - section: API Reference
+                contents:
+                  - page: StreamBlocks
+                    path: api-reference/hypercore-grpc/stream-blocks.mdx
+                  - page: StreamL2Book
+                    slug: stream-l2-book
+                    path: api-reference/hypercore-grpc/stream-l2-book.mdx
+                  - page: StreamL2BookDiff
+                    slug: stream-l2-book-diff
+                    path: api-reference/hypercore-grpc/stream-l2-book-diff.mdx
+                  - page: StreamL4Book
+                    slug: stream-l4-book
+                    path: api-reference/hypercore-grpc/stream-l4-book.mdx
+                  - page: StreamL4BookUpdates
+                    slug: stream-l4-book-updates
+                    path: api-reference/hypercore-grpc/stream-l4-book-updates.mdx
+                  - page: StreamBboBook
+                    path: api-reference/hypercore-grpc/stream-bbo-book.mdx
+                  - page: StreamTpslUpdates
+                    path: api-reference/hypercore-grpc/stream-tpsl-updates.mdx
+          - section: Trace API
+            contents:
+              - page: Trace API Overview
+                path: api-reference/trace-api/trace-api-quickstart.mdx
+              - api: Trace API Endpoints
+                api-name: trace
+              - section: Trace API Resources
+                path: >-
+                  api-reference/trace-api/trace-api-resources/what-are-evm-traces.mdx
+                contents:
+                  - page: Trace API vs. Debug API
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/trace-api-vs-debug-api.mdx
+                  - page: What is trace_transaction?
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/what-is-trace-transaction.mdx
+                  - page: What is trace_block?
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/what-is-trace-block.mdx
+                  - page: What is trace_filter?
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/what-is-trace-filter.mdx
+                  - page: trace_call vs debug_traceCall
+                    path: >-
+                      api-reference/trace-api/trace-api-resources/trace-call-vs-debug-tracecall.mdx
+                slug: trace-api-resources
+            slug: trace-api
+          - section: Debug API
+            contents:
+              - page: Debug API Overview
+                path: api-reference/debug-api/debug-api-quickstart.mdx
+              - api: Debug API Endpoints
+                api-name: debug
+            slug: debug-api
+
+          - section: Yellowstone gRPC
+            contents:
+              - section: Getting Started
+                contents:
+                  - page: Overview
+                    path: api-reference/yellowstone/overview.mdx
+                  - page: Quickstart
+                    path: api-reference/yellowstone/quickstart.mdx
+                slug: getting-started
+              - section: API Reference
+                path: api-reference/yellowstone/api-reference-overview.mdx
+                contents:
+                  - page: Subscribe Request
+                    path: api-reference/yellowstone/subscribe-request.mdx
+                  - page: Subscribe to Slots
+                    path: api-reference/yellowstone/subscribe-slots.mdx
+                  - page: Subscribe to Transactions
+                    path: api-reference/yellowstone/subscribe-transactions.mdx
+                  - page: Subscribe to Accounts
+                    path: api-reference/yellowstone/subscribe-accounts.mdx
+                  - page: Subscribe to Blocks
+                    path: api-reference/yellowstone/subscribe-blocks.mdx
+                slug: api-reference
+              - section: Resources
+                contents:
+                  - page: Code Examples
+                    path: api-reference/yellowstone/examples.mdx
+                  - page: Best Practices
+                    path: api-reference/yellowstone/best-practices.mdx
+                slug: resources
+            slug: yellowstone-grpc
+
+          # Temporary home for Rollups: self-serve is deprecated (no new rollups
+          # are being created; existing ones are still supported), so it is no
+          # longer a top-level tab. Framed for customers who want to launch their
+          # own L2 chain. Remove entirely once deprecation is communicated to all
+          # customers.
+          - section: Launch Your Own Chain (Rollups)
+            contents:
+              - page: Rollups Overview
+                path: api-reference/alchemy-rollups/rollups-quickstart.mdx
+              - page: Supported Frameworks
+                path: api-reference/alchemy-rollups/supported-stacks.mdx
+              - page: Using your Rollup
+                path: api-reference/alchemy-rollups/using-your-rollup.mdx
+              - page: Operating your Rollup
+                path: api-reference/alchemy-rollups/operating-your-rollup.mdx
+              - page: Customizing & Integrations
+                path: api-reference/alchemy-rollups/customizations-integrations.mdx
+              - page: Bridging Assets
+                path: api-reference/alchemy-rollups/bridge-contract-address.mdx
+              - page: Rollups FAQ
+                path: api-reference/alchemy-rollups/rollups-faq.mdx
+            slug: rollups
+
+      - section: Ethereum
+        contents:
+          - page: Quickstart
+            path: api-reference/ethereum/ethereum-api-quickstart.mdx
+          - page: Ethereum API Overview
+            path: api-reference/ethereum/ethereum-api-overview.mdx
+          - api: Ethereum API Endpoints
+            api-name: eth
+          - api: Ethereum Beacon API Endpoints
+            api-name: eth-beacon
+            flattened: true
+          - page: FAQ
+            path: api-reference/ethereum/ethereum-api-faq/ethereum-api-faq.mdx
+        slug: ethereum
+      - section: Robinhood Chain
+        contents:
+          - page: Quickstart
+            path: api-reference/robinhood-chain/robinhood-chain-api-quickstart.mdx
+          - page: Robinhood Chain API Overview
+            path: api-reference/robinhood-chain/robinhood-chain-api-overview.mdx
+          - api: Robinhood Chain API Endpoints
+            api-name: robinhood
+          - page: FAQ
+            path: api-reference/robinhood-chain/robinhood-chain-api-faq.mdx
+        slug: robinhood-chain
+      - section: Solana
+        contents:
+          - section: Quickstart
+            path: api-reference/solana/solana-api-quickstart.mdx
+            contents:
+              - link: CU Calculator
+                href: https://solana-demo-sigma.vercel.app/
+              - page: Accounts DB Infrastructure
+                path: api-reference/solana/accounts-db-infra.mdx
+          - page: Solana API Overview
+            path: api-reference/solana/solana-api-overview.mdx
+          - api: Solana API Endpoints
+            api-name: solana
+          - page: Solana Account Archive
+            path: api-reference/solana/account-archive.mdx
+          - link: Solana DAS APIs
+            href: /docs/reference/alchemy-das-apis-for-solana
+          - link: Solana DAS APIs v2
+            href: /docs/reference/alchemy-das-apis-for-solana-v2
+          - section: Solana Photon API
+            path: >-
+              api-reference/data/nft-api/alchemy-photon-apis-for-solana.mdx
+            contents:
+              - api: Solana Photon API
+                api-name: solana-photon
+                flattened: true
+          - section: Tutorials
+            contents:
+              - link: Hello World Solana Application
+                href: /docs/hello-world-solana-program
+              - link: Set up Frontend for Solana Application
+                href: /docs/hello-world-solana-application
+          - page: FAQ
+            path: api-reference/solana/solana-api-faq.mdx
+        slug: solana
+      - section: Abstract
+        contents:
+          - page: Quickstart
+            path: api-reference/abstract/abstract-api-quickstart.mdx
+          - page: Abstract API Overview
+            path: api-reference/abstract/abstract-api-overview.mdx
+          - api: Abstract API Endpoints
+            api-name: abstract
+          - page: FAQ
+            path: api-reference/abstract/abstract-api-faq.mdx
+        slug: abstract
+      - section: ADI
+        contents:
+          - page: Quickstart
+            path: api-reference/adi/adi-api-quickstart.mdx
+          - page: ADI API Overview
+            path: api-reference/adi/adi-api-overview.mdx
+          - api: ADI API Endpoints
+            api-name: adi
+          - page: FAQ
+            path: api-reference/adi/adi-api-faq.mdx
+        slug: adi
+      - section: Anime
+        contents:
+          - page: Quickstart
+            path: api-reference/anime/anime-api-quickstart.mdx
+          - page: Anime API Overview
+            path: api-reference/anime/anime-api-overview.mdx
+          - api: Anime API Endpoints
+            api-name: anime
+          - page: FAQ
+            path: api-reference/anime/anime-api-faq.mdx
+        slug: anime
+      - section: Apechain
+        contents:
+          - page: Quickstart
+            path: api-reference/apechain/apechain-api-quickstart.mdx
+          - api: ApeChain API Endpoints
+            api-name: apechain
+          - page: FAQ
+            path: api-reference/apechain/apechain-api-faq.mdx
+        slug: apechain
+      - section: Aptos
+        contents:
+          - page: Quickstart
+            path: api-reference/aptos/aptos-api-quickstart.mdx
+          - api: Aptos API Endpoints
+            api-name: aptos
+            flattened: true
+          - page: FAQ
+            path: api-reference/aptos/aptos-api-faq.mdx
+        slug: aptos
+      - section: Arbitrum
+        contents:
+          - page: Quickstart
+            path: api-reference/arbitrum/arbitrum-api-quickstart.mdx
+          - page: Arbitrum API Overview
+            path: api-reference/arbitrum/arbitrum-api-overview.mdx
+          - api: Arbitrum API Endpoints
+            api-name: arbitrum
+          - section: FAQ
+            path: api-reference/arbitrum/arbitrum-api-faq/arbitrum-api-faq.mdx
+            contents:
+              - page: Arbitrum vs. Ethereum API Differences
+                path: >-
+                  api-reference/arbitrum/arbitrum-api-faq/arbitrumethereum-differences.mdx
+            slug: arbitrum-api-faq
+
+        slug: arbitrum
+      - section: Arbitrum Nova
+        contents:
+          - page: Arbitrum Nova Deprecation Notice
+            path: api-reference/arbitrum-nova/arbitrum-nova-deprecation-notice.mdx
+        slug: arbitrum-nova
+      - section: Arc
+        contents:
+          - page: Quickstart
+            path: api-reference/arc/arc-api-quickstart.mdx
+          - page: Arc API Overview
+            path: api-reference/arc/arc-api-overview.mdx
+          - api: Arc API Endpoints
+            api-name: arc
+          - page: FAQ
+            path: api-reference/arc/arc-api-faq.mdx
+        slug: arc
+      - section: Astar
+        contents:
+          - page: Quickstart
+            path: api-reference/astar/astar-api-quickstart.mdx
+          - page: Astar API Overview
+            path: api-reference/astar/astar-api-overview.mdx
+          - api: Astar API Endpoints
+            api-name: astar
+            slug: astar-api-endpoints
+          - page: FAQ
+            path: api-reference/astar/astar-api-faq.mdx
+        slug: astar
+      - section: Avalanche C-Chain
+        contents:
+          - page: Quickstart
+            path: api-reference/avalanche/avalanche-api-quickstart.mdx
+          - api: Avalanche API Endpoints
+            api-name: avalanche
+          - page: FAQ
+            path: api-reference/avalanche/avalanche-api-faq.mdx
+        slug: avalanche
+      - section: Avalanche P-Chain
+        contents:
+          - page: Quickstart
+            path: api-reference/avalanche-p/avalanche-p-api-quickstart.mdx
+          - page: Avalanche P-Chain API Overview
+            path: api-reference/avalanche-p/avalanche-p-api-overview.mdx
+          - api: Avalanche P-Chain API Endpoints
+            api-name: avalanche-p
+          - page: FAQ
+            path: api-reference/avalanche-p/avalanche-p-api-faq.mdx
+        slug: avalanche-p
+      - section: Base
+        contents:
+          - page: Quickstart
+            path: api-reference/base/base-api-quickstart.mdx
+          - page: Base API Overview
+            path: api-reference/base/base-api-overview.mdx
+          - api: Base API Endpoints
+            api-name: base
+            slug: base-api-endpoints
+          - page: Flashblocks API Quickstart
+            path: api-reference/base/base-flashblocks-api-quickstart.mdx
+          - page: FAQ
+            path: api-reference/base/base-api-faq.mdx
+        slug: base
+      - section: Berachain
+        contents:
+          - page: Quickstart
+            path: api-reference/berachain/berachain-api-quickstart.mdx
+          - page: Berachain API Overview
+            path: api-reference/berachain/berachain-api-overview.mdx
+          - api: Berachain API Endpoints
+            api-name: berachain
+          - page: FAQ
+            path: api-reference/berachain/berachain-api-faq.mdx
+        slug: berachain
+      - section: Bitcoin
+        contents:
+          - page: Quickstart
+            path: api-reference/bitcoin/bitcoin-api-quickstart.mdx
+          - page: Bitcoin API Overview
+            path: api-reference/bitcoin/bitcoin-api-overview.mdx
+          - api: Bitcoin API Endpoints
+            api-name: bitcoin
+          - section: UTXO
+            skip-slug: true
+            contents:
+              - page: UTXO Overview
+                path: api-reference/bitcoin/utxo.mdx
+              - page: UTXO Migration Guide
+                path: api-reference/bitcoin/utxo-migration-guide.mdx
+              - api: UTXO API Endpoints
+                api-name: utxo
+                flattened: true
+              - page: UTXO WebSockets
+                path: api-reference/bitcoin/utxo-websockets.mdx
+          - page: FAQ
+            path: api-reference/bitcoin/bitcoin-api-faq.mdx
+        slug: bitcoin
+      - section: Bitcoin Cash
+        contents:
+          - page: Quickstart
+            path: api-reference/bitcoincash/bitcoincash-api-quickstart.mdx
+          - page: Bitcoin Cash API Overview
+            path: api-reference/bitcoincash/bitcoincash-api-overview.mdx
+          - api: Bitcoin Cash API Endpoints
+            api-name: bitcoincash
+            slug: bitcoincash-api-endpoints
+          - section: UTXO
+            skip-slug: true
+            contents:
+              - page: UTXO Overview
+                path: api-reference/bitcoincash/utxo.mdx
+              - link: UTXO Migration Guide
+                href: /docs/bitcoin/utxo-migration-guide
+              - api: UTXO API Endpoints
+                api-name: utxo-bitcoincash
+                flattened: true
+              - page: UTXO WebSockets
+                path: api-reference/bitcoincash/utxo-websockets.mdx
+          - page: FAQ
+            path: api-reference/bitcoincash/bitcoincash-api-faq.mdx
+        slug: bitcoincash
+      - section: Blast
+        contents:
+          - page: Quickstart
+            path: api-reference/blast/blast-api-quickstart.mdx
+          - page: Blast API Overview
+            path: api-reference/blast/blast-api-overview.mdx
+          - api: Blast API Endpoints
+            api-name: blast
+          - page: FAQ
+            path: api-reference/blast/blast-api-faq.mdx
+        slug: blast
+      - section: BNB Smart Chain
+        contents:
+          - page: BNB Smart Chain API Overview
+            path: api-reference/bnb-smart-chain/bnb-smart-chain-api-overview.mdx
+          - api: BNB Smart Chain API Endpoints
+            api-name: bnb
+          - page: BNB Smart Chain Quickstart
+            path: api-reference/bnb-smart-chain/bnb-smart-chain-api-quickstart.mdx
+          - page: BNB Smart Chain FAQ
+            path: api-reference/bnb-smart-chain/bnb-smart-chain-faq.mdx
+        slug: bnb-smart-chain
+      - section: BOB
+        contents:
+          - page: Quickstart
+            path: api-reference/bob/bob-api-quickstart.mdx
+          - page: BOB API Overview
+            path: api-reference/bob/bob-api-overview.mdx
+          - api: BOB API Endpoints
+            api-name: bob
+          - page: FAQ
+            path: api-reference/bob/bob-api-faq.mdx
+        slug: bob
+      - section: Botanix
+        contents:
+          - page: Quickstart
+            path: api-reference/botanix/botanix-api-quickstart.mdx
+          - page: Botanix API Overview
+            path: api-reference/botanix/botanix-api-overview.mdx
+          - page: Botanix Deprecation Notice
+            path: api-reference/botanix/botanix-deprecation-notice.mdx
+          - api: Botanix API Endpoints
+            api-name: botanix
+          - page: FAQ
+            path: api-reference/botanix/botanix-api-faq.mdx
+        slug: botanix
+      - section: Celo
+        contents:
+          - page: Quickstart
+            path: api-reference/celo/celo-chain-api-quickstart.mdx
+          - page: Celo API Overview
+            path: api-reference/celo/celo-api-overview.mdx
+          - api: Celo API Endpoints
+            api-name: celo
+          - page: FAQ
+            path: api-reference/celo/celo-chain-api-faq.mdx
+        slug: celo
+      - section: Citrea
+        contents:
+          - page: Quickstart
+            path: api-reference/citrea/citrea-api-quickstart.mdx
+          - page: Citrea API Overview
+            path: api-reference/citrea/citrea-api-overview.mdx
+          - api: Citrea API Endpoints
+            api-name: citrea
+          - page: FAQ
+            path: api-reference/citrea/citrea-api-faq.mdx
+        slug: citrea
+      - section: Clankermon
+        contents:
+          - page: Clankermon Deprecation Notice
+            path: api-reference/clankermon/clankermon-deprecation-notice.mdx
+        slug: clankermon
+      - section: CrossFi
+        contents:
+          - page: Quickstart
+            path: api-reference/crossfi/crossfi-api-quickstart.mdx
+          - page: CrossFi API Overview
+            path: api-reference/crossfi/crossfi-api-overview.mdx
+          - api: CrossFi API Endpoints
+            api-name: crossfi
+          - page: FAQ
+            path: api-reference/crossfi/crossfi-api-faq.mdx
+        slug: crossfi
+      - section: Degen
+        contents:
+          - page: Quickstart
+            path: api-reference/degen/degen-api-quickstart.mdx
+          - page: Degen API Overview
+            path: api-reference/degen/degen-api-overview.mdx
+          - api: Degen API Endpoints
+            api-name: degen
+          - page: FAQ
+            path: api-reference/degen/degen-api-faq.mdx
+        slug: degen
+      - section: Dogecoin
+        contents:
+          - page: Quickstart
+            path: api-reference/dogecoin/dogecoin-api-quickstart.mdx
+          - page: Dogecoin API Overview
+            path: api-reference/dogecoin/dogecoin-api-overview.mdx
+          - api: Dogecoin API Endpoints
+            api-name: dogecoin
+          - section: UTXO
+            skip-slug: true
+            contents:
+              - page: UTXO Overview
+                path: api-reference/dogecoin/utxo.mdx
+              - link: UTXO Migration Guide
+                href: /docs/bitcoin/utxo-migration-guide
+              - api: UTXO API Endpoints
+                api-name: utxo-dogecoin
+                flattened: true
+              - page: UTXO WebSockets
+                path: api-reference/dogecoin/utxo-websockets.mdx
+          - page: FAQ
+            path: api-reference/dogecoin/dogecoin-api-faq.mdx
+        slug: dogecoin
+      - section: Fantom
+        contents:
+          - page: Fantom Deprecation Notice
+            path: api-reference/fantom/fantom-deprecation-notice.mdx
+        slug: fantom
+      - section: Flow
+        contents:
+          - page: Quickstart
+            path: api-reference/flow/flow-api-quickstart.mdx
+          - api: Flow EVM API Endpoints
+            api-name: flow
+          - page: FAQ
+            path: api-reference/flow/flow-api-faq.mdx
+        slug: flow-evm
+      - section: Frax
+        contents:
+          - page: Quickstart
+            path: api-reference/frax/frax-api-quickstart.mdx
+          - page: Frax API Overview
+            path: api-reference/frax/frax-api-overview.mdx
+          - api: Frax API Endpoints
+            api-name: frax
+          - page: FAQ
+            path: api-reference/frax/frax-api-faq.mdx
+        slug: frax
+      - section: Geist
+        contents:
+          - page: Geist Deprecation Notice
+            path: api-reference/geist/geist-deprecation-notice.mdx
+        slug: geist
+      - section: Gensyn
+        contents:
+          - page: Quickstart
+            path: api-reference/gensyn/gensyn-api-quickstart.mdx
+          - page: Gensyn API Overview
+            path: api-reference/gensyn/gensyn-api-overview.mdx
+          - api: Gensyn API Endpoints
+            api-name: gensyn
+          - page: FAQ
+            path: api-reference/gensyn/gensyn-api-faq.mdx
+        slug: gensyn
+      - section: Gnosis
+        contents:
+          - page: Quickstart
+            path: api-reference/gnosis/gnosis-chain-api-quickstart.mdx
+          - page: Gnosis API Overview
+            path: api-reference/gnosis/gnosis-api-overview.mdx
+          - api: Gnosis API Endpoints
+            api-name: gnosis
+          - page: FAQ
+            path: api-reference/gnosis/gnosis-chain-faq.mdx
+        slug: gnosis
+      - section: Humanity
+        contents:
+          - page: Quickstart
+            path: api-reference/humanity/humanity-api-quickstart.mdx
+          - page: Humanity API Overview
+            path: api-reference/humanity/humanity-api-overview.mdx
+          - api: Humanity API Endpoints
+            api-name: humanity
+          - page: FAQ
+            path: api-reference/humanity/humanity-api-faq.mdx
+        slug: humanity
+      - section: Hyperliquid
+        contents:
+          - page: Quickstart
+            path: api-reference/hyperliquid/hyperliquid-api-quickstart.mdx
+          - page: Hyperliquid API Overview
+            path: api-reference/hyperliquid/hyperliquid-api-overview.mdx
+          - api: Hyperliquid API Endpoints
+            api-name: hyperliquid
+          - page: Hyperliquid Info Endpoint
+            path: api-reference/hyperliquid/hyperliquid-info-endpoint.mdx
+          - page: FAQ
+            path: api-reference/hyperliquid/hyperliquid-api-faq.mdx
+          - section: HyperCore Chain API
+            hidden: true
+            slug: hypercore
+            contents:
+              - page: Overview
+                path: api-reference/hyperliquid/hypercore/overview.mdx
+              - page: Getting started
+                path: api-reference/hyperliquid/hypercore/getting-started.mdx
+              - page: Networks and endpoints
+                path: api-reference/hyperliquid/hypercore/networks-and-endpoints.mdx
+              - section: Concepts
+                contents:
+                  - page: Blocks and finality
+                    path: api-reference/hyperliquid/hypercore/concepts/blocks-and-finality.mdx
+                  - page: HyperCore and HyperEVM
+                    slug: hypercore-and-hyperevm
+                    path: api-reference/hyperliquid/hypercore/concepts/hypercore-vs-hyperevm.mdx
+                  - page: Raw and normalized blocks
+                    path: api-reference/hyperliquid/hypercore/concepts/raw-and-normalized-blocks.mdx
+              - section: JSON-RPC
+                contents:
+                  - page: Overview
+                    path: api-reference/hyperliquid/hypercore/json-rpc/overview.mdx
+                  - api: HyperCore Chain API Endpoints
+                    api-name: hypercore-chain
+              - section: Guides
+                contents:
+                  - page: Retrieve and backfill blocks
+                    path: api-reference/hyperliquid/hypercore/guides/retrieve-and-backfill-blocks.mdx
+        slug: hyperliquid
+      - section: Injective
+        contents:
+          - page: Quickstart
+            path: api-reference/injective/injective-api-quickstart.mdx
+          - page: Injective API Overview
+            path: api-reference/injective/injective-api-overview.mdx
+          - api: Injective API Endpoints
+            api-name: injective
+          - page: FAQ
+            path: api-reference/injective/injective-api-faq.mdx
+        slug: injective
+      - section: Ink
+        contents:
+          - page: Quickstart
+            path: api-reference/ink/ink-api-quickstart.mdx
+          - page: Ink API Overview
+            path: api-reference/ink/ink-api-overview.mdx
+          - api: Ink API Endpoints
+            api-name: ink
+          - page: FAQ
+            path: api-reference/ink/ink-api-faq.mdx
+        slug: ink
+      - section: Jovay
+        contents:
+          - page: Quickstart
+            path: api-reference/jovay/jovay-api-quickstart.mdx
+          - page: Jovay API Overview
+            path: api-reference/jovay/jovay-api-overview.mdx
+          - api: Jovay API Endpoints
+            api-name: jovay
+          - page: FAQ
+            path: api-reference/jovay/jovay-api-faq.mdx
+        slug: jovay
+      - section: Lens
+        contents:
+          - page: Quickstart
+            path: api-reference/lens/lens-api-quickstart.mdx
+          - page: Lens API Overview
+            path: api-reference/lens/lens-api-overview.mdx
+          - api: Lens API Endpoints
+            api-name: lens
+          - page: FAQ
+            path: api-reference/lens/lens-api-faq.mdx
+        slug: lens
+      - section: Linea
+        contents:
+          - page: Quickstart
+            path: api-reference/linea/linea-chain-api-quickstart.mdx
+          - page: Linea API Overview
+            path: api-reference/linea/linea-api-overview.mdx
+          - api: Linea API Endpoints
+            api-name: linea
+          - page: FAQ
+            path: api-reference/linea/linea-chain-api-faq.mdx
+        slug: linea
+      - section: Litecoin
+        contents:
+          - page: Quickstart
+            path: api-reference/litecoin/litecoin-api-quickstart.mdx
+          - page: Litecoin API Overview
+            path: api-reference/litecoin/litecoin-api-overview.mdx
+          - api: Litecoin API Endpoints
+            api-name: litecoin
+          - section: UTXO
+            skip-slug: true
+            contents:
+              - page: UTXO Overview
+                path: api-reference/litecoin/utxo.mdx
+              - link: UTXO Migration Guide
+                href: /docs/bitcoin/utxo-migration-guide
+              - api: UTXO API Endpoints
+                api-name: utxo-litecoin
+                flattened: true
+              - page: UTXO WebSockets
+                path: api-reference/litecoin/utxo-websockets.mdx
+          - page: FAQ
+            path: api-reference/litecoin/litecoin-api-faq.mdx
+        slug: litecoin
+      - section: Lumia
+        contents:
+          - page: Lumia Deprecation Notice
+            path: api-reference/lumia/lumia-deprecation-notice.mdx
+        slug: lumia
+      - section: Mantle
+        contents:
+          - page: Quickstart
+            path: api-reference/mantle/mantle-chain-api-quickstart.mdx
+          - page: Mantle API Overview
+            path: api-reference/mantle/mantle-api-overview.mdx
+          - api: Mantle API Endpoints
+            api-name: mantle
+          - page: FAQ
+            path: api-reference/mantle/mantle-chain-api-faq.mdx
+        slug: mantle
+      - section: MegaETH
+        contents:
+          - page: Quickstart
+            path: api-reference/megaeth/megaeth-api-quickstart.mdx
+          - page: MegaETH API Overview
+            path: api-reference/megaeth/megaeth-api-overview.mdx
+          - api: MegaETH API Endpoints
+            api-name: megaeth
+          - page: FAQ
+            path: api-reference/megaeth/megaeth-api-faq.mdx
+        slug: megaeth
+      - section: Metis
+        contents:
+          - page: Quickstart
+            path: api-reference/metis/metis-chain-api-quickstart.mdx
+          - page: Metis API Overview
+            path: api-reference/metis/metis-api-overview.mdx
+          - api: Metis API Endpoints
+            api-name: metis
+          - page: FAQ
+            path: api-reference/metis/metis-chain-api-faq.mdx
+        slug: metis
+      - section: Mode
+        contents:
+          - page: Quickstart
+            path: api-reference/mode/mode-api-quickstart.mdx
+          - page: Mode API Overview
+            path: api-reference/mode/mode-api-overview.mdx
+          - api: Mode API Endpoints
+            api-name: mode
+          - page: FAQ
+            path: api-reference/mode/mode-api-faq.mdx
+        slug: mode
+      - section: Monad
+        contents:
+          - page: Quickstart
+            path: api-reference/monad/monad-api-quickstart.mdx
+          - page: Monad API Overview
+            path: api-reference/monad/monad-api-overview.mdx
+          - api: Monad API Endpoints
+            api-name: monad
+          - page: FAQ
+            path: api-reference/monad/monad-api-faq.mdx
+        slug: monad
+      - section: Moonbeam
+        contents:
+          - page: Quickstart
+            path: api-reference/moonbeam/moonbeam-api-quickstart.mdx
+          - page: Moonbeam API Overview
+            path: api-reference/moonbeam/moonbeam-api-overview.mdx
+          - api: Moonbeam API Endpoints
+            api-name: moonbeam
+          - page: FAQ
+            path: api-reference/moonbeam/moonbeam-api-faq.mdx
+        slug: moonbeam
+      - section: Mythos
+        contents:
+          - page: Quickstart
+            path: api-reference/mythos/mythos-api-quickstart.mdx
+          - page: Mythos API Overview
+            path: api-reference/mythos/mythos-api-overview.mdx
+          - api: Mythos API Endpoints
+            api-name: mythos
+          - page: FAQ
+            path: api-reference/mythos/mythos-api-faq.mdx
+        slug: mythos
+      - section: OP Mainnet
+        contents:
+          - page: Quickstart
+            path: api-reference/op-mainnet/op-mainnet-api-quickstart.mdx
+          - page: OP Mainnet API Overview
+            path: api-reference/op-mainnet/op-mainnet-api-overview.mdx
+          - api: OP Mainnet API Endpoints
+            api-name: opt
+          - page: Flashblocks API Quickstart
+            path: api-reference/op-mainnet/op-mainnet-flashblocks-api-quickstart.mdx
+          - section: FAQ
+            path: api-reference/op-mainnet/op-mainnet-api-faq/op-mainnet-api-faq.mdx
+            contents:
+              - page: OP Mainnet Error Codes
+                path: api-reference/op-mainnet/op-mainnet-api-faq/op-mainnet-error-codes.mdx
+            slug: op-mainnet-api-faq
+
+        slug: op-mainnet
+      - section: opBNB
+        contents:
+          - page: Quickstart
+            path: api-reference/opbnb-paid-tier/opbnb-chain-api-quickstart.mdx
+          - api: OpBNB API Endpoints
+            api-name: opbnb
+          - page: FAQ
+            path: api-reference/opbnb-paid-tier/opbnb-chain-api-faq.mdx
+        slug: opbnb
+      - section: Pharos
+        contents:
+          - page: Quickstart
+            path: api-reference/pharos/pharos-api-quickstart.mdx
+          - page: Pharos API Overview
+            path: api-reference/pharos/pharos-api-overview.mdx
+          - api: Pharos API Endpoints
+            api-name: pharos
+          - page: FAQ
+            path: api-reference/pharos/pharos-api-faq.mdx
+        slug: pharos
+      - section: Plasma
+        contents:
+          - page: Quickstart
+            path: api-reference/plasma/plasma-api-quickstart.mdx
+          - page: Plasma API Overview
+            path: api-reference/plasma/plasma-api-overview.mdx
+          - api: Plasma API Endpoints
+            api-name: plasma
+          - page: FAQ
+            path: api-reference/plasma/plasma-api-faq.mdx
+        slug: plasma
+      - section: Polygon PoS
+        contents:
+          - page: Quickstart
+            path: api-reference/polygon-pos/polygon-api-quickstart.mdx
+          - page: Polygon PoS API Overview
+            path: api-reference/polygon-pos/polygon-pos-api-overview.mdx
+          - page: Polygon PoS Erigon Client Deprecation Notice
+            path: api-reference/polygon-pos/polygon-pos-erigon-deprecation-notice.mdx
+          - api: Polygon PoS API Endpoints
+            api-name: matic
+          - page: FAQ
+            path: api-reference/polygon-pos/polygon-api-faq.mdx
+        slug: polygon-pos
+      - section: Polygon zkEVM
+        contents:
+          - page: Polygon zkEVM Deprecation Notice
+            path: api-reference/polygon-zkevm/polygon-zkevm-deprecation-notice.mdx
+        slug: polygon-zkevm
+      - section: Rise
+        contents:
+          - page: Quickstart
+            path: api-reference/rise/rise-api-quickstart.mdx
+          - page: Rise API Overview
+            path: api-reference/rise/rise-api-overview.mdx
+          - api: Rise API Endpoints
+            api-name: rise
+          - page: FAQ
+            path: api-reference/rise/rise-api-faq.mdx
+        slug: rise
+      - section: Ronin
+        contents:
+          - page: Quickstart
+            path: api-reference/ronin/ronin-api-quickstart.mdx
+          - page: Ronin API Overview
+            path: api-reference/ronin/ronin-api-overview.mdx
+          - api: Ronin API Endpoints
+            api-name: ronin
+          - page: FAQ
+            path: api-reference/ronin/ronin-api-faq.mdx
+        slug: ronin
+      - section: Rootstock
+        contents:
+          - page: Quickstart
+            path: api-reference/rootstock/rootstock-api-quickstart.mdx
+          - page: Rootstock API Overview
+            path: api-reference/rootstock/rootstock-api-overview.mdx
+          - api: Rootstock API Endpoints
+            api-name: rootstock
+          - page: FAQ
+            path: api-reference/rootstock/rootstock-api-faq.mdx
+        slug: rootstock
+      - section: Scroll
+        contents:
+          - page: Quickstart
+            path: api-reference/scroll/scroll-chain-api-quickstart.mdx
+          - page: Scroll API Overview
+            path: api-reference/scroll/scroll-api-overview.mdx
+          - api: Scroll API Endpoints
+            api-name: scroll
+          - page: FAQ
+            path: api-reference/scroll/scroll-chain-api-faq.mdx
+        slug: scroll
+      - section: Sei
+        contents:
+          - page: Quickstart
+            path: api-reference/sei/sei-api-quickstart.mdx
+          - page: Sei API Overview
+            path: api-reference/sei/sei-api-overview.mdx
+          - api: Sei API Endpoints
+            api-name: sei
+          - page: FAQ
+            path: api-reference/sei/sei-api-faq.mdx
+        slug: sei
+      - section: Settlus
+        contents:
+          - page: Quickstart
+            path: api-reference/settlus/settlus-api-quickstart.mdx
+          - page: Settlus API Overview
+            path: api-reference/settlus/settlus-api-overview.mdx
+          - api: Settlus API Endpoints
+            api-name: settlus
+          - page: FAQ
+            path: api-reference/settlus/settlus-api-faq.mdx
+        slug: settlus
+      - section: Shape
+        contents:
+          - page: Quickstart
+            path: api-reference/shape/shape-api-quickstart.mdx
+          - page: Shape API Overview
+            path: api-reference/shape/shape-api-overview.mdx
+          - api: Shape API Endpoints
+            api-name: shape
+          - page: FAQ
+            path: api-reference/shape/shape-api-faq.mdx
+        slug: shape
+      - section: Soneium
+        contents:
+          - page: Quickstart
+            path: api-reference/soneium/soneium-api-quickstart.mdx
+          - page: Soneium API Overview
+            path: api-reference/soneium/soneium-api-overview.mdx
+          - api: Soneium API Endpoints
+            api-name: soneium
+          - page: FAQ
+            path: api-reference/soneium/soneium-api-faq.mdx
+        slug: soneium
+      - section: Sonic
+        contents:
+          - page: Quickstart
+            path: api-reference/sonic/sonic-api-quickstart.mdx
+          - page: Sonic Blaze Deprecation Notice
+            path: api-reference/sonic/sonic-blaze-deprecation-notice.mdx
+          - page: Sonic API Overview
+            path: api-reference/sonic/sonic-api-overview.mdx
+          - api: Sonic API Endpoints
+            api-name: sonic
+          - page: FAQ
+            path: api-reference/sonic/sonic-api-faq.mdx
+        slug: sonic
+      - section: Stable
+        contents:
+          - page: Quickstart
+            path: api-reference/stable/stable-api-quickstart.mdx
+          - page: Stable API Overview
+            path: api-reference/stable/stable-api-overview.mdx
+          - api: Stable API Endpoints
+            api-name: stable
+          - page: FAQ
+            path: api-reference/stable/stable-api-faq.mdx
+        slug: stable
+      - section: Starknet
+        contents:
+          - page: Quickstart
+            path: api-reference/starknet/starknet-api-quickstart.mdx
+          - page: Starknet API Overview
+            path: api-reference/starknet/starknet-api-overview.mdx
+          - api: Starknet API Endpoints
+            api-name: starknet
+          - page: FAQ
+            path: api-reference/starknet/starknet-api-faq.mdx
+        slug: starknet
+      - section: Stellar
+        contents:
+          - page: Quickstart
+            path: api-reference/stellar/stellar-api-quickstart.mdx
+          - page: Stellar API Overview
+            path: api-reference/stellar/stellar-api-overview.mdx
+          - api: Stellar API Endpoints
+            api-name: stellar
+          - link: Stellar Data API
+            href: /docs/reference/stellar-data-api-overview
+          - page: FAQ
+            path: api-reference/stellar/stellar-api-faq.mdx
+        slug: stellar
+      - section: DATA Network
+        contents:
+          - page: Quickstart
+            path: api-reference/data-network/data-network-api-quickstart.mdx
+          - page: DATA Network API Overview
+            path: api-reference/data-network/data-network-api-overview.mdx
+          - api: DATA Network API Endpoints
+            api-name: story
+            slug: data-network-api-endpoints
+          - page: FAQ
+            path: api-reference/data-network/data-network-api-faq.mdx
+        slug: data-network
+      - section: Sui
+        contents:
+          - page: Quickstart
+            path: api-reference/sui/sui-api-quickstart.mdx
+          - api: Sui API Endpoints
+            api-name: sui
+          - section: Sui gRPC
+            contents:
+              - section: Getting started
+                contents:
+                  - page: Overview
+                    path: api-reference/sui-grpc/overview.mdx
+                  - page: Quickstart
+                    path: api-reference/sui-grpc/quickstart.mdx
+                slug: getting-started
+              - section: API reference
+                contents:
+                  - page: Objects and ledger
+                    path: api-reference/sui-grpc/objects-and-ledger.mdx
+                  - page: Transactions
+                    path: api-reference/sui-grpc/transactions.mdx
+                  - page: State and balances
+                    path: api-reference/sui-grpc/state-and-balances.mdx
+                  - page: Move packages
+                    path: api-reference/sui-grpc/move-packages.mdx
+                  - page: Name service
+                    path: api-reference/sui-grpc/name-service.mdx
+                  - page: Subscriptions
+                    path: api-reference/sui-grpc/subscriptions.mdx
+                  - page: Signature verification
+                    path: api-reference/sui-grpc/signature-verification.mdx
+                slug: api-reference
+            slug: sui-grpc
+          - page: FAQ
+            path: api-reference/sui/sui-api-faq.mdx
+        slug: sui
+      - section: Superseed
+        contents:
+          - page: Quickstart
+            path: api-reference/superseed/superseed-api-quickstart.mdx
+          - page: Superseed API Overview
+            path: api-reference/superseed/superseed-api-overview.mdx
+          - api: Superseed API Endpoints
+            api-name: superseed
+          - page: FAQ
+            path: api-reference/superseed/superseed-api-faq.mdx
+        slug: superseed
+      - section: Tea
+        contents:
+          - page: Tea Deprecation Notice
+            path: api-reference/tea/tea-deprecation-notice.mdx
+        slug: tea
+      - section: Tempo
+        contents:
+          - page: Quickstart
+            path: api-reference/tempo/tempo-api-quickstart.mdx
+          - page: Tempo API Overview
+            path: api-reference/tempo/tempo-api-overview.mdx
+          - api: Tempo API Endpoints
+            api-name: tempo
+          - page: FAQ
+            path: api-reference/tempo/tempo-api-faq.mdx
+        slug: tempo
+      - section: Tron
+        contents:
+          - page: Quickstart
+            path: api-reference/tron/tron-api-quickstart.mdx
+          - page: Tron API Overview
+            path: api-reference/tron/tron-api-overview.mdx
+          - api: Tron API Endpoints
+            api-name: tron
+          - api: Tron HTTP API Endpoints
+            api-name: tron-http
+            flattened: true
+          - api: Tron Solidity HTTP API Endpoints
+            api-name: tron-solidity-http
+            flattened: true
+          - page: FAQ
+            path: api-reference/tron/tron-api-faq.mdx
+        slug: tron
+      - section: Unichain
+        contents:
+          - page: Quickstart
+            path: api-reference/unichain/unichain-api-quickstart.mdx
+          - page: Unichain API Overview
+            path: api-reference/unichain/unichain-api-overview.mdx
+          - api: Unichain API Endpoints
+            api-name: unichain
+          - page: Flashblocks API Quickstart
+            path: api-reference/unichain/unichain-flashblocks-api-quickstart.mdx
+          - page: FAQ
+            path: api-reference/unichain/unichain-api-faq.mdx
+        slug: unichain
+      - section: World Chain
+        contents:
+          - page: Quickstart
+            path: api-reference/world-chain/world-chain-api-quickstart.mdx
+          - page: World Chain API Overview
+            path: api-reference/world-chain/world-chain-api-overview.mdx
+          - api: World Chain API Endpoints
+            api-name: worldchain
+          - page: FAQ
+            path: api-reference/world-chain/world-chain-api-faq.mdx
+        slug: world-chain
+      - section: World Mobile Chain
+        contents:
+          - page: Quickstart
+            path: api-reference/world-mobile-chain/world-mobile-chain-api-quickstart.mdx
+          - page: World Mobile Chain API Overview
+            path: api-reference/world-mobile-chain/world-mobile-chain-api-overview.mdx
+          - api: World Mobile Chain API Endpoints
+            api-name: worldmobilechain
+          - page: FAQ
+            path: api-reference/world-mobile-chain/world-mobile-chain-api-faq.mdx
+        slug: world-mobile-chain
+      - section: X Layer
+        contents:
+          - page: Quickstart
+            path: api-reference/x-layer/x-layer-api-quickstart.mdx
+          - page: X Layer API Overview
+            path: api-reference/x-layer/x-layer-api-overview.mdx
+          - api: X Layer API Endpoints
+            api-name: x-layer
+          - page: FAQ
+            path: api-reference/x-layer/x-layer-api-faq.mdx
+        slug: x-layer
+      - section: XMTP
+        contents:
+          - page: Quickstart
+            path: api-reference/xmtp/xmtp-api-quickstart.mdx
+          - page: XMTP API Overview
+            path: api-reference/xmtp/xmtp-api-overview.mdx
+          - api: XMTP API Endpoints
+            api-name: xmtp
+          - page: FAQ
+            path: api-reference/xmtp/xmtp-api-faq.mdx
+        slug: xmtp
+      - section: ZetaChain
+        contents:
+          - page: Quickstart
+            path: api-reference/zetachain/zetachain-api-quickstart.mdx
+          - page: ZetaChain API Overview
+            path: api-reference/zetachain/zetachain-api-overview.mdx
+          - api: ZetaChain API Endpoints
+            api-name: zetachain
+          - page: FAQ
+            path: api-reference/zetachain/zetachain-api-faq.mdx
+        slug: zetachain
+      - section: zksync
+        contents:
+          - page: Quickstart
+            path: api-reference/zksync/zksync-api-quickstart.mdx
+          - page: zkSync API Overview
+            path: api-reference/zksync/zksync-api-overview.mdx
+          - api: zkSync API Endpoints
+            api-name: zksync
+          - page: FAQ
+            path: api-reference/zksync/zksync-api-faq.mdx
+        slug: zksync
+      - section: Zora
+        contents:
+          - page: Quickstart
+            path: api-reference/zora/zora-api-quickstart.mdx
+          - page: Zora API Overview
+            path: api-reference/zora/zora-api-overview.mdx
+          - api: Zora API Endpoints
+            api-name: zora
+          - page: FAQ
+            path: api-reference/zora/zora-api-faq.mdx
+        slug: zora
+      - section: Katana
+        contents:
+          - page: Quickstart
+            path: api-reference/katana/katana-api-quickstart.mdx
+          - page: Katana API Overview
+            path: api-reference/katana/katana-api-overview.mdx
+          - api: Katana API Endpoints
+            api-name: katana
+          - page: FAQ
+            path: api-reference/katana/katana-api-faq.mdx
+        slug: katana
+      - section: Kaia
+        contents:
+          - page: Quickstart
+            path: api-reference/kaia/kaia-api-quickstart.mdx
+          - page: Kaia API Overview
+            path: api-reference/kaia/kaia-api-overview.mdx
+          - api: Kaia API Endpoints
+            api-name: kaia
+          - page: FAQ
+            path: api-reference/kaia/kaia-api-faq.mdx
+        slug: kaia
+
+      - section: Cronos
+        contents:
+          - page: Quickstart
+            path: api-reference/cronos/cronos-api-quickstart.mdx
+          - page: Cronos API Overview
+            path: api-reference/cronos/cronos-api-overview.mdx
+          - api: Cronos API Endpoints
+            api-name: cronos
+            slug: cronos-api-endpoints
+          - page: FAQ
+            path: api-reference/cronos/cronos-api-faq.mdx
+        slug: cronos
+
+      - section: Boba
+        contents:
+          - page: Quickstart
+            path: api-reference/boba/boba-api-quickstart.mdx
+          - page: Boba API Overview
+            path: api-reference/boba/boba-api-overview.mdx
+          - api: Boba API Endpoints
+            api-name: boba
+            slug: boba-api-endpoints
+          - page: FAQ
+            path: api-reference/boba/boba-api-faq.mdx
+        slug: boba
+
+  - tab: data
     layout:
       - section: Introduction
         contents:
-          - page: Get Started
-            path: api-reference/introduction/api-overview.mdx
-          - section: Alchemy Quickstart Guides
-            path: >-
-              api-reference/introduction/alchemy-quickstart-guide.mdx
-            contents:
-              - page: Create an Alchemy API Key
-                path: tutorials/getting-started/create-an-api-key.mdx
-              - page: Make Your First Alchemy Request
-                path: tutorials/getting-started/make-your-first-request.mdx
-              - page: Set Up Alchemy with Viem
-                path: tutorials/getting-started/set-up-alchemy-with-viem.mdx
-              - page: Set Up Alchemy with any Library via AI
-                path: tutorials/getting-started/alchemy-via-libraries.mdx
-            slug: alchemy-quickstart-guides
-        slug: introduction
-      - section: Pricing & Resources
+          - page: Data API Overview
+            path: api-reference/data/data-overview.mdx
+          - link: Pricing
+            href: /docs/reference/pricing-plans
+      - section: Portfolio API
         contents:
-          - section: Pricing
+          - page: Portfolio API Overview
+            path: api-reference/data/portfolio-apis/portfolio-apis.mdx
+          - api: Portfolio API Endpoints
+            api-name: portfolio
+            flattened: true
+
+        slug: portfolio-apis
+      - section: Token API
+        contents:
+          - page: Token API Overview
+            path: api-reference/data/token-api/token-api-overview.mdx
+          - page: Token API Quickstart
+            path: api-reference/data/token-api/token-api-quickstart.mdx
+          # - page: Solana Token APIs (Beta)
+          #   path: >-
+          #     api-reference/data/token-api/beta-alchemy-das-apis-for-solana-nfts-and-fungible-tokens-1ba069f2006680279109d7f34758ac6fpvs4.mdx
+          - api: Token API Endpoints
+            api-name: token
+          # - section: Token API Tutorials
+          #   contents:
+          #     - page: How to Get Token Metadata
+          #       path: >-
+          #         tutorials/defi/erc-20-tokens/how-to-get-token-metadata.mdx
+          #     - page: How to Get Token Balance
+          #       path: >-
+          #         tutorials/defi/token-balances/how-to-get-token-balance-for-an-address.mdx
+        slug: token-api
+      - section: Transfers API
+        contents:
+          - page: Transfers API Overview
+            path: api-reference/data/transfers-api/transfers-api-quickstart.mdx
+          - api: Transfers Endpoints
+            api-name: transfers
+          - section: Transfers API Tutorials
             contents:
-              - page: Pricing Plans
-                path: api-reference/pricing-resources/pricing/pricing-plans.mdx
-              - page: Compute Units
-                path: api-reference/pricing-resources/pricing/compute-units.mdx
-              - page: Compute Unit Costs
-                path: api-reference/pricing-resources/pricing/compute-unit-costs.mdx
-            slug: pricing
+              - link: How to Get Tx History for Address
+                href: /docs/how-to-get-transaction-history-for-an-address-on-ethereum
+              # - page: How to Get All NFTs Owned by Address
+              #   path: >-
+              #     tutorials/nfts/nft-api-tutorials/how-to-get-all-nfts-owned-by-an-address.mdx
+              - link: How to Get Contract's First Transfer Event
+                href: /docs/how-to-get-a-contracts-first-transfer-event
+              - link: How to Get Contract's Last Transfer Event
+                href: /docs/how-to-get-a-contracts-last-transfer-event
+              - link: How to Integrate Historical Transactions into Your App
+                href: /docs/integrating-historical-transaction-data-into-your-dapp
+            slug: transfers-api-tutorials
+        slug: transfers-api
+      - section: Prices API
+        contents:
+          - page: Prices API Quickstart
+            path: api-reference/data/prices-api/prices-api-quickstart.mdx
+          - api: Prices API Endpoints
+            api-name: prices
+            flattened: true
+          - page: Prices API FAQ
+            path: api-reference/data/prices-api/prices-api-faq.mdx
+        slug: prices-api
+      - section: NFT API
+        contents:
+          - page: NFT API Overview
+            path: api-reference/data/nft-api/nft-api-overview.mdx
+          - page: NFT API Quickstart
+            path: api-reference/data/nft-api/nft-api-quickstart.mdx
+          - section: Solana DAS API
+            path: >-
+              api-reference/data/nft-api/alchemy-das-apis-for-solana.mdx
+            contents:
+              - api: Solana DAS API Endpoints
+                api-name: solana-das
+          - section: Solana DAS API v2
+            path: >-
+              api-reference/data/nft-api/alchemy-das-apis-for-solana-v2.mdx
+            contents:
+              - api: Solana DAS API v2 Endpoints
+                api-name: solana-das-v2
+                # Pin the slug: the auto-generated kebab-case of "Solana DAS
+                # API v2 Endpoints" splits "v2" into "v-2" (matching the
+                # Polygon zkEVM pattern above), which diverges from the
+                # v2 mdx landing page's hard-coded method links. Pin it so
+                # endpoint URLs stay stable.
+                slug: solana-das-api-v2-endpoints
+          - section: NFT API Endpoints
+            path: >-
+              api-reference/data/nft-api/nft-api-endpoints.mdx
+            contents:
+              - api: NFT API Endpoints
+                api-name: nft
+                flattened: true
+            slug: nft-api-endpoints
+          - page: NFT API FAQ
+            path: api-reference/data/nft-api/nft-api-faq.mdx
+            slug: nft-api-tutorials
+        slug: nft-api
+      - section: Webhooks
+        contents:
+          - page: Webhooks Overview
+            path: api-reference/data/webhooks/webhooks-overview.mdx
+          - section: Webhooks Quickstart Guides
+            path: >-
+              api-reference/data/webhooks/webhooks-quickstart/notify-api-quickstart.mdx
+            contents:
+              - page: Custom Webhooks Query Examples
+                path: >-
+                  api-reference/data/webhooks/custom-webhooks-quickstart/custom-webhooks-example.mdx
+              - page: Custom Webhook Filters
+                path: >-
+                  api-reference/data/webhooks/custom-webhooks-quickstart/custom-webhook-filters.mdx
+              - page: Custom Webhook Variables
+                path: >-
+                  api-reference/data/webhooks/custom-webhooks-quickstart/custom-webhook-variables.mdx
+            #   - page: Webhooks Tutorials and Applications
+            #     path: >-
+            #       api-reference/data/webhooks/webhooks-quickstart/notify-tutorials-and-applications.mdx
+            # - page: Webhooks FAQ
+            #   path: >-
+            #     api-reference/data/webhooks/webhooks-quickstart/notify-api-faq.mdx
+            slug: webhooks-quickstart
+          - section: Webhook Types
+            path: >-
+              api-reference/data/webhooks/webhook-types/webhook-types.mdx
+            contents:
+              - page: Custom Webhook
+                path: >-
+                  api-reference/data/webhooks/webhook-types/custom-webhook.mdx
+              - page: Address Activity Webhook
+                path: >-
+                  api-reference/data/webhooks/webhook-types/address-activity-webhook.mdx
+              - page: NFT Activity Webhook
+                path: >-
+                  api-reference/data/webhooks/webhook-types/nft-activity-webhook.mdx
+              # - page: NFT Metadata Updates Webhook
+              #   path: >-
+              #     api-reference/data/webhooks/webhook-types/nft-metadata-updates-webhook.mdx
+            slug: webhook-types
+          - api: Webhooks API Endpoints
+            api-name: notify
+            flattened: true
+          # - section: Webhooks API Tutorials
+          #   contents:
+          #     - page: How to Integrate Alchemy Webhooks with Zapier
+          #       path: >-
+          #         tutorials/streaming-data/how-to-integrate-alchemy-webhooks-with-zapier.mdx
+          #     - page: How to Build App with Real-Time Tx Notifications
+          #       path: >-
+          #         tutorials/streaming-data/transaction-notifications/building-a-dapp-with-real-time-transaction-notifications.mdx
+        slug: webhooks
+      - section: Simulation API
+        hidden: true
+        contents:
+          - page: Transaction Simulation Overview
+            path: api-reference/alchemy-transact/transaction-simulation/simulation.mdx
+          - section: Transaction Simulation Types
+            contents:
+              - page: Asset Changes
+                path: >-
+                  api-reference/alchemy-transact/transaction-simulation/simulation-asset-changes.mdx
+              - page: Execution Simulation
+                path: >-
+                  api-reference/alchemy-transact/transaction-simulation/simulation-execution.mdx
+              - page: Bundle Simulation
+                path: >-
+                  api-reference/alchemy-transact/transaction-simulation/simulation-bundle.mdx
+              - page: Transaction Simulation Examples
+                path: >-
+                  api-reference/alchemy-transact/transaction-simulation/simulation-examples.mdx
+              - page: Transaction Simulation FAQs
+                path: >-
+                  api-reference/alchemy-transact/transaction-simulation/simulation-faqs.mdx
+            slug: transaction-simulation
+          - api: Transaction Simulation Endpoints
+            api-name: transaction-simulation
+        slug: simulation-apis
+      - section: Utility API
+        contents:
+          - page: Utility APIs Overview
+            path: api-reference/data/utility-apis/utility-apis-overview.mdx
+          - api: Transactions Receipts Endpoints
+            api-name: transactions-receipt
+        slug: utility-apis
+      - section: Stellar Data API
+        contents:
+          - page: Stellar Data API Overview
+            path: api-reference/data/stellar-data-api/stellar-data-api-overview.mdx
+          - api: Stellar Data API Endpoints
+            api-name: stellar-data-api
+        slug: stellar-data-api
+      - section: Subgraphs
+        contents:
+          - page: Alchemy Subgraphs Deprecation Notice
+            path: tutorials/alchemy-subgraphs/deprecation-notice.mdx
+      - section: Beta APIs
+        contents:
+          - api: Beta API Endpoints
+            api-name: beta
+            flattened: true
+        slug: beta-apis
+
+      - section: HyperCore Data API
+        hidden: true
+        slug: hypercore
+        contents:
+          - page: Overview
+            path: api-reference/data/hypercore/overview.mdx
+          - page: Getting started
+            path: api-reference/data/hypercore/getting-started.mdx
+          - page: Networks and endpoints
+            path: api-reference/data/hypercore/networks-and-endpoints.mdx
+          - section: REST API
+            path: api-reference/data/hypercore/rest/overview.mdx
+            contents:
+              - api: HyperCore Data API Endpoints
+                api-name: hypercore
+          - page: Historical data
+            path: api-reference/data/hypercore/historical-data/overview.mdx
+          - section: Concepts
+            contents:
+              - page: Fills, orders, and liquidations
+                path: api-reference/data/hypercore/concepts/fills-orders-and-liquidations.mdx
+              - page: Markets, assets, and DEXes
+                slug: markets-assets-and-dexes
+                path: api-reference/data/hypercore/concepts/markets-assets-and-dexes.mdx
+              - page: Order books
+                path: api-reference/data/hypercore/concepts/order-books.mdx
+              - page: Timestamps, cursors, and replay
+                path: api-reference/data/hypercore/concepts/timestamps-cursors-and-replay.mdx
+          - section: Guides
+            contents:
+              - page: Combine streaming with backfill
+                path: api-reference/data/hypercore/guides/combine-streaming-with-backfill.mdx
+              - page: Ingest historical exports
+                path: api-reference/data/hypercore/guides/ingest-historical-exports.mdx
+              - page: Query wallet trading history
+                path: api-reference/data/hypercore/guides/query-wallet-trading-history.mdx
+              - page: Rebuild a book from diffs
+                path: api-reference/data/hypercore/guides/rebuild-a-book-from-diffs.mdx
+              - page: Stream an L2 order book
+                slug: stream-an-l2-order-book
+                path: api-reference/data/hypercore/guides/stream-l2-order-book.mdx
+              - page: Stream wallet fills
+                path: api-reference/data/hypercore/guides/stream-wallet-fills.mdx
+  - tab: wallets
+    layout:
+      - section: Overview
+        skip-slug: true
+        contents:
+          - page: Overview
+            slug: /
+            path: wallets/pages/index.mdx
+          - page: Quickstart
+            path: wallets/pages/smart-wallets/quickstart/sdk.mdx
+          - page: Supported Chains
+            path: wallets/pages/overview/supported-chains.mdx
+
+      - section: Transactions
+        contents:
+          - page: Using SDK
+            path: wallets/pages/smart-wallets/quickstart/sdk.mdx
+          - page: Using API
+            path: wallets/pages/smart-wallets/quickstart/api.mdx
+          - section: Send transactions
+            contents:
+              - page: Single transactions
+                path: wallets/pages/transactions/send-transactions/index.mdx
+              - page: Batch transactions
+                path: wallets/pages/transactions/send-batch-transactions/index.mdx
+              - page: Parallel transactions
+                path: wallets/pages/transactions/send-parallel-transactions/index.mdx
+          - section: Debug transactions
+            path: wallets/pages/transactions/debug-transactions/index.mdx
+            contents:
+              - page: Debug with Tenderly
+                path: wallets/pages/transactions/debug-transactions/debug-with-tenderly.mdx
+          - section: EIP-7702
+            path: wallets/pages/transactions/using-eip-7702/index.mdx
+            contents:
+              - page: Undelegate 7702 account
+                path: wallets/pages/transactions/undelegate-account/index.mdx
+          - section: Sponsor gas
+            path: wallets/pages/transactions/sponsor-gas/overview.mdx
+            contents:
+              - page: Dashboard guide
+                path: wallets/pages/transactions/sponsor-gas/dashboard-guide.mdx
+              - page: Full sponsorship
+                path: wallets/pages/transactions/sponsor-gas/index.mdx
+              - page: Conditional sponsorship rules
+                path: wallets/pages/transactions/sponsor-gas/conditional-sponsorship-rules.mdx
+              - page: Pay gas with any token
+                path: wallets/pages/transactions/pay-gas-with-any-token/index.mdx
+              - page: Solana sponsorship
+                path: wallets/pages/transactions/sponsor-gas/solana/index.mdx
+              - page: Bundler Sponsored Operations
+                path: wallets/pages/transactions/sponsor-gas/bundler-sponsored-operations.mdx
+          - section: Swap tokens
+            contents:
+              - page: Same-chain swaps
+                path: wallets/pages/transactions/swap-tokens/index.mdx
+              - page: Cross-chain swaps
+                path: wallets/pages/transactions/cross-chain-swap-tokens/index.mdx
+          - section: Grant session keys
+            contents:
+              - page: Overview
+                path: wallets/pages/smart-wallets/session-keys/index.mdx
+              - page: Using SDK
+                path: wallets/pages/smart-wallets/session-keys/sdk.mdx
+              - page: Using API
+                path: wallets/pages/smart-wallets/session-keys/api.mdx
+              - page: Legacy session keys
+                path: wallets/pages/smart-wallets/session-keys/legacy-session-keys.mdx
+          - page: Retry transactions
+            path: wallets/pages/transactions/retry-transactions/index.mdx
+          - section: Sign
+            contents:
+              - page: Sign messages
+                path: wallets/pages/transactions/signing/sign-messages/index.mdx
+              - page: Sign typed data
+                path: wallets/pages/transactions/signing/sign-typed-data/index.mdx
+          - page: Configure client
+            path: wallets/pages/concepts/smart-account-client.mdx
+
+      - section: Wallet integration
+        contents:
+          - page: Overview
+            path: wallets/pages/authentication/overview.mdx
+          - section: Privy
+            path: wallets/pages/third-party/signers/privy.mdx
+            contents:
+              - page: Signer migration overview
+                path: wallets/wallet-integrations/privy/signer-migration-overview.mdx
+              - page: React migration
+                path: wallets/wallet-integrations/privy/react-migration.mdx
+              - page: JWT auth migration
+                path: wallets/wallet-integrations/privy/jwt-auth-migration.mdx
+          - section: Other signers
+            contents:
+              - page: Openfort
+                path: wallets/pages/third-party/signers/openfort.mdx
+              - page: Turnkey
+                path: wallets/pages/third-party/signers/turnkey.mdx
+              - page: Solana
+                path: wallets/pages/third-party/signers/solana-signers.mdx
+              - page: Other signers
+                path: wallets/pages/third-party/signers/custom-integration.mdx
+          - section: Account Kit (v4)
+            contents:
+              - section: Login methods
+                contents:
+                  - page: Email OTP
+                    path: wallets/pages/authentication/login-methods/email-otp.mdx
+                  - page: Email magic-link
+                    path: wallets/pages/authentication/login-methods/email-magic-link.mdx
+                  - page: Social login
+                    path: wallets/pages/authentication/login-methods/social-login.mdx
+                  - page: Custom social providers
+                    path: wallets/pages/react/login-methods/social-providers.mdx
+                  - page: Bring your own authentication
+                    path: wallets/pages/authentication/login-methods/bring-your-own-auth.mdx
+                  - page: Passkey signup
+                    path: wallets/pages/authentication/login-methods/passkey-signup.mdx
+                  - page: Passkey login
+                    path: wallets/pages/react/login-methods/passkey-login.mdx
+                  - page: SMS login
+                    path: wallets/pages/authentication/login-methods/sms-login.mdx
+                  - page: "On-chain passkeys"
+                    path: wallets/pages/react/login-methods/onchain-passkeys.mdx
+                  - page: Adding and removing login methods
+                    path: wallets/pages/react/login-methods/adding-and-removing-login-methods.mdx
+              - section: UI components
+                contents:
+                  - page: Using UI components
+                    path: wallets/pages/react/ui-components.mdx
+                  - page: Theme & branding
+                    path: wallets/pages/react/customization/theme.mdx
+                  - page: Tailwind setup
+                    path: wallets/pages/react/customization/tailwind-setup.mdx
+              - section: Whitelabel
+                contents:
+                  - page: React hooks
+                    path: wallets/pages/react/react-hooks.mdx
+                  - page: Other JS initialization
+                    path: wallets/pages/signer/quickstart.mdx
+              - section: Connectors
+                contents:
+                  - page: Connect external wallets
+                    path: wallets/pages/react/login-methods/eoa-login.mdx
+                  - page: Customize
+                    path: wallets/pages/react/connectors/customization.mdx
+              - section: MFA
+                contents:
+                  - page: Set up MFA
+                    path: wallets/pages/react/mfa/setup-mfa.mdx
+                  - page: Email OTP
+                    path: wallets/pages/react/mfa/email-otp.mdx
+                  - page: Email magic-link
+                    path: wallets/pages/react/mfa/email-magic-link.mdx
+                  - page: Social login
+                    path: wallets/pages/react/mfa/social-login.mdx
+              - page: Solana wallets
+                path: wallets/pages/react/solana-wallets/get-started.mdx
+              - page: Server wallets
+                path: wallets/pages/signer/authentication/server-wallets.mdx
+              - section: Account management
+                contents:
+                  - page: User sessions
+                    path: wallets/pages/signer/user-sessions.mdx
+                  - page: Manage account ownership
+                    path: wallets/pages/smart-contracts/modular-account-v2/managing-ownership.mdx
+                  - page: Export private key
+                    path: wallets/pages/signer/export-private-key.mdx
+          - page: Choosing a signer
+            path: wallets/pages/authentication/what-is-a-signer.mdx
+
+      - section: Low-Level Infra
+        contents:
+          - page: Overview
+            path: wallets/pages/low-level-infra/overview.mdx
+          - page: Quickstart
+            path: wallets/pages/low-level-infra/quickstart.mdx
+          - section: Gas Manager API
+            contents:
+              - section: Policy Management
+                contents:
+                  - page: API Endpoints
+                    path: wallets/pages/low-level-infra/gas-manager/policy-management/api-endpoints.mdx
+              - section: Gas Sponsorship
+                contents:
+                  - page: API Endpoints
+                    path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/api-endpoints.mdx
+                  - section: Using SDK
+                    contents:
+                      - page: Basic Gas Sponsorship
+                        path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/using-sdk/basic-gas-sponsorship.mdx
+                      - page: Conditional Gas Sponsorship
+                        path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/using-sdk/conditional-gas-sponsorship.mdx
+                      - page: Pay Gas with Any ERC20 Token
+                        path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/using-sdk/pay-gas-with-any-erc20-token.mdx
+                      - page: Solana
+                        path: wallets/pages/transactions/solana/sponsor-gas-solana.mdx
+          - section: Bundler API
+            path: wallets/pages/low-level-infra/bundler/overview.mdx
+            contents:
+              - page: API Endpoints
+                path: wallets/pages/low-level-infra/bundler/api-endpoints.mdx
+              - page: Using SDK
+                path: wallets/pages/low-level-infra/bundler/sdk.mdx
+              - page: Bundler FAQs
+                path: wallets/pages/bundler-api/bundler-faqs.mdx
+          - section: Third Party Infrastructure
+            contents:
+              - page: Non-Alchemy chains
+                path: wallets/pages/low-level-infra/third-party-infrastructure/chains.mdx
+              - page: Third Party Bundlers
+                path: wallets/pages/low-level-infra/third-party-infrastructure/bundlers.mdx
+              - page: Third Party Paymasters
+                path: wallets/pages/low-level-infra/third-party-infrastructure/paymasters.mdx
+          - section: Smart Account Types
+            contents:
+              - page: Choosing a Smart Account
+                path: wallets/pages/authorization/smart-account-types/choosing-a-smart-account.mdx
+              - section: Modular Account V2
+                contents:
+                  - page: Overview
+                    path: wallets/pages/authorization/smart-account-types/modular-account-v2/overview.mdx
+                  - page: Getting started
+                    path: wallets/pages/smart-contracts/modular-account-v2/getting-started.mdx
+                  - section: Session keys
+                    contents:
+                      - page: What are session keys?
+                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/index.mdx
+                      - page: Adding session keys
+                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/adding-session-keys.mdx
+                      - page: Supported permissions
+                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/session-key-permissions.mdx
+                      - page: Using session keys
+                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/using-session-keys.mdx
+                      - page: Removing session keys
+                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/removing-session-keys.mdx
+              - section: Light Account
+                contents:
+                  - page: Overview
+                    path: wallets/pages/smart-contracts/other-accounts/light-account/index.mdx
+                  - page: Getting started
+                    path: wallets/pages/smart-contracts/other-accounts/light-account/getting-started.mdx
+                  - page: Transfer ownership
+                    path: wallets/pages/smart-contracts/other-accounts/light-account/transfer-ownership-light-account.mdx
+                  - page: Manage multiple owners
+                    path: wallets/pages/smart-contracts/other-accounts/light-account/multi-owner-light-account.mdx
+              - page: Third party
+                path: wallets/pages/third-party/smart-contracts.mdx
+              - page: Deployed addresses
+                path: wallets/pages/smart-contracts/deployed-addresses.mdx
+
+      - section: API Reference
+        contents:
+          - section: Wallet APIs
+            contents:
+              - api: Wallet API Endpoints
+                api-name: wallet-api
+                flattened: true
+            slug: smart-wallets
+          - section: Gas Manager
+            contents:
+              - api: Gas Abstraction API Endpoints
+                api-name: gas-manager-coverage
+              - api: Admin API Endpoints
+                api-name: admin
+            slug: gas-manager-admin-api
+          - section: Bundler
+            contents:
+              - api: Bundler API Endpoints
+                api-name: bundler
+                slug: bundler-api-endpoints
+              - api: UserOp Simulation Endpoints
+                api-name: userop-sim
+                slug: useroperation-simulation-endpoints
+              - section: EntryPoint Revert Codes
+                contents:
+                  - page: EntryPoint v0.7 / v0.8 Revert Codes
+                    path: >-
+                      wallets/pages/bundler-api/entrypoint-revert-codes/entrypoint-v07-revert-codes.mdx
+                  - page: EntryPoint v0.6 Revert Codes
+                    path: >-
+                      wallets/pages/bundler-api/entrypoint-revert-codes/entrypoint-v06-revert-codes.mdx
+                slug: entrypoint-revert-codes
+            slug: bundler-api
+          - section: Signer
+            contents:
+              - api: Signer API Endpoints
+                api-name: accounts
+              - page: How to stamp requests
+                path: wallets/pages/smart-wallets/how-to-stamp-requests.mdx
+            slug: signer
+
+      - section: Resources
+        skip-slug: true
+        contents:
+          - section: Chain Reference
+            slug: resources/chain-reference
+            contents:
+              - page: Polygon PoS
+                slug: polygon-pos
+                path: wallets/pages/resources/chain-reference/polygon-pos.mdx
+          - page: Features
+            slug: wallets/resources/features
+            path: wallets/pages/features.mdx
+          - page: Understanding Wallet APIs
+            path: wallets/pages/concepts/intro-to-account-kit.mdx
+          - section: Recipes
+            contents:
+              - page: Overview
+                slug: recipes
+                path: wallets/pages/recipes/overview.mdx
+              - page: Send USDC
+                slug: recipes/send-usdc
+                path: wallets/pages/recipes/send-usdc.mdx
+              - page: Programmatic Wallet Creation
+                path: wallets/pages/recipes/programmatic-wallet-creation.mdx
+              - page: Onramp Funds
+                slug: recipes/onramp-funds
+                path: wallets/pages/recipes/onramp-funds.mdx
+              - page: Session Keys with Wallet APIs
+                slug: recipes/wallet-session-keys-app
+                path: wallets/pages/recipes/wallet-session-keys-app.mdx
+              - page: Hyperliquid Transactions
+                slug: recipes/hyperliquid-wallets
+                path: wallets/pages/recipes/hyperliquid-wallets.mdx
+              - page: Wallet APIs with Aave
+                slug: wallets/recipes/smart-wallets-aave
+                path: wallets/pages/recipes/smart-wallets-aave.mdx
+              - page: Upgrade to Smart Accounts
+                slug: recipes/upgrade-to-smart-accounts
+                path: wallets/pages/recipes/upgrade-to-smart-accounts.mdx
+              - page: Multi-chain setup
+                slug: recipes/multi-chain-setup
+                path: wallets/pages/recipes/multi-chain-setup.mdx
+              - page: Multi-chain Balances
+                path: tutorials/data/how-to-get-crosschain-token-balances.mdx
+          - link: GitHub
+            href: https://github.com/alchemyplatform/aa-sdk
+          - link: Changelog
+            href: https://github.com/alchemyplatform/aa-sdk/blob/main/CHANGELOG.md
+          - link: Contributing
+            href: https://github.com/alchemyplatform/aa-sdk/blob/main/CONTRIBUTING.md
+          - link: Gas benchmarks
+            href: https://github.com/alchemyplatform/aa-benchmarks
+          - page: Migrating to 4.x.x
+            slug: migration-guide
+            path: wallets/pages/migration-guide.mdx
+          - page: Migrating to 5.x.x
+            slug: resources/migration-v5
+            path: wallets/pages/resources/migration-v5.mdx
+          - page: Terms
+            slug: resources/terms
+            path: wallets/pages/resources/terms.mdx
+          - page: Types
+            slug: resources/types
+            path: wallets/pages/resources/types.mdx
+          - page: Middleware
+            path: wallets/pages/concepts/middleware.mdx
+
+          - section: Troubleshooting
+            contents:
+              - page: General FAQs
+                path: wallets/pages/resources/faqs.mdx
+              - page: Wallet APIs Errors
+                path: wallets/pages/troubleshooting/wallet-apis-errors.mdx
+              - page: Gas Manager FAQs
+                path: wallets/pages/gas-manager-admin-api/gas-manager-faqs.mdx
+              - page: Gas Manager Errors
+                path: wallets/pages/gas-manager-admin-api/gas-manager-errors.mdx
+              - page: Bundler FAQs
+                path: wallets/pages/bundler-api/bundler-faqs.mdx
+              - page: Bundler RPC Errors
+                path: wallets/pages/bundler-api/bundler-rpc-errors.mdx
+              - page: Server-side rendering
+                slug: troubleshooting/ssr
+                path: wallets/pages/troubleshooting/server-side-rendering.mdx
+          - page: Contact us
+            slug: resources/contact-us
+            path: wallets/pages/resources/contact-us.mdx
+
+  # Build with AI is promoted to a top-level tab: AI is part of everyday
+  # developer workflows and deserves the visibility even while the content
+  # set is still small.
+  - tab: build-with-ai
+    layout:
+      - section: Getting Started
+        contents:
+          - page: Overview
+            path: tutorials/build-with-ai/overview.mdx
+          - page: Agent Skills
+            path: tutorials/build-with-ai/alchemy-agent-skills.mdx
+          - page: Alchemy CLI
+            path: tutorials/build-with-ai/alchemy-cli.mdx
+          - page: Agent Wallets
+            path: tutorials/build-with-ai/agent-wallets.mdx
+          - page: x402 payments
+            path: tutorials/build-with-ai/x402-payments.mdx
+          - page: Wallet auth for Alchemy APIs
+            path: tutorials/build-with-ai/alchemy-for-agents.mdx
+          - page: Alchemy MCP Server
+            path: tutorials/build-with-ai/alchemy-mcp-server.mdx
+          - page: Alchemy Claude Plugin
+            path: tutorials/build-with-ai/alchemy-claude-plugin.mdx
+        slug: getting-started
+      - section: Tutorials
+        contents:
+          - page: Add Alchemy RPC To Any Project
+            path: tutorials/build-with-ai/add-alchemy-rpc-to-any-project.mdx
+          - page: Build a Web3 Dashboard
+            path: tutorials/build-with-ai/web3-dashboard-prompt.mdx
+          - page: Learning Alchemy's Data APIs using Cursor
+            path: tutorials/build-with-ai/data-apis-with-cursor.mdx
+        slug: tutorials
+
+  # Former "Get Started" tab, renamed "Tools & Resources": it collects admin,
+  # pricing, dashboard tooling, and learning material that doesn't belong to a
+  # single product area. The "Get Started" page in Introduction is slated to
+  # become the docs homepage/landing page and move out of this tab.
+  - tab: get-started
+    layout:
+      # Hidden for now: /docs/get-started stays routable (old links and
+      # redirects point at it) but is out of the sidebar. The tab's landing
+      # page is Pricing Plans (see the docs-site header config).
+      - page: Get Started
+        path: api-reference/introduction/api-overview.mdx
+        hidden: true
+      - section: Pricing
+        contents:
+          - page: Pricing Plans
+            path: api-reference/pricing-resources/pricing/pricing-plans.mdx
+          - page: Compute Units
+            path: api-reference/pricing-resources/pricing/compute-units.mdx
+          - page: Compute Unit Costs
+            path: api-reference/pricing-resources/pricing/compute-unit-costs.mdx
           - section: Pricing FAQ
             contents:
               - page: Pay As You Go Pricing FAQ
@@ -63,9 +2054,6 @@ navigation:
             slug: pricing-faq
           - section: Resources
             contents:
-              - page: Feature support by chain
-                path: >-
-                  api-reference/pricing-resources/resources/feature-support-by-chain.mdx
               - page: Throughput
                 path: api-reference/pricing-resources/resources/throughput.mdx
               - page: Batch Requests
@@ -77,30 +2065,6 @@ navigation:
                 path: api-reference/pricing-resources/resources/error-reference.mdx
             slug: resources
         slug: pricing-resources
-      - section: Build with AI
-        contents:
-          - page: Overview
-            path: tutorials/build-with-ai/overview.mdx
-          - page: Agent Skills
-            path: tutorials/build-with-ai/alchemy-agent-skills.mdx
-          - page: Alchemy CLI
-            path: tutorials/build-with-ai/alchemy-cli.mdx
-          - page: Agent Wallets
-            path: tutorials/build-with-ai/agent-wallets.mdx
-          - page: Alchemy MCP Server
-            path: tutorials/build-with-ai/alchemy-mcp-server.mdx
-          - page: Alchemy Claude Plugin
-            path: tutorials/build-with-ai/alchemy-claude-plugin.mdx
-          - page: Agent Authentication and Payment
-            path: tutorials/build-with-ai/alchemy-for-agents.mdx
-          - section: Tutorials
-            contents:
-              - page: Add Alchemy RPC To Any Project
-                path: tutorials/build-with-ai/add-alchemy-rpc-to-any-project.mdx
-              - page: Build a Web3 Dashboard
-                path: tutorials/build-with-ai/web3-dashboard-prompt.mdx
-              - page: Learning Alchemy's Data APIs using Cursor
-                path: tutorials/build-with-ai/data-apis-with-cursor.mdx
       - section: Tools
         contents:
           - page: Tools Quickstart
@@ -113,6 +2077,9 @@ navigation:
             path: tutorials/getting-started/dashboard/request-logs.mdx
           - page: Roles
             path: tutorials/getting-started/dashboard/dashboard-roles.mdx
+          - page: Dashboard Roles
+            path: tutorials/getting-started/dashboard/dashboard-team-roles.mdx
+            hidden: true
           - page: Single Sign-On (SSO)
             path: tutorials/getting-started/dashboard/dashboard-sso.mdx
           - section: Admin API
@@ -139,6 +2106,19 @@ navigation:
                 path: tutorials/getting-started/dashboard/activity-log-ocsf-mapping.mdx
       - section: Tutorials
         contents:
+          - section: Alchemy Quickstart Guides
+            path: >-
+              api-reference/introduction/alchemy-quickstart-guide.mdx
+            contents:
+              - page: Create an Alchemy API Key
+                path: tutorials/getting-started/create-an-api-key.mdx
+              - page: Make Your First Alchemy Request
+                path: tutorials/getting-started/make-your-first-request.mdx
+              - page: Set Up Alchemy with Viem
+                path: tutorials/getting-started/set-up-alchemy-with-viem.mdx
+              - page: Set Up Alchemy with any Library via AI
+                path: tutorials/getting-started/alchemy-via-libraries.mdx
+            slug: alchemy-quickstart-guides
           - section: Transactions
             contents:
               - section: Understanding Transactions
@@ -249,6 +2229,9 @@ navigation:
               - page: How To Make HTTP Header-Based API Requests
                 path: >-
                   tutorials/getting-started/api-security-and-authentication/how-to-use-api-keys-in-http-headers.mdx
+              - page: How to Rotate API Keys
+                path: >-
+                  tutorials/getting-started/api-security-and-authentication/how-to-rotate-api-keys.mdx
               - page: How To Use JWTs For API Requests
                 path: >-
                   tutorials/getting-started/api-security-and-authentication/how-to-use-jwts-for-api-requests.mdx
@@ -532,1809 +2515,5 @@ navigation:
                       tutorials/creating-smart-contracts/how-to-deploy-a-smart-contract-to-the-sepolia-testnet.mdx
                 slug: creating-smart-contracts
             slug: developer-basics
-
-  - tab: node
-    layout:
-      - section: Introduction
-        contents:
-          - page: Node API Overview
-            path: api-reference/node-api/node-api-overview.mdx
-          - link: Pricing
-            href: /docs/reference/pricing-plans
-          - page: Supported Chains
-            path: api-reference/node-api/node-supported-chains.mdx
-        slug: introduction
-
-      - section: WebSockets
-        contents:
-          - page: Subscription API Overview
-            path: api-reference/websockets/subscription-api.mdx
-          - page: Best Practices for Using WebSockets in Web3
-            path: >-
-              api-reference/websockets/best-practices-for-using-websockets-in-web3.mdx
-          - section: Subscription API Endpoints
-            path: >-
-              api-reference/websockets/subscription-api-endpoints/subscription-api-endpoints.mdx
-            contents:
-              - page: alchemy_minedTransactions
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/alchemy-minedtransactions.mdx
-              - page: alchemy_pendingTransactions
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/alchemy-pendingtransactions.mdx
-              - page: newPendingTransactions
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/newpendingtransactions.mdx
-              - page: newHeads
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/newheads.mdx
-              - page: logs
-                path: api-reference/websockets/subscription-api-endpoints/logs.mdx
-              - page: monadNewHeads
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/monadnewheads.mdx
-              - page: monadLogs
-                path: >-
-                  api-reference/websockets/subscription-api-endpoints/monadlogs.mdx
-            slug: subscription-api-endpoints
-          - section: Solana Subscription API Endpoints
-            path: >-
-              api-reference/websockets/solana-subscription-api-endpoints/solana-subscription-api-endpoints.mdx
-            contents:
-              - page: accountSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/account-subscribe.mdx
-              - page: programSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/program-subscribe.mdx
-              - page: logsSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/logs-subscribe.mdx
-              - page: signatureSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/signature-subscribe.mdx
-              - page: rootSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/root-subscribe.mdx
-              - page: slotSubscribe
-                path: >-
-                  api-reference/websockets/solana-subscription-api-endpoints/slot-subscribe.mdx
-            slug: solana-subscription-api-endpoints
-        slug: websockets
-
-      - section: Yellowstone gRPC
-        contents:
-          - section: Getting Started
-            contents:
-              - page: Overview
-                path: api-reference/yellowstone/overview.mdx
-              - page: Quickstart
-                path: api-reference/yellowstone/quickstart.mdx
-            slug: getting-started
-          - section: API Reference
-            path: api-reference/yellowstone/api-reference-overview.mdx
-            contents:
-              - page: Subscribe Request
-                path: api-reference/yellowstone/subscribe-request.mdx
-              - page: Subscribe to Slots
-                path: api-reference/yellowstone/subscribe-slots.mdx
-              - page: Subscribe to Transactions
-                path: api-reference/yellowstone/subscribe-transactions.mdx
-              - page: Subscribe to Accounts
-                path: api-reference/yellowstone/subscribe-accounts.mdx
-              - page: Subscribe to Blocks
-                path: api-reference/yellowstone/subscribe-blocks.mdx
-            slug: api-reference
-          - section: Resources
-            contents:
-              - page: Code Examples
-                path: api-reference/yellowstone/examples.mdx
-              - page: Best Practices
-                path: api-reference/yellowstone/best-practices.mdx
-            slug: resources
-        slug: yellowstone-grpc
-
-      - section: Trace API
-        contents:
-          - page: Trace API Overview
-            path: api-reference/trace-api/trace-api-quickstart.mdx
-          - api: Trace API Endpoints
-            api-name: trace
-          - section: Trace API Resources
-            path: >-
-              api-reference/trace-api/trace-api-resources/what-are-evm-traces.mdx
-            contents:
-              - page: Trace API vs. Debug API
-                path: >-
-                  api-reference/trace-api/trace-api-resources/trace-api-vs-debug-api.mdx
-              - page: What is trace_transaction?
-                path: >-
-                  api-reference/trace-api/trace-api-resources/what-is-trace-transaction.mdx
-              - page: What is trace_block?
-                path: >-
-                  api-reference/trace-api/trace-api-resources/what-is-trace-block.mdx
-              - page: What is trace_filter?
-                path: >-
-                  api-reference/trace-api/trace-api-resources/what-is-trace-filter.mdx
-              - page: trace_call vs debug_traceCall
-                path: >-
-                  api-reference/trace-api/trace-api-resources/trace-call-vs-debug-tracecall.mdx
-            slug: trace-api-resources
-        slug: trace-api
-      - section: Debug API
-        contents:
-          - page: Debug API Overview
-            path: api-reference/debug-api/debug-api-quickstart.mdx
-          - api: Debug API Endpoints
-            api-name: debug
-        slug: debug-api
-
-  - tab: data
-    layout:
-      - section: Introduction
-        contents:
-          - page: Data API Overview
-            path: api-reference/data/data-overview.mdx
-          - link: Pricing
-            href: /docs/reference/pricing-plans
-      - section: Portfolio API
-        contents:
-          - page: Portfolio API Overview
-            path: api-reference/data/portfolio-apis/portfolio-apis.mdx
-          - api: Portfolio API Endpoints
-            api-name: portfolio
-            flattened: true
-
-        slug: portfolio-apis
-      - section: Token API
-        contents:
-          - page: Token API Overview
-            path: api-reference/data/token-api/token-api-overview.mdx
-          - page: Token API Quickstart
-            path: api-reference/data/token-api/token-api-quickstart.mdx
-          # - page: Solana Token APIs (Beta)
-          #   path: >-
-          #     api-reference/data/token-api/beta-alchemy-das-apis-for-solana-nfts-and-fungible-tokens-1ba069f2006680279109d7f34758ac6fpvs4.mdx
-          - api: Token API Endpoints
-            api-name: token
-          # - section: Token API Tutorials
-          #   contents:
-          #     - page: How to Get Token Metadata
-          #       path: >-
-          #         tutorials/defi/erc-20-tokens/how-to-get-token-metadata.mdx
-          #     - page: How to Get Token Balance
-          #       path: >-
-          #         tutorials/defi/token-balances/how-to-get-token-balance-for-an-address.mdx
-        slug: token-api
-      - section: Transfers API
-        contents:
-          - page: Transfers API Overview
-            path: api-reference/data/transfers-api/transfers-api-quickstart.mdx
-          - api: Transfers Endpoints
-            api-name: transfers
-          - section: Transfers API Tutorials
-            contents:
-              - link: How to Get Tx History for Address
-                href: /docs/how-to-get-transaction-history-for-an-address-on-ethereum
-              # - page: How to Get All NFTs Owned by Address
-              #   path: >-
-              #     tutorials/nfts/nft-api-tutorials/how-to-get-all-nfts-owned-by-an-address.mdx
-              - link: How to Get Contract's First Transfer Event
-                href: /docs/how-to-get-a-contracts-first-transfer-event
-              - link: How to Get Contract's Last Transfer Event
-                href: /docs/how-to-get-a-contracts-last-transfer-event
-              - link: How to Integrate Historical Transactions into Your App
-                href: /docs/integrating-historical-transaction-data-into-your-dapp
-            slug: transfers-api-tutorials
-        slug: transfers-api
-      - section: Prices API
-        contents:
-          - page: Prices API Quickstart
-            path: api-reference/data/prices-api/prices-api-quickstart.mdx
-          - api: Prices API Endpoints
-            api-name: prices
-            flattened: true
-          - page: Prices API FAQ
-            path: api-reference/data/prices-api/prices-api-faq.mdx
-        slug: prices-api
-      - section: NFT API
-        contents:
-          - page: NFT API Overview
-            path: api-reference/data/nft-api/nft-api-overview.mdx
-          - page: NFT API Quickstart
-            path: api-reference/data/nft-api/nft-api-quickstart.mdx
-          - section: Solana DAS API
-            path: >-
-              api-reference/data/nft-api/alchemy-das-apis-for-solana.mdx
-            contents:
-              - api: Solana DAS API Endpoints
-                api-name: solana-das
-          - section: NFT API Endpoints
-            path: >-
-              api-reference/data/nft-api/nft-api-endpoints.mdx
-            contents:
-              - api: NFT API Endpoints
-                api-name: nft
-                flattened: true
-            slug: nft-api-endpoints
-          - page: NFT API FAQ
-            path: api-reference/data/nft-api/nft-api-faq.mdx
-            slug: nft-api-tutorials
-        slug: nft-api
-      - section: Webhooks
-        contents:
-          - page: Webhooks Overview
-            path: api-reference/data/webhooks/webhooks-overview.mdx
-          - section: Webhooks Quickstart Guides
-            path: >-
-              api-reference/data/webhooks/webhooks-quickstart/notify-api-quickstart.mdx
-            contents:
-              - page: Custom Webhooks Query Examples
-                path: >-
-                  api-reference/data/webhooks/custom-webhooks-quickstart/custom-webhooks-example.mdx
-              - page: Custom Webhook Filters
-                path: >-
-                  api-reference/data/webhooks/custom-webhooks-quickstart/custom-webhook-filters.mdx
-              - page: Custom Webhook Variables
-                path: >-
-                  api-reference/data/webhooks/custom-webhooks-quickstart/custom-webhook-variables.mdx
-            #   - page: Webhooks Tutorials and Applications
-            #     path: >-
-            #       api-reference/data/webhooks/webhooks-quickstart/notify-tutorials-and-applications.mdx
-            # - page: Webhooks FAQ
-            #   path: >-
-            #     api-reference/data/webhooks/webhooks-quickstart/notify-api-faq.mdx
-            slug: webhooks-quickstart
-          - section: Webhook Types
-            path: >-
-              api-reference/data/webhooks/webhook-types/webhook-types.mdx
-            contents:
-              - page: Custom Webhook
-                path: >-
-                  api-reference/data/webhooks/webhook-types/custom-webhook.mdx
-              - page: Address Activity Webhook
-                path: >-
-                  api-reference/data/webhooks/webhook-types/address-activity-webhook.mdx
-              - page: NFT Activity Webhook
-                path: >-
-                  api-reference/data/webhooks/webhook-types/nft-activity-webhook.mdx
-              # - page: NFT Metadata Updates Webhook
-              #   path: >-
-              #     api-reference/data/webhooks/webhook-types/nft-metadata-updates-webhook.mdx
-            slug: webhook-types
-          - api: Webhooks API Endpoints
-            api-name: notify
-            flattened: true
-          # - section: Webhooks API Tutorials
-          #   contents:
-          #     - page: How to Integrate Alchemy Webhooks with Zapier
-          #       path: >-
-          #         tutorials/streaming-data/how-to-integrate-alchemy-webhooks-with-zapier.mdx
-          #     - page: How to Build App with Real-Time Tx Notifications
-          #       path: >-
-          #         tutorials/streaming-data/transaction-notifications/building-a-dapp-with-real-time-transaction-notifications.mdx
-        slug: webhooks
-      - section: Simulation API
-        hidden: true
-        contents:
-          - page: Transaction Simulation Overview
-            path: api-reference/alchemy-transact/transaction-simulation/simulation.mdx
-          - section: Transaction Simulation Types
-            contents:
-              - page: Asset Changes
-                path: >-
-                  api-reference/alchemy-transact/transaction-simulation/simulation-asset-changes.mdx
-              - page: Execution Simulation
-                path: >-
-                  api-reference/alchemy-transact/transaction-simulation/simulation-execution.mdx
-              - page: Bundle Simulation
-                path: >-
-                  api-reference/alchemy-transact/transaction-simulation/simulation-bundle.mdx
-              - page: Transaction Simulation Examples
-                path: >-
-                  api-reference/alchemy-transact/transaction-simulation/simulation-examples.mdx
-              - page: Transaction Simulation FAQs
-                path: >-
-                  api-reference/alchemy-transact/transaction-simulation/simulation-faqs.mdx
-            slug: transaction-simulation
-          - api: Transaction Simulation Endpoints
-            api-name: transaction-simulation
-        slug: simulation-apis
-      - section: Utility API
-        contents:
-          - page: Utility APIs Overview
-            path: api-reference/data/utility-apis/utility-apis-overview.mdx
-          - api: Transactions Receipts Endpoints
-            api-name: transactions-receipt
-        slug: utility-apis
-      - section: Stellar Data API
-        contents:
-          - page: Stellar Data API Overview
-            path: api-reference/data/stellar-data-api/stellar-data-api-overview.mdx
-          - api: Stellar Data API Endpoints
-            api-name: stellar-data-api
-        slug: stellar-data-api
-      - section: Subgraphs
-        contents:
-          - page: Alchemy Subgraphs Deprecation Notice
-            path: tutorials/alchemy-subgraphs/deprecation-notice.mdx
-      - section: Beta APIs
-        contents:
-          - api: Beta API Endpoints
-            api-name: beta
-            flattened: true
-        slug: beta-apis
-
-  - tab: wallets
-    layout:
-      - section: Overview
-        skip-slug: true
-        contents:
-          - page: Overview
-            slug: /
-            path: wallets/pages/index.mdx
-          - page: Quickstart
-            path: wallets/pages/smart-wallets/quickstart/sdk.mdx
-          - page: Supported Chains
-            path: wallets/pages/overview/supported-chains.mdx
-
-      - section: Transactions
-        contents:
-          - page: Using SDK
-            path: wallets/pages/smart-wallets/quickstart/sdk.mdx
-          - page: Using API
-            path: wallets/pages/smart-wallets/quickstart/api.mdx
-          - section: Send transactions
-            contents:
-              - page: Single transactions
-                path: wallets/pages/transactions/send-transactions/index.mdx
-              - page: Batch transactions
-                path: wallets/pages/transactions/send-batch-transactions/index.mdx
-              - page: Parallel transactions
-                path: wallets/pages/transactions/send-parallel-transactions/index.mdx
-          - section: Debug transactions
-            path: wallets/pages/transactions/debug-transactions/index.mdx
-            contents:
-              - page: Debug with Tenderly
-                path: wallets/pages/transactions/debug-transactions/debug-with-tenderly.mdx
-          - section: EIP-7702
-            path: wallets/pages/transactions/using-eip-7702/index.mdx
-            contents:
-              - page: Undelegate 7702 account
-                path: wallets/pages/transactions/undelegate-account/index.mdx
-          - section: Sponsor gas
-            path: wallets/pages/transactions/sponsor-gas/overview.mdx
-            contents:
-              - page: Dashboard guide
-                path: wallets/pages/transactions/sponsor-gas/dashboard-guide.mdx
-              - page: Full sponsorship
-                path: wallets/pages/transactions/sponsor-gas/index.mdx
-              - page: Conditional sponsorship rules
-                path: wallets/pages/transactions/sponsor-gas/conditional-sponsorship-rules.mdx
-              - page: Pay gas with any token
-                path: wallets/pages/transactions/pay-gas-with-any-token/index.mdx
-              - page: Solana sponsorship
-                path: wallets/pages/transactions/sponsor-gas/solana/index.mdx
-          - section: Swap tokens
-            contents:
-              - page: Same-chain swaps
-                path: wallets/pages/transactions/swap-tokens/index.mdx
-              - page: Cross-chain swaps
-                path: wallets/pages/transactions/cross-chain-swap-tokens/index.mdx
-          - section: Grant session keys
-            contents:
-              - page: Overview
-                path: wallets/pages/smart-wallets/session-keys/index.mdx
-              - page: Using SDK
-                path: wallets/pages/smart-wallets/session-keys/sdk.mdx
-              - page: Using API
-                path: wallets/pages/smart-wallets/session-keys/api.mdx
-              - page: Legacy session keys
-                path: wallets/pages/smart-wallets/session-keys/legacy-session-keys.mdx
-          - page: Retry transactions
-            path: wallets/pages/transactions/retry-transactions/index.mdx
-          - section: Sign
-            contents:
-              - page: Sign messages
-                path: wallets/pages/transactions/signing/sign-messages/index.mdx
-              - page: Sign typed data
-                path: wallets/pages/transactions/signing/sign-typed-data/index.mdx
-          - page: Configure client
-            path: wallets/pages/concepts/smart-account-client.mdx
-
-      - section: Wallet integration
-        contents:
-          - page: Overview
-            path: wallets/pages/authentication/overview.mdx
-          - section: Privy
-            path: wallets/pages/third-party/signers/privy.mdx
-            contents:
-              - page: Signer migration overview
-                path: wallets/wallet-integrations/privy/signer-migration-overview.mdx
-              - page: React migration
-                path: wallets/wallet-integrations/privy/react-migration.mdx
-              - page: JWT auth migration
-                path: wallets/wallet-integrations/privy/jwt-auth-migration.mdx
-          - section: Other signers
-            contents:
-              - page: Openfort
-                path: wallets/pages/third-party/signers/openfort.mdx
-              - page: Turnkey
-                path: wallets/pages/third-party/signers/turnkey.mdx
-              - page: Solana
-                path: wallets/pages/third-party/signers/solana-signers.mdx
-              - page: Other signers
-                path: wallets/pages/third-party/signers/custom-integration.mdx
-          - section: Account Kit (v4)
-            contents:
-              - section: Login methods
-                contents:
-                  - page: Email OTP
-                    path: wallets/pages/authentication/login-methods/email-otp.mdx
-                  - page: Email magic-link
-                    path: wallets/pages/authentication/login-methods/email-magic-link.mdx
-                  - page: Social login
-                    path: wallets/pages/authentication/login-methods/social-login.mdx
-                  - page: Custom social providers
-                    path: wallets/pages/react/login-methods/social-providers.mdx
-                  - page: Bring your own authentication
-                    path: wallets/pages/authentication/login-methods/bring-your-own-auth.mdx
-                  - page: Passkey signup
-                    path: wallets/pages/authentication/login-methods/passkey-signup.mdx
-                  - page: Passkey login
-                    path: wallets/pages/react/login-methods/passkey-login.mdx
-                  - page: SMS login
-                    path: wallets/pages/authentication/login-methods/sms-login.mdx
-                  - page: "On-chain passkeys"
-                    path: wallets/pages/react/login-methods/onchain-passkeys.mdx
-                  - page: Adding and removing login methods
-                    path: wallets/pages/react/login-methods/adding-and-removing-login-methods.mdx
-              - section: UI components
-                contents:
-                  - page: Using UI components
-                    path: wallets/pages/react/ui-components.mdx
-                  - page: Theme & branding
-                    path: wallets/pages/react/customization/theme.mdx
-                  - page: Tailwind setup
-                    path: wallets/pages/react/customization/tailwind-setup.mdx
-              - section: Whitelabel
-                contents:
-                  - page: React hooks
-                    path: wallets/pages/react/react-hooks.mdx
-                  - page: Other JS initialization
-                    path: wallets/pages/signer/quickstart.mdx
-              - section: Connectors
-                contents:
-                  - page: Connect external wallets
-                    path: wallets/pages/react/login-methods/eoa-login.mdx
-                  - page: Customize
-                    path: wallets/pages/react/connectors/customization.mdx
-              - section: MFA
-                contents:
-                  - page: Set up MFA
-                    path: wallets/pages/react/mfa/setup-mfa.mdx
-                  - page: Email OTP
-                    path: wallets/pages/react/mfa/email-otp.mdx
-                  - page: Email magic-link
-                    path: wallets/pages/react/mfa/email-magic-link.mdx
-                  - page: Social login
-                    path: wallets/pages/react/mfa/social-login.mdx
-              - page: Solana wallets
-                path: wallets/pages/react/solana-wallets/get-started.mdx
-              - page: Server wallets
-                path: wallets/pages/signer/authentication/server-wallets.mdx
-              - section: Account management
-                contents:
-                  - page: User sessions
-                    path: wallets/pages/signer/user-sessions.mdx
-                  - page: Manage account ownership
-                    path: wallets/pages/smart-contracts/modular-account-v2/managing-ownership.mdx
-                  - page: Export private key
-                    path: wallets/pages/signer/export-private-key.mdx
-          - page: Choosing a signer
-            path: wallets/pages/authentication/what-is-a-signer.mdx
-
-      - section: Low-Level Infra
-        contents:
-          - page: Overview
-            path: wallets/pages/low-level-infra/overview.mdx
-          - page: Quickstart
-            path: wallets/pages/low-level-infra/quickstart.mdx
-          - section: Gas Manager API
-            contents:
-              - section: Policy Management
-                contents:
-                  - page: API Endpoints
-                    path: wallets/pages/low-level-infra/gas-manager/policy-management/api-endpoints.mdx
-              - section: Gas Sponsorship
-                contents:
-                  - page: API Endpoints
-                    path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/api-endpoints.mdx
-                  - section: Using SDK
-                    contents:
-                      - page: Basic Gas Sponsorship
-                        path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/using-sdk/basic-gas-sponsorship.mdx
-                      - page: Conditional Gas Sponsorship
-                        path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/using-sdk/conditional-gas-sponsorship.mdx
-                      - page: Pay Gas with Any ERC20 Token
-                        path: wallets/pages/low-level-infra/gas-manager/gas-sponsorship/using-sdk/pay-gas-with-any-erc20-token.mdx
-                      - page: Solana
-                        path: wallets/pages/transactions/solana/sponsor-gas-solana.mdx
-          - section: Bundler API
-            path: wallets/pages/low-level-infra/bundler/overview.mdx
-            contents:
-              - page: API Endpoints
-                path: wallets/pages/low-level-infra/bundler/api-endpoints.mdx
-              - page: Using SDK
-                path: wallets/pages/low-level-infra/bundler/sdk.mdx
-              - page: Bundler Sponsored Operations
-                path: wallets/pages/bundler-api/bundler-sponsored-operations.mdx
-              - page: Bundler FAQs
-                path: wallets/pages/bundler-api/bundler-faqs.mdx
-          - section: Third Party Infrastructure
-            contents:
-              - page: Non-Alchemy chains
-                path: wallets/pages/low-level-infra/third-party-infrastructure/chains.mdx
-              - page: Third Party Bundlers
-                path: wallets/pages/low-level-infra/third-party-infrastructure/bundlers.mdx
-              - page: Third Party Paymasters
-                path: wallets/pages/low-level-infra/third-party-infrastructure/paymasters.mdx
-          - section: Smart Account Types
-            contents:
-              - page: Choosing a Smart Account
-                path: wallets/pages/authorization/smart-account-types/choosing-a-smart-account.mdx
-              - section: Modular Account V2
-                contents:
-                  - page: Overview
-                    path: wallets/pages/authorization/smart-account-types/modular-account-v2/overview.mdx
-                  - page: Getting started
-                    path: wallets/pages/smart-contracts/modular-account-v2/getting-started.mdx
-                  - section: Session keys
-                    contents:
-                      - page: What are session keys?
-                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/index.mdx
-                      - page: Adding session keys
-                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/adding-session-keys.mdx
-                      - page: Supported permissions
-                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/session-key-permissions.mdx
-                      - page: Using session keys
-                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/using-session-keys.mdx
-                      - page: Removing session keys
-                        path: wallets/pages/smart-contracts/modular-account-v2/session-keys/removing-session-keys.mdx
-              - section: Light Account
-                contents:
-                  - page: Overview
-                    path: wallets/pages/smart-contracts/other-accounts/light-account/index.mdx
-                  - page: Getting started
-                    path: wallets/pages/smart-contracts/other-accounts/light-account/getting-started.mdx
-                  - page: Transfer ownership
-                    path: wallets/pages/smart-contracts/other-accounts/light-account/transfer-ownership-light-account.mdx
-                  - page: Manage multiple owners
-                    path: wallets/pages/smart-contracts/other-accounts/light-account/multi-owner-light-account.mdx
-              - page: Third party
-                path: wallets/pages/third-party/smart-contracts.mdx
-              - page: Deployed addresses
-                path: wallets/pages/smart-contracts/deployed-addresses.mdx
-
-      - section: API Reference
-        contents:
-          - section: Wallet APIs
-            contents:
-              - api: Wallet API Endpoints
-                api-name: wallet-api
-                flattened: true
-            slug: smart-wallets
-          - section: Gas Manager
-            contents:
-              - api: Gas Abstraction API Endpoints
-                api-name: gas-manager-coverage
-              - api: Admin API Endpoints
-                api-name: admin
-            slug: gas-manager-admin-api
-          - section: Bundler
-            contents:
-              - api: Bundler API Endpoints
-                api-name: bundler
-                slug: bundler-api-endpoints
-              - api: UserOp Simulation Endpoints
-                api-name: userop-sim
-                slug: useroperation-simulation-endpoints
-              - section: EntryPoint Revert Codes
-                contents:
-                  - page: EntryPoint v0.7 / v0.8 Revert Codes
-                    path: >-
-                      wallets/pages/bundler-api/entrypoint-revert-codes/entrypoint-v07-revert-codes.mdx
-                  - page: EntryPoint v0.6 Revert Codes
-                    path: >-
-                      wallets/pages/bundler-api/entrypoint-revert-codes/entrypoint-v06-revert-codes.mdx
-                slug: entrypoint-revert-codes
-            slug: bundler-api
-          - section: Signer
-            contents:
-              - api: Signer API Endpoints
-                api-name: accounts
-              - page: How to stamp requests
-                path: wallets/pages/smart-wallets/how-to-stamp-requests.mdx
-            slug: signer
-
-      - section: Resources
-        skip-slug: true
-        contents:
-          - section: Chain Reference
-            slug: resources/chain-reference
-            contents:
-              - page: Polygon PoS
-                slug: polygon-pos
-                path: wallets/pages/resources/chain-reference/polygon-pos.mdx
-          - page: Features
-            slug: wallets/resources/features
-            path: wallets/pages/features.mdx
-          - page: Understanding Wallet APIs
-            path: wallets/pages/concepts/intro-to-account-kit.mdx
-          - section: Recipes
-            contents:
-              - page: Overview
-                slug: recipes
-                path: wallets/pages/recipes/overview.mdx
-              - page: Send USDC
-                slug: recipes/send-usdc
-                path: wallets/pages/recipes/send-usdc.mdx
-              - page: Programmatic Wallet Creation
-                path: wallets/pages/recipes/programmatic-wallet-creation.mdx
-              - page: Onramp Funds
-                slug: recipes/onramp-funds
-                path: wallets/pages/recipes/onramp-funds.mdx
-              - page: Session Keys with Wallet APIs
-                slug: recipes/wallet-session-keys-app
-                path: wallets/pages/recipes/wallet-session-keys-app.mdx
-              - page: Hyperliquid Transactions
-                slug: recipes/hyperliquid-wallets
-                path: wallets/pages/recipes/hyperliquid-wallets.mdx
-              - page: Wallet APIs with Aave
-                slug: wallets/recipes/smart-wallets-aave
-                path: wallets/pages/recipes/smart-wallets-aave.mdx
-              - page: Upgrade to Smart Accounts
-                slug: recipes/upgrade-to-smart-accounts
-                path: wallets/pages/recipes/upgrade-to-smart-accounts.mdx
-              - page: Multi-chain setup
-                slug: recipes/multi-chain-setup
-                path: wallets/pages/recipes/multi-chain-setup.mdx
-              - page: Multi-chain Balances
-                path: tutorials/data/how-to-get-crosschain-token-balances.mdx
-          - link: GitHub
-            href: https://github.com/alchemyplatform/aa-sdk
-          - link: Changelog
-            href: https://github.com/alchemyplatform/aa-sdk/blob/main/CHANGELOG.md
-          - link: Contributing
-            href: https://github.com/alchemyplatform/aa-sdk/blob/main/CONTRIBUTING.md
-          - link: Gas benchmarks
-            href: https://github.com/alchemyplatform/aa-benchmarks
-          - page: Migrating to 4.x.x
-            slug: migration-guide
-            path: wallets/pages/migration-guide.mdx
-          - page: Migrating to 5.x.x
-            slug: resources/migration-v5
-            path: wallets/pages/resources/migration-v5.mdx
-          - page: Terms
-            slug: resources/terms
-            path: wallets/pages/resources/terms.mdx
-          - page: Types
-            slug: resources/types
-            path: wallets/pages/resources/types.mdx
-          - page: Middleware
-            path: wallets/pages/concepts/middleware.mdx
-
-          - section: Troubleshooting
-            contents:
-              - page: General FAQs
-                path: wallets/pages/resources/faqs.mdx
-              - page: Wallet APIs Errors
-                path: wallets/pages/troubleshooting/wallet-apis-errors.mdx
-              - page: Gas Manager FAQs
-                path: wallets/pages/gas-manager-admin-api/gas-manager-faqs.mdx
-              - page: Gas Manager Errors
-                path: wallets/pages/gas-manager-admin-api/gas-manager-errors.mdx
-              - page: Bundler FAQs
-                path: wallets/pages/bundler-api/bundler-faqs.mdx
-              - page: Bundler RPC Errors
-                path: wallets/pages/bundler-api/bundler-rpc-errors.mdx
-              - page: Server-side rendering
-                slug: troubleshooting/ssr
-                path: wallets/pages/troubleshooting/server-side-rendering.mdx
-          - page: Contact us
-            slug: resources/contact-us
-            path: wallets/pages/resources/contact-us.mdx
-  - tab: rollups
-    layout:
-      - section: Introduction
-        contents:
-          - page: Rollups Overview
-            path: api-reference/alchemy-rollups/rollups-quickstart.mdx
-          - page: Supported Frameworks
-            path: api-reference/alchemy-rollups/supported-stacks.mdx
-        slug: introduction
-      - section: Rollup Basics
-        contents:
-          - page: Using your Rollup
-            path: api-reference/alchemy-rollups/using-your-rollup.mdx
-          - page: Operating your Rollup
-            path: api-reference/alchemy-rollups/operating-your-rollup.mdx
-        slug: deploy-a-rollup
-      - section: Configure your Rollup
-        contents:
-          - page: Customizing & Integrations
-            path: api-reference/alchemy-rollups/customizations-integrations.mdx
-        slug: configure-your-rollup
-      - section: Resources
-        contents:
-          - page: Bridging Assets
-            path: api-reference/alchemy-rollups/bridge-contract-address.mdx
-          - page: Rollups FAQ
-            path: api-reference/alchemy-rollups/rollups-faq.mdx
-        slug: resources
-
-  - tab: chains
-    layout:
-      - section: Chain APIs
-        contents:
-          - page: Chain APIs Overview
-            path: api-reference/node-api/chain-apis-overview.mdx
-          - page: MEV Protection
-            path: api-reference/node-api/mev-protection.mdx
-      - section: Ethereum
-        contents:
-          - page: Quickstart
-            path: api-reference/ethereum/ethereum-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/ethereum/ethereum-api-faq/ethereum-api-faq.mdx
-          - page: Ethereum API Overview
-            path: api-reference/ethereum/ethereum-api-overview.mdx
-          - api: Ethereum API Endpoints
-            api-name: eth
-          - api: Ethereum Beacon API Endpoints
-            api-name: eth-beacon
-            flattened: true
-        slug: ethereum
-      - section: Solana
-        contents:
-          - section: Quickstart
-            path: api-reference/solana/solana-api-quickstart.mdx
-            contents:
-              - link: CU Calculator
-                href: https://solana-demo-sigma.vercel.app/
-              - page: Accounts DB Infrastructure
-                path: api-reference/solana/accounts-db-infra.mdx
-              - page: Historical account state
-                path: api-reference/solana/historical-account-state.mdx
-          - section: Tutorials
-            contents:
-              - link: Hello World Solana Application
-                href: /docs/hello-world-solana-program
-              - link: Set up Frontend for Solana Application
-                href: /docs/hello-world-solana-application
-          - page: FAQ
-            path: api-reference/solana/solana-api-faq.mdx
-          - page: Solana API Overview
-            path: api-reference/solana/solana-api-overview.mdx
-          - api: Solana API Endpoints
-            api-name: solana
-          - link: Solana DAS APIs
-            href: /docs/reference/alchemy-das-apis-for-solana
-          - section: Solana Photon API
-            path: >-
-              api-reference/data/nft-api/alchemy-photon-apis-for-solana.mdx
-            contents:
-              - api: Solana Photon API
-                api-name: solana-photon
-                flattened: true
-        slug: solana
-      - section: Abstract
-        contents:
-          - page: Quickstart
-            path: api-reference/abstract/abstract-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/abstract/abstract-api-faq.mdx
-          - page: Abstract API Overview
-            path: api-reference/abstract/abstract-api-overview.mdx
-          - api: Abstract API Endpoints
-            api-name: abstract
-        slug: abstract
-      - section: ADI
-        contents:
-          - page: Quickstart
-            path: api-reference/adi/adi-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/adi/adi-api-faq.mdx
-          - page: ADI API Overview
-            path: api-reference/adi/adi-api-overview.mdx
-          - api: ADI API Endpoints
-            api-name: adi
-        slug: adi
-
-      - section: Anime
-        contents:
-          - page: Quickstart
-            path: api-reference/anime/anime-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/anime/anime-api-faq.mdx
-          - page: Anime API Overview
-            path: api-reference/anime/anime-api-overview.mdx
-          - api: Anime API Endpoints
-            api-name: anime
-        slug: anime
-      - section: Apechain
-        contents:
-          - page: Quickstart
-            path: api-reference/apechain/apechain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/apechain/apechain-api-faq.mdx
-          - api: ApeChain API Endpoints
-            api-name: apechain
-        slug: apechain
-      - section: Aptos
-        contents:
-          - page: Quickstart
-            path: api-reference/aptos/aptos-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/aptos/aptos-api-faq.mdx
-          - api: Aptos API Endpoints
-            api-name: aptos
-            flattened: true
-        slug: aptos
-      - section: Arbitrum
-        contents:
-          - page: Quickstart
-            path: api-reference/arbitrum/arbitrum-api-quickstart.mdx
-          - section: FAQ
-            path: api-reference/arbitrum/arbitrum-api-faq/arbitrum-api-faq.mdx
-            contents:
-              - page: Arbitrum vs. Ethereum API Differences
-                path: >-
-                  api-reference/arbitrum/arbitrum-api-faq/arbitrumethereum-differences.mdx
-            slug: arbitrum-api-faq
-
-          - page: Arbitrum API Overview
-            path: api-reference/arbitrum/arbitrum-api-overview.mdx
-          - api: Arbitrum API Endpoints
-            api-name: arbitrum
-        slug: arbitrum
-      - section: Arbitrum Nova
-        contents:
-          - page: Arbitrum Nova Deprecation Notice
-            path: api-reference/arbitrum-nova/arbitrum-nova-deprecation-notice.mdx
-        slug: arbitrum-nova
-      - section: Arc
-        contents:
-          - page: Quickstart
-            path: api-reference/arc/arc-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/arc/arc-api-faq.mdx
-          - page: Arc API Overview
-            path: api-reference/arc/arc-api-overview.mdx
-          - api: Arc API Endpoints
-            api-name: arc
-        slug: arc
-      - section: Astar
-        contents:
-          - page: Quickstart
-            path: api-reference/astar/astar-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/astar/astar-api-faq.mdx
-          - page: Astar API Overview
-            path: api-reference/astar/astar-api-overview.mdx
-          - api: Astar API Endpoints
-            api-name: astar
-            slug: astar-api-endpoints
-        slug: astar
-      - section: Avalanche C-Chain
-        contents:
-          - page: Quickstart
-            path: api-reference/avalanche/avalanche-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/avalanche/avalanche-api-faq.mdx
-          - api: Avalanche API Endpoints
-            api-name: avalanche
-        slug: avalanche
-      - section: Avalanche P-Chain
-        contents:
-          - page: Quickstart
-            path: api-reference/avalanche-p/avalanche-p-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/avalanche-p/avalanche-p-api-faq.mdx
-          - page: Avalanche P-Chain API Overview
-            path: api-reference/avalanche-p/avalanche-p-api-overview.mdx
-          - api: Avalanche P-Chain API Endpoints
-            api-name: avalanche-p
-        slug: avalanche-p
-      - section: Base
-        contents:
-          - page: Quickstart
-            path: api-reference/base/base-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/base/base-api-faq.mdx
-          - page: Base API Overview
-            path: api-reference/base/base-api-overview.mdx
-          - api: Base API Endpoints
-            api-name: base
-            slug: base-api-endpoints
-          - page: Flashblocks API Quickstart
-            path: api-reference/base/base-flashblocks-api-quickstart.mdx
-        slug: base
-      - section: Berachain
-        contents:
-          - page: Quickstart
-            path: api-reference/berachain/berachain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/berachain/berachain-api-faq.mdx
-          - page: Berachain API Overview
-            path: api-reference/berachain/berachain-api-overview.mdx
-          - api: Berachain API Endpoints
-            api-name: berachain
-        slug: berachain
-      - section: Bitcoin
-        contents:
-          - page: Quickstart
-            path: api-reference/bitcoin/bitcoin-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/bitcoin/bitcoin-api-faq.mdx
-          - page: Bitcoin API Overview
-            path: api-reference/bitcoin/bitcoin-api-overview.mdx
-          - api: Bitcoin API Endpoints
-            api-name: bitcoin
-          - section: UTXO
-            skip-slug: true
-            contents:
-              - page: UTXO Overview
-                path: api-reference/bitcoin/utxo.mdx
-              - page: UTXO Migration Guide
-                path: api-reference/bitcoin/utxo-migration-guide.mdx
-              - api: UTXO API Endpoints
-                api-name: utxo
-                flattened: true
-              - page: UTXO WebSockets
-                path: api-reference/bitcoin/utxo-websockets.mdx
-        slug: bitcoin
-      - section: Bitcoin Cash
-        contents:
-          - page: Quickstart
-            path: api-reference/bitcoincash/bitcoincash-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/bitcoincash/bitcoincash-api-faq.mdx
-          - page: Bitcoin Cash API Overview
-            path: api-reference/bitcoincash/bitcoincash-api-overview.mdx
-          - api: Bitcoin Cash API Endpoints
-            api-name: bitcoincash
-            slug: bitcoincash-api-endpoints
-          - section: UTXO
-            skip-slug: true
-            contents:
-              - page: UTXO Overview
-                path: api-reference/bitcoincash/utxo.mdx
-              - link: UTXO Migration Guide
-                href: /docs/bitcoin/utxo-migration-guide
-              - api: UTXO API Endpoints
-                api-name: utxo-bitcoincash
-                flattened: true
-              - page: UTXO WebSockets
-                path: api-reference/bitcoincash/utxo-websockets.mdx
-        slug: bitcoincash
-      - section: Blast
-        contents:
-          - page: Quickstart
-            path: api-reference/blast/blast-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/blast/blast-api-faq.mdx
-          - page: Blast API Overview
-            path: api-reference/blast/blast-api-overview.mdx
-          - api: Blast API Endpoints
-            api-name: blast
-        slug: blast
-      - section: BNB Smart Chain
-        contents:
-          - page: BNB Smart Chain Quickstart
-            path: api-reference/bnb-smart-chain/bnb-smart-chain-api-quickstart.mdx
-          - page: BNB Smart Chain FAQ
-            path: api-reference/bnb-smart-chain/bnb-smart-chain-faq.mdx
-          - page: BNB Smart Chain API Overview
-            path: api-reference/bnb-smart-chain/bnb-smart-chain-api-overview.mdx
-          - api: BNB Smart Chain API Endpoints
-            api-name: bnb
-        slug: bnb-smart-chain
-      - section: BOB
-        contents:
-          - page: Quickstart
-            path: api-reference/bob/bob-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/bob/bob-api-faq.mdx
-          - page: BOB API Overview
-            path: api-reference/bob/bob-api-overview.mdx
-          - api: BOB API Endpoints
-            api-name: bob
-        slug: bob
-      - section: Botanix
-        contents:
-          - page: Quickstart
-            path: api-reference/botanix/botanix-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/botanix/botanix-api-faq.mdx
-          - page: Botanix API Overview
-            path: api-reference/botanix/botanix-api-overview.mdx
-          - api: Botanix API Endpoints
-            api-name: botanix
-        slug: botanix
-      - section: Celo
-        contents:
-          - page: Quickstart
-            path: api-reference/celo/celo-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/celo/celo-chain-api-faq.mdx
-          - page: Celo API Overview
-            path: api-reference/celo/celo-api-overview.mdx
-          - api: Celo API Endpoints
-            api-name: celo
-        slug: celo
-      - section: Citrea
-        contents:
-          - page: Quickstart
-            path: api-reference/citrea/citrea-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/citrea/citrea-api-faq.mdx
-          - page: Citrea API Overview
-            path: api-reference/citrea/citrea-api-overview.mdx
-          - api: Citrea API Endpoints
-            api-name: citrea
-        slug: citrea
-
-      - section: Clankermon
-        contents:
-          - page: Quickstart
-            path: api-reference/clankermon/clankermon-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/clankermon/clankermon-api-faq.mdx
-          - page: Clankermon API Overview
-            path: api-reference/clankermon/clankermon-api-overview.mdx
-          - api: Clankermon API Endpoints
-            api-name: clankermon
-        slug: clankermon
-
-      - section: CrossFi
-        contents:
-          - page: Quickstart
-            path: api-reference/crossfi/crossfi-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/crossfi/crossfi-api-faq.mdx
-          - page: CrossFi API Overview
-            path: api-reference/crossfi/crossfi-api-overview.mdx
-          - api: CrossFi API Endpoints
-            api-name: crossfi
-        slug: crossfi
-      - section: Degen
-        contents:
-          - page: Quickstart
-            path: api-reference/degen/degen-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/degen/degen-api-faq.mdx
-          - page: Degen API Overview
-            path: api-reference/degen/degen-api-overview.mdx
-          - api: Degen API Endpoints
-            api-name: degen
-        slug: degen
-
-      - section: Dogecoin
-        contents:
-          - page: Quickstart
-            path: api-reference/dogecoin/dogecoin-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/dogecoin/dogecoin-api-faq.mdx
-          - page: Dogecoin API Overview
-            path: api-reference/dogecoin/dogecoin-api-overview.mdx
-          - api: Dogecoin API Endpoints
-            api-name: dogecoin
-          - section: UTXO
-            skip-slug: true
-            contents:
-              - page: UTXO Overview
-                path: api-reference/dogecoin/utxo.mdx
-              - link: UTXO Migration Guide
-                href: /docs/bitcoin/utxo-migration-guide
-              - api: UTXO API Endpoints
-                api-name: utxo-dogecoin
-                flattened: true
-              - page: UTXO WebSockets
-                path: api-reference/dogecoin/utxo-websockets.mdx
-        slug: dogecoin
-
-      - section: Fantom
-        contents:
-          - page: Fantom Deprecation Notice
-            path: api-reference/fantom/fantom-deprecation-notice.mdx
-        slug: fantom
-
-      - section: Flow
-        contents:
-          - page: Quickstart
-            path: api-reference/flow/flow-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/flow/flow-api-faq.mdx
-          - api: Flow EVM API Endpoints
-            api-name: flow
-        slug: flow-evm
-      - section: Frax
-        contents:
-          - page: Quickstart
-            path: api-reference/frax/frax-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/frax/frax-api-faq.mdx
-          - page: Frax API Overview
-            path: api-reference/frax/frax-api-overview.mdx
-          - api: Frax API Endpoints
-            api-name: frax
-        slug: frax
-
-      - section: Geist
-        contents:
-          - page: Geist Deprecation Notice
-            path: api-reference/geist/geist-deprecation-notice.mdx
-        slug: geist
-      - section: Gensyn
-        contents:
-          - page: Quickstart
-            path: api-reference/gensyn/gensyn-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/gensyn/gensyn-api-faq.mdx
-          - page: Gensyn API Overview
-            path: api-reference/gensyn/gensyn-api-overview.mdx
-          - api: Gensyn API Endpoints
-            api-name: gensyn
-        slug: gensyn
-
-      - section: Gnosis
-        contents:
-          - page: Quickstart
-            path: api-reference/gnosis/gnosis-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/gnosis/gnosis-chain-faq.mdx
-          - page: Gnosis API Overview
-            path: api-reference/gnosis/gnosis-api-overview.mdx
-          - api: Gnosis API Endpoints
-            api-name: gnosis
-        slug: gnosis
-      - section: Humanity
-        contents:
-          - page: Quickstart
-            path: api-reference/humanity/humanity-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/humanity/humanity-api-faq.mdx
-          - page: Humanity API Overview
-            path: api-reference/humanity/humanity-api-overview.mdx
-          - api: Humanity API Endpoints
-            api-name: humanity
-        slug: humanity
-
-      - section: Hyperliquid
-        contents:
-          - page: Quickstart
-            path: api-reference/hyperliquid/hyperliquid-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/hyperliquid/hyperliquid-api-faq.mdx
-          - page: Hyperliquid API Overview
-            path: api-reference/hyperliquid/hyperliquid-api-overview.mdx
-          - api: Hyperliquid API Endpoints
-            api-name: hyperliquid
-          - page: Hyperliquid Info Endpoint
-            path: api-reference/hyperliquid/hyperliquid-info-endpoint.mdx
-        slug: hyperliquid
-      - section: Injective
-        contents:
-          - page: Quickstart
-            path: api-reference/injective/injective-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/injective/injective-api-faq.mdx
-          - page: Injective API Overview
-            path: api-reference/injective/injective-api-overview.mdx
-          - api: Injective API Endpoints
-            api-name: injective
-        slug: injective
-      - section: Ink
-        contents:
-          - page: Quickstart
-            path: api-reference/ink/ink-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/ink/ink-api-faq.mdx
-          - page: Ink API Overview
-            path: api-reference/ink/ink-api-overview.mdx
-          - api: Ink API Endpoints
-            api-name: ink
-        slug: ink
-      - section: Jovay
-        contents:
-          - page: Quickstart
-            path: api-reference/jovay/jovay-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/jovay/jovay-api-faq.mdx
-          - page: Jovay API Overview
-            path: api-reference/jovay/jovay-api-overview.mdx
-          - api: Jovay API Endpoints
-            api-name: jovay
-        slug: jovay
-      - section: Lens
-        contents:
-          - page: Quickstart
-            path: api-reference/lens/lens-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/lens/lens-api-faq.mdx
-          - page: Lens API Overview
-            path: api-reference/lens/lens-api-overview.mdx
-          - api: Lens API Endpoints
-            api-name: lens
-        slug: lens
-      - section: Linea
-        contents:
-          - page: Quickstart
-            path: api-reference/linea/linea-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/linea/linea-chain-api-faq.mdx
-          - page: Linea API Overview
-            path: api-reference/linea/linea-api-overview.mdx
-          - api: Linea API Endpoints
-            api-name: linea
-        slug: linea
-      - section: Litecoin
-        contents:
-          - page: Quickstart
-            path: api-reference/litecoin/litecoin-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/litecoin/litecoin-api-faq.mdx
-          - page: Litecoin API Overview
-            path: api-reference/litecoin/litecoin-api-overview.mdx
-          - api: Litecoin API Endpoints
-            api-name: litecoin
-          - section: UTXO
-            skip-slug: true
-            contents:
-              - page: UTXO Overview
-                path: api-reference/litecoin/utxo.mdx
-              - link: UTXO Migration Guide
-                href: /docs/bitcoin/utxo-migration-guide
-              - api: UTXO API Endpoints
-                api-name: utxo-litecoin
-                flattened: true
-              - page: UTXO WebSockets
-                path: api-reference/litecoin/utxo-websockets.mdx
-        slug: litecoin
-      - section: Lumia
-        contents:
-          - page: Lumia Deprecation Notice
-            path: api-reference/lumia/lumia-deprecation-notice.mdx
-        slug: lumia
-      - section: Mantle
-        contents:
-          - page: Quickstart
-            path: api-reference/mantle/mantle-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/mantle/mantle-chain-api-faq.mdx
-          - page: Mantle API Overview
-            path: api-reference/mantle/mantle-api-overview.mdx
-          - api: Mantle API Endpoints
-            api-name: mantle
-        slug: mantle
-      - section: MegaETH
-        contents:
-          - page: Quickstart
-            path: api-reference/megaeth/megaeth-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/megaeth/megaeth-api-faq.mdx
-          - page: MegaETH API Overview
-            path: api-reference/megaeth/megaeth-api-overview.mdx
-          - api: MegaETH API Endpoints
-            api-name: megaeth
-        slug: megaeth
-      - section: Metis
-        contents:
-          - page: Quickstart
-            path: api-reference/metis/metis-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/metis/metis-chain-api-faq.mdx
-          - page: Metis API Overview
-            path: api-reference/metis/metis-api-overview.mdx
-          - api: Metis API Endpoints
-            api-name: metis
-        slug: metis
-      - section: Mode
-        contents:
-          - page: Quickstart
-            path: api-reference/mode/mode-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/mode/mode-api-faq.mdx
-          - page: Mode API Overview
-            path: api-reference/mode/mode-api-overview.mdx
-          - api: Mode API Endpoints
-            api-name: mode
-        slug: mode
-      - section: Monad
-        contents:
-          - page: Quickstart
-            path: api-reference/monad/monad-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/monad/monad-api-faq.mdx
-          - page: Monad API Overview
-            path: api-reference/monad/monad-api-overview.mdx
-          - api: Monad API Endpoints
-            api-name: monad
-        slug: monad
-      - section: Moonbeam
-        contents:
-          - page: Quickstart
-            path: api-reference/moonbeam/moonbeam-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/moonbeam/moonbeam-api-faq.mdx
-          - page: Moonbeam API Overview
-            path: api-reference/moonbeam/moonbeam-api-overview.mdx
-          - api: Moonbeam API Endpoints
-            api-name: moonbeam
-        slug: moonbeam
-      - section: Mythos
-        contents:
-          - page: Quickstart
-            path: api-reference/mythos/mythos-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/mythos/mythos-api-faq.mdx
-          - page: Mythos API Overview
-            path: api-reference/mythos/mythos-api-overview.mdx
-          - api: Mythos API Endpoints
-            api-name: mythos
-        slug: mythos
-
-      - section: OP Mainnet
-        contents:
-          - page: Quickstart
-            path: api-reference/op-mainnet/op-mainnet-api-quickstart.mdx
-          - section: FAQ
-            path: api-reference/op-mainnet/op-mainnet-api-faq/op-mainnet-api-faq.mdx
-            contents:
-              - page: OP Mainnet Error Codes
-                path: api-reference/op-mainnet/op-mainnet-api-faq/op-mainnet-error-codes.mdx
-            slug: op-mainnet-api-faq
-
-          - page: OP Mainnet API Overview
-            path: api-reference/op-mainnet/op-mainnet-api-overview.mdx
-          - api: OP Mainnet API Endpoints
-            api-name: opt
-          - page: Flashblocks API Quickstart
-            path: api-reference/op-mainnet/op-mainnet-flashblocks-api-quickstart.mdx
-        slug: op-mainnet
-      - section: opBNB
-        contents:
-          - page: Quickstart
-            path: api-reference/opbnb-paid-tier/opbnb-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/opbnb-paid-tier/opbnb-chain-api-faq.mdx
-          - api: OpBNB API Endpoints
-            api-name: opbnb
-        slug: opbnb
-      - section: Pharos
-        contents:
-          - page: Quickstart
-            path: api-reference/pharos/pharos-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/pharos/pharos-api-faq.mdx
-          - page: Pharos API Overview
-            path: api-reference/pharos/pharos-api-overview.mdx
-          - api: Pharos API Endpoints
-            api-name: pharos
-        slug: pharos
-
-      - section: Plasma
-        contents:
-          - page: Quickstart
-            path: api-reference/plasma/plasma-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/plasma/plasma-api-faq.mdx
-          - page: Plasma API Overview
-            path: api-reference/plasma/plasma-api-overview.mdx
-          - api: Plasma API Endpoints
-            api-name: plasma
-        slug: plasma
-
-      - section: Polygon PoS
-        contents:
-          - page: Quickstart
-            path: api-reference/polygon-pos/polygon-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/polygon-pos/polygon-api-faq.mdx
-          - page: Polygon PoS API Overview
-            path: api-reference/polygon-pos/polygon-pos-api-overview.mdx
-          - api: Polygon PoS API Endpoints
-            api-name: matic
-        slug: polygon-pos
-      - section: Polygon zkEVM
-        contents:
-          - page: Quickstart
-            path: api-reference/polygon-zkevm/polygon-zkevm-api-quickstart.mdx
-          - section: FAQ
-            path: >-
-              api-reference/polygon-zkevm/polygon-zkevm-api-faq/polygon-zkevm-api-faq.mdx
-            contents:
-              - page: What is the difference between Polygon zkEVM and Ethereum?
-                path: >-
-                  api-reference/polygon-zkevm/polygon-zkevm-api-faq/polygon-zkevm-and-ethereum-differences.mdx
-              - page: What is the difference between Polygon zkEVM and Polygon PoS?
-                path: >-
-                  api-reference/polygon-zkevm/polygon-zkevm-api-faq/what-is-the-difference-between-polygon-zkevm-and-polygon.mdx
-            slug: polygon-zkevm-api-faq
-          - page: Polygon zkEVM API Overview
-            path: api-reference/polygon-zkevm/polygon-zkevm-api-overview.mdx
-          - page: Polygon zkEVM Deprecation Notice
-            path: api-reference/polygon-zkevm/polygon-zkevm-deprecation-notice.mdx
-          - api: Polygon zkEVM API Endpoints
-            api-name: polygon-zkevm
-            # Pin the slug: the auto-generated kebab-case of "Polygon zkEVM API
-            # Endpoints" splits zkEVM into "zk-evm", which diverges from the
-            # overview/FAQ link convention. Pin it so endpoint URLs stay stable.
-            slug: polygon-zkevm-api-endpoints
-        slug: polygon-zkevm
-      - section: Rise
-        contents:
-          - page: Quickstart
-            path: api-reference/rise/rise-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/rise/rise-api-faq.mdx
-          - page: Rise API Overview
-            path: api-reference/rise/rise-api-overview.mdx
-          - api: Rise API Endpoints
-            api-name: rise
-        slug: rise
-
-      - section: Robinhood Chain
-        contents:
-          - page: Quickstart
-            path: api-reference/robinhood-chain/robinhood-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/robinhood-chain/robinhood-chain-api-faq.mdx
-          - page: Robinhood Chain API Overview
-            path: api-reference/robinhood-chain/robinhood-chain-api-overview.mdx
-          - api: Robinhood Chain API Endpoints
-            api-name: robinhood
-        slug: robinhood-chain
-
-      - section: Ronin
-        contents:
-          - page: Quickstart
-            path: api-reference/ronin/ronin-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/ronin/ronin-api-faq.mdx
-          - page: Ronin API Overview
-            path: api-reference/ronin/ronin-api-overview.mdx
-          - api: Ronin API Endpoints
-            api-name: ronin
-        slug: ronin
-
-      - section: Rootstock
-        contents:
-          - page: Quickstart
-            path: api-reference/rootstock/rootstock-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/rootstock/rootstock-api-faq.mdx
-          - page: Rootstock API Overview
-            path: api-reference/rootstock/rootstock-api-overview.mdx
-          - api: Rootstock API Endpoints
-            api-name: rootstock
-        slug: rootstock
-      - section: Scroll
-        contents:
-          - page: Quickstart
-            path: api-reference/scroll/scroll-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/scroll/scroll-chain-api-faq.mdx
-          - page: Scroll API Overview
-            path: api-reference/scroll/scroll-api-overview.mdx
-          - api: Scroll API Endpoints
-            api-name: scroll
-        slug: scroll
-      - section: Sei
-        contents:
-          - page: Quickstart
-            path: api-reference/sei/sei-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/sei/sei-api-faq.mdx
-          - page: Sei API Overview
-            path: api-reference/sei/sei-api-overview.mdx
-          - api: Sei API Endpoints
-            api-name: sei
-        slug: sei
-      - section: Settlus
-        contents:
-          - page: Quickstart
-            path: api-reference/settlus/settlus-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/settlus/settlus-api-faq.mdx
-          - page: Settlus API Overview
-            path: api-reference/settlus/settlus-api-overview.mdx
-          - api: Settlus API Endpoints
-            api-name: settlus
-        slug: settlus
-
-      - section: Shape
-        contents:
-          - page: Quickstart
-            path: api-reference/shape/shape-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/shape/shape-api-faq.mdx
-          - page: Shape API Overview
-            path: api-reference/shape/shape-api-overview.mdx
-          - api: Shape API Endpoints
-            api-name: shape
-        slug: shape
-      - section: Soneium
-        contents:
-          - page: Quickstart
-            path: api-reference/soneium/soneium-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/soneium/soneium-api-faq.mdx
-          - page: Soneium API Overview
-            path: api-reference/soneium/soneium-api-overview.mdx
-          - api: Soneium API Endpoints
-            api-name: soneium
-        slug: soneium
-      - section: Sonic
-        contents:
-          - page: Quickstart
-            path: api-reference/sonic/sonic-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/sonic/sonic-api-faq.mdx
-          - page: Sonic API Overview
-            path: api-reference/sonic/sonic-api-overview.mdx
-          - page: Sonic Blaze Deprecation Notice
-            path: api-reference/sonic/sonic-blaze-deprecation-notice.mdx
-          - api: Sonic API Endpoints
-            api-name: sonic
-        slug: sonic
-      - section: Stable
-        contents:
-          - page: Quickstart
-            path: api-reference/stable/stable-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/stable/stable-api-faq.mdx
-          - page: Stable API Overview
-            path: api-reference/stable/stable-api-overview.mdx
-          - api: Stable API Endpoints
-            api-name: stable
-        slug: stable
-      - section: Starknet
-        contents:
-          - page: Quickstart
-            path: api-reference/starknet/starknet-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/starknet/starknet-api-faq.mdx
-          - page: Starknet API Overview
-            path: api-reference/starknet/starknet-api-overview.mdx
-          - api: Starknet API Endpoints
-            api-name: starknet
-        slug: starknet
-      - section: Stellar
-        contents:
-          - page: Quickstart
-            path: api-reference/stellar/stellar-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/stellar/stellar-api-faq.mdx
-          - page: Stellar API Overview
-            path: api-reference/stellar/stellar-api-overview.mdx
-          - api: Stellar API Endpoints
-            api-name: stellar
-          - link: Stellar Data API
-            href: /docs/reference/stellar-data-api-overview
-        slug: stellar
-
-      - section: DATA Network
-        contents:
-          - page: Quickstart
-            path: api-reference/data-network/data-network-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/data-network/data-network-api-faq.mdx
-          - page: DATA Network API Overview
-            path: api-reference/data-network/data-network-api-overview.mdx
-          - api: DATA Network API Endpoints
-            api-name: story
-            slug: data-network-api-endpoints
-        slug: data-network
-      - section: Sui
-        contents:
-          - page: Quickstart
-            path: api-reference/sui/sui-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/sui/sui-api-faq.mdx
-          - api: Sui API Endpoints
-            api-name: sui
-          - section: Sui gRPC
-            contents:
-              - section: Getting started
-                contents:
-                  - page: Overview
-                    path: api-reference/sui-grpc/overview.mdx
-                  - page: Quickstart
-                    path: api-reference/sui-grpc/quickstart.mdx
-                slug: getting-started
-              - section: API reference
-                contents:
-                  - page: Objects and ledger
-                    path: api-reference/sui-grpc/objects-and-ledger.mdx
-                  - page: Transactions
-                    path: api-reference/sui-grpc/transactions.mdx
-                  - page: State and balances
-                    path: api-reference/sui-grpc/state-and-balances.mdx
-                  - page: Move packages
-                    path: api-reference/sui-grpc/move-packages.mdx
-                  - page: Name service
-                    path: api-reference/sui-grpc/name-service.mdx
-                  - page: Subscriptions
-                    path: api-reference/sui-grpc/subscriptions.mdx
-                  - page: Signature verification
-                    path: api-reference/sui-grpc/signature-verification.mdx
-                slug: api-reference
-            slug: sui-grpc
-        slug: sui
-      - section: Superseed
-        contents:
-          - page: Quickstart
-            path: api-reference/superseed/superseed-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/superseed/superseed-api-faq.mdx
-          - page: Superseed API Overview
-            path: api-reference/superseed/superseed-api-overview.mdx
-          - api: Superseed API Endpoints
-            api-name: superseed
-        slug: superseed
-      - section: Tea
-        contents:
-          - page: Tea Deprecation Notice
-            path: api-reference/tea/tea-deprecation-notice.mdx
-        slug: tea
-
-      - section: Tempo
-        contents:
-          - page: Quickstart
-            path: api-reference/tempo/tempo-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/tempo/tempo-api-faq.mdx
-          - page: Tempo API Overview
-            path: api-reference/tempo/tempo-api-overview.mdx
-          - api: Tempo API Endpoints
-            api-name: tempo
-        slug: tempo
-
-      - section: Tron
-        contents:
-          - page: Quickstart
-            path: api-reference/tron/tron-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/tron/tron-api-faq.mdx
-          - page: Tron API Overview
-            path: api-reference/tron/tron-api-overview.mdx
-          - api: Tron API Endpoints
-            api-name: tron
-          - api: Tron HTTP API Endpoints
-            api-name: tron-http
-            flattened: true
-          - api: Tron Solidity HTTP API Endpoints
-            api-name: tron-solidity-http
-            flattened: true
-        slug: tron
-
-      - section: Unichain
-        contents:
-          - page: Quickstart
-            path: api-reference/unichain/unichain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/unichain/unichain-api-faq.mdx
-          - page: Unichain API Overview
-            path: api-reference/unichain/unichain-api-overview.mdx
-          - api: Unichain API Endpoints
-            api-name: unichain
-          - page: Flashblocks API Quickstart
-            path: api-reference/unichain/unichain-flashblocks-api-quickstart.mdx
-        slug: unichain
-      - section: World Chain
-        contents:
-          - page: Quickstart
-            path: api-reference/world-chain/world-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/world-chain/world-chain-api-faq.mdx
-          - page: World Chain API Overview
-            path: api-reference/world-chain/world-chain-api-overview.mdx
-          - api: World Chain API Endpoints
-            api-name: worldchain
-        slug: world-chain
-      - section: World Mobile Chain
-        contents:
-          - page: Quickstart
-            path: api-reference/world-mobile-chain/world-mobile-chain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/world-mobile-chain/world-mobile-chain-api-faq.mdx
-          - page: World Mobile Chain API Overview
-            path: api-reference/world-mobile-chain/world-mobile-chain-api-overview.mdx
-          - api: World Mobile Chain API Endpoints
-            api-name: worldmobilechain
-        slug: world-mobile-chain
-
-      - section: X Layer
-        contents:
-          - page: Quickstart
-            path: api-reference/x-layer/x-layer-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/x-layer/x-layer-api-faq.mdx
-          - page: X Layer API Overview
-            path: api-reference/x-layer/x-layer-api-overview.mdx
-          - api: X Layer API Endpoints
-            api-name: x-layer
-        slug: x-layer
-      - section: XMTP
-        contents:
-          - page: Quickstart
-            path: api-reference/xmtp/xmtp-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/xmtp/xmtp-api-faq.mdx
-          - page: XMTP API Overview
-            path: api-reference/xmtp/xmtp-api-overview.mdx
-          - api: XMTP API Endpoints
-            api-name: xmtp
-        slug: xmtp
-
-      - section: ZetaChain
-        contents:
-          - page: Quickstart
-            path: api-reference/zetachain/zetachain-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/zetachain/zetachain-api-faq.mdx
-          - page: ZetaChain API Overview
-            path: api-reference/zetachain/zetachain-api-overview.mdx
-          - api: ZetaChain API Endpoints
-            api-name: zetachain
-        slug: zetachain
-      - section: zksync
-        contents:
-          - page: zkSync API Overview
-            path: api-reference/zksync/zksync-api-overview.mdx
-          - page: Quickstart
-            path: api-reference/zksync/zksync-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/zksync/zksync-api-faq.mdx
-          - api: zkSync API Endpoints
-            api-name: zksync
-        slug: zksync
-      - section: Zora
-        contents:
-          - page: Quickstart
-            path: api-reference/zora/zora-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/zora/zora-api-faq.mdx
-          - page: Zora API Overview
-            path: api-reference/zora/zora-api-overview.mdx
-          - api: Zora API Endpoints
-            api-name: zora
-        slug: zora
-
-      - section: Katana
-        contents:
-          - page: Quickstart
-            path: api-reference/katana/katana-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/katana/katana-api-faq.mdx
-          - page: Katana API Overview
-            path: api-reference/katana/katana-api-overview.mdx
-          - api: Katana API Endpoints
-            api-name: katana
-        slug: katana
-
-      - section: Kaia
-        contents:
-          - page: Quickstart
-            path: api-reference/kaia/kaia-api-quickstart.mdx
-          - page: FAQ
-            path: api-reference/kaia/kaia-api-faq.mdx
-          - page: Kaia API Overview
-            path: api-reference/kaia/kaia-api-overview.mdx
-          - api: Kaia API Endpoints
-            api-name: kaia
-        slug: kaia
 
   - tab: changelog

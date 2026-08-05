@@ -1,0 +1,88 @@
+---
+title: "liquidationFills stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# liquidationFills stream
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "liquidationFills",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "liquidationFills"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "liquidationFills",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "cursor": "<opaque cursor>",
+  "data": {
+    "fills": [
+      {
+        "coin": "BTC",
+        "px": "99000.0",
+        "sz": "0.50",
+        "side": "A",
+        "isLiquidation": true,
+        "tradeId": "trade_02"
+      }
+    ]
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| fills | array | Fill records. |
+| fills[] | object | Fill records. |
+| fills[].coin | string | Market identifier. |
+| fills[].px | string | Price value. |
+| fills[].sz | string | Size value. |
+| fills[].side | string | Side code: A is ask/sell; B is bid/buy. |
+| fills[].isLiquidation | boolean | Illustrative isLiquidation value. |
+| fills[].tradeId | string | Illustrative tradeId value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "liquidationFills",
+    "coins": [
+      "BTC"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

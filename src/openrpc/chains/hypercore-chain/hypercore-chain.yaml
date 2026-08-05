@@ -1,0 +1,223 @@
+$schema: https://meta.open-rpc.org/
+openrpc: 1.2.4
+info:
+  title: Alchemy HyperCore JSON-RPC API
+  version: 0.0.0
+  description: HyperCore JSON-RPC methods for private preview.
+servers:
+  - url: https://api.g.alchemy.com/hypercore/v1
+    description: Provisional placeholder required for preview rendering; the HyperCore JSON-RPC endpoint will be confirmed before availability.
+methods:
+  - name: hl_getLatestBlocks
+    summary: Get latest blocks
+    description: This API is in private preview. Target September 2026; timing is subject to change. Retrieve the latest blocks.
+    tags: [{ name: HyperCore block and batch }]
+    params:
+      - name: limit
+        required: true
+        schema: { type: integer, format: int64 }
+    result:
+      name: result
+      schema: { type: object, additionalProperties: true }
+    examples:
+      - name: illustrative
+        params: [{ name: limit, value: 10 }]
+        result:
+          {
+            name: result,
+            value:
+              {
+                blocks:
+                  [
+                    {
+                      blockHeight: 123456,
+                      blockTime: 1780000000000,
+                      isFinal: true,
+                    },
+                  ],
+              },
+          }
+  - name: hl_getBlock
+    summary: Get a block
+    description: This API is in private preview. Target September 2026; timing is subject to change. Retrieve a block by height.
+    tags: [{ name: HyperCore block and batch }]
+    params:
+      - name: blockHeight
+        required: true
+        schema: { type: integer, format: int64 }
+    result:
+      name: result
+      schema: { type: object, additionalProperties: true }
+    examples:
+      - name: illustrative
+        params: [{ name: blockHeight, value: 123456 }]
+        result:
+          {
+            name: result,
+            value:
+              {
+                block:
+                  {
+                    metadata:
+                      {
+                        blockHeight: 123456,
+                        blockTime: 1780000000000,
+                        isFinal: true,
+                      },
+                    commands: [],
+                    actions: [],
+                    events: [],
+                    fills: [],
+                  },
+              },
+          }
+  - name: hl_getBatchBlocks
+    summary: Get multiple blocks
+    description: This API is in private preview. Target September 2026; timing is subject to change. Retrieve multiple blocks.
+    tags: [{ name: HyperCore block and batch }]
+    params:
+      - name: blockHeights
+        required: true
+        schema: { type: array, items: { type: integer, format: int64 } }
+    result:
+      name: result
+      schema: { type: object, additionalProperties: true }
+    examples:
+      - name: illustrative
+        params: [{ name: blockHeights, value: [123456, 123457] }]
+        result: { name: result, value: { blocks: [], missingBlockHeights: [] } }
+  - name: hl_batchClearinghouseStates
+    summary: Get multiple clearinghouse states
+    description: This API is in private preview. Target September 2026; timing is subject to change. Retrieve multiple clearinghouse states.
+    tags: [{ name: HyperCore block and batch }]
+    params:
+      - name: users
+        required: true
+        schema: { type: array, items: { type: string } }
+    result:
+      name: result
+      schema: { type: object, additionalProperties: true }
+    examples:
+      - name: illustrative
+        params:
+          [
+            {
+              name: users,
+              value: ["0x1111111111111111111111111111111111111111"],
+            },
+          ]
+        result: { name: result, value: { states: [], missingUsers: [] } }
+  - name: hl_batchPortfolioStates
+    summary: Get multiple portfolio states
+    description: This API is in private preview. Target September 2026; timing is subject to change. Retrieve multiple portfolio states.
+    tags: [{ name: HyperCore block and batch }]
+    params:
+      - name: users
+        required: true
+        schema: { type: array, items: { type: string } }
+    result:
+      name: result
+      schema: { type: object, additionalProperties: true }
+    examples:
+      - name: illustrative
+        params:
+          [
+            {
+              name: users,
+              value: ["0x1111111111111111111111111111111111111111"],
+            },
+          ]
+        result: { name: result, value: { states: [], missingUsers: [] } }
+  - name: hl_batchOpenOrders
+    summary: Get multiple open-order sets
+    description: This API is in private preview. Target September 2026; timing is subject to change. Retrieve multiple open-order sets.
+    tags: [{ name: HyperCore block and batch }]
+    params:
+      - name: users
+        required: true
+        schema: { type: array, items: { type: string } }
+    result:
+      name: result
+      schema: { type: object, additionalProperties: true }
+    examples:
+      - name: illustrative
+        params:
+          [
+            {
+              name: users,
+              value: ["0x1111111111111111111111111111111111111111"],
+            },
+          ]
+        result: { name: result, value: { ordersByUser: [], missingUsers: [] } }
+components:
+  schemas:
+    Address: { type: string, pattern: "^0x[a-fA-F0-9]{40}$" }
+    BlockIdentifier:
+      {
+        type: integer,
+        format: int64,
+        description: "HyperCore block height, not an EVM block number.",
+      }
+    BlockMetadata:
+      {
+        type: object,
+        properties:
+          {
+            blockHeight: { type: integer },
+            blockTime:
+              {
+                type: integer,
+                format: int64,
+                description: "Unix milliseconds.",
+              },
+            isFinal: { type: boolean },
+          },
+      }
+    HyperCoreBlock:
+      {
+        type: object,
+        properties:
+          {
+            metadata: { $ref: "#/components/schemas/BlockMetadata" },
+            commands: { type: array, items: { type: object } },
+            actions:
+              {
+                type: array,
+                items: { $ref: "#/components/schemas/BlockAction" },
+              },
+            events:
+              {
+                type: array,
+                items: { $ref: "#/components/schemas/BlockEvent" },
+              },
+            fills:
+              { type: array, items: { $ref: "#/components/schemas/Fill" } },
+          },
+      }
+    BlockAction:
+      {
+        type: object,
+        additionalProperties: true,
+        description: "Raw HyperCore action representation.",
+      }
+    BlockEvent:
+      {
+        type: object,
+        additionalProperties: true,
+        description: "Normalized HyperCore event representation.",
+      }
+    Fill:
+      {
+        type: object,
+        properties:
+          {
+            coin: { type: string },
+            px: { type: string },
+            sz: { type: string },
+            side: { type: string },
+            time: { type: integer, format: int64 },
+          },
+      }
+    ClearinghouseState: { type: object, additionalProperties: true }
+    PortfolioState: { type: object, additionalProperties: true }
+    OpenOrder: { type: object, additionalProperties: true }

@@ -1,0 +1,584 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
+openapi: 3.1.0
+info:
+  title: "⚡ HyperCore API"
+  version: "1.0"
+  description: |
+    HyperCore read and historical methods for private preview.
+servers:
+  - url: https://api.g.alchemy.com/hypercore/v1
+    description: Provisional base URL; it will be confirmed before general availability.
+tags:
+  - name: HyperCore Data API Endpoints
+paths:
+  "/{apiKey}/info":
+    post:
+      tags:
+        - HyperCore Data API Endpoints
+      operationId: get-info
+      summary: Execute a native-compatible HyperCore read
+      description: |
+        This API is in private preview. Target October 2026; timing is subject to change.
+
+        Execute a native-compatible HyperCore read selected by the required type discriminator. The remaining native methods will be documented as the service is finalized.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/InfoRequest"
+            examples:
+              userFills:
+                value:
+                  type: userFills
+                  user: "0x1111111111111111111111111111111111111111"
+              userFillsByTime:
+                value:
+                  type: userFillsByTime
+                  user: "0x1111111111111111111111111111111111111111"
+                  startTime: 1780000000000
+                  endTime: 1780086400000
+      responses:
+        "200":
+          description: Successful response. The currently modeled shapes are selected by the requested type.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/InfoResponse"
+  "/{apiKey}/user-fills":
+    post:
+      tags:
+        - HyperCore Data API Endpoints
+      operationId: get-user-fills
+      summary: Get user fills
+      description: |
+        This API is in private preview. Target October 2026; timing is subject to change.
+
+        Retrieve fills associated with a user.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserFillsRequest"
+            examples:
+              userFills:
+                value:
+                  type: userFills
+                  user: "0x1111111111111111111111111111111111111111"
+      responses:
+        "200":
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/UserFillsResponse"
+              examples:
+                default:
+                  "$ref": "#/components/examples/UserFillsResponse"
+  "/{apiKey}/user-fills-by-time":
+    post:
+      tags:
+        - HyperCore Data API Endpoints
+      operationId: get-user-fills-by-time
+      summary: Get user fills by time
+      description: |
+        This API is in private preview. Target October 2026; timing is subject to change.
+
+        Retrieve fills associated with a user over a time range.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserFillsByTimeRequest"
+            examples:
+              userFillsByTime:
+                value:
+                  type: userFillsByTime
+                  user: "0x1111111111111111111111111111111111111111"
+                  startTime: 1780000000000
+                  endTime: 1780086400000
+      responses:
+        "200":
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/UserFillsByTimeResponse"
+              examples:
+                default:
+                  "$ref": "#/components/examples/UserFillsByTimeResponse"
+  "/{apiKey}/clearinghouse-state":
+    post:
+      tags:
+        - HyperCore Data API Endpoints
+      operationId: get-clearinghouse-state
+      summary: Get clearinghouse state
+      description: |
+        This API is in private preview. Target October 2026; timing is subject to change.
+
+        Retrieve clearinghouse state associated with a user.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ClearinghouseStateRequest"
+      responses:
+        "200":
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ClearinghouseStateResponse"
+              examples:
+                default:
+                  "$ref": "#/components/examples/ClearinghouseStateResponse"
+  "/{apiKey}/historical-orders":
+    post:
+      tags:
+        - HyperCore Data API Endpoints
+      operationId: get-historical-orders
+      summary: Get historical orders
+      description: |
+        This API is in private preview. Target October 2026; timing is subject to change.
+
+        Retrieve historical orders associated with a user.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/HistoricalOrdersRequest"
+      responses:
+        "200":
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/HistoricalOrdersResponse"
+              examples:
+                default:
+                  "$ref": "#/components/examples/HistoricalOrdersResponse"
+  "/{apiKey}/portfolio-state":
+    post:
+      tags:
+        - HyperCore Data API Endpoints
+      operationId: get-portfolio-state
+      summary: Get normalized portfolio state
+      description: |
+        This API is in private preview. Target October 2026; timing is subject to change.
+
+        Retrieve a normalized portfolio-state composite for a user.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserRequest"
+            examples:
+              default:
+                value:
+                  user: "0x1111111111111111111111111111111111111111"
+                  include: [positions, balances, margin]
+      responses:
+        "200":
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PortfolioState"
+              examples:
+                default:
+                  "$ref": "#/components/examples/PortfolioStateResponse"
+  "/{apiKey}/extra-agents":
+    post:
+      tags:
+        - HyperCore Data API Endpoints
+      operationId: get-extra-agents
+      summary: Get agent and API-wallet state
+      description: |
+        This API is in private preview. Target October 2026; timing is subject to change.
+
+        Retrieve agent and API-wallet information associated with a user.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserRequest"
+      responses:
+        "200":
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ExtraAgentsResponse"
+              examples:
+                default:
+                  "$ref": "#/components/examples/ExtraAgentsResponse"
+components:
+  parameters:
+    apiKey:
+      name: apiKey
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Address:
+      type: string
+      pattern: "^0x[a-fA-F0-9]{40}$"
+      description: EVM-style account address.
+    Cursor:
+      type: string
+      description: Opaque cursor. Store and return it unmodified; its format may change.
+    TimestampMs:
+      type: integer
+      format: int64
+      description: Unix timestamp in milliseconds.
+    UserRequest:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          "$ref": "#/components/schemas/Address"
+        startTime:
+          "$ref": "#/components/schemas/TimestampMs"
+        endTime:
+          "$ref": "#/components/schemas/TimestampMs"
+        cursor:
+          "$ref": "#/components/schemas/Cursor"
+        include:
+          type: array
+          items:
+            type: string
+    InfoRequest:
+      oneOf:
+        - "$ref": "#/components/schemas/UserFillsRequest"
+        - "$ref": "#/components/schemas/UserFillsByTimeRequest"
+        - "$ref": "#/components/schemas/HistoricalOrdersRequest"
+        - "$ref": "#/components/schemas/UserFundingRequest"
+        - "$ref": "#/components/schemas/UserLedgerRequest"
+        - "$ref": "#/components/schemas/DelegationsRequest"
+        - "$ref": "#/components/schemas/DelegatorHistoryRequest"
+        - "$ref": "#/components/schemas/ClearinghouseStateRequest"
+        - "$ref": "#/components/schemas/SpotClearinghouseStateRequest"
+        - "$ref": "#/components/schemas/FrontendOpenOrdersRequest"
+      discriminator:
+        propertyName: type
+        mapping:
+          userFills: "#/components/schemas/UserFillsRequest"
+          userFillsByTime: "#/components/schemas/UserFillsByTimeRequest"
+          historicalOrders: "#/components/schemas/HistoricalOrdersRequest"
+          userFunding: "#/components/schemas/UserFundingRequest"
+          userNonFundingLedgerUpdates: "#/components/schemas/UserLedgerRequest"
+          delegations: "#/components/schemas/DelegationsRequest"
+          delegatorHistory: "#/components/schemas/DelegatorHistoryRequest"
+          clearinghouseState: "#/components/schemas/ClearinghouseStateRequest"
+          spotClearinghouseState: "#/components/schemas/SpotClearinghouseStateRequest"
+          frontendOpenOrders: "#/components/schemas/FrontendOpenOrdersRequest"
+    InfoResponse:
+      oneOf:
+        - "$ref": "#/components/schemas/UserFillsResponse"
+        - "$ref": "#/components/schemas/UserFillsByTimeResponse"
+        - "$ref": "#/components/schemas/ClearinghouseStateResponse"
+        - "$ref": "#/components/schemas/HistoricalOrdersResponse"
+    UserFillsRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: userFills
+    UserFillsByTimeRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+            - startTime
+            - endTime
+          properties:
+            type:
+              const: userFillsByTime
+    HistoricalOrdersRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: historicalOrders
+    UserFundingRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: userFunding
+    UserLedgerRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: userNonFundingLedgerUpdates
+    DelegationsRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: delegations
+    DelegatorHistoryRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: delegatorHistory
+    ClearinghouseStateRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: clearinghouseState
+    SpotClearinghouseStateRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: spotClearinghouseState
+    FrontendOpenOrdersRequest:
+      allOf:
+        - "$ref": "#/components/schemas/UserRequest"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              const: frontendOpenOrders
+    Fill:
+      type: object
+      properties:
+        coin:
+          type: string
+        px:
+          type: string
+        sz:
+          type: string
+        side:
+          type: string
+          enum: [A, B]
+        time:
+          "$ref": "#/components/schemas/TimestampMs"
+        tid:
+          type: integer
+        oid:
+          type: integer
+        closedPnl:
+          type: string
+        fee:
+          type: string
+        feeToken:
+          type: string
+    UserFillsResponse:
+      type: object
+      properties:
+        fills:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Fill"
+    UserFillsByTimeResponse:
+      type: object
+      properties:
+        fills:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Fill"
+        nextCursor:
+          type: string
+    HistoricalOrder:
+      type: object
+      properties:
+        orderId:
+          type: string
+        coin:
+          type: string
+        side:
+          type: string
+          enum: [A, B]
+        limitPx:
+          type: string
+        sz:
+          type: string
+        status:
+          type: string
+        timestamp:
+          "$ref": "#/components/schemas/TimestampMs"
+    HistoricalOrdersResponse:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            "$ref": "#/components/schemas/HistoricalOrder"
+    ClearinghouseStateResponse:
+      type: object
+      properties:
+        marginSummary:
+          type: object
+          properties:
+            accountValue:
+              type: string
+            totalMarginUsed:
+              type: string
+        assetPositions:
+          type: array
+          items:
+            type: object
+            properties:
+              position:
+                type: object
+                properties:
+                  coin:
+                    type: string
+                  szi:
+                    type: string
+                  entryPx:
+                    type: string
+                  unrealizedPnl:
+                    type: string
+    PortfolioState:
+      type: object
+      properties:
+        user:
+          "$ref": "#/components/schemas/Address"
+        asOf:
+          "$ref": "#/components/schemas/TimestampMs"
+        perpetual:
+          type: object
+          additionalProperties: true
+        spot:
+          type: object
+          additionalProperties: true
+        margin:
+          type: object
+          additionalProperties: true
+    Agent:
+      type: object
+      properties:
+        address:
+          "$ref": "#/components/schemas/Address"
+        name:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    ExtraAgentsResponse:
+      type: object
+      properties:
+        user:
+          "$ref": "#/components/schemas/Address"
+        agents:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Agent"
+  examples:
+    UserFillsResponse:
+      value:
+        fills:
+          - coin: BTC
+            px: "100000.0"
+            sz: "0.01"
+            side: B
+            time: 1780000000000
+            tid: 12345
+            oid: 54321
+            closedPnl: "0"
+            fee: "0.20"
+            feeToken: USDC
+    UserFillsByTimeResponse:
+      value:
+        fills:
+          - coin: BTC
+            px: "100000.0"
+            sz: "0.01"
+            side: B
+            time: 1780000000000
+            tid: 12345
+        nextCursor: optional-cursor
+    HistoricalOrdersResponse:
+      value:
+        orders:
+          - orderId: "54321"
+            coin: BTC
+            side: B
+            limitPx: "100000.0"
+            sz: "0.10"
+            status: filled
+            timestamp: 1780000000000
+    ClearinghouseStateResponse:
+      value:
+        marginSummary:
+          accountValue: "1000.00"
+          totalMarginUsed: "100.00"
+        assetPositions:
+          - position:
+              coin: BTC
+              szi: "0.10"
+              entryPx: "99000.0"
+              unrealizedPnl: "100.0"
+    PortfolioStateResponse:
+      value:
+        user: "0x1111111111111111111111111111111111111111"
+        asOf: 1780000000000
+        perpetual:
+          accountValue: "1000.00"
+          positions: []
+        spot:
+          balances: []
+        margin:
+          totalMarginUsed: "100.00"
+    ExtraAgentsResponse:
+      value:
+        user: "0x1111111111111111111111111111111111111111"
+        agents:
+          - address: "0x4444444444444444444444444444444444444444"
+            name: market-maker
+            permissions: [trade]

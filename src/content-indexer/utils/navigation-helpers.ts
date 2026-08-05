@@ -29,5 +29,12 @@ export const getChainNameFromAncestors = (
 ): string | undefined => {
   if (tab !== "chains") return undefined;
   const firstAncestor = navigationAncestors[0];
+  // Chain sections are slugged top-level sections of the chains tab. A
+  // skip-slug first ancestor (e.g. the cross-chain "Introduction" grouping
+  // holding WebSockets/Trace/Debug) is not a chain, so methods under it get
+  // no chain suffix.
+  if (firstAncestor && "skipSlug" in firstAncestor && firstAncestor.skipSlug) {
+    return undefined;
+  }
   return firstAncestor?.title;
 };

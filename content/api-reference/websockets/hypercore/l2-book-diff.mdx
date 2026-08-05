@@ -1,0 +1,104 @@
+---
+title: "l2BookDiff stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# l2BookDiff stream
+
+For the corresponding gRPC diff stream, see [StreamL2BookDiff](/docs/chains/hypercore-grpc/api-reference/stream-l2-book-diff). [l2Book](/docs/chains/websockets/hypercore/streams/l2-book) is the snapshot representation.
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "l2BookDiff",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "l2BookDiff"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "l2BookDiff",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "cursor": "<opaque cursor>",
+  "data": {
+    "coin": "BTC",
+    "changes": [
+      {
+        "px": "100000.0",
+        "sz": "1.50",
+        "n": 4
+      }
+    ],
+    "isSnapshot": false
+  }
+}
+```
+
+## Filters and behavior
+
+* `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
+* Supply `cursor` in the subscription object to request replay after that cursor. The cursor is opaque: clients store and return it unmodified, and its format may change.
+* Start from a compatible `l2Book` snapshot before applying `l2BookDiff` updates.
+
+## Snapshot-to-diff bootstrap
+
+1. Subscribe to `l2Book` and install the received snapshot as local book state.
+2. Persist the snapshot cursor after the snapshot is processed.
+3. The approved snapshot example does not contain a sequence or other ordering-position field. The position field needed to order the snapshot against later diffs is pending confirmation.
+4. Subscribe to `l2BookDiff` for the same coin scope and apply only diffs that follow the installed snapshot once the ordering contract is confirmed.
+5. If replay reports a gap, or a cursor is rejected, discard local state and start again from a fresh snapshot.
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| coin | string | Market identifier. |
+| changes | array | Order-book changes. |
+| changes[] | object | Order-book changes. |
+| changes[].px | string | Price value. |
+| changes[].sz | string | Size value. |
+| changes[].n | integer | Order-count value. |
+| isSnapshot | boolean | Illustrative isSnapshot value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "l2BookDiff",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

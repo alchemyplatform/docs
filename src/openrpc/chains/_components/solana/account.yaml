@@ -40,6 +40,35 @@ components:
           $ref: "./base-types.yaml#/components/schemas/DataSlice"
         minContextSlot:
           $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        slot:
+          type: integer
+          minimum: 0
+          description: >-
+            [Account Archive](/docs/solana/account-archive) parameter. Return
+            the account's state as of slot `S` (inclusive): the latest write
+            with `slot <= S`. Mutually exclusive with `lastUpdateBeforeSlot`,
+            `firstUpdateAfterSlot`, and `minContextSlot`; requires
+            `finalized` commitment (the default).
+        lastUpdateBeforeSlot:
+          type: integer
+          minimum: 0
+          description: >-
+            [Account Archive](/docs/solana/account-archive) parameter. Return
+            the most recent write to this account strictly before slot `S`.
+            The response's `context.slot` is the actual slot at which that
+            write landed and can be used as the cursor for the next call.
+            Mutually exclusive with `slot`, `firstUpdateAfterSlot`, and
+            `minContextSlot`; requires `finalized` commitment (the default).
+        firstUpdateAfterSlot:
+          type: integer
+          minimum: 0
+          description: >-
+            [Account Archive](/docs/solana/account-archive) parameter. Return
+            the first write to this account strictly after slot `S`. The
+            response's `context.slot` is the actual slot at which that write
+            landed and can be used as the cursor for the next call. Mutually
+            exclusive with `slot`, `lastUpdateBeforeSlot`, and
+            `minContextSlot`; requires `finalized` commitment (the default).
     GetBalanceConfig:
       title: GetBalance Configuration
       type: object
@@ -119,6 +148,169 @@ components:
         encoding:
           $ref: "./base-types.yaml#/components/schemas/Encoding"
           description: Encoding format for account data.
+    GetTokenAccountsByOwnerAtSlotFilter:
+      title: GetTokenAccountsByOwnerAtSlot Filter
+      type: object
+      description: >-
+        Restricts results to a single mint or a single token program.
+        Include either `mint` or `programId`, never both. Omit the whole
+        object to return all token accounts.
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: >-
+            Return only accounts of this token mint (base58 pubkey).
+        programId:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: >-
+            Return only accounts owned by this token program. Must be
+            `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` (SPL Token) or
+            `TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb` (Token-2022).
+    GetTokenAccountsByOwnerAtSlotConfig:
+      title: GetTokenAccountsByOwnerAtSlot Configuration
+      type: object
+      description: Optional point-in-time and pagination options.
+      properties:
+        slot:
+          type: integer
+          description: >-
+            The slot to reconstruct the wallet's holdings at. Omit for the
+            wallet's current holdings (as of the latest available slot).
+        pageKey:
+          type: string
+          default: ""
+          description: >-
+            Cursor for the next page. Use the `pageKey` from the previous
+            response; omit or send an empty string for the first page.
+        pageLimit:
+          type: integer
+          default: 1000
+          maximum: 10000
+          description: >-
+            Maximum number of token accounts per page. Values above `10000`
+            are reduced to `10000`.
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          description: >-
+            Accepted for compatibility; responses are always `jsonParsed`.
+    ParsedSplTokenAccountInfo:
+      title: Parsed SPL Token Account Info
+      type: object
+      description: >-
+        `jsonParsed` decoding of an SPL Token or Token-2022 account's data.
+      properties:
+        isNative:
+          type: boolean
+          description: >-
+            `true` when this token account is the native SOL mint wrapper.
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The mint associated with this token account.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The wallet that owns this token account.
+        state:
+          type: string
+          description: >-
+            Account state, typically `initialized`, `uninitialized`, or
+            `frozen`.
+        tokenAmount:
+          $ref: "#/components/schemas/TokenBalance"
+          description: The token balance held by this account.
+    ParsedSplTokenAccountData:
+      title: Parsed SPL Token Account Data
+      type: object
+      description: >-
+        `jsonParsed` decoding of a token account's on-chain data. The
+        outer envelope carries the parser identity; the actual account
+        fields live under `parsed.info`.
+      properties:
+        program:
+          type: string
+          description: >-
+            The program the parser used to decode this account
+            (`spl-token` or `spl-token-2022`).
+        space:
+          type: integer
+          description: On-chain data size in bytes.
+        parsed:
+          type: object
+          description: The parsed account payload.
+          properties:
+            type:
+              type: string
+              description: The parsed record type (e.g., `account`).
+            info:
+              $ref: "#/components/schemas/ParsedSplTokenAccountInfo"
+    ParsedTokenAccountInfo:
+      title: Parsed Token Account Info
+      type: object
+      description: >-
+        Account metadata plus the `jsonParsed` token account payload.
+      properties:
+        lamports:
+          type: integer
+          description: Number of lamports assigned to this account.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: >-
+            The token program that owns this account (SPL Token or
+            Token-2022).
+        executable:
+          type: boolean
+          description: Indicates if the account contains a program.
+        rentEpoch:
+          type: integer
+          description: The epoch at which this account will next owe rent.
+        space:
+          type: integer
+          description: On-chain data size in bytes.
+        data:
+          $ref: "#/components/schemas/ParsedSplTokenAccountData"
+    ParsedTokenAccount:
+      title: Parsed Token Account
+      type: object
+      description: >-
+        A single SPL Token or Token-2022 account with its data decoded in
+        `jsonParsed` form.
+      properties:
+        pubkey:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The token account Pubkey as a base-58 encoded string.
+        account:
+          $ref: "#/components/schemas/ParsedTokenAccountInfo"
+    GetTokenAccountsByOwnerAtSlotResult:
+      title: GetTokenAccountsByOwnerAtSlot Result
+      type: object
+      description: >-
+        A paginated set of token accounts held by the owner at the
+        requested slot.
+      properties:
+        context:
+          type: object
+          description: The slot the result was computed at.
+          properties:
+            slot:
+              type: integer
+              description: >-
+                The slot the result was computed at (the `slot` you
+                requested, or the latest slot).
+            apiVersion:
+              type: string
+              description: API version string.
+        value:
+          type: array
+          description: >-
+            The token accounts the wallet held at that slot, decoded in
+            `jsonParsed` form.
+          items:
+            $ref: "#/components/schemas/ParsedTokenAccount"
+        pageKey:
+          type: string
+          nullable: true
+          description: >-
+            Cursor for the next page, or `null` on the last page. Send it
+            back in `config.pageKey` to continue paging.
     LargestAccountsConfig:
       title: LargestAccounts Configuration
       type: object

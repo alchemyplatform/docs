@@ -1,0 +1,97 @@
+---
+title: "l4BookUpdates stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# l4BookUpdates stream
+
+The L4 delivery model is still being finalized. Candidate models are an initial snapshot followed by incremental updates, or update-only delivery. L4 volumes make a full snapshot per block impractical.
+
+For the corresponding gRPC update stream, see [StreamL4BookUpdates](/docs/chains/hypercore-grpc/api-reference/stream-l4-book-updates). For the snapshot-to-diff recovery pattern, see [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff#snapshot-to-diff-bootstrap).
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "l4BookUpdates",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "l4BookUpdates"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "l4BookUpdates",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "cursor": "<opaque cursor>",
+  "data": {
+    "coin": "BTC",
+    "orders": [
+      {
+        "orderId": "12345",
+        "px": "100000.0",
+        "sz": "0.10",
+        "action": "upsert"
+      }
+    ]
+  }
+}
+```
+
+## Filters and behavior
+
+* `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
+* Supply `cursor` in the subscription object to request replay after that cursor. The cursor is opaque: clients store and return it unmodified, and its format may change.
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| coin | string | Market identifier. |
+| orders | array | Order records. |
+| orders[] | object | Order records. |
+| orders[].orderId | string | Illustrative orderId value. |
+| orders[].px | string | Price value. |
+| orders[].sz | string | Size value. |
+| orders[].action | string | Illustrative action value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "l4BookUpdates",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

@@ -2,7 +2,7 @@
 title: Build with AI
 description: Pick the right Alchemy tool for your AI workflow. Teach a coding agent every Alchemy API with Agent Skills, automate from the terminal with the CLI, give it live data via the MCP Server, or let it authenticate autonomously with a wallet.
 subtitle: Pick the right Alchemy tool for your AI workflow. Teach a coding agent every Alchemy API with Agent Skills, automate from the terminal with the CLI, give it live data via the MCP Server, or let it authenticate autonomously with a wallet.
-slug: docs/build-with-ai-overview
+slug: docs/build-with-ai
 ---
 
 We ship four tools for building with AI on Alchemy. They're complementary, and most agent-driven workflows use two or three of them together.
@@ -17,7 +17,7 @@ We ship four tools for building with AI on Alchemy. They're complementary, and m
 npx skills add alchemyplatform/skills --yes
 ```
 
-* Two skills included: `alchemy-api` (API key auth) and `agentic-gateway` (wallet-based x402 auth)
+* Two skills included: `alchemy-api` (API key auth) and `agentic-gateway` (x402 gateway auth)
 * Works with [Claude Code](https://www.anthropic.com/claude-code), [Codex](https://openai.com/index/codex/), [Cursor](https://cursor.com), [VS Code Copilot](https://code.visualstudio.com/docs/setup/copilot), and any agent that supports the [skills spec](https://agentskills.io)
 
 [Get started with Agent Skills →](docs/alchemy-agent-skills)
@@ -33,7 +33,8 @@ npm i -g @alchemy/cli@latest
 * Covers JSON-RPC nodes, Data APIs, Wallet APIs, Notify webhooks, and the Admin API across [100+ networks](docs/reference/node-supported-chains)
 * `--json --no-interactive` flags make every command machine-readable
 * Built-in `agent-prompt` command emits a complete usage spec for AI agents
-* Supports API key, access key, and x402 wallet authentication
+* Supports API key, access key, and x402 gateway auth for Alchemy APIs
+* Pays compatible x402 v2 third-party APIs in USDC with [x402 payments](docs/x402-payments) (`alchemy x402 request`)
 
 [Get started with the CLI →](docs/alchemy-cli)
 
@@ -51,15 +52,17 @@ claude mcp add alchemy --transport http https://mcp.alchemy.com/mcp
 
 [Get started with the MCP Server →](docs/alchemy-mcp-server)
 
-### Agent authentication and payment
+### Wallet auth for Alchemy APIs
 
-Your agent can authenticate with a crypto wallet instead of an API key, purchasing credits in USDC via the [x402 payment protocol](https://www.x402.org/). This is what the `agentic-gateway` skill teaches your agent automatically, and what the CLI uses when you pass `--x402`.
+Your agent can authenticate with a crypto wallet instead of an API key, purchasing Alchemy credits in USDC via the [x402 payment protocol](https://www.x402.org/). This is what the `agentic-gateway` skill teaches your agent automatically, and what the CLI uses when you pass `--x402`.
 
 * No API key required, supports authentication via [SIWE (Sign-In With Ethereum)](https://eips.ethereum.org/EIPS/eip-4361) and SIWS (Sign-In With Solana)
 * Supports payment via USDC on Base and Solana
 * Wallet type is independent of which chain you query
 
-[Learn about agent authentication and payment →](docs/alchemy-for-agents)
+[Learn about wallet auth for Alchemy APIs →](docs/alchemy-for-agents)
+
+To have your agent pay an x402 v2 endpoint that offers a supported EVM payment option, use the CLI's [x402 payments](docs/x402-payments) instead.
 
 ## Pick the right tool
 
@@ -70,10 +73,11 @@ Your agent can authenticate with a crypto wallet instead of an API key, purchasi
 | Script a recurring job, cron, or CI step that calls Alchemy | [CLI](docs/alchemy-cli) |
 | Give a shell-driven agent a structured tool surface | [CLI](docs/alchemy-cli) with `--json --no-interactive` |
 | Let my IDE copilot query live onchain data during a conversation | [MCP Server](docs/alchemy-mcp-server) or [CLI](docs/alchemy-cli) |
-| Build an autonomous agent that authenticates with a wallet and pays in USDC | [Agent Authentication and Payment](docs/alchemy-for-agents) plus [Skills](docs/alchemy-agent-skills) or [CLI](docs/alchemy-cli) |
+| Build an autonomous agent that authenticates with a wallet and pays Alchemy in USDC | [Wallet auth for Alchemy APIs](docs/alchemy-for-agents) plus [Skills](docs/alchemy-agent-skills) or [CLI](docs/alchemy-cli) |
+| Pay a compatible x402 v2 third-party API in USDC | [x402 payments](docs/x402-payments) via the [CLI](docs/alchemy-cli) |
 | Give a coding agent both API knowledge and live data access | Agent Skills + MCP Server or CLI |
 
-These tools layer on top of each other. An agent using **Skills** to understand our APIs can shell out to the **CLI** for admin tasks, call the **MCP Server** for live data, and use the **`agentic-gateway` skill** or `--x402` flag to operate without a pre-provisioned API key.
+These tools layer on top of each other. An agent using **Skills** to understand our APIs can shell out to the **CLI** for admin tasks, call the **MCP Server** for live data, use the **`agentic-gateway` skill** or `--x402` flag to operate without a pre-provisioned API key, and use `alchemy x402` to pay third-party APIs in USDC.
 
 ## Supported AI tools
 

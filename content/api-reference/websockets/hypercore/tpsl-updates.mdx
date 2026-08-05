@@ -1,0 +1,82 @@
+---
+title: "tpslUpdates stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# tpslUpdates stream
+
+For the corresponding gRPC stream, see [StreamTpslUpdates](/docs/chains/hypercore-grpc/api-reference/stream-tpsl-updates).
+
+## Subscribe
+> The values below illustrate the intended request shape.
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "tpslUpdates",
+    "users": [
+      "0x1111111111111111111111111111111111111111"
+    ]
+  }
+}
+```
+
+## Acknowledgement
+```json
+{
+  "channel": "subscriptionResponse",
+  "data": {
+    "subscriptionId": "sub_01",
+    "type": "tpslUpdates"
+  }
+}
+```
+
+## Event envelope
+
+```json
+{
+  "channel": "tpslUpdates",
+  "subscriptionId": "sub_01",
+  "blockHeight": 123456,
+  "blockTime": 1780000000000,
+  "cursor": "<opaque cursor>",
+  "data": {
+    "user": "0x1111111111111111111111111111111111111111",
+    "orderId": "12345",
+    "triggerType": "stopLoss",
+    "triggerPrice": "99000.0",
+    "status": "triggered"
+  }
+}
+```
+
+## Payload fields
+
+The payload shape is proposed.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| user | string | User identifier. |
+| orderId | string | Illustrative orderId value. |
+| triggerType | string | Illustrative triggerType value. |
+| triggerPrice | string | Illustrative triggerPrice value. |
+| status | string | Illustrative status value. |
+## Unsubscribe
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "tpslUpdates",
+    "users": [
+      "0x1111111111111111111111111111111111111111"
+    ]
+  }
+}
+```
+## Resume
+
+To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

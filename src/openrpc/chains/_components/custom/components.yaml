@@ -14,3 +14,96 @@ components:
       title: hex encoded unsigned integer (any case)
       type: string
       pattern: ^0[xX]([1-9A-Fa-f]+[0-9A-Fa-f]*|0)$
+
+    BlockHeader:
+      title: Block header object
+      description: >-
+        The consensus fields of a block header, as returned by
+        `eth_getHeaderByHash` and `eth_getHeaderByNumber`. Structurally
+        identical to the `Block` object but without body-level fields
+        (`size`, `transactions`, `uncles`, `withdrawals`).
+      type: object
+      required:
+        - hash
+        - parentHash
+        - sha3Uncles
+        - miner
+        - stateRoot
+        - transactionsRoot
+        - receiptsRoot
+        - logsBloom
+        - number
+        - gasLimit
+        - gasUsed
+        - timestamp
+        - extraData
+        - mixHash
+        - nonce
+      additionalProperties: false
+      properties:
+        hash:
+          title: Hash
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        parentHash:
+          title: Parent block hash
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        sha3Uncles:
+          title: Ommers hash
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        miner:
+          title: Coinbase
+          $ref: "../evm/base-types.yaml#/components/schemas/address"
+        stateRoot:
+          title: State root
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        transactionsRoot:
+          title: Transactions root
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        receiptsRoot:
+          title: Receipts root
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        logsBloom:
+          title: Bloom filter
+          $ref: "../evm/base-types.yaml#/components/schemas/bytes256"
+        difficulty:
+          title: Difficulty
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        number:
+          title: Number
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        gasLimit:
+          title: Gas limit
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        gasUsed:
+          title: Gas used
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        timestamp:
+          title: Timestamp
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        extraData:
+          title: Extra data
+          $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+        mixHash:
+          title: Mix hash
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        nonce:
+          title: Nonce
+          $ref: "../evm/base-types.yaml#/components/schemas/bytes8"
+        baseFeePerGas:
+          title: Base fee per gas (EIP-1559, London)
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        withdrawalsRoot:
+          title: Withdrawals root (EIP-4895, Shanghai)
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        blobGasUsed:
+          title: Blob gas used (EIP-4844, Cancun)
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        excessBlobGas:
+          title: Excess blob gas (EIP-4844, Cancun)
+          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+        parentBeaconBlockRoot:
+          title: Parent Beacon Block Root (EIP-4788, Cancun)
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+        requestsHash:
+          title: Requests hash (EIP-7685, Prague/Pectra)
+          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
