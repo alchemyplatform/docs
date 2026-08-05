@@ -1151,19 +1151,23 @@ components:
         Available on paid Alchemy plans (pay-as-you-go or enterprise); not available on the free tier.
 
 
-        Returns the status of one or more previously submitted Jito bundles.
-        Behaves similarly to Solana's `getSignatureStatuses` but keyed on `bundle_id`.
-        If a bundle is not found or has not landed, its entry is omitted from the
-        `value` array.
+        Returns the status of submitted bundle(s). This function operates similarly
+        to the Solana RPC method `getSignatureStatuses`. If a `bundle_id` is not
+        found or has not landed, it returns `null`. If found and processed, it
+        returns context information including the slot at which the request was
+        made and results with the `bundle_id(s)` and the transactions along with
+        their slot and confirmation status.
 
 
-        Internally the block engine calls `getSignatureStatuses` with the default
-        `searchTransactionHistory: false`, so only recent slots plus up to
-        `MAX_RECENT_BLOCKHASHES` (currently 300) rooted slots are searched.
+        We use `getSignatureStatuses` with the default value of
+        `searchTransactionHistory` set to `false` to check transaction statuses
+        on-chain. This means the RPC call will search only its recent history,
+        including all recent slots plus up to `MAX_RECENT_BLOCKHASHES` rooted slots
+        for the transactions. Currently, `MAX_RECENT_BLOCKHASHES` is 300.
 
 
         See Jito's [getBundleStatuses](https://docs.jito.wtf/lowlatencytxnsend/#getbundlestatuses)
-        docs for the underlying block engine behavior.
+        docs for background.
       x-compute-units: 40
       params:
         - name: Bundle IDs
@@ -1207,9 +1211,10 @@ components:
         Available on paid Alchemy plans (pay-as-you-go or enterprise); not available on the free tier.
 
 
-        Returns the 8 Jito tip accounts designated to receive bundle tips. To reduce
-        contention, pick one at random for each bundle. The tip account addresses
-        remain constant.
+        Retrieves the tip accounts designated for tip payments for bundles. The
+        tip accounts have remained constant and can also be found in the
+        [example response](https://docs.jito.wtf/lowlatencytxnsend/#response-example-tips)
+        of Jito's docs.
 
 
         See Jito's [getTipAccounts](https://docs.jito.wtf/lowlatencytxnsend/#gettipaccounts)
@@ -1255,18 +1260,17 @@ components:
         Available on paid Alchemy plans (pay-as-you-go or enterprise); not available on the free tier.
 
 
-        Returns the in-flight status of one or more Jito bundles submitted within
-        the last 5 minutes. Up to 5 bundle IDs may be queried in a single request.
-        Statuses are one of:
+        Returns the status of submitted bundles within the last five minutes,
+        allowing up to five bundle IDs per request.
 
 
-        * `Failed`: every region that received the bundle has marked it as failed and it has not been forwarded.
+        * **Failed**: Indicates that all regions have marked the bundle as failed, and it has not been forwarded.
 
-        * `Pending`: the bundle has not failed, landed, or been marked invalid.
+        * **Pending**: Indicates the bundle has not failed, landed, or been deemed invalid.
 
-        * `Landed`: the bundle has landed on-chain, verified via RPC or the `bundles_landed` table.
+        * **Landed**: Signifies the bundle has successfully landed on-chain, verified through RPC or the `bundles_landed` table.
 
-        * `Invalid`: the bundle is no longer in the block engine's 5-minute look back window.
+        * **Invalid**: Means the bundle is no longer in the system.
 
 
         See Jito's [getInflightBundleStatuses](https://docs.jito.wtf/lowlatencytxnsend/#getinflightbundlestatuses)
@@ -1288,6 +1292,9 @@ components:
               value:
                 - "b31e5fae4923f345218403ac1ab242b46a72d4f2a38d131f474255ae88f1ec9a"
                 - "e3c4d7933cf3210489b17307a14afbab2e4ae3c67c9e7157156f191f047aa6e8"
+                - "a7abecabd9a165bc73fd92c809da4dc25474e1227e61339f02b35ce91c9965e2"
+                - "e3934d2f81edbc161c2b8bb352523cc5f74d49e8d4db81b222c553de60a66514"
+                - "2cd515429ae99487dfac24b170248f6929e4fd849aa7957cccc1daf75f666b54"
           result:
             name: Inflight bundle statuses
             value:
@@ -1298,6 +1305,15 @@ components:
                   status: "Invalid"
                   landed_slot: null
                 - bundle_id: "e3c4d7933cf3210489b17307a14afbab2e4ae3c67c9e7157156f191f047aa6e8"
+                  status: "Invalid"
+                  landed_slot: null
+                - bundle_id: "a7abecabd9a165bc73fd92c809da4dc25474e1227e61339f02b35ce91c9965e2"
+                  status: "Invalid"
+                  landed_slot: null
+                - bundle_id: "e3934d2f81edbc161c2b8bb352523cc5f74d49e8d4db81b222c553de60a66514"
+                  status: "Invalid"
+                  landed_slot: null
+                - bundle_id: "2cd515429ae99487dfac24b170248f6929e4fd849aa7957cccc1daf75f666b54"
                   status: "Invalid"
                   landed_slot: null
       result:
