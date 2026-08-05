@@ -6,8 +6,6 @@ subtitle: Alchemy's Jito bundle APIs for low-latency, atomic transaction executi
 
 ## Background
 
-Alchemy proxies [Jito's](https://docs.jito.wtf/lowlatencytxnsend/) low-latency bundle methods on the standard Solana RPC endpoints, so you can submit atomic multi-transaction bundles through the same endpoint you already use for Solana Core RPC.
-
 A **bundle** is a group of up to 5 signed Solana transactions that execute:
 
 * **Sequentially** — in the exact order you list them.
@@ -21,9 +19,15 @@ Bundles do not go through Solana's normal gossip path. They go to the [Jito Bloc
 
 Your bid in that auction is the **Jito tip** — a plain SOL transfer to one of the [8 tip accounts](/docs/chains/solana/solana-jito-bundles-and-transactions/solana-jito-bundles-and-transactions/get-tip-accounts) returned by `getTipAccounts`, included in one of your bundle's transactions. The minimum tip is 1,000 lamports; contested MEV opportunities can require substantially higher tips. See Jito's [tip amount guidance](https://docs.jito.wtf/lowlatencytxnsend/#tip-amount) for current recommendations.
 
-## Endpoints
+## Endpoint
 
-These methods are served through the standard Solana Alchemy endpoints (`https://solana-mainnet.g.alchemy.com/v2/{apiKey}` and `https://solana-devnet.g.alchemy.com/v2/{apiKey}`), so you can call them with the same client you already use for Solana Core RPC.
+Jito bundle methods are available on **Solana Mainnet only** through the standard Alchemy Solana RPC endpoint:
+
+```
+https://solana-mainnet.g.alchemy.com/v2/{apiKey}
+```
+
+Devnet is not supported.
 
 ## Methods
 
