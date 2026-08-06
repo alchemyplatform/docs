@@ -1,0 +1,137 @@
+---
+title: Usage API Quickstart
+subtitle: Query account usage summaries and time-series data with the Usage API.
+slug: reference/usage-api/quickstart
+---
+
+## Get started
+
+This guide walks through retrieving an account usage summary and querying usage over time.
+
+### Prerequisites
+
+* An access key with Usage **read** permissions
+  * Refer to the [overview authentication section](/docs/reference/usage-api/overview#authentication) for instructions to create an access key
+
+## Set up environment variables
+
+```bash
+export ALCHEMY_ADMIN_BASE_URL="https://admin-api.alchemy.com/v1"
+export ALCHEMY_ADMIN_ACCESS_KEY="YOUR_ACCESS_KEY_HERE"
+```
+
+Auth header:
+
+```bash
+export ALCHEMY_ADMIN_AUTH_HEADER="Authorization: Bearer $ALCHEMY_ADMIN_ACCESS_KEY"
+```
+
+## 1. Get usage summary
+
+Retrieve usage totals for the current billing period and recent rolling windows.
+
+```bash
+curl "$ALCHEMY_ADMIN_BASE_URL/usage/summary" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER"
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "billingPeriod": {
+      "startTime": "2026-06-01T00:00:00Z",
+      "endTime": "2026-07-01T00:00:00Z"
+    },
+    "totals": {
+      "last7Days": {
+        "amount": "1250000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "12.50"
+      },
+      "last30Days": {
+        "amount": "4800000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "48.00"
+      },
+      "monthToDate": {
+        "amount": "3200000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "32.00"
+      }
+    },
+    "usageLimit": {
+      "unit": "CU",
+      "limit": "10000000",
+      "used": "3200000",
+      "remaining": "6800000",
+      "percentUsed": 32
+    },
+    "freshness": {
+      "dataThrough": "2026-06-28T23:59:00Z",
+      "containsPartialToday": true,
+      "updateCadence": "minute"
+    }
+  }
+}
+```
+
+## 2. Get usage time series
+
+Query daily usage over a date range. You can optionally filter by app, network, method, or request type, and group results by one dimension.
+
+```bash
+curl -X POST "$ALCHEMY_ADMIN_BASE_URL/usage/time-series" \
+  -H "Content-Type: application/json" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+  -d '{
+    "startTime": "2026-06-01T00:00:00Z",
+    "endTime": "2026-06-07T23:59:59Z",
+    "granularity": "day",
+    "products": ["SUPERNODE_CU"],
+    "metrics": ["amount", "usd"],
+    "groupBy": ["network"]
+  }'
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "query": {
+      "startTime": "2026-06-01T00:00:00Z",
+      "endTime": "2026-06-07T23:59:59Z",
+      "granularity": "day",
+      "products": ["SUPERNODE_CU"],
+      "metrics": ["amount", "usd"],
+      "groupBy": ["network"]
+    },
+    "freshness": {
+      "dataThrough": "2026-06-07T23:59:00Z",
+      "containsPartialToday": false,
+      "updateCadence": "minute"
+    },
+    "data": [
+      {
+        "startTime": "2026-06-01T00:00:00Z",
+        "endTime": "2026-06-02T00:00:00Z",
+        "isPartial": false,
+        "dimensions": {
+          "network": "eth-mainnet"
+        },
+        "amount": "450000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "4.50"
+      }
+    ]
+  }
+}
+```
+
+## Next steps
+
+* See the [Get usage summary](/docs/tutorials/tools/usage-api/usage-api-endpoints/get-usage-summary) endpoint reference for response fields
+* See the [Get usage time series](/docs/tutorials/tools/usage-api/usage-api-endpoints/get-usage-time-series) endpoint reference for all request options
+* Use the [Alchemy CLI](/docs/alchemy-cli#usage) to query usage from the terminal without writing HTTP requests

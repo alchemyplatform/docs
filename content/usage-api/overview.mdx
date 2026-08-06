@@ -1,0 +1,53 @@
+---
+title: Usage API Overview
+subtitle: Inspect compute unit usage and billing metrics for your account.
+slug: reference/usage-api/overview
+---
+
+The Usage API lets you programmatically inspect API usage for your Alchemy account. Use it to build dashboards, billing alerts, and internal reporting without exporting data from the Alchemy Dashboard.
+
+Usage data includes compute unit totals, estimated USD cost, billing period boundaries, and optional breakdowns by app, network, method, and request type.
+
+***
+
+## What you can do
+
+Use this API to:
+
+* Retrieve account usage summaries for the current billing period and recent rolling windows
+* Query usage time series with hourly or daily granularity
+* Filter by app, network, method, and request type
+* Group results by request type, app, network, or method
+
+Each request is authenticated and returns JSON responses.
+
+***
+
+## Authentication
+
+All requests must include credentials with Usage read permissions.
+
+You can authenticate with either:
+
+* An access key with **Usage** read permissions (`ADMIN_USAGE_READ`)
+* A dashboard user session token with `viewer`, `developer`, or `admin` role
+
+To create an access key:
+
+1. Go to the [security tab](https://dashboard.alchemy.com/settings/security?utm_source=docs&utm_medium=referral&utm_content=reference_usage-api_overview) in the Alchemy Dashboard
+2. Create a new access key
+3. Enable **Usage** with Read permissions
+
+***
+
+## Plan limits
+
+Time-series query ranges are limited by plan:
+
+| Plan | Maximum range |
+|---|---:|
+| Free | 1 day |
+| Pay as You Go | 7 days |
+| Longer ranges | [Contact sales](https://www.alchemy.com/contact-sales) |
+
+If you request a range longer than your plan supports, the API returns results for the allowed range.
