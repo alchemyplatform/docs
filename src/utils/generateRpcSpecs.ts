@@ -27,10 +27,14 @@ const generateOpenRpcSpecFromSource = async (
   })) as DerefedOpenRpcDoc & { [SERVER_URL_FINAL_KEY]?: boolean };
 
   const skipApiKeyParam = spec[SERVER_URL_FINAL_KEY] === true;
+  const hasCustomAuthParams =
+    Array.isArray((spec as Record<string, unknown>)["x-auth-params"]) &&
+    ((spec as Record<string, unknown>)["x-auth-params"] as unknown[]).length >
+      0;
   const { [SERVER_URL_FINAL_KEY]: _skipKey, ...specWithoutKey } = spec;
   const fullSpec = {
     ...specWithoutKey,
-    ...(skipApiKeyParam
+    ...(skipApiKeyParam || hasCustomAuthParams
       ? {}
       : {
           "x-auth-params": [
