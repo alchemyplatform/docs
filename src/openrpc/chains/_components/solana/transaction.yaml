@@ -542,3 +542,102 @@ components:
           $ref: "./base-types.yaml#/components/schemas/Commitment"
         minContextSlot:
           $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+    SendBundleConfig:
+      title: SendBundle Configuration
+      type: object
+      properties:
+        encoding:
+          type: string
+          description: Encoding used for the transaction data. `base64` is recommended; `base58` is deprecated.
+          enum:
+            - base64
+            - base58
+          default: base58
+    BundleStatus:
+      title: Bundle Status
+      type: object
+      properties:
+        bundle_id:
+          type: string
+          description: The bundle ID.
+        transactions:
+          type: array
+          items:
+            type: string
+          description: The list of base-58 encoded transaction signatures in the bundle. The list will not be empty.
+        slot:
+          type: integer
+          description: The slot in which this bundle was processed.
+        confirmation_status:
+          type: string
+          description: The bundle transactions' cluster confirmation status; either `processed`, `confirmed`, or `finalized`.
+          enum:
+            - processed
+            - confirmed
+            - finalized
+        err:
+          type: object
+          nullable: true
+          description: The retryable or non-retryable error encountered when getting the bundle status. If retryable, query again.
+    BundleStatusesResult:
+      title: Bundle Statuses Result
+      type: object
+      nullable: true
+      description: An RPC response containing the bundle statuses, or `null` if none of the requested bundles are found.
+      properties:
+        context:
+          type: object
+          properties:
+            slot:
+              type: integer
+              description: The slot at which the request was processed.
+        value:
+          type: array
+          description: An array of bundle status objects. Empty if none of the requested bundles are found.
+          items:
+            $ref: "#/components/schemas/BundleStatus"
+    InflightBundleStatus:
+      title: Inflight Bundle Status
+      type: object
+      properties:
+        bundle_id:
+          type: string
+          description: The bundle ID.
+        status:
+          type: string
+          description: >-
+            The inflight status of the bundle.
+
+            `Invalid`: bundle ID is not in the block engine's 5-minute look back window.
+
+            `Pending`: bundle has not failed, landed, or been marked invalid.
+
+            `Failed`: every region that received the bundle has marked it as failed and it has not been forwarded.
+
+            `Landed`: bundle has landed on-chain, verified via RPC or the `bundles_landed` table.
+          enum:
+            - Invalid
+            - Pending
+            - Failed
+            - Landed
+        landed_slot:
+          type: integer
+          nullable: true
+          description: The slot the bundle landed in, or `null` if the bundle is `Invalid`, `Pending`, or `Failed`.
+    InflightBundleStatusesResult:
+      title: Inflight Bundle Statuses Result
+      type: object
+      nullable: true
+      description: An RPC response containing the inflight bundle statuses, or `null` if none of the requested bundles are found.
+      properties:
+        context:
+          type: object
+          properties:
+            slot:
+              type: integer
+              description: The slot at which the request was processed.
+        value:
+          type: array
+          description: An array of inflight bundle status objects.
+          items:
+            $ref: "#/components/schemas/InflightBundleStatus"
