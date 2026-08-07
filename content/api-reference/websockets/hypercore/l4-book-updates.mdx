@@ -7,91 +7,91 @@ description: "HyperCore private-preview documentation."
 
 # l4BookUpdates stream
 
-The L4 delivery model is still being finalized. Candidate models are an initial snapshot followed by incremental updates, or update-only delivery. L4 volumes make a full snapshot per block impractical.
+`l4BookUpdates` delivers every individual order placed, resized, or removed,
+including its position in the price-level queue. This is ideal for market making,
+queue-position analysis, liquidity attribution, and reconstructing an order-level book.
 
 For the corresponding gRPC update stream, see [StreamL4BookUpdates](/docs/chains/hypercore-grpc/api-reference/stream-l4-book-updates). For the snapshot-to-diff recovery pattern, see [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff#snapshot-to-diff-bootstrap).
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
-{
-  "method": "subscribe",
-  "subscription": {
-    "type": "l4BookUpdates",
-    "coins": [
-      "BTC",
-      "ETH"
-    ]
-  }
-}
+{"method":"subscribe","subscription":{"type":"l4BookUpdates","coins":["BTC","ETH"]}}
 ```
 
-## Acknowledgement
+Use `marketTypes` instead of `coins` to subscribe to all markets of selected types:
+
 ```json
-{
-  "channel": "subscriptionResponse",
-  "data": {
-    "subscriptionId": "sub_01",
-    "type": "l4BookUpdates"
-  }
-}
+{"method":"subscribe","subscription":{"type":"l4BookUpdates","marketTypes":["spot"]}}
+```
+
+## Subscription parameters
+
+| Parameter | Type | Required | Source | Description |
+| --- | --- | --- | --- | --- |
+| `coins` | string[] | No | Alchemy extension | Markets to subscribe to. Omit to subscribe to every market of the types in `marketTypes`, which defaults to perpetuals. The native API takes a single `coin` per subscription; the plural array is an Alchemy extension. |
+| `marketTypes` | string[] | No | Alchemy extension | Restricts delivery by market type. Accepted values: `perp`, `spot`, `outcome`, or `*`. Defaults to `["perp"]`. Rejected if combined with `coins`. |
+
+The default never grows. New market types must be added to `marketTypes` explicitly, or pass `["*"]` to opt in to future types automatically.
+
+## Acknowledgement
+
+```json
+{"channel":"subscriptionResponse","data":{"subscriptionId":"sub_01","type":"l4BookUpdates"}}
 ```
 
 ## Event envelope
 
 ```json
-{
-  "channel": "l4BookUpdates",
-  "subscriptionId": "sub_01",
-  "blockHeight": 123456,
-  "blockTime": 1780000000000,
-  "cursor": "<opaque cursor>",
-  "data": {
-    "coin": "BTC",
-    "orders": [
-      {
-        "orderId": "12345",
-        "px": "100000.0",
-        "sz": "0.10",
-        "action": "upsert"
-      }
-    ]
-  }
-}
+{"channel":"l4BookUpdates","subscriptionId":"sub_01","blockHeight":123456,"blockTime":1780000000000,"cursor":"<opaque cursor>","data":{"height":123456,"time":1780000000000,"isSnapshot":false,"diffs":[{"type":"new","coin":"BTC","oid":12345,"user":"0x1111111111111111111111111111111111111111","side":"B","px":"100000.0","sz":"0.10","insertBefore":12346}]}}
 ```
-
-## Filters and behavior
-
-* `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
-* Supply `cursor` in the subscription object to request replay after that cursor. The cursor is opaque: clients store and return it unmodified, and its format may change.
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
-| coin | string | Market identifier. |
-| orders | array | Order records. |
-| orders[] | object | Order records. |
-| orders[].orderId | string | Illustrative orderId value. |
-| orders[].px | string | Price value. |
-| orders[].sz | string | Size value. |
-| orders[].action | string | Illustrative action value. |
-## Unsubscribe
-```json
-{
-  "method": "unsubscribe",
-  "subscription": {
-    "type": "l4BookUpdates",
-    "coins": [
-      "BTC",
-      "ETH"
-    ]
-  }
-}
-```
-## Resume
+| `height` | integer | Block height. |
+| `time` | integer | Block timestamp in milliseconds. |
+| `isSnapshot` | boolean | `true` when the message contains a complete replacement snapshot; absent or `false` for an incremental update. |
+| `diffs` | array | Per-order changes in this block. |
+| `diffs[].type` | string | `new`, `update`, or `remove`. |
+| `diffs[].coin` | string | Market symbol. |
+| `diffs[].oid` | integer | Order ID, unique and stable for the life of the order. |
+| `diffs[].user` | string | Address that placed the order. |
+| `diffs[].side` | string | `B` for bid, `A` for ask. |
+| `diffs[].px` | string | Limit price, as a decimal string. |
+| `diffs[].sz` | string | Current size. Present on `new` and `update`, absent on `remove`. |
+| `diffs[].insertBefore` | integer | Optional, on `new` only. Queue placement — see below. |
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+## Queue position
+
+`insertBefore` places this order immediately ahead of the resting order with that ID at the same price level, reflecting HyperCore's priority placement rules. When absent, append the order to the tail of the queue. If the named order is no longer at that level, append to the tail.
+
+## Update behavior
+
+* `update` means the order's size changed, typically a partial fill
+* `remove` is terminal — the order was filled or cancelled
+* Grouping these orders by price produces the corresponding level-aggregated view — sum the sizes and count the orders at each price — so one subscription can serve both order-level and level-aggregated needs. This corresponds to an unaggregated `l2Book`; it does not reproduce a book requested with `nSigFigs` or `mantissa` applied.
+
+## Choosing a book stream
+
+| | l2Book | l2BookDiff | bbo | l4BookUpdates |
+| --- | --- | --- | --- | --- |
+| **Delivers** | Complete aggregated snapshot | Changed aggregated levels | Best bid and ask only | Changed individual orders |
+| **Client state** | None required | Maintains a local book | None required | Maintains a local book |
+| **Detail** | Aggregated levels | Aggregated levels | Top of book | Individual orders, with queue position |
+| **Use case** | Displays, periodic reads | Efficient live book | Price and spread tracking | Market making, queue analysis |
+
+## Unsubscribe
+
+```json
+{"method":"unsubscribe","subscription":{"type":"l4BookUpdates","coins":["BTC","ETH"]}}
+```
+
+## Recovery
+
+* Persist `cursor` and each market's `seq` after applying a message.
+* On reconnect, supply `cursor` in the subscription object.
+* Check `prev_seq` against your position for that market on every diff.
+* A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state.
+* If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you. There is no separate resynchronization message and no epoch to track — `isSnapshot: true` is the signal to discard local state and adopt the supplied snapshot.

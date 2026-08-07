@@ -7,4 +7,49 @@ description: "HyperCore private-preview documentation."
 
 # Timestamps, cursors, and replay
 
-The intended contract uses Unix milliseconds and opaque cursors. Cursors order events within a subscription and are not business identifiers. Replay begins after the supplied cursor. Clients store and return cursors unmodified because their format may change.
+## Time
+
+All timestamps are Unix milliseconds.
+
+## Block height
+
+HyperCore produces a block roughly every 70 ms, and block numbers on the chain are sequential.
+
+Block-derived messages identify their source block by height or round. Whether a skipped height indicates a gap depends on the stream — block-complete streams expect continuity, change-driven streams do not. `bbo` emits only when the best bid or ask moves, and `l2Book` sends a market only when that market's book changed. Stateful diff streams use their own sequence fields for gap detection, described below.
+
+## Cursors
+
+On a replay-capable stream, a cursor marks a position in a subscription. It is opaque: store it and return it unmodified, because its format may change. Cursors are per subscription, not per connection — subscriptions sharing a connection resume independently, and replay resumes after the supplied cursor. `l2Book` and `bbo` carry no cursor.
+
+## Snapshot and diff streams
+
+The stateful market-data streams use two recovery models. This taxonomy does not classify event feeds such as fills, order updates, funding, and ledger events.
+
+**Complete-snapshot streams** — `l2Book` and `bbo`. Every message is self-contained and replaces prior state. There is no cursor and nothing to replay: after a disconnect, resubscribe and the next message re-establishes state.
+
+**Incremental streams** — `l2BookDiff`, `l4BookUpdates`, and `tpslUpdates`. Messages carry changes that chain onto previous state. These carry a cursor and support replay.
+
+> A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state. If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you — there is no separate resynchronization message and no epoch to track.
+
+## Detecting gaps
+
+**Client-side detection**, on `l2BookDiff`: each per-market diff carries `seq` and `prev_seq`. If `prev_seq` does not match your current position for that market, you have a gap.
+
+**Server-side detection**, on `l4BookUpdates` and `tpslUpdates`: these carry no sequence fields. When continuity breaks, the service pushes a message with `isSnapshot: true` rather than requiring the client to detect the gap itself. A client on these streams has no gap-detection bookkeeping to implement.
+
+## Deduplicating on reconnect
+
+When resuming from a cursor, replayed and live messages may overlap. There is no single deduplication key across all streams. Deduplicate using the identity fields the stream actually documents:
+
+| Stream kind | Identity for deduplication |
+| --- | --- |
+| `l2BookDiff` | The per-market `seq` value |
+| `l4BookUpdates`, `tpslUpdates` | No client-side deduplication is required — a pushed snapshot replaces state |
+| Block streams | Block `height` or `round`, according to the API surface |
+| Event streams | The identity fields documented by that stream, such as `(time, txIndex)` where both are present |
+
+A cursor identifies a resume position, not an event. It is not itself a deduplication key.
+
+## Replay depth
+
+Replay depth is bounded by node block-data retention, currently approximately 48 hours. For block-derived streams, gaps that replay cannot bridge can be recovered with the block lookup methods.

@@ -5,25 +5,71 @@ description: "HyperCore private-preview documentation."
 
 <Markdown src="../shared/preview-notice-september.mdx" />
 
-# StreamBboBook
+# Stream BBO book
 
-## Intended RPC
+`StreamBboBook` delivers the top-of-book best bid and offer when either side changes.
+This is ideal for live price and spread displays, routing decisions, and applications
+where full depth is wasted bandwidth.
 
-`rpc StreamBboBook(StreamBboBookRequest) returns (stream BboBookEnvelope);`
+> The contract below is proposed and will be confirmed before general availability.
 
-Carries best-bid-and-offer book data. For the WebSocket representation, see [bbo](/docs/chains/websockets/hypercore/streams/bbo).
+## Overview
 
-## Intended message
+* Emitted only when the best bid or the best ask changes for a market
+* Top of book only — use `StreamL2Book` for depth
+* A null side means there are no resting orders on that side
+* Every message is complete, so there is nothing to replay
 
-The envelope below is illustrative and non-binding: its field names, field numbers, scalar types, payload type names, and finality semantics remain provisional. It makes no wire-compatibility promise.
+## Request structure
 
 ```proto
-message BboBookEnvelope {
-  string cursor = 1;
-  uint64 sequence = 2;
-  bool is_final = 3;
-  BboBookPayload best_bid_offer = 4;
+message StreamBboBookRequest {
+  repeated string coins = 1;
+  repeated string market_types = 2;
 }
 ```
 
-The service will publish the request and payload message definitions.
+### Coins
+
+**Field**: `coins`
+**Type**: `repeated string`
+
+Markets to subscribe to. Empty means all markets.
+
+### Market types
+
+**Field**: `market_types`
+**Type**: `repeated string`
+
+Accepted values are `perp`, `spot`, `outcome`, or `*`. The default is `["perp"]`, so
+spot and outcome markets are not delivered unless requested. The default never grows:
+add new market types explicitly, or pass `["*"]` to opt in to future types automatically.
+This field is rejected when combined with an explicit `coins` list.
+
+## Response structure
+
+```proto
+message BboBookUpdate {
+  string coin = 1;
+  uint64 height = 2;
+  uint64 time = 3;
+  Level bid = 4;
+  Level ask = 5;
+}
+```
+
+### Key fields
+
+**`coin`**: Market symbol.
+
+**`height`**: Block number.
+
+**`time`**: Block timestamp in milliseconds.
+
+**`bbo`**: `[best_bid, best_ask]`. Each element is a level with `px`, `sz`, and `n`, or
+`null` if that side is empty. The tuple always has exactly two elements.
+
+## When to use BBO
+
+Use this stream for spread monitoring, price displays, routing decisions, and any case
+where full depth is wasted bandwidth.

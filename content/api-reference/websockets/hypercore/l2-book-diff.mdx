@@ -7,98 +7,100 @@ description: "HyperCore private-preview documentation."
 
 # l2BookDiff stream
 
+`l2BookDiff` delivers incremental price-level changes so clients can maintain a
+local order book without receiving a complete snapshot on every update. This is
+ideal for latency-sensitive consumers needing continuous book state.
+
 For the corresponding gRPC diff stream, see [StreamL2BookDiff](/docs/chains/hypercore-grpc/api-reference/stream-l2-book-diff). [l2Book](/docs/chains/websockets/hypercore/streams/l2-book) is the snapshot representation.
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
-{
-  "method": "subscribe",
-  "subscription": {
-    "type": "l2BookDiff",
-    "coins": [
-      "BTC",
-      "ETH"
-    ]
-  }
-}
+{"method":"subscribe","subscription":{"type":"l2BookDiff","coins":["BTC","ETH"],"nSigFigs":5,"mantissa":2,"nLevels":20}}
 ```
 
-## Acknowledgement
+Use `marketTypes` instead of `coins` to subscribe to all markets of selected types:
+
 ```json
-{
-  "channel": "subscriptionResponse",
-  "data": {
-    "subscriptionId": "sub_01",
-    "type": "l2BookDiff"
-  }
-}
+{"method":"subscribe","subscription":{"type":"l2BookDiff","marketTypes":["spot"]}}
+```
+
+## Subscription parameters
+
+| Parameter | Type | Required | Source | Description |
+| --- | --- | --- | --- | --- |
+| `coins` | string[] | No | Alchemy extension | Markets to subscribe to. Omit to subscribe to every market of the types in `marketTypes`, which defaults to perpetuals. The native API takes a single `coin` per subscription; the plural array is an Alchemy extension. |
+| `marketTypes` | string[] | No | Alchemy extension | Restricts delivery by market type. Accepted values: `perp`, `spot`, `outcome`, or `*`. Defaults to `["perp"]`. Rejected if combined with `coins`. |
+| `nSigFigs` | number | No | Foundation native | Aggregate price levels to N significant figures. Accepted values: `2`, `3`, `4`, `5`. |
+| `mantissa` | number | No | Foundation native | Snap prices to a mantissa step. Accepted values: `2` or `5`. Valid only when `nSigFigs` is `5`. |
+| `nLevels` | number | No | Alchemy extension | Levels per side: `1`, `10`, `20` (default), or `50`. |
+
+The default never grows. New market types must be added to `marketTypes` explicitly, or pass `["*"]` to opt in to future types automatically.
+
+Aggregation rounds bids down and asks up. With `nSigFigs: 5` and `mantissa: 2`, a bid of `70325` becomes `70324` and an ask of `70325` becomes `70326`.
+
+## Acknowledgement
+
+```json
+{"channel":"subscriptionResponse","data":{"subscriptionId":"sub_01","type":"l2BookDiff"}}
 ```
 
 ## Event envelope
 
 ```json
-{
-  "channel": "l2BookDiff",
-  "subscriptionId": "sub_01",
-  "blockHeight": 123456,
-  "blockTime": 1780000000000,
-  "cursor": "<opaque cursor>",
-  "data": {
-    "coin": "BTC",
-    "changes": [
-      {
-        "px": "100000.0",
-        "sz": "1.50",
-        "n": 4
-      }
-    ],
-    "isSnapshot": false
-  }
-}
+{"channel":"l2BookDiff","subscriptionId":"sub_01","blockHeight":123456,"blockTime":1780000000000,"cursor":"<opaque cursor>","data":{"height":123456,"time":1780000000000,"isSnapshot":false,"diffs":[{"coin":"BTC","seq":42,"prev_seq":41,"levels":[[{"px":"100000.0","sz":"1.50","n":4}],[]]}]}}
 ```
 
-## Filters and behavior
+## Payload fields
 
-* `coins` is an array of market symbols. One subscription can cover several markets. Omitting `coins` requests the stream's default market-wide scope.
-* Supply `cursor` in the subscription object to request replay after that cursor. The cursor is opaque: clients store and return it unmodified, and its format may change.
-* Start from a compatible `l2Book` snapshot before applying `l2BookDiff` updates.
+| Field | Type | Description |
+| --- | --- | --- |
+| `height` | integer | Block height. |
+| `time` | integer | Block timestamp in milliseconds. |
+| `isSnapshot` | boolean | `true` when the message contains a complete replacement snapshot; absent or `false` for an incremental update. |
+| `diffs` | array | One entry per market that changed in this block. |
+| `diffs[].coin` | string | Market symbol. |
+| `diffs[].seq` | integer | Per-market sequence number, incrementing by one per diff for that market. |
+| `diffs[].prev_seq` | integer | The preceding per-market sequence number, for gap detection. |
+| `diffs[].levels` | array | Two-element tuple of `[bids, asks]`, containing changed levels only. |
+| `diffs[].levels[][].px` | string | Price, as a decimal string. |
+| `diffs[].levels[][].sz` | string | New total size at this price level. `"0"` means the level was removed. |
+| `diffs[].levels[][].n` | integer | Number of orders at this level. `0` when the level was removed. |
+
+## Applying diffs
+
+* A level with `sz` of `"0"` has been removed. Delete that price from your book.
+* Any other level is an upsert: set that price to the given `sz` and `n`.
+* Sizes are absolute — the level's new total, not a delta.
+* Levels absent from a diff are unchanged.
+* The snapshot and all subsequent diffs must use identical `nSigFigs`, `mantissa`, and `nLevels`. Applying diffs from one aggregation setting to a snapshot taken at another produces an invalid book.
 
 ## Snapshot-to-diff bootstrap
 
 1. Subscribe to `l2Book` and install the received snapshot as local book state.
-2. Persist the snapshot cursor after the snapshot is processed.
-3. The approved snapshot example does not contain a sequence or other ordering-position field. The position field needed to order the snapshot against later diffs is pending confirmation.
-4. Subscribe to `l2BookDiff` for the same coin scope and apply only diffs that follow the installed snapshot once the ordering contract is confirmed.
-5. If replay reports a gap, or a cursor is rejected, discard local state and start again from a fresh snapshot.
+2. The snapshot establishes the local book state.
+3. Subscribe to `l2BookDiff` for the same coin scope and apply its diffs to that state.
+4. If continuity is broken, discard local state and start again from a fresh snapshot.
 
-## Payload fields
+## Choosing a book stream
 
-The payload shape is proposed.
+| | l2Book | l2BookDiff | bbo | l4BookUpdates |
+| --- | --- | --- | --- | --- |
+| **Delivers** | Complete aggregated snapshot | Changed aggregated levels | Best bid and ask only | Changed individual orders |
+| **Client state** | None required | Maintains a local book | None required | Maintains a local book |
+| **Detail** | Aggregated levels | Aggregated levels | Top of book | Individual orders, with queue position |
+| **Use case** | Displays, periodic reads | Efficient live book | Price and spread tracking | Market making, queue analysis |
 
-| Field | Type | Description |
-| --- | --- | --- |
-| coin | string | Market identifier. |
-| changes | array | Order-book changes. |
-| changes[] | object | Order-book changes. |
-| changes[].px | string | Price value. |
-| changes[].sz | string | Size value. |
-| changes[].n | integer | Order-count value. |
-| isSnapshot | boolean | Illustrative isSnapshot value. |
 ## Unsubscribe
-```json
-{
-  "method": "unsubscribe",
-  "subscription": {
-    "type": "l2BookDiff",
-    "coins": [
-      "BTC",
-      "ETH"
-    ]
-  }
-}
-```
-## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+```json
+{"method":"unsubscribe","subscription":{"type":"l2BookDiff","coins":["BTC","ETH"]}}
+```
+
+## Recovery
+
+* Persist `cursor` and each market's `seq` after applying a message.
+* On reconnect, supply `cursor` in the subscription object.
+* Check `prev_seq` against your position for that market on every diff.
+* A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state.
+* If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you. There is no separate resynchronization message and no epoch to track — `isSnapshot: true` is the signal to discard local state and adopt the supplied snapshot.

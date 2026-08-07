@@ -5,25 +5,119 @@ description: "HyperCore private-preview documentation."
 
 <Markdown src="../shared/preview-notice-september.mdx" />
 
-# StreamTpslUpdates
+# Stream TP/SL updates
 
-## Intended RPC
+`StreamTpslUpdates` delivers the lifecycle of resting take-profit and stop-loss trigger
+orders. This is ideal for trigger heatmaps, stop and liquidation monitoring, frontend
+overlays, and alerting.
 
-`rpc StreamTpslUpdates(StreamTpslUpdatesRequest) returns (stream TpslUpdatesEnvelope);`
+> The contract below is proposed and will be confirmed before general availability.
 
-Carries take-profit and stop-loss update data. For the WebSocket representation, see [tpslUpdates](/docs/chains/websockets/hypercore/streams/tpsl-updates).
+## Overview
 
-## Intended message
+* The first message after subscribing is a snapshot of all open trigger orders, delivered
+  as `ADD` diffs with `snapshot` set true
+* Trigger orders are immutable: a modified order appears as a `REMOVE` followed by an
+  `ADD` with a new `oid`
+* A `REMOVE` is always terminal
+* Perpetual markets only
 
-This non-binding example is intentionally provisional: field names, field numbers, scalar types, payload type names, and finality semantics have not been fixed, and it implies no wire compatibility.
+## Request structure
 
 ```proto
-message TpslUpdatesEnvelope {
-  string cursor = 1;
-  uint64 sequence = 2;
-  bool is_final = 3;
-  TpslUpdatesPayload tpsl_updates = 4;
+message StreamTpslUpdatesRequest {
+  repeated string coins = 1;
 }
 ```
 
-The service will publish request and payload message definitions.
+### Coins
+
+**Field**: `coins`
+**Type**: `repeated string`
+
+Trigger orders exist only on perpetual markets. Empty means all perpetual markets.
+
+## Response structure
+
+```proto
+message TpslUpdatesUpdate {
+  uint64 height = 1;
+  uint64 time = 2;
+  bool snapshot = 3;
+  string cursor = 4;
+  repeated TpslOrderDiff diffs = 5;
+}
+
+message TpslOrderDiff {
+  TpslDiffType diff_type = 1;
+  uint64 oid = 2;
+  string coin = 3;
+  string user = 4;
+  string side = 5;
+  string trigger_px = 6;
+  string limit_px = 7;
+  string sz = 8;
+  string trigger_condition = 9;
+  string order_type = 10;
+  bool is_position_tpsl = 11;
+  bool reduce_only = 12;
+  uint64 timestamp = 13;
+  string reason = 14;
+}
+
+enum TpslDiffType {
+  TPSL_DIFF_TYPE_ADD = 0;
+  TPSL_DIFF_TYPE_REMOVE = 1;
+}
+```
+
+### Key fields
+
+**`oid`**: Order ID.
+
+**`side`**: `B` for buy, `A` for sell.
+
+**`trigger_px`**: Price at which the order triggers.
+
+**`limit_px`**: Limit price applied once triggered.
+
+**`sz`**: Order size. `"0.0"` indicates a position-level TP/SL sized by the position
+rather than a fixed quantity.
+
+**`trigger_condition`**: Human-readable condition, for example `Price above 50000`.
+
+**`order_type`**: For example `Stop Market`, `Take Profit Limit`.
+
+**`is_position_tpsl`**: True when the order is attached to a position rather than standing
+alone.
+
+**`reduce_only`**: True when the order can only reduce a position.
+
+**`timestamp`**: Order creation time in milliseconds.
+
+**`reason`**: Present on `REMOVE` only. Why the order left the book.
+
+## Removal reasons
+
+| Reason | Meaning |
+| --- | --- |
+| `triggered` | Condition met; the order was placed on the book |
+| `canceled` | Cancelled by the user |
+| `reduceOnlyCanceled` | Reduce-only order cancelled because the position closed |
+| `marginCanceled` | Cancelled due to insufficient margin |
+| `rejected` | Rejected by the matching engine |
+| `siblingFilledCanceled` | A paired TP/SL order triggered, cancelling this one |
+| `liquidatedCanceled` | Cancelled because the position was liquidated |
+
+`reason` is informational — treat every `REMOVE` as terminal regardless of its value. New
+reason values may appear as HyperCore adds order statuses, so do not branch on an exhaustive
+set.
+
+## Recovery
+
+A message flagged as a snapshot replaces your local state. Anything else is a diff that
+must chain onto your previous block.
+
+If continuity is broken, a fresh snapshot is pushed to you. There is no separate
+resynchronization message to handle and no epoch to track — receiving a snapshot is the
+signal to discard local state and adopt it.
