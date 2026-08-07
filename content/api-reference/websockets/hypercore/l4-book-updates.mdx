@@ -90,8 +90,9 @@ The default never grows. New market types must be added to `marketTypes` explici
 
 ## Recovery
 
-* Persist `cursor` and each market's `seq` after applying a message.
+`l4BookUpdates` carries no per-market `seq` or `prev_seq`; gap detection is server-side, so there is no client sequence bookkeeping. See [detecting gaps](/docs/data/hypercore/concepts/timestamps-cursors-and-replay#detecting-gaps).
+
+* Persist `cursor` after applying a message.
 * On reconnect, supply `cursor` in the subscription object.
-* Check `prev_seq` against your position for that market on every diff.
 * A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state.
 * If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you. There is no separate resynchronization message and no epoch to track — `isSnapshot: true` is the signal to discard local state and adopt the supplied snapshot.
