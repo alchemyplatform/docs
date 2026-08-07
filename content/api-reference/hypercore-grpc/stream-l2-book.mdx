@@ -5,25 +5,116 @@ description: "HyperCore private-preview documentation."
 
 <Markdown src="../shared/preview-notice-september.mdx" />
 
-# StreamL2Book
+# Stream L2 book
 
-## Intended RPC
+`StreamL2Book` delivers aggregated price-level order book snapshots, one per block for
+each market whose book changed. This is ideal for order book displays, depth analysis,
+pricing, and applications that need current book state without maintaining it
+incrementally.
 
-`rpc StreamL2Book(StreamL2BookRequest) returns (stream L2BookEnvelope);`
+> The contract below is proposed and will be confirmed before general availability.
 
-Carries L2 order-book snapshots. For the WebSocket representation, see [l2Book](/docs/chains/websockets/hypercore/streams/l2-book). Use [StreamL2BookDiff](/docs/chains/hypercore-grpc/api-reference/stream-l2-book-diff) for the corresponding diff stream.
+## Overview
 
-## Intended message
+* Every message is a complete snapshot for the market it names
+* A market is sent only when its book changed in that block
+* Levels are aggregated: a single level can represent many orders, and `n` reports how many
+* Order IDs and user addresses are not exposed on this stream
 
-This is a non-binding illustration: field names, field numbers, scalar types, payload type names, and finality semantics are provisional. It does not imply wire compatibility.
+## Request structure
 
 ```proto
-message L2BookEnvelope {
-  string cursor = 1;
-  uint64 sequence = 2;
-  bool is_final = 3;
-  L2BookSnapshot snapshot = 4;
+message StreamL2BookRequest {
+  repeated string coins = 1;
+  repeated string market_types = 2;
+  uint32 n_levels = 3;
+  uint32 n_sig_figs = 4;
+  uint64 mantissa = 5;
 }
 ```
 
-The request and payload message definitions will be published with the service.
+### Coins
+
+**Field**: `coins`
+**Type**: `repeated string`
+
+Markets to subscribe to. Empty means all markets.
+
+### Market types
+
+**Field**: `market_types`
+**Type**: `repeated string`
+
+Accepted values are `perp`, `spot`, `outcome`, or `*`. The default is `["perp"]`, so
+spot and outcome markets are not delivered unless requested. The default never grows:
+add new market types explicitly, or pass `["*"]` to opt in to future types automatically.
+This field is rejected when combined with an explicit `coins` list.
+
+### Levels
+
+**Field**: `n_levels`
+**Type**: `uint32`
+
+Levels per side: `1`, `10`, `20` (default), or `50`.
+
+### Significant figures
+
+**Field**: `n_sig_figs`
+**Type**: `uint32`
+
+Accepted values are `2`, `3`, `4`, or `5`.
+
+### Mantissa
+
+**Field**: `mantissa`
+**Type**: `uint64`
+
+Accepted values are `2` or `5`, and this field is valid only when `n_sig_figs = 5`.
+Aggregation rounds bids down and asks up. With `n_sig_figs = 5` and `mantissa = 2`, a
+bid of `70325` becomes `70324` and an ask of `70325` becomes `70326`.
+
+## Response structure
+
+```proto
+message L2BookUpdate {
+  string coin = 1;
+  uint64 height = 2;
+  uint64 time = 3;
+  repeated Level bids = 4;
+  repeated Level asks = 5;
+}
+
+message Level {
+  string px = 1;
+  string sz = 2;
+  uint32 n = 3;
+}
+```
+
+### Key fields
+
+**`coin`**: Market symbol.
+
+**`height`**: Block number this snapshot reflects.
+
+**`time`**: Block timestamp in milliseconds.
+
+**`bids`**: Repeated `Level`, sorted descending by `px`.
+
+**`asks`**: Repeated `Level`, sorted ascending by `px`.
+
+**`px`**: Price, as a decimal string.
+
+**`sz`**: Total size resting at this price level, as a decimal string.
+
+**`n`**: Number of orders aggregated into this level.
+
+## Choosing a book stream
+
+| | StreamL2Book | StreamL2BookDiff | StreamL4BookUpdates |
+| --- | --- | --- | --- |
+| **Payload** | Full snapshot per block | Changed levels only | Per-order changes |
+| **Client state** | None required | Maintains a local book | Maintains a local book |
+| **Bandwidth** | Highest | Low | Moderate |
+| **Detail** | Aggregated levels | Aggregated levels | Individual orders, with queue position |
+| **Use case** | Displays, periodic reads | Efficient live book | Market making, queue analysis |
