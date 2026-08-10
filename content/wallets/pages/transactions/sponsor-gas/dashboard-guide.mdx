@@ -1,5 +1,5 @@
 ---
-title: Dashboard guide to Gas Sponsorship policies
+title: Policy Management
 description: Create and manage gas sponsorship policies in the Alchemy dashboard, choose the right policy type, configure rules, go live, and monitor spend on the Usage tab.
 slug: wallets/transactions/sponsor-gas/dashboard-guide
 ---
@@ -15,8 +15,6 @@ The Gas Sponsorship surface has two tabs:
 * **Policies** — create, edit, and activate your sponsorship policies
 * **Usage** — monitor spend across your team and per policy
 
-When you open the surface with no policies yet, the Policies tab shows an empty state with a **New policy** button.
-
 <Info>
   Sponsoring gas on mainnets requires a Growth or Enterprise plan. Test networks like Sepolia are available on every plan so you can validate your policy before going live.
 </Info>
@@ -24,26 +22,26 @@ When you open the surface with no policies yet, the Policies tab shows an empty 
 ## Create a policy
 
 <Steps>
-  <Step title="Open the create policy modal">
+  <Step title="Open the create policy dialog">
     On the Policies tab, select **New policy**. If you don't see the button, you don't have edit permission for the app's configuration. Ask an app admin to grant it.
 
-    ![Create policy modal showing the policy type picker](https://alchemyapi-res.cloudinary.com/image/upload/v1786381902/docs/aa-sdk/images/wallets/create-policy-type-picker.png)
+    ![Create policy dialog showing the policy type picker](https://alchemyapi-res.cloudinary.com/image/upload/v1786381902/docs/aa-sdk/images/wallets/create-policy-type-picker.png)
   </Step>
   <Step title="Choose a policy type">
     Pick the policy type that matches how your app sends transactions. See [Policy types](#policy-types) below for guidance on each option. **Gas Sponsorship** is selected by default and is recommended for most apps.
   </Step>
   <Step title="Select chains">
-    For EVM policy types, the modal advances to **Select chains**, where you enable the chains this policy sponsors. You can change these later from the policy editor.
+    For EVM policy types, the dialog advances to **Select chains**, where you enable the chains this policy sponsors. You can change these later from the policy editor.
 
-    ![Create policy modal showing chain selection](https://alchemyapi-res.cloudinary.com/image/upload/v1786381905/docs/aa-sdk/images/wallets/create-policy-select-chains.png)
+    ![Create policy dialog showing chain selection](https://alchemyapi-res.cloudinary.com/image/upload/v1786381905/docs/aa-sdk/images/wallets/create-policy-select-chains.png)
 
-    Solana policies skip this step: the policy is created with the default Solana chains for your plan (mainnet and devnet on paid plans, devnet on the free plan). ERC-20 policies add one more step after chain selection.
+    Solana policies skip this step: the policy is created with the default Solana chains for your plan (mainnet and devnet on paid plans, devnet on the free plan).
   </Step>
   <Step title="Set the ERC-20 recipient and tokens (ERC-20 only)">
-    For ERC-20 policies, set the recipient address that receives the ERC-20 tokens used to pay gas, then pick which tokens to accept on which chains. You can refine these later from the policy editor's **Tokens** tab.
+    For ERC-20 policies, after chain selection the dialog asks for the recipient address that receives the ERC-20 tokens used to pay gas, then which tokens to accept on which chains. You can refine these later from the policy editor's **Tokens** tab.
   </Step>
   <Step title="Create the policy">
-    Select **Create policy**. A confirmation modal shows the new **Policy ID**. Copy it, you'll pass it to your SDK or API calls to route transactions through this policy.
+    Select **Create policy**. A confirmation dialog shows the new **Policy ID**. Copy it, you'll pass it to your SDK or API calls to route transactions through this policy.
 
     The policy opens in the editor where you configure rules before going live.
   </Step>
@@ -56,45 +54,45 @@ The dashboard exposes four policy types. Each maps to a sponsorship mode and det
 | Policy type | Best for | Rule tabs |
 | --- | --- | --- |
 | **Gas Sponsorship** (recommended) | Sponsoring gas for smart wallet transactions across your EVM chains. Best for most Smart Wallets apps. | Spending limits, Transaction limits, Access control, Custom rules, Settings |
-| **Onchain Paymaster** | Sponsoring gas with an onchain paymaster contract on EVM chains, for apps that submit transactions directly to the paymaster. | Spending limits, Transaction limits, Access control, Custom rules, Settings |
+| **Onchain Paymaster** | Sponsoring gas with an onchain paymaster contract on EVM chains. | Spending limits, Transaction limits, Access control, Custom rules, Settings |
 | **Solana Fee Sponsorship** | Sponsoring transaction fees for your users on Solana. | Spending limits, Transaction limits, Settings |
 | **ERC-20** | Letting users pay gas with any ERC-20 token, such as USDC or USDT, instead of you sponsoring it. | Tokens, Transfer mode, Settings |
 
-Use **Gas Sponsorship** when your app sends smart wallet transactions through Smart Wallets. Use **Onchain Paymaster** when you interact with the paymaster contract directly. Use **Solana Fee Sponsorship** only for Solana transactions. Use **ERC-20** when you want users to cover their own gas with a token instead of you sponsoring it.
+Use **Gas Sponsorship** when your app sends smart wallet transactions through Smart Wallets. Use **Onchain Paymaster** when an onchain paymaster contract should decide which transactions to sponsor. Use **Solana Fee Sponsorship** only for Solana transactions. Use **ERC-20** when you want users to cover their own gas with a token instead of you sponsoring it.
 
 ## Configure rules
 
 After creating a policy, the editor opens with rule tabs for the policy type. Configure each tab, then save. Rules apply to the transactions this policy sponsors.
 
-### Gas Sponsorship and Onchain Paymaster
+<Accordion title="Gas Sponsorship and Onchain Paymaster">
+  Both EVM policy types share the same rule tabs.
 
-Both EVM policy types share the same rule tabs.
+  * **Spending limits** — cap total spend, spend per sender, and spend per transaction. Use these to control cost exposure.
+  * **Transaction limits** — cap total count and count per sender. Use these to limit how many transactions a policy sponsors.
+  * **Access control** — set a sender allowlist or blocklist to restrict which addresses the policy sponsors.
+  * **Custom rules** — add a webhook URL so your server can approve or reject sponsorship in real time, and choose whether to sponsor on webhook error or timeout. See [conditional sponsorship rules](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules).
+  * **Settings** — rename the policy, set a sponsorship expiry, and schedule start and end times.
+</Accordion>
 
-* **Spending limits** — cap total spend, spend per sender, and spend per transaction. Use these to control cost exposure.
-* **Transaction limits** — cap total count and count per sender. Use these to limit how many transactions a policy sponsors.
-* **Access control** — set a sender allowlist or blocklist to restrict which addresses the policy sponsors.
-* **Custom rules** — add a webhook URL so your server can approve or reject sponsorship in real time, and choose whether to sponsor on webhook error or timeout. See [conditional sponsorship rules](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules).
-* **Settings** — rename the policy, set a sponsorship expiry, and schedule start and end times.
+<Accordion title="Solana Fee Sponsorship">
+  Solana policies have a reduced rule set because Solana sponsorship has no allowlists or custom webhooks.
 
-### Solana Fee Sponsorship
+  * **Spending limits** — cap total spend and spend per transaction.
+  * **Transaction limits** — cap total count.
+  * **Settings** — set a sponsorship window with start and end times.
 
-Solana policies have a reduced rule set because Solana sponsorship has no allowlists or custom webhooks.
+  See [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana) for the Solana-specific request options.
+</Accordion>
 
-* **Spending limits** — cap total spend and spend per transaction.
-* **Transaction limits** — cap total count.
-* **Settings** — set a sponsorship window with start and end times.
+<Accordion title="ERC-20">
+  ERC-20 policies configure which tokens to accept and how users pay, instead of spend and access controls. In the editor, networks for an ERC-20 policy come from the tokens you enable: turn on a token for a chain to sponsor that chain. There is no separate network selector on the editor.
 
-See [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana) for the Solana-specific request options.
+  ![Policy editor for an ERC-20 policy showing the Tokens, Transfer mode, and Settings tabs](https://alchemyapi-res.cloudinary.com/image/upload/v1786381902/docs/aa-sdk/images/wallets/erc20-editor.png)
 
-### ERC-20
-
-ERC-20 policies configure which tokens to accept and how users pay, instead of spend and access controls. Networks for an ERC-20 policy are derived from the tokens you enable, so there's no separate network selector — enable a token on a chain to sponsor that chain.
-
-![Policy editor for an ERC-20 policy showing the Tokens, Transfer mode, and Settings tabs](https://alchemyapi-res.cloudinary.com/image/upload/v1786381902/docs/aa-sdk/images/wallets/erc20-editor.png)
-
-* **Tokens** — choose which ERC-20 tokens to accept on which chains, and set a price multiplier to add a margin over the token's gas value.
-* **Transfer mode** — choose whether the user pays the token after the transaction executes (recommended) or before. After is recommended because it doesn't require an onchain allowance ahead of the transaction. See [pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token).
-* **Settings** — set the recipient address that receives the tokens, plus the standard spending and time windows inherited from the base rules.
+  * **Tokens** — choose which ERC-20 tokens to accept on which chains, and set a price multiplier to add a margin over the token's gas value.
+  * **Transfer mode** — choose whether the user pays the token after the transaction executes (recommended) or before. After is recommended because it doesn't require an onchain allowance ahead of the transaction. See [pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token).
+  * **Settings** — set the recipient address that receives the tokens, plus the standard spending and time windows inherited from the base rules.
+</Accordion>
 
 ## Go live
 
