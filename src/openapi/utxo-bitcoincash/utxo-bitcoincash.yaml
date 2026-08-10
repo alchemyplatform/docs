@@ -47,10 +47,25 @@ paths:
       description: >
         Returns normalized transaction data for the given transaction ID. Response shape is consistent
         across UTXO networks. Empty fields are omitted.
+
+
+        Pass `spending=true` to include spending metadata for each output that has since been spent.
+        For spent outputs the response adds `spentTxId`, `spentIndex`, and `spentHeight` on the
+        matching `vout` entry. Unspent outputs, and all outputs of an unconfirmed transaction, have
+        no spending transaction to return.
       tags: ["UTXO API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/txid"
+        - in: query
+          name: spending
+          required: false
+          description: >
+            When `true`, include spending metadata (`spentTxId`, `spentIndex`, `spentHeight`) on each
+            output that has subsequently been spent.
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Transaction details.
@@ -713,6 +728,21 @@ components:
           description: Value in the smallest denomination, as a decimal string.
         n: { type: integer }
         spent: { type: boolean }
+        spentTxId:
+          type: string
+          description: >
+            Transaction ID that spent this output. Only present when the request included
+            `spending=true` and the output has been spent.
+        spentIndex:
+          type: integer
+          description: >
+            Input index within the spending transaction that consumed this output. Only present
+            when the request included `spending=true` and the output has been spent.
+        spentHeight:
+          type: integer
+          description: >
+            Block height at which this output was spent. Only present when the request included
+            `spending=true` and the output has been spent.
         hex: { type: string }
         addresses:
           type: array
