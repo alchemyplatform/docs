@@ -8,73 +8,39 @@ description: "HyperCore private-preview documentation."
 # userNonFundingLedgerUpdates stream
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
-{
-  "method": "subscribe",
-  "subscription": {
-    "type": "userNonFundingLedgerUpdates",
-    "users": [
-      "0x1111111111111111111111111111111111111111"
-    ]
-  }
-}
+{"method":"subscribe","subscription":{"type":"userNonFundingLedgerUpdates","users":["0x1111111111111111111111111111111111111111"]}}
 ```
 
 ## Acknowledgement
+
 ```json
-{
-  "channel": "subscriptionResponse",
-  "data": {
-    "subscriptionId": "sub_01",
-    "type": "userNonFundingLedgerUpdates"
-  }
-}
+{"channel":"subscriptionResponse","data":{"subscriptionId":"sub_01","type":"userNonFundingLedgerUpdates"}}
 ```
 
 ## Event envelope
 
 ```json
-{
-  "channel": "userNonFundingLedgerUpdates",
-  "subscriptionId": "sub_01",
-  "blockHeight": 123456,
-  "blockTime": 1780000000000,
-  "cursor": "<opaque cursor>",
-  "data": {
-    "user": "0x1111111111111111111111111111111111111111",
-    "eventType": "deposit",
-    "asset": "USDC",
-    "amount": "100.00",
-    "time": 1780000000000
-  }
-}
+{"channel":"userNonFundingLedgerUpdates","subscriptionId":"sub_01","blockHeight":123456,"blockTime":1780000000000,"cursor":"<opaque cursor>","data":{"user":"0x1111111111111111111111111111111111111111","delta":{"type":"deposit","usdc":"100.00"},"time":1780000000000}}
 ```
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
-| user | string | User identifier. |
-| eventType | string | Illustrative eventType value. |
-| asset | string | Illustrative asset value. |
-| amount | string | Illustrative amount value. |
-| time | integer | Source time. |
+| `user` | string | Address associated with the ledger update. |
+| `delta` | object | Ledger operation and its type-specific fields. |
+| `time` | integer | Event timestamp in milliseconds. |
+
+<Markdown src="./ledger-delta-types.mdx" />
+
 ## Unsubscribe
+
 ```json
-{
-  "method": "unsubscribe",
-  "subscription": {
-    "type": "userNonFundingLedgerUpdates",
-    "users": [
-      "0x1111111111111111111111111111111111111111"
-    ]
-  }
-}
+{"method":"unsubscribe","subscription":{"type":"userNonFundingLedgerUpdates","users":["0x1111111111111111111111111111111111111111"]}}
 ```
+
 ## Resume
 
 To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

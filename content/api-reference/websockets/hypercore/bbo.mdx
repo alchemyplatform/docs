@@ -7,92 +7,75 @@ description: "HyperCore private-preview documentation."
 
 # bbo stream
 
+`bbo` delivers the top-of-book best bid and offer when either side changes. This is ideal for live prices and spreads.
+
 For the corresponding gRPC stream, see [StreamBboBook](/docs/chains/hypercore-grpc/api-reference/stream-bbo-book).
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
-{
-  "method": "subscribe",
-  "subscription": {
-    "type": "bbo",
-    "coins": [
-      "BTC"
-    ]
-  }
-}
+{"method":"subscribe","subscription":{"type":"bbo","coins":["BTC"]}}
 ```
 
-## Acknowledgement
+Use `marketTypes` instead of `coins` to subscribe to all markets of selected types:
+
 ```json
-{
-  "channel": "subscriptionResponse",
-  "data": {
-    "subscriptionId": "sub_01",
-    "type": "bbo"
-  }
-}
+{"method":"subscribe","subscription":{"type":"bbo","marketTypes":["spot"]}}
+```
+
+## Subscription parameters
+
+| Parameter | Type | Required | Source | Description |
+| --- | --- | --- | --- | --- |
+| `coins` | string[] | No | Alchemy extension | Markets to subscribe to. Omit to subscribe to every market of the types in `marketTypes`, which defaults to perpetuals. The native API takes a single `coin` per subscription; the plural array is an Alchemy extension. |
+| `marketTypes` | string[] | No | Alchemy extension | Restricts delivery by market type. Accepted values: `perp`, `spot`, `outcome`, or `*`. Defaults to `["perp"]`. Rejected if combined with `coins`. |
+
+The default never grows. New market types must be added to `marketTypes` explicitly, or pass `["*"]` to opt in to future types automatically.
+
+## Acknowledgement
+
+```json
+{"channel":"subscriptionResponse","data":{"subscriptionId":"sub_01","type":"bbo"}}
 ```
 
 ## Event envelope
 
 ```json
-{
-  "channel": "bbo",
-  "subscriptionId": "sub_01",
-  "blockHeight": 123456,
-  "blockTime": 1780000000000,
-  "cursor": "<opaque cursor>",
-  "data": {
-    "coin": "BTC",
-    "time": 1780000000000,
-    "levels": [
-      [
-        {
-          "px": "100000.0",
-          "sz": "1.25",
-          "n": 0
-        }
-      ],
-      [
-        {
-          "px": "100001.0",
-          "sz": "0.80",
-          "n": 0
-        }
-      ]
-    ]
-  }
-}
+{"channel":"bbo","subscriptionId":"sub_01","blockHeight":123456,"blockTime":1780000000000,"data":{"coin":"BTC","time":1780000000000,"bbo":[{"px":"100000.0","sz":"1.25","n":3},{"px":"100001.0","sz":"0.80","n":2}]}}
 ```
 
 ## Payload fields
 
-This table is a native compatibility target.
-
 | Field | Type | Description |
 | --- | --- | --- |
-| coin | string | Market identifier. |
-| time | integer | Source time. |
-| levels | array | Bid and ask level arrays. |
-| levels\[\] | array | Bid and ask level arrays. |
-| levels\[\]\[\] | object | Bid and ask level arrays. |
-| levels\[\]\[\].px | string | Price value. |
-| levels\[\]\[\].sz | string | Size value. |
-| levels\[\]\[\].n | integer | Order-count value. |
-## Unsubscribe
-```json
-{
-  "method": "unsubscribe",
-  "subscription": {
-    "type": "bbo",
-    "coins": [
-      "BTC"
-    ]
-  }
-}
-```
-## Resume
+| `coin` | string | Market symbol. |
+| `time` | integer | Block timestamp in milliseconds. |
+| `bbo` | array | Two-element tuple of `[best_bid, best_ask]`. Either element is `null` when that side has no resting orders. |
+| `bbo[].px` | string | Price, as a decimal string. |
+| `bbo[].sz` | string | Total size at this level, as a decimal string. |
+| `bbo[].n` | integer | Number of orders at this level. |
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+The `bbo` tuple always has exactly two elements. This matches the native `WsBbo` shape.
+
+## Update behavior
+
+* Emitted only when the best bid or the best ask changes for a market
+* Top of book only, with no depth — use `l2Book` for depth
+* A `null` element means that side of the book is empty
+
+## Choosing a book stream
+
+| | l2Book | l2BookDiff | bbo | l4BookUpdates |
+| --- | --- | --- | --- | --- |
+| **Delivers** | Complete aggregated snapshot | Changed aggregated levels | Best bid and ask only | Changed individual orders |
+| **Client state** | None required | Maintains a local book | None required | Maintains a local book |
+| **Detail** | Aggregated levels | Aggregated levels | Top of book | Individual orders, with queue position |
+| **Use case** | Displays, periodic reads | Efficient live book | Price and spread tracking | Market making, queue analysis |
+
+## Unsubscribe
+
+```json
+{"method":"unsubscribe","subscription":{"type":"bbo","coins":["BTC"]}}
+```
+
+Every message is a complete snapshot, so there is nothing to replay. After a disconnect, resubscribe and the next message re-establishes your state.
