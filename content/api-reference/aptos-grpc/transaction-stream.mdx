@@ -1,0 +1,47 @@
+---
+title: Transaction stream
+description: Aptos gRPC RawData service API reference
+slug: reference/aptos-grpc-transaction-stream
+---
+
+The `RawData` service provides server-streaming access to complete Aptos transaction data.
+
+## GetTransactions
+
+Streams transactions in version order, starting from a given version. This is a server-streaming RPC: the server sends batches of transactions until the requested count is reached, or indefinitely if no count is set.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `starting_version` | uint64 | No | Version to start streaming from. If omitted, the stream starts at the latest version |
+| `transactions_count` | uint64 | No | Total number of transactions to return before closing the stream. If omitted, the stream stays open indefinitely |
+| `batch_size` | uint64 | No | Number of transactions per response message. If omitted, the server chooses a default |
+| `transaction_filter` | BooleanTransactionFilter | No | Server-side filter; only matching transactions are delivered |
+
+**Response** (stream):
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `transactions` | repeated Transaction | A batch of transactions in version order |
+| `chain_id` | uint64 | The chain ID of the network |
+| `processed_range` | ProcessedRange | First and last version covered by this response, useful when filtering |
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path protos/proto \
+  -proto aptos/indexer/v1/raw_data.proto \
+  -d '{
+    "starting_version": 100000000,
+    "transactions_count": 100
+  }' \
+  aptos-mainnet.g.alchemy.com:443 \
+  aptos.indexer.v1.RawData/GetTransactions
+```
+
+Each `Transaction` message includes the transaction type (user, genesis, block metadata, state checkpoint, or validator), timestamp, version, transaction info with events and write-set changes, and the type-specific payload. See the [transaction proto](https://github.com/aptos-labs/aptos-core/blob/main/protos/proto/aptos/transaction/v1/transaction.proto) for the full schema.
+
+<Note>
+  This is a long-lived streaming connection. The server will continue sending transactions until the requested `transactions_count` is reached or the client disconnects. To resume after a disconnect, reconnect with `starting_version` set to the last processed version plus one.
+</Note>
