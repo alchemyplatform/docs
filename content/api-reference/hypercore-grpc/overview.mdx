@@ -7,10 +7,27 @@ description: "HyperCore private-preview documentation."
 
 # gRPC streaming
 
-## API reference
+HyperCore gRPC provides block streaming and order-book streaming at price-level,
+top-of-book, and order-level detail, plus trigger-order updates. Connection details and
+generated client configuration will be published as the service is finalized.
 
-This preview documents block and order-book gRPC streams. Connection details and generated client configuration will be published as the service is finalized. [StreamBlocks](/docs/chains/hypercore-grpc/api-reference/stream-blocks) is the most fully specified stream today; the order-book streams remain earlier design proposals.
+## Available streams
+
+| Stream | Delivers |
+| --- | --- |
+| [StreamBlocks](/docs/chains/hypercore-grpc/api-reference/stream-blocks) | Raw blocks, one message per block |
+| [StreamL2Book](/docs/chains/hypercore-grpc/api-reference/stream-l2-book) | Aggregated price-level snapshots |
+| [StreamL2BookDiff](/docs/chains/hypercore-grpc/api-reference/stream-l2-book-diff) | Incremental price-level changes |
+| [StreamL4BookUpdates](/docs/chains/hypercore-grpc/api-reference/stream-l4-book-updates) | Per-order changes with queue position |
+| [StreamBboBook](/docs/chains/hypercore-grpc/api-reference/stream-bbo-book) | Top-of-book best bid and offer |
+| [StreamTpslUpdates](/docs/chains/hypercore-grpc/api-reference/stream-tpsl-updates) | Take-profit and stop-loss order lifecycle |
 
 ## Choosing a transport
 
-WebSocket and gRPC can expose the same market data through different transports. Use [WebSocket streams](/docs/chains/websockets/hypercore) when integrating with the subscription envelope, and use [gRPC streams](/docs/chains/hypercore-grpc/getting-started/overview) when integrating with the RPC service definition. For L2 books, [l2Book](/docs/chains/websockets/hypercore/streams/l2-book) and [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff) describe complementary snapshot and diff representations.
+WebSocket and gRPC can expose the same market data through different transports. Use
+[WebSocket streams](/docs/chains/websockets/hypercore) when integrating with the
+subscription envelope, and use [gRPC streams](/docs/chains/hypercore-grpc/getting-started/overview)
+when integrating with the RPC service definition. For L2 books,
+[l2Book](/docs/chains/websockets/hypercore/streams/l2-book) and
+[l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff) describe
+complementary snapshot and diff representations.

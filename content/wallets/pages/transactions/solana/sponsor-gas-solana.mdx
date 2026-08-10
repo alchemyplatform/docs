@@ -89,12 +89,11 @@ We support sponsoring rent for inner `SystemProgram.createAccount` calls. `Syste
 
 * Enable `prefundRent` only for flows that may create accounts through CPI.
 * Submit the returned transaction promptly from your backend after collecting signatures.
-* For extra protection against stale state, when the response includes `simulationSlot`, consider passing it as `minContextSlot` when submitting the transaction.
+* When sending quick subsequent transactions that depend on each other, call `sendTransaction` with `preflightCommitment: "confirmed"`, or with `skipPreflight: true` to skip preflight entirely. Preflight otherwise falls back to `finalized`, which trails the chain by roughly 13 seconds, so it will fail on state the earlier transaction just wrote.
 
 ### Notes
 
 * Simulation is not the same as execution. Account state can change between sponsorship and submission, and programs can take different CPI paths at execution time.
-  * `minContextSlot` reduces stale-state risk, but it does not guarantee identical execution.
   * If execution needs more lamports than the simulation predicted, the transaction will fail. If execution needs less, the extra SOL remains in the funded wallet and is still billed to your policy.
 * **Important:** Only use `prefundRent` for payloads you control or can validate. If an attacker can influence the transaction or the programs it invokes, they may be able to grief your policy by causing failed or unnecessarily expensive prefunds.
 * `prefundRent` is not transaction-shape-preserving. When prefunding is needed, the returned transaction includes an added top-level `SystemProgram.transfer` instruction before your program flow. Programs that inspect sibling instructions or depend on exact top-level instruction ordering can behave differently or fail.

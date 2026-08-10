@@ -7,18 +7,22 @@ description: "HyperCore private-preview documentation."
 
 # Raw and normalized HyperCore blocks
 
-The Chain API keeps raw source material distinct from normalized block-oriented objects. It does not force EVM transaction terminology onto HyperCore.
+The Chain API keeps raw source material distinct from normalized block-oriented objects. HyperCore uses exchange concepts — markets, orders, fills, and actions — rather than EVM transactions.
 
 ## Raw block structure
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `abci_block.round` | integer | The block identifier. |
-| `parent_round` | integer | Links to the preceding block. |
-| `time` | value | Raw block time value. |
-| `proposer` | value | Raw proposer value. |
-| `hardfork` | object | Protocol version and activation round. |
-| `signed_action_bundles` | array | Pairs of `[tx_hash, bundle]`. Each bundle carries signed actions, including signature, action type, nonce, vault address, and expiry, together with broadcaster and broadcaster nonce. |
+| `abci_block.parent_round` | integer | Links to the preceding block. |
+| `abci_block.time` | integer | Block timestamp in milliseconds. |
+| `abci_block.proposer` | string | Address of the validator that proposed the block. |
+| `abci_block.hardfork` | object | Protocol version and activation round. |
+| `abci_block.signed_action_bundles` | array | Pairs of `[tx_hash, bundle]`. Each bundle carries signed actions, including signature, action type, nonce, vault address, and expiry, together with broadcaster and broadcaster nonce. |
 | `resps` | object | Execution results keyed by transaction hash. Each result includes a user address and an `ok` or `err` status. |
+
+## Raw versus normalized
+
+The gRPC block stream exposes raw HyperCore block content. The JSON-RPC block methods return normalized block objects for lookup and bounded backfill. The two surfaces describe the same block data at different semantic levels.
 
 For data-product queries over normalized historical material, see [historical data](/docs/data/hypercore/historical-data).

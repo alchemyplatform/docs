@@ -5,27 +5,122 @@ description: "HyperCore private-preview documentation."
 
 <Markdown src="../shared/preview-notice-september.mdx" />
 
-# StreamL4BookUpdates
+# Stream L4 book updates
 
-The L4 delivery model is still being finalized. Candidate models are an initial snapshot followed by incremental updates, or update-only delivery. L4 volumes make a full snapshot per block impractical.
+`StreamL4BookUpdates` delivers every individual order placed, resized, or removed,
+including its position in the price-level queue. This is ideal for market making,
+queue-position analysis, liquidity attribution, and reconstructing an exact book.
 
-## Intended RPC
+> The contract below is proposed and will be confirmed before general availability.
 
-`rpc StreamL4BookUpdates(StreamL4BookUpdatesRequest) returns (stream L4BookUpdatesEnvelope);`
+## Overview
 
-Carries order-level book updates. For the WebSocket representation, see [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates). [StreamL4Book](/docs/chains/hypercore-grpc/api-reference/stream-l4-book) is the full order-level stream.
+* The first message after subscribing is a full snapshot: every resting order is delivered
+  as a `NEW` diff with `snapshot` set true
+* `UPDATE` means the order's size changed, typically a partial fill
+* `REMOVE` is terminal — the order was filled or cancelled
+* Aggregating these orders by price yields an exact L2 view, so a single subscription can
+  serve both order-level and level-aggregated needs
 
-## Intended message
-
-Read this as a provisional, non-binding outline: field names, field numbers, scalar types, payload type names, and finality semantics can change, and the outline does not imply wire compatibility.
+## Request structure
 
 ```proto
-message L4BookUpdatesEnvelope {
-  string cursor = 1;
-  uint64 sequence = 2;
-  bool is_final = 3;
-  L4BookUpdatesPayload order_updates = 4;
+message StreamL4BookUpdatesRequest {
+  repeated string coins = 1;
+  repeated string market_types = 2;
 }
 ```
 
-The request and payload definitions will be published with the service.
+### Coins
+
+**Field**: `coins`
+**Type**: `repeated string`
+
+Markets to subscribe to. Empty means all markets.
+
+### Market types
+
+**Field**: `market_types`
+**Type**: `repeated string`
+
+Accepted values are `perp`, `spot`, `outcome`, or `*`. The default is `["perp"]`, so
+spot and outcome markets are not delivered unless requested. The default never grows:
+add new market types explicitly, or pass `["*"]` to opt in to future types automatically.
+This field is rejected when combined with an explicit `coins` list.
+
+## Response structure
+
+```proto
+message L4BookUpdatesUpdate {
+  uint64 height = 1;
+  uint64 time = 2;
+  bool snapshot = 3;
+  string cursor = 4;
+  repeated OrderDiff diffs = 5;
+}
+
+message OrderDiff {
+  DiffType diff_type = 1;
+  string coin = 2;
+  uint64 oid = 3;
+  string user = 4;
+  string side = 5;
+  string px = 6;
+  string sz = 7;
+  optional uint64 insert_before = 8;
+}
+
+enum DiffType {
+  DIFF_TYPE_NEW = 0;
+  DIFF_TYPE_UPDATE = 1;
+  DIFF_TYPE_REMOVE = 2;
+}
+```
+
+### Key fields
+
+**`oid`**: Order ID, unique and stable for the life of the order.
+
+**`user`**: Address that placed the order.
+
+**`side`**: `B` for bid, `A` for ask.
+
+**`px`**: Limit price, as a decimal string.
+
+**`sz`**: Current size on `NEW` and `UPDATE`. Absent on `REMOVE`.
+
+**`insert_before`**: Queue placement. Insert this order immediately ahead of the resting
+order with this ID at the same price level. Absent means append to the tail of the queue.
+If the named order is no longer at that level, append to the tail.
+
+### Field presence by operation
+
+| Operation | Fields present |
+| --- | --- |
+| `NEW` | `coin`, `oid`, `user`, `side`, `px`, `sz`, and `insert_before` when applicable |
+| `UPDATE` | `coin`, `oid`, `sz` |
+| `REMOVE` | `coin`, `oid` |
+
+## Queue position
+
+`insert_before` reflects HyperCore's priority placement rules. It supplies the queue
+position that makes order-level consumption useful beyond aggregated levels.
+
+## Recovery
+
+A message flagged as a snapshot replaces your local state. Anything else is a diff that
+must chain onto your previous block.
+
+If continuity is broken, a fresh snapshot is pushed to you. There is no separate
+resynchronization message to handle and no epoch to track — receiving a snapshot is the
+signal to discard local state and adopt it.
+
+## Choosing a book stream
+
+| | StreamL2Book | StreamL2BookDiff | StreamL4BookUpdates |
+| --- | --- | --- | --- |
+| **Payload** | Full snapshot per block | Changed levels only | Per-order changes |
+| **Client state** | None required | Maintains a local book | Maintains a local book |
+| **Bandwidth** | Highest | Low | Moderate |
+| **Detail** | Aggregated levels | Aggregated levels | Individual orders, with queue position |
+| **Use case** | Displays, periodic reads | Efficient live book | Market making, queue analysis |

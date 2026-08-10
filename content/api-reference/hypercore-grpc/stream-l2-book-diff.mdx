@@ -5,25 +5,151 @@ description: "HyperCore private-preview documentation."
 
 <Markdown src="../shared/preview-notice-september.mdx" />
 
-# StreamL2BookDiff
+# Stream L2 book diff
 
-## Intended RPC
+`StreamL2BookDiff` delivers incremental price-level changes so that a client can maintain
+a local order book at a fraction of snapshot bandwidth. This is ideal for
+latency-sensitive consumers that need continuous book state.
 
-`rpc StreamL2BookDiff(StreamL2BookDiffRequest) returns (stream L2BookDiffEnvelope);`
+> The contract below is proposed and will be confirmed before general availability.
 
-Carries L2 order-book diffs. [StreamL2Book](/docs/chains/hypercore-grpc/api-reference/stream-l2-book) is the corresponding snapshot stream. For the WebSocket representation, see [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff).
+## Overview
 
-## Intended message
+* Each message contains changes for the markets that changed in its block
+* The initial snapshot supplies current levels unless `skip_initial_snapshot` is set
+* Diffs carry absolute level sizes, not size deltas
+* Per-market sequence values identify continuity for each local book
 
-This draft shape is non-binding. Field names, field numbers, scalar types, payload type names, and finality semantics are all provisional; no wire compatibility follows from this sketch.
+## Request structure
 
 ```proto
-message L2BookDiffEnvelope {
-  string cursor = 1;
-  uint64 sequence = 2;
-  bool is_final = 3;
-  L2BookDiffPayload diff = 4;
+message StreamL2BookDiffRequest {
+  repeated string coins = 1;
+  repeated string market_types = 2;
+  uint32 n_levels = 3;
+  uint32 n_sig_figs = 4;
+  uint64 mantissa = 5;
+  bool skip_initial_snapshot = 6;
 }
 ```
 
-Request and payload message definitions will be published with the service.
+### Coins
+
+**Field**: `coins`
+**Type**: `repeated string`
+
+Markets to subscribe to. Empty means all markets.
+
+### Market types
+
+**Field**: `market_types`
+**Type**: `repeated string`
+
+Accepted values are `perp`, `spot`, `outcome`, or `*`. The default is `["perp"]`, so
+spot and outcome markets are not delivered unless requested. The default never grows:
+add new market types explicitly, or pass `["*"]` to opt in to future types automatically.
+This field is rejected when combined with an explicit `coins` list.
+
+### Levels
+
+**Field**: `n_levels`
+**Type**: `uint32`
+
+Levels per side: `1`, `10`, `20` (default), or `50`.
+
+### Significant figures
+
+**Field**: `n_sig_figs`
+**Type**: `uint32`
+
+Accepted values are `2`, `3`, `4`, or `5`.
+
+### Mantissa
+
+**Field**: `mantissa`
+**Type**: `uint64`
+
+Accepted values are `2` or `5`, and this field is valid only when `n_sig_figs = 5`.
+Aggregation rounds bids down and asks up. With `n_sig_figs = 5` and `mantissa = 2`, a
+bid of `70325` becomes `70324` and an ask of `70325` becomes `70326`.
+
+### Skip initial snapshot
+
+**Field**: `skip_initial_snapshot`
+**Type**: `bool`
+
+Default: `false`. When false, the first message for each market carries that market's
+current levels as a snapshot. Set true only if you already hold a compatible snapshot
+and position.
+
+## Response structure
+
+```proto
+message L2BookDiffUpdate {
+  uint64 height = 1;
+  uint64 time = 2;
+  bool snapshot = 3;
+  string cursor = 4;
+  repeated CoinDiff diffs = 5;
+}
+
+message CoinDiff {
+  string coin = 1;
+  uint64 seq = 2;
+  uint64 prev_seq = 3;
+  bool snapshot = 4;
+  repeated Level bids = 5;
+  repeated Level asks = 6;
+}
+```
+
+### Key fields
+
+**`height`**: Block number.
+
+**`time`**: Block timestamp in milliseconds.
+
+**`snapshot`**: True when this message carries initial levels for any market.
+
+**`cursor`**: Resume position. Persist after applying.
+
+**`diffs`**: One entry per market that changed in this block.
+
+**`seq`** / **`prev_seq`**: Per-market sequence and its predecessor. If `prev_seq` does
+not match your current position for that market, you have a gap.
+
+**`bids`** / **`asks`**: Changed levels only.
+
+## Applying diffs
+
+* A level with `sz` of `"0"` has been removed from the book. Delete that price.
+* Any other level is an upsert: set that price to the given `sz` and `n`.
+* Sizes are absolute — the level's new total, not a delta.
+* Levels not present in a diff are unchanged.
+* The snapshot and all subsequent diffs must use identical `n_levels`, `n_sig_figs`, and
+  `mantissa`. Applying diffs from one aggregation setting to a snapshot taken at another
+  produces an invalid book.
+
+## Recovery
+
+A message flagged as a snapshot replaces your local state. Anything else is a diff that
+must chain onto your previous block.
+
+If continuity is broken, a fresh snapshot is pushed to you. There is no separate
+resynchronization message to handle and no epoch to track — receiving a snapshot is the
+signal to discard local state and adopt it.
+
+1. After applying each message, persist `cursor` and the per-market `seq`.
+2. On reconnect, send `cursor`.
+3. Check `prev_seq` against your position for each market on every diff.
+4. If a snapshot arrives for a market, discard your book for that market and adopt it.
+
+## Choosing a book stream
+
+| | StreamL2Book | StreamL2BookDiff | StreamL4BookUpdates |
+| --- | --- | --- | --- |
+| **Payload** | Full snapshot per block | Changed levels only | Per-order changes |
+| **Client state** | None required | Maintains a local book | Maintains a local book |
+| **Bandwidth** | Highest | Low | Moderate |
+| **Detail** | Aggregated levels | Aggregated levels | Individual orders, with queue position |
+| **Use case** | Displays, periodic reads | Efficient live book | Market making, queue analysis |
