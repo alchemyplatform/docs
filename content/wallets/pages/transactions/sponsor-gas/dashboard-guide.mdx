@@ -8,7 +8,8 @@ slug: wallets/transactions/sponsor-gas/dashboard-guide
      v_TODO/docs/gas-sponsorship-dashboard/<name>.png URL with the final
      Cloudinary secure URL after Richard uploads the captured PNGs. Source PNGs
      live in the docs worktree under screenshots-todo/. Captured from the
-     redesigned dashboard with GasSponsorshipRedesignEnabled ON.
+     Gas Sponsorship dashboard (the redesign flag was dropped, so the surface
+     renders by default).
 
      Cloudinary upload paths (under docs/gas-sponsorship-dashboard/):
        - create-policy-type-picker.png
@@ -16,9 +17,9 @@ slug: wallets/transactions/sponsor-gas/dashboard-guide
        - erc20-editor.png
        - usage-tab.png */}
 
-Create and manage gas sponsorship policies from the redesigned Gas Sponsorship dashboard. This walkthrough covers opening the surface, creating a policy, choosing a policy type, configuring rules, going live, and monitoring spend.
+Create and manage gas sponsorship policies from the Gas Sponsorship dashboard. This walkthrough covers opening the surface, creating a policy, choosing a policy type, configuring rules, going live, and monitoring spend.
 
-The redesigned Gas Sponsorship dashboard is app-scoped. Open it from the app you want to sponsor transactions for: in the dashboard, navigate to **Gas Sponsorship** under your app, or go to `https://dashboard.alchemy.com/apps/latest/gas-sponsorship` directly.
+The Gas Sponsorship dashboard is app-scoped. Open it from the app you want to sponsor transactions for: in the dashboard, navigate to **Gas Sponsorship** under your app, or go to `https://dashboard.alchemy.com/apps/latest/gas-sponsorship` directly.
 
 ## Open the Gas Sponsorship dashboard
 
@@ -39,7 +40,7 @@ When you open the surface with no policies yet, the Policies tab shows an empty 
   <Step title="Open the create policy modal">
     On the Policies tab, select **New policy**. If you don't see the button, you don't have edit permission for the app's configuration. Ask an app admin to grant it.
 
-    The create modal opens to the policy type picker.
+    The create modal opens to the policy type picker, titled **Create a new policy**, with the subtitle **Choose how to sponsor fees for your users**.
 
     ![Create policy modal showing the policy type picker](https://alchemyapi-res.cloudinary.com/image/upload/v_TODO/docs/gas-sponsorship-dashboard/create-policy-type-picker.png)
   </Step>
@@ -47,7 +48,7 @@ When you open the surface with no policies yet, the Policies tab shows an empty 
     Pick the policy type that matches how your app sends transactions. See [Choose a policy type](#choose-a-policy-type) below for guidance on each option. **Gas Sponsorship** is selected by default and is recommended for most apps.
   </Step>
   <Step title="Select chains">
-    For EVM policy types, choose the chains the policy applies to. You can select multiple chains now and change them later from the policy editor.
+    For EVM policy types, the modal advances to **Select chains**, where you enable the chains this policy sponsors. You can change these later from the policy editor.
 
     ![Create policy modal showing chain selection](https://alchemyapi-res.cloudinary.com/image/upload/v_TODO/docs/gas-sponsorship-dashboard/create-policy-select-chains.png)
 
@@ -102,7 +103,7 @@ See [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana) for the 
 
 ### ERC-20
 
-ERC-20 policies configure which tokens to accept and how users pay, instead of spend and access controls.
+ERC-20 policies configure which tokens to accept and how users pay, instead of spend and access controls. Networks for an ERC-20 policy are derived from the tokens you enable, so there's no separate network selector — enable a token on a chain to sponsor that chain.
 
 ![Policy editor for an ERC-20 policy showing the Tokens, Transfer mode, and Settings tabs](https://alchemyapi-res.cloudinary.com/image/upload/v_TODO/docs/gas-sponsorship-dashboard/erc20-editor.png)
 
@@ -123,12 +124,11 @@ You can deactivate a policy at any time to pause sponsorship without deleting it
 
 ## Monitor spend on the Usage tab
 
-Open the **Usage** tab to track sponsorship spend. The tab shows three sections:
+Open the **Usage** tab to track sponsorship spend. The tab shows a **Current usage** card followed by a per-policy breakdown:
 
-![Usage tab showing team spend, usage over time, and per-policy breakdown](https://alchemyapi-res.cloudinary.com/image/upload/v_TODO/docs/gas-sponsorship-dashboard/usage-tab.png)
+![Usage tab showing the Current usage card with spend meter and daily spend chart, then the per-policy breakdown](https://alchemyapi-res.cloudinary.com/image/upload/v_TODO/docs/gas-sponsorship-dashboard/usage-tab.png)
 
-* **Team spend** — total sponsored spend for the current billing period across all policies on your account. At the end of the month, the sponsored total is deducted from your available credits.
-* **Usage over time** — a chart of sponsored spend over the selected window, so you can spot spikes or trends.
+* **Current usage** — a spend meter showing your total sponsorship spend, with a **Daily sponsorship spend** chart underneath. The card includes month-to-date gas sponsorship spend plus unpaid invoices from prior periods across all policies. At the end of the month, your sponsored total is deducted from your available credits.
 * **Per policy** — a breakdown of spend and count per policy, with a link into the Logs product for the sponsorship RPC methods so you can inspect individual transactions.
 
 If the Usage tab is empty, create a policy and send a sponsored transaction, then return to see the data populate.
