@@ -1,0 +1,71 @@
+---
+title: Create policies
+description: Create and manage gas sponsorship policies in the Alchemy dashboard, choose the right policy type, configure rules, and monitor spend on the Usage tab.
+slug: wallets/transactions/sponsor-gas/gas-sponsorship-policy-management
+---
+
+Manage gas sponsorship policies for your app from the [Gas Sponsorship dashboard](https://dashboard.alchemy.com/apps/latest/gas-sponsorship). A policy defines how gas is sponsored for your app: which chains it covers, and any spend, transaction, or access rules. Policies can also be created and managed with the [Gas Manager API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints).
+
+## Create a policy
+
+<Steps>
+  <Step title="Select your app">
+    Select the app you want to sponsor gas for. Policies are app-scoped and can only be applied to a single app.
+  </Step>
+  <Step title="Choose a policy type">
+    See [Policy types](#policy-types) below. **Gas Sponsorship** is recommended for most apps.
+
+    ![Create policy dialog showing the policy type picker](https://alchemyapi-res.cloudinary.com/image/upload/v1786381902/docs/aa-sdk/images/wallets/create-policy-type-picker.png)
+  </Step>
+  <Step title="Select chains">
+    Enable the chains you want to sponsor gas on. Chains must already be enabled on the app.
+
+    <Info>
+    Sponsoring gas on mainnet requires a PAYG or Enterprise plan; Solana sponsorship requires Enterprise. Testnets are available on every plan.
+    </Info>
+    
+    ![Create policy dialog showing chain selection](https://alchemyapi-res.cloudinary.com/image/upload/v1786381905/docs/aa-sdk/images/wallets/create-policy-select-chains.png)
+
+    For ERC-20 policies, networks come from the tokens you enable instead — see [pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token).
+
+    ![Policy editor for an ERC-20 policy showing the Tokens, Transfer mode, and Settings tabs](https://alchemyapi-res.cloudinary.com/image/upload/v1786381902/docs/aa-sdk/images/wallets/erc20-editor.png)
+  </Step>
+  <Step title="Get your policy ID">
+    Copy your **Policy ID** and pass it to your SDK or API calls to start sending sponsored transactions. See [sponsor gas](/docs/wallets/transactions/sponsor-gas) for integration details.
+  </Step>
+</Steps>
+
+## Policy types
+
+| Policy type | Best for |
+| --- | --- |
+| **Gas Sponsorship** (recommended) | Sponsoring gas for smart wallet transactions across your EVM chains. Powered by [Bundler Sponsored Operations (BSO)](/docs/wallets/transactions/sponsor-gas/bundler-sponsored-operations) for faster confirmations and automatic retries. |
+| **Onchain Paymaster** | Sponsoring gas with an onchain paymaster contract on EVM chains. |
+| **Solana Fee Sponsorship** | Sponsoring transaction fees for your users on Solana. Requires an Enterprise plan. |
+| **ERC-20** | Letting users pay gas with any ERC-20 token, such as USDC or USDT, instead of you sponsoring it. See [pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token). |
+
+## Configure rules
+
+Rules control who and what a policy sponsors: spend caps, transaction limits, allowlists, and webhook-based approval. See all supported rules [here](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules).
+
+Edit rules from the policy editor or by using the [Gas Manager API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints). 
+
+A policy only sponsors transactions while it's **Active**. Toggle status from the editor to activate, deactivate, or check whether it's expired.
+
+## Monitor spend
+
+The **Usage** tab shows your current sponsorship spend and a per-policy breakdown.
+
+![Usage tab showing the Current usage card with spend meter and daily spend chart, then the per-policy breakdown](https://alchemyapi-res.cloudinary.com/image/upload/v1786381904/docs/aa-sdk/images/wallets/usage-tab.png)
+
+<!-- NEEDS INPUT: replace this paragraph with the actual mechanics of usage tracking, billing, and reset. Specifically: (1) is usage shown here real-time or does it lag, (2) what "available credits" / top-up means and how it relates to PAYG vs Enterprise billing, (3) when the usage counter resets (billing cycle date vs calendar month), and (4) how unpaid invoices from prior periods factor in. This is the section causing the most support questions, so it should be explicit rather than glossed over. -->
+
+Usage shown here reflects [FILL IN: real-time / delayed by X] spend across all policies for the app. [FILL IN: describe how spend is deducted from credits or billed, and when the counter resets.]
+
+## Next steps
+
+* [Sponsor gas](/docs/wallets/transactions/sponsor-gas) — sponsor gas for smart wallet transactions
+* [Conditional sponsorship rules](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules) — webhooks and access controls
+* [Pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token) — ERC-20 gas payments
+* [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana) — sponsor fees on Solana
+* [Gas Manager API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints) — manage policies programmatically
