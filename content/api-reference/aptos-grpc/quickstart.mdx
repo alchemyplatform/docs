@@ -1,0 +1,109 @@
+---
+title: Aptos gRPC quickstart
+description: Get started with the Aptos gRPC Transaction Stream API
+slug: reference/aptos-grpc-quickstart
+---
+
+import { Steps, Step } from "/snippets/interactive-steps.mdx";
+
+This guide walks you through streaming your first transactions over Aptos gRPC.
+
+## Prerequisites
+
+* An [Alchemy API key](https://dashboard.alchemy.com/signup)
+* A gRPC client library for your language ([grpcurl](https://github.com/fullstorydev/grpcurl) for CLI testing)
+* The [Aptos proto definitions](https://github.com/aptos-labs/aptos-core/tree/main/protos/proto) cloned locally (grpcurl requires the `.proto` files)
+
+## Endpoints
+
+| Network | Endpoint |
+| --- | --- |
+| Mainnet | `aptos-mainnet.g.alchemy.com:443` |
+| Testnet | `aptos-testnet.g.alchemy.com:443` |
+
+Authentication uses a Bearer token in the request header:
+
+```bash
+-H "Authorization: Bearer <YOUR_API_KEY>"
+```
+
+<Note>
+  gRPC server reflection is not supported. Always pass the proto files explicitly (`-import-path` and `-proto` with grpcurl, or compiled stubs in your client library). The relevant protos are `aptos/indexer/v1/raw_data.proto` and its imports (`aptos/indexer/v1/filter.proto`, `aptos/transaction/v1/transaction.proto`, `aptos/util/timestamp/timestamp.proto`).
+</Note>
+
+<Steps>
+<Step title="Get the proto definitions">
+
+The Transaction Stream API protos live in the `aptos-core` repository.
+
+```bash
+git clone --depth 1 https://github.com/aptos-labs/aptos-core.git
+cd aptos-core
+```
+
+The proto root is `protos/proto`; use it as the import path in the following steps.
+
+</Step>
+<Step title="Fetch a fixed batch of transactions">
+
+Request 5 transactions starting at a specific version. The server sends the transactions and closes the stream once the count is reached.
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path protos/proto \
+  -proto aptos/indexer/v1/raw_data.proto \
+  -d '{
+    "starting_version": 100000000,
+    "transactions_count": 5
+  }' \
+  aptos-mainnet.g.alchemy.com:443 \
+  aptos.indexer.v1.RawData/GetTransactions
+```
+
+Each response message contains a batch of transactions plus the chain ID:
+
+```json
+{
+  "transactions": [
+    {
+      "timestamp": "2026-04-01T12:00:00Z",
+      "version": "100000000",
+      "info": { "...": "..." },
+      "type": "TRANSACTION_TYPE_USER",
+      "user": { "...": "..." }
+    }
+  ],
+  "chainId": "1"
+}
+```
+
+</Step>
+<Step title="Stream live transactions">
+
+Omit `transactions_count` to keep the stream open indefinitely. The server continuously pushes new transactions in version order as they are processed.
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path protos/proto \
+  -proto aptos/indexer/v1/raw_data.proto \
+  -d '{
+    "starting_version": 100000000
+  }' \
+  aptos-mainnet.g.alchemy.com:443 \
+  aptos.indexer.v1.RawData/GetTransactions
+```
+
+</Step>
+<Step title="Resume from where you left off">
+
+Track the `version` of the last transaction you processed. If the stream disconnects, reconnect with `starting_version` set to that version plus one — transactions are strictly ordered by version, so you will not miss or duplicate data.
+
+</Step>
+</Steps>
+
+## Next steps
+
+* [Aptos gRPC overview](/docs/reference/aptos-grpc-overview) for the full service description
+* [Transaction stream](/docs/reference/aptos-grpc-transaction-stream) for detailed `RawData` service documentation
