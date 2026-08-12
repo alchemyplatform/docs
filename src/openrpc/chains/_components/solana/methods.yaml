@@ -1488,6 +1488,34 @@ components:
         description: Returns epoch activation information for the stake account.
         schema:
           $ref: ./account.yaml#/components/schemas/StakeActivation
+
+    getStakeMinimumDelegation:
+      name: getStakeMinimumDelegation
+      description: Returns the cluster's current stake minimum delegation, in lamports.
+      x-compute-units: 20
+      params:
+        - name: Configuration
+          required: false
+          description: Optional configuration object.
+          schema:
+            $ref: ./state.yaml#/components/schemas/GetStakeMinimumDelegationConfig
+      examples:
+        - name: getStakeMinimumDelegation example
+          params: []
+          result:
+            name: Stake minimum delegation
+            value:
+              context:
+                apiVersion: "2.3.3"
+                slot: 250000000
+              value: 1000000000
+      result:
+        name: Stake minimum delegation
+        description: >-
+          An RpcResponse object whose `value` is the current cluster minimum
+          stake delegation, in lamports.
+        schema:
+          $ref: ./state.yaml#/components/schemas/StakeMinimumDelegationResult
     getTransactionCount:
       name: getTransactionCount
       description: Returns the current transaction count from the ledger.
