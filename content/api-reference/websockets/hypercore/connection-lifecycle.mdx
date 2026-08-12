@@ -13,30 +13,24 @@ description: "HyperCore private-preview documentation."
 2. Authenticate when the connection is established.
 3. Send one or more subscription frames.
 4. Wait for an acknowledgement for each subscription.
-5. Process messages and persist the latest cursor for each subscription.
+5. Process messages and persist the latest cursor for each replay-capable subscription.
 6. If the connection closes, reconnect with exponential backoff and jitter.
-7. Resume each subscription from its last persisted cursor. If that cursor is no longer valid, resynchronize from a snapshot.
+7. Resume replay-capable subscriptions from their last persisted cursor. Complete-snapshot streams resubscribe without a cursor.
 
 ## Heartbeats
 
-The connection uses WebSocket ping and pong frames. Clients must respond promptly and should treat a missed pong as a dead connection, then reconnect. The ping interval and idle timeout will be published with the service.
+The connection uses WebSocket ping and pong frames. Clients must respond promptly and should treat a missed pong as a dead connection, then reconnect.
 
-## Cursors and gap detection
+## Sequencing and recovery
 
-Every message carries a cursor. Clients persist the latest cursor for each subscription. A replay response indicates whether a gap occurred, so clients can determine when local state is untrustworthy.
+For the sequencing and recovery model, see [timestamps, cursors, and replay](/docs/data/hypercore/concepts/timestamps-cursors-and-replay).
 
-## Resuming
-
-Supply the last persisted cursor in the subscription object of the subscribe frame. Resume is per subscription rather than per connection because one connection can carry subscriptions at different positions. The cursor is opaque: clients store and return it unmodified, and its format may change.
-
-## When to resynchronize
-
-If a cursor is expired or rejected, or a gap is reported, discard local state and rebuild from a fresh snapshot before trusting it. This is especially important for book streams.
+> For replay-capable subscriptions, resume is per subscription: supply the last persisted cursor in that subscription's subscribe frame. Complete-snapshot streams resubscribe without a cursor.
 
 ## Backpressure and slow consumers
 
-Clients should apply bounded queues. A consumer that cannot keep up may receive an error frame before the connection is disconnected. The applicable thresholds will be published with the service.
+Clients should apply bounded queues. A consumer that cannot keep up may receive an error frame before the connection is disconnected.
 
 ## Errors
 
-Errors arrive as a structured frame on the same connection. The error-frame shape and error codes will be published with the service.
+Errors arrive as a structured frame on the same connection.

@@ -40,6 +40,35 @@ components:
           $ref: "./base-types.yaml#/components/schemas/DataSlice"
         minContextSlot:
           $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        slot:
+          type: integer
+          minimum: 0
+          description: >-
+            [Account Archive](/docs/solana/account-archive) parameter. Return
+            the account's state as of slot `S` (inclusive): the latest write
+            with `slot <= S`. Mutually exclusive with `lastUpdateBeforeSlot`,
+            `firstUpdateAfterSlot`, and `minContextSlot`; requires
+            `finalized` commitment (the default).
+        lastUpdateBeforeSlot:
+          type: integer
+          minimum: 0
+          description: >-
+            [Account Archive](/docs/solana/account-archive) parameter. Return
+            the most recent write to this account strictly before slot `S`.
+            The response's `context.slot` is the actual slot at which that
+            write landed and can be used as the cursor for the next call.
+            Mutually exclusive with `slot`, `firstUpdateAfterSlot`, and
+            `minContextSlot`; requires `finalized` commitment (the default).
+        firstUpdateAfterSlot:
+          type: integer
+          minimum: 0
+          description: >-
+            [Account Archive](/docs/solana/account-archive) parameter. Return
+            the first write to this account strictly after slot `S`. The
+            response's `context.slot` is the actual slot at which that write
+            landed and can be used as the cursor for the next call. Mutually
+            exclusive with `slot`, `lastUpdateBeforeSlot`, and
+            `minContextSlot`; requires `finalized` commitment (the default).
     GetBalanceConfig:
       title: GetBalance Configuration
       type: object

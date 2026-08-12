@@ -5,37 +5,106 @@ description: "HyperCore private-preview documentation."
 
 <Markdown src="../shared/preview-notice-september.mdx" />
 
-# StreamBlocks
+# Stream blocks
 
-## What the stream carries
+`StreamBlocks` delivers raw HyperCore blocks as they are produced — every signed action
+the block contained, together with its execution results. This is ideal for full-chain
+indexers, action and response analysis, deposit and transfer monitoring, and
+reconciliation against your own records.
 
-StreamBlocks is intended to carry block data for full-chain indexing, action and response analysis, deposit and transfer monitoring, and reconciliation. `round` identifies a block, and `parent_round` links it to its predecessor. See [raw and normalized HyperCore blocks](/docs/chains/hyperliquid/hypercore/concepts/raw-and-normalized-blocks) for the payload structure.
+> The contract below is proposed and will be confirmed before general availability.
 
-## Intended RPC
+## Overview
 
-`rpc StreamBlocks(StreamBlocksRequest) returns (stream BlockEnvelope);`
+HyperCore produces a block roughly every 70 ms, and block numbers increment by exactly
+one. The stream reflects that directly:
 
-The current request sketch is illustrative and pending engineering confirmation. It proposes a starting position, an optional cursor, and inclusion controls for commands, actions, events, and fills. These dimensions are not an approved request contract.
+* One message per block, in order, including blocks with no activity
+* Block number is the stream sequence — there is no separate sequence counter to track
+* A missing block number is therefore an unambiguous gap
+* Blocks are delivered as passthrough — the raw block, not a normalized projection
 
-## Intended message
+Because the stream is dense, gap detection needs no heartbeat and no bookkeeping beyond
+remembering the last block you processed.
 
-> The envelope below is illustrative and non-binding. Its field names, field numbers, scalar types, payload type names, and semantics are provisional; it establishes no wire compatibility.
+## Request structure
 
 ```proto
-message BlockEnvelope {
-  string cursor = 1;
-  uint64 sequence = 2;
-  bool is_final = 3;
-  BlockData block = 4;
+message StreamBlocksRequest {
+  optional uint64 start_height = 1;
+  string cursor = 2;
 }
 ```
 
-The exact request, payload, and `.proto` definitions will be published with the service.
+### Start height
 
-## Workflow
+**Field**: `start_height`
+**Type**: `uint64`
 
-Use this as a design pattern: backfill an initial range with `hl_getBlock` or `hl_getBatchBlocks`, consume the live stream, use bounded block lookup to repair a gap, and reconcile against historical lookups when needed. The [JSON-RPC block-method overview](/docs/chains/hyperliquid/hypercore/json-rpc/overview) describes those lookup methods. This does not establish a retention guarantee.
+Block number to begin streaming from. Omit to start from the current head.
+
+### Cursor
+
+**Field**: `cursor`
+**Type**: `string`
+
+Resume token from a previous session. Opaque — store it and return it unmodified.
+Takes precedence over `start_height` when both are supplied.
+
+## Response structure
+
+```proto
+message BlockEnvelope {
+  uint64 height = 1;
+  string cursor = 2;
+  BlockData block = 3;
+}
+```
+
+### Key fields
+
+**`height`**: Block number and stream sequence. Compare it with the last processed block
+to detect a gap.
+
+**`cursor`**: Resume position for this message. Persist it after processing.
+
+**`block`**: The raw block.
+
+## Block contents
+
+| Field | Description |
+| --- | --- |
+| `abci_block.round` | Block number. Use this as the block identifier. |
+| `abci_block.parent_round` | Preceding block number, for verifying continuity. |
+| `abci_block.time` | Block timestamp. |
+| `abci_block.proposer` | Validator that proposed the block. |
+| `abci_block.hardfork` | Protocol version and the round it activated. |
+| `abci_block.signed_action_bundles` | Signed actions in the block, each with signature, action type, nonce, and vault address, plus builder attribution where present. |
+| `resps` | Execution result per action, keyed by transaction hash, with the acting user and an ok or error status. |
+
+See [raw and normalized HyperCore blocks](/docs/chains/hyperliquid/hypercore/concepts/raw-and-normalized-blocks)
+for how these relate to the normalized objects returned by the JSON-RPC block methods.
+
+## Recovering from a gap
+
+1. Track the block number of the last message you processed.
+2. On reconnect, send that number plus one as `start_height`, or send your stored `cursor`.
+3. If `parent_round` does not match your last processed block, fetch the missing range
+   with [`hl_getBatchBlocks`](/docs/chains/hyperliquid/hypercore/json-rpc/overview)
+   and reconcile before resuming.
+
+Replay depth is bounded by node block-data retention, currently approximately 48 hours. For block-derived streams, gaps that replay cannot bridge can be recovered with the block lookup methods.
+
+## Stream vs block lookup
+
+| | StreamBlocks | JSON-RPC block methods |
+| --- | --- | --- |
+| **Delivery** | Push, one message per block | Request/response |
+| **Latency** | Lowest available | Higher — per-call round trip |
+| **Range** | Live, plus bounded replay | Bounded historical lookup |
+| **Use case** | Continuous indexing | Backfill, gap repair, spot checks |
 
 ## Message size
 
-Raw HyperCore blocks can be large. Clients should configure receive limits and processing queues appropriate to the service limits published at launch.
+Raw HyperCore blocks can be large, and high-activity blocks substantially more so.
+Configure your client's maximum receive size and processing queues accordingly.

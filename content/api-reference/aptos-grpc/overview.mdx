@@ -1,0 +1,35 @@
+---
+title: Aptos gRPC overview
+description: High-performance transaction streaming for Aptos over gRPC
+slug: reference/aptos-grpc-overview
+---
+
+Aptos gRPC provides access to the Aptos Transaction Stream API (`aptos.indexer.v1`) using Protocol Buffers and gRPC. It streams complete, ordered transaction data in real time, making it the recommended way to build indexers, analytics pipelines, and any service that needs to process every transaction on chain.
+
+## Why Aptos gRPC?
+
+Aptos gRPC offers advantages over polling the REST API:
+
+* **Real-time push**: Transactions are streamed to your client as they are processed — no polling loop required
+* **Strongly typed**: Protocol Buffers provide strict typing and schema validation for every transaction field
+* **Efficient serialization**: Binary encoding reduces payload size compared to JSON
+* **Ordered and resumable**: Transactions arrive in version order, and streams can resume from any historical version
+* **Server-side filtering**: Optionally filter the stream so only matching transactions are delivered
+
+## Available services
+
+### [Transaction stream](/docs/reference/aptos-grpc-transaction-stream)
+
+Stream raw transactions through the `RawData` service.
+
+| gRPC method | REST equivalent |
+| --- | --- |
+| `GetTransactions` | `GET /v1/transactions` (paginated polling) |
+
+<Note>
+  gRPC server reflection is not supported on Alchemy endpoints. Clients must supply the Aptos proto definitions directly — see the [quickstart](/docs/reference/aptos-grpc-quickstart) for setup instructions.
+</Note>
+
+## Getting started
+
+Check out the [quickstart guide](/docs/reference/aptos-grpc-quickstart) to make your first gRPC call.

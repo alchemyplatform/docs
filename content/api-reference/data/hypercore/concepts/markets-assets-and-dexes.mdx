@@ -7,4 +7,39 @@ description: "HyperCore private-preview documentation."
 
 # Markets, assets, and DEXes
 
-A market identifier selects a tradeable HyperCore market. Asset and DEX semantics must be sourced from the native metadata contract. This private-preview uses `BTC` only as an illustrative market identifier.
+## Market identifiers
+
+HyperCore coin strings are unambiguous across market types — the format tells you the type:
+
+| Form | Market type | Examples |
+| --- | --- | --- |
+| Readable name | Perpetual | `BTC`, `ETH`, `HYPE`, `SOL` |
+| `@index` | Spot | `@1`, `@107`, `@142` |
+| `#N` | Outcome market (HIP-4) | `#90` |
+| `dex:name` | HIP-3 DEX market | `xyz:SP500` |
+
+There is no overlap between forms: `BTC` is always the perpetual, and spot BTC is a separate `@index` coin. `PURR/USDC` is a documented spot-market exception with a readable name. Discover `@index` mappings through the native `meta` and `spotMeta` metadata endpoints.
+
+Coin strings are case-sensitive.
+
+## Market types and DEXes
+
+The `marketTypes` filter accepts `perp`, `spot`, `outcome`, or `*`. Its default is `["perp"]`, and the default never grows: request new types explicitly or pass `["*"]` to opt in to future types automatically.
+
+The `dex` selector is `main` for Hyperliquid perpetuals or a named DEX for HIP-3 deployments. Outcome markets carry two coins per outcome, one per side.
+
+## Price aggregation
+
+| Parameter | Accepted values | Effect |
+| --- | --- | --- |
+| `nSigFigs` | `2`, `3`, `4`, `5` | Significant figures used to bucket price levels |
+| `mantissa` | `2` or `5` | Mantissa step within the bucket. Valid only when `nSigFigs` is `5` |
+| `nLevels` | `1`, `10`, `20` (default), `50` | Levels returned per side |
+
+Aggregation rounds bids down and asks up. With `nSigFigs: 5` and `mantissa: 2`, a bid of `70325` becomes `70324` and an ask of `70325` becomes `70326`. When aggregation parameters are omitted, each distinct price level is reported individually.
+
+A snapshot and the diffs applied to it must use identical aggregation parameters, or the resulting book is invalid.
+
+## Level semantics
+
+A price level reports total resting size and an order count — `px`, `sz`, and `n`. One level may represent many orders; `n` is how many. Level-aggregated streams expose no order IDs and no user addresses. Order-level detail requires `l4BookUpdates`.

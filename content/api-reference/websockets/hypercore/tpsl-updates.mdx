@@ -7,76 +7,91 @@ description: "HyperCore private-preview documentation."
 
 # tpslUpdates stream
 
+`tpslUpdates` delivers the lifecycle of resting take-profit and stop-loss trigger
+orders. This is ideal for trigger heatmaps, stop-order monitoring, frontend
+overlays, and alerting.
+
 For the corresponding gRPC stream, see [StreamTpslUpdates](/docs/chains/hypercore-grpc/api-reference/stream-tpsl-updates).
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
-{
-  "method": "subscribe",
-  "subscription": {
-    "type": "tpslUpdates",
-    "users": [
-      "0x1111111111111111111111111111111111111111"
-    ]
-  }
-}
+{"method":"subscribe","subscription":{"type":"tpslUpdates","coins":["BTC","ETH"]}}
 ```
 
+## Subscription parameters
+
+| Parameter | Type | Required | Source | Description |
+| --- | --- | --- | --- | --- |
+| `coins` | string[] | No | Alchemy extension | Markets to subscribe to. Omit to subscribe to all perpetual markets. |
+
+Trigger orders exist only on perpetual markets, so no market-type filter applies.
+
 ## Acknowledgement
+
 ```json
-{
-  "channel": "subscriptionResponse",
-  "data": {
-    "subscriptionId": "sub_01",
-    "type": "tpslUpdates"
-  }
-}
+{"channel":"subscriptionResponse","data":{"subscriptionId":"sub_01","type":"tpslUpdates"}}
 ```
 
 ## Event envelope
 
 ```json
-{
-  "channel": "tpslUpdates",
-  "subscriptionId": "sub_01",
-  "blockHeight": 123456,
-  "blockTime": 1780000000000,
-  "cursor": "<opaque cursor>",
-  "data": {
-    "user": "0x1111111111111111111111111111111111111111",
-    "orderId": "12345",
-    "triggerType": "stopLoss",
-    "triggerPrice": "99000.0",
-    "status": "triggered"
-  }
-}
+{"channel":"tpslUpdates","subscriptionId":"sub_01","blockHeight":123456,"blockTime":1780000000000,"cursor":"<opaque cursor>","data":{"height":123456,"time":1780000000000,"isSnapshot":false,"diffs":[{"type":"add","oid":12345,"coin":"BTC","user":"0x1111111111111111111111111111111111111111","side":"B","triggerPx":"99000.0","limitPx":"98900.0","sz":"0.10","triggerCondition":"Price below 99000","orderType":"Stop Limit","isPositionTpsl":false,"reduceOnly":true,"timestamp":1780000000000}]}}
 ```
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
-| user | string | User identifier. |
-| orderId | string | Illustrative orderId value. |
-| triggerType | string | Illustrative triggerType value. |
-| triggerPrice | string | Illustrative triggerPrice value. |
-| status | string | Illustrative status value. |
-## Unsubscribe
-```json
-{
-  "method": "unsubscribe",
-  "subscription": {
-    "type": "tpslUpdates",
-    "users": [
-      "0x1111111111111111111111111111111111111111"
-    ]
-  }
-}
-```
-## Resume
+| `height` | integer | Block height. |
+| `time` | integer | Block timestamp in milliseconds. |
+| `isSnapshot` | boolean | `true` when the message contains a complete replacement snapshot; absent or `false` for an incremental update. |
+| `diffs[].type` | string | `add` or `remove`. |
+| `diffs[].oid` | integer | Order ID. |
+| `diffs[].coin` | string | Market symbol. |
+| `diffs[].user` | string | Address that placed the order. |
+| `diffs[].side` | string | `B` for buy, `A` for sell. |
+| `diffs[].triggerPx` | string | Price at which the order triggers. |
+| `diffs[].limitPx` | string | Limit price applied once triggered. |
+| `diffs[].sz` | string | Order size. `"0.0"` indicates a position-level TP/SL sized by the position rather than a fixed quantity. |
+| `diffs[].triggerCondition` | string | Human-readable condition, for example `Price above 50000`. |
+| `diffs[].orderType` | string | For example `Stop Market`, `Take Profit Limit`. |
+| `diffs[].isPositionTpsl` | boolean | True when attached to a position rather than standing alone. |
+| `diffs[].reduceOnly` | boolean | True when the order can only reduce a position. |
+| `diffs[].timestamp` | integer | Order creation time in milliseconds. |
+| `diffs[].reason` | string | Present on `remove` only. Why the order left the book. |
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+## Update behavior
+
+* Trigger orders are immutable. There is no update operation — a modified order appears as a `remove` followed by an `add` with a new `oid`
+* A `remove` is always terminal
+* Perpetual markets only
+
+## Removal reasons
+
+| Reason | Meaning |
+| --- | --- |
+| `triggered` | Condition met; the order was placed on the book |
+| `canceled` | Cancelled by the user |
+| `reduceOnlyCanceled` | Reduce-only order cancelled because the position closed |
+| `marginCanceled` | Cancelled due to insufficient margin |
+| `rejected` | Rejected by the matching engine |
+| `siblingFilledCanceled` | A paired TP/SL order triggered, cancelling this one |
+| `liquidatedCanceled` | Cancelled because the position was liquidated |
+
+`reason` is informational — treat every `remove` as terminal regardless of its value. New reason values may appear as HyperCore adds order statuses, so do not branch on an exhaustive set.
+
+## Unsubscribe
+
+```json
+{"method":"unsubscribe","subscription":{"type":"tpslUpdates","coins":["BTC","ETH"]}}
+```
+
+## Recovery
+
+`tpslUpdates` carries no per-market `seq` or `prev_seq`; gap detection is server-side, so there is no client sequence bookkeeping. See [detecting gaps](/docs/data/hypercore/concepts/timestamps-cursors-and-replay#detecting-gaps).
+
+* Persist `cursor` after applying a message.
+* On reconnect, supply `cursor` in the subscription object.
+* A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state.
+* If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you. There is no separate resynchronization message and no epoch to track — `isSnapshot: true` is the signal to discard local state and adopt the supplied snapshot.
