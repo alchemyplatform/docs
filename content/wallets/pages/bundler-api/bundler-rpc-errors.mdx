@@ -8,6 +8,8 @@ slug: wallets/reference/bundler-rpc-errors
 
 This document provides a list of the JSON-RPC errors that you might encounter when using the Bundler API. These are in addition to the [standard JSON-RPC error codes](/docs/reference/error-reference#json-rpc-error-codes) returned by a bad method call.
 
+Field names below reflect what the Alchemy bundler ([Rundler](https://github.com/alchemyplatform/rundler)) actually serializes on the wire (camelCase). If a code is emitted without a `data` object, the useful context is included in the top-level `message` string instead.
+
 ### `-32500`: Rejected by EntryPoint’s `simulateValidation`
 
 * **Description**: The `userOp` is rejected by entryPoint's `simulateValidation`, during account creation or validation. The `-32500` error code may be accompanied by an additional [`AAxx` revert code](/docs/reference/entrypoint-revert-codes) provided by the EntryPoint to give additional guidance.
@@ -20,12 +22,11 @@ This document provides a list of the JSON-RPC errors that you might encounter wh
 
 ### `-32501`: Rejected by paymaster's `validatePaymasterUserOp`
 
-* **Description**: The `userOp` is rejected by paymaster's `validatePaymasterUserOp`.
+* **Description**: The `userOp` is rejected by paymaster's `validatePaymasterUserOp`. The paymaster's rejection reason is included in the top-level `message` field of the error.
 
 **Data Fields**:
 
-* `paymaster`: Address of the paymaster.
-* `reason`: String providing the reason for the rejection.
+* `paymaster`: Address of the paymaster that rejected the operation.
 
 ### `-32502`: Opcode violation
 
@@ -33,19 +34,17 @@ This document provides a list of the JSON-RPC errors that you might encounter wh
 
 **Data Fields**:
 
-* `entity`: Type of entity (e.g., paymaster, sender) accessing the storage.
+For most opcode violations, no additional data fields are returned. The offending entity type and opcode are included in the top-level `message` string.
 
-* `opcode`: Opcode that caused the violation.
+When the violation is caused by an entity (or a dependency) with insufficient stake, the following fields are additionally returned:
 
-* Additional fields (when associated with `StakeTooLow`):
-
-  * `needs_stake`: Entity that needs staking.
-  * `accessing_entity`: Type of entity accessing the storage.
-  * `accessed_address`: Address of the accessed storage.
-  * `accessed_entity`: Optional type of accessed entity.
-  * `slot`: Storage slot accessed.
-  * `minimum_stake`: Minimum required stake.
-  * `minimum_unstake_delay`: Minimum required unstake delay.
+* `needsStake`: Single-key object identifying the entity that needs staking, in the form `{<entityType>: <address>}` where `<entityType>` is one of `account`, `paymaster`, `factory`, or `aggregator`.
+* `accessingEntity`: Type of entity accessing the storage.
+* `accessedAddress`: Address of the accessed storage.
+* `accessedEntity`: Optional type of accessed entity.
+* `slot`: Storage slot accessed.
+* `minimumStake`: Minimum required stake.
+* `minimumUnstakeDelay`: Minimum required unstake delay.
 
 ### `-32503`: Out of time range
 
@@ -53,8 +52,8 @@ This document provides a list of the JSON-RPC errors that you might encounter wh
 
 **Data Fields**:
 
-* `valid_until`: Timestamp indicating the valid until time.
-* `valid_after`: Timestamp indicating the valid after time.
+* `validUntil`: Timestamp indicating the valid until time.
+* `validAfter`: Timestamp indicating the valid after time.
 * `paymaster`: Optional address of the paymaster.
 
 ### `-32504`: Throttled or banned
@@ -63,22 +62,17 @@ This document provides a list of the JSON-RPC errors that you might encounter wh
 
 **Data Fields**:
 
-* `entity`: Type of entity (e.g., paymaster, aggregator) that is throttled or banned.
-* `address`: Address of the entity.
+The `data` value is a single-key object identifying the throttled or banned entity, in the form `{<entityType>: <address>}` where `<entityType>` is one of `account`, `paymaster`, `factory`, or `aggregator`.
+
+Example: `{"paymaster": "0x1234...5678"}`.
 
 ### `-32505`: Stake or unstake-delay too low
 
-* **Description**: The `userOp` was rejected because the paymaster's or signature aggregator's stake or unstake delay was too low.
+* **Description**: The `userOp` was rejected because either the paymaster's or aggregator's stake or unstake delay was too low, or the sender has too many pending operations for an unstaked account. Details on which entity needs staking are included in the top-level `message` field.
 
 **Data Fields**:
 
-* `needs_stake`: Entity that needs staking.
-* `accessing_entity`: Type of entity accessing the storage.
-* `accessed_address`: Address of the accessed storage.
-* `accessed_entity`: Optional type of accessed entity.
-* `slot`: Storage slot accessed.
-* `minimum_stake`: Minimum required stake.
-* `minimum_unstake_delay`: Minimum required unstake delay.
+* No additional data fields.
 
 ### `-32506`: Unsupported aggregator
 
@@ -96,13 +90,21 @@ This document provides a list of the JSON-RPC errors that you might encounter wh
 
 * No additional data fields.
 
+### `-32508`: Paymaster balance too low
+
+* **Description**: The `userOp` was rejected because the paymaster's deposit on the EntryPoint is insufficient to cover the maximum gas cost of the operation. The required and current balances are included in the top-level `message` field.
+
+**Data Fields**:
+
+* No additional data fields.
+
 ### `-32521`: Execution reverted
 
 * **Description**: The `userOp` was reverted during the execution phase.
 
 **Data Fields**:
 
-* `revert_data`: Optional bytes containing additional data related to the revert.
+* `revertData`: Bytes containing additional data related to the revert. Only present when the revert included return data; text-only reverts include the revert reason in the top-level `message` field and do not populate the `data` object.
 
 ### `-32602`: Invalid `userOp`
 
@@ -110,8 +112,10 @@ This document provides a list of the JSON-RPC errors that you might encounter wh
 
 **Data Fields**:
 
-* `current_max_priority_fee`: Optional U256 containing the current maximum priority fee.
-* `current_max_fee`: Optional U256 containing the current maximum fee.
+Most `-32602` responses have no `data` object. For the specific "replacement underpriced" case (a resubmitted `userOp` whose fees don't meet the required replacement bump), `data` includes:
+
+* `currentMaxPriorityFee`: Current maximum priority fee for the pending userOp being replaced.
+* `currentMaxFee`: Current maximum fee for the pending userOp being replaced.
 
 ### `-32603`: Internal error
 
