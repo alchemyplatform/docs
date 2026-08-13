@@ -58,3 +58,30 @@ Time-series query ranges are limited by plan:
 | Longer ranges | [Contact sales](https://www.alchemy.com/contact-sales) |
 
 If you request a range longer than your plan supports, the API returns results for the allowed range.
+
+***
+
+## Time series products
+
+The `products` field on the time series endpoint selects which meter to query.
+
+If you omit `products`, the API uses `SUPERNODE_CU`. That meter is core RPC only. It does not include Enhanced APIs.
+
+You can pass more than one product when those products share a unit. A request cannot mix CU products with `SOLANA_GRPC_TB` or `SPONSORED_GAS`.
+
+For CU prices per method, see [Compute Units](/docs/reference/compute-units).
+
+| `products` value | What it measures | Unit |
+|---|---|---|
+| `SUPERNODE_CU` | Core RPC (default). Node methods, including `eth_*` and Solana JSON-RPC. | CU |
+| `SUPERNODE_ENHANCED_CU` | Enhanced APIs: NFT, Token, Transfers, Portfolio, and Prices. | CU |
+| `SOLANA_ARCHIVAL_CU` | Solana archival RPC. Historical Solana reads. | CU |
+| `BLAST_CU` | Blast RPC. | CU |
+| `SPONSORED_GAS` | Gas Manager sponsored transactions. | sponsored gas |
+| `SOLANA_GRPC_TB` | Solana Yellowstone gRPC streams. | TB |
+
+A dashboard-style CU query uses both core RPC and Enhanced APIs:
+
+```json
+"products": ["SUPERNODE_CU", "SUPERNODE_ENHANCED_CU"]
+```
