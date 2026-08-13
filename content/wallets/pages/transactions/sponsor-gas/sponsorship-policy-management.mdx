@@ -1,0 +1,58 @@
+---
+title: Create sponsorship policies
+description: Create and manage gas sponsorship policies in the Alchemy dashboard, choose the right policy type, configure rules, and monitor spend on the Usage tab.
+slug: wallets/transactions/sponsor-gas/sponsorship-policy-management
+---
+
+Manage gas sponsorship policies for your app from the [Gas Sponsorship dashboard](https://dashboard.alchemy.com/apps/latest/gas-sponsorship). A policy defines how gas is sponsored for your app: which chains it covers, and any spend, transaction, or access rules. Policies can also be created and managed with the [Gas Manager API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints).
+
+## Create a policy
+
+<Steps>
+  <Step title="Select your app">
+    Select the app you want to sponsor gas for. Policies are app-scoped and can only be applied to a single app.
+  </Step>
+  <Step title="Choose a policy type">
+    See [Policy types](#policy-types) below. **Gas Sponsorship / BSO** is recommended for most apps.
+
+    ![Create policy dialog showing the policy type picker](https://alchemyapi-res.cloudinary.com/image/upload/v1786381902/docs/aa-sdk/images/wallets/create-policy-type-picker.png)
+  </Step>
+  <Step title="Select chains">
+    Enable the chains you want to sponsor gas on.
+    <Info>
+    Chains must already be enabled on the app. Sponsoring gas on mainnet requires a PAYG or Enterprise plan; Solana sponsorship requires Enterprise. Testnets are available on every plan.
+    </Info>
+    
+    ![Create policy dialog showing chain selection](https://alchemyapi-res.cloudinary.com/image/upload/v1786381905/docs/aa-sdk/images/wallets/create-policy-select-chains.png)
+
+    For ERC-20 policies, networks come from the tokens you enable instead — see [pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token).
+  </Step>
+  <Step title="Get your policy ID">
+    Copy your **Policy ID** and pass it to your SDK or API calls to start [sending sponsored transactions](/docs/wallets/transactions/sponsor-gas).
+  </Step>
+</Steps>
+
+## Policy types
+
+| Policy type | Best for |
+| --- | --- |
+| **Gas Sponsorship** (recommended) | Sponsoring gas across EVM chains (ERC-4337 + ERC-7702 compatible). Powered by [Bundler Sponsored Operations (BSO)](/docs/wallets/transactions/sponsor-gas/bundler-sponsored-operations) for faster confirmations and automatic retries. |
+| **Onchain Paymaster** | Sponsoring gas with an onchain paymaster contract on EVM chains (standard ERC-4337 paymaster). |
+| **Solana Fee Sponsorship** | Sponsoring transaction fees for your users on Solana. Requires an Enterprise plan. |
+| **ERC-20** | Letting users pay gas with any ERC-20 token, such as USDC or USDT, instead of you sponsoring it. See [pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token). |
+
+## Configure rules
+
+Rules control who and what a policy sponsors: spend caps, transaction limits, allowlists, and webhook-based approval. See all supported rules [here](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules).
+
+Edit rules from the policy dashboard or by using the [Gas Manager API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints). 
+
+A policy only sponsors transactions while it's **Active**. Toggle status from the dashboard to activate, deactivate, or check whether it's expired.
+
+## Next steps
+
+* [Sponsor gas](/docs/wallets/transactions/sponsor-gas) — sponsor gas for smart wallet transactions
+* [Support sponsorship policy rules](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules) — webhooks and access controls
+* [Pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token) — ERC-20 gas payments
+* [Solana sponsorship](/docs/wallets/transactions/sponsor-gas/solana) — sponsor fees on Solana
+* [Gas Manager API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints) — manage policies programmatically
