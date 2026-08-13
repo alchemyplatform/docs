@@ -42,6 +42,7 @@ export const visitSection = (
   } = config;
   const sectionUrlSlug = sectionItem.slug ?? kebabCase(sectionItem.section);
   const skipSlug = sectionItem["skip-slug"] ?? false;
+  const urlPathSegments = sectionItem["url-path"]?.split("/").filter(Boolean);
 
   let sectionFullSlug: string[] | undefined;
   let sectionPath: string | undefined;
@@ -51,7 +52,7 @@ export const visitSection = (
   if (sectionItem.path) {
     const cached = contentCache.getMdxContent(sectionItem.path);
     const normalizedSlug = normalizeSlug(cached?.frontmatter.slug as string);
-    sectionFullSlug = normalizedSlug?.split("/");
+    sectionFullSlug = urlPathSegments ?? normalizedSlug?.split("/");
 
     const sectionPathBuilder = parentPath.apply({
       fullSlug: sectionFullSlug,
@@ -90,7 +91,7 @@ export const visitSection = (
 
   // Create path builder for children
   const childPathBuilder = parentPath.apply({
-    fullSlug: sectionFullSlug,
+    fullSlug: urlPathSegments ?? sectionFullSlug,
     urlSlug: sectionUrlSlug,
     skipUrlSlug: skipSlug,
   });
