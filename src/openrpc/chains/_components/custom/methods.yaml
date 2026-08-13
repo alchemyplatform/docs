@@ -2647,3 +2647,246 @@ components:
               excessBlobGas: "0x0"
               parentBeaconBlockRoot: "0x602625e5c228d3ea1c71f2c9a596ce93c7c9a9e2f2a1c733c832e3a0369cb31c"
               requestsHash: "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+    # Solana Jito bundle methods
+    # (Classified as `custom` in chain-config, so definitions live here rather
+    # than in `_components/solana/methods.yaml`.)
+    sendBundle:
+      name: sendBundle
+      summary: Submit a Jito bundle to the block engine.
+      description: >-
+        Available on paid Alchemy plans (pay-as-you-go or enterprise); not available on the free tier.
+
+
+        Submits a bundle of signed transactions to the Jito block engine for atomic
+        processing. Transactions are processed sequentially in the order given; if any
+        transaction fails, the entire bundle is rejected (all-or-nothing). Returns a
+        `bundle_id` immediately once the bundle is accepted; this does not guarantee
+        the bundle lands on-chain. Use [`getBundleStatuses`](/docs/chains/solana/solana-jito-bundles-and-transactions/solana-jito-bundles-and-transactions/get-bundle-statuses)
+        or [`getInflightBundleStatuses`](/docs/chains/solana/solana-jito-bundles-and-transactions/solana-jito-bundles-and-transactions/get-inflight-bundle-statuses)
+        to poll the bundle's status.
+
+
+        A tip is required for the bundle to be considered. The tip can be any
+        instruction (top-level or CPI) that transfers SOL to one of the 8 Jito tip
+        accounts. Use [`getTipAccounts`](/docs/chains/solana/solana-jito-bundles-and-transactions/solana-jito-bundles-and-transactions/get-tip-accounts)
+        to retrieve them, and randomize the selection to reduce contention. The
+        minimum tip is 1,000 lamports; competitive MEV opportunities may require
+        significantly higher tips.
+
+
+        See Jito's [Low Latency Transaction Send](https://docs.jito.wtf/lowlatencytxnsend/#sendbundle)
+        docs for background on bundle mechanics.
+      x-compute-units: 40
+      params:
+        - name: Encoded transactions
+          required: true
+          description: >-
+            Fully-signed transactions as base64 (recommended) or base58 (deprecated)
+            encoded strings. Maximum of 5 transactions.
+          schema:
+            type: array
+            maxItems: 5
+            items:
+              type: string
+        - name: Configuration
+          required: false
+          description: Optional configuration object specifying the encoding used for the transactions.
+          schema:
+            $ref: "../solana/transaction.yaml#/components/schemas/SendBundleConfig"
+      examples:
+        - name: sendBundle example
+          params:
+            - name: Encoded transactions
+              value:
+                - "AT2AqtlokikUWgGNnSX5xrmdvBjSaiIPxvFz6zc5Abn5Z0CPFW5GO+Y3rXceLnqLgQFnGw0yTk3NtJdFNsbrwwQBAAIEsXPDJ9cMVbpFQYClVM7PGLh8JOfCD6E2vz5VNmBCF+p4Uhyxec67hYm1VqLV7JTSSYaC/fm7KvWtZOSRzEFT2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI1i3Wzl2VfewCI8oYXParnP78725sKFzYheTEn8v865YQIDABhqaXRvIGJ1bmRsZSAwOiBqaXRvIHRlc3QCAgABDAIAAACghgEAAAAAAA=="
+                - "AS6fOZuGDsmyYdd+RC0fiFUgNe1BYTOYT+1hkRXHAeroC8R60h3g34EPF5Ys8sGzVBMP9MDSTVgy1/SSTqpCtA4BAAIEsXPDJ9cMVbpFQYClVM7PGLh8JOfCD6E2vz5VNmBCF+p4Uhyxec67hYm1VqLV7JTSSYaC/fm7KvWtZOSRzEFT2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI1i3Wzl2VfewCI8oYXParnP78725sKFzYheTEn8v865YQIDABhqaXRvIGJ1bmRsZSAxOiBqaXRvIHRlc3QCAgABDAIAAACghgEAAAAAAA=="
+            - name: Configuration
+              value:
+                encoding: base64
+          result:
+            name: Bundle ID
+            value: "2id3YC2jK9G5Wo2phDx4gJVAew8DcY5NAojnVuao8rkxwPYPe8cSwE5GzhEgJA2y8fVjDEo6iR6ykBvDxrTQrtpb"
+      result:
+        name: Bundle ID
+        description: The bundle ID, used to identify the bundle. This is the SHA-256 hash of the bundle's transaction signatures.
+        schema:
+          type: string
+
+    getBundleStatuses:
+      name: getBundleStatuses
+      summary: Get the status of submitted Jito bundles.
+      description: >-
+        Available on paid Alchemy plans (pay-as-you-go or enterprise); not available on the free tier.
+
+
+        Returns the status of submitted bundle(s). This function operates similarly
+        to the Solana RPC method `getSignatureStatuses`. If a `bundle_id` is not
+        found or has not landed, it returns `null`. If found and processed, it
+        returns context information including the slot at which the request was
+        made and results with the `bundle_id(s)` and the transactions along with
+        their slot and confirmation status.
+
+
+        We use `getSignatureStatuses` with the default value of
+        `searchTransactionHistory` set to `false` to check transaction statuses
+        on-chain. This means the RPC call will search only its recent history,
+        including all recent slots plus up to `MAX_RECENT_BLOCKHASHES` rooted slots
+        for the transactions. Currently, `MAX_RECENT_BLOCKHASHES` is 300.
+
+
+        See Jito's [getBundleStatuses](https://docs.jito.wtf/lowlatencytxnsend/#getbundlestatuses)
+        docs for background.
+      x-compute-units: 40
+      params:
+        - name: Bundle IDs
+          required: true
+          description: An array of bundle IDs to confirm. Maximum of 5.
+          schema:
+            type: array
+            maxItems: 5
+            items:
+              type: string
+      examples:
+        - name: getBundleStatuses example
+          params:
+            - name: Bundle IDs
+              value:
+                - "892b79ed49138bfb3aa5441f0df6e06ef34f9ee8f3976c15b323605bae0cf51d"
+          result:
+            name: Bundle statuses
+            value:
+              context:
+                slot: 242806119
+              value:
+                - bundle_id: "892b79ed49138bfb3aa5441f0df6e06ef34f9ee8f3976c15b323605bae0cf51d"
+                  transactions:
+                    - "3bC2M9fiACSjkTXZDgeNAuQ4ScTsdKGwR42ytFdhUvikqTmBheUxfsR1fDVsM5ADCMMspuwGkdm1uKbU246x5aE3"
+                    - "8t9hKYEYNbLvNqiSzP96S13XF1C2f1ro271Kdf7bkZ6EpjPLuDff1ywRy4gfaGSTubsM2FeYGDoT64ZwPm1cQUt"
+                  slot: 242804011
+                  confirmation_status: "finalized"
+                  err:
+                    Ok: null
+      result:
+        name: Bundle statuses
+        description: The status of each submitted bundle, or an empty `value` array if none of the requested bundles are found in recent slots.
+        schema:
+          $ref: "../solana/transaction.yaml#/components/schemas/BundleStatusesResult"
+
+    getTipAccounts:
+      name: getTipAccounts
+      summary: Get the Jito tip accounts.
+      description: >-
+        Available on paid Alchemy plans (pay-as-you-go or enterprise); not available on the free tier.
+
+
+        Retrieves the tip accounts designated for tip payments for bundles. The
+        tip accounts have remained constant and can also be found in the
+        [example response](https://docs.jito.wtf/lowlatencytxnsend/#response-example-tips)
+        of Jito's docs.
+
+
+        See Jito's [getTipAccounts](https://docs.jito.wtf/lowlatencytxnsend/#gettipaccounts)
+        docs for background.
+      x-compute-units: 40
+      params:
+        - name: Placeholder
+          required: false
+          description: >-
+            Not read by the server. Included so the JSON-RPC `params` field is
+            present in the request body. Leave the pre-filled empty object as-is.
+          schema:
+            type: object
+            default: {}
+      examples:
+        - name: getTipAccounts example
+          params:
+            - name: Placeholder
+              value: {}
+          result:
+            name: Tip accounts
+            value:
+              - "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"
+              - "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe"
+              - "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY"
+              - "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49"
+              - "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh"
+              - "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt"
+              - "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL"
+              - "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT"
+      result:
+        name: Tip accounts
+        description: The list of 8 Jito tip accounts as base-58 encoded pubkey strings.
+        schema:
+          type: array
+          items:
+            $ref: "../solana/base-types.yaml#/components/schemas/Pubkey"
+
+    getInflightBundleStatuses:
+      name: getInflightBundleStatuses
+      summary: Get the in-flight status of Jito bundles from the last 5 minutes.
+      description: >-
+        Available on paid Alchemy plans (pay-as-you-go or enterprise); not available on the free tier.
+
+
+        Returns the status of submitted bundles within the last five minutes,
+        allowing up to five bundle IDs per request.
+
+
+        * **Failed**: Indicates that all regions have marked the bundle as failed, and it has not been forwarded.
+
+        * **Pending**: Indicates the bundle has not failed, landed, or been deemed invalid.
+
+        * **Landed**: Signifies the bundle has successfully landed on-chain, verified through RPC or the `bundles_landed` table.
+
+        * **Invalid**: Means the bundle is no longer in the system.
+
+
+        See Jito's [getInflightBundleStatuses](https://docs.jito.wtf/lowlatencytxnsend/#getinflightbundlestatuses)
+        docs for background.
+      x-compute-units: 40
+      params:
+        - name: Bundle IDs
+          required: true
+          description: An array of bundle IDs to confirm. Maximum of 5.
+          schema:
+            type: array
+            maxItems: 5
+            items:
+              type: string
+      examples:
+        - name: getInflightBundleStatuses example
+          params:
+            - name: Bundle IDs
+              value:
+                - "b31e5fae4923f345218403ac1ab242b46a72d4f2a38d131f474255ae88f1ec9a"
+                - "e3c4d7933cf3210489b17307a14afbab2e4ae3c67c9e7157156f191f047aa6e8"
+                - "a7abecabd9a165bc73fd92c809da4dc25474e1227e61339f02b35ce91c9965e2"
+                - "e3934d2f81edbc161c2b8bb352523cc5f74d49e8d4db81b222c553de60a66514"
+                - "2cd515429ae99487dfac24b170248f6929e4fd849aa7957cccc1daf75f666b54"
+          result:
+            name: Inflight bundle statuses
+            value:
+              context:
+                slot: 280999028
+              value:
+                - bundle_id: "b31e5fae4923f345218403ac1ab242b46a72d4f2a38d131f474255ae88f1ec9a"
+                  status: "Invalid"
+                  landed_slot: null
+                - bundle_id: "e3c4d7933cf3210489b17307a14afbab2e4ae3c67c9e7157156f191f047aa6e8"
+                  status: "Invalid"
+                  landed_slot: null
+                - bundle_id: "a7abecabd9a165bc73fd92c809da4dc25474e1227e61339f02b35ce91c9965e2"
+                  status: "Invalid"
+                  landed_slot: null
+                - bundle_id: "e3934d2f81edbc161c2b8bb352523cc5f74d49e8d4db81b222c553de60a66514"
+                  status: "Invalid"
+                  landed_slot: null
+                - bundle_id: "2cd515429ae99487dfac24b170248f6929e4fd849aa7957cccc1daf75f666b54"
+                  status: "Invalid"
+                  landed_slot: null
+      result:
+        name: Inflight bundle statuses
+        description: The in-flight status of each queried bundle.
+        schema:
+          $ref: "../solana/transaction.yaml#/components/schemas/InflightBundleStatusesResult"
