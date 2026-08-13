@@ -299,4 +299,52 @@ describe("visitApiReference", () => {
     // Should return array instead of wrapped in API section
     expect(Array.isArray(result.navItem)).toBe(true);
   });
+
+  test("should pass include-tags through to OpenAPI processing", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    cache.setSpec("admin-api", {
+      specType: "openapi",
+      spec: openApiSpecFactory({
+        paths: {
+          "/apps": {
+            get: {
+              operationId: "ListApps",
+              tags: ["Apps"],
+              responses: { "200": { description: "Success" } },
+            },
+          },
+          "/chains": {
+            get: {
+              operationId: "ListChains",
+              tags: ["Chains"],
+              responses: { "200": { description: "Success" } },
+            },
+          },
+        },
+      }),
+      specId: "alchemy/rest/admin-api.json",
+    });
+
+    const result = visitApiReference({
+      item: {
+        api: "Apps",
+        "api-name": "admin-api",
+        "skip-slug": true,
+        flattened: true,
+        "include-tags": ["Apps"],
+      },
+      parentPath: PathBuilder.init("admin-api/apps"),
+      tab: "get-started",
+      stripPathPrefix: undefined,
+      contentCache: cache,
+      context,
+      navigationAncestors: [],
+    });
+
+    expect(Object.keys(result.indexEntries)).toEqual([
+      "admin-api/apps/list-apps",
+    ]);
+  });
 });
