@@ -93,7 +93,9 @@ components:
         - code: -32602
           message: >-
             Invalid params. `slot` and `minContextSlot` are mutually
-            exclusive. `lastUpdateBeforeSlot` and `firstUpdateAfterSlot`
+            exclusive. `slot` requires `finalized` commitment (the
+            default); combining it with `processed` or `confirmed` is
+            rejected. `lastUpdateBeforeSlot` and `firstUpdateAfterSlot`
             (available on `getAccountInfo`) are not supported on this
             method; only `slot`. Also returned for a malformed Pubkey or
             configuration value.
@@ -171,11 +173,13 @@ components:
             available slot.
         - code: -32602
           message: >-
-            Invalid params. `lastUpdateBeforeSlot` and
-            `firstUpdateAfterSlot` (available on `getAccountInfo`) are
-            not supported on this method; only `slot`. Also returned for
-            a malformed Pubkey (or a Pubkey that is not an SPL Token
-            account) or configuration value.
+            Invalid params. `slot` requires `finalized` commitment (the
+            default); combining it with `processed` or `confirmed` is
+            rejected. `lastUpdateBeforeSlot` and `firstUpdateAfterSlot`
+            (available on `getAccountInfo`) are not supported on this
+            method; only `slot`. Also returned for a malformed Pubkey (or
+            a Pubkey that is not an SPL Token account) or configuration
+            value.
 
     getTokenAccountsByOwner:
       name: getTokenAccountsByOwner
