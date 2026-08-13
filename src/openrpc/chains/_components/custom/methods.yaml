@@ -1238,6 +1238,170 @@ components:
     #         name: Cancellation Status
     #         value: true
 
+    eth_config:
+      name: eth_config
+      description: >-
+        Returns the node's fork configuration for the current, next, and last
+        known forks, as introduced by
+        [EIP-7910](https://eips.ethereum.org/EIPS/eip-7910). Operators can use
+        this method to verify that a node is correctly configured for the
+        current network state and any scheduled upgrades. Takes no parameters.
+      x-compute-units: 10
+      params: []
+      result:
+        name: Fork configuration
+        description: >-
+          An object with three members: `current`, `next`, and `last`. `next`
+          and `last` are `null` when the client is not configured for a
+          scheduled future fork; both may hold the same value when the next
+          fork is also the last known fork.
+        schema:
+          type: object
+          required: [current]
+          properties:
+            current:
+              description: The configuration object currently in effect.
+              type: object
+              required:
+                [activationTime, blobSchedule, chainId, forkId, precompiles]
+              properties:
+                activationTime:
+                  type: integer
+                  description: Fork activation timestamp in Unix epoch seconds. `0` when the fork activates at genesis.
+                blobSchedule:
+                  type: object
+                  description: Blob configuration parameters for the fork.
+                  required: [baseFeeUpdateFraction, max, target]
+                  properties:
+                    baseFeeUpdateFraction:
+                      type: integer
+                      description: The base fee update fraction for blob gas.
+                    max:
+                      type: integer
+                      description: The maximum number of blobs per block.
+                    target:
+                      type: integer
+                      description: The target number of blobs per block.
+                chainId:
+                  type: string
+                  description: Chain ID as an unsigned `0x`-prefixed hexadecimal string with leading zeros removed.
+                forkId:
+                  type: string
+                  description: The `FORK_HASH` value from [EIP-6122](https://eips.ethereum.org/EIPS/eip-6122), padded to four bytes.
+                precompiles:
+                  type: object
+                  description: Active precompile contracts for the fork, keyed by the agreed-upon contract name (e.g. `ECREC`); values are 20-byte `0x`-prefixed hexadecimal addresses.
+                  additionalProperties:
+                    type: string
+                systemContracts:
+                  type: object
+                  description: System-level contracts relevant to the fork (Cancun and later). Keys are contract names from the defining EIP (e.g. `BEACON_ROOTS_ADDRESS`); values are 20-byte `0x`-prefixed hexadecimal addresses.
+                  additionalProperties:
+                    type: string
+            next:
+              description: The next scheduled fork configuration, or `null` when none is scheduled.
+              oneOf:
+                - type: object
+                  required:
+                    [activationTime, blobSchedule, chainId, forkId, precompiles]
+                  properties:
+                    activationTime:
+                      type: integer
+                    blobSchedule:
+                      type: object
+                      properties:
+                        baseFeeUpdateFraction:
+                          type: integer
+                        max:
+                          type: integer
+                        target:
+                          type: integer
+                    chainId:
+                      type: string
+                    forkId:
+                      type: string
+                    precompiles:
+                      type: object
+                      additionalProperties:
+                        type: string
+                    systemContracts:
+                      type: object
+                      additionalProperties:
+                        type: string
+                - type: "null"
+            last:
+              description: The last known fork configuration, or `null` when none is scheduled. Equal to `next` when the next fork is also the last configured fork.
+              oneOf:
+                - type: object
+                  required:
+                    [activationTime, blobSchedule, chainId, forkId, precompiles]
+                  properties:
+                    activationTime:
+                      type: integer
+                    blobSchedule:
+                      type: object
+                      properties:
+                        baseFeeUpdateFraction:
+                          type: integer
+                        max:
+                          type: integer
+                        target:
+                          type: integer
+                    chainId:
+                      type: string
+                    forkId:
+                      type: string
+                    precompiles:
+                      type: object
+                      additionalProperties:
+                        type: string
+                    systemContracts:
+                      type: object
+                      additionalProperties:
+                        type: string
+                - type: "null"
+      examples:
+        - name: eth_config example
+          params: []
+          result:
+            name: Fork configuration
+            value:
+              current:
+                activationTime: 1767747671
+                blobSchedule:
+                  baseFeeUpdateFraction: 11684671
+                  max: 21
+                  target: 14
+                chainId: "0x1"
+                forkId: "0x07c9462e"
+                precompiles:
+                  BLAKE2F: "0x0000000000000000000000000000000000000009"
+                  BLS12_G1ADD: "0x000000000000000000000000000000000000000b"
+                  BLS12_G1MSM: "0x000000000000000000000000000000000000000c"
+                  BLS12_G2ADD: "0x000000000000000000000000000000000000000d"
+                  BLS12_G2MSM: "0x000000000000000000000000000000000000000e"
+                  BLS12_MAP_FP2_TO_G2: "0x0000000000000000000000000000000000000011"
+                  BLS12_MAP_FP_TO_G1: "0x0000000000000000000000000000000000000010"
+                  BLS12_PAIRING_CHECK: "0x000000000000000000000000000000000000000f"
+                  BN254_ADD: "0x0000000000000000000000000000000000000006"
+                  BN254_MUL: "0x0000000000000000000000000000000000000007"
+                  BN254_PAIRING: "0x0000000000000000000000000000000000000008"
+                  ECREC: "0x0000000000000000000000000000000000000001"
+                  ID: "0x0000000000000000000000000000000000000004"
+                  KZG_POINT_EVALUATION: "0x000000000000000000000000000000000000000a"
+                  MODEXP: "0x0000000000000000000000000000000000000005"
+                  P256VERIFY: "0x0000000000000000000000000000000000000100"
+                  RIPEMD160: "0x0000000000000000000000000000000000000003"
+                  SHA256: "0x0000000000000000000000000000000000000002"
+                systemContracts:
+                  BEACON_ROOTS_ADDRESS: "0x000f3df6d732807ef1319fb7b8bb8522d0beac02"
+                  CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS: "0x0000bbddc7ce488642fb579f8b00f3a590007251"
+                  DEPOSIT_CONTRACT_ADDRESS: "0x00000000219ab540356cbb839cbe05303d7705fa"
+                  HISTORY_STORAGE_ADDRESS: "0x0000f90827f1c53a10cb7a02335b175320002935"
+                  WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS: "0x00000961ef480eb55e80d19ad83579a64c007002"
+              next: null
+              last: null
+
     eth_baseFee:
       name: eth_baseFee
       description: Returns the base fee for the next block.
