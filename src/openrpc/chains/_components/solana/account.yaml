@@ -84,8 +84,10 @@ components:
             [Account Archive](/docs/solana/account-archive) parameter. Return
             the account's lamport balance as of slot `S` (inclusive): the
             latest write with `slot <= S`. Mutually exclusive with
-            `minContextSlot`; requires `finalized` commitment (the default);
-            combining with `processed` or `confirmed` is rejected.
+            `minContextSlot`. Only finalized slots enter the archive;
+            `processed` and `confirmed` are still accepted as `commitment`
+            values but do not change what the archive returns, and any
+            slot above the finalized tip returns `-32020`.
     LamportBalance:
       title: Lamport Balance
       type: integer
@@ -124,9 +126,11 @@ components:
           description: >-
             [Account Archive](/docs/solana/account-archive) parameter. Return
             the token account's balance as of slot `S` (inclusive): the
-            latest write with `slot <= S`. Requires `finalized` commitment
-            (the default); combining with `processed` or `confirmed` is
-            rejected.
+            latest write with `slot <= S`. Only finalized slots enter the
+            archive; `processed` and `confirmed` are still accepted as
+            `commitment` values but do not change what the archive
+            returns, and any slot above the finalized tip returns
+            `-32020`.
     TokenBalance:
       title: Token Balance
       type: object
