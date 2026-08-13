@@ -456,4 +456,55 @@ describe("processOpenApiSpec", () => {
       expect(result.navItem.children[0].type).toBe("endpoint");
     }
   });
+
+  test("should keep only operations whose first tag is in includeTags", () => {
+    const context = new ProcessingContext("docs");
+
+    const result = processOpenApiSpec({
+      spec: openApiSpecFactory({
+        paths: {
+          "/apps": {
+            get: {
+              operationId: "ListApps",
+              tags: ["Apps"],
+              responses: { "200": { description: "Success" } },
+            },
+          },
+          "/chains": {
+            get: {
+              operationId: "ListChains",
+              tags: ["Chains"],
+              responses: { "200": { description: "Success" } },
+            },
+          },
+        },
+      }),
+      specId: "alchemy/rest/admin-api.json",
+      visitorConfig: {
+        item: { api: "Apps", "api-name": "admin-api" },
+        parentPath: PathBuilder.init(),
+        tab: "get-started",
+        stripPathPrefix: undefined,
+        contentCache: new ContentCache(),
+        context,
+        navigationAncestors: [],
+      },
+      apiPathBuilder: PathBuilder.init("admin-api/apps"),
+      apiTitle: "Apps",
+      isHidden: false,
+      isFlattened: true,
+      includeTags: ["Apps"],
+    });
+
+    expect(Object.keys(result.indexEntries)).toEqual([
+      "admin-api/apps/list-apps",
+    ]);
+    expect(result.indexEntries["admin-api/apps/list-chains"]).toBeUndefined();
+    expect(Array.isArray(result.navItem)).toBe(true);
+    if (Array.isArray(result.navItem)) {
+      expect(result.navItem).toHaveLength(1);
+      expect(result.navItem[0].type).toBe("endpoint");
+      expect(result.navItem[0].path).toBe("/admin-api/apps/list-apps");
+    }
+  });
 });

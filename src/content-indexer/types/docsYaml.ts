@@ -14,6 +14,8 @@ export interface SectionConfig {
   hidden?: boolean;
   contents: NavigationItem[];
   path?: string; // Optional overview page
+  /** Full URL path override for this section and its children (no /docs prefix). */
+  "url-path"?: string;
 }
 
 export interface LinkConfig {
@@ -28,6 +30,8 @@ export interface ApiConfig {
   "skip-slug"?: boolean;
   hidden?: boolean;
   flattened?: boolean;
+  /** Keep only OpenAPI operations whose first tag is in this list. */
+  "include-tags"?: string[];
 }
 
 export interface ChangelogConfig {
