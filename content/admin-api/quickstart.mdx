@@ -1,41 +1,43 @@
 ---
 title: Admin API Quickstart
-subtitle: Create, configure, and manage an app using the Admin API.
+subtitle: Create an app and query usage with the Admin API.
 slug: reference/admin-api/quickstart
 ---
 
 ## Get started
 
-This guide walks through creating an app, retrieving its details, updating its configuration, and deleting it.
+This guide walks through creating an app, updating its configuration, and querying account usage.
 
 ### Prerequisites
 
-* An access key with App Management **write** permissions
-  * Refer to the overview authentication section for instructions to create an access key
+* An access key with App Management **write** permissions and Usage **read** permissions
+  * Refer to the [overview authentication section](/docs/reference/admin-api/overview#authentication) for instructions to create an access key
 
-## Set up Environment Variables
+## Set up environment variables
 
 ```bash
 export ALCHEMY_ADMIN_BASE_URL="https://admin-api.alchemy.com/v1"
 export ALCHEMY_ADMIN_ACCESS_KEY="YOUR_ACCESS_KEY_HERE"
 ```
 
-Auth Header
+Auth header:
 
 ```bash
 export ALCHEMY_ADMIN_AUTH_HEADER="Authorization: Bearer $ALCHEMY_ADMIN_ACCESS_KEY"
 ```
 
-## Get chain network options
+## 1. Get chain network options
 
-Use this endpoint to retrieve the list of supported networks and their identifiers. These values are required when configuring network allowlists.
+Retrieve the list of supported networks and their identifiers. These values are required when you configure network allowlists.
 
 ```bash
 curl "$ALCHEMY_ADMIN_BASE_URL/chains" \
   -H "$ALCHEMY_ADMIN_AUTH_HEADER"
 ```
 
-## 1. Create an app
+See the [List chains](/docs/admin-api/chains/list-chains) endpoint for response fields.
+
+## 2. Create an app
 
 Create a new app by providing a name, description, and supported networks.
 
@@ -79,7 +81,9 @@ Example response:
 }
 ```
 
-## 2. Get app info
+See the [Create app](/docs/admin-api/apps/create-app) endpoint for request options.
+
+## 3. Get app info
 
 Retrieve details for a single app using its `app_id`.
 
@@ -90,9 +94,7 @@ curl "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID" \
   -H "$ALCHEMY_ADMIN_AUTH_HEADER"
 ```
 
-***
-
-## 3. Update app configuration
+## 4. Update app configuration
 
 App updates are split between **metadata updates** and **configuration updates**.
 
@@ -115,7 +117,7 @@ curl -X PATCH "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID" \
 
 ### Update network allowlist (optional)
 
-Update the set of networks this app is allowed to access. Network values must come from the Chains endpoint. The networks provided will replace the current list.
+Update the set of networks this app is allowed to access. Network values must come from the Chains endpoint. The networks you provide replace the current list.
 
 ```bash
 APP_ID="app_123"
@@ -162,7 +164,115 @@ curl -X PUT "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID/ip-allowlist" \
   }'
 ```
 
-## 4. Delete the app
+## 5. Get usage summary
+
+Retrieve usage totals for the current billing period and recent rolling windows.
+
+```bash
+curl "$ALCHEMY_ADMIN_BASE_URL/usage/summary" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER"
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "billingPeriod": {
+      "startTime": "2026-06-01T00:00:00Z",
+      "endTime": "2026-07-01T00:00:00Z"
+    },
+    "totals": {
+      "last7Days": {
+        "amount": "1250000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "12.50"
+      },
+      "last30Days": {
+        "amount": "4800000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "48.00"
+      },
+      "monthToDate": {
+        "amount": "3200000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "32.00"
+      }
+    },
+    "usageLimit": {
+      "unit": "CU",
+      "limit": "10000000",
+      "used": "3200000",
+      "remaining": "6800000",
+      "percentUsed": 32
+    },
+    "freshness": {
+      "dataThrough": "2026-06-28T23:59:00Z",
+      "containsPartialToday": true,
+      "updateCadence": "minute"
+    }
+  }
+}
+```
+
+See the [Get usage summary](/docs/admin-api/usage/get-usage-summary) endpoint for response fields.
+
+## 6. Get usage time series
+
+Query daily usage over a date range. You can optionally filter by app, network, method, or request type, and group results by one dimension.
+
+```bash
+curl -X POST "$ALCHEMY_ADMIN_BASE_URL/usage/time-series" \
+  -H "Content-Type: application/json" \
+  -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+  -d '{
+    "startTime": "2026-06-01T00:00:00Z",
+    "endTime": "2026-06-07T23:59:59Z",
+    "granularity": "day",
+    "products": ["SUPERNODE_CU"],
+    "metrics": ["amount", "usd"],
+    "groupBy": ["network"]
+  }'
+```
+
+Example response:
+
+```json
+{
+  "data": {
+    "query": {
+      "startTime": "2026-06-01T00:00:00Z",
+      "endTime": "2026-06-07T23:59:59Z",
+      "granularity": "day",
+      "products": ["SUPERNODE_CU"],
+      "metrics": ["amount", "usd"],
+      "groupBy": ["network"]
+    },
+    "freshness": {
+      "dataThrough": "2026-06-07T23:59:00Z",
+      "containsPartialToday": false,
+      "updateCadence": "minute"
+    },
+    "data": [
+      {
+        "startTime": "2026-06-01T00:00:00Z",
+        "endTime": "2026-06-02T00:00:00Z",
+        "isPartial": false,
+        "dimensions": {
+          "network": "eth-mainnet"
+        },
+        "amount": "450000",
+        "unit": "ALCHEMY_COMPUTE_UNIT",
+        "usd": "4.50"
+      }
+    ]
+  }
+}
+```
+
+See the [Get usage time series](/docs/admin-api/usage/get-usage-time-series) endpoint for request options.
+
+## 7. Delete the app
 
 Permanently delete an app. This action cannot be undone.
 
@@ -172,3 +282,7 @@ APP_ID="app_123"
 curl -X DELETE "$ALCHEMY_ADMIN_BASE_URL/apps/$APP_ID" \
   -H "$ALCHEMY_ADMIN_AUTH_HEADER"
 ```
+
+## Next steps
+
+* Use the [Alchemy CLI](/docs/alchemy-cli#usage) to query usage from the terminal without writing HTTP requests

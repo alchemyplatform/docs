@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Alchemy docs.yml",
-  "description": "Navigation configuration for the Alchemy docs site. Allows only the options supported by the content indexer (src/content-indexer/types/docsYaml.ts), including Alchemy-specific extensions (skip-slug, flattened).",
+  "description": "Navigation configuration for the Alchemy docs site. Allows only the options supported by the content indexer (src/content-indexer/types/docsYaml.ts), including Alchemy-specific extensions (skip-slug, flattened, url-path, include-tags).",
   "type": "object",
   "additionalProperties": false,
   "required": ["navigation"],
@@ -121,6 +121,10 @@
           "description": "Alchemy extension: omit this section's slug from descendant URL paths.",
           "type": "boolean"
         },
+        "url-path": {
+          "description": "Alchemy extension: replace the inherited URL path for this section and its descendants. Do not include a /docs prefix.",
+          "type": "string"
+        },
         "hidden": {
           "description": "Hide this section and its contents from the sidebar and search indexing.",
           "type": "boolean"
@@ -172,6 +176,13 @@
         "flattened": {
           "description": "Alchemy extension: render endpoints as a flat list instead of grouped by spec hierarchy.",
           "type": "boolean"
+        },
+        "include-tags": {
+          "description": "Alchemy extension: keep only OpenAPI operations whose first tag is in this list.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }
