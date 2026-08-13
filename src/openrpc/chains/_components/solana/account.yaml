@@ -45,30 +45,30 @@ components:
           minimum: 0
           description: >-
             [Account Archive](/docs/solana/account-archive) parameter. Return
-            the account's state as of slot `S` (inclusive): the latest write
-            with `slot <= S`. Mutually exclusive with `lastUpdateBeforeSlot`,
-            `firstUpdateAfterSlot`, and `minContextSlot`; requires
-            `finalized` commitment (the default).
+            the account's state as of finalized slot `S` (inclusive): the
+            latest write with `slot <= S`. Mutually exclusive with
+            `lastUpdateBeforeSlot`, `firstUpdateAfterSlot`, and
+            `minContextSlot`.
         lastUpdateBeforeSlot:
           type: integer
           minimum: 0
           description: >-
             [Account Archive](/docs/solana/account-archive) parameter. Return
-            the most recent write to this account strictly before slot `S`.
-            The response's `context.slot` is the actual slot at which that
-            write landed and can be used as the cursor for the next call.
-            Mutually exclusive with `slot`, `firstUpdateAfterSlot`, and
-            `minContextSlot`; requires `finalized` commitment (the default).
+            the most recent write to this account strictly before finalized
+            slot `S`. The response's `context.slot` is the actual slot at
+            which that write landed and can be used as the cursor for the
+            next call. Mutually exclusive with `slot`,
+            `firstUpdateAfterSlot`, and `minContextSlot`.
         firstUpdateAfterSlot:
           type: integer
           minimum: 0
           description: >-
             [Account Archive](/docs/solana/account-archive) parameter. Return
-            the first write to this account strictly after slot `S`. The
-            response's `context.slot` is the actual slot at which that write
-            landed and can be used as the cursor for the next call. Mutually
-            exclusive with `slot`, `lastUpdateBeforeSlot`, and
-            `minContextSlot`; requires `finalized` commitment (the default).
+            the first write to this account strictly after finalized slot
+            `S`. The response's `context.slot` is the actual slot at which
+            that write landed and can be used as the cursor for the next
+            call. Mutually exclusive with `slot`, `lastUpdateBeforeSlot`,
+            and `minContextSlot`.
     GetBalanceConfig:
       title: GetBalance Configuration
       type: object
@@ -82,12 +82,9 @@ components:
           minimum: 0
           description: >-
             [Account Archive](/docs/solana/account-archive) parameter. Return
-            the account's lamport balance as of slot `S` (inclusive): the
-            latest write with `slot <= S`. Mutually exclusive with
-            `minContextSlot`. Only finalized slots enter the archive;
-            `processed` and `confirmed` are still accepted as `commitment`
-            values but do not change what the archive returns, and any
-            slot above the finalized tip returns `-32020`.
+            the account's lamport balance as of finalized slot `S`
+            (inclusive): the latest write with `slot <= S`. Mutually
+            exclusive with `minContextSlot`.
     LamportBalance:
       title: Lamport Balance
       type: integer
@@ -125,12 +122,8 @@ components:
           minimum: 0
           description: >-
             [Account Archive](/docs/solana/account-archive) parameter. Return
-            the token account's balance as of slot `S` (inclusive): the
-            latest write with `slot <= S`. Only finalized slots enter the
-            archive; `processed` and `confirmed` are still accepted as
-            `commitment` values but do not change what the archive
-            returns, and any slot above the finalized tip returns
-            `-32020`.
+            the token account's balance as of finalized slot `S`
+            (inclusive): the latest write with `slot <= S`.
     TokenBalance:
       title: Token Balance
       type: object
