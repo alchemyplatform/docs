@@ -30,6 +30,7 @@ export const visitApiReference = (config: ApiVisitorConfig): VisitorResult => {
   const skipSlug = apiConfig["skip-slug"] ?? false;
   const isHidden = apiConfig.hidden || config.isAncestorHidden || false;
   const isFlattened = apiConfig.flattened ?? false;
+  const includeTags = apiConfig["include-tags"];
 
   // Build path for this API
   const apiPathBuilder = skipSlug
@@ -58,6 +59,7 @@ export const visitApiReference = (config: ApiVisitorConfig): VisitorResult => {
         apiTitle: apiConfig.api,
         isHidden,
         isFlattened,
+        includeTags,
       });
 
     case "openrpc":

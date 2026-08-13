@@ -32,6 +32,8 @@ export interface ProcessOpenApiConfig {
   apiTitle: string;
   isHidden: boolean;
   isFlattened: boolean;
+  /** When set, keep only operations whose first OpenAPI tag is in this list. */
+  includeTags?: string[];
 }
 
 interface BuildOpenApiIndexEntriesConfig {
@@ -182,11 +184,20 @@ export const processOpenApiSpec = ({
   apiTitle,
   isHidden,
   isFlattened,
+  includeTags,
 }: ProcessOpenApiConfig): VisitorResult => {
   const { tab, context, navigationAncestors } = visitorConfig;
 
   // Extract operations and build index entries
-  const operations = extractOpenApiOperations(spec.paths);
+  let operations = extractOpenApiOperations(spec.paths);
+  if (includeTags && includeTags.length > 0) {
+    const allowedTags = new Set(includeTags);
+    operations = operations
+      .filter((operation) => operation.tag && allowedTags.has(operation.tag))
+      // The yaml section already groups these endpoints, so drop the tag
+      // to avoid a duplicate URL segment and sidebar wrapper.
+      .map((operation) => ({ ...operation, tag: undefined }));
+  }
   const indexEntries = buildOpenApiIndexEntries({
     operations,
     apiPathBuilder,

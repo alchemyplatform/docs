@@ -545,4 +545,36 @@ describe("visitSection", () => {
       expect(result.navItem.children[2].type).toBe("link");
     }
   });
+
+  test("should replace inherited path when url-path is set", () => {
+    const context = new ProcessingContext("docs");
+    const cache = new ContentCache();
+
+    const result = visitSection(
+      {
+        item: {
+          section: "Apps",
+          "url-path": "admin-api/apps",
+          contents: [
+            {
+              page: "Create app",
+              path: "content/admin-api/create-app.mdx",
+            },
+          ],
+        },
+        parentPath: PathBuilder.init("tutorials/tools/admin-api"),
+        tab: "get-started",
+        stripPathPrefix: undefined,
+        contentCache: cache,
+        context,
+        navigationAncestors: [],
+      },
+      visitNavigationItem,
+    );
+
+    expect(result.indexEntries["admin-api/apps/create-app"]).toBeDefined();
+    expect(
+      result.indexEntries["tutorials/tools/admin-api/apps/create-app"],
+    ).toBeUndefined();
+  });
 });
