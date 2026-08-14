@@ -9,9 +9,9 @@ With Wallet APIs, you can allow users to pay for gas with any token, streamlinin
 
 <Info>
   **Use a custom ERC-20 token.** The tokens listed in the dashboard are not the
-  limit. You can configure any ERC-20 token through the Admin API by providing
-  a compatible price-reference token. The custom token and its price reference
-  must use the same number of decimals.
+  limit. You can configure a token through the Admin API. Testnet tokens require
+  a compatible price-reference token; mainnet tokens can use either their own
+  supported price or an optional price reference.
 </Info>
 
 ## How it works
@@ -30,9 +30,13 @@ Post-operation mode is recommended for most use cases. If the token approval is 
 
 To accept a token that is not listed in the dashboard, create an ERC-20 policy
 with the [Create Policy Admin API](/docs/wallets/api/gas-manager-admin-api/admin-api-endpoints/create-policy).
-Set `priceReferenceNetwork` and `priceReferenceTokenAddress` for each custom
-token. The price-reference token provides the conversion price and must have
-the same number of decimals as the custom token.
+Testnet tokens must set `priceReferenceNetwork` and
+`priceReferenceTokenAddress`; the reference token provides the conversion
+price. Mainnet tokens can omit both fields when their own token price is
+supported, or set both fields to use a reference token instead.
+
+Choose a reference token with the same number of decimals as the payment token.
+The service does not validate matching decimals.
 
 This example accepts a six-decimal custom token on Base Sepolia and uses Base
 Sepolia USDC as its six-decimal price reference:
