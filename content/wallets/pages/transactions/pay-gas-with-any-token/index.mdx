@@ -10,8 +10,9 @@ With Wallet APIs, you can allow users to pay for gas with any token, streamlinin
 <Info>
   **Use a custom ERC-20 token.** The tokens listed in the dashboard are not the
   limit. You can configure a token through the Admin API. Testnet tokens require
-  a compatible price-reference token; mainnet tokens can use either their own
-  supported price or an optional price reference.
+  a compatible price-reference token; mainnet tokens can use either a price
+  supported by the [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address)
+  or an optional price reference.
 </Info>
 
 ## How it works
@@ -32,8 +33,9 @@ To accept a token that is not listed in the dashboard, create an ERC-20 policy
 with the [Create Policy Admin API](/docs/wallets/api/gas-manager-admin-api/admin-api-endpoints/create-policy).
 Testnet tokens must set `priceReferenceNetwork` and
 `priceReferenceTokenAddress`; the reference token provides the conversion
-price. Mainnet tokens can omit both fields when their own token price is
-supported, or set both fields to use a reference token instead.
+price. Mainnet tokens can omit both fields when their token price is supported
+by the [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address),
+or set both fields to use a reference token instead.
 
 Choose a reference token with the same number of decimals as the payment token.
 The service does not validate matching decimals.
