@@ -569,6 +569,49 @@ components:
           description: Error details.
       required:
         - error
+
+    PartialError:
+      type: object
+      description: >
+        Present on 200 responses only when one or more requested networks did not return
+        data (upstream error or per-network timeout: 5s on paginated requests, 10s on
+        fetch-all). When every requested network succeeds, the `error` key is omitted
+        from the response entirely (it is not present-and-null). See
+        [Handling partial failures](/docs/reference/portfolio-apis#handling-partial-failures)
+        for the recommended client pattern.
+      properties:
+        message:
+          type: string
+          description: >
+            Human-readable summary of the partial failure. On the token endpoints this is
+            `"Failed to fetch tokens on certain networks"`; on the NFT endpoints it is
+            `"Failed to fetch NFTs on certain networks"`.
+        partialErrors:
+          type: array
+          description: >
+            One entry per failed network. A network may appear more than once if the
+            request body contained multiple entries covering that network.
+          items:
+            $ref: "#/components/schemas/PartialErrorItem"
+      required:
+        - message
+        - partialErrors
+
+    PartialErrorItem:
+      type: object
+      properties:
+        network:
+          type: string
+          description: Network slug that failed (e.g. `eth-mainnet`, `robinhood-mainnet`).
+        message:
+          type: string
+          description: >
+            Human-readable failure reason. Treat as an opaque string, not an enumerable
+            error code. It does not distinguish upstream errors from per-network
+            timeouts.
+      required:
+        - network
+        - message
     ####################################################
     # Token APIs
     ####################################################
@@ -585,6 +628,8 @@ components:
                 $ref: "#/components/schemas/TokensResponseItem"
             pageKey:
               $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+        error:
+          $ref: "#/components/schemas/PartialError"
       required:
         - data
 
@@ -598,8 +643,10 @@ components:
           type: string
           description: Network identifier.
         tokenAddress:
-          type: string
-          description: Token address.
+          type:
+            - string
+            - "null"
+          description: Token contract address. `null` for a chain's native token.
         tokenBalance:
           type: string
           description: Balance of that particular token.
@@ -661,6 +708,8 @@ components:
                 $ref: "#/components/schemas/TokenBalancesResponseItem"
             pageKey:
               $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+        error:
+          $ref: "#/components/schemas/PartialError"
       required:
         - data
 
@@ -674,8 +723,10 @@ components:
           type: string
           description: Wallet address.
         tokenAddress:
-          type: string
-          description: Token address.
+          type:
+            - string
+            - "null"
+          description: Token contract address. `null` for a chain's native token.
         tokenBalance:
           type: string
           description: Balance of that particular token.
@@ -704,6 +755,8 @@ components:
               $ref: "../nft/nft.yaml#/components/schemas/totalNFTCount"
             pageKey:
               $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+        error:
+          $ref: "#/components/schemas/PartialError"
       required:
         - data
 
@@ -722,6 +775,8 @@ components:
               $ref: "../nft/nft.yaml#/components/schemas/totalNFTCount"
             pageKey:
               $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+        error:
+          $ref: "#/components/schemas/PartialError"
       required:
         - data
 

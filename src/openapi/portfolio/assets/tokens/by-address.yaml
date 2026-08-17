@@ -1,6 +1,12 @@
 summary: Tokens By Wallet
 description: >
   Fetches fungible tokens (native, ERC-20 and SPL) for multiple wallet addresses and networks. Returns a list of tokens with balances, prices, and metadata for each wallet/network combination. This endpoint is supported on Ethereum, Solana, and 30+ EVM chains. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
+
+
+  This endpoint fans out across every requested network and merges the results. If one or more networks fail (upstream error or per-network timeout: 5s on paginated requests, 10s on fetch-all), the response is still HTTP 200 with a top-level `error.partialErrors` array listing the failed networks. See [Handling partial failures](/docs/reference/portfolio-apis#handling-partial-failures) for the recommended client pattern.
+
+
+  The top-level `error` object is distinct from the per-token `data.tokens[].error` field. The former reports networks that failed entirely; the latter reports a per-token metadata or pricing failure within an otherwise successful network response.
 tags: ["Portfolio API Endpoints"]
 parameters:
   - $ref: "./../../portfolio.yaml#/components/parameters/apiKey"
@@ -28,6 +34,76 @@ responses:
       application/json:
         schema:
           $ref: "./../../portfolio.yaml#/components/schemas/TokensResponse"
+        examples:
+          success:
+            summary: All networks succeeded
+            value:
+              data:
+                tokens:
+                  - address: "0x1E6E8695FAb3Eb382534915eA8d7Cc1D1994B152"
+                    network: "eth-mainnet"
+                    tokenAddress: null
+                    tokenBalance: "0x02c68af0bb140000"
+                    tokenMetadata:
+                      decimals: 18
+                      logo: "https://static.alchemyapi.io/images/assets/1027.png"
+                      name: "Ethereum"
+                      symbol: "ETH"
+                    tokenPrices:
+                      - currency: "usd"
+                        value: "4608.2208671202"
+                        lastUpdatedAt: "2025-08-26T20:17:27Z"
+                  - address: "0x1E6E8695FAb3Eb382534915eA8d7Cc1D1994B152"
+                    network: "base-mainnet"
+                    tokenAddress: null
+                    tokenBalance: "0x016345785d8a0000"
+                    tokenMetadata:
+                      decimals: 18
+                      logo: "https://static.alchemyapi.io/images/assets/1027.png"
+                      name: "Ethereum"
+                      symbol: "ETH"
+                    tokenPrices:
+                      - currency: "usd"
+                        value: "4608.2208671202"
+                        lastUpdatedAt: "2025-08-26T20:17:27Z"
+                  - address: "0x1E6E8695FAb3Eb382534915eA8d7Cc1D1994B152"
+                    network: "matic-mainnet"
+                    tokenAddress: null
+                    tokenBalance: "0x0de0b6b3a7640000"
+                    tokenMetadata:
+                      decimals: 18
+                      logo: "https://static.alchemyapi.io/images/assets/3890.png"
+                      name: "Polygon"
+                      symbol: "POL"
+                    tokenPrices:
+                      - currency: "usd"
+                        value: "0.4210556310"
+                        lastUpdatedAt: "2025-08-26T20:17:27Z"
+          partialFailure:
+            summary: One or more networks failed (HTTP 200)
+            value:
+              data:
+                tokens:
+                  - address: "0x1E6E8695FAb3Eb382534915eA8d7Cc1D1994B152"
+                    network: "eth-mainnet"
+                    tokenAddress: null
+                    tokenBalance: "0x02c68af0bb140000"
+                    tokenMetadata:
+                      decimals: 18
+                      logo: "https://static.alchemyapi.io/images/assets/1027.png"
+                      name: "Ethereum"
+                      symbol: "ETH"
+                    tokenPrices:
+                      - currency: "usd"
+                        value: "4608.2208671202"
+                        lastUpdatedAt: "2025-08-26T20:17:27Z"
+              error:
+                message: "Failed to fetch tokens on certain networks"
+                partialErrors:
+                  - network: "base-mainnet"
+                    message: "Internal server error"
+                  - network: "matic-mainnet"
+                    message: "Internal server error"
   "400":
     description: "Bad Request: Invalid input (e.g., malformed JSON)."
     content:
