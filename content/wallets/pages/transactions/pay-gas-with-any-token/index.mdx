@@ -9,9 +9,9 @@ With Wallet APIs, you can allow users to pay for gas with any token, streamlinin
 
 <Info>
   **Use a custom ERC-20 token.** The tokens listed in the dashboard are not the
-  limit. You can configure a token through the Admin API. Testnet tokens require
-  a compatible price-reference token; mainnet tokens can use either a price
-  supported by the [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address)
+  limit. You can configure a token through the [Gas Manager Admin API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints).
+  Testnet tokens require a compatible price-reference token; mainnet tokens can
+  use either a price supported by the [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address)
   or an optional price reference.
 </Info>
 
@@ -64,6 +64,19 @@ curl --request POST \
       "recipientAddress": "'$RECIPIENT_ADDRESS'",
       "usePostOp": true
     }
+  }'
+```
+
+New policies start inactive. Use the policy ID returned by Create Policy to
+activate the policy before accepting gas payments:
+
+```bash
+curl --request PUT \
+  --url https://manage.g.alchemy.com/api/gasManager/policy/$ALCHEMY_POLICY_ID/status \
+  --header 'Authorization: Bearer '$ALCHEMY_ACCESS_TOKEN \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "status": "active"
   }'
 ```
 
