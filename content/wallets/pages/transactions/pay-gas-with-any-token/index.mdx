@@ -7,6 +7,14 @@ slug: wallets/transactions/pay-gas-with-any-token
 Gas fees paid in the native token can feel foreign to users that primarily hold stablecoins or your app's own token.
 With Wallet APIs, you can allow users to pay for gas with any token, streamlining the user experience.
 
+<Info>
+  **Use a custom ERC-20 token.** The tokens listed in the dashboard are not the
+  limit. You can configure a token through the [Gas Manager Admin API](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints).
+  Testnet tokens require a compatible price-reference token; mainnet tokens can
+  use either a price supported by the [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address)
+  or an optional price reference.
+</Info>
+
 ## How it works
 
 When a user pays for gas with a token, the gas is fronted using the network's native gas token and the payment tokens are transferred from the user's wallet to a wallet you configure in the policy.
@@ -18,6 +26,59 @@ Post-operation mode is recommended for most use cases. If the token approval is 
 
 * API key from your [dashboard](https://dashboard.alchemy.com/apps)
 * An [ERC-20 Policy](/docs/wallets/transactions/sponsor-gas/sponsorship-policy-management) in the Gas Sponsorship dashboard.
+
+## Configure a custom ERC-20 token
+
+To accept a token that is not listed in the dashboard, create an ERC-20 policy
+with the [Create Policy Admin API](/docs/wallets/api/gas-manager-admin-api/admin-api-endpoints/create-policy).
+Testnet tokens must set `priceReferenceNetwork` and
+`priceReferenceTokenAddress`; the reference token provides the conversion
+price. Mainnet tokens can omit both fields when their token price is supported
+by the [Token Prices By Address API](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address),
+or set both fields to use a reference token instead.
+
+Choose a reference token with the same number of decimals as the payment token.
+The service does not validate matching decimals.
+
+This example accepts a six-decimal custom token on Base Sepolia and uses Base
+Sepolia USDC as its six-decimal price reference:
+
+```bash
+curl --request POST \
+  --url https://manage.g.alchemy.com/api/gasManager/policy \
+  --header 'Authorization: Bearer '$ALCHEMY_ACCESS_TOKEN \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "policyName": "Custom token gas payments",
+    "policyType": "erc20",
+    "appId": "'$ALCHEMY_APP_ID'",
+    "erc20Rules": {
+      "tokens": [
+        {
+          "network": "BASE_SEPOLIA",
+          "tokenAddress": "'$CUSTOM_TOKEN_ADDRESS'",
+          "priceReferenceNetwork": "BASE_SEPOLIA",
+          "priceReferenceTokenAddress": "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+        }
+      ],
+      "recipientAddress": "'$RECIPIENT_ADDRESS'",
+      "usePostOp": true
+    }
+  }'
+```
+
+New policies start inactive. Use the policy ID returned by Create Policy to
+activate the policy before accepting gas payments:
+
+```bash
+curl --request PUT \
+  --url https://manage.g.alchemy.com/api/gasManager/policy/$ALCHEMY_POLICY_ID/status \
+  --header 'Authorization: Bearer '$ALCHEMY_ACCESS_TOKEN \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "status": "active"
+  }'
+```
 
 ## Implementation
 
