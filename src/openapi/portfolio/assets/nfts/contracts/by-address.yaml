@@ -1,6 +1,9 @@
 summary: NFT Collections By Wallet
 description: >
   Fetches NFT collections (contracts) for multiple wallet addresses and networks. Returns a list of collections and metadata for each wallet/network combination. This endpoint is supported on Ethereum and many L2s, including Polygon, Arbitrum, Optimism, Base, World Chain and more. See the full list of supported networks [here](https://dashboard.alchemy.com/chains).
+
+
+  This endpoint fans out across every requested network and merges the results. If one or more networks fail (upstream error or per-network timeout: 5s on paginated requests, 10s on fetch-all), the response is still HTTP 200 with a top-level `error.partialErrors` array listing the failed networks. See [Handling partial failures](/docs/reference/portfolio-apis#handling-partial-failures) for the recommended client pattern.
 tags: ["Portfolio API Endpoints"]
 parameters:
   - $ref: "./../../../portfolio.yaml#/components/parameters/apiKey"
@@ -28,6 +31,42 @@ responses:
       application/json:
         schema:
           $ref: "./../../../portfolio.yaml#/components/schemas/NFTCollectionsByOwnerResponse"
+        examples:
+          success:
+            summary: All networks succeeded
+            value:
+              data:
+                contracts:
+                  - network: "eth-mainnet"
+                    address: "0x1E6E8695FAb3Eb382534915eA8d7Cc1D1994B152"
+                    contract:
+                      address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+                      name: "BoredApeYachtClub"
+                      symbol: "BAYC"
+                      totalSupply: "10000"
+                      tokenType: "ERC721"
+                totalCount: 1
+          partialFailure:
+            summary: One or more networks failed (HTTP 200)
+            value:
+              data:
+                contracts:
+                  - network: "eth-mainnet"
+                    address: "0x1E6E8695FAb3Eb382534915eA8d7Cc1D1994B152"
+                    contract:
+                      address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
+                      name: "BoredApeYachtClub"
+                      symbol: "BAYC"
+                      totalSupply: "10000"
+                      tokenType: "ERC721"
+                totalCount: 1
+              error:
+                message: "Failed to fetch NFTs on certain networks"
+                partialErrors:
+                  - network: "base-mainnet"
+                    message: "Internal server error"
+                  - network: "matic-mainnet"
+                    message: "Internal server error"
   "400":
     description: "Bad Request: Invalid input (e.g., malformed JSON)."
     content:
