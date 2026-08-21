@@ -320,6 +320,114 @@ components:
             Internal error. Retry the request; if it persists, contact
             support.
 
+    getBalanceByOwnerAtSlot:
+      name: getBalanceByOwnerAtSlot
+      summary: >-
+        Returns a wallet's total balance of a single SPL Token or
+        Token-2022 mint as of a specific slot.
+      description: >-
+        Returns a wallet's total balance of a single SPL Token or
+        Token-2022 mint as of a specific slot, already summed across
+        every token account the wallet held of that mint. It returns a
+        single figure rather than the list of accounts returned by
+        `getTokenAccountsByOwnerAtSlot`.
+
+
+        A wallet can own more than one token account for the same mint.
+        The optional `scope` parameter selects which of them the result
+        covers: `all` (default) sums every token account the wallet held
+        of that mint at that slot, `ata` returns the balance of the
+        wallet's canonical Associated Token Account only (derived from
+        `(wallet, token program, mint)`, with the token program selected
+        from the mint so Token-2022 mints resolve correctly). When a
+        wallet holds exactly one token account of the mint, both scopes
+        return the same value.
+
+
+        Available on Solana mainnet only. The request may also be sent
+        as a positional array `[wallet, mint, slot, scope]`, and `owner`
+        is accepted as an alias for `wallet`.
+      paramStructure: by-name
+      params:
+        - name: wallet
+          required: true
+          description: >-
+            Base-58 encoded pubkey of the wallet whose balance you want.
+            `owner` is accepted as an alias.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: mint
+          required: true
+          description: >-
+            Base-58 encoded pubkey of the token mint. SPL Token and
+            Token-2022 mints are both supported.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: slot
+          required: true
+          description: >-
+            The slot to reconstruct the balance at. There is no
+            "latest slot" default; omitting `slot` is an error.
+          schema:
+            type: integer
+            minimum: 0
+        - name: scope
+          required: false
+          description: >-
+            Which of the wallet's token accounts the balance covers.
+            `all` (default) sums every token account the wallet held of
+            that mint at that slot; `ata` returns the balance of the
+            wallet's canonical Associated Token Account only.
+            Case-sensitive.
+          schema:
+            type: string
+            enum:
+              - all
+              - ata
+            default: all
+      examples:
+        - name: getBalanceByOwnerAtSlot example
+          params:
+            - name: wallet
+              value: "FHX9fPAUVA1MxPme28f4eeVH81QVRHDWofa2V6FUJaiR"
+            - name: mint
+              value: "poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk"
+            - name: slot
+              value: 225000000
+          result:
+            name: Balance at slot
+            value:
+              wallet: "FHX9fPAUVA1MxPme28f4eeVH81QVRHDWofa2V6FUJaiR"
+              mint: "poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk"
+              isNative: false
+              balance: "38205.4"
+              balanceRaw: "3820540000000"
+              decimals: 8
+              slot: 225000000
+      result:
+        name: Balance at slot
+        description: >-
+          The wallet's total token balance for that mint at the
+          requested slot, with the slot the balance was computed at.
+        schema:
+          $ref: "./account.yaml#/components/schemas/GetBalanceByOwnerAtSlotResult"
+      errors:
+        - code: -32602
+          message: >-
+            Invalid params. Common causes include a missing or malformed
+            `wallet` / `mint` (each must be a 32-byte base58 pubkey), a
+            missing or non-integer `slot`, an unknown `scope` value
+            (only `all` and `ata` are accepted, case-sensitive), or a
+            mint that is not present in the index.
+        - code: -32600
+          message: >-
+            Unsupported method. Returned when the method is called
+            against a chain other than Solana mainnet.
+        - code: -32603
+          message: >-
+            Internal error. Retry the request; if it persists, contact
+            support.
+
     getLargestAccounts:
       name: getLargestAccounts
       description: Returns the 20 largest accounts, by lamport balance.
