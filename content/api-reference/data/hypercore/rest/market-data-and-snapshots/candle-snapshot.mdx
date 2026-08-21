@@ -1,0 +1,70 @@
+---
+title: "Candle snapshot"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Candle snapshot
+
+Returns up to 5,000 OHLCV candles for charting a market over a bounded time range.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter       | Type    | Required | Description                                                                                      |
+| --------------- | ------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `type`          | string  | Yes      | Selects `candleSnapshot`.                                                                        |
+| `req`           | object  | Yes      | Nested candle request.                                                                           |
+| `req.coin`      | string  | Yes      | Market identifier; HIP-3 markets use a DEX-prefixed name.                                        |
+| `req.interval`  | string  | Yes      | One of `1m`, `3m`, `5m`, `15m`, `30m`, `1h`, `2h`, `4h`, `8h`, `12h`, `1d`, `3d`, `1w`, or `1M`. |
+| `req.startTime` | integer | Yes      | Inclusive start time in milliseconds.                                                            |
+| `req.endTime`   | integer | Yes      | Inclusive end time in milliseconds.                                                              |
+
+```json
+{
+  "type": "candleSnapshot",
+  "req": {
+    "coin": "BTC",
+    "interval": "15m",
+    "startTime": 1735689600000,
+    "endTime": 1735776000000
+  }
+}
+```
+
+## Response fields
+
+| Field  | Type    | Description                                             |
+| ------ | ------- | ------------------------------------------------------- |
+| `[]`   | array   | Candles ordered by the requested time range.            |
+| `[].T` | integer | Candle close time in milliseconds.                      |
+| `[].c` | string  | Closing price as a decimal string.                      |
+| `[].h` | string  | Highest traded price during the interval.               |
+| `[].i` | string  | Candle interval, such as `15m` or `1h`.                 |
+| `[].l` | string  | Lowest traded price during the interval.                |
+| `[].n` | integer | Number of trades included in the candle.                |
+| `[].o` | string  | Opening price as a decimal string.                      |
+| `[].s` | string  | Market symbol; HIP-3 markets include the DEX prefix.    |
+| `[].t` | integer | Candle open time in milliseconds.                       |
+| `[].v` | string  | Traded volume during the interval, as a decimal string. |
+
+## Response example
+
+```json
+[
+  {
+    "T": 1681924499999,
+    "c": "29258.0",
+    "h": "29309.0",
+    "i": "15m",
+    "l": "29250.0",
+    "n": 189,
+    "o": "29295.0",
+    "s": "BTC",
+    "t": 1681923600000,
+    "v": "0.98639"
+  }
+]
+```

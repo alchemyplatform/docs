@@ -1,0 +1,53 @@
+---
+title: "Predicted fundings"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Predicted fundings
+
+Returns predicted funding rates and scheduled funding times for the first perpetual DEX.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                  |
+| --------- | ------ | -------- | ---------------------------- |
+| `type`    | string | Yes      | Selects `predictedFundings`. |
+
+```json
+{
+  "type": "predictedFundings"
+}
+```
+
+## Response fields
+
+| Field                             | Type           | Description                                               |
+| --------------------------------- | -------------- | --------------------------------------------------------- |
+| `[]`                              | array          | One tuple per market containing its funding predictions.  |
+| `[][0]`                           | string         | Market symbol for this prediction tuple.                  |
+| `[][1]`                           | array          | Predictions grouped by the venues contributing rates.     |
+| `[][1][][0]`                      | string \| null | Venue identifier, or `null` when that venue has no entry. |
+| `[][1][][1]`                      | object         | Funding-rate schedule reported by the associated venue.   |
+| `[][1][][1].fundingRate`          | string         | Predicted funding rate for the next interval.             |
+| `[][1][][1].nextFundingTime`      | integer        | Next scheduled funding time in milliseconds.              |
+| `[][1][][1].fundingIntervalHours` | integer        | Hours between funding events for this venue.              |
+
+## Response example
+
+```json
+[
+  [
+    "AVAX",
+    [
+      [
+        "HlPerp",
+        { "fundingRate": "0.0000125", "nextFundingTime": 1733958000000 }
+      ]
+    ]
+  ]
+]
+```

@@ -1,0 +1,55 @@
+---
+title: "Open orders"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Open orders
+
+Returns a user's current open orders for a selected perpetual DEX.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                                           |
+| --------- | ------ | -------- | ----------------------------------------------------- |
+| `type`    | string | Yes      | Selects `openOrders`.                                 |
+| `user`    | string | Yes      | Master or sub-account address.                        |
+| `dex`     | string | No       | Perpetual DEX name; omit for the first perpetual DEX. |
+
+```json
+{
+  "type": "openOrders",
+  "user": "0x0000000000000000000000000000000000000000",
+  "dex": ""
+}
+```
+
+## Response fields
+
+| Field          | Type    | Description                                  |
+| -------------- | ------- | -------------------------------------------- |
+| `[]`           | array   | Open-order entries.                          |
+| `[].coin`      | string  | Market identifier.                           |
+| `[].limitPx`   | string  | Limit price, as a decimal string.            |
+| `[].oid`       | integer | Order identifier.                            |
+| `[].side`      | string  | `B` for a bid or `A` for an ask.             |
+| `[].sz`        | string  | Size.                                        |
+| `[].timestamp` | integer | Millisecond time when the order was created. |
+
+## Response example
+
+```json
+[
+  {
+    "coin": "BTC",
+    "limitPx": "29792.0",
+    "oid": 91490942,
+    "side": "A",
+    "sz": "0.0",
+    "timestamp": 1681247412573
+  }
+]
+```

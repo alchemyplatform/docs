@@ -1,0 +1,57 @@
+---
+title: "Delegator history"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Delegator history
+
+Returns a user's delegation, deposit, and withdrawal history.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `delegatorHistory`.    |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "delegatorHistory",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field                            | Type    | Description                                            |
+| -------------------------------- | ------- | ------------------------------------------------------ |
+| `[]`                             | array   | Delegation and undelegation events for the account.    |
+| `[].time`                        | integer | Ledger-event timestamp in milliseconds.                |
+| `[].hash`                        | string  | Transaction hash for the delegation action.            |
+| `[].delta`                       | object  | Ledger change whose member identifies the action type. |
+| `[].delta.delegate`              | object  | Details of the delegation or undelegation action.      |
+| `[].delta.delegate.validator`    | string  | Address of the validator receiving or losing stake.    |
+| `[].delta.delegate.amount`       | string  | Stake amount moved by the action, as a decimal string. |
+| `[].delta.delegate.isUndelegate` | boolean | `true` for an undelegation; `false` for a delegation.  |
+
+## Response example
+
+```json
+[
+  {
+    "time": 1735380381353,
+    "hash": "0x55492465cb523f90815a041a226ba90147008d4b221a24ae8dc35a0dbede4ea4",
+    "delta": {
+      "delegate": {
+        "validator": "0x5ac99df645f3414876c816caa18b2d234024b487",
+        "amount": "10000.0",
+        "isUndelegate": false
+      }
+    }
+  }
+]
+```

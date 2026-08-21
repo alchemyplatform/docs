@@ -8,21 +8,19 @@ description: "HyperCore private-preview documentation."
 # fundingRates stream
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
 {
   "method": "subscribe",
   "subscription": {
     "type": "fundingRates",
-    "coins": [
-      "BTC"
-    ]
+    "coins": ["BTC"]
   }
 }
 ```
 
 ## Acknowledgement
+
 ```json
 {
   "channel": "subscriptionResponse",
@@ -32,8 +30,6 @@ description: "HyperCore private-preview documentation."
   }
 }
 ```
-
-Whether an event includes `nextFundingTime` is pending verification.
 
 ## Event envelope
 
@@ -46,33 +42,30 @@ Whether an event includes `nextFundingTime` is pending verification.
   "cursor": "<opaque cursor>",
   "data": {
     "coin": "BTC",
-    "fundingRate": "0.00001",
-    "nextFundingTime": 1780003600000
+    "fundingRate": "0.00001"
   }
 }
 ```
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
-| coin | string | Market identifier. |
-| fundingRate | string | Illustrative fundingRate value. |
-| nextFundingTime | integer | Pending verification; shown only in the illustrative payload. |
+| coin | string | Market symbol for the funding update. |
+| fundingRate | string | Funding rate for the market. |
+
 ## Unsubscribe
+
 ```json
 {
   "method": "unsubscribe",
   "subscription": {
     "type": "fundingRates",
-    "coins": [
-      "BTC"
-    ]
+    "coins": ["BTC"]
   }
 }
 ```
+
 ## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply cursor in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

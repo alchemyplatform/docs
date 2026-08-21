@@ -1,0 +1,81 @@
+---
+title: "User role"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# User role
+
+Returns the account role and linked address where the role has one.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `userRole`.            |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "userRole",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field         | Type                                            | Description                                                                   |
+| ------------- | ----------------------------------------------- | ----------------------------------------------------------------------------- |
+| `role`        | user \| agent \| vault \| subAccount \| missing | Account classification: `missing`, `user`, `agent`, `vault`, or `subAccount`. |
+| `data`        | object                                          | Role-specific details; present for agent and sub-account roles.               |
+| `data.user`   | string                                          | Principal user address represented by the agent.                              |
+| `data.master` | string                                          | Master address that controls this sub-account.                                |
+
+## Response example
+
+<Tabs>
+<Tab title="User">
+
+```json
+{ "role": "user" }
+```
+
+</Tab>
+<Tab title="Agent">
+
+```json
+{
+  "role": "agent",
+  "data": { "user": "0x0000000000000000000000000000000000000000" }
+}
+```
+
+</Tab>
+<Tab title="Vault">
+
+```json
+{ "role": "vault" }
+```
+
+</Tab>
+<Tab title="Subaccount">
+
+```json
+{
+  "role": "subAccount",
+  "data": { "master": "0x0000000000000000000000000000000000000000" }
+}
+```
+
+</Tab>
+<Tab title="Missing">
+
+```json
+{ "role": "missing" }
+```
+
+</Tab>
+</Tabs>

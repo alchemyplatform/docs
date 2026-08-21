@@ -8,21 +8,19 @@ description: "HyperCore private-preview documentation."
 # liquidationFills stream
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
 {
   "method": "subscribe",
   "subscription": {
     "type": "liquidationFills",
-    "coins": [
-      "BTC"
-    ]
+    "coins": ["BTC"]
   }
 }
 ```
 
 ## Acknowledgement
+
 ```json
 {
   "channel": "subscriptionResponse",
@@ -45,12 +43,33 @@ description: "HyperCore private-preview documentation."
   "data": {
     "fills": [
       {
+        "user": "0x1111111111111111111111111111111111111111",
         "coin": "BTC",
-        "px": "99000.0",
-        "sz": "0.50",
-        "side": "A",
-        "isLiquidation": true,
-        "tradeId": "trade_02"
+        "px": "100000.0",
+        "sz": "0.01",
+        "side": "B",
+        "time": 1780000000000,
+        "startPosition": "0.00",
+        "dir": "Open Long",
+        "closedPnl": "0.0",
+        "hash": "0xabc123",
+        "oid": 12345,
+        "crossed": false,
+        "fee": "0.20",
+        "tid": 87654321,
+        "liquidation": {
+          "liquidatedUser": "0x3333333333333333333333333333333333333333",
+          "markPx": "99990.0",
+          "method": "market"
+        },
+        "feeToken": "USDC",
+        "builderFee": "0.01",
+        "cloid": "client-order-01",
+        "deployerFee": "0.01",
+        "priorityGas": "0.001",
+        "builder": "0x2222222222222222222222222222222222222222",
+        "twapId": null,
+        "txIndex": 3
       }
     ]
   }
@@ -59,30 +78,50 @@ description: "HyperCore private-preview documentation."
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
 | fills | array | Fill records. |
-| fills[] | object | Fill records. |
-| fills[].coin | string | Market identifier. |
-| fills[].px | string | Price value. |
-| fills[].sz | string | Size value. |
+| fills[] | object | Fill record. |
+| fills[].user | string | User identifier for the fill. |
+| Field | Type | Description |
+| --- | --- | --- |
+| fills[].coin | string | Market symbol for the fill. |
+| fills[].px | string | Execution price. |
+| fills[].sz | string | Executed size. |
 | fills[].side | string | Side code: A is ask/sell; B is bid/buy. |
-| fills[].isLiquidation | boolean | Illustrative isLiquidation value. |
-| fills[].tradeId | string | Illustrative tradeId value. |
+| fills[].time | integer | Time of the fill, in milliseconds. |
+| fills[].startPosition | string | Position size immediately before the fill. |
+| fills[].dir | string | Display direction for the fill. |
+| fills[].closedPnl | string | Realized profit or loss closed by the fill. |
+| fills[].hash | string | Layer-1 transaction hash for the fill. |
+| fills[].oid | integer | Identifier of the order that produced the fill. |
+| fills[].crossed | boolean | Whether the order crossed the spread. |
+| fills[].fee | string | Fee charged for the fill; a negative value is a rebate. |
+| fills[].tid | integer | Trade identifier. |
+| fills[].liquidation | object or null | Liquidation details when the fill is a liquidation. |
+| fills[].liquidation.liquidatedUser | string | Address of the liquidated user, when present. |
+| fills[].liquidation.markPx | string | Mark price at liquidation. |
+| fills[].liquidation.method | string | Liquidation method: market or backstop. |
+| fills[].feeToken | string | Token in which the fee was paid. |
+| fills[].builderFee | string | Amount paid to the builder and included in fee. |
+| fills[].cloid | string or null | Client order identifier. |
+| fills[].deployerFee | string | Fee paid to the HIP-3 deployer. |
+| fills[].priorityGas | string or null | Order-priority fee paid in HYPE. |
+| fills[].builder | string | Builder address associated with the fill. |
+| fills[].twapId | integer or null | Identifier of the TWAP that produced the fill. |
+| fills[].txIndex | integer | Transaction index of the fill within its block. |
 ## Unsubscribe
+
 ```json
 {
   "method": "unsubscribe",
   "subscription": {
     "type": "liquidationFills",
-    "coins": [
-      "BTC"
-    ]
+    "coins": ["BTC"]
   }
 }
 ```
+
 ## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply cursor in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

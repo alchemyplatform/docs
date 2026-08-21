@@ -1,0 +1,73 @@
+---
+title: "Spot deployment state"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Spot deployment state
+
+Returns the caller's spot-token deployment states and the current deployment auction.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `spotDeployState`.     |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "spotDeployState",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field                                   | Type           | Description                                                          |
+| --------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| `states[]`                              | array          | Deployment-state entries.                                            |
+| `states[].token`                        | integer        | Numeric token index assigned to the deployment.                      |
+| `states[].spec`                         | object         | Registration configuration submitted for the token.                  |
+| `states[].spec.name`                    | string         | Display name requested for the token.                                |
+| `states[].spec.szDecimals`              | integer        | Number of decimal places accepted for order sizes.                   |
+| `states[].spec.weiDecimals`             | integer        | Decimal places in the token’s smallest unit.                         |
+| `states[].fullName`                     | string \| null | Full token name, or `null` when not supplied.                        |
+| `states[].spots`                        | array          | Spot-pair indices already registered for the token.                  |
+| `states[].maxSupply`                    | integer        | Maximum token supply permitted by the deployment.                    |
+| `states[].hyperliquidityGenesisBalance` | string         | Genesis allocation reserved for Hyperliquidity, as a decimal string. |
+| `states[].totalGenesisBalanceWei`       | string         | Total genesis balance in the token’s smallest unit.                  |
+| `states[].userGenesisBalances`          | array          | Address-and-balance pairs allocated at genesis.                      |
+| `states[].existingTokenGenesisBalances` | array          | Existing-token index and genesis-balance pairs.                      |
+| `gasAuction`                            | object         | Current Dutch-auction state for token deployment.                    |
+| `gasAuction.startTimeSeconds`           | integer        | Unix time in seconds when the auction starts.                        |
+| `gasAuction.durationSeconds`            | integer        | Length of the auction window in seconds.                             |
+| `gasAuction.startGas`                   | string         | Opening auction gas price in HYPE.                                   |
+| `gasAuction.currentGas`                 | string \| null | Current auction gas price, or `null` before it is available.         |
+| `gasAuction.endGas`                     | string \| null | Auction end gas price, or `null` while the auction is open.          |
+
+## Response example
+
+```json
+{
+  "states": [
+    {
+      "token": 150,
+      "spec": { "name": "HYPE", "szDecimals": 2, "weiDecimals": 8 },
+      "fullName": "Hyperliquid",
+      "spots": [107],
+      "maxSupply": 1000000000
+    }
+  ],
+  "gasAuction": {
+    "startTimeSeconds": 1733929200,
+    "durationSeconds": 111600,
+    "startGas": "181305.90046",
+    "currentGas": null,
+    "endGas": "181291.247358"
+  }
+}
+```

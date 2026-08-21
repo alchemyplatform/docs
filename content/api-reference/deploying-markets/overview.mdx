@@ -1,0 +1,59 @@
+---
+title: "Deploying Hyperliquid markets"
+description: "How HIP-3 perpetual DEXs and HIP-4 outcome markets are deployed on Hyperliquid."
+---
+
+<Markdown src="../shared/preview-notice.mdx" />
+
+# Deploying Hyperliquid markets
+
+Hyperliquid supports two permissionless market-deployment primitives with different market models and operating responsibilities.
+
+## HIP-3 perpetual DEXs
+
+[HIP-3](https://hyperliquid.gitbook.io/hyperliquid-docs/hyperliquid-improvement-proposals-hips/hip-3-builder-deployed-perpetuals) lets a deployer create a perpetual DEX. Each DEX has independent margining, order books, and deployer settings.
+
+A HIP-3 deployer defines its markets, including the oracle definition and contract specifications, then operates those markets by maintaining oracle prices, leverage limits, and settlement when needed. The current mainnet staking requirement is 500,000 HYPE and remains in place for at least 183 days after the DEX is deployed.
+
+Deploying and operating a HIP-3 market involves:
+
+* Selecting collateral, market specifications, and margin settings
+* Registering the DEX and its assets through the [HIP-3 deployer actions](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/hip-3-deployer-actions)
+* Operating a resilient oracle update process
+* Setting market controls, including funding, open-interest, and fee settings
+* Planning liquidity, monitoring, settlement, and incident response
+
+## HIP-4 outcome markets
+
+[HIP-4](https://hyperliquid.gitbook.io/hyperliquid-docs/hyperliquid-improvement-proposals-hips/hip-4-outcome-markets) provides fully collateralized contracts that settle within a fixed range. It is designed for uses such as prediction markets and bounded options-like instruments rather than leveraged perpetual trading.
+
+Outcome markets have two sides, each represented by a token. Questions group outcomes where exactly one outcome settles to Yes and the others settle to No. The [HIP-4 deployer actions](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/hip-4-deployer-actions) describe template-based deployment: validators vote on templates, and deployers instantiate approved templates with their market values.
+
+## HIP-4 availability
+
+Permissionless HIP-4 deployment is available on testnet through approved outcome templates. The Foundation documents testnet limits of 10 active outcomes per deployer and 50 deployed outcomes per day.
+
+The current mainnet outcome metadata reports no outcome deployers, while the Foundation's HIP-4 overview describes the initial mainnet release as recurring outcomes. Alchemy prepares teams for testnet deployment and for permissionless mainnet deployment when it opens; Alchemy does not offer mainnet market deployment today.
+
+Each outcome deployer has a venue name. The Foundation requires that venue name to be unique, two to four lowercase ASCII letters, and subject to the same naming rules and shared namespace as HIP-3 perpetual DEX names. The outcome metadata response identifies deployers by both deployer address and venue. Query available templates with the outcomeTemplates info request.
+
+## Preparing to deploy
+
+A market deployment is an operating commitment as well as an onchain action. Establish the market definition, oracle and settlement design, collateral model, liquidity plan, monitoring, and response ownership before launch.
+
+Alchemy is standing up a Hyperliquid validator. This work is giving our team direct visibility into the technical requirements of market deployment as the validator comes online.
+
+For HIP-3, we work with partners to help prospective deployers source the required stake. After launch, we will work with an ecosystem of partners to support deployers across market operations, including oracle providers.
+
+## Next steps
+
+The [HyperCore REST reference](/docs/data/hypercore/rest-api) includes deployment
+state, deployment-auction, outcome metadata, settled-outcome, and outcome-template
+reads.
+
+Use the Foundation documentation for the action-level requirements and signed request formats:
+
+* [HIP-3 builder-deployed perpetuals](https://hyperliquid.gitbook.io/hyperliquid-docs/hyperliquid-improvement-proposals-hips/hip-3-builder-deployed-perpetuals)
+* [HIP-3 deployer actions](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/hip-3-deployer-actions)
+* [HIP-4 outcome markets](https://hyperliquid.gitbook.io/hyperliquid-docs/hyperliquid-improvement-proposals-hips/hip-4-outcome-markets)
+* [HIP-4 deployer actions](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/hip-4-deployer-actions)

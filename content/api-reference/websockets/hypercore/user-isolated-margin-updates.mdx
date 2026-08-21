@@ -7,7 +7,7 @@ description: "HyperCore private-preview documentation."
 
 # userIsolatedMarginUpdates stream
 
-Intended to carry user-context isolated-margin updates. The subscription scope is pending confirmation.
+Streams isolated-margin and isolated-margin top-up updates for the requested addresses.
 
 ## Subscribe
 
@@ -15,20 +15,56 @@ Intended to carry user-context isolated-margin updates. The subscription scope i
 {
   "method": "subscribe",
   "subscription": {
-    "type": "userIsolatedMarginUpdates"
+    "type": "userIsolatedMarginUpdates",
+    "addresses": ["0x1111111111111111111111111111111111111111"]
   }
 }
 ```
-## Acknowledgement
+
+## Event envelope
 
 ```json
 {
-  "channel": "subscriptionResponse",
-  "data": {
-    "type": "userIsolatedMarginUpdates"
-  }
+  "type": "userIsolatedMarginUpdates",
+  "channel": "userIsolatedMarginUpdates",
+  "seq": 1,
+  "cursor": 1704067201000,
+  "updates": [{
+    "update_type": "isolated_margin",
+    "time": 1704067201000,
+    "user": "0x1111111111111111111111111111111111111111",
+    "coin": "BTC",
+    "is_buy": true,
+    "ntli": "500.00",
+    "tx_index": 0
+  }]
 }
 ```
+
+An isolated-margin top-up update uses update_type top_up_isolated_margin and includes target_leverage instead of is_buy and ntli.
+
+## Payload fields
+
+| Field | Type | Description | Source tier |
+| --- | --- | --- | --- |
+| type | string | Event type. | Extended-provider |
+| channel | string | Routing channel for the event. | Extended-provider |
+| seq | integer | Monotonic sequence number for the stream. | Extended-provider |
+| cursor | integer | Resume cursor for the event position. | Extended-provider |
+| updates | array | Margin update records. | Extended-provider |
+| updates[] | object | Isolated-margin or isolated-margin top-up record. | Extended-provider |
+| updates[].update_type | string | Update discriminator: isolated_margin or top_up_isolated_margin. | Extended-provider |
+| updates[].time | integer | Event time in milliseconds. | Extended-provider |
+| updates[].user | string | Address whose margin setting changed. | Extended-provider |
+| updates[].coin | string | Market identifier. | Extended-provider |
+| updates[].is_buy | boolean | Isolated-margin side for an isolated_margin update. | Extended-provider |
+| updates[].ntli | string | Isolated-margin notional value for an isolated_margin update. | Extended-provider |
+| updates[].target_leverage | string | Target leverage for a top_up_isolated_margin update. | Extended-provider |
+| updates[].tx_index | integer | Index of the transaction within its block. | Extended-provider |
+
+## Behavior
+
+The stream batches updates for the subscribed addresses. The cursor identifies the event position for resumption.
 
 ## Unsubscribe
 
@@ -36,14 +72,12 @@ Intended to carry user-context isolated-margin updates. The subscription scope i
 {
   "method": "unsubscribe",
   "subscription": {
-    "type": "userIsolatedMarginUpdates"
+    "type": "userIsolatedMarginUpdates",
+    "addresses": ["0x1111111111111111111111111111111111111111"]
   }
 }
 ```
 
-## Payload schema
-
-The payload schema is pending engineering confirmation.
 ## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply cursor in the subscription object. Store and return the cursor unmodified.
