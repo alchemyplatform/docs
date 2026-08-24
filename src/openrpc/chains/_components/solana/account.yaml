@@ -326,6 +326,50 @@ components:
           description: >-
             Cursor for the next page, or `null` on the last page. Send it
             back in `config.pageKey` to continue paging.
+    GetBalanceByOwnerAtSlotScope:
+      title: GetBalanceByOwnerAtSlot Scope
+      type: string
+      description: >-
+        Which of the wallet's token accounts the balance covers.
+        Case-sensitive.
+      enum:
+        - all
+        - ata
+      default: all
+    GetBalanceByOwnerAtSlotResult:
+      title: GetBalanceByOwnerAtSlot Result
+      type: object
+      description: >-
+        A wallet's aggregate balance of a single SPL Token or Token-2022
+        mint at the requested slot. The response shape is identical for
+        every scope, so callers never need to branch on it.
+      properties:
+        wallet:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The wallet queried.
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The token mint queried.
+        isNative:
+          type: boolean
+          description: "`true` for Wrapped SOL."
+        balance:
+          type: string
+          description: >-
+            Human-readable amount (`balanceRaw` scaled by `decimals`).
+            Returned as a string so large values survive JSON parsing
+            without precision loss.
+        balanceRaw:
+          type: string
+          description: >-
+            Raw token amount, as an integer string. Parse as a big
+            integer, not a float.
+        decimals:
+          type: integer
+          description: Mint decimals.
+        slot:
+          type: integer
+          description: The slot the balance was computed at.
     LargestAccountsConfig:
       title: LargestAccounts Configuration
       type: object

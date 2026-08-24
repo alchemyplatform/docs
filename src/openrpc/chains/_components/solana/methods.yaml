@@ -320,6 +320,124 @@ components:
             Internal error. Retry the request; if it persists, contact
             support.
 
+    getBalanceByOwnerAtSlot:
+      name: getBalanceByOwnerAtSlot
+      summary: >-
+        Returns a wallet's total balance of a single SPL Token or
+        Token-2022 mint as of a specific slot.
+      description: >-
+        Returns a wallet's total balance of a single SPL Token or
+        Token-2022 mint as of a specific slot, already summed across
+        every token account the wallet held of that mint. It is the
+        aggregate counterpart to `getTokenAccountsByOwnerAtSlot`: where
+        that method returns the inventory, this returns the number.
+
+
+        A wallet can own an unlimited number of token accounts for the
+        same mint, so "the balance" is genuinely ambiguous. The optional
+        `scope` parameter chooses which question to answer.
+
+
+        - `all` (default) sums across every token account the wallet
+        held of that mint at that slot. Use it for portfolio value, cost
+        basis, PnL, tax reporting, and treasury reconciliation.
+
+        - `ata` returns the balance of the wallet's canonical Associated
+        Token Account only, the deterministic address derived from
+        (`wallet`, token program, `mint`). It excludes auxiliary
+        accounts created by programs and is substantially faster because
+        it resolves one known address instead of aggregating every
+        account the wallet holds. The correct token program is selected
+        automatically from the mint, so Token-2022 mints derive their
+        ATA correctly.
+
+
+        For a wallet holding a single token account of the mint, both
+        scopes return the same value. For a wallet holding many, they
+        can differ by orders of magnitude.
+
+
+        Unlike `getTokenAccountsByOwnerAtSlot`, there is no "latest
+        slot" default: omitting `slot` is an error. Accepts either an
+        object (recommended) or a positional array
+        `[wallet, mint, slot, scope]`. The `wallet` field also accepts
+        `owner` as an alias in the object form.
+      x-compute-units: 40
+      params:
+        - name: wallet
+          required: true
+          description: >-
+            The base58-encoded Pubkey of the wallet whose balance you
+            want. `owner` is accepted as an alias in the object form.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: mint
+          required: true
+          description: >-
+            The base58-encoded Pubkey of the token mint. SPL Token and
+            Token-2022 mints are both supported.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: slot
+          required: true
+          description: >-
+            The slot to reconstruct the balance at. There is no default,
+            omitting `slot` is an error.
+          schema:
+            type: integer
+            minimum: 0
+        - name: scope
+          required: false
+          description: >-
+            Which of the wallet's token accounts the balance covers.
+            Defaults to `all`. Case-sensitive.
+          schema:
+            $ref: "./account.yaml#/components/schemas/GetBalanceByOwnerAtSlotScope"
+      examples:
+        - name: getBalanceByOwnerAtSlot example
+          params:
+            - name: wallet
+              value: "FHX9fPAUVA1MxPme28f4eeVH81QVRHDWofa2V6FUJaiR"
+            - name: mint
+              value: "poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk"
+            - name: slot
+              value: 225000000
+            - name: scope
+              value: all
+          result:
+            name: Balance at slot
+            value:
+              wallet: "FHX9fPAUVA1MxPme28f4eeVH81QVRHDWofa2V6FUJaiR"
+              mint: "poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk"
+              isNative: false
+              balance: "38205.4"
+              balanceRaw: "3820540000000"
+              decimals: 8
+              slot: 225000000
+      result:
+        name: Balance at slot
+        description: >-
+          The wallet's aggregate balance of the requested mint at the
+          requested slot, plus the slot the balance was computed at.
+        schema:
+          $ref: "./account.yaml#/components/schemas/GetBalanceByOwnerAtSlotResult"
+      errors:
+        - code: -32602
+          message: >-
+            Invalid params. Common causes include a missing or malformed
+            `wallet`/`owner`, a missing or malformed `mint`, a missing
+            `slot`, an unknown `scope` value (only `all` and `ata` are
+            accepted, case-sensitive), or a `mint` that is not present
+            in the index.
+        - code: -32600
+          message: >-
+            Unsupported method on `SOLANA_MAINNET`. The `method` field
+            was not `getBalanceByOwnerAtSlot`.
+        - code: -32603
+          message: >-
+            Internal error. Retry the request; if it persists, contact
+            support.
+
     getLargestAccounts:
       name: getLargestAccounts
       description: Returns the 20 largest accounts, by lamport balance.
