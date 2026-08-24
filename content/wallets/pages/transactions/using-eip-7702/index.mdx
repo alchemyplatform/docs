@@ -6,23 +6,6 @@ slug: wallets/transactions/using-eip-7702
 
 [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) is enabled by default, giving you access to all Smart Wallet capabilities including gas sponsorship, batching, and more - while keeping the same address.
 
-<Note>
-  **EIP-7702 support on Monad**
-
-  Monad keeps a [minimum balance reserve on delegated
-  accounts](https://docs.monad.xyz/developer-essentials/reserve-balance#eip-7702-delegated-accounts)
-  as a safety measure - [a 7702-delegated account can't dip below
-  10 MON](https://docs.monad.xyz/developer-essentials/eip-7702#delegated-eoas-can%E2%80%99t-dip-below-10-mon).
-  In practice, this means a delegated account can only transfer MON out in a
-  UserOperation while its balance stays at `0 MON` or at least `10 MON` -
-  gas-sponsored UserOperations that don't transfer MON aren't affected.
-
-  EIP-7702 on Monad is currently allowlisted, and teams must agree to meet
-  these balance requirements to be allowlisted. Contact
-  [support@alchemy.com](mailto:support@alchemy.com) to request access for
-  your team.
-</Note>
-
 ## How it works
 
 EIP-7702 enables EOAs (Externally Owned Accounts) to delegate to a smart wallet that can execute code directly from their addresses. When using Transaction APIs:
@@ -245,6 +228,21 @@ Call `requestAccount` with the desired `accountType`, then pass the returned add
   To reset an account back to a pure EOA, delegate to
   `0x0000000000000000000000000000000000000000`
   as defined in [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702#behavior).
+</Accordion>
+
+<Accordion title="EIP-7702 support on Monad">
+  Monad keeps a [minimum balance reserve on delegated
+  accounts](https://docs.monad.xyz/developer-essentials/reserve-balance#eip-7702-delegated-accounts)
+  as a safety measure, so [a 7702-delegated account can't dip below
+  10 MON](https://docs.monad.xyz/developer-essentials/eip-7702#delegated-eoas-can%E2%80%99t-dip-below-10-mon).
+  In practice, this means a delegated account can only transfer MON out in a
+  UserOperation while its balance stays at `0 MON` or at least `10 MON`.
+  Gas-sponsored UserOperations that don't transfer MON aren't affected.
+
+  EIP-7702 on Monad is currently allowlisted, and teams must agree to meet
+  these balance requirements to be allowlisted. Contact
+  [support@alchemy.com](mailto:support@alchemy.com) to request access for
+  your team.
 </Accordion>
 
 <Accordion title="Un-delegating accounts">
