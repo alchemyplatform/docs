@@ -89,6 +89,43 @@ components:
       title: Lamport Balance
       type: integer
       description: The balance in lamports of the account.
+    TokenBalanceByOwnerAtSlot:
+      title: Token Balance by Owner at Slot
+      type: object
+      description: >-
+        A wallet's balance of a single SPL Token or Token-2022 mint as of a
+        specific finalized slot. `balance` is the UI amount using
+        mint-prescribed decimals; `balanceRaw` is the raw u64 amount as a
+        string. When `mint` is `So11111111111111111111111111111111111111112`
+        the value reflects native SOL (wrapped) and `isNative` is `true`.
+      properties:
+        balance:
+          type: string
+          description: >-
+            The balance formatted with the mint's decimals, as a string
+            (e.g. `"1093.743449"`).
+        balanceRaw:
+          type: string
+          description: >-
+            The raw balance without decimals, as a string representation of
+            u64.
+        decimals:
+          type: integer
+          description: Number of base-10 digits to the right of the decimal place.
+        isNative:
+          type: boolean
+          description: >-
+            `true` when `mint` is the wrapped SOL mint
+            (`So11111111111111111111111111111111111111112`).
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The base58-encoded token mint queried.
+        slot:
+          type: integer
+          description: The finalized slot the balance was computed at.
+        wallet:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The base58-encoded wallet whose balance was queried.
     GetMultipleAccountsConfig:
       title: GetMultipleAccounts Configuration
       type: object

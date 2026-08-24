@@ -96,6 +96,89 @@ components:
             method; only `slot`. Also returned for a malformed Pubkey or
             configuration value.
 
+    getBalanceByOwnerAtSlot:
+      name: getBalanceByOwnerAtSlot
+      summary: >-
+        Returns a wallet's balance of a single SPL Token or Token-2022 mint
+        as of a specific slot.
+      description: >-
+        Returns a wallet's balance of a single SPL Token or Token-2022 mint
+        as of a specific finalized slot. It is the historical, point-in-time
+        counterpart to `getTokenAccountBalance`: instead of asking for a
+        token account by its Pubkey, you ask for what a wallet held of a
+        given mint at a given slot.
+
+
+        Pass the wrapped SOL mint
+        (`So11111111111111111111111111111111111111112`) to read a wallet's
+        native SOL balance historically; the response sets `isNative: true`
+        in that case. All three parameters (`owner`, `mint`, and `slot`)
+        are required.
+      x-compute-units: 10
+      params:
+        - name: Wallet Pubkey
+          required: true
+          description: >-
+            The base58-encoded Pubkey of the wallet whose balance you want.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: Mint
+          required: true
+          description: >-
+            The base58-encoded mint of the SPL Token or Token-2022 asset
+            to look up. Use `So11111111111111111111111111111111111111112`
+            for native SOL.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: Slot
+          required: true
+          description: >-
+            [Account Archive](/docs/solana/account-archive) parameter. The
+            finalized slot `S` to reconstruct the balance at (inclusive):
+            the latest write with `slot <= S`.
+          schema:
+            type: integer
+            minimum: 0
+      examples:
+        - name: getBalanceByOwnerAtSlot example
+          params:
+            - name: Wallet Pubkey
+              value: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+            - name: Mint
+              value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            - name: Slot
+              value: 441000000
+          result:
+            name: Token balance at slot
+            value:
+              balance: "1093.743449"
+              balanceRaw: "1093743449"
+              decimals: 6
+              isNative: false
+              mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+              slot: 441000000
+              wallet: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+      result:
+        name: Token balance at slot
+        description: >-
+          The wallet's balance of the given mint as of the requested slot,
+          including both the UI-formatted `balance` and the raw u64
+          `balanceRaw`.
+        schema:
+          $ref: "./account.yaml#/components/schemas/TokenBalanceByOwnerAtSlot"
+      errors:
+        - code: -32602
+          message: >-
+            Invalid params. Common causes include a missing or malformed
+            `owner` or `mint` Pubkey, or a missing `slot` field. All three
+            fields (`owner`, `mint`, `slot`) are required.
+        - code: -32601
+          message: Method not found.
+        - code: -32603
+          message: >-
+            Internal error. Retry the request; if it persists, contact
+            support.
+
     getMultipleAccounts:
       name: getMultipleAccounts
       description: Returns the account information for a list of Pubkeys.
