@@ -1,0 +1,192 @@
+---
+title: "HyperCore node peering"
+description: "Dedicated peer connections for teams running their own Hyperliquid node."
+---
+
+<Markdown src="../shared/preview-notice.mdx" />
+
+# HyperCore node peering
+
+A Hyperliquid non-validating node receives data only as fast and as completely as its
+peers allow. Node peering gives you dedicated, reserved peers on Alchemy
+infrastructure in Tokyo, including uncommitted mempool transactions.
+
+<Note>
+  Peering provides no preferential access. Every peering customer receives the same
+  peer configuration, the same delivery, and the same price.
+</Note>
+
+## Why peers matter
+
+Two properties of the Hyperliquid gossip network determine what a node can receive.
+
+**Mempool delivery requires an unbroken chain of configured peers.** Uncommitted
+transactions reach your node only when `split_client_blocks` is enabled on every peer
+between your node and the validating network. A peer without it forwards committed
+blocks and nothing more, which is why most public peers cannot supply mempool data.
+
+**Public root peers are shared.** The Hyperliquid community operates a published list
+of open root peers, discoverable through the `gossipRootIps` info endpoint. They are
+free and work for committed blocks, but connection slots are contended, peers rotate,
+and mempool delivery is not available.
+
+Peering addresses both: reserved slots that are not contended, and
+`split_client_blocks` enabled end to end.
+
+## What you get
+
+* **Allowlisted peer connections** to Alchemy nodes, reserved for your node's public IP
+* **Mempool delivery**, with `split_client_blocks` enabled through to the validating network
+* **Tokyo placement**, colocated with the Alchemy Hyperliquid validator once we go live
+* **99.99% uptime SLA** on peer availability, monitored and alerted
+* **Direct engineer support**, including APAC hours
+
+## Capacity
+
+Peer slots are allowlisted per node IP and provisioned from reserved capacity rather
+than shared public slots. Capacity scales with the number of connected peers; we add
+infrastructure ahead of demand rather than oversubscribing existing slots.
+
+## Gossip priority
+
+Hyperliquid runs a Dutch auction for gossip read priority, and nodes may optionally
+honor the resulting ordering when forwarding data to peers. The Hyperliquid
+Foundation's non-validating node respects the auction ordering.
+
+If you have bid for a gossip priority slot, your position is preserved through our
+peers rather than discarded. Priority ordering is the chain's mechanism, applied
+uniformly — it is not an Alchemy allocation.
+
+## Pricing
+
+**$499 per month.** Flat, published, and identical for every customer.
+
+There is no volume tier, no negotiated rate, and no discount contingent on staking,
+trading activity, or any other commercial relationship with Alchemy. Peering does not
+require an Alchemy API plan.
+
+## Getting started
+
+<Steps>
+<Step title="Request access">
+
+Email [abdul.manan@alchemy.com](mailto:abdul.manan@alchemy.com) with your
+organization, your node's public IP address, and the region it runs in. We add your IP
+to `reserved_peer_ips` on our nodes so incoming connections from your node are
+always accepted. Provisioning takes two to five business days.
+
+</Step>
+<Step title="Configure your peers">
+
+Add the peer addresses we return to `~/override_gossip_config.json`:
+
+```json
+{
+  "root_node_ips": [{ "Ip": "<peer-1>" }, { "Ip": "<peer-2>" }],
+  "try_new_peers": false,
+  "chain": "Mainnet",
+  "split_client_blocks": true
+}
+```
+
+`try_new_peers: false` keeps your node on the reserved peers rather than drifting to
+public ones. `split_client_blocks: true` enables mempool delivery; uncommitted
+transactions are written to `~/hl/data/mempool_txs/{date}`.
+
+</Step>
+<Step title="Verify">
+
+Confirm `applied block X` lines appear in your node output and that files land in
+`~/hl/data/mempool_txs/`. Mempool files contain actions only, not responses, since
+those transactions have not yet been committed.
+
+</Step>
+</Steps>
+
+A seven business day evaluation period is available on request.
+
+## Node requirements
+
+Peering does not change what your node needs. The Hyperliquid non-validator baseline
+is 16 vCPUs, 128 GB RAM, and 500 GB SSD on Ubuntu 24.04, with gossip ports 4001 and
+4002 open publicly. Default settings produce roughly 100 GB of logs per day, and
+enabling mempool capture adds to that materially. Size disk and retention before
+provisioning.
+
+For lowest latency, run your node in Tokyo.
+
+## Specifications
+
+<StickyTable>
+
+| Specification | Detail |
+| --- | --- |
+| Peer connections | Allowlisted per node IP via `reserved_peer_ips` |
+| Region | Tokyo |
+| Node type supported | Non-validating |
+| Mempool | Included, `split_client_blocks` enabled end to end |
+| Gossip priority | Auction ordering respected |
+| Uptime SLA | 99.99% on peer availability |
+| Support | Direct engineer email, APAC hours |
+| Price | $499 per month, flat |
+| Provisioning | 2–5 business days, engineer-provisioned |
+| API plan required | No |
+
+</StickyTable>
+
+## Peering or a managed API
+
+Peering is useful only if you already operate a Hyperliquid node. If you want the data
+without running node infrastructure, use the HyperCore APIs.
+
+| | Node peering | HyperCore APIs |
+| --- | --- | --- |
+| **You run the node** | Yes | No |
+| **What you connect to** | Reserved peer connections on Alchemy nodes | Managed endpoints |
+| **Delivery** | Gossip: committed blocks and mempool | WebSocket, gRPC, REST, JSON-RPC |
+| **Mempool** | Yes, to local disk | Not exposed |
+| **Best for** | Teams already committed to their own node | Everyone else |
+
+## Frequently asked questions
+
+<AccordionGroup>
+
+<Accordion title="Does peering make my node faster than other peers?">
+
+No. Reserved slots and end-to-end mempool configuration mean your node is not
+competing for connections and is not missing data. They do not place you ahead of
+other peers, and every peering customer receives the same configuration.
+
+</Accordion>
+
+<Accordion title="Why can't I get mempool data from public peers?">
+
+Mempool delivery requires `split_client_blocks` enabled on every peer between your
+node and the validating network, not only on your own node. Most public root peers
+have not enabled it, so they forward committed blocks and nothing else.
+
+</Accordion>
+
+<Accordion title="What does the uptime SLA cover?">
+
+Availability of your reserved peer connections, monitored and alerted by the team
+operating them. It does not cover your own node's uptime.
+
+</Accordion>
+
+<Accordion title="What happens if my node's IP changes?">
+
+Email us and we will update `reserved_peer_ips`. Allowlisting is per IP address, so
+send the new one ahead of a planned migration to avoid an interruption.
+
+</Accordion>
+
+<Accordion title="Can I keep public peers configured as a fallback?">
+
+Yes, though `try_new_peers: false` is recommended while peered so your node stays on
+the reserved connections. Public root peers remain discoverable through the
+`gossipRootIps` info endpoint if you want them as a backstop.
+
+</Accordion>
+
+</AccordionGroup>

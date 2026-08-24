@@ -1,0 +1,45 @@
+---
+title: "User vault equities"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# User vault equities
+
+Returns the current equity a user has in each vault.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `userVaultEquities`.   |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "userVaultEquities",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field             | Type   | Description                                        |
+| ----------------- | ------ | -------------------------------------------------- |
+| `[]`              | array  | Current equity positions across the user's vaults. |
+| `[].vaultAddress` | string | Onchain address that identifies the vault.         |
+| `[].equity`       | string | User's current vault equity as a decimal string.   |
+
+## Response example
+
+```json
+[
+  {
+    "vaultAddress": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+    "equity": "742500.082809"
+  }
+]
+```

@@ -1,0 +1,62 @@
+---
+title: "Perpetual metadata"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Perpetual metadata
+
+Returns perpetual market definitions and margin tiers for a selected DEX.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                                           |
+| --------- | ------ | -------- | ----------------------------------------------------- |
+| `type`    | string | Yes      | Selects `meta`.                                       |
+| `dex`     | string | No       | Perpetual DEX name; omit for the first perpetual DEX. |
+
+```json
+{
+  "type": "meta",
+  "dex": ""
+}
+```
+
+## Response fields
+
+| Field                                         | Type              | Description                                                             |
+| --------------------------------------------- | ----------------- | ----------------------------------------------------------------------- |
+| `universe[]`                                  | array             | Ordered perpetual market definitions; index aligns with asset contexts. |
+| `universe[].name`                             | string            | Perpetual market symbol, for example `BTC`.                             |
+| `universe[].szDecimals`                       | integer           | Number of decimal places accepted for order sizes.                      |
+| `universe[].maxLeverage`                      | integer           | Maximum leverage permitted for the market.                              |
+| `universe[].marginTableId`                    | integer           | Identifier of the leverage-tier table used by this market.              |
+| `universe[].onlyIsolated`                     | boolean           | Whether the market permits isolated margin only.                        |
+| `universe[].isDelisted`                       | boolean           | Whether trading has been delisted for the market.                       |
+| `universe[].marginMode`                       | cross \| isolated | Allowed margin mode: `cross` or `isolated`.                             |
+| `marginTables`                                | array             | Leverage-tier definitions referenced by `marginTableId`.                |
+| `marginTables[][0]`                           | integer           | Margin-table identifier referenced by market definitions.               |
+| `marginTables[][1].description`               | string            | Human-readable description of this margin table.                        |
+| `marginTables[][1].marginTiers[]`             | array             | Notional thresholds and their maximum leverage limits.                  |
+| `marginTables[][1].marginTiers[].lowerBound`  | string            | Minimum notional at which this margin tier applies.                     |
+| `marginTables[][1].marginTiers[].maxLeverage` | integer           | Maximum leverage allowed within this notional tier.                     |
+
+## Response example
+
+```json
+{
+  "universe": [{ "name": "BTC", "szDecimals": 5, "maxLeverage": 50 }],
+  "marginTables": [
+    [
+      50,
+      {
+        "description": "",
+        "marginTiers": [{ "lowerBound": "0.0", "maxLeverage": 50 }]
+      }
+    ]
+  ]
+}
+```

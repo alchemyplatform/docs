@@ -1,0 +1,53 @@
+---
+title: "Spot clearinghouse state"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Spot clearinghouse state
+
+Returns a user's spot balances for account-state and balance checks.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                       |
+| --------- | ------ | -------- | --------------------------------- |
+| `type`    | string | Yes      | Selects `spotClearinghouseState`. |
+| `user`    | string | Yes      | Master or sub-account address.    |
+
+```json
+{
+  "type": "spotClearinghouseState",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field                 | Type    | Description                                                 |
+| --------------------- | ------- | ----------------------------------------------------------- |
+| `balances[]`          | array   | Balance entries.                                            |
+| `balances[].coin`     | string  | Spot-token symbol, for example `USDC`.                      |
+| `balances[].token`    | integer | Numeric token index from the spot metadata response.        |
+| `balances[].hold`     | string  | Amount reserved by orders.                                  |
+| `balances[].total`    | string  | Combined balance held by the account, as a decimal string.  |
+| `balances[].entryNtl` | string  | Entry notional for this token balance, as a decimal string. |
+
+## Response example
+
+```json
+{
+  "balances": [
+    {
+      "coin": "USDC",
+      "token": 0,
+      "hold": "0.0",
+      "total": "14.625485",
+      "entryNtl": "0.0"
+    }
+  ]
+}
+```

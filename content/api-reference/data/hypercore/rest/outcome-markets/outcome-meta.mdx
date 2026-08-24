@@ -1,0 +1,56 @@
+---
+title: "Outcome metadata"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Outcome metadata
+
+Returns registered outcome-market specifications and questions.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description            |
+| --------- | ------ | -------- | ---------------------- |
+| `type`    | string | Yes      | Selects `outcomeMeta`. |
+
+```json
+{
+  "type": "outcomeMeta"
+}
+```
+
+## Response fields
+
+| Field                         | Type    | Description                                         |
+| ----------------------------- | ------- | --------------------------------------------------- |
+| `outcomes[]`                  | array   | Registered outcome-market specifications.           |
+| `outcomes[].outcome`          | integer | Numeric identifier for the outcome market.          |
+| `outcomes[].name`             | string  | Display name for the outcome market.                |
+| `outcomes[].description`      | string  | Machine-readable attributes that define the market. |
+| `outcomes[].sideSpecs[]`      | array   | Permitted outcome sides for this market.            |
+| `outcomes[].sideSpecs[].name` | string  | Display label for an allowed outcome side.          |
+| `questions[]`                 | array   | Question records associated with outcome markets.   |
+| `deployers`                   | array   | Addresses registered to deploy outcome markets.     |
+| `feeScale`                    | integer | Fee-scale setting used for outcome-market fees.     |
+
+## Response example
+
+```json
+{
+  "outcomes": [
+    {
+      "outcome": 123,
+      "name": "Recurring",
+      "description": "class:priceBinary|underlying:HYPE|expiry:20260310-1100|targetPrice:34.5|period:3m",
+      "sideSpecs": [{ "name": "Yes" }, { "name": "No" }]
+    }
+  ],
+  "questions": [],
+  "deployers": [],
+  "feeScale": 0
+}
+```

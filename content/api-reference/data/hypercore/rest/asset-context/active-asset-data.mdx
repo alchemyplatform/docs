@@ -1,0 +1,75 @@
+---
+title: "Active asset data"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Active asset data
+
+Returns a user's active perpetual-market trading capacity and leverage for one coin.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `activeAssetData`.     |
+| `user`    | string | Yes      | Master or sub-account address. |
+| `coin`    | string | Yes      | Perpetual market identifier.   |
+
+```json
+{
+  "type": "activeAssetData",
+  "user": "0x0000000000000000000000000000000000000000",
+  "coin": "BTC"
+}
+```
+
+## Response fields
+
+| Field              | Type              | Description                                               |
+| ------------------ | ----------------- | --------------------------------------------------------- |
+| `user`             | string            | Account address.                                          |
+| `coin`             | string            | Perpetual market symbol requested by the caller.          |
+| `leverage`         | object            | Selected leverage configuration for this user and market. |
+| `leverage.type`    | cross \| isolated | Selected margin mode: `cross` or `isolated`.              |
+| `leverage.value`   | integer           | Configured leverage multiplier.                           |
+| `leverage.rawUsd`  | string            | HIP-3 isolated-margin amount in USD, when supplied.       |
+| `maxTradeSzs`      | array             | Maximum buy and sell sizes permitted at current margin.   |
+| `availableToTrade` | array             | Available buy and sell notional at current margin.        |
+| `markPx`           | string            | Current mark price used for margin and unrealized PnL.    |
+
+## Response example
+
+<Tabs>
+<Tab title="First perpetual DEX">
+
+```json
+{
+  "user": "0xb65822a30bbaaa68942d6f4c43d78704faeabbbb",
+  "coin": "APT",
+  "leverage": { "type": "cross", "value": 3 },
+  "maxTradeSzs": ["24836370.4400000013", "24836370.4400000013"],
+  "availableToTrade": ["37019438.0284740031", "37019438.0284740031"],
+  "markPx": "4.4716"
+}
+```
+
+</Tab>
+<Tab title="HIP-3 DEX">
+
+```json
+{
+  "user": "0xa15099a30bbf2e68942d6f4c43d70d04faeab0a0",
+  "coin": "xyz:XYZ100",
+  "leverage": { "type": "isolated", "value": 20, "rawUsd": "0.0" },
+  "maxTradeSzs": ["0.0", "0.0"],
+  "availableToTrade": ["0.0", "0.0"],
+  "markPx": "25451.0"
+}
+```
+
+</Tab>
+</Tabs>

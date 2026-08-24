@@ -1,0 +1,46 @@
+---
+title: "User rate limit"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# User rate limit
+
+Returns the native request allowance and usage for an account.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `userRateLimit`.       |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "userRateLimit",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field              | Type    | Description                            |
+| ------------------ | ------- | -------------------------------------- |
+| `cumVlm`           | string  | Cumulative volume.                     |
+| `nRequestsUsed`    | integer | Requests used after reserved capacity. |
+| `nRequestsCap`     | integer | Current request cap.                   |
+| `nRequestsSurplus` | integer | Reserved request capacity remaining.   |
+
+## Response example
+
+```json
+{
+  "cumVlm": "2854574.593578",
+  "nRequestsUsed": 2890,
+  "nRequestsCap": 2864574,
+  "nRequestsSurplus": 0
+}
+```

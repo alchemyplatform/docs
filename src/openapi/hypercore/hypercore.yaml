@@ -7,20 +7,37 @@ info:
     HyperCore read and historical methods for private preview.
 servers:
   - url: https://api.g.alchemy.com/hypercore/v1
-    description: Provisional base URL; it will be confirmed before general availability.
+    description: HyperCore REST base URL.
 tags:
-  - name: HyperCore Data API Endpoints
+  - name: Account state
+    description: User account and portfolio reads.
+  - name: Orders and fills
+    description: Order and fill reads.
+  - name: Ledger and funding
+    description: Ledger and funding reads.
+  - name: Market data and snapshots
+    description: Market-data reads and state snapshots.
+  - name: Asset context
+    description: Asset metadata and current context reads.
+  - name: Metadata
+    description: Perpetual and spot metadata reads.
+  - name: Token deployment
+    description: Token and market deployment reads.
+  - name: Vaults
+    description: Vault discovery and account-equity reads.
+  - name: Staking, delegation, and validators
+    description: Delegation and validator reads.
+  - name: Roles, agents, and limits
+    description: Roles, agents, fee approvals, and rate-limit reads.
+  - name: Outcome markets
+    description: Outcome-market metadata and settlement reads.
 paths:
   "/{apiKey}/info":
     post:
-      tags:
-        - HyperCore Data API Endpoints
       operationId: get-info
       summary: Execute a native-compatible HyperCore read
       description: |
-        This API is in private preview. Target October 2026; timing is subject to change.
-
-        Execute a native-compatible HyperCore read selected by the required type discriminator. The remaining native methods will be documented as the service is finalized.
+        Execute a native-compatible HyperCore read selected by the required type discriminator.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
       requestBody:
@@ -42,20 +59,13 @@ paths:
                   endTime: 1780086400000
       responses:
         "200":
-          description: Successful response. The currently modeled shapes are selected by the requested type.
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/InfoResponse"
+          "$ref": "#/components/responses/InfoResponse"
   "/{apiKey}/user-fills":
     post:
-      tags:
-        - HyperCore Data API Endpoints
+      tags: [Orders and fills]
       operationId: get-user-fills
       summary: Get user fills
       description: |
-        This API is in private preview. Target October 2026; timing is subject to change.
-
         Retrieve fills associated with a user.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
@@ -82,13 +92,10 @@ paths:
                   "$ref": "#/components/examples/UserFillsResponse"
   "/{apiKey}/user-fills-by-time":
     post:
-      tags:
-        - HyperCore Data API Endpoints
+      tags: [Orders and fills]
       operationId: get-user-fills-by-time
       summary: Get user fills by time
       description: |
-        This API is in private preview. Target October 2026; timing is subject to change.
-
         Retrieve fills associated with a user over a time range.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
@@ -117,13 +124,10 @@ paths:
                   "$ref": "#/components/examples/UserFillsByTimeResponse"
   "/{apiKey}/clearinghouse-state":
     post:
-      tags:
-        - HyperCore Data API Endpoints
+      tags: [Account state]
       operationId: get-clearinghouse-state
       summary: Get clearinghouse state
       description: |
-        This API is in private preview. Target October 2026; timing is subject to change.
-
         Retrieve clearinghouse state associated with a user.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
@@ -145,13 +149,10 @@ paths:
                   "$ref": "#/components/examples/ClearinghouseStateResponse"
   "/{apiKey}/historical-orders":
     post:
-      tags:
-        - HyperCore Data API Endpoints
+      tags: [Orders and fills]
       operationId: get-historical-orders
       summary: Get historical orders
       description: |
-        This API is in private preview. Target October 2026; timing is subject to change.
-
         Retrieve historical orders associated with a user.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
@@ -173,13 +174,10 @@ paths:
                   "$ref": "#/components/examples/HistoricalOrdersResponse"
   "/{apiKey}/portfolio-state":
     post:
-      tags:
-        - HyperCore Data API Endpoints
+      tags: [Account state]
       operationId: get-portfolio-state
       summary: Get normalized portfolio state
       description: |
-        This API is in private preview. Target October 2026; timing is subject to change.
-
         Retrieve a normalized portfolio-state composite for a user.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
@@ -206,13 +204,10 @@ paths:
                   "$ref": "#/components/examples/PortfolioStateResponse"
   "/{apiKey}/extra-agents":
     post:
-      tags:
-        - HyperCore Data API Endpoints
+      tags: ["Roles, agents, and limits"]
       operationId: get-extra-agents
       summary: Get agent and API-wallet state
       description: |
-        This API is in private preview. Target October 2026; timing is subject to change.
-
         Retrieve agent and API-wallet information associated with a user.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
@@ -232,6 +227,38 @@ paths:
               examples:
                 default:
                   "$ref": "#/components/examples/ExtraAgentsResponse"
+  "/{apiKey}/l2-book-diff-snapshot":
+    post:
+      tags: [Market data and snapshots]
+      operationId: get-l2-book-diff-snapshot
+      summary: Get an L2 book snapshot for diff-stream bootstrap
+      description: |
+        Retrieve aggregated L2 books at a common block height with each market's diff sequence.
+      parameters:
+        - "$ref": "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/L2BookDiffSnapshotRequest"
+            examples:
+              default:
+                value:
+                  coins: [BTC, ETH]
+                  nSigFigs: 5
+                  mantissa: 2
+                  nLevels: 20
+      responses:
+        "200":
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/L2BookDiffSnapshotResponse"
+              examples:
+                default:
+                  "$ref": "#/components/examples/L2BookDiffSnapshotResponse"
 components:
   parameters:
     apiKey:
@@ -241,6 +268,80 @@ components:
       schema:
         type: string
   schemas:
+    InfoTypeRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          description: HyperCore `/info` request discriminator. Most values are native-compatible reads; `l4Snapshots` and `triggerOrderSnapshot` are Alchemy-original snapshot reads. The `portfolioState` and `extraAgents` composites are not `/info` discriminators; they are exposed as purpose-built endpoints at `/portfolio-state` and `/extra-agents`.
+          enum:
+            - openOrders
+            - frontendOpenOrders
+            - userFills
+            - userFillsByTime
+            - historicalOrders
+            - userFunding
+            - userNonFundingLedgerUpdates
+            - clearinghouseState
+            - spotClearinghouseState
+            - userRateLimit
+            - maxBuilderFee
+            - subAccounts
+            - userVaultEquities
+            - userRole
+            - userFees
+            - userDexAbstraction
+            - allMids
+            - candleSnapshot
+            - l4Snapshots
+            - triggerOrderSnapshot
+            - meta
+            - spotMeta
+            - metaAndAssetCtxs
+            - spotMetaAndAssetCtxs
+            - activeAssetData
+            - predictedFundings
+            - spotDeployState
+            - perpDeployAuctionStatus
+            - spotPairDeployAuctionStatus
+            - vaultSummaries
+            - vaultDetails
+            - leadingVaults
+            - delegations
+            - delegatorSummary
+            - delegatorHistory
+            - delegatorRewards
+            - validatorL1Votes
+            - outcomeMeta
+            - settledOutcome
+            - outcomeTemplates
+        user:
+          "$ref": "#/components/schemas/Address"
+        dex:
+          type: string
+          description: Perpetual DEX name. The empty string selects the first perpetual DEX.
+        builder:
+          "$ref": "#/components/schemas/Address"
+        coin:
+          type: string
+        startTime:
+          "$ref": "#/components/schemas/TimestampMs"
+        endTime:
+          "$ref": "#/components/schemas/TimestampMs"
+        interval:
+          type: string
+        vaultAddress:
+          "$ref": "#/components/schemas/Address"
+        outcome:
+          type: integer
+        includeUsers:
+          type: boolean
+        includeTriggerOrders:
+          type: boolean
+      additionalProperties: true
+      description: The fields required with `type` are defined by the selected native read.
+    NativeInfoResponse: {}
     Address:
       type: string
       pattern: "^0x[a-fA-F0-9]{40}$"
@@ -270,7 +371,7 @@ components:
           items:
             type: string
     InfoRequest:
-      oneOf:
+      anyOf:
         - "$ref": "#/components/schemas/UserFillsRequest"
         - "$ref": "#/components/schemas/UserFillsByTimeRequest"
         - "$ref": "#/components/schemas/HistoricalOrdersRequest"
@@ -281,6 +382,7 @@ components:
         - "$ref": "#/components/schemas/ClearinghouseStateRequest"
         - "$ref": "#/components/schemas/SpotClearinghouseStateRequest"
         - "$ref": "#/components/schemas/FrontendOpenOrdersRequest"
+        - "$ref": "#/components/schemas/InfoTypeRequest"
       discriminator:
         propertyName: type
         mapping:
@@ -294,6 +396,36 @@ components:
           clearinghouseState: "#/components/schemas/ClearinghouseStateRequest"
           spotClearinghouseState: "#/components/schemas/SpotClearinghouseStateRequest"
           frontendOpenOrders: "#/components/schemas/FrontendOpenOrdersRequest"
+          openOrders: "#/components/schemas/InfoTypeRequest"
+          userRateLimit: "#/components/schemas/InfoTypeRequest"
+          maxBuilderFee: "#/components/schemas/InfoTypeRequest"
+          subAccounts: "#/components/schemas/InfoTypeRequest"
+          userVaultEquities: "#/components/schemas/InfoTypeRequest"
+          userRole: "#/components/schemas/InfoTypeRequest"
+          userFees: "#/components/schemas/InfoTypeRequest"
+          userDexAbstraction: "#/components/schemas/InfoTypeRequest"
+          allMids: "#/components/schemas/InfoTypeRequest"
+          candleSnapshot: "#/components/schemas/InfoTypeRequest"
+          l4Snapshots: "#/components/schemas/InfoTypeRequest"
+          triggerOrderSnapshot: "#/components/schemas/InfoTypeRequest"
+          meta: "#/components/schemas/InfoTypeRequest"
+          spotMeta: "#/components/schemas/InfoTypeRequest"
+          metaAndAssetCtxs: "#/components/schemas/InfoTypeRequest"
+          spotMetaAndAssetCtxs: "#/components/schemas/InfoTypeRequest"
+          activeAssetData: "#/components/schemas/InfoTypeRequest"
+          predictedFundings: "#/components/schemas/InfoTypeRequest"
+          spotDeployState: "#/components/schemas/InfoTypeRequest"
+          perpDeployAuctionStatus: "#/components/schemas/InfoTypeRequest"
+          spotPairDeployAuctionStatus: "#/components/schemas/InfoTypeRequest"
+          vaultSummaries: "#/components/schemas/InfoTypeRequest"
+          vaultDetails: "#/components/schemas/InfoTypeRequest"
+          leadingVaults: "#/components/schemas/InfoTypeRequest"
+          delegatorSummary: "#/components/schemas/InfoTypeRequest"
+          delegatorRewards: "#/components/schemas/InfoTypeRequest"
+          validatorL1Votes: "#/components/schemas/InfoTypeRequest"
+          outcomeMeta: "#/components/schemas/InfoTypeRequest"
+          settledOutcome: "#/components/schemas/InfoTypeRequest"
+          outcomeTemplates: "#/components/schemas/InfoTypeRequest"
     InfoResponse:
       oneOf:
         - "$ref": "#/components/schemas/UserFillsResponse"
@@ -519,6 +651,183 @@ components:
           type: array
           items:
             "$ref": "#/components/schemas/Agent"
+    L2BookDiffSnapshotRequest:
+      type: object
+      required:
+        - coins
+      properties:
+        coins:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: Markets to include in the snapshot.
+        nSigFigs:
+          type: integer
+          enum: [2, 3, 4, 5]
+          description: Significant-figure aggregation for price levels.
+        mantissa:
+          type: integer
+          enum: [2, 5]
+          description: Mantissa step. Valid only when nSigFigs is 5.
+        nLevels:
+          type: integer
+          enum: [1, 10, 20, 50]
+          description: Levels per side. Defaults to 20.
+    L2BookLevel:
+      type: object
+      required:
+        - px
+        - sz
+        - n
+      properties:
+        px:
+          type: string
+          description: Price as a decimal string.
+        sz:
+          type: string
+          description: Total size at the price level.
+        n:
+          type: integer
+          description: Number of orders at the price level.
+    L2BookDiffSnapshotBook:
+      type: object
+      required:
+        - coin
+        - time
+        - levels
+        - seq
+      properties:
+        coin:
+          type: string
+          description: Market symbol.
+        time:
+          "$ref": "#/components/schemas/TimestampMs"
+        levels:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: array
+            items:
+              "$ref": "#/components/schemas/L2BookLevel"
+          description: Two-element tuple of bids and asks.
+        seq:
+          type: integer
+          minimum: 0
+          description: Per-market l2BookDiff sequence at the snapshot height.
+    L2BookDiffSnapshotResponse:
+      type: object
+      required:
+        - height
+        - books
+      properties:
+        height:
+          type: integer
+          description: Block height reflected by every returned book.
+        books:
+          type: array
+          items:
+            "$ref": "#/components/schemas/L2BookDiffSnapshotBook"
+  responses:
+    InfoResponse:
+      description: Successful native-compatible response.
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/NativeInfoResponse"
+          examples:
+            openOrders:
+              value:
+                - coin: BTC
+                  limitPx: "29792.0"
+                  oid: 91490942
+                  side: A
+                  sz: "0.0"
+                  timestamp: 1681247412573
+            frontendOpenOrders:
+              value:
+                - coin: BTC
+                  isPositionTpsl: false
+                  isTrigger: false
+                  limitPx: "29792.0"
+                  oid: 91490942
+                  orderType: Limit
+                  origSz: "5.0"
+                  reduceOnly: false
+                  side: A
+                  sz: "5.0"
+                  timestamp: 1681247412573
+                  triggerCondition: N/A
+                  triggerPx: "0.0"
+            userRateLimit:
+              value:
+                cumVlm: "2854574.593578"
+                nRequestsUsed: 2890
+                nRequestsCap: 2864574
+            maxBuilderFee:
+              value: 1
+            subAccounts:
+              value:
+                - name: Test
+                  subAccountUser: "0x035605fc2f24d65300227189025e90a0d947f16c"
+                  master: "0x8c967e73e6b15087c42a10d344cff4c96d877f1d"
+                  clearinghouseState:
+                    marginSummary:
+                      accountValue: "29.78001"
+                      totalNtlPos: "0.0"
+                      totalRawUsd: "29.78001"
+                      totalMarginUsed: "0.0"
+                    crossMarginSummary:
+                      accountValue: "29.78001"
+                      totalNtlPos: "0.0"
+                      totalRawUsd: "29.78001"
+                      totalMarginUsed: "0.0"
+                    crossMaintenanceMarginUsed: "0.0"
+                    withdrawable: "29.78001"
+                    assetPositions: []
+                    time: 1733968369395
+                  spotState:
+                    balances:
+                      - coin: USDC
+                        token: 0
+                        total: "0.22"
+                        hold: "0.0"
+                        entryNtl: "0.0"
+            userVaultEquities:
+              value:
+                - vaultAddress: "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303"
+                  equity: "742500.082809"
+            userRole:
+              value: { role: user }
+            userFees:
+              value:
+                dailyUserVlm:
+                  - date: "2025-05-23"
+                    userCross: "0.0"
+                    userAdd: "0.0"
+                    exchange: "2852367.0770729999"
+                userCrossRate: "0.000315"
+                userAddRate: "0.000105"
+                userSpotCrossRate: "0.00049"
+                userSpotAddRate: "0.00028"
+                activeReferralDiscount: "0.0"
+                trial: null
+                feeTrialReward: "0.0"
+                nextTrialAvailableTimestamp: null
+            delegations:
+              value:
+                - validator: "0x5ac99df645f3414876c816caa18b2d234024b487"
+                  amount: "12060.16529862"
+                  lockedUntilTimestamp: 1735466781353
+            delegatorSummary:
+              value:
+                delegated: "12060.16529862"
+                undelegated: "0.0"
+                totalPendingWithdrawal: "0.0"
+                nPendingWithdrawals: 0
+            userDexAbstraction:
+              value: true
   examples:
     UserFillsResponse:
       value:
@@ -582,3 +891,17 @@ components:
           - address: "0x4444444444444444444444444444444444444444"
             name: market-maker
             permissions: [trade]
+    L2BookDiffSnapshotResponse:
+      value:
+        height: 123456
+        books:
+          - coin: BTC
+            time: 1780000000000
+            levels:
+              - - px: "100000.0"
+                  sz: "1.25"
+                  n: 3
+              - - px: "100001.0"
+                  sz: "0.80"
+                  n: 2
+            seq: 42

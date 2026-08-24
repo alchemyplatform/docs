@@ -1,0 +1,47 @@
+---
+title: "Delegations"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Delegations
+
+Returns a user's active validator delegations.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `delegations`.         |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "delegations",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field                     | Type    | Description                                        |
+| ------------------------- | ------- | -------------------------------------------------- |
+| `[]`                      | array   | Current delegation positions for the account.      |
+| `[].validator`            | string  | Address of the validator receiving the delegation. |
+| `[].amount`               | string  | Delegated stake as a decimal string.               |
+| `[].lockedUntilTimestamp` | integer | Delegation unlock time in milliseconds.            |
+
+## Response example
+
+```json
+[
+  {
+    "validator": "0x5ac99df645f3414876c816caa18b2d234024b487",
+    "amount": "12060.16529862",
+    "lockedUntilTimestamp": 1735466781353
+  }
+]
+```

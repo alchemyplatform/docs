@@ -7,7 +7,20 @@ description: "HyperCore private-preview documentation."
 
 # Stream an L2 order book
 
-Subscribe to `l2Book` for the market, wait for the initial snapshot, store its cursor, and render price levels. Use `l2BookDiff` only after the snapshot is installed.
+To maintain an L2 book from `l2BookDiff`, install the first message for each market
+as local state. It carries the current levels with `isSnapshot: true`. Apply later
+diffs in height order, checking each market's `prev_seq` against the snapshot `seq`
+and then against your local position.
+
+`l2Book` is a standalone display snapshot, not a bootstrap source for a
+diff-maintained book. If continuity breaks, discard affected local state and adopt
+the pushed `isSnapshot: true` message; bootstrap and recovery use the same
+replacement mechanism.
+
+For a snapshot shared by many consumers, or to let a slow client digest a large book
+while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api)
+instead.
 
 ## Cursor rule
+
 Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.

@@ -7,22 +7,24 @@ description: "HyperCore private-preview documentation."
 
 # setOracleUpdates stream
 
+For a native REST read of the current perpetual oracle price, use the `oraclePx`
+field in `metaAndAssetCtxs` from the [HyperCore REST API](/docs/data/hypercore/rest-api).
+This stream is the separate HIP-3 oracle-update node-file surface.
+
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
 {
   "method": "subscribe",
   "subscription": {
     "type": "setOracleUpdates",
-    "coins": [
-      "BTC"
-    ]
+    "dex": "vntls"
   }
 }
 ```
 
 ## Acknowledgement
+
 ```json
 {
   "channel": "subscriptionResponse",
@@ -43,34 +45,41 @@ description: "HyperCore private-preview documentation."
   "blockTime": 1780000000000,
   "cursor": "<opaque cursor>",
   "data": {
-    "coin": "BTC",
-    "oraclePrice": "99995.0",
-    "source": "validatorSet"
+    "block_time": "2025-10-06T14:56:40.274583420",
+    "dex": "vntls",
+    "success": true,
+    "error": null,
+    "oracle_pxs": [["vntls:vANDRL", "52.146"]],
+    "mark_pxs": [[["vntls:vANDRL", "50.809"]]],
+    "external_perp_pxs": [["vntls:vANDRL", "50.809"]]
   }
 }
 ```
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
-| coin | string | Market identifier. |
-| oraclePrice | string | Illustrative oraclePrice value. |
-| source | string | Illustrative source value. |
+| block_time | string | Time of the oracle update. |
+| dex | string | Perpetual DEX that received the oracle update. |
+| success | boolean | Whether the oracle update action succeeded. |
+| error | string or null | Error returned for a failed oracle update. |
+| oracle_pxs | array | Oracle prices for assets on the DEX, as asset-and-price pairs. |
+| mark_pxs | array | Mark-price tiers; each tier is an array of asset-and-price pairs. |
+| external_perp_pxs | array | External perpetual prices for assets on the DEX, as asset-and-price pairs. |
+
 ## Unsubscribe
+
 ```json
 {
   "method": "unsubscribe",
   "subscription": {
     "type": "setOracleUpdates",
-    "coins": [
-      "BTC"
-    ]
+    "dex": "vntls"
   }
 }
 ```
+
 ## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply cursor in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

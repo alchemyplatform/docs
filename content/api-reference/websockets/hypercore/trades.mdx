@@ -1,0 +1,72 @@
+---
+title: "trades stream"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../shared/preview-notice-september.mdx" />
+
+# trades stream
+
+Subscribe to real-time trades for one market.
+
+## Subscribe
+
+```json
+{
+  "method": "subscribe",
+  "subscription": {
+    "type": "trades",
+    "coin": "BTC"
+  }
+}
+```
+
+## Event
+
+```json
+{
+  "channel": "trades",
+  "data": [
+    {
+      "coin": "BTC",
+      "side": "B",
+      "px": "72581.0",
+      "sz": "0.00017",
+      "time": 1787259217020,
+      "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "tid": 877707108085800,
+      "users": [
+        "0x9b54264d7502f80163ea949038aad771eae67e38",
+        "0x706bb519b05b7dc01d048af9a5e29d1ef5d6d9e3"
+      ]
+    }
+  ]
+}
+```
+
+## Payload fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| data | array | Trade records. |
+| data[] | object | Trade record. |
+| data[].coin | string | Market symbol for the trade. |
+| data[].side | string | Taker side: A is ask/sell; B is bid/buy. |
+| data[].px | string | Trade price. |
+| data[].sz | string | Trade size. |
+| data[].time | integer | Trade time in milliseconds. |
+| data[].hash | string | Layer-1 transaction hash for the trade. |
+| data[].tid | integer | Trade identifier. |
+| data[].users | array | Buyer and seller addresses, in that order. |
+
+## Unsubscribe
+
+```json
+{
+  "method": "unsubscribe",
+  "subscription": {
+    "type": "trades",
+    "coin": "BTC"
+  }
+}
+```

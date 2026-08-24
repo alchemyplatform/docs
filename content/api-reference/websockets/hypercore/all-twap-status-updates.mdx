@@ -8,21 +8,19 @@ description: "HyperCore private-preview documentation."
 # allTwapStatusUpdates stream
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
 {
   "method": "subscribe",
   "subscription": {
     "type": "allTwapStatusUpdates",
-    "coins": [
-      "BTC"
-    ]
+    "coins": ["BTC"]
   }
 }
 ```
 
 ## Acknowledgement
+
 ```json
 {
   "channel": "subscriptionResponse",
@@ -43,38 +41,63 @@ description: "HyperCore private-preview documentation."
   "blockTime": 1780000000000,
   "cursor": "<opaque cursor>",
   "data": {
-    "twapId": "twap_01",
+    "time": "2025-09-03T10:48:14.285201806",
+    "createdAt": 1756896494285,
+    "twapId": 12345,
+    "user": "0x1111111111111111111111111111111111111111",
     "coin": "BTC",
-    "status": "active",
-    "executedSize": "0.20",
-    "remainingSize": "0.80"
+    "side": "B",
+    "status": "activated",
+    "statusMessage": null,
+    "sz": "1.00",
+    "minutes": 60,
+    "reduceOnly": false,
+    "randomize": true,
+    "executedSz": "0.20",
+    "executedNtl": "20000.0",
+    "txIndex": 3,
+    "triggerPx": "100000.0",
+    "triggerAbove": true,
+    "stopPx": "95000.0"
   }
 }
 ```
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
-| twapId | string | Illustrative twapId value. |
-| coin | string | Market identifier. |
-| status | string | Illustrative status value. |
-| executedSize | string | Illustrative executedSize value. |
-| remainingSize | string | Illustrative remainingSize value. |
+| time | string | Time of the status update. |
+| createdAt | integer | Time the TWAP was created, in milliseconds. |
+| twapId | integer | Identifier for the TWAP order. |
+| user | string | Address that owns the TWAP order. |
+| coin | string | Market symbol for the TWAP order. |
+| side | string | Side code: A is ask/sell; B is bid/buy. |
+| status | string | TWAP status: activated, finished, terminated, stopped, waitingForTrigger, or error. |
+| statusMessage | string or null | Status detail; populated for an error status. |
+| sz | string | Total TWAP size. |
+| minutes | integer | Duration of the TWAP in minutes. |
+| reduceOnly | boolean | Whether the TWAP only reduces an existing position. |
+| randomize | boolean | Whether the TWAP schedule is randomized. |
+| executedSz | string | Cumulative size executed by the TWAP order. |
+| executedNtl | string | Cumulative notional executed by the TWAP order. |
+| txIndex | integer | Transaction index of the update within its block. |
+| triggerPx | string | Trigger price for a trigger TWAP. |
+| triggerAbove | boolean | Direction that activates a trigger TWAP relative to triggerPx. |
+| stopPx | string | Stop price attached to the TWAP. |
+
 ## Unsubscribe
+
 ```json
 {
   "method": "unsubscribe",
   "subscription": {
     "type": "allTwapStatusUpdates",
-    "coins": [
-      "BTC"
-    ]
+    "coins": ["BTC"]
   }
 }
 ```
+
 ## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply cursor in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

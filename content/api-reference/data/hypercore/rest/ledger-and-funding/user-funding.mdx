@@ -1,0 +1,90 @@
+---
+title: "User funding"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# User funding
+
+Returns a user's funding-payment history over a time range.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter   | Type    | Required | Description                                                       |
+| ----------- | ------- | -------- | ----------------------------------------------------------------- |
+| `type`      | string  | Yes      | Selects `userFunding`.                                            |
+| `user`      | string  | Yes      | Master or sub-account address.                                    |
+| `startTime` | integer | Yes      | Inclusive start time in milliseconds.                             |
+| `endTime`   | integer | No       | Inclusive end time in milliseconds; defaults to the current time. |
+
+```json
+{
+  "type": "userFunding",
+  "user": "0x0000000000000000000000000000000000000000",
+  "startTime": 1735689600000,
+  "endTime": 1735776000000
+}
+```
+
+## Response fields
+
+| Field                  | Type            | Description                                                         |
+| ---------------------- | --------------- | ------------------------------------------------------------------- |
+| `[]`                   | array           | Funding-payment records for the requested time range.               |
+| `[].delta`             | object          | Event-specific funding payload.                                     |
+| `[].delta.type`        | string          | Event kind; this read returns `funding`.                            |
+| `[].delta.coin`        | string          | Market identifier.                                                  |
+| `[].delta.usdc`        | string          | Funding payment in USDC; negative values are payments made.         |
+| `[].delta.szi`         | string          | Signed position size when the funding payment was applied.          |
+| `[].delta.fundingRate` | string          | Funding rate.                                                       |
+| `[].delta.nSamples`    | integer \| null | Number of samples used, or `null` when no sample count is supplied. |
+| `[].hash`              | string          | Transaction hash that recorded the funding payment.                 |
+| `[].time`              | integer         | Millisecond timestamp of the funding event.                         |
+
+## Response example
+
+<Tabs>
+<Tab title="First perpetual DEX">
+
+```json
+[
+  {
+    "delta": {
+      "type": "funding",
+      "coin": "ETH",
+      "usdc": "-3.625312",
+      "szi": "49.1477",
+      "fundingRate": "0.0000417",
+      "nSamples": null
+    },
+    "hash": "0xa166e3fa63c25663024b03f2e0da011a00307e4017465df020210d3d432e7cb8",
+    "time": 1681222254710
+  }
+]
+```
+
+</Tab>
+<Tab title="HIP-3 DEX">
+
+```json
+[
+  {
+    "delta": {
+      "type": "funding",
+      "coin": "xyz:XYZ100",
+      "usdc": "2.378343",
+      "szi": "-15.0",
+      "fundingRate": "0.00000625",
+      "nSamples": null
+    },
+    "hash": "0xa166e3fa63c25663024b03f2e0da011a00307e4017465df020210d3d432e7cb9",
+    "time": 1767654000068
+  }
+]
+```
+
+</Tab>
+</Tabs>

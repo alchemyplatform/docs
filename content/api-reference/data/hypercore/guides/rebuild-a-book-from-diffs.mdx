@@ -7,7 +7,20 @@ description: "HyperCore private-preview documentation."
 
 # Rebuild a book from diffs
 
-Start from a durable L2 snapshot. Apply ordered diffs one cursor at a time. On a cursor discontinuity, discard local state, fetch a new snapshot or historical cursor, then resume.
+Subscribe to `l2BookDiff`. The first message for each market is the current book
+snapshot with `isSnapshot: true`; install it as local state. Apply later diffs in
+height order. The first diff for each market must carry `prev_seq` equal to that
+market's snapshot `seq`; continue checking `prev_seq` against your local position on
+every diff.
+
+On a continuity break, discard local state for the affected markets and adopt the
+pushed message with `isSnapshot: true`; bootstrap and recovery use the same
+replacement mechanism.
+
+For a snapshot shared by many consumers, or to let a slow client digest a large book
+while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api)
+instead.
 
 ## Cursor rule
+
 Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.

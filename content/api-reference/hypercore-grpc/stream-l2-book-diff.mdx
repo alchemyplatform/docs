@@ -11,8 +11,6 @@ description: "HyperCore private-preview documentation."
 a local order book at a fraction of snapshot bandwidth. This is ideal for
 latency-sensitive consumers that need continuous book state.
 
-> The contract below is proposed and will be confirmed before general availability.
-
 ## Overview
 
 * Each message contains changes for the markets that changed in its block
@@ -135,9 +133,9 @@ not match your current position for that market, you have a gap.
 A message flagged as a snapshot replaces your local state. Anything else is a diff that
 must chain onto your previous block.
 
-If continuity is broken, a fresh snapshot is pushed to you. There is no separate
-resynchronization message to handle and no epoch to track — receiving a snapshot is the
-signal to discard local state and adopt it.
+If continuity is broken, a fresh snapshot is pushed to you. The snapshot flag is the
+only continuity signal you need to handle — receiving it means discard local state
+and adopt the snapshot.
 
 1. After applying each message, persist `cursor` and the per-market `seq`.
 2. On reconnect, send `cursor`.
