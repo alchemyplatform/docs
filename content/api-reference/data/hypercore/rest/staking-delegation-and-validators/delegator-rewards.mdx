@@ -1,0 +1,52 @@
+---
+title: "Delegator rewards"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Delegator rewards
+
+Returns a user's delegation and commission reward history.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `delegatorRewards`.    |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "delegatorRewards",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field            | Type    | Description                                                |
+| ---------------- | ------- | ---------------------------------------------------------- |
+| `[]`             | array   | Reward records for the requested delegator.                |
+| `[].time`        | integer | Reward-record timestamp in milliseconds.                   |
+| `[].source`      | string  | Reward category, for example `delegation` or `commission`. |
+| `[].totalAmount` | string  | Reward amount.                                             |
+
+## Response example
+
+```json
+[
+  {
+    "time": 1736726400073,
+    "source": "delegation",
+    "totalAmount": "0.73117184"
+  },
+  {
+    "time": 1736726400073,
+    "source": "commission",
+    "totalAmount": "130.76445876"
+  }
+]
+```

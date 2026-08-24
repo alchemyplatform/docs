@@ -29,7 +29,7 @@ The stateful market-data streams use two recovery models. This taxonomy does not
 
 **Incremental streams** — `l2BookDiff`, `l4BookUpdates`, and `tpslUpdates`. Messages carry changes that chain onto previous state. These carry a cursor and support replay.
 
-> A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state. If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you — there is no separate resynchronization message and no epoch to track.
+> A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state. If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you. `isSnapshot` is the only continuity signal you need to handle — receiving it means discard local state and adopt the supplied snapshot.
 
 ## Detecting gaps
 

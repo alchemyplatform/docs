@@ -1,0 +1,114 @@
+---
+title: "Perpetual metadata and asset contexts"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Perpetual metadata and asset contexts
+
+Returns perpetual metadata and aligned live market contexts; use it to read the current oracle price alongside mark and mid prices.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                                           |
+| --------- | ------ | -------- | ----------------------------------------------------- |
+| `type`    | string | Yes      | Selects `metaAndAssetCtxs`.                           |
+| `dex`     | string | No       | Perpetual DEX name; omit for the first perpetual DEX. |
+
+```json
+{
+  "type": "metaAndAssetCtxs",
+  "dex": ""
+}
+```
+
+## Response fields
+
+| Field                        | Type           | Description                                                                               |
+| ---------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| `[0]`                        | object         | Metadata object at tuple index 0.                                                         |
+| `[0].universe[]`             | array          | Ordered perpetual market definitions aligned to context entries.                          |
+| `[0].universe[].name`        | string         | Perpetual market symbol, for example `BTC`.                                               |
+| `[0].universe[].szDecimals`  | integer        | Number of decimal places accepted for order sizes.                                        |
+| `[0].universe[].maxLeverage` | integer        | Maximum leverage permitted for the market.                                                |
+| `[0].marginTables`           | array          | Leverage-tier definitions referenced by `marginTableId`.                                  |
+| `[0].collateralToken`        | integer        | Spot-token index used as collateral.                                                      |
+| `[1]`                        | array          | Aligned asset-context array at tuple index 1.                                             |
+| `[1][].dayNtlVlm`            | string         | Rolling 24-hour notional trading volume.                                                  |
+| `[1][].funding`              | string         | Current funding rate for the market.                                                      |
+| `[1][].impactPxs`            | array \| null  | Estimated prices for market-impact calculations on each side, or `null` when unavailable. |
+| `[1][].markPx`               | string         | Current mark price used for margin and unrealized PnL.                                    |
+| `[1][].midPx`                | string \| null | Current midpoint between the best bid and ask, or `null` without both sides.              |
+| `[1][].openInterest`         | string         | Total open position size, as a decimal string.                                            |
+| `[1][].oraclePx`             | string         | Current external oracle price used by the market.                                         |
+| `[1][].premium`              | string \| null | Mark-price premium relative to the oracle price, or `null` when unavailable.              |
+| `[1][].prevDayPx`            | string         | Market price approximately 24 hours earlier.                                              |
+
+## Response example
+
+<Tabs>
+<Tab title="First perpetual DEX">
+
+```json
+[
+  {
+    "universe": [{ "name": "BTC", "szDecimals": 5, "maxLeverage": 50 }],
+    "marginTables": [],
+    "collateralToken": 0
+  },
+  [
+    {
+      "dayNtlVlm": "1169046.29406",
+      "funding": "0.0000125",
+      "impactPxs": ["14.3047", "14.3444"],
+      "markPx": "14.3161",
+      "midPx": "14.314",
+      "openInterest": "688.11",
+      "oraclePx": "14.32",
+      "premium": "0.00031774",
+      "prevDayPx": "15.322"
+    }
+  ]
+]
+```
+
+</Tab>
+<Tab title="HIP-3 DEX">
+
+```json
+[
+  {
+    "universe": [
+      {
+        "name": "xyz:XYZ100",
+        "szDecimals": 4,
+        "maxLeverage": 20,
+        "marginTableId": 20,
+        "onlyIsolated": true
+      }
+    ],
+    "marginTables": [],
+    "collateralToken": 0
+  },
+  [
+    {
+      "funding": "0.0002110251",
+      "openInterest": "0.0854",
+      "prevDayPx": "25956.0",
+      "dayNtlVlm": "462.9758",
+      "premium": "0.0031136686",
+      "oraclePx": "25372.0",
+      "markPx": "25451.0",
+      "midPx": "25451.0",
+      "impactPxs": ["24946.0", "25956.0"],
+      "dayBaseVlm": "0.0183"
+    }
+  ]
+]
+```
+
+</Tab>
+</Tabs>

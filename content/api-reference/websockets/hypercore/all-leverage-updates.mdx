@@ -7,7 +7,7 @@ description: "HyperCore private-preview documentation."
 
 # allLeverageUpdates stream
 
-Carries leverage-setting updates across the available stream scope.
+Streams leverage, isolated-margin, and isolated-margin top-up updates across users.
 
 ## Subscribe
 
@@ -19,16 +19,53 @@ Carries leverage-setting updates across the available stream scope.
   }
 }
 ```
-## Acknowledgement
+
+## Event envelope
 
 ```json
 {
-  "channel": "subscriptionResponse",
-  "data": {
-    "type": "allLeverageUpdates"
-  }
+  "type": "allLeverageUpdates",
+  "channel": "allLeverageUpdates",
+  "seq": 1,
+  "cursor": 1704067200000,
+  "updates": [{
+    "update_type": "leverage",
+    "time": 1704067200000,
+    "user": "0x1111111111111111111111111111111111111111",
+    "coin": "ETH",
+    "is_cross": true,
+    "leverage": 10,
+    "tx_index": 0
+  }]
 }
 ```
+
+The stream also emits isolated_margin records with is_buy and ntli, and top_up_isolated_margin records with target_leverage.
+
+## Payload fields
+
+| Field | Type | Description | Source tier |
+| --- | --- | --- | --- |
+| type | string | Event type. | Extended-provider |
+| channel | string | Routing channel for the event. | Extended-provider |
+| seq | integer | Monotonic sequence number for the stream. | Extended-provider |
+| cursor | integer | Resume cursor for the event position. | Extended-provider |
+| updates | array | Leverage-setting update records. | Extended-provider |
+| updates[] | object | Leverage, isolated-margin, or isolated-margin top-up record. | Extended-provider |
+| updates[].update_type | string | Update discriminator: leverage, isolated_margin, or top_up_isolated_margin. | Extended-provider |
+| updates[].time | integer | Event time in milliseconds. | Extended-provider |
+| updates[].user | string | Address whose setting changed. | Extended-provider |
+| updates[].coin | string | Market identifier. | Extended-provider |
+| updates[].is_cross | boolean | Whether a leverage update uses cross margin. | Extended-provider |
+| updates[].leverage | integer | Leverage setting for a leverage update. | Extended-provider |
+| updates[].is_buy | boolean | Isolated-margin side for an isolated_margin update. | Extended-provider |
+| updates[].ntli | string | Isolated-margin notional value for an isolated_margin update. | Extended-provider |
+| updates[].target_leverage | string | Target leverage for a top_up_isolated_margin update. | Extended-provider |
+| updates[].tx_index | integer | Index of the transaction within its block. | Extended-provider |
+
+## Behavior
+
+The stream batches update records. The cursor identifies the event position for resumption.
 
 ## Unsubscribe
 
@@ -41,9 +78,6 @@ Carries leverage-setting updates across the available stream scope.
 }
 ```
 
-## Payload schema
-
-The payload schema is pending engineering confirmation.
 ## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply cursor in the subscription object. Store and return the cursor unmodified.

@@ -1,0 +1,52 @@
+---
+title: "Non-funding ledger updates"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Non-funding ledger updates
+
+Returns deposits, transfers, withdrawals, and other non-funding ledger activity over a time range.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter   | Type    | Required | Description                                                       |
+| ----------- | ------- | -------- | ----------------------------------------------------------------- |
+| `type`      | string  | Yes      | Selects `userNonFundingLedgerUpdates`.                            |
+| `user`      | string  | Yes      | Master or sub-account address.                                    |
+| `startTime` | integer | Yes      | Inclusive start time in milliseconds.                             |
+| `endTime`   | integer | No       | Inclusive end time in milliseconds; defaults to the current time. |
+
+```json
+{
+  "type": "userNonFundingLedgerUpdates",
+  "user": "0x0000000000000000000000000000000000000000",
+  "startTime": 1735689600000,
+  "endTime": 1735776000000
+}
+```
+
+## Response fields
+
+| Field           | Type    | Description                                              |
+| --------------- | ------- | -------------------------------------------------------- |
+| `[]`            | array   | Non-funding ledger events for the requested time range.  |
+| `[].delta`      | object  | Event-specific payload; use `type` to select its schema. |
+| `[].delta.type` | string  | Ledger event kind that determines the `delta` shape.     |
+| `[].hash`       | string  | Transaction hash that recorded the ledger event.         |
+| `[].time`       | integer | Millisecond timestamp of the ledger event.               |
+
+## Response example
+
+```json
+[
+  {
+    "delta": { "type": "deposit", "usdc": "100.0" },
+    "hash": "0xa166e3fa63c25663024b03f2e0da011a00307e4017465df020210d3d432e7cb8",
+    "time": 1681222254710
+  }
+]
+```

@@ -1,0 +1,65 @@
+---
+title: "Spot metadata"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Spot metadata
+
+Returns spot token and spot-pair definitions.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description         |
+| --------- | ------ | -------- | ------------------- |
+| `type`    | string | Yes      | Selects `spotMeta`. |
+
+```json
+{
+  "type": "spotMeta"
+}
+```
+
+## Response fields
+
+| Field                    | Type           | Description                                               |
+| ------------------------ | -------------- | --------------------------------------------------------- |
+| `tokens[]`               | array          | Spot-token definitions used by spot-pair entries.         |
+| `tokens[].name`          | string         | Spot-token symbol, for example `USDC`.                    |
+| `tokens[].szDecimals`    | integer        | Number of decimal places accepted for order sizes.        |
+| `tokens[].weiDecimals`   | integer        | Decimal places in the token’s smallest unit.              |
+| `tokens[].index`         | integer        | Zero-based index used to reference this token.            |
+| `tokens[].tokenId`       | string         | Onchain identifier assigned to the spot token.            |
+| `tokens[].isCanonical`   | boolean        | Whether this token is in the canonical spot universe.     |
+| `tokens[].evmContract`   | string \| null | EVM contract address, or `null` when none is assigned.    |
+| `tokens[].fullName`      | string \| null | Full token name, or `null` when not supplied.             |
+| `universe[]`             | array          | Ordered spot-pair definitions.                            |
+| `universe[].name`        | string         | Spot-pair symbol, for example `PURR/USDC`.                |
+| `universe[].tokens`      | array          | Indices of the base and quote tokens in the token list.   |
+| `universe[].index`       | integer        | Pair index used in the `@{index}` spot identifier.        |
+| `universe[].isCanonical` | boolean        | Whether this pair belongs to the canonical spot universe. |
+
+## Response example
+
+```json
+{
+  "tokens": [
+    {
+      "name": "USDC",
+      "szDecimals": 8,
+      "weiDecimals": 8,
+      "index": 0,
+      "tokenId": "0x6d1e7cde53ba9467b783cb7c530ce054",
+      "isCanonical": true,
+      "evmContract": null,
+      "fullName": null
+    }
+  ],
+  "universe": [
+    { "name": "PURR/USDC", "tokens": [1, 0], "index": 0, "isCanonical": true }
+  ]
+}
+```

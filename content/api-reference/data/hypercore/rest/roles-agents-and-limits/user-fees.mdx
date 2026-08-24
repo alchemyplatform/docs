@@ -1,0 +1,94 @@
+---
+title: "User fees"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# User fees
+
+Returns an account's fee schedule, current rates, and daily volume history.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `type`    | string | Yes      | Selects `userFees`.            |
+| `user`    | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "userFees",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field                                | Type            | Description                                                          |
+| ------------------------------------ | --------------- | -------------------------------------------------------------------- |
+| `dailyUserVlm[]`                     | array           | Daily user and exchange volume buckets.                              |
+| `dailyUserVlm[].date`                | string          | UTC calendar date for this volume bucket.                            |
+| `dailyUserVlm[].userCross`           | string          | User taker notional volume for the UTC day.                          |
+| `dailyUserVlm[].userAdd`             | string          | User maker notional volume for the UTC day.                          |
+| `dailyUserVlm[].exchange`            | string          | Exchange-wide notional volume for the same UTC day.                  |
+| `feeSchedule`                        | object          | Base rates and volume-tier adjustments that determine user fees.     |
+| `feeSchedule.cross`                  | string          | Base perpetual taker fee rate as a decimal fraction.                 |
+| `feeSchedule.add`                    | string          | Base perpetual maker fee rate as a decimal fraction.                 |
+| `feeSchedule.spotCross`              | string          | Base spot taker fee rate as a decimal fraction.                      |
+| `feeSchedule.spotAdd`                | string          | Base spot maker fee rate as a decimal fraction.                      |
+| `feeSchedule.tiers`                  | object          | VIP and market-maker tiers that adjust the base fee rates.           |
+| `feeSchedule.referralDiscount`       | string          | Referral discount fraction available to eligible users.              |
+| `feeSchedule.stakingDiscountTiers[]` | array           | Staking thresholds and associated fee-discount fractions.            |
+| `userCrossRate`                      | string          | Current perpetual taker fee rate after applicable discounts.         |
+| `userAddRate`                        | string          | Current perpetual maker fee rate after applicable discounts.         |
+| `userSpotCrossRate`                  | string          | Current spot taker fee rate after applicable discounts.              |
+| `userSpotAddRate`                    | string          | Current spot maker fee rate after applicable discounts.              |
+| `activeReferralDiscount`             | string          | Referral discount fraction currently applied to user fees.           |
+| `trial`                              | object \| null  | Fee-trial details, or `null` when no trial applies.                  |
+| `feeTrialReward`                     | string          | Fee-trial reward amount, as a decimal string.                        |
+| `nextTrialAvailableTimestamp`        | integer \| null | Time in milliseconds when another trial may be available, or `null`. |
+| `stakingLink`                        | object          | Link between this account and its staking account.                   |
+| `activeStakingDiscount`              | object          | Staking-based discount currently applied to user fees.               |
+
+## Response example
+
+```json
+{
+  "dailyUserVlm": [
+    {
+      "date": "2025-05-23",
+      "userCross": "0.0",
+      "userAdd": "0.0",
+      "exchange": "2852367.0770729999"
+    }
+  ],
+  "feeSchedule": {
+    "cross": "0.00045",
+    "add": "0.00015",
+    "spotCross": "0.0007",
+    "spotAdd": "0.0004",
+    "tiers": { "vip": [] },
+    "referralDiscount": "0.04",
+    "stakingDiscountTiers": []
+  },
+  "userCrossRate": "0.000315",
+  "userAddRate": "0.000105",
+  "userSpotCrossRate": "0.00049",
+  "userSpotAddRate": "0.00028",
+  "activeReferralDiscount": "0.0",
+  "trial": null,
+  "feeTrialReward": "0.0",
+  "nextTrialAvailableTimestamp": null,
+  "stakingLink": {
+    "type": "tradingUser",
+    "stakingUser": "0x54c049d9c7d3c92c2462bf3d28e083f3d6805061"
+  },
+  "activeStakingDiscount": {
+    "bpsOfMaxSupply": "4.7577998927",
+    "discount": "0.3"
+  }
+}
+```

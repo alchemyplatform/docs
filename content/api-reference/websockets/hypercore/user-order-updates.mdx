@@ -8,21 +8,19 @@ description: "HyperCore private-preview documentation."
 # userOrderUpdates stream
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
 {
   "method": "subscribe",
   "subscription": {
     "type": "userOrderUpdates",
-    "users": [
-      "0x1111111111111111111111111111111111111111"
-    ]
+    "users": ["0x1111111111111111111111111111111111111111"]
   }
 }
 ```
 
 ## Acknowledgement
+
 ```json
 {
   "channel": "subscriptionResponse",
@@ -43,50 +41,80 @@ description: "HyperCore private-preview documentation."
   "blockTime": 1780000000000,
   "cursor": "<opaque cursor>",
   "data": {
-    "orders": [
-      {
-        "user": "0x1111111111111111111111111111111111111111",
-        "orderId": "12345",
+    "orders": [{
+      "time": "2024-01-01T00:00:00.000000000",
+      "user": "0x1111111111111111111111111111111111111111",
+      "hash": "0xabc...def",
+      "builder": { "b": "0x2222222222222222222222222222222222222222", "f": 100 },
+      "status": "open",
+      "txIndex": 3,
+      "statusTimestamp": 1780000000000,
+      "order": {
+        "oid": 12345,
         "coin": "BTC",
         "side": "B",
-        "limitPrice": "100000.0",
+        "limitPx": "100000.0",
         "sz": "0.10",
-        "status": "open",
-        "filledSize": "0"
+        "timestamp": 1780000000000,
+        "triggerCondition": "N/A",
+        "isTrigger": false,
+        "triggerPx": "0.0",
+        "children": [],
+        "isPositionTpsl": false,
+        "reduceOnly": false,
+        "orderType": "Limit",
+        "origSz": "0.10",
+        "tif": "Gtc",
+        "cloid": null
       }
-    ]
+    }]
   }
 }
 ```
 
 ## Payload fields
 
-The payload shape is proposed.
+| Field | Type | Description | Source tier |
+| --- | --- | --- | --- |
+| orders | array | Order status records. | Our own choice |
+| orders[] | object | Order status record. | Our own choice |
+| orders[].time | string | Time the node recorded the order-status event. | Foundation-native |
+| orders[].user | string | User identifier. | Foundation-native |
+| orders[].hash | string | Transaction hash associated with the update. | Extended-provider |
+| orders[].builder | object | Builder metadata for the update, containing the builder address and fee rate. | Extended-provider |
+| orders[].status | string | Current state of the order. | Foundation-native |
+| orders[].txIndex | integer | Index of the transaction within its block. | Extended-provider |
+| orders[].statusTimestamp | integer | Milliseconds timestamp for the status update. | Foundation-native |
+| orders[].order | object | Order fields. | Foundation-native |
+| orders[].order.oid | integer | Identifier assigned to the order. | Foundation-native |
+| orders[].order.coin | string | Market symbol for the order. | Foundation-native |
+| orders[].order.side | string | Side code: A is ask/sell; B is bid/buy. | Foundation-native |
+| orders[].order.limitPx | string | Limit price for the order. | Foundation-native |
+| orders[].order.sz | string | Filled size for the order status. | Foundation-native |
+| orders[].order.timestamp | integer | Milliseconds timestamp when the order was created. | Foundation-native |
+| orders[].order.triggerCondition | string | Condition that controls trigger-order execution. | Foundation-native |
+| orders[].order.isTrigger | boolean | Whether the order is a trigger order. | Foundation-native |
+| orders[].order.triggerPx | string | Price that activates a trigger order. | Foundation-native |
+| orders[].order.children | array | Child orders associated with the order. | Foundation-native |
+| orders[].order.isPositionTpsl | boolean | Whether the order is a position take-profit or stop-loss order. | Foundation-native |
+| orders[].order.reduceOnly | boolean | Whether execution can only reduce the position. | Foundation-native |
+| orders[].order.orderType | string | Order type. | Foundation-native |
+| orders[].order.origSz | string | Original order size. | Foundation-native |
+| orders[].order.tif | string | Time-in-force instruction. | Foundation-native |
+| orders[].order.cloid | string \| null | Client-supplied order identifier, when present. | Foundation-native |
 
-| Field | Type | Description |
-| --- | --- | --- |
-| orders | array | Order records. |
-| orders[] | object | Order records. |
-| orders[].user | string | User identifier. |
-| orders[].orderId | string | Illustrative orderId value. |
-| orders[].coin | string | Market identifier. |
-| orders[].side | string | Side code: A is ask/sell; B is bid/buy. |
-| orders[].limitPrice | string | Illustrative limitPrice value. |
-| orders[].sz | string | Size value. |
-| orders[].status | string | Illustrative status value. |
-| orders[].filledSize | string | Illustrative filledSize value. |
 ## Unsubscribe
+
 ```json
 {
   "method": "unsubscribe",
   "subscription": {
     "type": "userOrderUpdates",
-    "users": [
-      "0x1111111111111111111111111111111111111111"
-    ]
+    "users": ["0x1111111111111111111111111111111111111111"]
   }
 }
 ```
+
 ## Resume
 
-To resume a stream, supply `cursor` in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+To resume a stream, supply cursor in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.

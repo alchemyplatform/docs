@@ -1,0 +1,69 @@
+---
+title: "Frontend open orders"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Frontend open orders
+
+Returns open orders with trigger, reduce-only, and order-type details used by trading interfaces.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                                           |
+| --------- | ------ | -------- | ----------------------------------------------------- |
+| `type`    | string | Yes      | Selects `frontendOpenOrders`.                         |
+| `user`    | string | Yes      | Master or sub-account address.                        |
+| `dex`     | string | No       | Perpetual DEX name; omit for the first perpetual DEX. |
+
+```json
+{
+  "type": "frontendOpenOrders",
+  "user": "0x0000000000000000000000000000000000000000",
+  "dex": ""
+}
+```
+
+## Response fields
+
+| Field                 | Type    | Description                                             |
+| --------------------- | ------- | ------------------------------------------------------- |
+| `[]`                  | array   | Open-order entries.                                     |
+| `[].coin`             | string  | Market identifier.                                      |
+| `[].isPositionTpsl`   | boolean | Whether the order applies to an entire position.        |
+| `[].isTrigger`        | boolean | Whether this is a conditional trigger order.            |
+| `[].limitPx`          | string  | Limit price, as a decimal string.                       |
+| `[].oid`              | integer | Order identifier.                                       |
+| `[].orderType`        | string  | Order instruction, such as limit or trigger order.      |
+| `[].origSz`           | string  | Original order size before fills or reductions.         |
+| `[].reduceOnly`       | boolean | Whether execution may only reduce an existing position. |
+| `[].side`             | string  | `B` for a bid or `A` for an ask.                        |
+| `[].sz`               | string  | Size.                                                   |
+| `[].timestamp`        | integer | Millisecond time when the order was created.            |
+| `[].triggerCondition` | string  | Price condition that activates the trigger order.       |
+| `[].triggerPx`        | string  | Price threshold that activates the trigger order.       |
+
+## Response example
+
+```json
+[
+  {
+    "coin": "BTC",
+    "isPositionTpsl": false,
+    "isTrigger": false,
+    "limitPx": "29792.0",
+    "oid": 91490942,
+    "orderType": "Limit",
+    "origSz": "5.0",
+    "reduceOnly": false,
+    "side": "A",
+    "sz": "5.0",
+    "timestamp": 1681247412573,
+    "triggerCondition": "N/A",
+    "triggerPx": "0.0"
+  }
+]
+```

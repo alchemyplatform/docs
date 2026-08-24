@@ -1,0 +1,56 @@
+---
+title: "Settled outcome"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Settled outcome
+
+Returns the specification and settlement details for one outcome identifier.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type    | Required | Description               |
+| --------- | ------- | -------- | ------------------------- |
+| `type`    | string  | Yes      | Selects `settledOutcome`. |
+| `outcome` | integer | Yes      | Outcome identifier.       |
+
+```json
+{
+  "type": "settledOutcome",
+  "outcome": 95
+}
+```
+
+## Response fields
+
+| Field                   | Type    | Description                                       |
+| ----------------------- | ------- | ------------------------------------------------- |
+| `spec`                  | object  | Configuration that defined the settled outcome.   |
+| `spec.outcome`          | integer | Numeric identifier of the settled outcome market. |
+| `spec.name`             | string  | Displayed title of the settled outcome.           |
+| `spec.description`      | string  | Human-readable wording of the outcome question.   |
+| `spec.sideSpecs[]`      | array   | Allowed outcome sides at settlement.              |
+| `spec.sideSpecs[].name` | string  | Display label for that selectable side.           |
+| `spec.quoteToken`       | string  | Token used to quote the outcome market.           |
+| `settleFraction`        | string  | Settlement fraction.                              |
+| `details`               | string  | Supporting information used for settlement.       |
+
+## Response example
+
+```json
+{
+  "spec": {
+    "outcome": 95,
+    "name": "Recurring",
+    "description": "class:priceBinary|underlying:BTC|expiry:20260526-0600|targetPrice:77363|period:1d",
+    "sideSpecs": [{ "name": "Yes" }, { "name": "No" }],
+    "quoteToken": "USDC"
+  },
+  "settleFraction": "0.0",
+  "details": "price:76876.9"
+}
+```

@@ -1,0 +1,64 @@
+---
+title: "Spot metadata and asset contexts"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Spot metadata and asset contexts
+
+Returns spot metadata with the aligned current context for each spot pair.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                     |
+| --------- | ------ | -------- | ------------------------------- |
+| `type`    | string | Yes      | Selects `spotMetaAndAssetCtxs`. |
+
+```json
+{
+  "type": "spotMetaAndAssetCtxs"
+}
+```
+
+## Response fields
+
+| Field                      | Type    | Description                                               |
+| -------------------------- | ------- | --------------------------------------------------------- |
+| `[0]`                      | object  | Metadata object at tuple index 0.                         |
+| `[0].tokens[]`             | array   | Spot-token definitions used by the pair universe.         |
+| `[0].tokens[].name`        | string  | Spot-token symbol, for example `USDC`.                    |
+| `[0].tokens[].szDecimals`  | integer | Number of decimal places accepted for order sizes.        |
+| `[0].tokens[].weiDecimals` | integer | Decimal places in the token’s smallest unit.              |
+| `[0].tokens[].index`       | integer | Zero-based index used to reference this token or pair.    |
+| `[0].universe[]`           | array   | Ordered spot-pair definitions aligned to context entries. |
+| `[0].universe[].name`      | string  | Spot-pair symbol, for example `PURR/USDC`.                |
+| `[0].universe[].tokens`    | array   | Indices of the base and quote tokens in the token list.   |
+| `[1]`                      | array   | Aligned asset-context array at tuple index 1.             |
+| `[1][].dayNtlVlm`          | string  | Rolling 24-hour notional trading volume.                  |
+| `[1][].markPx`             | string  | Current mark price for the spot pair.                     |
+| `[1][].midPx`              | string  | Current midpoint between the best bid and ask.            |
+| `[1][].prevDayPx`          | string  | Market price approximately 24 hours earlier.              |
+
+## Response example
+
+```json
+[
+  {
+    "tokens": [
+      { "name": "USDC", "szDecimals": 8, "weiDecimals": 8, "index": 0 }
+    ],
+    "universe": [{ "name": "PURR/USDC", "tokens": [1, 0] }]
+  },
+  [
+    {
+      "dayNtlVlm": "8906.0",
+      "markPx": "0.14",
+      "midPx": "0.209265",
+      "prevDayPx": "0.20432"
+    }
+  ]
+]
+```

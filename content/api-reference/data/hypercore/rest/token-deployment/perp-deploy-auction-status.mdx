@@ -1,0 +1,46 @@
+---
+title: "Perpetual deployment auction status"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Perpetual deployment auction status
+
+Returns the current perpetual deployment auction state.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                        |
+| --------- | ------ | -------- | ---------------------------------- |
+| `type`    | string | Yes      | Selects `perpDeployAuctionStatus`. |
+
+```json
+{
+  "type": "perpDeployAuctionStatus"
+}
+```
+
+## Response fields
+
+| Field              | Type           | Description                                                  |
+| ------------------ | -------------- | ------------------------------------------------------------ |
+| `startTimeSeconds` | integer        | Unix time in seconds when the auction starts.                |
+| `durationSeconds`  | integer        | Length of the auction window in seconds.                     |
+| `startGas`         | string         | Opening auction gas price in HYPE.                           |
+| `currentGas`       | string \| null | Current auction gas price, or `null` before it is available. |
+| `endGas`           | string \| null | Auction end gas price, or `null` while the auction is open.  |
+
+## Response example
+
+```json
+{
+  "startTimeSeconds": 1747656000,
+  "durationSeconds": 111600,
+  "startGas": "500.0",
+  "currentGas": "500.0",
+  "endGas": null
+}
+```

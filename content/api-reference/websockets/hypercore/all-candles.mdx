@@ -7,10 +7,9 @@ description: "HyperCore private-preview documentation."
 
 # allCandles stream
 
-Multi-interval delivery and per-subscription interval limits are still being finalized to ensure reliable delivery at high event volumes.
+Streams candles for the requested markets and intervals.
 
 ## Subscribe
-> The values below illustrate the intended request shape.
 
 ```json
 {
@@ -51,11 +50,15 @@ Multi-interval delivery and per-subscription interval limits are still being fin
     "interval": "1m",
     "candles": [
       {
-        "coin": "BTC",
-        "openTime": 1780000000000,
-        "close": "100005.0",
-        "volume": "12.4",
-        "isFinal": false
+        "s": "BTC",
+        "t": 1780000000000,
+        "T": 1780000059999,
+        "o": "100000.0",
+        "h": "100010.0",
+        "l": "99995.0",
+        "c": "100005.0",
+        "v": "12.4",
+        "x": false
       }
     ]
   }
@@ -64,18 +67,20 @@ Multi-interval delivery and per-subscription interval limits are still being fin
 
 ## Payload fields
 
-The payload shape is proposed.
-
 | Field | Type | Description |
 | --- | --- | --- |
 | interval | string | Candle interval. |
 | candles | array | Candle records. |
 | candles[] | object | Candle records. |
-| candles[].coin | string | Market identifier. |
-| candles[].openTime | integer | Illustrative openTime value. |
-| candles[].close | string | Illustrative close value. |
-| candles[].volume | string | Illustrative volume value. |
-| candles[].isFinal | boolean | Finality indicator. |
+| candles[].s | string | Market symbol for the candle. |
+| candles[].t | integer | Start time of the candle interval, in milliseconds. |
+| candles[].T | integer | End time of the candle interval, in milliseconds. |
+| candles[].o | string | Opening price for the candle interval. |
+| candles[].h | string | Highest traded price in the candle interval. |
+| candles[].l | string | Lowest traded price in the candle interval. |
+| candles[].c | string | Closing price for the candle interval. |
+| candles[].v | string | Volume traded in the base asset during the candle interval. |
+| candles[].x | boolean | Whether the candle is final. |
 ## Unsubscribe
 ```json
 {

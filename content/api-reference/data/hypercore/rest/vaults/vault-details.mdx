@@ -1,0 +1,92 @@
+---
+title: "Vault details"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Vault details
+
+Returns a vault's configuration, performance history, and follower state.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter      | Type   | Required | Description                    |
+| -------------- | ------ | -------- | ------------------------------ |
+| `type`         | string | Yes      | Selects `vaultDetails`.        |
+| `vaultAddress` | string | Yes      | Vault address.                 |
+| `user`         | string | Yes      | Master or sub-account address. |
+
+```json
+{
+  "type": "vaultDetails",
+  "vaultAddress": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+  "user": "0x0000000000000000000000000000000000000000"
+}
+```
+
+## Response fields
+
+| Field                                | Type           | Description                                                         |
+| ------------------------------------ | -------------- | ------------------------------------------------------------------- |
+| `name`                               | string         | Display name assigned to the vault.                                 |
+| `vaultAddress`                       | string         | Onchain address that identifies the vault.                          |
+| `leader`                             | string         | Address authorized to manage the vault's positions.                 |
+| `description`                        | string         | Vault-provided summary for prospective followers.                   |
+| `portfolio`                          | array          | Performance history by interval.                                    |
+| `portfolio[][0]`                     | string         | Time interval label for the paired performance data.                |
+| `portfolio[][1].accountValueHistory` | array          | Timestamped account-value observations for that interval.           |
+| `portfolio[][1].pnlHistory`          | array          | Timestamped profit-and-loss observations for that interval.         |
+| `portfolio[][1].vlm`                 | string         | Trading volume recorded for that interval as a decimal string.      |
+| `apr`                                | number         | Annualized return.                                                  |
+| `followerState`                      | object \| null | Follower state for the requesting user, or `null` when none exists. |
+| `leaderFraction`                     | number         | Fraction of vault equity owned by the vault leader.                 |
+| `leaderCommission`                   | number         | Fraction of follower profit charged as leader commission.           |
+| `followers[]`                        | array          | Accounts with an equity position in the vault.                      |
+| `followers[].user`                   | string         | Address of the account following the vault.                         |
+| `followers[].vaultEquity`            | string         | Follower's vault equity as a decimal string.                        |
+| `followers[].pnl`                    | string         | Follower profit and loss for the current reporting period.          |
+| `followers[].allTimePnl`             | string         | Follower cumulative profit and loss since joining.                  |
+| `followers[].daysFollowing`          | integer        | Whole days since the account began following the vault.             |
+| `followers[].vaultEntryTime`         | integer        | Time in milliseconds when the follower entered the vault.           |
+| `followers[].lockupUntil`            | integer        | Time in milliseconds before which the follower cannot withdraw.     |
+| `maxDistributable`                   | number         | Maximum amount currently available for distribution.                |
+| `maxWithdrawable`                    | number         | Maximum amount currently available for withdrawal.                  |
+| `isClosed`                           | boolean        | Whether the vault is closed.                                        |
+| `relationship`                       | object         | Vault relationship metadata, such as its parent or child links.     |
+| `allowDeposits`                      | boolean        | Whether deposits are allowed.                                       |
+| `alwaysCloseOnWithdraw`              | boolean        | Whether withdrawals close positions.                                |
+
+## Response example
+
+```json
+{
+  "name": "Test",
+  "vaultAddress": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+  "leader": "0x677d831aef5328190852e24f13c46cac05f984e7",
+  "description": "Community-owned vault",
+  "portfolio": [
+    [
+      "day",
+      {
+        "accountValueHistory": [[1734397526634, "329265410.90790099"]],
+        "pnlHistory": [[1734397526634, "0.0"]],
+        "vlm": "0.0"
+      }
+    ]
+  ],
+  "apr": 0.36387129259090006,
+  "followerState": null,
+  "leaderFraction": 0.0007904828725729887,
+  "leaderCommission": 0,
+  "followers": [],
+  "maxDistributable": 94856870.164485,
+  "maxWithdrawable": 742557.680863,
+  "isClosed": false,
+  "relationship": { "type": "parent", "data": { "childAddresses": [] } },
+  "allowDeposits": true,
+  "alwaysCloseOnWithdraw": false
+}
+```

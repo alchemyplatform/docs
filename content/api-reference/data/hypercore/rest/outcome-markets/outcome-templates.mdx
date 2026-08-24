@@ -1,0 +1,51 @@
+---
+title: "Outcome templates"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Outcome templates
+
+Returns registered outcome templates for HIP-4 deployment planning.
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type   | Required | Description                 |
+| --------- | ------ | -------- | --------------------------- |
+| `type`    | string | Yes      | Selects `outcomeTemplates`. |
+
+```json
+{
+  "type": "outcomeTemplates"
+}
+```
+
+## Response fields
+
+| Field            | Type    | Description                                             |
+| ---------------- | ------- | ------------------------------------------------------- |
+| `[]`             | array   | Outcome-template entries.                               |
+| `[].id`          | integer | Numeric identifier used when selecting the template.    |
+| `[].role`        | string  | Role the template configures for an outcome deployment. |
+| `[].name`        | string  | Human-readable label shown for the template.            |
+| `[].description` | string  | Human-readable explanation of the template's purpose.   |
+| `[].keywords`    | array   | Search terms associated with the template.              |
+
+## Response example
+
+```json
+[
+  {
+    "id": 1,
+    "role": "creator",
+    "name": "Price binary",
+    "description": "A binary price outcome template.",
+    "keywords": ["price", "binary"]
+  }
+]
+```
+
+Mainnet returned an empty list in the capture. The populated shape above was observed on testnet, where permissionless HIP-4 deployment is available. For deployment context, see [Deploying Hyperliquid markets](/docs/chains/deploying-markets).
