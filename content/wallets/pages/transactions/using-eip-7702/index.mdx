@@ -9,17 +9,13 @@ slug: wallets/transactions/using-eip-7702
 <Note>
   **EIP-7702 support on Monad**
 
-  Monad protects consensus-time balance checks on inflight transactions by
-  reserving 10 MON per EOA. Delegation breaks the invariant that only the EOA
-  itself can reduce its own balance, so this reserve can't be safely skipped
-  for delegated accounts the way it can for plain EOAs. As a result, any
-  transaction that would drop a 7702-delegated account's balance below 10 MON
-  reverts, unless the balance is left unchanged or increased. In practice,
-  this means a delegated account can only transfer MON out in a UserOperation
-  while its balance stays at `0 MON` or at least `10 MON` - gas-sponsored
-  UserOperations that don't transfer MON aren't affected. See
-  [Monad's EIP-7702 docs](https://docs.monad.xyz/developer-essentials/eip-7702)
-  for details.
+  Monad keeps a [minimum balance reserve on delegated
+  accounts](https://docs.monad.xyz/developer-essentials/reserve-balance#eip-7702-delegated-accounts)
+  as a safety measure - [a 7702-delegated account can't dip below
+  10 MON](https://docs.monad.xyz/developer-essentials/eip-7702#delegated-eoas-can%E2%80%99t-dip-below-10-mon).
+  In practice, this means a delegated account can only transfer MON out in a
+  UserOperation while its balance stays at `0 MON` or at least `10 MON` -
+  gas-sponsored UserOperations that don't transfer MON aren't affected.
 
   EIP-7702 on Monad is currently allowlisted, and teams must agree to meet
   these balance requirements to be allowlisted. Contact
