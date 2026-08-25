@@ -9,10 +9,6 @@ slug: reference/block-subscribe
   `blockSubscribe` is only available on Alchemy's Solana **streaming** endpoint (`wss://solana-mainnet.streaming.alchemy.com`). It is **not** exposed on the standard `wss://solana-mainnet.g.alchemy.com` WebSocket endpoint, which will return `-32601 Method 'blockSubscribe' not found`.
 </Warning>
 
-<Warning>
-  Solana marks `blockSubscribe` as an **unstable** RPC PubSub subscription. The format of this subscription may change in the future. See the [Solana docs](https://solana.com/docs/rpc/websocket/blocksubscribe) for details.
-</Warning>
-
 The `blockSubscribe` method opens a stream that emits a notification every time a new block is confirmed or finalized. Pair it with [`blockUnsubscribe`](#unsubscribe) to stop receiving notifications.
 
 Block notifications are large: a single confirmed Solana block routinely runs into multiple megabytes (~1&ndash;5 MB per notification with `transactionDetails: "full"`). Filter with `mentionsAccountOrProgram` or reduce payload size with `transactionDetails: "signatures"` / `"none"` whenever possible.
