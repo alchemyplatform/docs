@@ -1,0 +1,146 @@
+---
+title: blockSubscribe
+description: Subscribe to notifications when a new Solana block is confirmed or finalized.
+subtitle: Subscribe to notifications when a new Solana block is confirmed or finalized.
+slug: reference/block-subscribe
+---
+
+<Warning>
+  `blockSubscribe` is only available on Alchemy's Solana **streaming** endpoint (`wss://solana-mainnet.streaming.alchemy.com`). It is **not** exposed on the standard `wss://solana-mainnet.g.alchemy.com` WebSocket endpoint, which will return `-32601 Method 'blockSubscribe' not found`.
+</Warning>
+
+<Warning>
+  Solana marks `blockSubscribe` as an **unstable** RPC PubSub subscription. The format of this subscription may change in the future. See the [Solana docs](https://solana.com/docs/rpc/websocket/blocksubscribe) for details.
+</Warning>
+
+The `blockSubscribe` method opens a stream that emits a notification every time a new block is confirmed or finalized. Pair it with [`blockUnsubscribe`](#unsubscribe) to stop receiving notifications.
+
+Block notifications are large: a single confirmed Solana block routinely runs into multiple megabytes (~1&ndash;5 MB per notification with `transactionDetails: "full"`). Filter with `mentionsAccountOrProgram` or reduce payload size with `transactionDetails: "signatures"` / `"none"` whenever possible.
+
+# Parameters
+
+* `filter`: `string | object` - Filter describing which blocks to receive:
+
+  * `"all"` - Include every transaction in the block.
+  * `{ "mentionsAccountOrProgram": <base58 pubkey> }` - Only include transactions that reference the given account or program. If a block contains no matching transactions, no notification is emitted.
+
+* `config` (optional): `object` - Configuration object containing:
+
+  * `commitment`: `string` - The commitment level. One of `confirmed`, `finalized`. Defaults to `finalized`. `processed` is not supported for this subscription.
+  * `encoding`: `string` - Encoding for account and instruction data. One of `base58`, `base64`, `base64+zstd`, `jsonParsed`. Defaults to `base64`.
+  * `transactionDetails`: `string` - Level of transaction detail to return. One of `full`, `accounts`, `signatures`, `none`. Defaults to `full`.
+  * `maxSupportedTransactionVersion`: `number` - The maximum transaction version to return. Set to `0` to receive versioned transactions. If a block contains a transaction with a higher version and this field is not set, that block's `block` field will be `null` and its `err` field will contain `UnsupportedTransactionVersion`.
+  * `showRewards`: `boolean` - Whether to include the block's `rewards` array. Defaults to `false`.
+
+# Request
+
+<CodeGroup>
+  ```shell wscat
+  // initiate websocket stream against the streaming endpoint
+  wscat -c wss://solana-mainnet.streaming.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
+
+  // then call subscription
+  {"jsonrpc":"2.0","id":1,"method":"blockSubscribe","params":["all",{"commitment":"confirmed","encoding":"base64","transactionDetails":"signatures","showRewards":false,"maxSupportedTransactionVersion":0}]}
+  ```
+
+  ```javascript ws
+  // @solana/web3.js does not wrap blockSubscribe, so use a raw WebSocket.
+  import WebSocket from 'ws'
+
+  const ws = new WebSocket(
+    'wss://solana-mainnet.streaming.alchemy.com/v2/<-- ALCHEMY APP API KEY -->'
+  )
+
+  ws.on('open', () => {
+    ws.send(
+      JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'blockSubscribe',
+        params: [
+          'all',
+          {
+            commitment: 'confirmed',
+            encoding: 'base64',
+            transactionDetails: 'signatures',
+            showRewards: false,
+            maxSupportedTransactionVersion: 0
+          }
+        ]
+      })
+    )
+  })
+
+  ws.on('message', (raw) => {
+    const msg = JSON.parse(raw.toString())
+    if (msg.method === 'blockNotification') {
+      const { slot, block, err } = msg.params.result.value
+      console.log('Block notification at slot', slot, {
+        blockhash: block?.blockhash,
+        parentSlot: block?.parentSlot,
+        txCount: block?.signatures?.length,
+        err
+      })
+    } else {
+      console.log('subscribe response', msg)
+    }
+  })
+  ```
+</CodeGroup>
+
+# Result
+
+<CodeGroup>
+  ```json result
+  // subscribe response
+  {"jsonrpc":"2.0","result":280,"id":1}
+
+  // notification
+  {
+    "jsonrpc": "2.0",
+    "method": "blockNotification",
+    "params": {
+      "subscription": 280,
+      "result": {
+        "context": { "slot": 441702602 },
+        "value": {
+          "slot": 441702602,
+          "block": {
+            "previousBlockhash": "V9999asiQtzKZFRaCqAEYw7uWaaPKbKEo8ujuRBFgPB",
+            "blockhash": "FRR9TCXheEm3Bpu6FcGepMo9KdrtgiCkUm6Ur9Ec2B8S",
+            "parentSlot": 441702601,
+            "signatures": [
+              "39utTm8Wq5sXFPKgqvCvdpm46gQkfkL2hzcza1MU6ziD9Zteb1i38E89PzLwDVwnW4E4i1h7N2ujr4rv4pasH2nt",
+              "3ki2ebyMMPGMhY9ubiwhFaMbeNzv3UXQmRipq9dkG1V57DkxphWc2rzQxTfhuRJr1wY2cZG2Qn4geftGk2fX3wHe",
+              "3xUVBEGsaihVPvUX8XyaD46tyutxzYdHysZ1E54A45JTnE7r2SqA4xTREXFkkkxP4WW9K4dTpWzGbJKjqyW6a3Yg"
+            ],
+            "blockTime": 1787687322,
+            "blockHeight": 419751272
+          },
+          "err": null
+        }
+      }
+    }
+  }
+  ```
+</CodeGroup>
+
+<Info>
+  When `maxSupportedTransactionVersion` is omitted and a block contains a versioned transaction, the notification's `block` field is `null` and `err` is set to `{"UnsupportedTransactionVersion": <version>}`. Include `maxSupportedTransactionVersion: 0` to receive versioned transactions.
+</Info>
+
+# Unsubscribe
+
+Use `blockUnsubscribe` with the subscription id returned by `blockSubscribe` to cancel the stream.
+
+* `subscription_id`: `number` - The subscription id to cancel.
+
+<CodeGroup>
+  ```shell wscat
+  {"jsonrpc":"2.0","id":1,"method":"blockUnsubscribe","params":[subscription_id]}
+  ```
+</CodeGroup>
+
+```json result
+{"jsonrpc":"2.0","result":true,"id":1}
+```
