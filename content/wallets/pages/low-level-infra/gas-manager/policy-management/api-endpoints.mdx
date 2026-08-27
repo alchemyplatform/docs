@@ -1,8 +1,82 @@
 ---
-title: Gas Manager Admin API Endpoints
-description: The Gas Manager Admin API Endpoints allows you to programmatically manage your gas manager policies.
-subtitle: The Gas Manager Admin API Endpoints allows you to programmatically manage your gas manager policies.
+title: Manage gas policies via API
+description: Create, update, and delete gas sponsorship policies programmatically.
+subtitle: Create, update, and delete gas sponsorship policies programmatically.
 slug: wallets/low-level-infra/gas-manager/policy-management/api-endpoints
 ---
 
-<Markdown src="../../../../shared/infra/api-endpoints/gas-manager-policy.mdx" />
+Use the dashboard when you want to create a one-off policy. Use the API when you need to create, update, or disable policies from your own tooling.
+
+Policy requests go to `https://manage.g.alchemy.com` and use an access key with Gas Manager permissions. See [how to create access keys](/docs/how-to-create-access-keys). Endpoint reference lives under [Admin API → Gas Policies](/docs/admin-api/gas-policies/create-policy).
+
+## Dashboard or API
+
+| Task | Dashboard | API |
+| --- | --- | --- |
+| Create a policy and copy a policy ID | Yes | [Create Policy](/docs/admin-api/gas-policies/create-policy) |
+| Edit spend, access, or webhook rules | Yes | [Replace Policy](/docs/admin-api/gas-policies/replace-policy) |
+| Activate or deactivate a policy | Yes | [Update Policy Status](/docs/admin-api/gas-policies/update-policy-status) |
+| List policies for an app | Yes | [Get All Policies](/docs/admin-api/gas-policies/get-all-policies) |
+| Configure a custom ERC-20 token | Limited | [Create Policy](/docs/admin-api/gas-policies/create-policy) — see [pay gas with any token](/docs/wallets/transactions/pay-gas-with-any-token#configure-a-custom-erc-20-token) |
+| Read per-policy stats and sponsorship history | Usage tab | [Get Policy Stats](/docs/admin-api/gas-policies/get-policy-stats), [Get Sponsorships](/docs/admin-api/gas-policies/get-sponsorships) |
+
+Most teams start in the dashboard, then move policy CRUD into the API for automation.
+
+## Create and activate a policy
+
+<Steps>
+  <Step title="Create an access key">
+    Create an access key on the [security tab](https://dashboard.alchemy.com/settings/security) and enable Gas Manager read and write.
+  </Step>
+  <Step title="Create the policy">
+    New policies start as `inactive`. Pass your app ID, policy type, networks, and rules:
+
+    ```bash
+    curl --request POST \
+      --url https://manage.g.alchemy.com/api/gasManager/policy \
+      --header "Authorization: Bearer $ALCHEMY_ACCESS_TOKEN" \
+      --header "Content-Type: application/json" \
+      --data '{
+        "policyName": "Sponsorship policy",
+        "policyType": "sponsorship",
+        "appId": "YOUR_APP_ID",
+        "networks": ["ETH_SEPOLIA"],
+        "rules": {
+          "maxSpendUsd": "100"
+        }
+      }'
+    ```
+
+    Save the returned policy ID. See [Create Policy](/docs/admin-api/gas-policies/create-policy) for the full request body, including `erc20` and `solana` policy types.
+  </Step>
+  <Step title="Activate the policy">
+    ```bash
+    curl --request PUT \
+      --url https://manage.g.alchemy.com/api/gasManager/policy/YOUR_POLICY_ID/status \
+      --header "Authorization: Bearer $ALCHEMY_ACCESS_TOKEN" \
+      --header "Content-Type: application/json" \
+      --data '{ "status": "active" }'
+    ```
+
+    A policy only sponsors transactions while it is active. See [Update Policy Status](/docs/admin-api/gas-policies/update-policy-status).
+  </Step>
+</Steps>
+
+## Update, inspect, and delete
+
+Replace every rule on a policy with [Replace Policy](/docs/admin-api/gas-policies/replace-policy). Fetch one policy with [Get Policy](/docs/admin-api/gas-policies/get-policy), or page through an app's policies with [Get All Policies](/docs/admin-api/gas-policies/get-all-policies).
+
+Use [Get Policy Stats](/docs/admin-api/gas-policies/get-policy-stats) and [Get Sponsorships](/docs/admin-api/gas-policies/get-sponsorships) to monitor spend. Deactivate a policy with [Update Policy Status](/docs/admin-api/gas-policies/update-policy-status), or remove it with [Delete Policy](/docs/admin-api/gas-policies/delete-policy).
+
+## Endpoint reference
+
+| Method | Description |
+| --- | --- |
+| [Create Policy](/docs/admin-api/gas-policies/create-policy) | Creates a policy. Returns the policy ID. |
+| [Get Policy](/docs/admin-api/gas-policies/get-policy) | Returns a policy by ID. |
+| [Replace Policy](/docs/admin-api/gas-policies/replace-policy) | Replaces all rules on an existing policy. |
+| [Delete Policy](/docs/admin-api/gas-policies/delete-policy) | Deletes a policy by ID. |
+| [Get All Policies](/docs/admin-api/gas-policies/get-all-policies) | Returns policies for an app. Paginated. |
+| [Update Policy Status](/docs/admin-api/gas-policies/update-policy-status) | Sets a policy to `active` or `inactive`. |
+| [Get Policy Stats](/docs/admin-api/gas-policies/get-policy-stats) | Returns spend and signature stats for a policy. |
+| [Get Sponsorships](/docs/admin-api/gas-policies/get-sponsorships) | Returns paginated sponsorships for a policy. |

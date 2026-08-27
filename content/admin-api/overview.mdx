@@ -1,14 +1,16 @@
 ---
 title: Admin API Overview
-subtitle: Programmatically manage Alchemy apps, networks, and usage.
+subtitle: Programmatically manage Alchemy apps, networks, usage, and gas policies.
 slug: reference/admin-api/overview
 ---
 
-The Admin API lets you manage Alchemy apps, list supported networks, and inspect compute unit usage without using the Alchemy Dashboard. Use it for automation, compliance, billing alerts, and enterprise workflows.
+The Admin API lets you manage Alchemy apps, list supported networks, inspect compute unit usage, and create gas sponsorship policies without using the Alchemy Dashboard. Use it for automation, compliance, billing alerts, and enterprise workflows.
 
 An App represents a single Alchemy project. You create an app, configure which networks it can access, and optionally restrict usage via allowlists. All app changes are applied immediately.
 
 Usage data includes compute unit totals, estimated USD cost, billing period boundaries, and optional breakdowns by app, network, method, and request type.
+
+Gas policy requests create and manage sponsorship rules for an app. Those endpoints use `https://manage.g.alchemy.com` and need a Gas Manager access-key permission.
 
 ***
 
@@ -25,6 +27,9 @@ Use this API to:
 * Query usage time series with hourly or daily granularity
 * Filter usage by app, network, method, and request type
 * Group usage results by request type, app, network, or method
+* Create, update, replace, and delete gas sponsorship policies
+* Activate or deactivate a policy
+* Retrieve policy stats and sponsorship history
 
 Each request is authenticated and returns JSON responses.
 
@@ -36,6 +41,7 @@ All requests must include an access key. Grant only the permissions the caller n
 
 * **App Management** read or read and write, for apps and chains
 * **Usage** read (`ADMIN_USAGE_READ`), for Usage API endpoints
+* **Gas Manager** read or read and write, for gas policy endpoints
 
 You can also authenticate usage requests with a dashboard user session token that has the `viewer`, `developer`, or `admin` role.
 
@@ -43,7 +49,7 @@ To create an access key:
 
 1. Go to the [security tab](https://dashboard.alchemy.com/settings/security?utm_source=docs&utm_medium=referral&utm_content=reference_admin-api_overview) in the Alchemy Dashboard
 2. Create a new access key
-3. Enable App Management and/or Usage with the permissions you need
+3. Enable App Management, Usage, and/or Gas Manager with the permissions you need
 
 ***
 
