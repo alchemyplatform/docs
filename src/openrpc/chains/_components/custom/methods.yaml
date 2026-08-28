@@ -1062,6 +1062,46 @@ components:
               transactionsRoot: "0xb19dc98f4f0c28f6f40abc86b3de6b5299784e78dbcc1c6cf6f1e285e48edcf2"
               withdrawalsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 
+    eth_getTransactionBySenderAndNonce:
+      name: eth_getTransactionBySenderAndNonce
+      description: >-
+        Returns the hash of the transaction sent by the given sender address at
+        the specified nonce, or null if no such transaction exists. Originally
+        introduced by the Otterscan project (as `ots_getTransactionBySenderAndNonce`)
+        and now exposed under the standard `eth_` namespace. Requires an
+        archive-capable backend because the lookup walks historical account
+        state.
+      x-compute-units: 20
+      params:
+        - name: Sender
+          required: true
+          description: The address of the sender (externally owned account) that submitted the transaction.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/address"
+        - name: Nonce
+          required: true
+          description: The nonce of the transaction to look up, as a hexadecimal string.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/uint"
+      result:
+        name: Transaction hash
+        description: The hash of the transaction sent by the given sender at the given nonce, or null if no such transaction exists.
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - title: Transaction hash
+              $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      examples:
+        - name: eth_getTransactionBySenderAndNonce example
+          params:
+            - name: Sender
+              value: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+            - name: Nonce
+              value: "0x3"
+          result:
+            name: Transaction hash
+            value: "0x021304206b2517c3f8f2df07014a55b79aac2ae097488fa807cc88eccd851a50"
+
     eth_getTransactionReceiptsByBlock:
       name: eth_getTransactionReceiptsByBlock
       description: Returns the transaction receipts for all transactions in a given block.
