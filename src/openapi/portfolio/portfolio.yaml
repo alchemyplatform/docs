@@ -374,7 +374,7 @@ components:
           type: boolean
           default: true
         includeBlockMetadata:
-          description: "Boolean - if set to `true`, includes a top-level `blockMetadata` object in the response mapping each successful network to the block used to compute the returned balances (`blockNumber`, `blockHash`, `blockTimestamp`)."
+          description: "Boolean - if set to `true`, includes a `blockMetadata` object inside `data` (alongside `pageKey`) mapping each requested network to the block used to compute the returned balances (`blockNumber`, `blockHash`, `blockTimestamp`). Failed networks are still present as keys but map to `null`."
           type: boolean
           default: false
       required:
@@ -407,7 +407,7 @@ components:
           type: boolean
           default: true
         includeBlockMetadata:
-          description: "Boolean - if set to `true`, includes a top-level `blockMetadata` object in the response mapping each successful network to the block used to compute the returned balances (`blockNumber`, `blockHash`, `blockTimestamp`)."
+          description: "Boolean - if set to `true`, includes a `blockMetadata` object inside `data` (alongside `pageKey`) mapping each requested network to the block used to compute the returned balances (`blockNumber`, `blockHash`, `blockTimestamp`). Failed networks are still present as keys but map to `null`."
           type: boolean
           default: false
       required:
@@ -624,9 +624,8 @@ components:
     BlockMetadataEntry:
       type: object
       description: >
-        Block used to compute the returned balances on a given network. Populated
-        only for networks that succeeded; failed networks appear in
-        `error.partialErrors` instead.
+        Block used to compute the returned balances on a given network. `null`
+        for networks that failed (see `error.partialErrors` for the reason).
       properties:
         blockNumber:
           type: string
@@ -651,10 +650,14 @@ components:
       description: >
         Block metadata for each network in the response, keyed by network slug
         (e.g. `eth-mainnet`, `matic-mainnet`). Present only when the request
-        sets `includeBlockMetadata` to `true`. Only successful networks are
-        included; networks that failed appear under `error.partialErrors`.
+        sets `includeBlockMetadata` to `true`. Every requested network appears
+        as a key: successful networks map to a `BlockMetadataEntry`, and
+        networks that failed map to `null` (their reason is reported in
+        `error.partialErrors`).
       additionalProperties:
-        $ref: "#/components/schemas/BlockMetadataEntry"
+        oneOf:
+          - $ref: "#/components/schemas/BlockMetadataEntry"
+          - type: "null"
       example:
         eth-mainnet:
           blockNumber: "0x18a6825"
@@ -664,6 +667,7 @@ components:
           blockNumber: "0x5877288"
           blockHash: "0x4ddbc1d12e14909468c49efd2771d1a09dec2850a823e0d9942db54d54633e43"
           blockTimestamp: "2026-08-27T16:46:07.000Z"
+        base-mainnet: null
     ####################################################
     # Token APIs
     ####################################################
@@ -680,10 +684,10 @@ components:
                 $ref: "#/components/schemas/TokensResponseItem"
             pageKey:
               $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+            blockMetadata:
+              $ref: "#/components/schemas/BlockMetadata"
         error:
           $ref: "#/components/schemas/PartialError"
-        blockMetadata:
-          $ref: "#/components/schemas/BlockMetadata"
       required:
         - data
 
@@ -762,10 +766,10 @@ components:
                 $ref: "#/components/schemas/TokenBalancesResponseItem"
             pageKey:
               $ref: "../nft/nft.yaml#/components/schemas/pageKey"
+            blockMetadata:
+              $ref: "#/components/schemas/BlockMetadata"
         error:
           $ref: "#/components/schemas/PartialError"
-        blockMetadata:
-          $ref: "#/components/schemas/BlockMetadata"
       required:
         - data
 
