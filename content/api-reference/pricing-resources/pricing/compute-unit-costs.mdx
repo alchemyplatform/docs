@@ -132,6 +132,7 @@ For more details, check out the [Compute Units](/docs/reference/compute-units#wh
 | getSlotLeader                     | 20                          |               |
 | getSlotLeaders                    | 20                          |               |
 | getStakeActivation                | 20                          |               |
+| getStakeMinimumDelegation         | 20                          |               |
 | getTokenAccountBalance            | 20                          |               |
 | getTokenLargestAccounts           | 20                          |               |
 | getTokenSupply                    | 20                          |               |
@@ -145,13 +146,27 @@ For more details, check out the [Compute Units](/docs/reference/compute-units#wh
 | sendTransaction                   | 20                          |               |
 | simulateBundle                    | 20                          |               |
 | simulateTransaction               | 20                          |               |
+| getBalanceByOwnerAtSlot           | 40                          | 100           |
 | getBlock                          | 40                          |               |
 | getFirstAvailableBlock            | 40                          |               |
 | getInflationReward                | 40                          | 300           |
 | getSignaturesForAddress           | 40                          |               |
+| getTokenAccountsByOwnerAtSlot     | 40                          | 100           |
 | getTransaction                    | 40                          |               |
 | getTransactionsForAddress         | 100                         |               |
+| getAsset\_v2                      | 160                         | 200           |
+| getAssetProof\_v2                 | 160                         | 200           |
+| getNftEditions\_v2                | 160                         | 200           |
+| getSignaturesForAsset\_v2         | 160                         | 200           |
 | getSupply                         | 160                         | 800           |
+| getTokenAccounts\_v2              | 160                         | 200           |
+| getAssetBatch\_v2                 | 480                         | 200           |
+| getAssetProofBatch\_v2            | 480                         | 200           |
+| getAssetsByAuthority\_v2          | 480                         | 200           |
+| getAssetsByCreator\_v2            | 480                         | 200           |
+| getAssetsByGroup\_v2              | 480                         | 200           |
+| getAssetsByOwner\_v2              | 480                         | 200           |
+| searchAssets\_v2                  | 480                         | 200           |
 | getLargestAccounts                | 3000                        |               |
 | batch\*                           | CU of method # times called |               |
 {/* cu:auto end */}
@@ -163,7 +178,7 @@ For more details, check out the [Compute Units](/docs/reference/compute-units#wh
 {/* cu:auto product="solana-das" */}
 | Method               | CU  | Throughput CU |
 | -------------------- | --- | ------------- |
-| getAsset             | 160 | 200           |
+| getAsset             | 80  | 200           |
 | getAssetProof        | 160 | 200           |
 | getAssetSignatures   | 160 | 200           |
 | getNftEditions       | 160 | 200           |
@@ -215,12 +230,12 @@ For more details, check out the [Compute Units](/docs/reference/compute-units#wh
 [Jito bundles](/docs/chains/solana/solana-jito-bundles-and-transactions) are groups of up to 5 signed transactions that execute sequentially and atomically in a single slot on Solana Mainnet. A tip to one of the Jito tip accounts is required for inclusion. These methods are available on paid Alchemy plans only.
 
 {/* cu:auto product="solana-jito" */}
-| Method                     | CU  | Throughput CU |
-| -------------------------- | --- | ------------- |
-| getBundleStatuses          | 40  |               |
-| getInflightBundleStatuses  | 40  |               |
-| getTipAccounts             | 40  |               |
-| sendBundle                 | 40  |               |
+| Method                    | CU |
+| ------------------------- | -- |
+| getBundleStatuses         | 40 |
+| getInflightBundleStatuses | 40 |
+| getTipAccounts            | 40 |
+| sendBundle                | 40 |
 {/* cu:auto end */}
 
 # Solana: Yellowstone gRPC
@@ -730,6 +745,7 @@ On average, a typical byte-priced webhook or WebSocket subscription event is abo
 | Method                               | CU |
 | ------------------------------------ | -- |
 | /api/v2/address/\{address}           | 20 |
+| /api/v2/balance/\{address}           | 20 |
 | /api/v2/balancehistory/\{address}    | 20 |
 | /api/v2/block-index/\{block\_height} | 20 |
 | /api/v2/block/\{block}               | 20 |
@@ -1194,12 +1210,17 @@ On average, a typical byte-priced webhook or WebSocket subscription event is abo
 | ---------------------------------------------------------- | -- |
 | sui.rpc.v2.LedgerService/GetServiceInfo                    | 10 |
 | sui.rpc.v2.SubscriptionService/SubscribeCheckpoints        | 10 |
+| sui.rpc.v2.SubscriptionService/SubscribeEvents             | 10 |
+| sui.rpc.v2.SubscriptionService/SubscribeTransactions       | 10 |
 | sui.rpc.v2.LedgerService/BatchGetObjects                   | 20 |
 | sui.rpc.v2.LedgerService/BatchGetTransactions              | 20 |
 | sui.rpc.v2.LedgerService/GetCheckpoint                     | 20 |
 | sui.rpc.v2.LedgerService/GetEpoch                          | 20 |
 | sui.rpc.v2.LedgerService/GetObject                         | 20 |
 | sui.rpc.v2.LedgerService/GetTransaction                    | 20 |
+| sui.rpc.v2.LedgerService/ListCheckpoints                   | 20 |
+| sui.rpc.v2.LedgerService/ListEvents                        | 20 |
+| sui.rpc.v2.LedgerService/ListTransactions                  | 20 |
 | sui.rpc.v2.MovePackageService/GetDatatype                  | 20 |
 | sui.rpc.v2.MovePackageService/GetFunction                  | 20 |
 | sui.rpc.v2.MovePackageService/GetPackage                   | 20 |
@@ -1228,6 +1249,215 @@ On average, a typical byte-priced webhook or WebSocket subscription event is abo
 | geyser.Geyser/IsBlockhashValid    | 10 |
 | geyser.Geyser/Ping                | 10 |
 | geyser.Geyser/SubscribeReplayInfo | 10 |
+{/* cu:auto end */}
+
+# aptos-grpc API
+
+{/* cu:auto product="aptos-grpc" */}
+| Method                                   | CU |
+| ---------------------------------------- | -- |
+| aptos.indexer.v1.RawData/GetTransactions | 10 |
+{/* cu:auto end */}
+
+# tron-grpc API
+
+{/* cu:auto product="tron-grpc" */}
+| Method                                                       | CU |
+| ------------------------------------------------------------ | -- |
+| protocol.Wallet/AccountPermissionUpdate                      | 20 |
+| protocol.Wallet/BroadcastTransaction                         | 20 |
+| protocol.Wallet/BuyStorage                                   | 20 |
+| protocol.Wallet/BuyStorageBytes                              | 20 |
+| protocol.Wallet/CancelAllUnfreezeV2                          | 20 |
+| protocol.Wallet/ClearContractABI                             | 20 |
+| protocol.Wallet/CreateAccount                                | 20 |
+| protocol.Wallet/CreateAccount2                               | 20 |
+| protocol.Wallet/CreateAssetIssue                             | 20 |
+| protocol.Wallet/CreateAssetIssue2                            | 20 |
+| protocol.Wallet/CreateCommonTransaction                      | 20 |
+| protocol.Wallet/CreateShieldedContractParameters             | 20 |
+| protocol.Wallet/CreateShieldedContractParametersWithoutAsk   | 20 |
+| protocol.Wallet/CreateShieldedTransaction                    | 20 |
+| protocol.Wallet/CreateShieldedTransactionWithoutSpendAuthSig | 20 |
+| protocol.Wallet/CreateShieldNullifier                        | 20 |
+| protocol.Wallet/CreateSpendAuthSig                           | 20 |
+| protocol.Wallet/CreateTransaction                            | 20 |
+| protocol.Wallet/CreateTransaction2                           | 20 |
+| protocol.Wallet/CreateWitness                                | 20 |
+| protocol.Wallet/CreateWitness2                               | 20 |
+| protocol.Wallet/DelegateResource                             | 20 |
+| protocol.Wallet/DeployContract                               | 20 |
+| protocol.Wallet/EstimateEnergy                               | 20 |
+| protocol.Wallet/ExchangeCreate                               | 20 |
+| protocol.Wallet/ExchangeInject                               | 20 |
+| protocol.Wallet/ExchangeTransaction                          | 20 |
+| protocol.Wallet/ExchangeWithdraw                             | 20 |
+| protocol.Wallet/FreezeBalance                                | 20 |
+| protocol.Wallet/FreezeBalance2                               | 20 |
+| protocol.Wallet/FreezeBalanceV2                              | 20 |
+| protocol.Wallet/GetAccount                                   | 20 |
+| protocol.Wallet/GetAccountBalance                            | 20 |
+| protocol.Wallet/GetAccountById                               | 20 |
+| protocol.Wallet/GetAccountNet                                | 20 |
+| protocol.Wallet/GetAccountResource                           | 20 |
+| protocol.Wallet/GetAkFromAsk                                 | 20 |
+| protocol.Wallet/GetAssetIssueByAccount                       | 20 |
+| protocol.Wallet/GetAssetIssueById                            | 20 |
+| protocol.Wallet/GetAssetIssueByName                          | 20 |
+| protocol.Wallet/GetAssetIssueList                            | 20 |
+| protocol.Wallet/GetAssetIssueListByName                      | 20 |
+| protocol.Wallet/GetAvailableUnfreezeCount                    | 20 |
+| protocol.Wallet/GetBandwidthPrices                           | 20 |
+| protocol.Wallet/GetBlock                                     | 20 |
+| protocol.Wallet/GetBlockBalanceTrace                         | 20 |
+| protocol.Wallet/GetBlockById                                 | 20 |
+| protocol.Wallet/GetBlockByLatestNum                          | 20 |
+| protocol.Wallet/GetBlockByLatestNum2                         | 20 |
+| protocol.Wallet/GetBlockByLimitNext                          | 20 |
+| protocol.Wallet/GetBlockByLimitNext2                         | 20 |
+| protocol.Wallet/GetBlockByNum                                | 20 |
+| protocol.Wallet/GetBlockByNum2                               | 20 |
+| protocol.Wallet/GetBrokerageInfo                             | 20 |
+| protocol.Wallet/GetBurnTrx                                   | 20 |
+| protocol.Wallet/GetCanDelegatedMaxSize                       | 20 |
+| protocol.Wallet/GetCanWithdrawUnfreezeAmount                 | 20 |
+| protocol.Wallet/GetChainParameters                           | 20 |
+| protocol.Wallet/GetContract                                  | 20 |
+| protocol.Wallet/GetContractInfo                              | 20 |
+| protocol.Wallet/GetDelegatedResource                         | 20 |
+| protocol.Wallet/GetDelegatedResourceAccountIndex             | 20 |
+| protocol.Wallet/GetDelegatedResourceAccountIndexV2           | 20 |
+| protocol.Wallet/GetDelegatedResourceV2                       | 20 |
+| protocol.Wallet/GetDiversifier                               | 20 |
+| protocol.Wallet/GetEnergyPrices                              | 20 |
+| protocol.Wallet/GetExchangeById                              | 20 |
+| protocol.Wallet/GetExpandedSpendingKey                       | 20 |
+| protocol.Wallet/GetIncomingViewingKey                        | 20 |
+| protocol.Wallet/GetMarketOrderByAccount                      | 20 |
+| protocol.Wallet/GetMarketOrderById                           | 20 |
+| protocol.Wallet/GetMarketOrderListByPair                     | 20 |
+| protocol.Wallet/GetMarketPairList                            | 20 |
+| protocol.Wallet/GetMarketPriceByPair                         | 20 |
+| protocol.Wallet/GetMemoFee                                   | 20 |
+| protocol.Wallet/GetMerkleTreeVoucherInfo                     | 20 |
+| protocol.Wallet/GetNewShieldedAddress                        | 20 |
+| protocol.Wallet/GetNextMaintenanceTime                       | 20 |
+| protocol.Wallet/GetNkFromNsk                                 | 20 |
+| protocol.Wallet/GetNodeInfo                                  | 20 |
+| protocol.Wallet/GetNowBlock                                  | 20 |
+| protocol.Wallet/GetNowBlock2                                 | 20 |
+| protocol.Wallet/GetPaginatedAssetIssueList                   | 20 |
+| protocol.Wallet/GetPaginatedExchangeList                     | 20 |
+| protocol.Wallet/GetPaginatedNowWitnessList                   | 20 |
+| protocol.Wallet/GetPaginatedProposalList                     | 20 |
+| protocol.Wallet/GetPendingSize                               | 20 |
+| protocol.Wallet/GetProposalById                              | 20 |
+| protocol.Wallet/GetRcm                                       | 20 |
+| protocol.Wallet/GetRewardInfo                                | 20 |
+| protocol.Wallet/GetShieldTransactionHash                     | 20 |
+| protocol.Wallet/GetSpendingKey                               | 20 |
+| protocol.Wallet/GetTransactionApprovedList                   | 20 |
+| protocol.Wallet/GetTransactionById                           | 20 |
+| protocol.Wallet/GetTransactionCountByBlockNum                | 20 |
+| protocol.Wallet/GetTransactionFromPending                    | 20 |
+| protocol.Wallet/GetTransactionInfoByBlockNum                 | 20 |
+| protocol.Wallet/GetTransactionInfoById                       | 20 |
+| protocol.Wallet/GetTransactionListFromPending                | 20 |
+| protocol.Wallet/GetTransactionSignWeight                     | 20 |
+| protocol.Wallet/GetTriggerInputForShieldedTRC20Contract      | 20 |
+| protocol.Wallet/GetZenPaymentAddress                         | 20 |
+| protocol.Wallet/IsShieldedTRC20ContractNoteSpent             | 20 |
+| protocol.Wallet/IsSpend                                      | 20 |
+| protocol.Wallet/ListExchanges                                | 20 |
+| protocol.Wallet/ListNodes                                    | 20 |
+| protocol.Wallet/ListProposals                                | 20 |
+| protocol.Wallet/ListWitnesses                                | 20 |
+| protocol.Wallet/MarketCancelOrder                            | 20 |
+| protocol.Wallet/MarketSellAsset                              | 20 |
+| protocol.Wallet/ParticipateAssetIssue                        | 20 |
+| protocol.Wallet/ParticipateAssetIssue2                       | 20 |
+| protocol.Wallet/ProposalApprove                              | 20 |
+| protocol.Wallet/ProposalCreate                               | 20 |
+| protocol.Wallet/ProposalDelete                               | 20 |
+| protocol.Wallet/ScanAndMarkNoteByIvk                         | 20 |
+| protocol.Wallet/ScanNoteByIvk                                | 20 |
+| protocol.Wallet/ScanNoteByOvk                                | 20 |
+| protocol.Wallet/ScanShieldedTRC20NotesByIvk                  | 20 |
+| protocol.Wallet/ScanShieldedTRC20NotesByOvk                  | 20 |
+| protocol.Wallet/SellStorage                                  | 20 |
+| protocol.Wallet/SetAccountId                                 | 20 |
+| protocol.Wallet/TotalTransaction                             | 20 |
+| protocol.Wallet/TransferAsset                                | 20 |
+| protocol.Wallet/TransferAsset2                               | 20 |
+| protocol.Wallet/TriggerConstantContract                      | 20 |
+| protocol.Wallet/TriggerContract                              | 20 |
+| protocol.Wallet/UnDelegateResource                           | 20 |
+| protocol.Wallet/UnfreezeAsset                                | 20 |
+| protocol.Wallet/UnfreezeAsset2                               | 20 |
+| protocol.Wallet/UnfreezeBalance                              | 20 |
+| protocol.Wallet/UnfreezeBalance2                             | 20 |
+| protocol.Wallet/UnfreezeBalanceV2                            | 20 |
+| protocol.Wallet/UpdateAccount                                | 20 |
+| protocol.Wallet/UpdateAccount2                               | 20 |
+| protocol.Wallet/UpdateAsset                                  | 20 |
+| protocol.Wallet/UpdateAsset2                                 | 20 |
+| protocol.Wallet/UpdateBrokerage                              | 20 |
+| protocol.Wallet/UpdateEnergyLimit                            | 20 |
+| protocol.Wallet/UpdateSetting                                | 20 |
+| protocol.Wallet/UpdateWitness                                | 20 |
+| protocol.Wallet/UpdateWitness2                               | 20 |
+| protocol.Wallet/VoteWitnessAccount                           | 20 |
+| protocol.Wallet/VoteWitnessAccount2                          | 20 |
+| protocol.Wallet/WithdrawBalance                              | 20 |
+| protocol.Wallet/WithdrawBalance2                             | 20 |
+| protocol.Wallet/WithdrawExpireUnfreeze                       | 20 |
+| protocol.WalletSolidity/EstimateEnergy                       | 20 |
+| protocol.WalletSolidity/GetAccount                           | 20 |
+| protocol.WalletSolidity/GetAccountById                       | 20 |
+| protocol.WalletSolidity/GetAssetIssueById                    | 20 |
+| protocol.WalletSolidity/GetAssetIssueByName                  | 20 |
+| protocol.WalletSolidity/GetAssetIssueList                    | 20 |
+| protocol.WalletSolidity/GetAssetIssueListByName              | 20 |
+| protocol.WalletSolidity/GetAvailableUnfreezeCount            | 20 |
+| protocol.WalletSolidity/GetBandwidthPrices                   | 20 |
+| protocol.WalletSolidity/GetBlock                             | 20 |
+| protocol.WalletSolidity/GetBlockByNum                        | 20 |
+| protocol.WalletSolidity/GetBlockByNum2                       | 20 |
+| protocol.WalletSolidity/GetBrokerageInfo                     | 20 |
+| protocol.WalletSolidity/GetBurnTrx                           | 20 |
+| protocol.WalletSolidity/GetCanDelegatedMaxSize               | 20 |
+| protocol.WalletSolidity/GetCanWithdrawUnfreezeAmount         | 20 |
+| protocol.WalletSolidity/GetDelegatedResource                 | 20 |
+| protocol.WalletSolidity/GetDelegatedResourceAccountIndex     | 20 |
+| protocol.WalletSolidity/GetDelegatedResourceAccountIndexV2   | 20 |
+| protocol.WalletSolidity/GetDelegatedResourceV2               | 20 |
+| protocol.WalletSolidity/GetEnergyPrices                      | 20 |
+| protocol.WalletSolidity/GetExchangeById                      | 20 |
+| protocol.WalletSolidity/GetMarketOrderByAccount              | 20 |
+| protocol.WalletSolidity/GetMarketOrderById                   | 20 |
+| protocol.WalletSolidity/GetMarketOrderListByPair             | 20 |
+| protocol.WalletSolidity/GetMarketPairList                    | 20 |
+| protocol.WalletSolidity/GetMarketPriceByPair                 | 20 |
+| protocol.WalletSolidity/GetMerkleTreeVoucherInfo             | 20 |
+| protocol.WalletSolidity/GetNowBlock                          | 20 |
+| protocol.WalletSolidity/GetNowBlock2                         | 20 |
+| protocol.WalletSolidity/GetPaginatedAssetIssueList           | 20 |
+| protocol.WalletSolidity/GetPaginatedNowWitnessList           | 20 |
+| protocol.WalletSolidity/GetRewardInfo                        | 20 |
+| protocol.WalletSolidity/GetTransactionById                   | 20 |
+| protocol.WalletSolidity/GetTransactionCountByBlockNum        | 20 |
+| protocol.WalletSolidity/GetTransactionInfoByBlockNum         | 20 |
+| protocol.WalletSolidity/GetTransactionInfoById               | 20 |
+| protocol.WalletSolidity/IsShieldedTRC20ContractNoteSpent     | 20 |
+| protocol.WalletSolidity/IsSpend                              | 20 |
+| protocol.WalletSolidity/ListExchanges                        | 20 |
+| protocol.WalletSolidity/ListWitnesses                        | 20 |
+| protocol.WalletSolidity/ScanAndMarkNoteByIvk                 | 20 |
+| protocol.WalletSolidity/ScanNoteByIvk                        | 20 |
+| protocol.WalletSolidity/ScanNoteByOvk                        | 20 |
+| protocol.WalletSolidity/ScanShieldedTRC20NotesByIvk          | 20 |
+| protocol.WalletSolidity/ScanShieldedTRC20NotesByOvk          | 20 |
+| protocol.WalletSolidity/TriggerConstantContract              | 20 |
 {/* cu:auto end */}
 
 # Compute unit cost for error codes
