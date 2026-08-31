@@ -320,9 +320,10 @@ The `usage` commands use your browser login automatically, like the Admin API co
 alchemy --json usage summary
 alchemy usage timeseries --start-date 2026-06-01 --granularity day
 alchemy usage timeseries --start-date 2026-06-01 --group-by network
+alchemy usage timeseries --start-date 2026-06-01 --group-by app,network
 ```
 
-`timeseries` accepts a date or time range, optional filters, and a single group-by dimension.
+`timeseries` accepts a date or time range, optional filters, and up to three group-by dimensions.
 
 Usage time-series ranges are limited by plan:
 
@@ -347,9 +348,9 @@ If you request a range longer than your plan supports, the Usage API returns res
 | `--networks <networks>` | Filter by networks (comma-separated), e.g. `eth-mainnet,base-mainnet` |
 | `--methods <methods>` | Filter by methods (comma-separated), e.g. `eth_getLogs` |
 | `--request-types <types>` | Filter by request types (comma-separated): `http`, `websocket`, `webhook`, `grpc` |
-| `--group-by <dimension>` | Group by one dimension: `requestType`, `app`, `network`, `method` |
+| `--group-by <dimensions>` | Group by up to three dimensions: `requestType`, `app`, `network`, `method` (comma-separated) |
 
-Filters are optional and combined with AND. `--group-by` accepts at most one dimension.
+Filters are optional and combined with AND. `--group-by` accepts at most three unique dimensions.
 
 ### Auth and config
 
