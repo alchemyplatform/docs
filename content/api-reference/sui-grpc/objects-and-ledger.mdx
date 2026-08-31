@@ -215,3 +215,109 @@ grpcurl \
   sui-mainnet.g.alchemy.com:443 \
   sui.rpc.v2.LedgerService/GetEpoch
 ```
+
+***
+
+## ListCheckpoints
+
+Streams checkpoints matching the provided filter over a checkpoint range. Server-streaming RPC that returns one `checkpoint` per frame plus progress watermarks; the final frame carries a `QueryEnd` marker.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `read_mask` | FieldMask | No | Fields to include on each checkpoint |
+| `start_checkpoint` | uint64 | No | Inclusive lower bound. Defaults to genesis |
+| `end_checkpoint` | uint64 | No | Exclusive upper bound. Defaults to the current indexed tip |
+| `filter` | TransactionFilter | No | DNF filter. A checkpoint matches if any transaction in it satisfies the filter. Absent means match every checkpoint in the range |
+| `options` | QueryOptions | No | `limit`, `after`, `before`, `ordering`. The server applies its own default and maximum item limit |
+
+**Response** (stream):
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `checkpoint` | Checkpoint | One matching checkpoint. Unset on progress-only and terminal frames |
+| `watermark` | Watermark | Safe resume cursor for this frame. Present on every frame |
+| `end` | QueryEnd | Set exactly once on the final frame; carries the stop reason (item limit, scan limit, checkpoint bound, cursor bound, or ledger tip) |
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/ledger_service.proto \
+  -d '{"start_checkpoint": 1000000, "options": {"limit": 10}}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/ListCheckpoints
+```
+
+<Note>
+  To paginate, pass the last received `watermark.cursor` back on the next request as `options.after` (ascending) or `options.before` (descending). Watermarks never regress in the requested ordering but consecutive frames may repeat the same cursor.
+</Note>
+
+***
+
+## ListTransactions
+
+Streams executed transactions matching the provided filter over a checkpoint range. Same shape as `ListCheckpoints`, one `transaction` per frame.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `read_mask` | FieldMask | No | Fields to include on each transaction |
+| `start_checkpoint` | uint64 | No | Inclusive lower bound. Defaults to genesis |
+| `end_checkpoint` | uint64 | No | Exclusive upper bound. Defaults to the current indexed tip |
+| `filter` | TransactionFilter | No | DNF filter over indexed transaction dimensions (`sender`, `affected_address`, `affected_object`, `move_call`, `emit_module`, `event_type`, `event_stream_head`, `package_write`). Absent means match every transaction in the range |
+| `options` | QueryOptions | No | `limit`, `after`, `before`, `ordering` |
+
+**Response** (stream):
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `transaction` | ExecutedTransaction | One matching transaction. Unset on progress-only and terminal frames |
+| `watermark` | Watermark | Safe resume cursor for this frame |
+| `end` | QueryEnd | Set exactly once on the final frame; carries the stop reason |
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/ledger_service.proto \
+  -d '{"start_checkpoint": 1000000, "options": {"limit": 10}}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/ListTransactions
+```
+
+***
+
+## ListEvents
+
+Streams events matching the provided filter over a checkpoint range. Same shape as `ListTransactions`, one `event` per frame.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `read_mask` | FieldMask | No | Fields to include on each event |
+| `start_checkpoint` | uint64 | No | Inclusive lower bound. Defaults to genesis |
+| `end_checkpoint` | uint64 | No | Exclusive upper bound. Defaults to the current indexed tip |
+| `filter` | EventFilter | No | DNF filter over indexed event dimensions (`sender`, `emit_module`, `event_type`, `event_stream_head`). Absent means match every event in the range |
+| `options` | QueryOptions | No | `limit`, `after`, `before`, `ordering` |
+
+**Response** (stream):
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `event` | Event | One matching event. Unset on progress-only and terminal frames |
+| `watermark` | Watermark | Safe resume cursor for this frame |
+| `end` | QueryEnd | Set exactly once on the final frame; carries the stop reason |
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/ledger_service.proto \
+  -d '{"start_checkpoint": 1000000, "options": {"limit": 10}}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/ListEvents
+```

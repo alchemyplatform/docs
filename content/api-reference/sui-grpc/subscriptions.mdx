@@ -36,3 +36,67 @@ grpcurl \
 <Note>
   This is a long-lived streaming connection. The server will continue sending checkpoints until the client disconnects.
 </Note>
+
+## SubscribeTransactions
+
+Streams executed transactions matching the provided filter from the tip of the chain. The stream begins at the latest executed checkpoint as seen by the server and continues until the client disconnects.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `read_mask` | FieldMask | No | Fields to include on each transaction |
+| `filter` | TransactionFilter | No | DNF filter over indexed transaction dimensions (`sender`, `affected_address`, `affected_object`, `move_call`, `emit_module`, `event_type`, `event_stream_head`, `package_write`). Absent means stream every transaction |
+
+**Response** (stream):
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `transaction` | ExecutedTransaction | One matching transaction. Unset on progress-only frames on filtered streams |
+| `watermark` | Watermark | Progress watermark for this frame. Present on every frame |
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/subscription_service.proto \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.SubscriptionService/SubscribeTransactions
+```
+
+<Note>
+  Subscriptions do not support resumption; a new subscription always begins at the current tip. To backfill missed data, replay from the last received `watermark.cursor` using the paired `LedgerService/ListTransactions` API.
+</Note>
+
+## SubscribeEvents
+
+Streams events matching the provided filter from the tip of the chain. Same shape as `SubscribeTransactions`, one `event` per frame.
+
+**Request**:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `read_mask` | FieldMask | No | Fields to include on each event |
+| `filter` | EventFilter | No | DNF filter over indexed event dimensions (`sender`, `emit_module`, `event_type`, `event_stream_head`). Absent means stream every event |
+
+**Response** (stream):
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `event` | Event | One matching event. Unset on progress-only frames on filtered streams |
+| `watermark` | Watermark | Progress watermark for this frame |
+
+```bash cURL
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/subscription_service.proto \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.SubscriptionService/SubscribeEvents
+```
+
+<Note>
+  To backfill missed data, replay from the last received `watermark.cursor` using the paired `LedgerService/ListEvents` API.
+</Note>

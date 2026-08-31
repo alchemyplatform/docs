@@ -12,7 +12,7 @@ Sui gRPC offers advantages over the JSON-RPC API:
 
 * **Strongly typed**: Protocol Buffers provide strict typing and schema validation
 * **Efficient serialization**: Binary encoding reduces payload size compared to JSON
-* **Streaming support**: Subscribe to real-time checkpoint updates with server-streaming RPCs
+* **Streaming support**: Subscribe to real-time checkpoint, transaction, and event streams with server-streaming RPCs
 * **Field masking**: Request only the fields you need with `read_mask` to reduce response size
 * **Batch operations**: Fetch multiple objects or transactions in a single request
 
@@ -31,6 +31,9 @@ Query objects, transactions, checkpoints, and epochs through the `LedgerService`
 | `GetCheckpoint` | `sui_getCheckpoint` |
 | `GetEpoch` | No equivalent |
 | `GetServiceInfo` | `sui_getChainIdentifier` |
+| `ListCheckpoints` | `sui_getCheckpoints` |
+| `ListTransactions` | `suix_queryTransactionBlocks` |
+| `ListEvents` | `suix_queryEvents` |
 
 ### [Transactions](/docs/reference/sui-grpc-transactions)
 
@@ -75,11 +78,13 @@ Resolve SuiNS names through the `NameService`.
 
 ### [Subscriptions](/docs/reference/sui-grpc-subscriptions)
 
-Stream real-time checkpoint data through the `SubscriptionService`.
+Stream real-time checkpoints, transactions, and events through the `SubscriptionService`.
 
 | gRPC method | JSON-RPC equivalent |
 | --- | --- |
 | `SubscribeCheckpoints` | No equivalent |
+| `SubscribeTransactions` | `suix_subscribeTransaction` |
+| `SubscribeEvents` | `suix_subscribeEvent` |
 
 ### [Signature verification](/docs/reference/sui-grpc-signature-verification)
 
