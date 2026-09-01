@@ -1,0 +1,318 @@
+---
+title: "Sui JSON-RPC Migration Guide"
+description: "How to migrate from Sui JSON-RPC to Sui gRPC before support ends on September 25, 2026"
+slug: "reference/sui-json-rpc-migration-guide"
+---
+
+Sui is retiring JSON-RPC across the network. Please **migrate** your application to **Sui gRPC** by **September 25, 2026** to avoid any disruption.
+
+**Sui gRPC** is a Protocol Buffers API that covers reads, streaming, and transaction execution. This guide maps every JSON-RPC method to its gRPC equivalent and calls out the behavior differences that break a naive port.
+
+## Endpoints
+
+| Network | Endpoint                          |
+| ------- | --------------------------------- |
+| Mainnet | `sui-mainnet.g.alchemy.com:443` |
+| Testnet | `sui-testnet.g.alchemy.com:443` |
+
+gRPC uses a port-style host with TLS on 443, not an HTTPS URL path. Authentication uses a Bearer token in the request header:
+
+```bash
+-H "Authorization: Bearer <YOUR_API_KEY>"
+```
+
+## Before you start
+
+<Warning>
+  Every call must supply the `.proto` files or a compiled descriptor set — `grpcurl -import-path`/`-proto`, or `-protoset`. Reflection-based commands such as `grpcurl … list` and `grpcurl … describe` do not work, and will hang until they time out rather than returning an error. Start from the protos below.
+</Warning>
+
+1. Clone the proto definitions from [MystenLabs/sui-apis](https://github.com/MystenLabs/sui-apis). Generated clients and `grpcurl` both need the `.proto` files.
+2. Generate a typed client for your language, or use `grpcurl` for CLI testing.
+3. Confirm connectivity with `GetServiceInfo` before porting anything else.
+
+```bash
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/ledger_service.proto \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetServiceInfo
+```
+
+## Services
+
+| Service                         | Proto file                                        | Purpose                                                                                                                                                     |
+| ------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LedgerService`                 | `sui/rpc/v2/ledger_service.proto`                 | Point lookups for checkpoints, transactions, and objects, plus server-streaming historical queries over checkpoints, transactions, and events |
+| `StateService`                  | `sui/rpc/v2/state_service.proto`                  | Live state: balances, coin metadata, owned objects, dynamic fields                                                                                          |
+| `TransactionExecutionService`   | `sui/rpc/v2/transaction_execution_service.proto`  | Execute and simulate transactions                                                                                                                           |
+| `SubscriptionService`           | `sui/rpc/v2/subscription_service.proto`           | Server-streaming checkpoints, transactions, and events                                                                                                      |
+| `MovePackageService`            | `sui/rpc/v2/move_package_service.proto`           | Move package, module, function, and datatype introspection                                                                                                  |
+| `NameService`                   | `sui/rpc/v2/name_service.proto`                   | SuiNS forward and reverse resolution                                                                                                                        |
+| `SignatureVerificationService`  | `sui/rpc/v2/signature_verification_service.proto` | Verify signatures outside transaction execution                                                                                                             |
+
+## Method mapping
+
+### Checkpoints and network state
+
+| JSON-RPC                                                          | gRPC                              | Notes                                                                                                                                                                                            |
+| ----------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `sui_getChainIdentifier`                                          | `LedgerService.GetServiceInfo`    | Also returns chain, epoch, and checkpoint height. The value format changes: JSON-RPC returned the first 4 bytes of the genesis digest as hex (`35834a8a` on mainnet); `chain_id` is the full digest in base58 |
+| `sui_getCheckpoint`, `sui_getLatestCheckpointSequenceNumber`      | `LedgerService.GetCheckpoint`     | Omit the sequence number to get the latest checkpoint                                                                                                                                            |
+| `sui_getCheckpoints`                                              | `LedgerService.ListCheckpoints`   | Server-streaming. Use `SubscribeCheckpoints` for an ordered live stream                                                                                                                          |
+| `sui_getTotalTransactionBlocks`                                   | `LedgerService.GetCheckpoint`     | Read `summary.total_network_transactions` from the latest checkpoint                                                                                                                             |
+| `suix_getReferenceGasPrice`                                       | `LedgerService.GetEpoch`          | Read `reference_gas_price` from the response                                                                                                                                                     |
+
+### Transactions
+
+| JSON-RPC                                                              | gRPC                                                | Notes                                                                                                       |
+| --------------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `sui_getTransactionBlock`                                             | `LedgerService.GetTransaction`                      | Use `read_mask` instead of the `options` object                                                             |
+| `sui_multiGetTransactionBlocks`                                       | `LedgerService.BatchGetTransactions`                | Only the top-level `read_mask` applies                                                                      |
+| `suix_queryTransactionBlocks`                                         | `LedgerService.ListTransactions`                    | Server-streaming, takes a `TransactionFilter` over a checkpoint range                                       |
+| `suix_subscribeTransaction`                                            | `SubscriptionService.SubscribeTransactions`         | Same filter type as `ListTransactions`, so backfill and live stream share one filter                        |
+| `sui_executeTransactionBlock`                                         | `TransactionExecutionService.ExecuteTransaction`    | Submit signed transaction bytes                                                                             |
+| `sui_dryRunTransactionBlock`, `sui_devInspectTransactionBlock`        | `TransactionExecutionService.SimulateTransaction`   | One method replaces both. Moved out of `LiveDataService` in v2                                              |
+| All `unsafe_*` builders                                               | `TransactionExecutionService.ExecuteTransaction`    | No direct equivalent. Build a PTB with the TypeScript or Rust SDK, then submit the bytes                    |
+
+<Note>
+  The `unsafe_*` family (`unsafe_paySui`, `unsafe_pay`, `unsafe_payAllSui`, `unsafe_transferSui`, `unsafe_transferObject`, `unsafe_moveCall`, `unsafe_splitCoin`, `unsafe_splitCoinEqual`, `unsafe_mergeCoins`, `unsafe_batchTransaction`, `unsafe_publish`, `unsafe_requestAddStake`, `unsafe_requestWithdrawStake`) has no server-side replacement. Transaction construction moves entirely client-side to programmable transaction blocks.
+</Note>
+
+### Objects
+
+| JSON-RPC                                     | gRPC                                | Notes                                                                                                                                                                          |
+| -------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `sui_getObject`, `sui_tryGetPastObject`      | `LedgerService.GetObject`           | Pass `version` for a historical read, within the retention window                                                                                                              |
+| `sui_multiGetObjects`                        | `LedgerService.BatchGetObjects`     | Per-item field masks are ignored, only the top-level `read_mask` applies                                                                                                       |
+| `suix_getOwnedObjects`                       | `StateService.ListOwnedObjects`     | Optional `object_type` filter, paginated with `page_token`                                                                                                                     |
+| `suix_getDynamicFields`                      | `StateService.ListDynamicFields`    | Paginated by `parent` object ID                                                                                                                                                |
+| `suix_getDynamicFieldObject`                 | `LedgerService.GetObject`           | Derive the field object ID locally from the parent ID and field name, then fetch it. `ListDynamicFields` is unnecessary when you already know the name                        |
+
+### Balances and coins
+
+| JSON-RPC                                       | gRPC                              | Notes                                                                                                                    |
+| ---------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `suix_getBalance`                              | `StateService.GetBalance`         | Requires `owner` and `coin_type`                                                                                         |
+| `suix_getAllBalances`                          | `StateService.ListBalances`       | Paginated across all coin types held by the owner                                                                        |
+| `suix_getCoins`, `suix_getAllCoins`            | `StateService.ListOwnedObjects`   | Filter by the full coin type for one coin, or the bare `0x2::coin::Coin` type for all coins                              |
+| `suix_getCoinMetadata`, `suix_getTotalSupply`  | `StateService.GetCoinInfo`        | Returns metadata, regulated metadata, and treasury in one response                                                       |
+
+### Events
+
+| JSON-RPC                             | gRPC                                         | Notes                                                                              |
+| ------------------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `suix_queryEvents`                   | `LedgerService.ListEvents`                   | Server-streaming with an `EventFilter` over a checkpoint range                     |
+| `suix_subscribeEvent`                 | `SubscriptionService.SubscribeEvents`        | Same `EventFilter` type as `ListEvents`                                            |
+| Events for one known transaction     | `LedgerService.GetTransaction`               | Add `events` to the `read_mask` instead of a separate query                        |
+
+### Move packages
+
+| JSON-RPC                                                            | gRPC                                     | Notes                                                                 |
+| ------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| `sui_getNormalizedMoveModulesByPackage`, `sui_getNormalizedMoveModule` | `MovePackageService.GetPackage`        | Returns the package with its modules                                  |
+| `sui_getNormalizedMoveFunction`, `sui_getMoveFunctionArgTypes`      | `MovePackageService.GetFunction`         | Typed signature replaces the loose arg-type list                      |
+| `sui_getNormalizedMoveStruct`                                       | `MovePackageService.GetDatatype`         | Covers structs and enums                                              |
+| No equivalent                                                        | `MovePackageService.ListPackageVersions` | New in gRPC. Lists published versions of a package                    |
+
+### Name service
+
+| JSON-RPC                             | gRPC                             | Notes                              |
+| ------------------------------------ | -------------------------------- | ---------------------------------- |
+| `suix_resolveNameServiceAddress`     | `NameService.LookupName`         | SuiNS name to address              |
+| `suix_resolveNameServiceNames`       | `NameService.ReverseLookupName`  | Address to linked SuiNS name       |
+
+## Methods with no gRPC equivalent
+
+Beyond the `unsafe_*` builders above, these two read paths also require client-side work rather than a method swap.
+
+| JSON-RPC                                       | Workaround                                                                                                                                                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `suix_getStakes`, `suix_getStakesByIds`        | Call `StateService.ListOwnedObjects` filtered by type `0x3::staking_pool::StakedSui`, then fetch full contents with `LedgerService.GetObject`                                                                                  |
+| `suix_getValidatorsApy`                        | No APY field exists in gRPC. Read validator-set data and compute APY client-side. See [sui issue #23832](https://github.com/MystenLabs/sui/issues/23832) for the recommended computation                                       |
+
+## Migration caveats
+
+### Typed requests replace positional params
+
+JSON-RPC takes a positional array of arguments. gRPC takes typed protobuf messages. Do not translate positional indices directly, and do not port the JSON-RPC `options` object. Pass each value by name and use a `FieldMask` in `read_mask` to select the response shape.
+
+Field masks are also the main latency lever. Requesting every field on a large object or transaction is significantly slower than requesting the three fields you actually use.
+
+### Pagination uses typed cursors
+
+JSON-RPC cursors are opaque strings and are not portable into gRPC. Fetch a fresh cursor or token from the new API and persist that as your resume point.
+
+gRPC uses two different paging mechanisms depending on the method. Check which one you are calling.
+
+**Unary methods — page tokens.** `StateService.ListOwnedObjects`, `StateService.ListBalances`, `StateService.ListDynamicFields`, and `MovePackageService.ListPackageVersions` take `page_size` and `page_token`, and return `next_page_token`. The server can return fewer items than the requested `page_size`, so follow `next_page_token` rather than assuming a full page means more data and a short page means the end. Iterate until `next_page_token` is absent.
+
+**Server-streaming methods — bounds and cursors.** `LedgerService.ListCheckpoints`, `ListTransactions`, and `ListEvents` have no `page_token`. They stream results and are controlled by these fields instead.
+
+| Field                                       | Purpose                                                        |
+| ------------------------------------------- | -------------------------------------------------------------- |
+| `start_checkpoint`, `end_checkpoint`        | Bound the checkpoint range to scan                             |
+| `options.limit`                             | Cap the number of items returned                               |
+| `options.after`, `options.before`           | Resume from, or stop at, a cursor                              |
+| `options.ordering`                          | `ORDERING_ASCENDING` (default) or `ORDERING_DESCENDING`        |
+
+Each response frame carries `watermark.cursor`. Persist it as your resume point and pass it back as `options.after` on an ascending scan, or `options.before` on a descending one. The stream ends with a `QueryEnd` frame whose `reason` states why it stopped: `QUERY_END_REASON_ITEM_LIMIT`, `QUERY_END_REASON_SCAN_LIMIT`, `QUERY_END_REASON_CHECKPOINT_BOUND`, `QUERY_END_REASON_CURSOR_BOUND`, or `QUERY_END_REASON_LEDGER_TIP`. JSON responses carry these full enum names; typed clients expose them as generated enum constants. Do not treat stream termination as "all data retrieved" — check the reason and resume from the last cursor if it stopped on a limit rather than a bound.
+
+### WebSocket subscriptions become gRPC streams
+
+`suix_subscribeEvent` and `suix_subscribeTransaction` are replaced by server-streaming RPCs on `SubscriptionService`. Three differences matter in production:
+
+* Subscriptions begin at the current tip and **do not support resumption**. There is no cursor you can pass to start a stream from the past.
+* To avoid gaps on reconnect, open the subscription first and immediately drain live frames into durable, bounded storage while a separate worker backfills with the paired list API (`ListEvents`, `ListTransactions`, or `ListCheckpoints`). Do not leave the subscription unread during backfill.
+* Process the durable spool after backfill reaches the subscription boundary, and restart from the last durably processed cursor if the spool fills or the stream ends.
+
+Filtered streams emit progress-only frames where the payload is unset but `watermark` is present. Track `watermark.cursor` on every frame, not just on frames carrying data.
+
+`SubscribeCheckpoints` differs: its frames carry a plain `cursor` (a checkpoint sequence number) instead of a `watermark` message. Backfill checkpoints by passing `cursor + 1` as `start_checkpoint` on `ListCheckpoints`, not `options.after`.
+
+### Pruning returns NOT\_FOUND, with no implicit fallback
+
+JSON-RPC sometimes resolved older data through fallback paths that were invisible to the caller. gRPC does not. A full node serves only data inside its retention window (7 epochs / \~7 days) and returns `NOT_FOUND` for anything older.
+
+If your workload does replays, audits, or deep historical reads, plan for this explicitly rather than discovering it as intermittent `NOT_FOUND` responses in production.
+
+### Negative filters work differently
+
+JSON-RPC object queries supported `MatchAll`, `MatchAny`, and `MatchNone` combinators. gRPC object queries have no equivalent: `ListOwnedObjects` takes a single positive `object_type`, so combine results from multiple calls or filter client-side. Transaction and event queries are where negation lives — `TransactionFilter` and `EventFilter` use a disjunctive normal form (DNF) filter with per-literal negation.
+
+`TransactionFilter` and `EventFilter` are structured in three levels:
+
+* **`terms`** are ORed together. A present filter must contain at least one term. An absent filter matches everything.
+* **`literals`** within a single term are ANDed together.
+* Each **literal** sets exactly one predicate, plus an optional `negated: true` to invert it.
+
+Match transactions *not* sent by a given address:
+
+```json
+{
+  "filter": {
+    "terms": [
+      { "literals": [ { "negated": true, "sender": { "address": "0x..." } } ] }
+    ]
+  }
+}
+```
+
+Set the predicate field directly on the literal, as above. Some generated clients (notably `protobuf-ts`) represent oneofs internally as `{ "oneofKind": "sender", ... }`; that is a client-side artifact and is not valid protobuf JSON. Sending it fails with `message type sui.rpc.v2.TransactionLiteral has no known field named oneofKind`. If you instead see `TransactionFilter has no known field named negated`, you have set the literal's fields directly on the filter — nest them under `terms[].literals[]`.
+
+Transaction predicates: `sender`, `affected_address`, `affected_object`, `move_call`, `emit_module`, `event_type`, `event_stream_head`, `package_write`. Event predicates: `sender`, `emit_module`, `event_type`, `event_stream_head`.
+
+Write addresses in filter literals fully padded to 64 hex characters. Short forms are rejected with `INVALID_ARGUMENT: invalid address` — for example `0x3::validator::StakingRequestEvent` fails while `0x0000…0003::validator::StakingRequestEvent` works. (`ListOwnedObjects`'s `object_type` accepts short forms; filters do not.)
+
+### Balances cover two representations
+
+Sui tracks value both in coin objects and in the address-balance accumulator. `GetBalance` returns a `Balance` message with three numeric fields.
+
+| Field (JSON)      | Meaning                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| `balance`         | Total across both representations                          |
+| `coinBalance`     | Value held in coin objects                                 |
+| `addressBalance`  | Value held in the address-balance accumulator              |
+
+Read `balance` for the combined total. Read `coinBalance` and `addressBalance` separately when you need to reconcile against your own ledger. There is no `totalBalance` field.
+
+These fields use proto3 presence, so a field that is unset is omitted from the JSON response rather than returned as `0`. Treat an absent `addressBalance` as zero rather than assuming the field is always present.
+
+For transaction building, prefer gas smashing or address-balance gas payments over hand-assembling coin lists from `ListOwnedObjects`.
+
+### `optional` does not mean optional
+
+In proto3, marking a field `optional` enables presence detection, meaning the server can tell an explicitly set value from a default. It does not mean you can omit the field. Follow the API contract for required inputs.
+
+### Ecosystem tools migrate on their own schedule
+
+| Tool                 | Action                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sui CLI              | No changes needed. The CLI already uses gRPC internally                                                                                                       |
+| `@mysten/dapp-kit`   | The published client factory requires `SuiJsonRpcClient` and rejects `SuiGrpcClient`. Wait for a release that adds transport-agnostic client support           |
+| `@mysten/kiosk`      | Does not accept `SuiGrpcClient`. Migrate only after a Kiosk release adds gRPC support                                                                          |
+| Walrus site-builder  | Manages its own connection through `sites-config.yaml`. Transport is controlled by the Walrus team                                                             |
+
+## Worked examples
+
+### Look up a transaction
+
+```bash
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/ledger_service.proto \
+  -d '{
+    "digest": "YOUR_TX_DIGEST",
+    "read_mask": {"paths": ["digest", "effects", "events"]}
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.LedgerService/GetTransaction
+```
+
+### Read a balance
+
+```bash
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/state_service.proto \
+  -d '{
+    "owner": "0xYOUR_ADDRESS",
+    "coin_type": "0x2::sui::SUI"
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/GetBalance
+```
+
+### List owned coins
+
+Replaces `suix_getCoins`. Drop the type parameter from the filter to cover the `suix_getAllCoins` case.
+
+```bash
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/state_service.proto \
+  -d '{
+    "owner": "0xYOUR_ADDRESS",
+    "object_type": "0x2::coin::Coin<0x2::sui::SUI>",
+    "read_mask": {"paths": ["object_id", "version", "balance"]}
+  }' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.StateService/ListOwnedObjects
+```
+
+### Stream events
+
+Replaces `suix_subscribeEvent`. Pair it with `LedgerService/ListEvents` using the same filter to backfill.
+
+```bash
+grpcurl \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -import-path proto \
+  -proto sui/rpc/v2/subscription_service.proto \
+  -d '{}' \
+  sui-mainnet.g.alchemy.com:443 \
+  sui.rpc.v2.SubscriptionService/SubscribeEvents
+```
+
+## Migration checklist
+
+* Generate a typed client from the `v2` protos, not `v2beta2`
+* Swap every JSON-RPC call using the mapping tables above
+* Replace `options` objects with `read_mask` field masks, requesting only the fields you use
+* Replace stored JSON-RPC cursors with fresh gRPC page tokens
+* Move `unsafe_*` transaction building to PTBs client-side
+* Rebuild staking reads on `ListOwnedObjects` plus `GetObject`, and move APY to a client-side computation
+* Rework WebSocket subscribers into stream plus backfill, with a durable spool and persisted watermark cursor
+* Handle `NOT_FOUND` for reads outside the retention window
+* Load test against the new response shapes before cutover
+
+## Reference
+
+* [Sui Full Node gRPC methods](https://docs.sui.io/references/fullnode-protocol)
+* [Sui JSON-RPC migration guide](https://docs.sui.io/develop/accessing-data/json-rpc-migration)
+* [Sui proto definitions on GitHub](https://github.com/MystenLabs/sui-apis)
