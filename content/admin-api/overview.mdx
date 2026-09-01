@@ -49,15 +49,33 @@ To create an access key:
 
 ## Plan limits
 
-Time-series query ranges are limited by plan:
+Plan tier sets how far back you can query. Each time-series request also has a
+maximum span of 30 days between `startTime` and `endTime`.
 
-| Plan | Maximum range |
+| Plan | Maximum lookback |
 |---|---:|
 | Free | 1 day |
 | Pay as You Go | 7 days |
+| Enterprise | up to 90 days (when enabled for your team) |
 | Longer ranges | [Contact sales](https://www.alchemy.com/contact-sales) |
 
-If you request a range longer than your plan supports, the API returns results for the allowed range.
+If you request a range that starts before your plan allows, the API clamps the
+start and omits older buckets.
+
+If `endTime` minus `startTime` is more than 30 days, the API returns HTTP 400.
+
+Long ranges require multiple queries. Each query may span at most 30 days.
+
+### Pagination and rate limits
+
+When a time-series response includes `cursor`, send it on the next request with
+the same `startTime`, filters, and `groupBy`. `endTime` may be omitted; the
+cursor keeps the original range.
+
+Cursors expire 15 minutes after they are issued.
+
+Cursor follow-up pages are not counted against the distinct-payload rate limit.
+Only the first page of each query counts toward your per-minute query budget.
 
 ***
 
