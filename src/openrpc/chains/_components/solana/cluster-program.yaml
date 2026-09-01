@@ -71,6 +71,57 @@ components:
         filters:
           type: array
           description: Filters to apply using up to 4 filter objects.
+    GetProgramAccountsV2Config:
+      title: GetProgramAccountsV2 Configuration
+      type: object
+      description: >-
+        Configuration object for `getProgramAccountsV2`. Backward-compatible
+        with `getProgramAccountsConfig` and adds cursor-based pagination
+        (`limit`, `paginationKey`) plus `changedSinceSlot` for incremental
+        updates.
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        withContext:
+          type: boolean
+          description: >-
+            When `true`, wraps the response in the standard Solana
+            `{context, value}` envelope: `result.context` carries snapshot
+            metadata (`slot`, `apiVersion`) and `accounts` plus
+            `paginationKey` are nested under `result.value`. When `false` or
+            omitted, those fields appear directly on `result` (for example
+            `result.accounts`). Filters, limits, and pagination behavior are
+            unchanged; only the JSON shape of `result` differs.
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          default: json
+        dataSlice:
+          $ref: "./base-types.yaml#/components/schemas/DataSlice"
+        filters:
+          type: array
+          description: Filters to apply using up to 4 filter objects.
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 1000
+          description: >-
+            Maximum number of accounts to return in this page (1-10,000).
+            Fewer accounts than `limit` may be returned when filters apply.
+        paginationKey:
+          type: string
+          description: >-
+            Base-58 encoded cursor for fetching subsequent pages. Use the
+            `paginationKey` returned by the previous response. Omit on the
+            first request.
+        changedSinceSlot:
+          type: integer
+          minimum: 0
+          description: >-
+            Only return accounts modified at or after this slot. Useful for
+            incremental synchronization workflows.
     VoteAccountInfo:
       title: Vote Account Information
       type: object

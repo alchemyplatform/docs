@@ -111,6 +111,62 @@ components:
           description: The account Pubkey as a base-58 encoded string.
         account:
           $ref: "#/components/schemas/AccountInfo"
+    ProgramAccountsV2Page:
+      title: Program Accounts V2 Page
+      type: object
+      description: >-
+        Paginated program accounts. The same fields appear directly on
+        `result` when `withContext` is `false` or omitted, or under
+        `result.value` when `withContext` is `true`.
+      properties:
+        accounts:
+          type: array
+          description: Program accounts returned in the current page.
+          items:
+            $ref: "#/components/schemas/ProgramAccount"
+        paginationKey:
+          type: string
+          nullable: true
+          description: >-
+            Base-58 encoded cursor for the next page. `null` only when no
+            accounts are returned (end of pagination). Fewer accounts than
+            the requested `limit` may be returned due to filtering; that
+            does not indicate the end of pagination — always continue until
+            `paginationKey` is `null`.
+    ProgramAccountsV2Result:
+      title: Program Accounts V2 Result
+      description: >-
+        The JSON-RPC `result` for `getProgramAccountsV2`. Shape depends on
+        the request's `withContext` flag: when `false` or omitted, the page
+        fields sit directly on `result`; when `true`, snapshot metadata is
+        returned under `result.context` and the page is nested under
+        `result.value`.
+      oneOf:
+        - $ref: "#/components/schemas/ProgramAccountsV2Page"
+          title: without withContext
+        - type: object
+          title: with withContext
+          description: >-
+            Wrapped result returned when `withContext` is `true` in the
+            request configuration.
+          required:
+            - context
+            - value
+          properties:
+            context:
+              type: object
+              description: >-
+                Snapshot metadata for the node response, useful for slot
+                consistency and debugging.
+              properties:
+                slot:
+                  type: integer
+                  description: Slot at which the node built this response.
+                apiVersion:
+                  type: string
+                  description: RPC API version when available.
+            value:
+              $ref: "#/components/schemas/ProgramAccountsV2Page"
     GetTokenAccountBalanceConfig:
       title: GetTokenAccountBalance Configuration
       type: object

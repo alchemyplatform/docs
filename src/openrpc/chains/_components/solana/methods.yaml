@@ -856,6 +856,70 @@ components:
           items:
             $ref: "./account.yaml#/components/schemas/ProgramAccount"
 
+    getProgramAccountsV2:
+      name: getProgramAccountsV2
+      description: >-
+        Enhanced version of `getProgramAccounts` with cursor-based
+        pagination and `changedSinceSlot` support for efficiently querying
+        large sets of accounts owned by a Solana program. Configurable page
+        sizes from 1 to 10,000 accounts, incremental updates via slot-based
+        filtering, and full backward compatibility with all
+        `getProgramAccounts` parameters. Suited for DeFi protocols, NFT
+        marketplaces, and analytics workloads that previously timed out on
+        `getProgramAccounts`.
+
+
+        **Pagination**: continue paging until `paginationKey` is `null`. The
+        response may return fewer accounts than the requested `limit` due
+        to filtering — that alone does not indicate end of pagination.
+
+
+        **withContext**: optional boolean on the configuration object.
+        When `true`, the RPC returns the standard wrapped shape with
+        `result.context` (snapshot metadata, including `slot` and usually
+        `apiVersion`) and `result.value` holding `accounts` and
+        `paginationKey`. When `false` or omitted, those fields are returned
+        directly on `result` (for example `result.accounts`). Filters,
+        limits, and pagination behavior are unchanged; only the JSON shape
+        of `result` differs.
+      x-compute-units: 20
+      x-rate-limit-cus: 117
+      params:
+        - name: Pubkey
+          required: true
+          description: The Pubkey of the program.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: Configuration
+          required: false
+          description: >-
+            Optional configuration object. Supports every field accepted by
+            `getProgramAccounts` plus `limit`, `paginationKey`, and
+            `changedSinceSlot`.
+          schema:
+            $ref: "./cluster-program.yaml#/components/schemas/GetProgramAccountsV2Config"
+      examples:
+        - name: getProgramAccountsV2 example
+          params:
+            - name: Pubkey
+              value: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            - name: Configuration
+              value:
+                encoding: "base64"
+                limit: 1000
+                filters:
+                  - dataSize: 165
+      result:
+        name: Program accounts page
+        description: >-
+          A page of program accounts plus a pagination cursor. Shape depends
+          on the request's `withContext` flag: without it, the page fields
+          sit directly on `result`; with it, snapshot metadata is returned
+          under `result.context` and the page is nested under
+          `result.value`.
+        schema:
+          $ref: "./account.yaml#/components/schemas/ProgramAccountsV2Result"
+
     getLeaderSchedule:
       name: getLeaderSchedule
       description: Returns the leader schedule for a given epoch.
