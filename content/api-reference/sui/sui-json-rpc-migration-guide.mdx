@@ -72,7 +72,7 @@ grpcurl \
 | `sui_getTransactionBlock`                                             | `LedgerService.GetTransaction`                      | Use `read_mask` instead of the `options` object                                                             |
 | `sui_multiGetTransactionBlocks`                                       | `LedgerService.BatchGetTransactions`                | Only the top-level `read_mask` applies                                                                      |
 | `suix_queryTransactionBlocks`                                         | `LedgerService.ListTransactions`                    | Server-streaming, takes a `TransactionFilter` over a checkpoint range                                       |
-| `sui_subscribeTransaction`                                            | `SubscriptionService.SubscribeTransactions`         | Same filter type as `ListTransactions`, so backfill and live stream share one filter                        |
+| `suix_subscribeTransaction`                                            | `SubscriptionService.SubscribeTransactions`         | Same filter type as `ListTransactions`, so backfill and live stream share one filter                        |
 | `sui_executeTransactionBlock`                                         | `TransactionExecutionService.ExecuteTransaction`    | Submit signed transaction bytes                                                                             |
 | `sui_dryRunTransactionBlock`, `sui_devInspectTransactionBlock`        | `TransactionExecutionService.SimulateTransaction`   | One method replaces both. Moved out of `LiveDataService` in v2                                              |
 | All `unsafe_*` builders                                               | `TransactionExecutionService.ExecuteTransaction`    | No direct equivalent. Build a PTB with the TypeScript or Rust SDK, then submit the bytes                    |
@@ -105,7 +105,7 @@ grpcurl \
 | JSON-RPC                             | gRPC                                         | Notes                                                                              |
 | ------------------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `suix_queryEvents`                   | `LedgerService.ListEvents`                   | Server-streaming with an `EventFilter` over a checkpoint range                     |
-| `sui_subscribeEvent`                 | `SubscriptionService.SubscribeEvents`        | Same `EventFilter` type as `ListEvents`                                            |
+| `suix_subscribeEvent`                 | `SubscriptionService.SubscribeEvents`        | Same `EventFilter` type as `ListEvents`                                            |
 | Events for one known transaction     | `LedgerService.GetTransaction`               | Add `events` to the `read_mask` instead of a separate query                        |
 
 ### Move packages
@@ -162,7 +162,7 @@ Each response frame carries `watermark.cursor`. Persist it as your resume point 
 
 ### WebSocket subscriptions become gRPC streams
 
-`sui_subscribeEvent` and `sui_subscribeTransaction` are replaced by server-streaming RPCs on `SubscriptionService`. Three differences matter in production:
+`suix_subscribeEvent` and `suix_subscribeTransaction` are replaced by server-streaming RPCs on `SubscriptionService`. Three differences matter in production:
 
 * Subscriptions begin at the current tip and **do not support resumption**. There is no cursor you can pass to start a stream from the past.
 * To avoid gaps on reconnect, open the subscription first and immediately drain live frames into durable, bounded storage while a separate worker backfills with the paired list API (`ListEvents`, `ListTransactions`, or `ListCheckpoints`). Do not leave the subscription unread during backfill.
@@ -287,7 +287,7 @@ grpcurl \
 
 ### Stream events
 
-Replaces `sui_subscribeEvent`. Pair it with `LedgerService/ListEvents` using the same filter to backfill.
+Replaces `suix_subscribeEvent`. Pair it with `LedgerService/ListEvents` using the same filter to backfill.
 
 ```bash
 grpcurl \
