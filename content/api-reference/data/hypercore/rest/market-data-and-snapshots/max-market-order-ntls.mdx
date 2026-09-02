@@ -1,0 +1,47 @@
+---
+title: "Maximum market-order notionals"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Maximum market-order notionals
+
+Returns maximum market-order notionals by leverage, ordered from highest leverage first.
+
+<Note>
+
+  **Available now.** This read is served at the interim endpoint today.
+
+</Note>
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- |
+| `type` | string | Yes | Selects `maxMarketOrderNtls`. |
+
+```json
+{
+  "type": "maxMarketOrderNtls"
+}
+```
+
+## Response fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `[]` | array | `[leverage, maxNotional]` tuple, ordered by descending leverage. |
+| `[][0]` | integer | Leverage value for the tuple. |
+| `[][1]` | string | Maximum market-order notional at that leverage, encoded as a decimal string. |
+
+## Response example
+
+```json
+[
+  [25, "30000000.0"],
+  [20, "5000000.0"]
+]
+```

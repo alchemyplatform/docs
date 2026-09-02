@@ -52,4 +52,4 @@ A cursor identifies a resume position, not an event. It is not itself a deduplic
 
 ## Replay depth
 
-Replay depth is bounded by node block-data retention, currently approximately 48 hours. For block-derived streams, gaps that replay cannot bridge can be recovered with the block lookup methods.
+Replay covers a short reconnect window, not long-range recovery. Stateful streams — `l2BookDiff`, `l4BookUpdates`, and `tpslUpdates` — recover from a gap of any length, because a snapshot re-establishes state. Event streams such as fills, order updates, and ledger events replay only within the live window; events older than that are not retrievable from the streaming API. Historical coverage is a separate product surface with its own delivery timeline.

@@ -9,6 +9,13 @@ description: "HyperCore private-preview documentation."
 
 Alchemy-original read that returns an order-level L4 snapshot for checkpointing an order-status stream.
 
+
+<Note>
+
+  **Coming with HyperCore.** This read is documented but is not yet callable.
+
+</Note>
+
 ## Request
 
 `POST /{apiKey}/info`
@@ -27,49 +34,50 @@ Alchemy-original read that returns an order-level L4 snapshot for checkpointing 
 }
 ```
 
-## Response fields
+## Response structure
 
-| Field                | Type    | Description                                          |
-| -------------------- | ------- | ---------------------------------------------------- |
-| `[]`                 | array   | Per-market snapshot tuples.                          |
-| `[][0]`              | string  | Market identifier.                                   |
-| `[][1]`              | array   | Bid and ask sides.                                   |
-| `[][1][].coin`       | string  | Order market.                                        |
-| `[][1][].side`       | string  | `B` for a bid or `A` for an ask.                     |
-| `[][1][].limitPx`    | string  | Order limit price.                                   |
-| `[][1][].sz`         | string  | Order size.                                          |
-| `[][1][].oid`        | integer | Order identifier.                                    |
-| `[][1][].timestamp`  | integer | Millisecond time when the resting order was created. |
-| `[][1][].isTrigger`  | boolean | Whether the order is a trigger order.                |
-| `[][1][].triggerPx`  | string  | Trigger price.                                       |
-| `[][1][].reduceOnly` | boolean | Whether the order is reduce-only.                    |
-| `[][1][].origSz`     | string  | Original order size.                                 |
-
-## Response example
-
-```json
-[
-  [
-    "BTC",
-    [
-      [
-        {
-          "coin": "BTC",
-          "side": "B",
-          "limitPx": "103988.0",
-          "sz": "0.2782",
-          "oid": 30112287571,
-          "timestamp": 1747157301016,
-          "isTrigger": false,
-          "triggerPx": "0.0",
-          "reduceOnly": false,
-          "origSz": "0.2782"
-        }
-      ],
-      []
-    ]
-  ]
-]
+```text
+[height, [[coin, {book_orders, untriggered_orders}], ...]]
 ```
 
-Within a price level, orders are sorted in time order. Trigger orders come last and are identified by `isTrigger`.
+## Response fields
+
+| Field                                  | Type    | Description                                                                            |
+| -------------------------------------- | ------- | -------------------------------------------------------------------------------------- |
+| `[]`                                   | array   | Snapshot pair containing the block height and per-market snapshots.                   |
+| `[0]`                                  | integer | Block height reflected by the snapshot.                                                |
+| `[1]`                                  | array   | Per-market `[coin, snapshot]` pairs.                                                  |
+| `[1][][0]`                             | string  | Market identifier.                                                                     |
+| `[1][][1]`                             | object  | Market snapshot with `book_orders` and `untriggered_orders` keys.                     |
+| `[1][][1].book_orders`                 | array   | Two arrays: bids at index `0` and asks at index `1`.                                  |
+| `[1][][1].book_orders[0]`              | array   | Bid `[address, order]` pairs.                                                          |
+| `[1][][1].book_orders[1]`              | array   | Ask `[address, order]` pairs.                                                          |
+| `[1][][1].book_orders[0\|1][]`        | array   | `[address, order]` pair; orders are not bare objects.                                  |
+| `[1][][1].book_orders[0\|1][][0]`     | string  | Address associated with the order.                                                    |
+| `[1][][1].book_orders[0\|1][][1]`     | object  | Order object described below.                                                          |
+| `[1][][1].untriggered_orders`          | array   | Separate node-provided collection of `[address, order]` pairs for untriggered orders. |
+
+### Order fields
+
+The order object in each `[address, order]` pair contains the following fields.
+
+| Field              | Type            | Description                                                                                                                                    |
+| ------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `coin`             | string          | Market symbol for the order.                                                                                                                   |
+| `side`             | string          | Side code: A is ask/sell; B is bid/buy.                                                                                                        |
+| `limitPx`          | string          | Limit price for the order.                                                                                                                     |
+| `sz`               | string          | Current resting size of the order.                                                                                                            |
+| `oid`              | integer         | Identifier assigned to the order.                                                                                                              |
+| `timestamp`        | integer         | Milliseconds timestamp when the order was created.                                                                                             |
+| `triggerCondition` | string          | Human-readable trigger condition, not a programmatic enum. Non-trigger orders use the literal `"N/A"`; use `triggerPx` for the machine-readable price. |
+| `isTrigger`        | boolean         | Whether the order is a trigger order.                                                                                                          |
+| `triggerPx`        | string          | Machine-readable trigger price; `"0.0"` when `isTrigger` is false.                                                                           |
+| `children`         | array           | Child orders associated with the order.                                                                                                        |
+| `isPositionTpsl`   | boolean         | Whether the order is a position take-profit or stop-loss order.                                                                                |
+| `reduceOnly`       | boolean         | Whether execution can only reduce the position.                                                                                                |
+| `orderType`        | string          | Display string: `Limit`, `Stop Limit`, `Stop Market`, `Market`, `Take Profit Market`, or `Take Profit Limit`.                               |
+| `origSz`           | string          | Original order size.                                                                                                                           |
+| `tif`              | string \| null | Time-in-force: `Alo`, `Ioc`, `Gtc`, `FrontendMarket`, or `LiquidationMarket`; null when not set.                                           |
+| `cloid`            | string \| null | Client-supplied order identifier, when present.                                                                                              |
+
+In the sampled market, zero trigger orders appeared in `book_orders`; the node returns untriggered orders in their own `untriggered_orders` collection.

@@ -8,34 +8,11 @@ info:
 servers:
   - url: https://api.g.alchemy.com/hypercore/v1
     description: HyperCore REST base URL.
-tags:
-  - name: Account state
-    description: User account and portfolio reads.
-  - name: Orders and fills
-    description: Order and fill reads.
-  - name: Ledger and funding
-    description: Ledger and funding reads.
-  - name: Market data and snapshots
-    description: Market-data reads and state snapshots.
-  - name: Asset context
-    description: Asset metadata and current context reads.
-  - name: Metadata
-    description: Perpetual and spot metadata reads.
-  - name: Token deployment
-    description: Token and market deployment reads.
-  - name: Vaults
-    description: Vault discovery and account-equity reads.
-  - name: Staking, delegation, and validators
-    description: Delegation and validator reads.
-  - name: Roles, agents, and limits
-    description: Roles, agents, fee approvals, and rate-limit reads.
-  - name: Outcome markets
-    description: Outcome-market metadata and settlement reads.
 paths:
   "/{apiKey}/info":
     post:
       operationId: get-info
-      summary: Execute a native-compatible HyperCore read
+      summary: Get info
       description: |
         Execute a native-compatible HyperCore read selected by the required type discriminator.
       parameters:
@@ -62,11 +39,10 @@ paths:
           "$ref": "#/components/responses/InfoResponse"
   "/{apiKey}/user-fills":
     post:
-      tags: [Orders and fills]
       operationId: get-user-fills
       summary: Get user fills
       description: |
-        Retrieve fills associated with a user.
+        Retrieve fills associated with a user. Coming with HyperCore; this route is not yet callable.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
       requestBody:
@@ -92,11 +68,10 @@ paths:
                   "$ref": "#/components/examples/UserFillsResponse"
   "/{apiKey}/user-fills-by-time":
     post:
-      tags: [Orders and fills]
       operationId: get-user-fills-by-time
       summary: Get user fills by time
       description: |
-        Retrieve fills associated with a user over a time range.
+        Retrieve fills associated with a user over a time range. Coming with HyperCore; this route is not yet callable.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
       requestBody:
@@ -124,7 +99,6 @@ paths:
                   "$ref": "#/components/examples/UserFillsByTimeResponse"
   "/{apiKey}/clearinghouse-state":
     post:
-      tags: [Account state]
       operationId: get-clearinghouse-state
       summary: Get clearinghouse state
       description: |
@@ -149,11 +123,10 @@ paths:
                   "$ref": "#/components/examples/ClearinghouseStateResponse"
   "/{apiKey}/historical-orders":
     post:
-      tags: [Orders and fills]
       operationId: get-historical-orders
       summary: Get historical orders
       description: |
-        Retrieve historical orders associated with a user.
+        Retrieve historical orders associated with a user. Coming with HyperCore; this route is not yet callable.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
       requestBody:
@@ -174,11 +147,10 @@ paths:
                   "$ref": "#/components/examples/HistoricalOrdersResponse"
   "/{apiKey}/portfolio-state":
     post:
-      tags: [Account state]
       operationId: get-portfolio-state
       summary: Get normalized portfolio state
       description: |
-        Retrieve a normalized portfolio-state composite for a user.
+        Retrieve a normalized portfolio-state composite for a user. Coming with HyperCore; this route is not yet callable.
       parameters:
         - "$ref": "#/components/parameters/apiKey"
       requestBody:
@@ -204,7 +176,6 @@ paths:
                   "$ref": "#/components/examples/PortfolioStateResponse"
   "/{apiKey}/extra-agents":
     post:
-      tags: ["Roles, agents, and limits"]
       operationId: get-extra-agents
       summary: Get agent and API-wallet state
       description: |
@@ -229,7 +200,6 @@ paths:
                   "$ref": "#/components/examples/ExtraAgentsResponse"
   "/{apiKey}/l2-book-diff-snapshot":
     post:
-      tags: [Market data and snapshots]
       operationId: get-l2-book-diff-snapshot
       summary: Get an L2 book snapshot for diff-stream bootstrap
       description: |
@@ -316,6 +286,14 @@ components:
             - outcomeMeta
             - settledOutcome
             - outcomeTemplates
+            - exchangeStatus
+            - liquidatable
+            - maxMarketOrderNtls
+            - userToMultiSigSigners
+            - perpsAtOpenInterestCap
+            - marginTable
+            - perpDexs
+            - webData2
         user:
           "$ref": "#/components/schemas/Address"
         dex:
@@ -426,6 +404,14 @@ components:
           outcomeMeta: "#/components/schemas/InfoTypeRequest"
           settledOutcome: "#/components/schemas/InfoTypeRequest"
           outcomeTemplates: "#/components/schemas/InfoTypeRequest"
+          exchangeStatus: "#/components/schemas/InfoTypeRequest"
+          liquidatable: "#/components/schemas/InfoTypeRequest"
+          maxMarketOrderNtls: "#/components/schemas/InfoTypeRequest"
+          userToMultiSigSigners: "#/components/schemas/InfoTypeRequest"
+          perpsAtOpenInterestCap: "#/components/schemas/InfoTypeRequest"
+          marginTable: "#/components/schemas/InfoTypeRequest"
+          perpDexs: "#/components/schemas/InfoTypeRequest"
+          webData2: "#/components/schemas/InfoTypeRequest"
     InfoResponse:
       oneOf:
         - "$ref": "#/components/schemas/UserFillsResponse"

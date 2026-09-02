@@ -74,34 +74,63 @@ description: "HyperCore private-preview documentation."
 
 ## Payload fields
 
-| Field | Type | Description | Source tier |
-| --- | --- | --- | --- |
-| orders | array | Order status records. | Our own choice |
-| orders[] | object | Order status record. | Our own choice |
-| orders[].time | string | Time the node recorded the order-status event. | Foundation-native |
-| orders[].user | string | User identifier. | Foundation-native |
-| orders[].hash | string | Transaction hash associated with the update. | Extended-provider |
-| orders[].builder | object | Builder metadata for the update, containing the builder address and fee rate. | Extended-provider |
-| orders[].status | string | Current state of the order. | Foundation-native |
-| orders[].txIndex | integer | Index of the transaction within its block. | Extended-provider |
-| orders[].statusTimestamp | integer | Milliseconds timestamp for the status update. | Foundation-native |
-| orders[].order | object | Order fields. | Foundation-native |
-| orders[].order.oid | integer | Identifier assigned to the order. | Foundation-native |
-| orders[].order.coin | string | Market symbol for the order. | Foundation-native |
-| orders[].order.side | string | Side code: A is ask/sell; B is bid/buy. | Foundation-native |
-| orders[].order.limitPx | string | Limit price for the order. | Foundation-native |
-| orders[].order.sz | string | Filled size for the order status. | Foundation-native |
-| orders[].order.timestamp | integer | Milliseconds timestamp when the order was created. | Foundation-native |
-| orders[].order.triggerCondition | string | Condition that controls trigger-order execution. | Foundation-native |
-| orders[].order.isTrigger | boolean | Whether the order is a trigger order. | Foundation-native |
-| orders[].order.triggerPx | string | Price that activates a trigger order. | Foundation-native |
-| orders[].order.children | array | Child orders associated with the order. | Foundation-native |
-| orders[].order.isPositionTpsl | boolean | Whether the order is a position take-profit or stop-loss order. | Foundation-native |
-| orders[].order.reduceOnly | boolean | Whether execution can only reduce the position. | Foundation-native |
-| orders[].order.orderType | string | Order type. | Foundation-native |
-| orders[].order.origSz | string | Original order size. | Foundation-native |
-| orders[].order.tif | string | Time-in-force instruction. | Foundation-native |
-| orders[].order.cloid | string \| null | Client-supplied order identifier, when present. | Foundation-native |
+| Field | Type | Description |
+| --- | --- | --- |
+| orders | array | Order status records. |
+| orders[] | object | Order status record. |
+| orders[].time | string | Time the node recorded the order-status event. |
+| orders[].user | string | User identifier. |
+| orders[].hash | string \| null | Populated for `open`; null for every other observed status. Rejected and canceled orders have no submitted transaction. |
+| orders[].builder | object \| null | Builder metadata when the order was placed through a builder; null otherwise. |
+| orders[].status | string | Current state of the order. See the observed values below. |
+| orders[].txIndex | integer | Index of the transaction within its block. |
+| orders[].statusTimestamp | integer | Milliseconds timestamp for the status update. |
+| orders[].order | object | Order fields. |
+| orders[].order.oid | integer | Identifier assigned to the order. |
+| orders[].order.coin | string | Market symbol for the order. |
+| orders[].order.side | string | Side code: A is ask/sell; B is bid/buy. |
+| orders[].order.limitPx | string | Limit price for the order. |
+| orders[].order.sz | string | Current resting size of the order. |
+| orders[].order.timestamp | integer | Milliseconds timestamp when the order was created. |
+| orders[].order.triggerCondition | string | Human-readable trigger condition, not a programmatic enum. Non-trigger orders use the literal `"N/A"`; use `triggerPx` for the machine-readable price. |
+| orders[].order.isTrigger | boolean | Whether the order is a trigger order. |
+| orders[].order.triggerPx | string | Machine-readable trigger price; `"0.0"` when `isTrigger` is false. |
+| orders[].order.children | array | Child orders associated with the order. |
+| orders[].order.isPositionTpsl | boolean | Whether the order is a position take-profit or stop-loss order. |
+| orders[].order.reduceOnly | boolean | Whether execution can only reduce the position. |
+| orders[].order.orderType | string | Display string: `Limit`, `Stop Limit`, `Stop Market`, `Market`, `Take Profit Market`, or `Take Profit Limit`. |
+| orders[].order.origSz | string | Original order size. |
+| orders[].order.tif | string \| null | Time-in-force: `Alo`, `Ioc`, `Gtc`, `FrontendMarket`, or `LiquidationMarket`; null when not set. |
+| orders[].order.cloid | string \| null | Client-supplied order identifier, when present. |
+
+## Observed status values
+
+This list reflects values observed in node output and is not guaranteed exhaustive. Clients must tolerate unknown status strings rather than branch exhaustively.
+
+| Status | Meaning |
+| --- | --- |
+| `open` | Order is open. |
+| `canceled` | Order was canceled. |
+| `badAloPxRejected` | Rejected under add-liquidity-only price handling. |
+| `perpMarginRejected` | Rejected by perpetual-margin checks. |
+| `iocCancelRejected` | Observed immediate-or-cancel rejection status; the precise condition is not documented here. |
+| `filled` | Order was filled. |
+| `insufficientSpotBalanceRejected` | Rejected for insufficient spot balance. |
+| `tooManyOpenOrdersRejected` | Rejected because too many orders were already open. |
+| `positionIncreaseAtOpenInterestCapRejected` | Rejected because it would increase position at the open-interest cap. |
+| `reduceOnlyCanceled` | Canceled because its reduce-only condition could no longer be met. |
+| `reduceOnlyRejected` | Rejected because its reduce-only condition could not be met. |
+| `minTradeNtlRejected` | Rejected below the minimum trade notional. |
+| `selfTradeCanceled` | Canceled to prevent a self-trade. |
+| `tooAggressiveAtOpenInterestCapRejected` | Rejected as too aggressive at the open-interest cap. |
+| `positionFlipAtOpenInterestCapRejected` | Rejected because it would flip position at the open-interest cap. |
+| `triggered` | Trigger condition was met. |
+| `siblingFilledCanceled` | Canceled after a paired order filled. |
+| `openInterestCapCanceled` | Canceled at the open-interest cap. |
+| `marginCanceled` | Canceled for margin reasons. |
+| `liquidatedCanceled` | Canceled because the position was liquidated. |
+| `outcomeSettledCanceled` | Canceled because the outcome market settled. |
+| `openInterestIncreaseRejected` | Rejected because it would increase open interest. |
 
 ## Unsubscribe
 

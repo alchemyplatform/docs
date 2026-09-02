@@ -99,6 +99,12 @@ message CoinDiff {
   repeated Level bids = 5;
   repeated Level asks = 6;
 }
+
+message Level {
+  string px = 1;
+  string sz = 2;
+  uint32 n = 3;
+}
 ```
 
 ### Key fields
@@ -112,6 +118,8 @@ message CoinDiff {
 **`cursor`**: Resume position. Persist after applying.
 
 **`diffs`**: One entry per market that changed in this block.
+
+**`diffs[].snapshot`**: True when the `CoinDiff` replaces state for that market only.
 
 **`seq`** / **`prev_seq`**: Per-market sequence and its predecessor. If `prev_seq` does
 not match your current position for that market, you have a gap.
