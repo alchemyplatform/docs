@@ -1306,6 +1306,125 @@ components:
                   - "fe84b3e08b3f434a8d36b37c4b5a2dcd73f8e95c9b5b7ed46cc6ef3d3c5b2cdd"
                 spentby: []
 
+    getmempoolentry:
+      name: getmempoolentry
+      summary: Get mempool entry for a transaction
+      description: >
+        Returns mempool data for a given transaction. The transaction must currently be in the mempool.
+      x-compute-units: 10
+      params:
+        - name: txid
+          required: true
+          description: The transaction ID to look up in the mempool.
+          schema:
+            $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
+      result:
+        name: result
+        description: Mempool metadata for the specified transaction.
+        schema:
+          type: object
+          properties:
+            vsize:
+              type: integer
+              description: Virtual transaction size as defined in BIP 141. Different from the actual serialized size for witness transactions, since witness data is discounted.
+            weight:
+              type: integer
+              description: Transaction weight as defined in BIP 141.
+            fee:
+              type: number
+              description: Transaction fee in BTC (deprecated; use `fees.base`).
+            modifiedfee:
+              type: number
+              description: Transaction fee with fee deltas used for mining priority (deprecated; use `fees.modified`).
+            time:
+              type: integer
+              description: UNIX timestamp when the transaction entered the mempool.
+            height:
+              type: integer
+              description: Block height when the transaction entered the mempool.
+            descendantcount:
+              type: integer
+              description: Number of in-mempool descendant transactions (including this one).
+            descendantsize:
+              type: integer
+              description: Virtual transaction size of in-mempool descendants (including this one).
+            descendantfees:
+              type: number
+              description: Modified fees of in-mempool descendants (including this one) (deprecated; use `fees.descendant`).
+            ancestorcount:
+              type: integer
+              description: Number of in-mempool ancestor transactions (including this one).
+            ancestorsize:
+              type: integer
+              description: Virtual transaction size of in-mempool ancestors (including this one).
+            ancestorfees:
+              type: number
+              description: Modified fees of in-mempool ancestors (including this one) (deprecated; use `fees.ancestor`).
+            wtxid:
+              $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
+            fees:
+              type: object
+              description: Detailed fee breakdown in BTC.
+              properties:
+                base:
+                  type: number
+                  description: Transaction fee in BTC.
+                modified:
+                  type: number
+                  description: Transaction fee with fee deltas used for mining priority, in BTC.
+                ancestor:
+                  type: number
+                  description: Modified fees of in-mempool ancestors (including this one), in BTC.
+                descendant:
+                  type: number
+                  description: Modified fees of in-mempool descendants (including this one), in BTC.
+            depends:
+              type: array
+              description: Unconfirmed transactions used as inputs for this transaction.
+              items:
+                $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
+            spentby:
+              type: array
+              description: Unconfirmed transactions spending outputs from this transaction.
+              items:
+                $ref: "./filter.yaml#/components/schemas/BTC_TX_ID"
+            bip125-replaceable:
+              type: boolean
+              description: Whether this transaction could be replaced due to BIP125 (replace-by-fee).
+            unbroadcast:
+              type: boolean
+              description: Whether this transaction is currently unbroadcast (initial broadcast not yet acknowledged by any peers).
+      examples:
+        - name: getmempoolentry example
+          params:
+            - name: txid
+              value: "b86ae732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b795"
+          result:
+            name: result
+            value:
+              vsize: 234
+              weight: 936
+              fee: 0.00001000
+              modifiedfee: 0.00001000
+              time: 1714400000
+              height: 840000
+              descendantcount: 1
+              descendantsize: 234
+              descendantfees: 1000
+              ancestorcount: 1
+              ancestorsize: 234
+              ancestorfees: 1000
+              wtxid: "b86ae732473ff2c91c04073ec9cbef5e4ddaa701741e141e41345df72122b795"
+              fees:
+                base: 0.00001000
+                modified: 0.00001000
+                ancestor: 0.00001000
+                descendant: 0.00001000
+              depends: []
+              spentby: []
+              bip125-replaceable: true
+              unbroadcast: false
+
     getrawmempool:
       name: getrawmempool
       summary: Get raw mempool transaction data
