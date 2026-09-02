@@ -115,40 +115,39 @@ components:
       title: Program Accounts V2 Page
       type: object
       description: >-
-        Paginated program accounts. The same fields appear directly on
-        `result` when `withContext` is `false` or omitted, or under
-        `result.value` when `withContext` is `true`.
+        A single page of program accounts plus the cursor for the next
+        one. These fields sit directly on `result`, or under
+        `result.value`, depending on the request's `withContext` flag.
       properties:
         accounts:
           type: array
-          description: Program accounts returned in the current page.
+          description: Accounts owned by the program that fell into this page.
           items:
             $ref: "#/components/schemas/ProgramAccount"
         paginationKey:
           type: string
           nullable: true
           description: >-
-            Base-58 encoded cursor for the next page. `null` only when no
-            accounts are returned (end of pagination). Fewer accounts than
-            the requested `limit` may be returned due to filtering; that
-            does not indicate the end of pagination — always continue until
-            `paginationKey` is `null`.
+            Cursor to feed into the next request, base-58 encoded. Turns
+            to `null` once the server confirms there are no further
+            accounts to hand out. A page shorter than the requested
+            `limit` does not by itself mean the walk is done — keep
+            calling until this field is `null`.
     ProgramAccountsV2Result:
       title: Program Accounts V2 Result
       description: >-
-        The JSON-RPC `result` for `getProgramAccountsV2`. Shape depends on
-        the request's `withContext` flag: when `false` or omitted, the page
-        fields sit directly on `result`; when `true`, snapshot metadata is
-        returned under `result.context` and the page is nested under
-        `result.value`.
+        Shape of the `result` object. With `withContext` unset or
+        `false`, the page's `accounts` and `paginationKey` are returned
+        at the top level. With `withContext: true`, the same page is
+        placed under `value`, and a `context` sibling carries the slot
+        the node used to build the response.
       oneOf:
         - $ref: "#/components/schemas/ProgramAccountsV2Page"
           title: without withContext
         - type: object
           title: with withContext
           description: >-
-            Wrapped result returned when `withContext` is `true` in the
-            request configuration.
+            Envelope returned when the request has `withContext: true`.
           required:
             - context
             - value
@@ -156,8 +155,7 @@ components:
             context:
               type: object
               description: >-
-                Snapshot metadata for the node response, useful for slot
-                consistency and debugging.
+                Node metadata for the moment this response was built.
               properties:
                 slot:
                   type: integer

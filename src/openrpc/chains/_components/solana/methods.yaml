@@ -857,30 +857,18 @@ components:
 
     getProgramAccountsV2:
       name: getProgramAccountsV2
-      description: >-
-        Enhanced version of `getProgramAccounts` with cursor-based
-        pagination and `changedSinceSlot` support for efficiently querying
-        large sets of accounts owned by a Solana program. Configurable page
-        sizes from 1 to 10,000 accounts, incremental updates via slot-based
-        filtering, and full backward compatibility with all
-        `getProgramAccounts` parameters. Suited for DeFi protocols, NFT
-        marketplaces, and analytics workloads that previously timed out on
-        `getProgramAccounts`.
+      description: |
+        Paginated variant of `getProgramAccounts`. Reach for this when a program owns enough accounts that the single-response version times out or exhausts memory: indexing every token account for a mint, backfilling a DeFi protocol's state, or feeding analytics dashboards from raw on-chain data.
 
+        Requests accept the same `commitment`, `encoding`, `dataSlice`, and `filters` fields as `getProgramAccounts`, with three additions on the configuration object:
 
-        **Pagination**: continue paging until `paginationKey` is `null`. The
-        response may return fewer accounts than the requested `limit` due
-        to filtering — that alone does not indicate end of pagination.
+        * `limit` bounds a single page to between 1 and 10,000 accounts (default 1,000).
+        * `paginationKey` is the cursor returned by the previous page; omit it on the first request.
+        * `changedSinceSlot` restricts the page to accounts written at or after the given slot, so you can keep a downstream index in sync without re-scanning the whole program.
 
+        Keep paging while `paginationKey` is a string. It only turns `null` once the server has no more accounts to hand out; a page shorter than `limit` on its own does not mean the walk is finished, because filters can drop accounts server-side before the page ships.
 
-        **withContext**: optional boolean on the configuration object.
-        When `true`, the RPC returns the standard wrapped shape with
-        `result.context` (snapshot metadata, including `slot` and usually
-        `apiVersion`) and `result.value` holding `accounts` and
-        `paginationKey`. When `false` or omitted, those fields are returned
-        directly on `result` (for example `result.accounts`). Filters,
-        limits, and pagination behavior are unchanged; only the JSON shape
-        of `result` differs.
+        Set `withContext: true` on the configuration object to receive the wrapped Solana RPC shape: a `context` object (with at minimum the `slot` the node evaluated the request at, plus `apiVersion` when the node reports one) beside a `value` payload holding `accounts` and `paginationKey`. Leave `withContext` unset or `false` and those two fields are returned directly on `result` with no `context` sibling. Every other aspect of the response is identical between the two shapes.
       x-compute-units: 20
       params:
         - name: Pubkey
@@ -891,9 +879,10 @@ components:
         - name: Configuration
           required: false
           description: >-
-            Optional configuration object. Supports every field accepted by
-            `getProgramAccounts` plus `limit`, `paginationKey`, and
-            `changedSinceSlot`.
+            Optional configuration object. Accepts every field
+            `getProgramAccounts` accepts, with the pagination and
+            incremental-update fields (`limit`, `paginationKey`,
+            `changedSinceSlot`) layered on top.
           schema:
             $ref: "./cluster-program.yaml#/components/schemas/GetProgramAccountsV2Config"
       examples:
@@ -910,11 +899,10 @@ components:
       result:
         name: Program accounts page
         description: >-
-          A page of program accounts plus a pagination cursor. Shape depends
-          on the request's `withContext` flag: without it, the page fields
-          sit directly on `result`; with it, snapshot metadata is returned
-          under `result.context` and the page is nested under
-          `result.value`.
+          A page of accounts (up to `limit`) alongside the cursor for the
+          next request. When the request sets `withContext: true`, the
+          same page is placed inside a `{context, value}` envelope
+          instead of being returned directly on `result`.
         schema:
           $ref: "./account.yaml#/components/schemas/ProgramAccountsV2Result"
 
