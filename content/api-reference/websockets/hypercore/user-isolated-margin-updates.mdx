@@ -30,7 +30,7 @@ Streams isolated-margin and isolated-margin top-up updates for the requested add
   "seq": 1,
   "cursor": 1704067201000,
   "updates": [{
-    "updateType": "isolated_margin",
+    "updateType": "updateIsolatedMargin",
     "time": 1704067201000,
     "user": "0x1111111111111111111111111111111111111111",
     "coin": "BTC",
@@ -41,7 +41,7 @@ Streams isolated-margin and isolated-margin top-up updates for the requested add
 }
 ```
 
-An isolated-margin top-up update uses updateType top_up_isolated_margin and includes targetLeverage instead of isBuy and ntli.
+An isolated-margin top-up update uses updateType `topUpIsolatedOnlyMargin` and includes targetLeverage instead of isBuy and ntli.
 
 These are normalized events derived from on-chain actions: asset IDs are resolved to market symbols and integer quantities are converted to decimal strings.
 
@@ -55,13 +55,13 @@ These are normalized events derived from on-chain actions: asset IDs are resolve
 | cursor | integer | Resume cursor for the event position. |
 | updates | array | Margin update records. |
 | updates[] | object | Isolated-margin or isolated-margin top-up record. |
-| updates[].updateType | string | Update discriminator: isolated_margin or top_up_isolated_margin. |
+| updates[].updateType | string | Update discriminator: `updateIsolatedMargin` or `topUpIsolatedOnlyMargin`. |
 | updates[].time | integer | Event time in milliseconds. |
 | updates[].user | string | Address whose margin setting changed. |
 | updates[].coin | string | Market identifier. |
-| updates[].isBuy | boolean | Isolated-margin side for an isolated_margin update. |
-| updates[].ntli | string | Isolated-margin notional value for an isolated_margin update. |
-| updates[].targetLeverage | string | Target leverage for a top_up_isolated_margin update. |
+| updates[].isBuy | boolean | Isolated-margin side for an `updateIsolatedMargin` update. |
+| updates[].ntli | string | Isolated-margin notional value for an `updateIsolatedMargin` update. |
+| updates[].targetLeverage | string | Target leverage for a `topUpIsolatedOnlyMargin` update. |
 | updates[].txIndex | integer | Index of the transaction within its block. |
 
 ## Behavior
