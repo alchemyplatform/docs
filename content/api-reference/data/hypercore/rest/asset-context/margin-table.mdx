@@ -1,0 +1,53 @@
+---
+title: "Margin table"
+description: "HyperCore private-preview documentation."
+---
+
+<Markdown src="../../../../shared/preview-notice-october.mdx" />
+
+# Margin table
+
+Returns the leverage tiers for one perpetual margin-table identifier.
+
+<Note>
+
+  **Available now.** This read is served at the interim endpoint today.
+
+</Note>
+
+## Request
+
+`POST /{apiKey}/info`
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- |
+| `type` | string | Yes | Selects `marginTable`. |
+| `id` | integer | Yes | Margin-table identifier, such as a market's `marginTableId` from `meta`. |
+
+```json
+{
+  "type": "marginTable",
+  "id": 56
+}
+```
+
+## Response fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `description` | string | Human-readable margin-table label. |
+| `marginTiers` | array | Ordered notional thresholds and their maximum leverage limits. |
+| `marginTiers[].lowerBound` | string | Minimum notional at which the tier applies. |
+| `marginTiers[].maxLeverage` | integer | Maximum leverage permitted in the tier. |
+
+## Response example
+
+```json
+{
+  "description": "tiered 40x",
+  "marginTiers": [
+    { "lowerBound": "0.0", "maxLeverage": 40 },
+    { "lowerBound": "150000000.0", "maxLeverage": 20 }
+  ]
+}
+```
