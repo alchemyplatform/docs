@@ -29,37 +29,39 @@ Streams isolated-margin and isolated-margin top-up updates across users.
   "seq": 1,
   "cursor": 1704067201000,
   "updates": [{
-    "update_type": "isolated_margin",
+    "updateType": "isolated_margin",
     "time": 1704067201000,
     "user": "0x1111111111111111111111111111111111111111",
     "coin": "xyz:GOLD",
-    "is_buy": false,
+    "isBuy": false,
     "ntli": "0.223223",
-    "tx_index": 0
+    "txIndex": 0
   }]
 }
 ```
 
-An isolated-margin top-up update uses update_type top_up_isolated_margin and includes target_leverage instead of is_buy and ntli.
+An isolated-margin top-up update uses updateType top_up_isolated_margin and includes targetLeverage instead of isBuy and ntli.
+
+These are normalized events derived from on-chain actions: asset IDs are resolved to market symbols and integer quantities are converted to decimal strings.
 
 ## Payload fields
 
-| Field | Type | Description | Source tier |
-| --- | --- | --- | --- |
-| type | string | Event type. | Extended-provider |
-| channel | string | Routing channel for the event. | Extended-provider |
-| seq | integer | Monotonic sequence number for the stream. | Extended-provider |
-| cursor | integer | Resume cursor for the event position. | Extended-provider |
-| updates | array | Margin update records. | Extended-provider |
-| updates[] | object | Isolated-margin or isolated-margin top-up record. | Extended-provider |
-| updates[].update_type | string | Update discriminator: isolated_margin or top_up_isolated_margin. | Extended-provider |
-| updates[].time | integer | Event time in milliseconds. | Extended-provider |
-| updates[].user | string | Address whose margin setting changed. | Extended-provider |
-| updates[].coin | string | Market identifier. | Extended-provider |
-| updates[].is_buy | boolean | Isolated-margin side for an isolated_margin update. | Extended-provider |
-| updates[].ntli | string | Isolated-margin notional value for an isolated_margin update. | Extended-provider |
-| updates[].target_leverage | string | Target leverage for a top_up_isolated_margin update. | Extended-provider |
-| updates[].tx_index | integer | Index of the transaction within its block. | Extended-provider |
+| Field | Type | Description |
+| --- | --- | --- |
+| type | string | Event type. |
+| channel | string | Routing channel for the event. |
+| seq | integer | Monotonic sequence number for the stream. |
+| cursor | integer | Resume cursor for the event position. |
+| updates | array | Margin update records. |
+| updates[] | object | Isolated-margin or isolated-margin top-up record. |
+| updates[].updateType | string | Update discriminator: isolated_margin or top_up_isolated_margin. |
+| updates[].time | integer | Event time in milliseconds. |
+| updates[].user | string | Address whose margin setting changed. |
+| updates[].coin | string | Market identifier. |
+| updates[].isBuy | boolean | Isolated-margin side for an isolated_margin update. |
+| updates[].ntli | string | Isolated-margin notional value for an isolated_margin update. |
+| updates[].targetLeverage | string | Target leverage for a top_up_isolated_margin update. |
+| updates[].txIndex | integer | Index of the transaction within its block. |
 
 ## Behavior
 
