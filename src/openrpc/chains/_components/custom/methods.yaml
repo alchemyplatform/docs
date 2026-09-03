@@ -2368,9 +2368,9 @@ components:
             ledgerRetentionWindow: { type: integer }
           example:
             status: "healthy"
-            latestLedger: 50000
-            oldestLedger: 1
-            ledgerRetentionWindow: 17280
+            latestLedger: 64107174
+            oldestLedger: 63070374
+            ledgerRetentionWindow: 1036800
       examples:
         - name: getHealth example
           params: []
@@ -2406,7 +2406,10 @@ components:
     getTransaction:
       name: getTransaction
       summary: Get transaction
-      description: Returns the details and status of a submitted transaction by its hash.
+      description: |-
+        Returns the details and status of a submitted transaction by its hash.
+
+        Stellar-RPC will support querying within a maximum 60 days of recent ledgers.
       paramStructure: by-name
       x-compute-units: 40
       params:
@@ -2435,7 +2438,7 @@ components:
         - name: getTransaction example
           description: |
             Looks up a real successful Stellar mainnet transaction. Stellar RPC retains transactions
-            for ~14 days, so this hash will eventually age out and need to be replaced with a fresher one.
+            for ~60 days, so this hash will eventually age out and need to be replaced with a fresher one.
           params:
             - name: hash
               value: "86d85a0db4d7cdf2aa8e4b633e050e8c3c138deae7cac62ff4d4ff5fb732fe96"
@@ -2443,7 +2446,10 @@ components:
     getTransactions:
       name: getTransactions
       summary: Get transactions
-      description: Returns a paginated list of transactions from the network.
+      description: |-
+        Returns a paginated list of transactions from the network.
+
+        Stellar-RPC will support querying within a maximum 60 days of recent ledgers.
       paramStructure: by-name
       x-compute-units: 50
       params:
@@ -2478,7 +2484,7 @@ components:
         - name: getTransactions example
           description: |
             Returns one transaction starting at a recent mainnet ledger. Stellar RPC keeps roughly
-            the last 14 days of transactions; if the example ledger has aged out, replace `startLedger`
+            the last 60 days of transactions; if the example ledger has aged out, replace `startLedger`
             with a value within the current retention window (see `oldestLedger` from `getHealth`).
           params:
             - name: startLedger
