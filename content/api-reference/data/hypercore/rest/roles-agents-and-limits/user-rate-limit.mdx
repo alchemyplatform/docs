@@ -9,6 +9,13 @@ description: "HyperCore private-preview documentation."
 
 Returns the native request allowance and usage for an account.
 
+
+<Note>
+
+  **Available now.** This read is served at the interim endpoint today.
+
+</Note>
+
 ## Request
 
 `POST /{apiKey}/info`
@@ -29,9 +36,9 @@ Returns the native request allowance and usage for an account.
 
 | Field              | Type    | Description                            |
 | ------------------ | ------- | -------------------------------------- |
-| `cumVlm`           | string  | Cumulative volume.                     |
+| `cumVlm`           | string  | Cumulative volume used to scale the request cap. |
 | `nRequestsUsed`    | integer | Requests used after reserved capacity. |
-| `nRequestsCap`     | integer | Current request cap.                   |
+| `nRequestsCap`     | integer | Current request cap, which scales with `cumVlm`. |
 | `nRequestsSurplus` | integer | Reserved request capacity remaining.   |
 
 ## Response example
@@ -44,3 +51,5 @@ Returns the native request allowance and usage for an account.
   "nRequestsSurplus": 0
 }
 ```
+
+This example is one address at one point in time; `nRequestsCap` scales with that address's cumulative volume.

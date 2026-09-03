@@ -9,6 +9,13 @@ description: "HyperCore private-preview documentation."
 
 Returns the native validator L1-vote collection when it is available for the requested network.
 
+
+<Note>
+
+  **Available now.** This read is served at the interim endpoint today.
+
+</Note>
+
 ## Request
 
 `POST /{apiKey}/info`
@@ -25,15 +32,11 @@ Returns the native validator L1-vote collection when it is available for the req
 
 ## Response fields
 
-| Field         | Type   | Description                                                     |
-| ------------- | ------ | --------------------------------------------------------------- |
-| `[]`          | array  | Validator-vote entries.                                         |
-| `[].<fields>` | object | No populated native response was available to establish fields. |
+| Field                             | Type    | Description                                                                                         |
+| --------------------------------- | ------- | --------------------------------------------------------------------------------------------------- |
+| `[]`                              | array   | Validator L1-vote entries.                                                                          |
+| `[].expireTime`                   | integer | Time when the vote expires.                                                                         |
+| `[].action`                       | object  | Single-key union describing the validator action.                                                   |
+| `[].action.O.registerTemplate`    | object  | Observed action case carrying a HIP-4 outcome-template registration.                               |
 
-## Response example
-
-```json
-[]
-```
-
-The native API accepted this request on mainnet and testnet, but the captures returned empty arrays. This page documents the confirmed request and direct-array response only; vote-entry fields will be added after a populated native payload is observed.
+The 2026-09-02 capture returned populated entries with `expireTime` and a single-key `action` union. The observed action case was `action.O.registerTemplate`; other union members are not expanded here.

@@ -92,7 +92,9 @@ The default never grows. New market types must be added to `marketTypes` explici
 | `diffs[].user`         | string  | Address that placed the order.                                                                                 |
 | `diffs[].side`         | string  | `B` for bid, `A` for ask.                                                                                      |
 | `diffs[].px`           | string  | Limit price, as a decimal string.                                                                              |
-| `diffs[].sz`           | string  | Current size. Present on `new` and `update`, absent on `remove`.                                               |
+| `diffs[].sz`           | string  | Initial order size. Present on `new` only.                                                                      |
+| `diffs[].origSz`       | string  | Order size before an `update`. Present on `update` only.                                                        |
+| `diffs[].newSz`        | string  | Order size after an `update`. Present on `update` only.                                                         |
 | `diffs[].insertBefore` | integer | Optional, on `new` only. Queue placement — see below.                                                          |
 
 ## Queue position
@@ -101,15 +103,15 @@ The default never grows. New market types must be added to `marketTypes` explici
 
 ## Update behavior
 
-* `update` means the order's size changed, typically a partial fill
-* `remove` is terminal — the order was filled or cancelled
+* `update` means the order's size changed, typically a partial fill; it carries `origSz` and `newSz`
+* `remove` is terminal — the order was filled or cancelled and carries no operation-specific payload
 * Grouping these orders by price produces the corresponding level-aggregated view — sum the sizes and count the orders at each price — so one subscription can serve both order-level and level-aggregated needs. This corresponds to an unaggregated `l2Book`; it does not reproduce a book requested with `nSigFigs` or `mantissa` applied.
 
 ## Bootstrap
 
 The first message after subscribing carries a full order-book snapshot with `isSnapshot: true`, delivering every resting order as a `new` diff. Install it as local state, then apply later diffs. A later message with `isSnapshot: true` uses the same replacement mechanism for recovery.
 
-For a snapshot shared by many consumers, or to let a slow client digest a large book while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api) instead.
+For a snapshot shared by many consumers, or to let a slow client digest a large book while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api/market-data-and-snapshots/l-4-book-snapshots) instead.
 
 ## Choosing a book stream
 

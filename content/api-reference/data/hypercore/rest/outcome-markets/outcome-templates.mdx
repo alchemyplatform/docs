@@ -9,6 +9,13 @@ description: "HyperCore private-preview documentation."
 
 Returns registered outcome templates for HIP-4 deployment planning.
 
+
+<Note>
+
+  **Available now.** This read is served at the interim endpoint today.
+
+</Note>
+
 ## Request
 
 `POST /{apiKey}/info`
@@ -25,27 +32,32 @@ Returns registered outcome templates for HIP-4 deployment planning.
 
 ## Response fields
 
-| Field            | Type    | Description                                             |
-| ---------------- | ------- | ------------------------------------------------------- |
-| `[]`             | array   | Outcome-template entries.                               |
-| `[].id`          | integer | Numeric identifier used when selecting the template.    |
-| `[].role`        | string  | Role the template configures for an outcome deployment. |
-| `[].name`        | string  | Human-readable label shown for the template.            |
-| `[].description` | string  | Human-readable explanation of the template's purpose.   |
-| `[].keywords`    | array   | Search terms associated with the template.              |
+| Field                                 | Type   | Description                                                               |
+| ------------------------------------- | ------ | ------------------------------------------------------------------------- |
+| `[]`                                  | array  | Outcome-template entries.                                                 |
+| `[].id`                               | string | Template identifier, for example `binaryPrice`.                           |
+| `[].role`                             | object | Role configuration for the template.                                      |
+| `[].role.standaloneOutcome`           | object | Observed role configuration for a standalone outcome.                     |
+| `[].role.standaloneOutcome.sideNames` | array  | Side names in the observed standalone-outcome role configuration.         |
+| `[].name`                             | string | Human-readable label shown for the template.                              |
+| `[].description`                      | string | Human-readable explanation of the template's purpose.                     |
+| `[].keywords`                         | array  | Search terms associated with the template.                                |
 
 ## Response example
 
 ```json
 [
   {
-    "id": 1,
-    "role": "creator",
-    "name": "Price binary",
-    "description": "A binary price outcome template.",
-    "keywords": ["price", "binary"]
+    "id": "binaryPrice",
+    "role": {
+      "standaloneOutcome": {
+        "sideNames": ["Yes", "No"]
+      }
+    },
+    "name": "{perp} above {threshold} at {time}?",
+    "description": "The market resolves to Yes if the {perp} price is above {threshold} at {time}..."
   }
 ]
 ```
 
-Mainnet returned an empty list in the capture. The populated shape above was observed on testnet, where permissionless HIP-4 deployment is available. For deployment context, see [Deploying Hyperliquid markets](/docs/chains/deploying-markets).
+The 2026-09-02 capture returned seven templates on mainnet. `validatorL1Votes` records `registerTemplate` actions through which templates are registered in validator governance. For deployment context, see [Deploying Hyperliquid markets](/docs/chains/deploying-markets).

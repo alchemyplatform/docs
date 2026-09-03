@@ -1,50 +1,54 @@
 ## Delta types
 
 Every ledger update carries a `delta` object whose `type` field identifies the operation.
+There is no common delta shape: branch on `type` before reading value fields, because some deltas use USDC-denominated `usdc` while others use `amount` and `token`.
 
 ### Transfers
 
 | Type | Source | Description | Fields |
 | --- | --- | --- | --- |
-| `internalTransfer` | Foundation documented | Transfer between accounts. | `usdc`, `user`, `destination` |
-| `send` | Additional HyperCore type | Transfer to another address. | `token`, `amount`, `destination` |
-| `subAccountTransfer` | Foundation documented | Transfer involving a subaccount. | `usdc`, `user`, `destination` |
-| `accountClassTransfer` | Foundation documented | Transfer between account classes. | `usdc`, `user`, `destination` |
+| `internalTransfer` | Foundation documented | Transfer between accounts. | `user`, `destination`, `usdc`, `fee` |
+| `send` | Additional HyperCore type | Transfer to another address. | `user`, `destination`, `sourceDex`, `destinationDex`, `token`, `amount`, `usdcValue`, `fee`, `feeToken`, `nativeTokenFee`, `nonce` |
+| `subAccountTransfer` | Foundation documented | Transfer involving a subaccount. | `user`, `destination`, `usdc` |
+| `accountClassTransfer` | Foundation documented | Transfer between account classes. | `usdc`, `toPerp` |
 | `perpDexClassTransfer` | Additional HyperCore type | Transfer between perpetual DEX account classes. | `usdc`, `user`, `destination` |
-| `spotTransfer` | Foundation documented | Spot-asset transfer between accounts. | `token`, `amount`, `user`, `destination` |
+| `spotTransfer` | Foundation documented | Spot-asset transfer between accounts. | `user`, `destination`, `token`, `amount`, `usdcValue`, `fee`, `feeToken`, `nativeTokenFee`, `nonce` |
+| `gossipPriorityGasAuction` | Additional HyperCore type | Ledger effect of a priority gas auction. | `token`, `amount` |
+
+`send` includes `sourceDex` and `destinationDex` to route transfers across builder-deployed perpetual DEXes.
 
 ### Deposits and withdrawals
 
 | Type | Source | Description | Fields |
 | --- | --- | --- | --- |
-| `deposit` | Foundation documented | Bridge transfer from Arbitrum to Hyperliquid. | `usdc`, `user` |
-| `withdraw` | Foundation documented | Bridge transfer from Hyperliquid to Arbitrum. | `usdc`, `user`, `destination` |
+| `deposit` | Foundation documented | Bridge transfer from Arbitrum to Hyperliquid. | `usdc` |
+| `withdraw` | Foundation documented | Bridge transfer from Hyperliquid to Arbitrum. | `usdc`, `fee`, `nonce` |
 
 ### Vault operations
 
 | Type | Source | Description | Fields |
 | --- | --- | --- | --- |
 | `vaultCreate` | Foundation documented | Managed vault creation. | `vault`, `user` |
-| `vaultDeposit` | Foundation documented | Deposit into a managed vault. | `vault`, `user`, `amount` |
-| `vaultWithdraw` | Foundation documented | Withdrawal from a managed vault. | `vault`, `user`, `amount` |
+| `vaultDeposit` | Foundation documented | Deposit into a managed vault. | `vault`, `usdc` |
+| `vaultWithdraw` | Foundation documented | Withdrawal from a managed vault. | `user`, `vault`, `requestedUsd`, `netWithdrawnUsd`, `basis`, `closingCost`, `commission` |
 | `vaultDistribution` | Foundation documented | Distribution from a managed vault. | `vault`, `user`, `amount` |
-| `vaultLeaderCommission` | Foundation documented | Commission paid to a vault leader. | `vault`, `user`, `amount` |
+| `vaultLeaderCommission` | Foundation documented | Commission paid to a vault leader. | `user`, `usdc` |
 
 ### Staking and cross-chain
 
 | Type | Source | Description | Fields |
 | --- | --- | --- | --- |
-| `cStakingTransfer` | Additional HyperCore type | Transfer related to core staking. | `user`, `amount` |
+| `cStakingTransfer` | Additional HyperCore type | Transfer related to core staking. | `token`, `amount`, `isDeposit` |
 | `spotGenesis` | Foundation documented | Spot-market genesis allocation. | `token`, `amount`, `user` |
 
 ### System operations
 
 | Type | Source | Description | Fields |
 | --- | --- | --- | --- |
-| `rewardsClaim` | Foundation documented | Claim of account rewards. | `user`, `amount` |
-| `borrowLend` | Additional HyperCore type | Borrow or lend account operation. | `token`, `user`, `amount` |
+| `rewardsClaim` | Foundation documented | Claim of account rewards. | `token`, `amount` |
+| `borrowLend` | Additional HyperCore type | Borrow or lend account operation. | `token`, `amount`, `interestAmount`, `operation` |
 | `borrowLendBackstopLiquidation` | Additional HyperCore type | Backstop liquidation in the borrow and lend system. | `token`, `user`, `amount` |
-| `accountActivationGas` | Additional HyperCore type | Account-activation gas charge. | `user`, `amount` |
+| `accountActivationGas` | Additional HyperCore type | Account-activation gas charge. | `token`, `amount` |
 | `activateDexAbstraction` | Additional HyperCore type | DEX-abstraction activation. | `user` |
 | `deployGasAuction` | Additional HyperCore type | Gas-auction deployment operation. | `user`, `amount` |
 

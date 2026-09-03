@@ -66,6 +66,8 @@ message OrderDiff {
   string px = 6;
   string sz = 7;
   optional uint64 insert_before = 8;
+  optional string orig_sz = 9;
+  optional string new_sz = 10;
 }
 
 enum DiffType {
@@ -85,7 +87,11 @@ enum DiffType {
 
 **`px`**: Limit price, as a decimal string.
 
-**`sz`**: Current size on `NEW` and `UPDATE`. Absent on `REMOVE`.
+**`sz`**: Initial order size on `NEW`. Absent on `UPDATE` and `REMOVE`.
+
+**`orig_sz`**: Order size before an `UPDATE`. Absent on `NEW` and `REMOVE`.
+
+**`new_sz`**: Order size after an `UPDATE`. Absent on `NEW` and `REMOVE`.
 
 **`insert_before`**: Queue placement. Insert this order immediately ahead of the resting
 order with this ID at the same price level. Absent means append to the tail of the queue.
@@ -93,11 +99,11 @@ If the named order is no longer at that level, append to the tail.
 
 ### Field presence by operation
 
-| Operation | Fields present |
+| Operation | Operation-specific fields |
 | --- | --- |
-| `NEW` | `coin`, `oid`, `user`, `side`, `px`, `sz`, and `insert_before` when applicable |
-| `UPDATE` | `coin`, `oid`, `sz` |
-| `REMOVE` | `coin`, `oid` |
+| `NEW` | `sz`, and `insert_before` when applicable |
+| `UPDATE` | `orig_sz`, `new_sz` |
+| `REMOVE` | None; the normalized diff carries only its common context. |
 
 ## Queue position
 
