@@ -9,10 +9,9 @@ slug: wallets/low-level-infra/gas-manager/gas-sponsorship/using-sdk/pay-gas-with
 Use the Gas Manager API to let a smart account pay gas with an ERC-20 token instead of the network's native token. This guide shows the low-level post-operation flow for an EntryPoint v0.7 `UserOperation` using raw JSON-RPC calls and Viem utilities.
 
 <Info>
-  If you use Wallet APIs, follow the [pay gas with any token
-  guide](/docs/wallets/transactions/pay-gas-with-any-token) instead. Wallet APIs
-  can quote the payment, add the approval, prepare the operation, and return the
-  signature request for you.
+  **Wallet APIs are the recommended integration path.** They greatly simplify
+  this flow by reducing it to three API calls. Follow the [Wallet APIs
+  guide](/docs/wallets/transactions/pay-gas-with-any-token) to get started.
 </Info>
 
 ## How ERC-20 gas payment works
@@ -51,32 +50,74 @@ The example deliberately leaves account creation, batch encoding, and signing be
   <Step title="Configure the RPC client and account hooks">
     Set `ALCHEMY_API_KEY` and `ALCHEMY_POLICY_ID` in your environment, then add the following setup to your integration:
 
+    <CodeBlocks>
+
     ```ts title="pay-gas-with-usdc.ts"
     import {
       createPublicClient,
-      encodeFunctionData,
-      erc20Abi,
       getAddress,
       http,
       maxUint256,
       rpcSchema,
       toHex,
-      type Address,
-      type BundlerRpcSchema,
       type Hex,
-      type RpcUserOperation,
     } from "viem";
     import { entryPoint07Address } from "viem/account-abstraction";
     import { baseSepolia } from "viem/chains";
+    import { approvalCalls, decimalTokenAmountToRawUnitsCeil } from "./helpers";
+    import type {
+      Alchemy4337RpcSchema,
+      Call,
+      PartialUserOperationV07,
+      UnsignedUserOperationV07,
+    } from "./types";
 
-    type Call = { to: Address; data: Hex; value?: bigint };
+    const apiKey = process.env.ALCHEMY_API_KEY!;
+    const policyId = process.env.ALCHEMY_POLICY_ID!;
+    const rpcUrl = `https://base-sepolia.g.alchemy.com/v2/${apiKey}`;
+    const paymentToken = getAddress(
+      "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    );
+    // Set this to true for tokens that require approve(0) before changing a
+    // non-zero allowance. Base Sepolia USDC does not require it.
+    const requiresAllowanceReset = false;
+
+    const client = createPublicClient({
+      chain: baseSepolia,
+      transport: http(rpcUrl),
+      rpcSchema: rpcSchema<Alchemy4337RpcSchema>(),
+    });
+
+    // Implement these hooks with your smart account integration. Calls to
+    // buildPartialUserOperation must reuse the same sender and nonce.
+    declare function buildPartialUserOperation(
+      calls: Call[],
+    ): Promise<PartialUserOperationV07>;
+    declare function getDummySignature(): Promise<Hex>;
+    declare function signUserOperation(
+      userOperation: UnsignedUserOperationV07,
+    ): Promise<Hex>;
+    ```
+
+    ```ts title="types.ts"
+    import type {
+      Address,
+      BundlerRpcSchema,
+      Hex,
+      RpcUserOperation,
+    } from "viem";
+
+    export type Call = { to: Address; data: Hex; value?: bigint };
     type UserOperationV07 = RpcUserOperation<"0.7">;
-    type PartialUserOperationV07 = Pick<
+    export type PartialUserOperationV07 = Pick<
       UserOperationV07,
       "sender" | "nonce" | "callData"
     > &
       Partial<Pick<UserOperationV07, "factory" | "factoryData">>;
-    type UnsignedUserOperationV07 = Omit<UserOperationV07, "signature">;
+    export type UnsignedUserOperationV07 = Omit<
+      UserOperationV07,
+      "signature"
+    >;
 
     type Erc20Context = {
       tokenAddress: Address;
@@ -88,7 +129,6 @@ The example deliberately leaves account creation, batch encoding, and signing be
     type PaymasterFieldsV07 = Required<
       Pick<UserOperationV07, "paymaster" | "paymasterData">
     >;
-
     type GasAndPaymasterDataV07 = PaymasterFieldsV07 &
       Required<
         Pick<
@@ -102,7 +142,6 @@ The example deliberately leaves account creation, batch encoding, and signing be
         >
       > &
       Pick<UserOperationV07, "paymasterVerificationGasLimit">;
-
     type GasAndPaymasterRequestV07 = {
       policyId: string;
       entryPoint: Address;
@@ -110,7 +149,7 @@ The example deliberately leaves account creation, batch encoding, and signing be
       userOperation: PartialUserOperationV07;
     };
 
-    type Alchemy4337RpcSchema = [
+    export type Alchemy4337RpcSchema = [
       ...BundlerRpcSchema,
       {
         Method: "pm_getPaymasterStubData";
@@ -142,34 +181,77 @@ The example deliberately leaves account creation, batch encoding, and signing be
         ReturnType: GasAndPaymasterDataV07;
       },
     ];
-
-    const apiKey = process.env.ALCHEMY_API_KEY!;
-    const policyId = process.env.ALCHEMY_POLICY_ID!;
-    const rpcUrl = `https://base-sepolia.g.alchemy.com/v2/${apiKey}`;
-    const paymentToken = getAddress(
-      "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-    );
-
-    const client = createPublicClient({
-      chain: baseSepolia,
-      transport: http(rpcUrl),
-      rpcSchema: rpcSchema<Alchemy4337RpcSchema>(),
-    });
-
-    // Implement these hooks with your smart account integration. Calls to
-    // buildPartialUserOperation must reuse the same sender and nonce.
-    declare function buildPartialUserOperation(
-      calls: Call[],
-    ): Promise<PartialUserOperationV07>;
-    declare function getDummySignature(): Promise<Hex>;
-    declare function signUserOperation(
-      userOperation: UnsignedUserOperationV07,
-    ): Promise<Hex>;
     ```
+
+    ```ts title="helpers.ts"
+    import { encodeFunctionData, erc20Abi, type Address } from "viem";
+    import type { Call } from "./types";
+
+    export function approvalCalls({
+      token,
+      spender,
+      currentAllowance,
+      amount,
+      resetFirst,
+    }: {
+      token: Address;
+      spender: Address;
+      currentAllowance: bigint;
+      amount: bigint;
+      resetFirst: boolean;
+    }): Call[] {
+      if (currentAllowance >= amount) return [];
+
+      return [
+        ...(resetFirst && currentAllowance > 0n
+          ? [approveErc20(token, spender, 0n)]
+          : []),
+        approveErc20(token, spender, amount),
+      ];
+    }
+
+    function approveErc20(
+      token: Address,
+      spender: Address,
+      amount: bigint,
+    ): Call {
+      return {
+        to: token,
+        value: 0n,
+        data: encodeFunctionData({
+          abi: erc20Abi,
+          functionName: "approve",
+          args: [spender, amount],
+        }),
+      };
+    }
+
+    export function decimalTokenAmountToRawUnitsCeil(
+      value: string,
+      decimals: number,
+    ): bigint {
+      if (!/^\d+(?:\.\d+)?$/.test(value)) {
+        throw new Error(`Invalid decimal token amount: ${value}`);
+      }
+
+      const [whole, fraction = ""] = value.split(".");
+      const keptFraction = fraction.slice(0, decimals).padEnd(decimals, "0");
+      const discardedFraction = fraction.slice(decimals);
+      const roundUp = /[1-9]/.test(discardedFraction) ? 1n : 0n;
+
+      return (
+        BigInt(whole) * 10n ** BigInt(decimals) +
+        BigInt(keptFraction || "0") +
+        roundUp
+      );
+    }
+    ```
+
+    </CodeBlocks>
   </Step>
 
   <Step title="Discover the paymaster address">
-    An ERC-20 approval names a spender, so discover the paymaster before encoding the approval. Do not maintain a hardcoded paymaster address.
+    An ERC-20 approval names a spender, so you need the paymaster address before encoding the approval. The address differs by chain and EntryPoint version. This example discovers it from `pm_getPaymasterStubData`; you can instead configure the matching deployment address directly.
 
     ```ts title="pay-gas-with-usdc.ts"
     // Replace this with the action the smart account should perform.
@@ -217,7 +299,13 @@ The example deliberately leaves account creation, batch encoding, and signing be
     });
 
     const quoteOperation = await buildPartialUserOperation([
-      approveErc20(paymentToken, paymaster, maxUint256),
+      ...approvalCalls({
+        token: paymentToken,
+        spender: paymaster,
+        currentAllowance,
+        amount: maxUint256,
+        resetFirst: requiresAllowanceReset,
+      }),
       applicationCall,
     ]);
     const quote = await client.request({
@@ -248,9 +336,13 @@ The example deliberately leaves account creation, batch encoding, and signing be
 
     ```ts title="pay-gas-with-usdc.ts"
     const finalCalls: Call[] = [
-      ...(currentAllowance >= approvalAmount
-        ? []
-        : [approveErc20(paymentToken, paymaster, approvalAmount)]),
+      ...approvalCalls({
+        token: paymentToken,
+        spender: paymaster,
+        currentAllowance,
+        amount: approvalAmount,
+        resetFirst: requiresAllowanceReset,
+      }),
       applicationCall,
     ];
     const partialUserOperation = await buildPartialUserOperation(finalCalls);
@@ -273,7 +365,7 @@ The example deliberately leaves account creation, batch encoding, and signing be
     }
     ```
 
-    Some tokens require an `approve(0)` call before changing a non-zero allowance. Account for that token-specific behavior when you build `finalCalls`.
+    For reset-only tokens, `approvalCalls` includes `approve(0)` in both the temporary quote batch and final batch when the current allowance is non-zero.
 
     If the gas estimate or exchange rate changes enough that the exact approval no longer covers the final estimate, restart from the quote step and rebuild the operation.
   </Step>
@@ -305,42 +397,6 @@ The example deliberately leaves account creation, batch encoding, and signing be
     A successful response returns the UserOperation hash. Use [`eth_getUserOperationReceipt`](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-get-user-operation-receipt) to wait for its receipt.
   </Step>
 </Steps>
-
-Add these helpers to the same file:
-
-```ts title="pay-gas-with-usdc.ts"
-function approveErc20(token: Address, spender: Address, amount: bigint): Call {
-  return {
-    to: token,
-    value: 0n,
-    data: encodeFunctionData({
-      abi: erc20Abi,
-      functionName: "approve",
-      args: [spender, amount],
-    }),
-  };
-}
-
-function decimalTokenAmountToRawUnitsCeil(
-  value: string,
-  decimals: number,
-): bigint {
-  if (!/^\d+(?:\.\d+)?$/.test(value)) {
-    throw new Error(`Invalid decimal token amount: ${value}`);
-  }
-
-  const [whole, fraction = ""] = value.split(".");
-  const keptFraction = fraction.slice(0, decimals).padEnd(decimals, "0");
-  const discardedFraction = fraction.slice(decimals);
-  const roundUp = /[1-9]/.test(discardedFraction) ? 1n : 0n;
-
-  return (
-    BigInt(whole) * 10n ** BigInt(decimals) +
-    BigInt(keptFraction || "0") +
-    roundUp
-  );
-}
-```
 
 ## Operations that acquire the payment token
 
