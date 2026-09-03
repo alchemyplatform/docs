@@ -6,7 +6,7 @@ url: https://alchemy.com/docs/reference/how-to-pay-gas-with-any-token
 slug: wallets/low-level-infra/gas-manager/gas-sponsorship/using-sdk/pay-gas-with-any-erc20-token
 ---
 
-Use the Gas Manager API to let a smart account pay gas with an ERC-20 token instead of the network's native token. This guide shows the low-level post-operation flow for an EntryPoint v0.7 `UserOperation` using raw JSON-RPC calls and Viem utilities.
+Use the Gas Manager API to let a smart account pay gas with an ERC-20 token instead of the network's native token. This guide shows the low-level post-operation flow for an EntryPoint v0.7 `UserOperation` using Viem actions or raw JSON-RPC calls.
 
 <Info>
   **Wallet APIs are the recommended integration path.** They greatly simplify
@@ -37,14 +37,150 @@ Before you begin:
 * Create an API key in the [dashboard](https://dashboard.alchemy.com/apps) and enable Base Sepolia.
 * Create and activate a **Pay gas with any token** policy in the [Gas Manager dashboard](https://dashboard.alchemy.com/apps/latest/gas-sponsorship). Enable Base Sepolia USDC and select the post-operation transfer mode.
 * Fund `UserOperation.sender` with Base Sepolia USDC at `0x036CbD53842c5426634e7929541eC2318f3dCF7e`. You can get test USDC from the [Circle faucet](https://faucet.circle.com/).
-* Install Viem with `npm install viem`.
-* Start with an EntryPoint v0.7 smart account integration that can encode a batch, provide a dummy signature, and sign the final operation.
+* Install the dependencies with `npm install viem @alchemy/common @alchemy/aa-infra @alchemy/smart-accounts`.
+* Set `ALCHEMY_API_KEY`, `ALCHEMY_POLICY_ID`, and a test-only `OWNER_PRIVATE_KEY` in your environment for the Modular Account V2 example.
 
 Use an API key from the same app as the Gas Manager policy. For other network and token combinations, check the [supported chains](/docs/wallets/supported-chains) and enable the token on the policy.
 
-## Implement the post-operation flow
+## Send with Viem actions
 
-The example deliberately leaves account creation, batch encoding, and signing behind three hooks. Keep your account implementation's existing nonce, factory, encoding, and signature logic.
+Use Viem's account abstraction actions for the shortest low-level integration. This complete example creates a Modular Account V2, gives the paymaster a reusable 5 USDC allowance when the remaining allowance is below the payment cap, and limits each estimated payment to 0.5 USDC.
+
+The application call only reads the account's USDC balance; running the example still spends USDC on gas. Replace that read with the call your application needs, and choose allowance and cap values appropriate for your application.
+
+```ts title="pay-gas-with-usdc.ts"
+import { estimateFeesPerGas } from "@alchemy/aa-infra";
+import { alchemyTransport } from "@alchemy/common";
+import { toModularAccountV2 } from "@alchemy/smart-accounts";
+import {
+  createPublicClient,
+  encodeFunctionData,
+  erc20Abi,
+  formatUnits,
+  getAddress,
+  http,
+  parseUnits,
+  type Hex,
+} from "viem";
+import {
+  createBundlerClient,
+  createPaymasterClient,
+} from "viem/account-abstraction";
+import { privateKeyToAccount } from "viem/accounts";
+import { baseSepolia } from "viem/chains";
+
+const {
+  ALCHEMY_API_KEY: apiKey,
+  ALCHEMY_POLICY_ID: policyId,
+  OWNER_PRIVATE_KEY: ownerPrivateKey,
+} = process.env;
+if (!apiKey || !policyId || !ownerPrivateKey) {
+  throw new Error(
+    "Set ALCHEMY_API_KEY, ALCHEMY_POLICY_ID, and OWNER_PRIVATE_KEY",
+  );
+}
+const owner = privateKeyToAccount(ownerPrivateKey as Hex);
+
+const paymentToken = getAddress(
+  "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+);
+// This address is specific to Base Sepolia and EntryPoint v0.7.
+const paymaster = getAddress("0x2cc0c7981D846b9F2a16276556f6e8cb52BfB633");
+const approvalAmount = parseUnits("5", 6);
+const maxTokenAmount = parseUnits("0.5", 6);
+
+const transport = alchemyTransport({ apiKey });
+const rpcClient = createPublicClient({ chain: baseSepolia, transport });
+const account = await toModularAccountV2({ client: rpcClient, owner });
+
+const [balance, allowance] = await Promise.all([
+  rpcClient.readContract({
+    address: paymentToken,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [account.address],
+  }),
+  rpcClient.readContract({
+    address: paymentToken,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [account.address, paymaster],
+  }),
+]);
+
+console.log({
+  smartAccount: account.address,
+  usdcBalance: formatUnits(balance, 6),
+  currentAllowance: formatUnits(allowance, 6),
+});
+if (balance < maxTokenAmount) {
+  throw new Error(`Fund ${account.address} with Base Sepolia USDC and retry`);
+}
+
+const paymasterClient = createPaymasterClient({
+  transport: http(`https://base-sepolia.g.alchemy.com/v2/${apiKey}`),
+});
+const bundlerClient = createBundlerClient({
+  account,
+  chain: baseSepolia,
+  client: rpcClient,
+  transport,
+  paymaster: paymasterClient,
+  paymasterContext: {
+    policyId,
+    erc20Context: {
+      tokenAddress: paymentToken,
+      maxTokenAmount: maxTokenAmount.toString(),
+    },
+  },
+  userOperation: { estimateFeesPerGas },
+});
+
+const applicationCall = {
+  to: paymentToken,
+  data: encodeFunctionData({
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [account.address],
+  }),
+  value: 0n,
+} as const;
+
+const hash = await bundlerClient.sendUserOperation({
+  calls: [
+    ...(allowance < maxTokenAmount
+      ? [
+          {
+            to: paymentToken,
+            data: encodeFunctionData({
+              abi: erc20Abi,
+              functionName: "approve",
+              args: [paymaster, approvalAmount],
+            }),
+            value: 0n,
+          },
+        ]
+      : []),
+    applicationCall,
+  ],
+});
+
+const receipt = await bundlerClient.waitForUserOperationReceipt({ hash });
+if (!receipt.success) throw new Error(`UserOperation reverted: ${hash}`);
+
+console.log({
+  userOperationHash: hash,
+  transactionHash: receipt.receipt.transactionHash,
+});
+```
+
+`createPaymasterClient` does not receive a chain, so its transport uses an explicit Base Sepolia RPC URL. The bundler client uses `paymasterContext` for the policy, payment token, and raw-unit payment cap, then handles estimation, signing, submission, and receipt polling.
+
+For reset-only tokens, include `approve(0)` before changing an existing non-zero allowance. The Base Sepolia USDC used here does not require that reset.
+
+## Request an exact approval with raw RPC
+
+Use the raw flow when you need to request an exact token quote before choosing the approval amount, or when you are integrating an existing smart account implementation. The example deliberately leaves account creation, batch encoding, and signing behind three hooks so you can keep your account's nonce, factory, encoding, and signature logic.
 
 <Steps>
   <Step title="Configure the RPC client and account hooks">
