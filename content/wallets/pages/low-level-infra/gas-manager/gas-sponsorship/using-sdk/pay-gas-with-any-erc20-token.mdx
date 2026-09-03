@@ -16,17 +16,18 @@ Use the Gas Manager API to let a smart account pay gas with an ERC-20 token inst
 
 ## How ERC-20 gas payment works
 
-Gas is fronted in the network's native token. After the operation executes, the paymaster transfers the selected ERC-20 token from the smart account to the receiving address configured in your policy. The native gas cost and admin fee are added to the policy owner's monthly invoice.
+Gas is fronted in the network's native token. Depending on the transfer mode configured in the policy, the paymaster collects the selected ERC-20 token from the smart account either before or after the operation executes. The native gas cost and admin fee are added to the policy owner's monthly invoice.
 
 The smart account at `UserOperation.sender` must hold the payment token and approve the paymaster to spend it. Funding or approving only the owner EOA does not fund a separate smart account. For an EIP-7702 delegated account, the EOA and `UserOperation.sender` use the same address.
 
-This example uses post-operation mode so you can batch the approval with the application call. If that batch reverts, its new approval also reverts. The paymaster cannot collect the token payment, but the policy owner still pays the native gas cost.
-
 <Note>
+  This guide uses post-operation mode, which collects payment after execution
+  and lets you batch the approval with the application call. If that batch
+  reverts, its new approval also reverts, so the paymaster cannot collect the
+  token payment even though the policy owner still pays the native gas cost.
   Pre-operation mode collects payment before execution, so the paymaster must
-  already have an allowance or a compatible permit. An approval inside the
-  operation executes too late for that mode. Compare the [token gas payment
-  modes](/docs/wallets/transactions/pay-gas-with-any-token#token-gas-payment-modes)
+  already have an allowance or compatible permit; an approval inside the
+  operation executes too late. Compare the [token gas payment modes](/docs/wallets/transactions/pay-gas-with-any-token#token-gas-payment-modes)
   before configuring the policy.
 </Note>
 
@@ -35,8 +36,8 @@ This example uses post-operation mode so you can batch the approval with the app
 Before you begin:
 
 * Create an API key in the [dashboard](https://dashboard.alchemy.com/apps) and enable Base Sepolia.
-* Create and activate a **Pay gas with any token** policy in the [Gas Manager dashboard](https://dashboard.alchemy.com/apps/latest/gas-sponsorship). Enable Base Sepolia USDC and select the post-operation transfer mode.
-* Fund `UserOperation.sender` with Base Sepolia USDC at `0x036CbD53842c5426634e7929541eC2318f3dCF7e`. You can get test USDC from the [Circle faucet](https://faucet.circle.com/).
+* Create and activate an **ERC-20 Payments** policy in the [Gas Manager dashboard](https://dashboard.alchemy.com/apps/latest/gas-sponsorship). Enable Base Sepolia USDC and select the post-operation transfer mode.
+* Fund `UserOperation.sender` with Base Sepolia USDC at `0x036CbD53842c5426634e7929541eC2318f3dCF7e`. For a standard smart contract account, this is the separate smart account address, not its owner EOA. For an EIP-7702 delegated account, `UserOperation.sender` and the EOA are the same address. You can get test USDC from the [Circle faucet](https://faucet.circle.com/).
 * Install the dependencies with `npm install viem @alchemy/common @alchemy/aa-infra @alchemy/smart-accounts`.
 * Set `ALCHEMY_API_KEY`, `ALCHEMY_POLICY_ID`, and a test-only `OWNER_PRIVATE_KEY` in your environment for the Modular Account V2 example.
 
@@ -46,7 +47,7 @@ Use an API key from the same app as the Gas Manager policy. For other network an
 
 Use Viem's account abstraction actions for the shortest low-level integration. This complete example creates a Modular Account V2, gives the paymaster a reusable 5 USDC allowance when the remaining allowance is below the payment cap, and limits each estimated payment to 0.5 USDC.
 
-The application call only reads the account's USDC balance; running the example still spends USDC on gas. Replace that read with the call your application needs, and choose allowance and cap values appropriate for your application.
+The application call sends 0 ETH to the zero address. Replace it with the call your application needs, and choose allowance and cap values appropriate for your application.
 
 ```ts title="pay-gas-with-usdc.ts"
 import { estimateFeesPerGas } from "@alchemy/aa-infra";
@@ -137,12 +138,8 @@ const bundlerClient = createBundlerClient({
 });
 
 const applicationCall = {
-  to: paymentToken,
-  data: encodeFunctionData({
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: [account.address],
-  }),
+  to: "0x0000000000000000000000000000000000000000",
+  data: "0x",
   value: 0n,
 } as const;
 
@@ -176,7 +173,7 @@ console.log({
 
 `createPaymasterClient` does not receive a chain, so its transport uses an explicit Base Sepolia RPC URL. The bundler client uses `paymasterContext` for the policy, payment token, and raw-unit payment cap, then handles estimation, signing, submission, and receipt polling.
 
-For reset-only tokens, include `approve(0)` before changing an existing non-zero allowance. The Base Sepolia USDC used here does not require that reset.
+Some tokens do not let you change an allowance directly from one non-zero amount to another. For those tokens, include `approve(0)` before the new approval. The Base Sepolia USDC used here does not require this extra call.
 
 ## Request an exact approval with raw RPC
 
@@ -501,7 +498,7 @@ Use the raw flow when you need to request an exact token quote before choosing t
     }
     ```
 
-    For reset-only tokens, `approvalCalls` includes `approve(0)` in both the temporary quote batch and final batch when the current allowance is non-zero.
+    For tokens that require an allowance to be set to zero before changing from one non-zero amount to another, `approvalCalls` includes `approve(0)` in both the temporary quote batch and final batch.
 
     If the gas estimate or exchange rate changes enough that the exact approval no longer covers the final estimate, restart from the quote step and rebuild the operation.
   </Step>
