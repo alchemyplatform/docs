@@ -1,6 +1,117 @@
 # These methods are only supported by specific chains/networks
 components:
   methods:
+    # Arc methods
+    # (Arc's Malachite BFT consensus layer surfaces a custom `arc_` JSON-RPC
+    # namespace alongside the standard `eth_*` methods.)
+    arc_getCertificate:
+      name: arc_getCertificate
+      summary: Returns the Malachite BFT commit certificate for a finalized Arc block at the given height.
+      description: >-
+        Returns the Malachite BFT commit certificate for a finalized block on
+        Arc. The certificate contains the consensus round, the finalized block
+        hash, and the base64-encoded validator signatures that decided the
+        block. It is produced by Arc's Malachite consensus layer and is only
+        available for blocks that have already been finalized.
+
+
+        Because Arc has deterministic finality on inclusion, once a certificate
+        exists for a given height it is immutable and safe to cache
+        indefinitely.
+
+
+        See the [Arc node RPC reference](https://docs.arc.io/arc/tutorials/run-an-arc-node)
+        for background on the `arc` namespace.
+      x-compute-units: 20
+      params:
+        - name: Block height
+          required: true
+          description: >-
+            The block height to fetch the certificate for. Accepts either a
+            decimal integer (for example `7`) or a hex-encoded quantity
+            string (for example `"0x7"`). Must be greater than or equal to
+            `1`.
+          schema:
+            oneOf:
+              - title: Block height (decimal)
+                type: integer
+                minimum: 1
+              - title: Block height (hex quantity)
+                type: string
+                pattern: "^0[xX][0-9a-fA-F]+$"
+      result:
+        name: Commit certificate
+        description: The commit certificate for the requested block height.
+        schema:
+          title: Commit certificate
+          type: object
+          required:
+            - height
+            - round
+            - block_hash
+            - signatures
+          properties:
+            height:
+              title: Block height
+              description: The block height this certificate finalizes.
+              type: integer
+              minimum: 1
+            round:
+              title: Consensus round
+              description: The Malachite consensus round in which the block was decided.
+              type: integer
+              minimum: 0
+            block_hash:
+              title: Block hash
+              description: The 32-byte hash of the block finalized at this height.
+              type: string
+              pattern: "^0x[0-9a-fA-F]{64}$"
+            signatures:
+              title: Validator signatures
+              description: One entry per validator that signed the commit certificate.
+              type: array
+              items:
+                title: Validator signature
+                type: object
+                required:
+                  - address
+                  - signature
+                properties:
+                  address:
+                    title: Validator address
+                    description: The 20-byte validator address.
+                    type: string
+                    pattern: "^0x[0-9a-fA-F]{40}$"
+                  signature:
+                    title: Signature
+                    description: >-
+                      Standard padded Base64 encoding of the 64-byte
+                      validator signature.
+                    type: string
+      examples:
+        - name: arc_getCertificate example
+          params:
+            - name: Block height
+              value: "0x7"
+          result:
+            name: Commit certificate
+            value:
+              height: 7
+              round: 0
+              block_hash: "0x751ccaee8df96f648c9ab00121a4ac1a1bcafc0c8e8cb0d205c67346edb37af2"
+              signatures:
+                - address: "0x602930d1ab44f1744f42e842b701c2b149c5da4f"
+                  signature: "K3SKb2xKYGWLZ9eMIXtXYckACgU6AaOVwmymD4nIVT6GXvQ9UylllQpSWhTZfuV7oDjo75ynruLh4xHv++jQBA=="
+                - address: "0x6791e002c8419e8a2fa5266e2951ed1780bc2295"
+                  signature: "uNmquXJkx+4NyNnkLUnnRY+1ZZygb5drQbh9ya50oW0z0H9HS21R7PyueayfHoADnJT9DqbDF+D8KECLmy3+Cw=="
+                - address: "0x2e78053671f707844a631bc907d4855894848fe3"
+                  signature: "2/52ncq8uRzHMiBiVxTFk10BzEq9InHfHckBu/qK9fomDNmgOPSuwWURu49EGPDti7Q60If4n7/Qt3dLa2N7CQ=="
+      errors:
+        - code: -32004
+          message: Certificate not found
+        - code: -32602
+          message: Invalid params (height must be >= 1)
+
     # EVM Methods
     # Block methods
     eth_getUncleCountByBlockHash:
