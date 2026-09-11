@@ -32,7 +32,7 @@ BSOs instead operate at the bundler level: they use your Gas Manager policy to c
 ## How to use BSO sponsorship
 
 1. Create a BSO Gas Manager policy in your [dashboard](https://dashboard.alchemy.com/). Configure:
-* **Policy Type**: select **Bundler Sponsored Operations**
+* **Policy Type**: select **Gas Sponsorship (EVM)**
 * **Max Spend Per UO**: the maximum spend per transaction - we will retry up to this limit
 2. **Include the policy ID** in your requests when sending transactions.
 
@@ -78,8 +78,9 @@ const { id } = await client.sendCalls({
 
 ### Low-level APIs
 
-See the [Bundler API Quickstart](/docs/reference/bundler-api-quickstart) for full examples. Two extra steps are required:
+See the [Bundler API Quickstart](/docs/reference/bundler-api-quickstart) for full examples. Three extra steps are required:
 
+* Create a **Gas Sponsorship (EVM)** policy in your [dashboard](https://dashboard.alchemy.com/) and copy the policy ID.
 * Set the `x-alchemy-policy-id` header on the bundler transport (via `fetchOptions.headers`).
 * Zero out `maxFeePerGas`, `maxPriorityFeePerGas`, and `preVerificationGas` on the user operation. All three must be zero, the bundler treats that as the signal to cover gas under the BSO policy and fills in the actual values server-side.
 
@@ -150,7 +151,7 @@ BSO gas is priced as the onchain settlement cost plus a BSO service fee for adva
 ## Requirements
 
 * A valid API key with Bundler API access
-* A configured Gas Manager policy of type **Bundler Sponsored Operations** with Max Spend Per UO set
+* A configured Gas Manager policy of type **Gas Sponsorship (EVM)** with Max Spend Per UO set
 * Wallet APIs SDK or equivalent setup for creating and signing transactions
 
 <Warning>
