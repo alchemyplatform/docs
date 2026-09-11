@@ -494,39 +494,6 @@ paths:
                 withMetadata:
                   $ref: "#/components/examples/withMetadataGetContractsForOwner_response"
       operationId: getContractsForOwner-v3
-  "/v3/{apiKey}/reportSpam":
-    get:
-      summary: Report Spam Address
-      description: |
-        Reports a specific address to the API if it is suspected to be spam.
-
-        <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, BNB, Gnosis, Zksync, Unichain, and Blast. More to come soon!</Note>
-      tags: ["NFT Spam Endpoints"]
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: address
-          description: String - The address to check for spam status.
-          in: query
-          schema:
-            type: string
-            default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
-          required: true
-        - name: isSpam
-          in: query
-          required: true
-          schema:
-            type: boolean
-            description: "Whether the address is spam."
-            default: true
-      responses:
-        "200":
-          description: "Returns a confirmation message if the address was successfully reported as spam."
-          content:
-            application/json:
-              schema:
-                type: string
-                description: 'String - "Address was successfully reported as spam" if calling the API was successful.'
-      operationId: reportSpam-v3
   "/v3/{apiKey}/refreshNftMetadata":
     post:
       summary: Refresh NFT Metadata
