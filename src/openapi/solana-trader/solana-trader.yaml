@@ -489,36 +489,6 @@ paths:
                   fetchedAt:
                     secs_since_epoch: 1750000000
                     nanos_since_epoch: 0
-        "400":
-          description: >
-            Malformed request or invalid parameters. Body is
-            `{"error":"<description>"}` only — no `errorCode`, no `requestId`.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "501":
-          description: >
-            Parameter typed correctly but out of range. Currently emitted for:
-
-            * `computeUnitPricePercentile` sent as a number instead of one of
-              `medium` / `high` / `veryHigh`.
-            * `blockhashSlotsToExpiry` in the 256-300 range (Metis types the
-              field as `uint8`).
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "502":
-          description: >
-            Upstream failure. Emitted for a Metis routing failure, a
-            priority-fee estimate failure, a lookup-table resolve failure, a
-            missing blockhash, or a `tipAmount` request that Metis could not
-            match to a tip instruction.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   "/{apiKey}/quote-multiple-output-mints":
     post:
@@ -559,17 +529,6 @@ paths:
                     inAmount: "1000000000"
                     outAmount: "234481933"
                 contextSlot: 300000000
-        "400":
-          description: >
-            Malformed request body or invalid parameters. Body is
-            `{"error":"<description>"}` only. Common causes are submitting more
-            than 32 output mints, sending `amount` as a JSON number, an
-            `outputMints` entry equal to `inputMint`, or a duplicate mint in
-            `outputMints`.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   securitySchemes:
@@ -1102,12 +1061,3 @@ components:
       required:
         - inAmount
         - outAmount
-
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-          description: Human-readable error description.
-      required:
-        - error
