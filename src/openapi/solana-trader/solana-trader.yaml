@@ -1,0 +1,584 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
+
+openapi: 3.1.0
+info:
+  title: 💱 Solana Trader API
+  description: >
+    Alchemy's Solana Trader API returns swap quotes and, on request, an assembled
+    signable transaction for routing token swaps on Solana. Requests are
+    authenticated with your Alchemy API key in the URL path, the same key that
+    powers your other Solana RPC calls. Alchemy currently routes Trader API
+    requests through Metis.
+  version: "1.0"
+servers:
+  - url: https://solana-mainnet.g.alchemy.com/v2
+    description: Solana Mainnet
+paths:
+  "/{apiKey}/order":
+    get:
+      summary: Get Order
+      description: >
+        Returns a swap quote for `inputMint` → `outputMint`. When `taker` is
+        supplied, the response also includes an unsigned, base64-encoded Solana
+        transaction the taker can sign and broadcast. When `taker` is omitted,
+        the response contains the quote only and `transaction` is `null`.
+      tags: ["Solana Trader API Endpoints"]
+      x-compute-units: 100
+      x-rate-limit-cus: 100
+      operationId: get-swap-order
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/InputMint"
+        - $ref: "#/components/parameters/OutputMint"
+        - $ref: "#/components/parameters/Amount"
+        - name: taker
+          in: query
+          required: false
+          description: >
+            Public key of the wallet that will sign the transaction. When
+            omitted, the response returns a quote and `transaction` is `null`.
+          schema:
+            type: string
+          example: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+        - name: receiver
+          in: query
+          required: false
+          description: >
+            Public key of the wallet that will receive the output tokens. Must
+            differ from `taker`. Expects a wallet address, not a token account.
+            For non-SOL output, tokens are sent to the receiver's associated
+            token account (ATA); a create-ATA instruction is added when the ATA
+            does not exist.
+          schema:
+            type: string
+        - name: swapMode
+          in: query
+          required: false
+          description: Swap mode. Currently only `ExactIn` is supported.
+          schema:
+            type: string
+            enum: [ExactIn]
+            default: ExactIn
+        - name: slippageBps
+          in: query
+          required: false
+          description: >
+            Slippage tolerance in basis points (0-10000). Alchemy picks a value
+            automatically when omitted.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10000
+          example: 50
+        - name: priorityFeeLamports
+          in: query
+          required: false
+          description: >
+            Priority fee in lamports. Overrides the automatic priority fee
+            Alchemy would otherwise pick.
+          schema:
+            type: integer
+        - name: jitoTipLamports
+          in: query
+          required: false
+          description: Jito MEV tip in lamports for faster block inclusion.
+          schema:
+            type: integer
+        - name: broadcastFeeType
+          in: query
+          required: false
+          description: >
+            Fee cap strategy. `maxCap` treats the supplied fee as a maximum;
+            `exactFee` sends the exact amount. Ignored when neither
+            `priorityFeeLamports` nor `jitoTipLamports` is set.
+          schema:
+            type: string
+            enum: [maxCap, exactFee]
+        - name: excludeDexes
+          in: query
+          required: false
+          description: >
+            Comma-separated list of DEX labels to exclude from routing. Labels
+            are case-sensitive (e.g. `Raydium,Orca+V2,Meteora+DLMM`).
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quote with optional assembled transaction.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Malformed request or invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Missing or invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  "/{apiKey}/build":
+    get:
+      summary: Build Swap Instructions
+      description: >
+        Returns raw Solana swap instructions rather than a pre-built transaction.
+        Use `/build` when you need to compose the swap into a larger transaction
+        of your own (for example a program deposit before the swap or a
+        cleanup step after it). If you just need a signable transaction, use
+        `/order` with a `taker`.
+      tags: ["Solana Trader API Endpoints"]
+      x-compute-units: 100
+      x-rate-limit-cus: 100
+      operationId: build-swap-instructions
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/InputMint"
+        - $ref: "#/components/parameters/OutputMint"
+        - $ref: "#/components/parameters/Amount"
+        - name: taker
+          in: query
+          required: true
+          description: >
+            Public key of the wallet that will sign the swap instructions.
+            Required for `/build` since the instructions must reference concrete
+            source and destination accounts.
+          schema:
+            type: string
+          example: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+        - name: receiver
+          in: query
+          required: false
+          description: Public key of the wallet that will receive the output tokens.
+          schema:
+            type: string
+        - name: swapMode
+          in: query
+          required: false
+          description: Swap mode. Currently only `ExactIn` is supported.
+          schema:
+            type: string
+            enum: [ExactIn]
+            default: ExactIn
+        - name: slippageBps
+          in: query
+          required: false
+          description: >
+            Slippage tolerance in basis points (0-10000). Alchemy picks a value
+            automatically when omitted.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10000
+          example: 50
+        - name: excludeDexes
+          in: query
+          required: false
+          description: Comma-separated list of DEX labels to exclude from routing.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Raw swap instructions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildResponse"
+        "400":
+          description: Malformed request or invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Missing or invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  "/{apiKey}/quote-multiple-output-mints":
+    post:
+      summary: Quote Multiple Output Mints
+      description: >
+        Returns quotes for a single input mint against up to 32 candidate output
+        mints in one call. Useful for pricing a basket or comparing routes
+        across candidate outputs without issuing N separate requests. Each
+        entry in `quotes` follows the same shape as `/order` without a `taker`,
+        so responses carry the quote fields only and `transaction` is `null`.
+      tags: ["Solana Trader API Endpoints"]
+      x-compute-units: 100
+      x-rate-limit-cus: 100
+      operationId: quote-multiple-output-mints
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MultiQuoteRequest"
+      responses:
+        "200":
+          description: Array of quotes, one per requested output mint.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MultiQuoteResponse"
+        "400":
+          description: >
+            Malformed request or invalid parameters. Common cause is submitting
+            more than 32 output mints in `outputMints`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Missing or invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: >
+        Trader API requests carry the API key in the URL path, not in a header.
+        This scheme is defined to satisfy tooling and is unused by the
+        endpoints.
+      x-default: Bearer API_KEY
+  parameters:
+    apiKey:
+      name: apiKey
+      in: path
+      required: true
+      schema:
+        type: string
+        default: docs-demo
+      description: For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup).
+    InputMint:
+      name: inputMint
+      in: query
+      required: true
+      description: Mint address of the input token.
+      schema:
+        type: string
+        default: So11111111111111111111111111111111111111112
+      example: So11111111111111111111111111111111111111112
+    OutputMint:
+      name: outputMint
+      in: query
+      required: true
+      description: Mint address of the output token.
+      schema:
+        type: string
+        default: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+      example: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+    Amount:
+      name: amount
+      in: query
+      required: true
+      description: >
+        Amount to swap in the smallest unit of the input token (lamports for
+        native SOL, base units for SPL tokens).
+      schema:
+        type: string
+        default: "1000000000"
+      example: "1000000000"
+  schemas:
+    OrderResponse:
+      type: object
+      description: Quote fields, plus an assembled transaction when a taker was supplied.
+      properties:
+        inputMint:
+          type: string
+          description: Mint of the input token, echoed back.
+        outputMint:
+          type: string
+          description: Mint of the output token, echoed back.
+        inAmount:
+          type: string
+          description: Input amount used for the quote, in base units of the input mint.
+        outAmount:
+          type: string
+          description: Estimated output amount before slippage, in base units of the output mint.
+        otherAmountThreshold:
+          type: string
+          description: Minimum output amount after slippage is applied.
+        swapMode:
+          type: string
+          description: Swap mode used to build the quote.
+          enum: [ExactIn]
+        slippageBps:
+          type: integer
+          description: Slippage tolerance in basis points.
+        priceImpact:
+          type: number
+          description: >
+            Price impact of the swap, in percentage points (for example, `-0.1`
+            means -0.1%). Divide by 100 to convert to a decimal fraction.
+        routePlan:
+          type: array
+          description: Ordered list of route steps that make up the swap.
+          items:
+            $ref: "#/components/schemas/RoutePlanStep"
+        router:
+          type: string
+          description: >
+            Router that produced the quote. Alchemy currently serves quotes
+            through Metis only.
+          enum: [metis]
+        transaction:
+          type: ["string", "null"]
+          description: >
+            Base64-encoded, unsigned Solana transaction. `null` when `taker`
+            was not supplied. Empty string when `taker` was supplied but the
+            router could not build a transaction — inspect `errorCode` and
+            `errorMessage` in that case.
+        lastValidBlockHeight:
+          type: string
+          description: Block height beyond which the assembled transaction is no longer valid.
+        signatureFeeLamports:
+          type: integer
+          description: Estimated signature fee in lamports.
+        prioritizationFeeLamports:
+          type: integer
+          description: Estimated priority fee plus any Jito tip, in lamports.
+        rentFeeLamports:
+          type: integer
+          description: >
+            Estimated rent fee in lamports (for example, to open the output
+            token account when it does not already exist).
+        requestId:
+          type: string
+          description: Unique identifier for the request. Include when reporting issues.
+        taker:
+          type: ["string", "null"]
+          description: Taker echoed back from the request. `null` when not supplied.
+        errorCode:
+          type: integer
+          description: >
+            Present only when `taker` was supplied and `transaction` is the
+            empty string. Match on `errorCode` to identify the failure:
+
+            * `1` — insufficient funds
+            * `2` — insufficient SOL for gas
+            * `3` — swap below minimum for gasless
+        errorMessage:
+          type: string
+          description: >
+            Human-readable error description. Present when `errorCode` is set.
+            Match on `errorCode` rather than parsing this string.
+      required:
+        - inputMint
+        - outputMint
+        - inAmount
+        - outAmount
+        - swapMode
+        - slippageBps
+        - routePlan
+        - router
+
+    BuildResponse:
+      type: object
+      description: Raw Solana swap instructions.
+      properties:
+        setupInstructions:
+          type: array
+          description: >
+            Instructions that must run before the swap (for example, create an
+            associated token account or wrap SOL).
+          items:
+            $ref: "#/components/schemas/Instruction"
+        swapInstruction:
+          $ref: "#/components/schemas/Instruction"
+        cleanupInstruction:
+          description: >
+            Optional instruction that runs after the swap (for example, close a
+            temporary wrapped-SOL account and reclaim rent). `null` when no
+            cleanup is required.
+          oneOf:
+            - $ref: "#/components/schemas/Instruction"
+            - type: "null"
+        addressLookupTableAddresses:
+          type: array
+          description: Address lookup table accounts the swap references.
+          items:
+            type: string
+        computeUnitLimit:
+          type: integer
+          description: Recommended compute unit limit for the transaction.
+        prioritizationFeeLamports:
+          type: integer
+          description: Recommended prioritization fee in lamports.
+        requestId:
+          type: string
+          description: Unique identifier for the request.
+      required:
+        - swapInstruction
+
+    Instruction:
+      type: object
+      description: A Solana instruction in decomposed form.
+      properties:
+        programId:
+          type: string
+          description: Program ID that owns the instruction.
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountMeta"
+        data:
+          type: string
+          description: Base64-encoded instruction data.
+      required:
+        - programId
+        - accounts
+        - data
+
+    AccountMeta:
+      type: object
+      properties:
+        pubkey:
+          type: string
+        isSigner:
+          type: boolean
+        isWritable:
+          type: boolean
+      required:
+        - pubkey
+        - isSigner
+        - isWritable
+
+    RoutePlanStep:
+      type: object
+      properties:
+        swapInfo:
+          $ref: "#/components/schemas/SwapInfo"
+        percent:
+          type: number
+          description: Percentage of the total swap routed through this step (0-100).
+      required:
+        - swapInfo
+        - percent
+
+    SwapInfo:
+      type: object
+      properties:
+        ammKey:
+          type: string
+          description: On-chain address of the AMM pool used for this step.
+        label:
+          type: string
+          description: Human-readable DEX label (for example, `Orca V2`, `Raydium CLMM`).
+        inputMint:
+          type: string
+        outputMint:
+          type: string
+        inAmount:
+          type: string
+        outAmount:
+          type: string
+      required:
+        - ammKey
+        - label
+        - inputMint
+        - outputMint
+        - inAmount
+        - outAmount
+
+    MultiQuoteRequest:
+      type: object
+      properties:
+        inputMint:
+          type: string
+          description: Mint address of the input token.
+          example: So11111111111111111111111111111111111111112
+          default: So11111111111111111111111111111111111111112
+        amount:
+          type: string
+          description: Amount to swap, in base units of the input mint.
+          example: "1000000000"
+          default: "1000000000"
+        outputMints:
+          type: array
+          description: >
+            Mint addresses of the candidate output tokens. Up to 32 entries per
+            request.
+          minItems: 1
+          maxItems: 32
+          items:
+            type: string
+          example:
+            - EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+            - Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
+        swapMode:
+          type: string
+          enum: [ExactIn]
+          default: ExactIn
+        slippageBps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          description: Slippage tolerance in basis points applied to each quote.
+      required:
+        - inputMint
+        - amount
+        - outputMints
+
+    MultiQuoteResponse:
+      type: object
+      properties:
+        quotes:
+          type: array
+          description: >
+            One quote per requested output mint, in the same order as
+            `outputMints` in the request.
+          items:
+            $ref: "#/components/schemas/OrderResponse"
+        requestId:
+          type: string
+          description: Unique identifier for the request.
+      required:
+        - quotes
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error description.
+        errorCode:
+          type: integer
+          description: Machine-readable error code, when available.
+        requestId:
+          type: string
+          description: Unique identifier for the request.
+      required:
+        - error
