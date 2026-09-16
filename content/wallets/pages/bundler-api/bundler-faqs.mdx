@@ -95,6 +95,8 @@ To debug these errors, you should:
 
 The bundler supports up to 4 parallel nonces (default value from ERC-7562) for unstaked senders and unlimited parallel nonces for staked senders. See [below](/docs/reference/bundler-faqs#minimum-entrypoint-stake-amount) for stake requirements.
 
+For teams on a paid Alchemy plan (pay-as-you-go, enterprise), the per-sender parallel nonce limit is **1,000**.
+
 Unstaked accounts that attempt to exceed this limit will receive the error `Max operations (4) reached for account`. Staking the account removes the restriction. Accounts can be staked by calling `addStake(uint32 unstakeDelaySec)` on the EntryPoint contract, and later `unlockStake()` followed by `withdrawStake(address payable)` to recover the stake.
 
 Staked senders are subject to ERC-7562 reputation rules. If a sender submits a large number of userOps and subsequently invalidates them all, they may be throttled or banned.
