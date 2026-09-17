@@ -93,11 +93,15 @@ To debug these errors, you should:
 
 ### What is the maximum number of supported parallel nonces?
 
-The bundler supports up to 4 parallel nonces (default value from ERC-7562) for unstaked senders and unlimited parallel nonces for staked senders. See [below](/docs/reference/bundler-faqs#minimum-entrypoint-stake-amount) for stake requirements.
+The per-sender parallel nonce limit depends on your Alchemy plan and whether the sender is staked with the EntryPoint:
 
-For teams on a paid Alchemy plan (pay-as-you-go, enterprise), the per-sender parallel nonce limit is **1,000**.
+* **Free tier, unstaked**: up to **4** parallel nonces (default value from ERC-7562).
+* **Paid tier (pay-as-you-go, enterprise), unstaked**: up to **1,000** parallel nonces.
+* **Staked senders (any tier)**: effectively unlimited.
 
-Unstaked accounts that attempt to exceed this limit will receive the error `Max operations (4) reached for account`. Staking the account removes the restriction. Accounts can be staked by calling `addStake(uint32 unstakeDelaySec)` on the EntryPoint contract, and later `unlockStake()` followed by `withdrawStake(address payable)` to recover the stake.
+See [below](/docs/reference/bundler-faqs#minimum-entrypoint-stake-amount) for stake requirements.
+
+Unstaked accounts that exceed their limit will receive a `Max operations reached for account` error. Staking the account removes the restriction. Accounts can be staked by calling `addStake(uint32 unstakeDelaySec)` on the EntryPoint contract, and later `unlockStake()` followed by `withdrawStake(address payable)` to recover the stake.
 
 Staked senders are subject to ERC-7562 reputation rules. If a sender submits a large number of userOps and subsequently invalidates them all, they may be throttled or banned.
 
@@ -258,7 +262,7 @@ Testnets:
 | Educhain Testnet    | 0.1 ETH                  |
 | OpBNB Testnet       | 0.4 BNB                  |
 
-Paymasters and factories must have at least the above stake or their userOps will be rejected. Accounts only need to stake if they wish to exceed 4 parallel nonces in the Bundler's mempool; otherwise, userOps beyond this limit will be rejected. The same stake amounts apply to accounts.
+Paymasters and factories must have at least the above stake or their userOps will be rejected. Accounts only need to stake if they wish to exceed their unstaked parallel-nonce limit in the Bundler's mempool (4 on free tier, 1,000 on paid tiers); otherwise, userOps beyond this limit will be rejected. The same stake amounts apply to accounts.
 
 ### What is the minimum delay value?
 
