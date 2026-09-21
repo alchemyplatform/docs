@@ -777,7 +777,7 @@ components:
           type: array
           description: >
             Transfers matching the query, merged across all requested networks and ordered by
-            `blockTimestamp`. Empty array if nothing matches.
+            `blockTimestamp`. If nothing matches, the array is empty.
           items:
             $ref: "#/components/schemas/Transfer"
         pageKey:
@@ -786,7 +786,7 @@ components:
             - "null"
           description: >
             Opaque base64url cursor. Pass it as `pageKey` on the next request to fetch the
-            following page. `null` when there are no more results.
+            following page. `null` indicates that no more results exist.
         error:
           $ref: "#/components/schemas/TransfersPartialError"
       required:
@@ -794,11 +794,7 @@ components:
 
     Transfer:
       type: object
-      description: >
-        A single transfer. Inspired by `alchemy_getAssetTransfers`, with some changes: a
-        `network` field and top-level `blockTimestamp` are added, fungible-only fields are
-        grouped under `fungible`, NFT-only fields under `nfts`, and the token `contractAddress`
-        is pulled to the top level.
+      description: A historical transfer that matches the request.
       properties:
         network:
           type: string
@@ -812,7 +808,7 @@ components:
           type: string
           format: date-time
           description: >
-            ISO-8601 block timestamp. The cross-chain sort key; always returned.
+            ISO-8601 block timestamp. This field is the cross-chain sort key and is always returned.
         category:
           type: string
           enum:
@@ -839,7 +835,7 @@ components:
             - string
             - "null"
           description: >
-            Token contract address. `null` for native-token (e.g. ETH) transfers.
+            Token contract address. `null` for native-token transfers, such as ETH transfers.
         uniqueId:
           type: string
           description: >
@@ -861,17 +857,21 @@ components:
               type:
                 - number
                 - "null"
-              description: Human-readable amount, scaled by `decimals`. `null` if metadata is missing.
+              description: >
+                Human-readable amount, scaled by `decimals`. If metadata is missing, this field is
+                `null`.
             decimals:
               type:
                 - integer
                 - "null"
-              description: Number of decimals for the token. `null` if metadata is missing.
+              description: >
+                Number of decimals for the token. If metadata is missing, this field is `null`.
             asset:
               type:
                 - string
                 - "null"
-              description: Token symbol (e.g. USDC, ETH). `null` if metadata is missing.
+              description: >
+                Token symbol, such as USDC or ETH. If metadata is missing, this field is `null`.
         nfts:
           type:
             - object
@@ -906,8 +906,11 @@ components:
     TransfersPartialError:
       type: object
       description: >
-        Partial-failure details. Present only when one or more networks fail to return results;
-        omitted entirely when every network succeeds.
+        If one or more requested networks do not return data, this object is present in the HTTP
+        200 response.
+        When every requested network succeeds, the `error` key is omitted from the response.
+        See [Handling partial failures](/docs/reference/portfolio-apis#handling-partial-failures)
+        for the recommended client pattern.
       properties:
         message:
           type: string
@@ -923,7 +926,7 @@ components:
                 description: The network that failed.
               state:
                 type: string
-                description: Failure state (e.g. `timeout`).
+                description: Failure state, such as `timeout`.
               message:
                 type: string
                 description: Human-readable error for this network.
@@ -932,6 +935,7 @@ components:
               - message
       required:
         - message
+        - partialErrors
     ####################################################
     # Token APIs
     ####################################################
