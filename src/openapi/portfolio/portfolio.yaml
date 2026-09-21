@@ -27,6 +27,12 @@ paths:
     post:
       $ref: "./assets/nfts/contracts/by-address.yaml"
   ####################################################
+  # Multi-Chain Transfers API
+  ####################################################
+  "/{apiKey}/transfers/by-address":
+    post:
+      $ref: "./transfers/by-address.yaml"
+  ####################################################
   # Transaction History API
   ####################################################
   # "/{apiKey}/transactions/history/by-address":
@@ -668,6 +674,264 @@ components:
           blockHash: "0x4ddbc1d12e14909468c49efd2771d1a09dec2850a823e0d9942db54d54633e43"
           blockTimestamp: "2026-08-27T16:46:07.000Z"
         base-mainnet: null
+    ####################################################
+    # Multi-Chain Transfers API
+    ####################################################
+    TransfersByAddressRequest:
+      type: object
+      properties:
+        address:
+          type: string
+          description: >
+            The wallet address to fetch transfers for. A single address keeps the common
+            wallet use case (all activity to and from one address) in a single request.
+          example: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+          default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+        direction:
+          type: string
+          enum:
+            - to
+            - from
+            - both
+          default: both
+          description: >
+            Which side of the transfer `address` must match. `to` returns transfers received
+            by the address, `from` returns transfers sent by it, and `both` returns transfers
+            on either side.
+        networks:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            default: eth-mainnet
+          default:
+            - eth-mainnet
+            - base-mainnet
+            - matic-mainnet
+          description: >
+            Networks to query. Defaults to Ethereum, Base, and Polygon mainnet (same as the
+            other Portfolio APIs). You can query up to 5 networks. Reach out if you need more.
+            Find network enums [here](https://dashboard.alchemy.com/chains).
+        fromTimestamp:
+          type: string
+          format: date-time
+          description: >
+            ISO-8601 timestamp (inclusive). Only transfers at or after this time are returned.
+            Defaults to the beginning of chain history.
+          example: "2026-08-01T00:00:00Z"
+        toTimestamp:
+          type: string
+          format: date-time
+          description: >
+            ISO-8601 timestamp (inclusive). Only transfers at or before this time are returned.
+            Defaults to the current time.
+          example: "2026-08-06T00:00:00Z"
+        order:
+          type: string
+          enum:
+            - asc
+            - desc
+          default: desc
+          description: Sort order of results by `blockTimestamp`.
+        category:
+          type: array
+          items:
+            type: string
+            enum:
+              - external
+              - internal
+              - erc20
+              - erc721
+              - erc1155
+              - specialnft
+          description: >
+            Transfer categories to fetch. **Required**, with no default — provide one or more of
+            the listed categories.
+        contractAddresses:
+          type: array
+          items:
+            type: string
+          description: >
+            Filter results to these token contract addresses. Applies to the `erc20`, `erc721`,
+            `erc1155`, and `specialnft` categories.
+        excludeZeroValue:
+          type: boolean
+          default: true
+          description: Whether to exclude zero-value transfers.
+        maxCount:
+          type: integer
+          default: 100
+          description: Maximum number of transfers to return per page.
+        pageKey:
+          type: string
+          description: >
+            Opaque cursor returned by a previous response. Pass it back to fetch the next page.
+      required:
+        - address
+        - category
+
+    TransfersResponse:
+      type: object
+      properties:
+        transfers:
+          type: array
+          description: >
+            Transfers matching the query, merged across all requested networks and ordered by
+            `blockTimestamp`. Empty array if nothing matches.
+          items:
+            $ref: "#/components/schemas/Transfer"
+        pageKey:
+          type:
+            - string
+            - "null"
+          description: >
+            Opaque base64url cursor. Pass it as `pageKey` on the next request to fetch the
+            following page. `null` when there are no more results.
+        error:
+          $ref: "#/components/schemas/TransfersPartialError"
+      required:
+        - transfers
+
+    Transfer:
+      type: object
+      description: >
+        A single transfer. Inspired by `alchemy_getAssetTransfers`, with some changes: a
+        `network` field and top-level `blockTimestamp` are added, fungible-only fields are
+        grouped under `fungible`, NFT-only fields under `nfts`, and the token `contractAddress`
+        is pulled to the top level.
+      properties:
+        network:
+          type: string
+          description: The network this transfer occurred on.
+        blockNum:
+          type: string
+          description: >
+            Block number as a hex string. Not comparable across networks — use `blockTimestamp`
+            for ordering.
+        blockTimestamp:
+          type: string
+          format: date-time
+          description: >
+            ISO-8601 block timestamp. The cross-chain sort key; always returned.
+        category:
+          type: string
+          enum:
+            - external
+            - internal
+            - erc20
+            - erc721
+            - erc1155
+            - specialnft
+          description: Transfer category.
+        hash:
+          type: string
+          description: Transaction hash.
+        from:
+          type: string
+          description: Sender address.
+        to:
+          type:
+            - string
+            - "null"
+          description: Recipient address. `null` on contract creation.
+        contractAddress:
+          type:
+            - string
+            - "null"
+          description: >
+            Token contract address. `null` for native-token (e.g. ETH) transfers.
+        uniqueId:
+          type: string
+          description: >
+            Stable per-transfer identifier. Format varies by category: `{hash}:log:{logIndex}`
+            (erc20/erc721/erc1155/specialnft), `{hash}:external`,
+            `{hash}:internal:{traceAddress}`.
+        fungible:
+          type:
+            - object
+            - "null"
+          description: >
+            Fungible-transfer details for the `external`, `internal`, and `erc20` categories.
+            `null` for NFT (`erc721`/`erc1155`/`specialnft`) transfers.
+          properties:
+            rawValue:
+              type: string
+              description: Raw on-chain amount as a hex string (unscaled).
+            value:
+              type:
+                - number
+                - "null"
+              description: Human-readable amount, scaled by `decimals`. `null` if metadata is missing.
+            decimals:
+              type:
+                - integer
+                - "null"
+              description: Number of decimals for the token. `null` if metadata is missing.
+            asset:
+              type:
+                - string
+                - "null"
+              description: Token symbol (e.g. USDC, ETH). `null` if metadata is missing.
+        nfts:
+          type:
+            - object
+            - "null"
+          description: >
+            NFT-transfer details for the `erc721`, `erc1155`, and `specialnft` categories. `null`
+            for fungible transfers.
+          properties:
+            tokens:
+              type: array
+              description: The token IDs and amounts transferred in this event.
+              items:
+                type: object
+                properties:
+                  tokenId:
+                    type: string
+                    description: Token ID as a hex string.
+                  amount:
+                    type: string
+                    description: Quantity transferred (always `1` for `erc721`).
+      required:
+        - network
+        - blockNum
+        - blockTimestamp
+        - category
+        - hash
+        - from
+        - to
+        - contractAddress
+        - uniqueId
+
+    TransfersPartialError:
+      type: object
+      description: >
+        Partial-failure details. Present only when one or more networks fail to return results;
+        omitted entirely when every network succeeds.
+      properties:
+        message:
+          type: string
+          description: Human-readable summary of the partial failure.
+        partialErrors:
+          type: array
+          description: One entry per network that failed.
+          items:
+            type: object
+            properties:
+              network:
+                type: string
+                description: The network that failed.
+              state:
+                type: string
+                description: Failure state (e.g. `timeout`).
+              message:
+                type: string
+                description: Human-readable error for this network.
+            required:
+              - network
+              - message
+      required:
+        - message
     ####################################################
     # Token APIs
     ####################################################
