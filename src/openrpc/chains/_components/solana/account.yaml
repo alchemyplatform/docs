@@ -545,6 +545,69 @@ components:
         slot:
           type: integer
           description: The slot the balance was computed at.
+    GetTokenHoldersAtSlotSortBy:
+      title: GetTokenHoldersAtSlot SortBy
+      type: string
+      description: >-
+        The ordering of the returned holders. `balance_desc` (default)
+        returns the largest balance first; `balance_asc` returns the
+        smallest non-zero balance first. Case-sensitive. `sort_by` is
+        accepted as an alias for `sortBy`.
+      enum:
+        - balance_desc
+        - balance_asc
+      default: balance_desc
+    TokenHoldersAtSlotHolder:
+      title: Token Holders At Slot Holder
+      type: object
+      description: >-
+        A single token account holding the mint at the requested slot.
+        Balances are reported per token account and are never summed per
+        owner; a wallet with several token accounts of the same mint
+        occupies several rows.
+      properties:
+        holder:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The token account address.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The wallet that controls the token account.
+        balanceRaw:
+          type: string
+          description: >-
+            Raw token amount, as an integer string. Returned as a string
+            so large values survive JSON parsing without precision loss.
+            Parse as a big integer, not a float.
+        balanceUi:
+          type: string
+          description: >-
+            Human-readable amount (`balanceRaw` scaled by the mint's
+            decimals). Returned as a string for the same
+            precision-preserving reasons as `balanceRaw`.
+    GetTokenHoldersAtSlotResult:
+      title: GetTokenHoldersAtSlot Result
+      type: object
+      description: >-
+        The token accounts that held the mint at the requested slot,
+        ranked by balance, along with the slot the result was computed
+        at and the sort order applied. Accounts with a zero balance are
+        excluded; accounts with equal balances have no defined relative
+        order.
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The mint queried.
+        slot:
+          type: integer
+          description: The slot the holder list was computed at.
+        sortBy:
+          $ref: "#/components/schemas/GetTokenHoldersAtSlotSortBy"
+          description: The ordering applied, echoed back.
+        holders:
+          type: array
+          description: The holders of the mint, in `sortBy` order.
+          items:
+            $ref: "#/components/schemas/TokenHoldersAtSlotHolder"
     LargestAccountsConfig:
       title: LargestAccounts Configuration
       type: object
