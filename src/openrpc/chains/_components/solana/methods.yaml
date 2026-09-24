@@ -49,6 +49,29 @@ components:
             exclusive. Also returned for a malformed Pubkey or
             configuration value.
 
+    getAgGenesisCert:
+      name: getAgGenesisCert
+      description: >-
+        Returns the [Alpenglow](https://solana.com/upgrades/alpenglow) genesis
+        certificate: the certificate over the first block produced under
+        Alpenglow consensus. Returns `null` while the cluster is still running
+        TowerBFT, which makes this the way to detect whether Alpenglow is active
+        on a cluster. Available from Agave v4.3; earlier nodes respond with a
+        `Method not found` (-32601) error.
+      x-compute-units: 10
+      params: []
+      result:
+        name: Alpenglow genesis certificate
+        description: The Alpenglow genesis certificate, or `null` if the cluster has not migrated to Alpenglow consensus.
+        schema:
+          $ref: "./block.yaml#/components/schemas/AlpenglowGenesisCert"
+      examples:
+        - name: getAgGenesisCert example
+          params: []
+          result:
+            name: Alpenglow genesis certificate
+            value: null
+
     getBalance:
       name: getBalance
       description: Returns the lamport balance of the account of the provided Pubkey.
