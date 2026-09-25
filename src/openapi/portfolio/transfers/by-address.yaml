@@ -1,0 +1,144 @@
+summary: Transfers By Wallet (Beta)
+description: >
+  **Beta:** This endpoint is in beta. Do not rely on it in production. This API can change at any
+  time. To request access, email [data_apis@alchemy.com](mailto:data_apis@alchemy.com).
+
+
+  Fetches historical transfers (native, ERC-20, ERC-721, ERC-1155, special NFT, and internal) for
+  a single wallet address and multiple networks. Returns a list of transfers ordered by
+  `blockTimestamp`. Supported on 14 EVM networks — see the `networks` request-body field for
+  the enumerated list.
+
+
+  Note: the `internal` category is only supported on Ethereum Mainnet, Base Mainnet, Polygon
+  Mainnet, Arc Mainnet, and Arc Testnet. The `specialnft` category is only supported on
+  Ethereum Mainnet.
+
+
+  This endpoint fans out across every requested network and merges the results. If one or more
+  networks fail (upstream error or per-network timeout), the response is still HTTP 200 with a
+  top-level `error.partialErrors` array listing the failed networks. Transfers from successful
+  networks are still returned. See [Handling partial
+  failures](/docs/reference/portfolio-apis#handling-partial-failures) for the recommended client
+  pattern.
+tags: ["Portfolio API Endpoints"]
+parameters:
+  - $ref: "./../portfolio.yaml#/components/parameters/apiKey"
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: "./../portfolio.yaml#/components/schemas/TransfersByAddressRequest"
+      example:
+        address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+        direction: both
+        networks:
+          - eth-mainnet
+          - base-mainnet
+          - matic-mainnet
+        fromTimestamp: "2026-08-01T00:00:00Z"
+        toTimestamp: "2026-08-06T00:00:00Z"
+        category:
+          - external
+          - erc20
+          - erc721
+          - erc1155
+        order: desc
+        maxCount: 100
+responses:
+  "200":
+    description: Successful response!
+    content:
+      application/json:
+        schema:
+          $ref: "./../portfolio.yaml#/components/schemas/TransfersResponse"
+        examples:
+          success:
+            summary: All networks succeeded
+            value:
+              transfers:
+                - network: base-mainnet
+                  blockNum: "0x1410a3b"
+                  blockTimestamp: "2026-08-05T23:58:41Z"
+                  category: erc20
+                  hash: "0xabc123…"
+                  from: "0x1f98abcd…"
+                  to: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+                  contractAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+                  uniqueId: "0xabc123…:log:12"
+                  fungible:
+                    rawValue: "0xee6b2800"
+                    value: 250.0
+                    decimals: 6
+                    asset: USDC
+                  nfts: null
+                - network: eth-mainnet
+                  blockNum: "0x15f9a2d"
+                  blockTimestamp: "2026-08-05T23:55:12Z"
+                  category: external
+                  hash: "0xdef456…"
+                  from: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+                  to: "0x7a250d..."
+                  contractAddress: null
+                  uniqueId: "0xdef456…:external"
+                  fungible:
+                    rawValue: "0x6f05b59d3b20000"
+                    value: 0.5
+                    decimals: 18
+                    asset: ETH
+                  nfts: null
+                - network: base-mainnet
+                  blockNum: "0x1410a10"
+                  blockTimestamp: "2026-08-05T23:50:03Z"
+                  category: erc721
+                  hash: "0x9a8b7c…"
+                  from: "0x0000000000000000000000000000000000000000"
+                  to: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+                  contractAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D"
+                  uniqueId: "0x9a8b7c…:log:0"
+                  fungible: null
+                  nfts:
+                    tokens:
+                      - tokenId: "0x1a4"
+                        amount: "1"
+              pageKey: "eyJ0cyI6IjIwMjYtMDgtMDVUMjM6NTU6MTJaIiwibmV0Ijp7ImV0aC1tYWlubmV0IjoiMHgxNWY5YTJkOjMifX0="
+          partialFailure:
+            summary: One or more networks failed (HTTP 200)
+            value:
+              transfers:
+                - network: base-mainnet
+                  blockNum: "0x1410a3b"
+                  blockTimestamp: "2026-08-05T23:58:41Z"
+                  category: erc20
+                  hash: "0xabc123…"
+                  from: "0x1f98abcd…"
+                  to: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+                  contractAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+                  uniqueId: "0xabc123…:log:12"
+                  fungible:
+                    rawValue: "0xee6b2800"
+                    value: 250.0
+                    decimals: 6
+                    asset: USDC
+                  nfts: null
+              pageKey: null
+              error:
+                message: "Some networks did not return results"
+                partialErrors:
+                  - network: matic-mainnet
+                    state: timeout
+                    message: "upstream request timed out"
+  "400":
+    description: "Bad Request: Invalid input (e.g., malformed JSON)."
+    content:
+      application/json:
+        schema:
+          $ref: "./../portfolio.yaml#/components/schemas/ErrorResponse"
+  "429":
+    description: "Too Many Requests: Rate limit exceeded."
+    content:
+      application/json:
+        schema:
+          $ref: "./../portfolio.yaml#/components/schemas/ErrorResponse"
+operationId: get-transfers-by-address

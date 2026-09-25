@@ -49,6 +49,29 @@ components:
             exclusive. Also returned for a malformed Pubkey or
             configuration value.
 
+    getAgGenesisCert:
+      name: getAgGenesisCert
+      description: >-
+        Returns the [Alpenglow](https://solana.com/upgrades/alpenglow) genesis
+        certificate: the certificate over the first block produced under
+        Alpenglow consensus. Returns `null` while the cluster is still running
+        TowerBFT, which makes this the way to detect whether Alpenglow is active
+        on a cluster. Available from Agave v4.3; earlier nodes respond with a
+        `Method not found` (-32601) error.
+      x-compute-units: 10
+      params: []
+      result:
+        name: Alpenglow genesis certificate
+        description: The Alpenglow genesis certificate, or `null` if the cluster has not migrated to Alpenglow consensus.
+        schema:
+          $ref: "./block.yaml#/components/schemas/AlpenglowGenesisCert"
+      examples:
+        - name: getAgGenesisCert example
+          params: []
+          result:
+            name: Alpenglow genesis certificate
+            value: null
+
     getBalance:
       name: getBalance
       description: Returns the lamport balance of the account of the provided Pubkey.
@@ -548,6 +571,98 @@ components:
           message: >-
             Unsupported method. Returned when the method is called
             against a chain other than Solana mainnet.
+        - code: -32603
+          message: >-
+            Internal error. Retry the request; if it persists, contact
+            support.
+
+    getTokenHoldersAtSlot:
+      name: getTokenHoldersAtSlot
+      summary: >-
+        Returns the token accounts holding a single SPL Token or
+        Token-2022 mint as of a specific slot, ranked by balance.
+      description: >-
+        Returns the token accounts holding a single SPL Token or
+        Token-2022 mint as of a specific slot, ranked by balance.
+      paramStructure: by-name
+      params:
+        - name: mint
+          required: true
+          description: >-
+            The base-58 encoded pubkey of the token mint. SPL Token and
+            Token-2022 mints are both supported.
+          schema:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        - name: slot
+          required: true
+          description: >-
+            The slot to reconstruct the holder list at. There is no
+            "latest slot" default; omitting `slot` is an error.
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          required: false
+          description: >-
+            How many holders to return. Defaults to 1000; the server
+            ceiling is 10000.
+          schema:
+            type: integer
+            minimum: 0
+            default: 1000
+        - name: sortBy
+          required: false
+          description: >-
+            The ordering of the returned holders. Case-sensitive.
+            `sort_by` is accepted as an alias.
+          schema:
+            $ref: "./account.yaml#/components/schemas/GetTokenHoldersAtSlotSortBy"
+      examples:
+        - name: getTokenHoldersAtSlot example
+          params:
+            - name: mint
+              value: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            - name: slot
+              value: 430276235
+            - name: limit
+              value: 2
+            - name: sortBy
+              value: balance_desc
+          result:
+            name: Holders at slot
+            value:
+              mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+              slot: 430276235
+              sortBy: balance_desc
+              holders:
+                - holder: "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa"
+                  owner: "7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE"
+                  balanceRaw: "974620712305381"
+                  balanceUi: "974620712.305381"
+                - holder: "7KJjY7rArbydeLBF7gQ5LdqXRKRYyPArT99NEctsHsgU"
+                  owner: "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9"
+                  balanceRaw: "694102667534076"
+                  balanceUi: "694102667.534076"
+      result:
+        name: Holders at slot
+        description: >-
+          The token accounts that held the mint at the requested slot,
+          ranked by balance, along with the slot the result was
+          computed at and the sort order applied.
+        schema:
+          $ref: "./account.yaml#/components/schemas/GetTokenHoldersAtSlotResult"
+      errors:
+        - code: -32602
+          message: >-
+            Invalid params. Common causes include a missing or
+            malformed `mint` (must be a 32-byte base-58 pubkey), a
+            missing or non-integer `slot`, a non-integer `limit`, an
+            unknown `sortBy` value (only `balance_desc` and
+            `balance_asc` are accepted, case-sensitive), a `params`
+            value that is neither an array nor an object, or a mint
+            that is not present in the index.
+        - code: -32601
+          message: Method not found.
         - code: -32603
           message: >-
             Internal error. Retry the request; if it persists, contact
