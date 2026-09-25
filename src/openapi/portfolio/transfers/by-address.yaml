@@ -15,10 +15,11 @@ description: >
   Ethereum Mainnet.
 
 
-  This endpoint fans out across every requested network and merges the results. If one or more
-  networks fail (upstream error or per-network timeout), the response is still HTTP 200 with a
-  top-level `error.partialErrors` array listing the failed networks. Transfers from successful
-  networks are still returned. See [Handling partial
+  This endpoint fans out across every requested network and merges the results. If a network fails
+  (upstream error or per-network timeout), or an explicitly requested category is unsupported on a
+  network, the response is still HTTP 200 with a top-level `error.partialErrors` array. A network
+  can appear in `partialErrors` and still return transfers from its supported categories. See
+  [Handling partial
   failures](/docs/reference/portfolio-apis#handling-partial-failures) for the recommended client
   pattern.
 tags: ["Portfolio API Endpoints"]
@@ -124,6 +125,33 @@ responses:
                   - network: matic-mainnet
                     state: timeout
                     message: "upstream request timed out"
+          unsupportedCategory:
+            summary: A category is unsupported while another category succeeds (HTTP 200)
+            value:
+              transfers:
+                - network: base-mainnet
+                  blockNum: "0x3160d69"
+                  blockTimestamp: "2026-09-25T13:31:33Z"
+                  category: erc20
+                  hash: "0x4a265a6a…"
+                  from: "0x7437cc0e…"
+                  to: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+                  contractAddress: "0x88fb150bdc53a65fe94dea0c9ba0a6daf8c6e196"
+                  uniqueId: "0x4a265a6a…:log:946"
+                  fungible:
+                    rawValue: "0x5a58994db8be9"
+                    value: 0.001589385210072041
+                    decimals: 18
+                    asset: LINK
+              pageKey: "eyJ2ZXJzaW9uIjoxLCJvcmRlciI6ImRlc2MiLCIuLi4iOiIuLi4ifQ"
+              error:
+                message: "Some requested networks were not returned"
+                partialErrors:
+                  - network: base-mainnet
+                    state: unsupported
+                    message: >
+                      The 'specialnft' category is not supported for network 'base-mainnet'. Check
+                      the Alchemy documentation for supported networks.
   "400":
     description: "Bad Request: Invalid input (e.g., malformed JSON)."
     content:

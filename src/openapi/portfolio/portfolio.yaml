@@ -682,11 +682,11 @@ components:
       properties:
         address:
           type: string
+          pattern: "^0x[0-9a-fA-F]{40}$"
           description: >
             The wallet address to fetch transfers for. A single address keeps the common
             wallet use case (all activity to and from one address) in a single request.
           example: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-          default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
         direction:
           type: string
           enum:
@@ -722,7 +722,6 @@ components:
               - robinhood-testnet
               - arc-mainnet
               - arc-testnet
-            default: eth-mainnet
           description: >
             Networks to query. You can query up to 5 networks per request. Reach out if
             you need more.
@@ -774,13 +773,16 @@ components:
           type: array
           items:
             type: string
+            pattern: "^0x[0-9a-fA-F]{40}$"
           description: >
             Filter results to these token contract addresses. Applies to the `erc20`, `erc721`,
             `erc1155`, and `specialnft` categories.
         excludeZeroValue:
           type: boolean
           default: true
-          description: Whether to exclude zero-value transfers.
+          description: >
+            Whether to exclude zero-value `external`, `internal`, and `erc20` transfers. This
+            option does not affect `erc721`, `erc1155`, or `specialnft` transfers.
         maxCount:
           type: integer
           default: 100
@@ -791,6 +793,7 @@ components:
             Opaque cursor returned by a previous response. Pass it back to fetch the next page.
       required:
         - address
+        - networks
         - category
 
     TransfersResponse:
@@ -928,8 +931,9 @@ components:
     TransfersPartialError:
       type: object
       description: >
-        If one or more requested networks do not return data, this object is present in the HTTP
-        200 response.
+        If one or more requested networks do not return data, or an explicitly requested category
+        is unsupported on a network, this object is present in the HTTP 200 response. A network
+        with an unsupported category can still return transfers from its supported categories.
         When every requested network succeeds, the `error` key is omitted from the response.
         See [Handling partial failures](/docs/reference/portfolio-apis#handling-partial-failures)
         for the recommended client pattern.
@@ -939,21 +943,31 @@ components:
           description: Human-readable summary of the partial failure.
         partialErrors:
           type: array
-          description: One entry per network that failed.
+          description: >
+            One entry per network failure or unsupported network/category combination. For an
+            unsupported category, the human-readable message identifies the category while other
+            categories on the same network can still return data.
           items:
             type: object
             properties:
               network:
                 type: string
-                description: The network that failed.
+                description: The affected network.
               state:
                 type: string
-                description: Failure state, such as `timeout`.
+                enum:
+                  - unsupported
+                  - timeout
+                  - error
+                description: >
+                  Stable failure state. `unsupported` is permanent unless the request changes;
+                  `timeout` and `error` can be retried with a bounded retry policy.
               message:
                 type: string
-                description: Human-readable error for this network.
+                description: Human-readable error for this network or network/category combination.
             required:
               - network
+              - state
               - message
       required:
         - message
