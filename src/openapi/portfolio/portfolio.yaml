@@ -854,11 +854,10 @@ components:
             - "null"
           description: Recipient address. `null` on contract creation.
         contractAddress:
-          type:
-            - string
-            - "null"
+          type: string
           description: >
-            Token contract address. `null` for native-token transfers, such as ETH transfers.
+            Token contract address. Present for `erc20`, `erc721`, `erc1155`, and `specialnft`
+            transfers. Omitted for `external` and `internal` transfers.
         uniqueId:
           type: string
           description: >
@@ -866,12 +865,10 @@ components:
             (erc20/erc721/erc1155/specialnft), `{hash}:external`,
             `{hash}:internal:{traceAddress}`.
         fungible:
-          type:
-            - object
-            - "null"
+          type: object
           description: >
             Fungible-transfer details for the `external`, `internal`, and `erc20` categories.
-            `null` for NFT (`erc721`/`erc1155`/`specialnft`) transfers.
+            Omitted for NFT (`erc721`/`erc1155`/`specialnft`) transfers.
           properties:
             rawValue:
               type: string
@@ -896,12 +893,10 @@ components:
               description: >
                 Token symbol, such as USDC or ETH. If metadata is missing, this field is `null`.
         nfts:
-          type:
-            - object
-            - "null"
+          type: object
           description: >
-            NFT-transfer details for the `erc721`, `erc1155`, and `specialnft` categories. `null`
-            for fungible transfers.
+            NFT-transfer details for the `erc721`, `erc1155`, and `specialnft` categories.
+            Omitted for fungible transfers.
           properties:
             tokens:
               type: array
@@ -914,7 +909,12 @@ components:
                     description: Token ID as a hex string.
                   amount:
                     type: string
-                    description: Quantity transferred (always `1` for `erc721`).
+                    pattern: "^0x[0-9a-fA-F]+$"
+                    example: "0x1"
+                    description: >
+                      Raw transferred amount as a 0x-prefixed hexadecimal string. Always `0x1`
+                      for ERC-721. ERC-1155 amounts can contain leading zeroes, for example
+                      `0x01`.
       required:
         - network
         - blockNum
@@ -923,7 +923,6 @@ components:
         - hash
         - from
         - to
-        - contractAddress
         - uniqueId
 
     TransfersPartialError:
