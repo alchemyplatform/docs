@@ -30,9 +30,9 @@ The five multichain fan-out endpoints below can succeed on some networks and fai
 * [NFT Collections By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nft-contracts-by-address)
 * [Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address)
 
-When one or more networks in a request fail, the request still returns HTTP 200 with results from successful networks. The response also includes a top-level `error` object that describes the affected networks.
+When a request is only partially fulfilled, it still returns HTTP 200 with every result that was retrieved successfully. The response also includes a top-level `error` object that describes the incomplete parts of the request. Always process the returned results even when `error` is present.
 
-Transfers By Wallet can also return a partial error when an explicitly requested category is unsupported on a network. In that case, the same network can still return transfers from its supported categories.
+For Transfers By Wallet, a partial error can apply to an entire network or to one unsupported category. If only a category is unsupported, the same network can still return transfers from its other requested categories.
 
 The `error` key is omitted entirely when every requested network succeeds; it is not present-and-null.
 
@@ -52,9 +52,9 @@ The `error` key is omitted entirely when every requested network succeeds; it is
 
 [Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address) returns successful items in the top-level `transfers` array instead of `data`.
 
-`error.message` is a human-readable summary. Token and NFT endpoints return product-specific messages. Transfers By Wallet uses `"Some requested networks were not returned"` for unsupported inputs and `"Failed to fetch transfers on certain networks"` for fetch failures.
+`error.message` and `error.partialErrors[].message` are human-readable context. Do not match these strings or use them for programmatic decisions.
 
-On token and NFT endpoints, `error.partialErrors[].message` currently returns `"Internal server error"`. Transfers By Wallet also returns a required `state` for each partial error:
+Transfers By Wallet returns a required `state` for each partial error:
 
 * `unsupported`: The network or an explicitly requested category is not supported. Do not retry the unchanged request.
 * `timeout`: The network query timed out and can be retried with a bounded retry policy.
@@ -64,11 +64,12 @@ Treat `message` as human-readable text. Use `state`, not message matching, for r
 
 ### Behavior to design around
 
-* **HTTP 200 does not mean every network returned data.** Always check for the presence of `error` before treating the response as complete.
+* **Use the returned results.** A response with `error` can still contain valid data from successful networks and categories.
+* **HTTP 200 does not mean the full request succeeded.** Always check for the presence of `error` before treating the response as complete.
 * **Every requested network can fail.** If it does, the result array is empty and `partialErrors` contains one entry per network, still at HTTP 200.
 * **Networks can repeat in `partialErrors` on token and NFT endpoints.** A network repeats when multiple request entries include it.
 * **A fully failed network is dropped from pagination.** It is not retried on subsequent `pageKey` requests.
-* **Transfers category failures behave differently.** If one requested category is unsupported, supported categories on the same network remain in pagination. The category partial error can appear again on subsequent pages.
+* **Transfers category failures still return results.** If one requested category is unsupported, transfers from supported categories on the same network are returned and remain in pagination. The category partial error can appear again on subsequent pages.
 * **The top-level `error` is separate from `data.tokens[].error`** on Tokens By Wallet. The former reports networks that failed entirely; the latter reports a per-token metadata or pricing failure within an otherwise successful network response.
 
 ### Recommended client pattern

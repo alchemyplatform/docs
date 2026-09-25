@@ -15,11 +15,12 @@ description: >
   Ethereum Mainnet.
 
 
-  This endpoint fans out across every requested network and merges the results. If a network fails
-  (upstream error or per-network timeout), or an explicitly requested category is unsupported on a
-  network, the response is still HTTP 200 with a top-level `error.partialErrors` array. A network
-  can appear in `partialErrors` and still return transfers from its supported categories. See
-  [Handling partial
+  This endpoint fans out across every requested network and merges the results. A partially
+  fulfilled request still returns HTTP 200 with every transfer that was retrieved successfully and
+  a top-level `error.partialErrors` array. A partial error can apply to an entire network or to one
+  unsupported category. If only a category is unsupported, transfers from other categories on the
+  same network are still returned. Always process the `transfers` array even when `error` is
+  present. See [Handling partial
   failures](/docs/reference/portfolio-apis#handling-partial-failures) for the recommended client
   pattern.
 tags: ["Portfolio API Endpoints"]
