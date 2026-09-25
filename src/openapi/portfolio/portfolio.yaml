@@ -931,22 +931,23 @@ components:
     TransfersPartialError:
       type: object
       description: >
-        If one or more requested networks do not return data, or an explicitly requested category
-        is unsupported on a network, this object is present in the HTTP 200 response. A network
-        with an unsupported category can still return transfers from its supported categories.
-        When every requested network succeeds, the `error` key is omitted from the response.
+        Present when the request is only partially fulfilled. The `transfers` array still contains
+        every result that was retrieved successfully. A partial error can apply to an entire
+        network or to one unsupported category on a network. If only a category is unsupported,
+        transfers from other categories on that same network are still returned. When the full
+        request succeeds, the `error` key is omitted.
         See [Handling partial failures](/docs/reference/portfolio-apis#handling-partial-failures)
         for the recommended client pattern.
       properties:
         message:
           type: string
-          description: Human-readable summary of the partial failure.
+          description: Human-readable summary. Do not use this text for programmatic decisions.
         partialErrors:
           type: array
           description: >
-            One entry per network failure or unsupported network/category combination. For an
-            unsupported category, the human-readable message identifies the category while other
-            categories on the same network can still return data.
+            Details about the parts of the request that were not fulfilled. A network listed here
+            can still appear in `transfers` when only one of its requested categories is
+            unsupported.
           items:
             type: object
             properties:
@@ -964,7 +965,9 @@ components:
                   `timeout` and `error` can be retried with a bounded retry policy.
               message:
                 type: string
-                description: Human-readable error for this network or network/category combination.
+                description: >
+                  Human-readable context about the partial error. Do not use this text for
+                  programmatic decisions.
             required:
               - network
               - state
