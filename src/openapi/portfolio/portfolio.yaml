@@ -682,11 +682,11 @@ components:
       properties:
         address:
           type: string
+          pattern: "^0x[0-9a-fA-F]{40}$"
           description: >
             The wallet address to fetch transfers for. A single address keeps the common
             wallet use case (all activity to and from one address) in a single request.
           example: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-          default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
         direction:
           type: string
           enum:
@@ -722,7 +722,6 @@ components:
               - robinhood-testnet
               - arc-mainnet
               - arc-testnet
-            default: eth-mainnet
           description: >
             Networks to query. You can query up to 5 networks per request. Reach out if
             you need more.
@@ -774,13 +773,16 @@ components:
           type: array
           items:
             type: string
+            pattern: "^0x[0-9a-fA-F]{40}$"
           description: >
             Filter results to these token contract addresses. Applies to the `erc20`, `erc721`,
             `erc1155`, and `specialnft` categories.
         excludeZeroValue:
           type: boolean
           default: true
-          description: Whether to exclude zero-value transfers.
+          description: >
+            Whether to exclude zero-value `external`, `internal`, and `erc20` transfers. This
+            option does not affect `erc721`, `erc1155`, or `specialnft` transfers.
         maxCount:
           type: integer
           default: 100
@@ -791,6 +793,7 @@ components:
             Opaque cursor returned by a previous response. Pass it back to fetch the next page.
       required:
         - address
+        - networks
         - category
 
     TransfersResponse:
@@ -854,11 +857,10 @@ components:
             - "null"
           description: Recipient address. `null` on contract creation.
         contractAddress:
-          type:
-            - string
-            - "null"
+          type: string
           description: >
-            Token contract address. `null` for native-token transfers, such as ETH transfers.
+            Token contract address. Present for `erc20`, `erc721`, `erc1155`, and `specialnft`
+            transfers. Omitted for `external` and `internal` transfers.
         uniqueId:
           type: string
           description: >
@@ -866,12 +868,10 @@ components:
             (erc20/erc721/erc1155/specialnft), `{hash}:external`,
             `{hash}:internal:{traceAddress}`.
         fungible:
-          type:
-            - object
-            - "null"
+          type: object
           description: >
             Fungible-transfer details for the `external`, `internal`, and `erc20` categories.
-            `null` for NFT (`erc721`/`erc1155`/`specialnft`) transfers.
+            Omitted for NFT (`erc721`/`erc1155`/`specialnft`) transfers.
           properties:
             rawValue:
               type: string
@@ -896,12 +896,10 @@ components:
               description: >
                 Token symbol, such as USDC or ETH. If metadata is missing, this field is `null`.
         nfts:
-          type:
-            - object
-            - "null"
+          type: object
           description: >
-            NFT-transfer details for the `erc721`, `erc1155`, and `specialnft` categories. `null`
-            for fungible transfers.
+            NFT-transfer details for the `erc721`, `erc1155`, and `specialnft` categories.
+            Omitted for fungible transfers.
           properties:
             tokens:
               type: array
@@ -914,7 +912,12 @@ components:
                     description: Token ID as a hex string.
                   amount:
                     type: string
-                    description: Quantity transferred (always `1` for `erc721`).
+                    pattern: "^0x[0-9a-fA-F]+$"
+                    example: "0x1"
+                    description: >
+                      Raw transferred amount as a 0x-prefixed hexadecimal string. Always `0x1`
+                      for ERC-721. ERC-1155 amounts can contain leading zeroes, for example
+                      `0x01`.
       required:
         - network
         - blockNum
@@ -923,38 +926,51 @@ components:
         - hash
         - from
         - to
-        - contractAddress
         - uniqueId
 
     TransfersPartialError:
       type: object
       description: >
-        If one or more requested networks do not return data, this object is present in the HTTP
-        200 response.
-        When every requested network succeeds, the `error` key is omitted from the response.
+        Present when the request is only partially fulfilled. The `transfers` array still contains
+        every result that was retrieved successfully. A partial error can apply to an entire
+        network or to one unsupported category on a network. If only a category is unsupported,
+        transfers from other categories on that same network are still returned. When the full
+        request succeeds, the `error` key is omitted.
         See [Handling partial failures](/docs/reference/portfolio-apis#handling-partial-failures)
         for the recommended client pattern.
       properties:
         message:
           type: string
-          description: Human-readable summary of the partial failure.
+          description: Human-readable summary. Do not use this text for programmatic decisions.
         partialErrors:
           type: array
-          description: One entry per network that failed.
+          description: >
+            Details about the parts of the request that were not fulfilled. A network listed here
+            can still appear in `transfers` when only one of its requested categories is
+            unsupported.
           items:
             type: object
             properties:
               network:
                 type: string
-                description: The network that failed.
+                description: The affected network.
               state:
                 type: string
-                description: Failure state, such as `timeout`.
+                enum:
+                  - unsupported
+                  - timeout
+                  - error
+                description: >
+                  Stable failure state. `unsupported` is permanent unless the request changes;
+                  `timeout` and `error` can be retried with a bounded retry policy.
               message:
                 type: string
-                description: Human-readable error for this network.
+                description: >
+                  Human-readable context about the partial error. Do not use this text for
+                  programmatic decisions.
             required:
               - network
+              - state
               - message
       required:
         - message
