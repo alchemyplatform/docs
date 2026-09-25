@@ -22,21 +22,24 @@ Portfolio APIs include *everything* you need to build a view of a user's assets:
 
 ## Handling partial failures
 
-The five multichain fan-out endpoints below can succeed on some networks and fail on others within a single request. Applies to:
+The Portfolio API has two partial-error behaviors. The token and NFT endpoints use one behavior. Transfers By Wallet uses another behavior.
+
+### Token and NFT endpoint behavior
+
+This behavior applies to these endpoints:
 
 * [Tokens By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-tokens-by-address)
 * [Token Balances By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-token-balances-by-address)
 * [NFTs By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nfts-by-address)
 * [NFT Collections By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nft-contracts-by-address)
-* [Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address)
 
-When a request is only partially fulfilled, it still returns HTTP 200 with every result that was retrieved successfully. The response also includes a top-level `error` object that describes the incomplete parts of the request. Always process the returned results even when `error` is present.
+These endpoints can return results from some networks when other networks fail. The response has HTTP 200 and includes a top-level `error` object.
 
-For Transfers By Wallet, a partial error can apply to an entire network or to one unsupported category. If only a category is unsupported, the same network can still return transfers from its other requested categories.
+The `error` object lists the networks that failed. The successful results remain in the top-level `data` object.
 
-The `error` key is omitted entirely when every requested network succeeds; it is not present-and-null.
+The response omits the `error` key when all networks succeed.
 
-### Response shape on partial failure
+#### Response shape
 
 ```json
 {
@@ -50,35 +53,43 @@ The `error` key is omitted entirely when every requested network succeeds; it is
 }
 ```
 
-[Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address) returns successful items in the top-level `transfers` array instead of `data`.
+The message fields contain human-readable context. Do not use these fields for programmatic decisions.
 
-`error.message` and `error.partialErrors[].message` are human-readable context. Do not match these strings or use them for programmatic decisions.
+#### Pagination and retries
 
-Transfers By Wallet returns a required `state` for each partial error:
+* A failed network is not present in the next page. The `pageKey` does not retry that network.
+* A network can occur more than once in `partialErrors` when multiple request entries use that network.
+* Retry only the listed networks. Use a new request and stop after a fixed number of attempts.
+* Return the successful data to the client. Do not discard the response because it contains `error`.
+* On Tokens By Wallet, the top-level `error` is different from `data.tokens[].error`. The nested error describes a token metadata or price error.
 
-* `unsupported`: The network or an explicitly requested category is not supported. Do not retry the unchanged request.
-* `timeout`: The network query timed out and can be retried with a bounded retry policy.
-* `error`: The network query failed and can be retried with a bounded retry policy.
+### Transfers By Wallet behavior
 
-Treat `message` as human-readable text. Use `state`, not message matching, for retry decisions.
+[Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address) returns successful items in the top-level `transfers` array.
 
-### Behavior to design around
+A partial error can describe a failed network. It can also describe one unsupported category on a network.
 
-* **Use the returned results.** A response with `error` can still contain valid data from successful networks and categories.
-* **HTTP 200 does not mean the full request succeeded.** Always check for the presence of `error` before treating the response as complete.
-* **Every requested network can fail.** If it does, the result array is empty and `partialErrors` contains one entry per network, still at HTTP 200.
-* **Networks can repeat in `partialErrors` on token and NFT endpoints.** A network repeats when multiple request entries include it.
-* **A fully failed network is dropped from pagination.** It is not retried on subsequent `pageKey` requests.
-* **Transfers category failures still return results.** If one requested category is unsupported, transfers from supported categories on the same network are returned and remain in pagination. The category partial error can appear again on subsequent pages.
-* **The top-level `error` is separate from `data.tokens[].error`** on Tokens By Wallet. The former reports networks that failed entirely; the latter reports a per-token metadata or pricing failure within an otherwise successful network response.
+If only one category is unsupported, the same network can still return transfers from its other requested categories. Always process the `transfers` array.
 
-### Recommended client pattern
+The response has HTTP 200 in both cases. The response omits the `error` key only when the full request succeeds.
 
-Return partial data instead of discarding the response.
+Each transfer partial error has a required `state`:
 
-For Transfers By Wallet, inspect `partialErrors[].state`. Do not retry `unsupported` errors without changing the network or category selection. Retry `timeout` and `error` states as fresh requests for only the listed networks, and stop after a fixed number of attempts. Continue using `pageKey` for successful networks and supported categories.
+* `unsupported`: The network or category is not supported. Do not retry the same request.
+* `timeout`: The network query timed out. You can retry it with a fixed attempt limit.
+* `error`: The network query failed. You can retry it with a fixed attempt limit.
 
-The token and NFT endpoints do not currently return `state`. For those endpoints, retry only the listed networks as fresh requests and stop after a fixed number of attempts.
+The message fields contain human-readable context. Use `state`, not the message text, for programmatic decisions.
+
+#### Pagination and retries
+
+* A fully failed network is not present in the next page. The `pageKey` does not retry that network.
+* An unsupported category does not remove the network from pagination. Supported categories on that network remain in the next page.
+* The same category partial error can occur on later pages.
+* Do not retry an `unsupported` error unless you change the network or category selection.
+* Retry `timeout` and `error` states only for the listed networks. Use a new request and stop after a fixed number of attempts.
+* Continue to use `pageKey` for successful networks and supported categories.
+* Return the successful transfers to the client. Do not discard the response because it contains `error`.
 
 ## Feedback?
 
