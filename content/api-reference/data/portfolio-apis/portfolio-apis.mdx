@@ -22,19 +22,24 @@ Portfolio APIs include *everything* you need to build a view of a user's assets:
 
 ## Handling partial failures
 
-The five multichain fan-out endpoints below can succeed on some networks and fail on others within a single request. Applies to:
+The Portfolio API has two partial-error behaviors. The token and NFT endpoints use one behavior. Transfers By Wallet uses another behavior.
+
+### Token and NFT endpoint behavior
+
+This behavior applies to these endpoints:
 
 * [Tokens By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-tokens-by-address)
 * [Token Balances By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-token-balances-by-address)
 * [NFTs By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nfts-by-address)
 * [NFT Collections By Wallet](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nft-contracts-by-address)
-* [Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address)
 
-When one or more networks in a request fail, the request still returns HTTP 200 with results from successful networks. The response also includes a top-level `error` object that describes the failed networks.
+These endpoints can return results from some networks when other networks fail. The response has HTTP 200 and includes a top-level `error` object.
 
-The `error` key is omitted entirely when every requested network succeeds; it is not present-and-null.
+The `error` object lists the networks that failed. The successful results remain in the top-level `data` object.
 
-### Response shape on partial failure
+The response omits the `error` key when all networks succeed.
+
+#### Response shape
 
 ```json
 {
@@ -48,23 +53,43 @@ The `error` key is omitted entirely when every requested network succeeds; it is
 }
 ```
 
-[Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address) returns successful items in the top-level `transfers` array instead of `data`.
+The message fields contain human-readable context. Do not use these fields for programmatic decisions.
 
-`error.message` is a human-readable summary. Token and NFT endpoints return product-specific messages. Transfers By Wallet returns `"Some networks did not return results"`.
+#### Pagination and retries
 
-On token and NFT endpoints, `error.partialErrors[].message` currently returns `"Internal server error"`. Transfers By Wallet can also include a `state` for each failed network. Treat these fields as opaque values, not enumerable error codes.
+* A failed network is not present in the next page. The `pageKey` does not retry that network.
+* A network can occur more than once in `partialErrors` when multiple request entries use that network.
+* Retry only the listed networks. Use a new request and stop after a fixed number of attempts.
+* Return the successful data to the client. Do not discard the response because it contains `error`.
+* On Tokens By Wallet, the top-level `error` is different from `data.tokens[].error`. The nested error describes a token metadata or price error.
 
-### Behavior to design around
+### Transfers By Wallet behavior
 
-* **HTTP 200 does not mean every network returned data.** Always check for the presence of `error` before treating the response as complete.
-* **Every requested network can fail.** If it does, the result array is empty and `partialErrors` contains one entry per network, still at HTTP 200.
-* **Networks can repeat in `partialErrors` on token and NFT endpoints.** A network repeats when multiple request entries include it.
-* **Failed networks are dropped from pagination.** They are not retried on subsequent `pageKey` requests, so retry a failed network as a fresh request rather than expecting it on the next page.
-* **The top-level `error` is separate from `data.tokens[].error`** on Tokens By Wallet. The former reports networks that failed entirely; the latter reports a per-token metadata or pricing failure within an otherwise successful network response.
+[Transfers By Wallet (Beta)](/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address) returns successful items in the top-level `transfers` array.
 
-### Recommended client pattern
+A partial error can describe a failed network. It can also describe one unsupported category on a network.
 
-Treat `partialErrors` as retryable. Retry only the listed networks in a fresh request. Return the partial data instead of discarding the response. Stop after a fixed number of retries.
+If only one category is unsupported, the same network can still return transfers from its other requested categories. Always process the `transfers` array.
+
+The response has HTTP 200 in both cases. The response omits the `error` key only when the full request succeeds.
+
+Each transfer partial error has a required `state`:
+
+* `unsupported`: The network or category is not supported. Do not retry the same request.
+* `timeout`: The network query timed out. You can retry it with a fixed attempt limit.
+* `error`: The network query failed. You can retry it with a fixed attempt limit.
+
+The message fields contain human-readable context. Use `state`, not the message text, for programmatic decisions.
+
+#### Pagination and retries
+
+* A fully failed network is not present in the next page. The `pageKey` does not retry that network.
+* An unsupported category does not remove the network from pagination. Supported categories on that network remain in the next page.
+* The same category partial error can occur on later pages.
+* Do not retry an `unsupported` error unless you change the network or category selection.
+* Retry `timeout` and `error` states only for the listed networks. Use a new request and stop after a fixed number of attempts.
+* Continue to use `pageKey` for successful networks and supported categories.
+* Return the successful transfers to the client. Do not discard the response because it contains `error`.
 
 ## Feedback?
 
