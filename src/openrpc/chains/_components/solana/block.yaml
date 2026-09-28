@@ -421,3 +421,54 @@ components:
       title: Max Slot Result
       type: integer
       description: The maximum slot number observed.
+    AlpenglowGenesisBlock:
+      title: Alpenglow Genesis Block
+      type: object
+      description: The first block produced under Alpenglow consensus.
+      properties:
+        slot:
+          type: integer
+          description: Slot of the Alpenglow genesis block.
+        blockId:
+          type: array
+          description: Block ID of the Alpenglow genesis block, as a 32-byte array.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 255
+          minItems: 32
+          maxItems: 32
+    AlpenglowGenesisSignature:
+      title: Alpenglow Genesis Signature
+      type: object
+      description: Aggregate BLS signature over the Alpenglow genesis block.
+      properties:
+        signature:
+          type: array
+          description: 192-byte aggregate BLS signature.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 255
+          minItems: 192
+          maxItems: 192
+        bitmap:
+          type: array
+          description: Bitmap of the ranks of the validators whose votes are covered by the aggregate signature.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 255
+    AlpenglowGenesisCert:
+      title: Alpenglow Genesis Certificate
+      description: >-
+        The certificate over the first block produced under Alpenglow consensus,
+        or `null` while the cluster is still running TowerBFT.
+      oneOf:
+        - type: "null"
+        - type: object
+          properties:
+            block:
+              $ref: "#/components/schemas/AlpenglowGenesisBlock"
+            signature:
+              $ref: "#/components/schemas/AlpenglowGenesisSignature"

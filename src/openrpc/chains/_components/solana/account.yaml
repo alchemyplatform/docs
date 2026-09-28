@@ -217,6 +217,60 @@ components:
         encoding:
           $ref: "./base-types.yaml#/components/schemas/Encoding"
           description: Encoding format for account data.
+    GetTokenAccountsByOwnerV2Config:
+      title: GetTokenAccountsByOwnerV2 Configuration
+      type: object
+      description: >-
+        Options for a single `getTokenAccountsByOwnerV2` request. Every
+        field that `GetTokenAccountsByOwnerConfig` accepts is honored
+        here; the pagination and incremental-update fields (`limit`,
+        `paginationKey`, `changedSinceSlot`) and the `withContext`
+        response-shape toggle sit alongside them.
+      properties:
+        commitment:
+          $ref: "./base-types.yaml#/components/schemas/Commitment"
+        minContextSlot:
+          $ref: "./base-types.yaml#/components/schemas/MinContextSlot"
+        withContext:
+          type: boolean
+          description: >-
+            Set to `true` to receive the wrapped Solana RPC shape: a
+            `context` object (at minimum a `slot` field, plus
+            `apiVersion` when the node reports one) beside a `value`
+            object holding `accounts` and `paginationKey`. Leave unset
+            or set to `false` and those two fields sit at the top of
+            `result` with no `context` sibling and `value` returned as
+            the token-account array directly. Filters, page size, and
+            cursor behavior are identical either way — only the outer
+            JSON shape changes.
+        dataSlice:
+          $ref: "./base-types.yaml#/components/schemas/DataSlice"
+        encoding:
+          $ref: "./base-types.yaml#/components/schemas/Encoding"
+          description: Encoding format for account data.
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 1000
+          description: >-
+            Upper bound on the number of token accounts returned per
+            page (1-10,000). Server-side filtering can shrink a page
+            below `limit` without meaning the walk is finished — keep
+            paging until `paginationKey` comes back `null`.
+        paginationKey:
+          type: string
+          description: >-
+            Cursor for the next page, base-58 encoded. Take the value
+            from the previous response's `paginationKey`; leave this
+            field out on the first call.
+        changedSinceSlot:
+          type: integer
+          minimum: 0
+          description: >-
+            Restrict the page to token accounts written at or after this
+            slot. Useful for keeping a downstream portfolio index in
+            sync without re-scanning the wallet's full token holdings.
     GetTokenAccountsByOwnerAtSlotFilter:
       title: GetTokenAccountsByOwnerAtSlot Filter
       type: object
@@ -380,6 +434,83 @@ components:
           description: >-
             Cursor for the next page, or `null` on the last page. Send it
             back in `config.pageKey` to continue paging.
+    TokenAccountsByOwnerV2Page:
+      title: Token Accounts By Owner V2 Page
+      type: object
+      description: >-
+        A single page of token accounts plus the cursor for the next
+        one. These fields sit directly on `result`, or under
+        `result.value`, depending on the request's `withContext` flag.
+      properties:
+        accounts:
+          type: array
+          description: Token accounts owned by the wallet that fell into this page.
+          items:
+            $ref: "#/components/schemas/ParsedTokenAccount"
+        paginationKey:
+          type: string
+          nullable: true
+          description: >-
+            Cursor to feed into the next request, base-58 encoded. Turns
+            to `null` once the server confirms there are no further
+            token accounts to hand out. A page shorter than the
+            requested `limit` does not by itself mean the walk is done —
+            keep calling until this field is `null`.
+    TokenAccountsByOwnerV2Result:
+      title: Token Accounts By Owner V2 Result
+      description: >-
+        Shape of the `result` object. With `withContext` unset or
+        `false`, the page's `accounts` and `paginationKey` are returned
+        at the top level, with `accounts` renamed to `value` and given
+        as the token-account array directly. With `withContext: true`,
+        the same page is placed under `value` as an object (`accounts`
+        + `paginationKey`), and a `context` sibling carries the slot
+        the node used to build the response.
+      oneOf:
+        - type: object
+          title: without withContext
+          description: >-
+            Direct shape returned when the request omits `withContext`
+            or sends `withContext: false`. Matches the familiar
+            `getTokenAccountsByOwner` layout, with the pagination
+            cursor added on `result`.
+          properties:
+            value:
+              type: array
+              description: >-
+                Token accounts for the current page, decoded in the
+                requested `encoding` (defaults to `jsonParsed`).
+              items:
+                $ref: "#/components/schemas/ParsedTokenAccount"
+            paginationKey:
+              type: string
+              nullable: true
+              description: >-
+                Cursor to feed into the next request, base-58 encoded.
+                `null` only when the server confirms the end of
+                pagination — a short page on its own does not mean the
+                walk is finished.
+        - type: object
+          title: with withContext
+          description: >-
+            Envelope returned when the request has `withContext: true`.
+          required:
+            - context
+            - value
+          properties:
+            context:
+              type: object
+              description: >-
+                Node metadata for the moment this response was built.
+              properties:
+                slot:
+                  type: integer
+                  description: Slot at which the node built this response.
+                apiVersion:
+                  type: string
+                  description: RPC API version when available.
+            value:
+              $ref: "#/components/schemas/TokenAccountsByOwnerV2Page"
     GetBalanceByOwnerAtSlotResult:
       title: GetBalanceByOwnerAtSlot Result
       type: object
@@ -414,6 +545,69 @@ components:
         slot:
           type: integer
           description: The slot the balance was computed at.
+    GetTokenHoldersAtSlotSortBy:
+      title: GetTokenHoldersAtSlot SortBy
+      type: string
+      description: >-
+        The ordering of the returned holders. `balance_desc` (default)
+        returns the largest balance first; `balance_asc` returns the
+        smallest non-zero balance first. Case-sensitive. `sort_by` is
+        accepted as an alias for `sortBy`.
+      enum:
+        - balance_desc
+        - balance_asc
+      default: balance_desc
+    TokenHoldersAtSlotHolder:
+      title: Token Holders At Slot Holder
+      type: object
+      description: >-
+        A single token account holding the mint at the requested slot.
+        Balances are reported per token account and are never summed per
+        owner; a wallet with several token accounts of the same mint
+        occupies several rows.
+      properties:
+        holder:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The token account address.
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The wallet that controls the token account.
+        balanceRaw:
+          type: string
+          description: >-
+            Raw token amount, as an integer string. Returned as a string
+            so large values survive JSON parsing without precision loss.
+            Parse as a big integer, not a float.
+        balanceUi:
+          type: string
+          description: >-
+            Human-readable amount (`balanceRaw` scaled by the mint's
+            decimals). Returned as a string for the same
+            precision-preserving reasons as `balanceRaw`.
+    GetTokenHoldersAtSlotResult:
+      title: GetTokenHoldersAtSlot Result
+      type: object
+      description: >-
+        The token accounts that held the mint at the requested slot,
+        ranked by balance, along with the slot the result was computed
+        at and the sort order applied. Accounts with a zero balance are
+        excluded; accounts with equal balances have no defined relative
+        order.
+      properties:
+        mint:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: The mint queried.
+        slot:
+          type: integer
+          description: The slot the holder list was computed at.
+        sortBy:
+          $ref: "#/components/schemas/GetTokenHoldersAtSlotSortBy"
+          description: The ordering applied, echoed back.
+        holders:
+          type: array
+          description: The holders of the mint, in `sortBy` order.
+          items:
+            $ref: "#/components/schemas/TokenHoldersAtSlotHolder"
     LargestAccountsConfig:
       title: LargestAccounts Configuration
       type: object
