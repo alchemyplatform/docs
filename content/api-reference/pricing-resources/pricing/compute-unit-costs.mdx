@@ -396,19 +396,22 @@ We want builders to be able to use as much of the NFT API as they need without w
 # Portfolio API
 
 {/* cu:auto product="portfolio" */}
-| Method                            | CU   | Throughput CU |
-| --------------------------------- | ---- | ------------- |
-| utility/blocks/by-timestamp       | 10   | 1             |
-| stellar/balances                  | 40   |               |
-| stellar/nfts                      | 40   |               |
-| stellar/transfers                 | 40   |               |
-| assets/tokens/balances/by-address | 200  | 1             |
-| tokens/balances/by-address        | 200  | 1             |
-| assets/tokens/by-address          | 360  | 1             |
-| assets/nfts/contracts/by-address  | 600  | 1             |
-| assets/nfts/by-address            | 1000 | 1             |
-| transactions/history/by-address   | 1000 | 100           |
+| Method                            | CU    | Throughput CU |
+| --------------------------------- | ----- | ------------- |
+| utility/blocks/by-timestamp       | 10    | 1             |
+| stellar/balances                  | 40    |               |
+| stellar/nfts                      | 40    |               |
+| stellar/transfers                 | 40    |               |
+| assets/tokens/balances/by-address | 200   | 1             |
+| tokens/balances/by-address        | 200   | 1             |
+| assets/tokens/by-address          | 360   | 1             |
+| transfers/by-address              | 480\* | 1             |
+| assets/nfts/contracts/by-address  | 600   | 1             |
+| assets/nfts/by-address            | 1000  | 1             |
+| transactions/history/by-address   | 1000  | 100           |
 {/* cu:auto end */}
+
+\*`transfers/by-address` uses dynamic pricing: **480 CUs per network** specified in the `networks` request-body field. For example, a request specifying 3 networks costs 1,440 CUs.
 
 # Prices API
 
