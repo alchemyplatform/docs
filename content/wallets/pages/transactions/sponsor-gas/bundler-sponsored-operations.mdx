@@ -31,15 +31,19 @@ BSOs instead operate at the bundler level: they use your Gas Manager policy to c
 
 ## When sponsorship is applied
 
-The two sponsorship types differ in when the Gas Manager policy is checked:
+For low-level ERC-4337 integrations that send user operations with `eth_sendUserOperation`, the two sponsorship types differ in when the Gas Manager policy is checked:
 
 | | Paymaster sponsorship | BSO |
 | --- | --- | --- |
-| **Policy checked** | When you prepare the call (`prepareCalls`, or the paymaster step of a low-level flow) | When the bundler receives the signed user operation (`eth_sendUserOperation`) |
-| **What the user signs** | A user operation that already contains the Gas Manager's paymaster signature | A user operation with the gas fee fields zeroed, which the bundler fills in |
+| **Policy checked** | When you request paymaster data, before the user signs | When the bundler receives the signed user operation (`eth_sendUserOperation`) |
+| **User operation contents** | Already contains the Gas Manager's paymaster signature | Gas fee fields are zeroed, and the bundler fills them in |
 | **Sponsorship expiry** | The paymaster signature expires, so the user operation must be sent within the policy's sponsorship expiry period | Not applicable, since no paymaster signature is issued |
 
-With paymaster sponsorship, a call can be approved at prepare time and still be dropped if it is sent after the signature expires. With BSO, eligibility is only decided at send time, so a policy limit that is reached between prepare and send causes the send to fail.
+With paymaster sponsorship, a call can be approved up front and still be dropped if it is sent after the signature expires. With BSO, eligibility is only decided at send time, so a policy limit that is reached before the user operation is sent causes the send to fail.
+
+<Info>
+  This table describes user operations. In the Wallet APIs EIP-7702 flow, `prepareCalls` returns an authorization for the user to sign instead of a user operation, so what the user signs differs from the table above.
+</Info>
 
 ## How to use BSO sponsorship
 
