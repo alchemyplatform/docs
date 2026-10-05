@@ -29,6 +29,18 @@ Traditional ERC-4337 sponsorship relies on onchain paymaster contracts, which mu
 
 BSOs instead operate at the bundler level: they use your Gas Manager policy to control spend and remove paymaster contract calls.
 
+## When sponsorship is applied
+
+The two sponsorship types differ in when the Gas Manager policy is checked:
+
+| | Paymaster sponsorship | BSO |
+| --- | --- | --- |
+| **Policy checked** | When you prepare the call (`prepareCalls`, or the paymaster step of a low-level flow) | When the bundler receives the signed user operation (`eth_sendUserOperation`) |
+| **What the user signs** | A user operation that already contains the Gas Manager's paymaster signature | A user operation with the gas fee fields zeroed, which the bundler fills in |
+| **Sponsorship expiry** | The paymaster signature expires, so the user operation must be sent within the policy's sponsorship expiry period | Not applicable, since no paymaster signature is issued |
+
+With paymaster sponsorship, a call can be approved at prepare time and still be dropped if it is sent after the signature expires. With BSO, eligibility is only decided at send time, so a policy limit that is reached between prepare and send causes the send to fail.
+
 ## How to use BSO sponsorship
 
 1. Create a BSO Gas Manager policy in your [dashboard](https://dashboard.alchemy.com/). Configure:
