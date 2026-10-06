@@ -194,7 +194,7 @@ A standard `simulateTransaction` call is one transaction, run once, against what
 
 ### A simulation, walked through
 
-Say you want to know what a swap would have done to a pool's reserves, if it had landed at a specific slot in the past:
+Say you want to replay a transaction against the account state as it existed at a specific slot in the past, and capture the resulting state of one of the accounts it touched. Here's a SOL transfer sent against the archived state at slot 400,000,000:
 
 ```bash
 curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \
@@ -208,12 +208,12 @@ curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \
       "simulations": [
         {
           "slot": 400000000,
-          "encodedTransaction": "<base64-encoded transaction>"
+          "encodedTransaction": "AVshRNwSzqLB+PQb2vsbiK/ZUNZuyrcWvArv9sv9/AQieAx9gXlF0MApk8AZpYh6ESEbchfb8BBg7VYJrKJdeQ4BAAEDiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1yBOXcOqH0XX1ajVGbDTH7My42KkbTuN6Jd9g9bj8mzlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4zLa+S+r7Oi2P/ekQAXl/f2a+hWHVrYcWpX5BLO40IEBAgIAAQwCAAAAQEIPAAAAAAA="
         }
       ],
       "postExecutionAccountsConfigs": {
-        "accounts": ["7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE"],
-        "encoding": "jsonParsed"
+        "accounts": ["9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu"],
+        "encoding": "base64"
       }
     }]
   }'
@@ -234,15 +234,23 @@ The response says whether it would have succeeded, what it would have cost, and,
           "slot": 400000000,
           "status": "success",
           "err": null,
-          "unitsConsumed": 34521,
+          "unitsConsumed": 150,
           "feeLamports": 5000,
           "changedWritableAccounts": [
-            "7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE"
+            "AKnL4NNf3DGWZJS6cPknBuEGnVsV4A4m5tgebLHaRSZ9",
+            "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu"
           ],
           "postExecutionAccounts": [
             {
-              "address": "7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE",
-              "account": { "...": "the account's state immediately after this transaction" }
+              "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+              "account": {
+                "lamports": 1001000000,
+                "owner": "11111111111111111111111111111111",
+                "executable": false,
+                "rentEpoch": 18446744073709551615,
+                "data": ["", "base64"],
+                "space": 0
+              }
             }
           ]
         }
@@ -252,7 +260,7 @@ The response says whether it would have succeeded, what it would have cost, and,
 }
 ```
 
-Nothing here touched the live network. The pool account's state after the swap is real, the same state a validator would have produced had this transaction actually landed at slot 400,000,000, but it exists only in this response.
+Nothing here touched the live network. The recipient's post-transfer balance is real, the same state a validator would have produced had this transaction actually landed at slot 400,000,000, but it exists only in this response.
 
 A few shape details worth noting while you're reading this: `simulationResults` is always an array, in request order, even for a single-entry request. The authoritative per-entry outcome is `status` (`success`, `failed`, or `skipped`), not `err`; a `skipped` entry carries `err: null` the same way a success does. A `failed` entry still ran, so it reports `feeLamports` (the payer was debited) and an empty, not null, `changedWritableAccounts`. Each entry's `postExecutionAccounts` is filtered to only the accounts that simulation actually touched (its `stateOverrides` plus the transaction's writes), so expect `[]` on a successful entry whose transaction didn't touch any of the accounts you listed. And bad input (unknown fields, more than five simulations, a vote-program transaction, decreasing slots across entries) is a `-32602` JSON-RPC error, surfaced before anything executes.
 
