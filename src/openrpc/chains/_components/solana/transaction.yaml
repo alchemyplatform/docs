@@ -676,8 +676,13 @@ components:
           $ref: "#/components/schemas/SimulateTransactionsAtSlotAccountsConfig"
           description: >-
             Accounts to capture after every simulation, applied once per
-            simulation entry. Omit to skip the post-execution capture
-            (each entry's `postExecutionAccounts` will be `null`).
+            simulation entry. Only the subset of these accounts that the
+            simulation actually touched (via its own `stateOverrides` or
+            the transaction's writes) is returned on each entry; untouched
+            requested accounts are omitted from that entry's
+            `postExecutionAccounts`. Omit the config entirely to skip the
+            post-execution capture (each entry's `postExecutionAccounts`
+            will be `null`).
         innerInstructions:
           type: boolean
           default: false
@@ -930,9 +935,13 @@ components:
           type: array
           nullable: true
           description: >-
-            Snapshot of the accounts named in
-            `postExecutionAccountsConfigs`, taken immediately after this
-            entry. `null` if the config was omitted or the entry was
+            Captured accounts after this entry, filtered to only those
+            that the simulation actually touched (via its own
+            `stateOverrides` or the transaction's writes). Accounts named
+            in `postExecutionAccountsConfigs` that this entry did not
+            touch are omitted here (expect `[]` for a `success` entry
+            whose transaction did not touch any requested account).
+            `null` if the config was omitted or if the entry was
             `skipped`.
           items:
             $ref: "#/components/schemas/SimulateTransactionsAtSlotCapturedAccount"

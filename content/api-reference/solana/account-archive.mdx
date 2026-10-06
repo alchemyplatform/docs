@@ -219,7 +219,7 @@ curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \
   }'
 ```
 
-The response says whether it would have succeeded, what it would have cost, and exactly how the accounts you asked about would have changed:
+The response says whether it would have succeeded, what it would have cost, and, for each account you asked about that the simulation actually touched, exactly how its state would have changed:
 
 ```json
 {
@@ -254,7 +254,7 @@ The response says whether it would have succeeded, what it would have cost, and 
 
 Nothing here touched the live network. The pool account's state after the swap is real, the same state a validator would have produced had this transaction actually landed at slot 400,000,000, but it exists only in this response.
 
-A few shape details worth noting while you're reading this: `simulationResults` is always an array, in request order, even for a single-entry request. The authoritative per-entry outcome is `status` (`success`, `failed`, or `skipped`), not `err`; a `skipped` entry carries `err: null` the same way a success does. A `failed` entry still ran, so it reports `feeLamports` (the payer was debited) and an empty, not null, `changedWritableAccounts`. And bad input (unknown fields, more than five simulations, a vote-program transaction, decreasing slots across entries) is a `-32602` JSON-RPC error, surfaced before anything executes.
+A few shape details worth noting while you're reading this: `simulationResults` is always an array, in request order, even for a single-entry request. The authoritative per-entry outcome is `status` (`success`, `failed`, or `skipped`), not `err`; a `skipped` entry carries `err: null` the same way a success does. A `failed` entry still ran, so it reports `feeLamports` (the payer was debited) and an empty, not null, `changedWritableAccounts`. Each entry's `postExecutionAccounts` is filtered to only the accounts that simulation actually touched (its `stateOverrides` plus the transaction's writes), so expect `[]` on a successful entry whose transaction didn't touch any of the accounts you listed. And bad input (unknown fields, more than five simulations, a vote-program transaction, decreasing slots across entries) is a `-32602` JSON-RPC error, surfaced before anything executes.
 
 ### Testing scenarios that never happened
 

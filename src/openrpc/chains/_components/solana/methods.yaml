@@ -1570,6 +1570,13 @@ components:
           transaction, an unparseable transaction) is a `-32602`
           JSON-RPC error, detected before anything executes.
 
+        - Each entry's `postExecutionAccounts` is filtered to only the
+          accounts the simulation actually touched (its `stateOverrides`
+          plus the transaction's writes); accounts named in
+          `postExecutionAccountsConfigs` that the simulation did not
+          touch are omitted from that entry (expect `[]` on a `success`
+          whose transaction touched none of them).
+
 
         Caps enforced before execution (each triggers `-32602` if
         exceeded): at most 5 simulations per request; 100 accounts per
@@ -1602,7 +1609,7 @@ components:
 
         Early access. This method is not yet generally available and its
         request and response shapes may change before GA.
-      x-compute-units: 40
+      x-compute-units: 1500
       params:
         - name: Simulation request
           required: true
