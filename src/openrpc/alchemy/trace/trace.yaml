@@ -141,6 +141,10 @@ servers:
     name: World Chain Mainnet
   - url: https://worldchain-sepolia.g.alchemy.com/v2
     name: World Chain Sepolia
+  - url: https://xlayer-mainnet.g.alchemy.com/v2
+    name: X Layer Mainnet
+  - url: https://xlayer-testnet.g.alchemy.com/v2
+    name: X Layer Testnet
   - url: https://zetachain-mainnet.g.alchemy.com/v2
     name: ZetaChain Mainnet
   - url: https://zora-mainnet.g.alchemy.com/v2
@@ -939,8 +943,11 @@ methods:
               items:
                 $ref: "../_shared/components.yaml#/components/schemas/address"
             after:
-              type: string
-              description: "The offset trace number."
+              type: integer
+              format: uint64
+              minimum: 0
+              maximum: 18446744073709551615
+              description: "The offset trace number (uint64)."
             count:
               type: integer
               description: "Integer number of traces to display in a batch."
@@ -999,7 +1006,7 @@ methods:
               toBlock: "0xc26f54"
               fromAddress: ["0x15dce17509846b420b1f5c158fe3d7518204abb6"]
               toAddress: ["0x15dce17509846b420b1f5c158fe3d7518204abb6"]
-              after: "0x0"
+              after: 0
               count: 10
         result:
           name: "trace_filter response"
