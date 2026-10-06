@@ -17,7 +17,6 @@ methods:
   - $ref: >-
       ../_components/bitcoin/methods.yaml#/components/methods/decoderawtransaction
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/decodescript
-  - $ref: ../_components/bitcoin/methods.yaml#/components/methods/estimatesmartfee
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/getbestblockhash
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/getblock
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/getblockchaininfo
@@ -53,3 +52,11 @@ methods:
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/testmempoolaccept
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/validateaddress
   - $ref: ../_components/bitcoin/methods.yaml#/components/methods/verifymessage
+  - $ref: ../_components/custom/methods.yaml#/components/methods/estimatefee
+x-bot-ignore:
+  # Bitcoin Cash Node does not implement `estimatesmartfee` (it only exposes the
+  # legacy `estimatefee` RPC above). Chain-config lists BCH as supporting the
+  # `bitcoin` method group, which includes `estimatesmartfee`, so Daikon would
+  # otherwise re-add the reference on each run. Keep it ignored here until the
+  # upstream chain-config models the BCH-specific fee RPC surface directly.
+  - estimatesmartfee
