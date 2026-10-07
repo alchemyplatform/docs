@@ -1,0 +1,84 @@
+---
+title: Elysium API FAQ
+description: Frequently asked questions about the Elysium API
+subtitle: Frequently asked questions about the Elysium API
+slug: reference/elysium-api-faq
+---
+
+## What is Elysium?
+
+[Elysium](https://elysium.kinetiq.xyz/) is an Arbitrum Orbit chain from Kinetiq that settles to HyperEVM. It runs the standard EVM, so Ethereum developer tooling and existing Solidity contracts work on Elysium without modification. The chain is purpose-built for the Hyperliquid ecosystem and inherits security from its HyperEVM parent chain.
+
+## What is the Elysium API?
+
+The Elysium API lets your applications connect to an Elysium node on the network. You can read onchain data, submit transactions, and interact with smart contracts using its JSON-RPC endpoints. The API follows the JSON-RPC standard, a stateless, lightweight, remote procedure call (RPC) protocol encoded in JSON.
+
+## How can I get started using the Elysium API?
+
+Explained in the [Elysium API Quickstart Guide](/docs/reference/elysium-api-quickstart).
+
+## Is Elysium EVM compatible?
+
+Yes. Elysium is an Arbitrum Orbit chain, which means it runs the standard EVM. You can deploy existing Solidity contracts, use the same tools you use for Ethereum, and target Elysium without any contract changes.
+
+## What is an Elysium API key?
+
+When accessing the Elysium network through a node provider like Alchemy, you use an API key to send transactions and retrieve data from the network.
+
+For the best development experience, we recommend that you [sign up for a free API key](https://dashboard.alchemy.com/signup).
+
+## Which libraries support Elysium?
+
+Common Ethereum libraries such as [viem](https://viem.sh/), [ethers.js](https://docs.ethers.org/), and [web3.js](https://web3js.readthedocs.io/) all support Elysium given its EVM nature. Elysium is not yet in viem's bundled chain list, so you need to define it with `defineChain` using chain ID `99801` and HYPE as the native currency. See the [Quickstart](/docs/reference/elysium-api-quickstart) for an example.
+
+<Warning>
+  The `elysiumTestnet` export in `viem/chains` refers to a different chain: Vulcan Forged's Elysium Testnet (chain ID `1338`, LAVA currency). Define Kinetiq's Elysium Testnet (chain ID `99801`, HYPE currency) yourself with `defineChain`.
+</Warning>
+
+## What programming languages work with Elysium?
+
+Any language that works with Ethereum works with Elysium. Solidity is the primary choice for smart contract development. JavaScript and TypeScript are the most common languages for offchain interactions, while Python, Go, and Rust libraries also work.
+
+## What does Elysium use for gas?
+
+Elysium uses HYPE as its native gas token, bridged 1:1 from HyperEVM. A plain HYPE transfer uses about 21,140 gas because Nitro adds the cost of posting the transaction to the parent chain (reported as `gasUsedForL1` in the receipt). Hard-coded gas limits of `21000` return `intrinsic gas too low`, so let your library estimate gas when you don't set a limit.
+
+## What is the block time on Elysium?
+
+Elysium produces a block every 100 to 200 milliseconds, and Kinetiq is tuning the block time toward 100 ms. Because of the fast block cadence, limits defined in blocks cover much less time than on Ethereum: a 10,000-block `eth_getLogs` request covers roughly 17 to 33 minutes of chain time, and state served by `eth_getProof` is less than 127 blocks behind the tip (about 13 to 25 seconds). Paginate log backfills accordingly.
+
+## Does Elysium support a public mempool?
+
+No. Elysium runs a single sequencer with no public mempool, so pending transactions are never surfaced. `eth_subscribe("newPendingTransactions")` and `eth_newPendingTransactionFilter` return a subscription or filter ID but deliver no results, and an ethers.js `provider.on("pending")` listener never fires. Watch new blocks or transaction receipts instead.
+
+## Which networks does Alchemy support for Elysium?
+
+Alchemy currently supports the following Elysium network:
+
+* **Elysium Testnet** (chain ID `99801`): `https://elysium-testnet.g.alchemy.com/v2/{apiKey}`
+
+Elysium mainnet has not yet launched. When it does, we will add mainnet endpoint support here.
+
+## What testnet should I use for Elysium?
+
+Use **Elysium Testnet** (chain ID `99801`). It is an Arbitrum Orbit chain that settles to HyperEVM Testnet (chain ID `998`) and lets you deploy smart contracts, execute transactions, and rehearse bridging flows at no cost. You can request testnet HYPE from the [Kinetiq Elysium Testnet faucet](https://elysium.kinetiq.xyz/testnet-faucet) or bridge testnet HYPE from HyperEVM Testnet.
+
+## What methods does Alchemy support for the Elysium API?
+
+You can find the list of all the methods Alchemy supports for the Elysium API on the [Elysium API Endpoints](/docs/chains#elysium-apis) page.
+
+## How can I bridge assets between HyperEVM and Elysium?
+
+Elysium's HYPE comes from HyperEVM through a 1:1 bridge, so you can fund an Elysium Testnet account by bridging testnet HYPE from HyperEVM Testnet or by requesting from the faucet. See the [Kinetiq Elysium Testnet bridge](https://elysium.kinetiq.xyz/testnet-bridge) for the current bridge interface and step-by-step instructions.
+
+## Does Elysium support HyperCore precompiles?
+
+Not yet. Elysium does not currently expose HyperEVM's HyperCore read precompiles (at addresses `0x0000000000000000000000000000000000000800` and up) or the `CoreWriter` contract (`0x3333333333333333333333333333333333333333`). A call to one of these addresses succeeds and returns empty data, as a call to any address without code does, so a contract ported from HyperEVM reverts when it decodes the result rather than at the call site. Kinetiq plans a HyperCore market-data precompile and an `ElysiumCoreWriter` predeploy for an ArbOS upgrade after mainnet launch.
+
+## Which block explorer should I use for Elysium?
+
+Use the [Kinetiq Elysium Testnet Explorer](https://elysium.kinetiq.xyz/testnet-explorer) to look up transactions, addresses, tokens, and contracts on Elysium Testnet.
+
+## My question isn't here, where can I get help?
+
+If you have any questions or feedback, contact us at support@alchemy.com or open a ticket in the Alchemy Dashboard.
