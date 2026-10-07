@@ -174,6 +174,102 @@ Every question from the top of this page is now an API call:
 
 And one the intro didn't ask: **balance and position history without running an indexer at all.** Walk a token account backward with `lastUpdateBeforeSlot` and you have its complete timeline.
 
+## Simulate transactions against that history
+
+Reading history answers "what did this look like?" The next question is usually "what would happen if I ran this transaction against it?" That one is harder, because a transaction isn't a lookup, it's a program execution: instructions, CPIs, compute metering, sysvars, all reacting to the real state at that moment.
+
+`simulateTransactionsAtSlot` answers that question. It is a separate JSON-RPC method that runs one or more transactions through the real Solana runtime against archived account state at any slot in coverage. Think of it as the historical "what if" shape of `simulateTransaction` combined with `simulateBundle`'s ordered multi-transaction sequencing: both existing ideas, extended to any point in the past, in a method whose request and response shape stands on its own.
+
+### How a historical simulation differs from a live one
+
+A standard `simulateTransaction` call is one transaction, run once, against whatever the network looks like right now. `simulateTransactionsAtSlot` offers a different surface in three ways:
+
+* **Any archived slot, not just now.** Set `slot` on a simulation entry and the transaction runs against real account state as of that slot. Not an approximation; the exact bytes every account held at that moment.
+* **A sequence, not just one transaction.** Pass up to five transactions in `simulations`. They execute in order over a single shared overlay, so each successful transaction's writable-account changes are visible to the next one. A multi-step flow (approve, swap, close) simulates as the connected sequence it actually is.
+* **State you control, layered on top of what's real.** Before a transaction runs, you can patch specific accounts (lamports, data, owner, executable flag) with `stateOverrides`, or move the Clock sysvar's timestamp, slot, or epoch. Everything you don't touch stays exactly as it was archived; only what you override changes.
+
+### A simulation, walked through
+
+Say you want to replay a transaction against the account state as it existed at a specific slot in the past, and capture the resulting state of one of the accounts it touched. Here's a SOL transfer sent against the archived state at slot 400,000,000:
+
+```bash
+curl https://solana-mainnet.g.alchemy.com/v2/{apiKey} \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "simulateTransactionsAtSlot",
+    "params": [{
+      "simulations": [
+        {
+          "slot": 400000000,
+          "encodedTransaction": "AVshRNwSzqLB+PQb2vsbiK/ZUNZuyrcWvArv9sv9/AQieAx9gXlF0MApk8AZpYh6ESEbchfb8BBg7VYJrKJdeQ4BAAEDiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1yBOXcOqH0XX1ajVGbDTH7My42KkbTuN6Jd9g9bj8mzlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4zLa+S+r7Oi2P/ekQAXl/f2a+hWHVrYcWpX5BLO40IEBAgIAAQwCAAAAQEIPAAAAAAA="
+        }
+      ],
+      "postExecutionAccountsConfigs": {
+        "accounts": ["9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu"],
+        "encoding": "base64"
+      }
+    }]
+  }'
+```
+
+The response says whether it would have succeeded, what it would have cost, and, for each account you asked about that the simulation actually touched, exactly how its state would have changed:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "context": { "apiVersion": "2.3.3", "slot": 400000000 },
+    "value": {
+      "preExecutionAccounts": null,
+      "simulationResults": [
+        {
+          "slot": 400000000,
+          "status": "success",
+          "err": null,
+          "unitsConsumed": 150,
+          "feeLamports": 5000,
+          "changedWritableAccounts": [
+            "AKnL4NNf3DGWZJS6cPknBuEGnVsV4A4m5tgebLHaRSZ9",
+            "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu"
+          ],
+          "postExecutionAccounts": [
+            {
+              "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+              "account": {
+                "lamports": 1001000000,
+                "owner": "11111111111111111111111111111111",
+                "executable": false,
+                "rentEpoch": 18446744073709551615,
+                "data": ["", "base64"],
+                "space": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+Nothing here touched the live network. The recipient's post-transfer balance is real, the same state a validator would have produced had this transaction actually landed at slot 400,000,000, but it exists only in this response.
+
+A few shape details worth noting while you're reading this: `simulationResults` is always an array, in request order, even for a single-entry request. The authoritative per-entry outcome is `status` (`success`, `failed`, or `skipped`), not `err`; a `skipped` entry carries `err: null` the same way a success does. A `failed` entry still ran, so it reports `feeLamports` (the payer was debited) and an empty, not null, `changedWritableAccounts`. Each entry's `postExecutionAccounts` is filtered to only the accounts that simulation actually touched (its `stateOverrides` plus the transaction's writes), so expect `[]` on a successful entry whose transaction didn't touch any of the accounts you listed. And bad input (unknown fields, more than five simulations, a vote-program transaction, decreasing slots across entries) is a `-32602` JSON-RPC error, surfaced before anything executes.
+
+### Testing scenarios that never happened
+
+Because overrides apply before execution, you're not limited to replaying history exactly as it occurred. You can ask genuinely hypothetical questions: *what if this vault held ten times the liquidity? what if this happened a day later?* Patch the accounts or the Clock, run the transaction, and see the outcome. Everything you didn't change still reflects the real, archived state at that slot.
+
+### Reads vs. simulation
+
+Use the historical reads earlier on this page (`getAccountInfo` with `slot`) when you want to know what *did* happen. Use `simulateTransactionsAtSlot` when you want to know what *would* happen, against that same trustworthy historical record, or against a scenario you construct on top of it.
+
+See the [full method reference](/docs/chains/solana/solana-api-endpoints/simulate-transactions-at-slot) for every parameter, override shape, and response field.
+
 ## Get started
 
 Solana stays fast by keeping validators lean and focused on current state. Historical account state has simply lived elsewhere, and until now the ecosystem has worked around that. Solana Account Archive changes that. With finalization-gated live ingestion and a backfill pipeline that re-executes history through era-faithful runtimes and proves the result against consensus hashes, historical `getAccountInfo` becomes just another RPC call: same method, same response shape, one extra parameter.
@@ -223,3 +319,15 @@ No. Any Solana JSON-RPC client works. The archive implements standard `getAccoun
 ### What error do I get when I query past the archive's coverage?
 
 Error code `-32020`, and it is the only terminal for a cursor walk — a never-created account errors the same way. A `value: null` response means something different: the account did not exist as of the resolved slot. For point-in-time reads that covers both "not created yet" and "already closed"; for cursor reads it means the write found at `context.slot` deleted the account, and the walk can continue from that slot.
+
+### Is `simulateTransactionsAtSlot` the same as `simulateTransaction`, just with a slot added?
+
+No. Unlike the historical reads above, this isn't an extra parameter on an existing method; it's a separate method. `simulateTransaction` runs one transaction against current network state. `simulateTransactionsAtSlot` runs a *sequence* of up to five transactions against *archived* state, with per-simulation state overrides and a response shape that is always array-wrapped (one entry per simulation, in request order). Those capabilities don't fit inside `simulateTransaction`'s request or response, so historical simulation gets its own method rather than an incompatible change to one every existing client already relies on.
+
+### Can I simulate more than one transaction in a single call?
+
+Yes. Pass up to five transactions in the `simulations` array. They execute in order over one shared, mutable overlay: each successful transaction's writable-account changes are written back before the next entry runs, even across a slot change. The first failure aborts the rest, and the remaining entries come back with `status: "skipped"`.
+
+### Can I change account state before simulating?
+
+Yes, using `stateOverrides`. You can patch an account's `lamports`, `data`, `owner`, or `executable` flag, or move the Clock sysvar's `unixTimestamp`, `slot`, or `epoch`. Only the fields you explicitly set change; every other account keeps its real, archived state at the simulation's slot. Overrides apply per simulation entry, so a sequence can start from one hypothesis and keep going into others.
