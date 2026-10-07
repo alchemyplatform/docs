@@ -9,7 +9,7 @@ HELLO!
 
 If you are new to blockchain development and don’t know where to start, or if you've explored Ethereum mainnet a bit and found it way too expensive.. this guide is for you :)
 
-We will walk through coding, deploying, and interacting with a simple smart contract on the Polygon Mumbai test network using Metamask, Solidity, Hardhat, Ethers.js, and [Alchemy](https://www.alchemy.com/).
+We will walk through coding, deploying, and interacting with a simple smart contract on the Polygon Amoy test network using Metamask, Solidity, Hardhat, Ethers.js, and [Alchemy](https://www.alchemy.com/).
 
 And don’t worry if you don’t understand what any of these words mean yet, I'll explain everything! If you have questions at any point, I recommend going through the following steps, **in order**:
 
@@ -285,7 +285,7 @@ In summary, the "withdraw" function allows the contract owner to withdraw all th
 
 Now that we understand some basics on how Solidity code works, let's finish setting up some accounts and configurations to prepare for deployment to the Polygon blockchain!
 
-## Step 5: Connect to Polygon Mumbai with Alchemy
+## Step 5: Connect to Polygon Amoy with Alchemy
 
 There are many ways to make requests to the Polygon chain.
 
@@ -293,7 +293,7 @@ For simplicity, we’ll use a free account on Alchemy, a blockchain developer pl
 
 If you don’t already have an Alchemy developer account, you can [sign up for free here](https://dashboard.alchemy.com/signup).
 
-Once you’ve created an Alchemy account, generate an API key by creating an app. This will allow us to make requests to the Mumbai test network.
+Once you’ve created an Alchemy account, generate an API key by creating an app. This will allow us to make requests to the Polygon Amoy test network.
 
 If you’re not familiar with testnets, check out [this guide](/docs/alchemy/guides/choosing-a-network#polygon) on how to choose a blockchain network.
 
@@ -303,7 +303,7 @@ Navigate to the “Create App” page in your Alchemy Dashboard by hovering over
 
 Click "Create App"
 
-Name your app “Polygon Smart Contract”, offer a short description, select “Polygon” for the chain, and "Polygon Mumbai" for the network.
+Name your app “Polygon Smart Contract”, offer a short description, select “Polygon” for the chain, and "Polygon Amoy" for the network.
 
 ![1670](4371898-app-settings.png "app-settings.png")
 
@@ -311,13 +311,13 @@ New app settings
 
 Click “Create app” and that’s it! Your app should appear in your apps table.
 
-By clicking on the "View Key" link to the right of the the table row for your app, you will be able to find the HTTP RPC URL you can use to access a Polygon Mumbai Testnet node using Alchemy.
+By clicking on the "View Key" link to the right of the the table row for your app, you will be able to find the HTTP RPC URL you can use to access a Polygon Amoy testnet node using Alchemy.
 
 ![880](33e0762-high.jpeg "high.jpeg")
 
 You can see in our example that our HTTP URL is:
 
-`https://polygon-mumbai.g.alchemy.com/v2/Ed7AeuPuIgo6fNDi49TDy_x4UBymLBsJ`
+`https://polygon-amoy.g.alchemy.com/v2/Ed7AeuPuIgo6fNDi49TDy_x4UBymLBsJ`
 
 **DO NOT SHARE THIS WITH ANYONE!** This is your access to your node. If you share it, then others will be able to freely use up your app's resources and then you'll be sad.
 
@@ -329,13 +329,13 @@ Now we need an Ethereum account to send and receive transactions. For this tutor
 
 You can download and create a MetaMask account for free [here](https://metamask.io/).
 
-## Step 7. Switch to the Polygon Mumbai test network
+## Step 7. Switch to the Polygon Amoy test network
 
-After you create your MetaMask account, make sure to switch over to the “Mumbai Test Network”.
+After you create your MetaMask account, make sure to switch over to the “Amoy Test Network”.
 
 ![766](2b9fc53-Mumbai.jpeg "Mumbai.jpeg")
 
-MetaMask doesn't come with the Mumbai Test Network by default, so you will need to make some changes to create the connection. You can do this by clicking on your MetaMask profile icon and going down to settings.
+MetaMask doesn't come with the Amoy Test Network by default, so you will need to make some changes to create the connection. You can do this by clicking on your MetaMask profile icon and going down to settings.
 
 ![746](3d6455c-Mumbai_2.jpeg "Mumbai 2.jpeg")
 
@@ -345,16 +345,17 @@ Then click on "Networks" and then the "Add network" button.
 
 Input the following settings:
 
-* **Network Name**: Polygon Mumbai
-* **New RPC URL**: Chain ID: 80001
-* **Currency Symbol**: MATIC
-* **Block Explorer URL**: mumbai.polygonscan.com
+* **Network Name**: Polygon Amoy
+* **New RPC URL**: `https://polygon-amoy.g.alchemy.com/v2/<your-api-key>`
+* **Chain ID**: 80002
+* **Currency Symbol**: POL
+* **Block Explorer URL**: amoy.polygonscan.com
 
 ![880](71556d6-Add_Network.png "Add_Network.png")
 
-After you confirm the settings, MetaMask should automatically be connected to the new Polygon Mumbai test network.
+After you confirm the settings, MetaMask should automatically be connected to the new Polygon Amoy test network.
 
-## Step 8. Get some free test ETH from the Mumbai faucet
+## Step 8. Get some free test POL from the Polygon Amoy faucet
 
 Go to [https://www.alchemy.com/faucets/polygon-amoy](https://www.alchemy.com/faucets/polygon-amoy) and input your wallet address (ethereum account address) from MetaMask.
 
@@ -362,9 +363,9 @@ You can get your wallet address by opening MetaMask and copying the long string 
 
 ![352](f3ec3a3-test_account.jpeg "test account.jpeg")
 
-Once you input your wallet address into the faucet input box and click "Send Me MATIC", you will see a new transaction link show up. That links you to the polygonscan page where you can view a receipt of the faucet transaction.
+Once you input your wallet address into the faucet input box and click "Send Me POL", you will see a new transaction link show up. That links you to the Polygonscan page where you can view a receipt of the faucet transaction.
 
-Here is an example on the polyscan polygon blockchain explorer.
+Here is an example on the Polygonscan Polygon blockchain explorer.
 
 ![880](865d1e8-Mumbai_3.jpeg "Mumbai 3.jpeg")
 
@@ -397,7 +398,7 @@ So at this point, your `.env` file should look like this:
 
 <CodeGroup>
   ```text .env
-  API_URL=https://polygon-mumbai.g.alchemy.com/v2/<your-api-key>
+  API_URL=https://polygon-amoy.g.alchemy.com/v2/<your-api-key>
   PRIVATE_KEY="your-metamask-private-key"
   ```
 </CodeGroup>
@@ -436,7 +437,7 @@ Update your `hardhat.config.js` with the following code snippet:
   module.exports = {
     solidity: "0.8.9",
     networks: {
-      mumbai: {
+      amoy: {
         url: API_URL,
         accounts: [`0x${PRIVATE_KEY}`]
       }
@@ -447,7 +448,7 @@ Update your `hardhat.config.js` with the following code snippet:
 
 Note that with `dotenv`, we can access variables defined in our `.env` file by using `process.env`.
 
-Inside the [hardhat config](https://hardhat.org/config/), we define a new network called `mumbai` that uses the Alchemy HTTP URL and our MetaMask account to talk to the blockchain.
+Inside the [hardhat config](https://hardhat.org/config/), we define a new network called `amoy` that uses the Alchemy HTTP URL and our MetaMask account to talk to the blockchain.
 
 ## Step 11: Compile our Polgyon smart contract
 
@@ -477,14 +478,14 @@ At this point, if you have any issues, please check previous discussions on [Eth
 We’re finally ready to deploy our smart contract! Navigate to the command line and run:
 
 <Info>
-  You need to have at least about 1.1 ETH in your test wallet for deployment of the smart contract because it locks 1 ETH in the smart contract at the time of deployment.
+  You need to have at least about 1.1 POL in your test wallet for deployment of the smart contract because it locks 1 POL in the smart contract at the time of deployment.
 
-  If you do not have 1 ETH, you can go to `scripts/deploy.js` file and change the amount that you want to lock in the smart contract on Line 14.
+  If you do not have 1 POL, you can go to `scripts/deploy.js` file and change the amount that you want to lock in the smart contract on Line 14.
 </Info>
 
 <CodeGroup>
   ```shell shell
-  npx hardhat run scripts/sample-script.js --network mumbai
+  npx hardhat run scripts/sample-script.js --network amoy
   ```
 </CodeGroup>
 
@@ -496,7 +497,7 @@ You should then see output similar to this (with different address string):
   ```
 </CodeGroup>
 
-You can now paste this contract address into mumbai.polygonscan.com and find details about your deployed contract.
+You can now paste this contract address into amoy.polygonscan.com and find details about your deployed contract.
 
 For example, you can see when the contract was deployed, how much the transaction fee cost, and which wallet address was responsible for the deployment.
 
@@ -508,7 +509,7 @@ Your `.env` file should have at least these three environment variables defined:
 
 <CodeGroup>
   ```text .env
-  API_URL="https://polygon-mumbai.g.alchemy.com/v2/<your-api-key>"
+  API_URL="https://polygon-amoy.g.alchemy.com/v2/<your-api-key>"
   PRIVATE_KEY="your-wallet-private-key"
   CONTRACT_ADDRESS="your-deployed-contract-address"
   ```
@@ -544,13 +545,14 @@ In your `scripts` folder, creates a file called `scripts/greet.js`. Read through
   const abi = ContractJson.abi;
 
   async function main() {
-      // Notice that we're using process.env.ALCHEMY_API_KEY to load an
+      // Notice that we're using process.env.API_URL to load an
       // environment variable. If you are seeing errors, make sure to go
       // back to Step 12 and 13 to set up the dotenv dependency and .env
       // file correctly!
-      const alchemy = new hre.ethers.providers.AlchemyProvider(
-          'maticmum',
-          process.env.ALCHEMY_API_KEY
+      // We use JsonRpcProvider with the full Alchemy URL so this works on
+      // Polygon Amoy (and any chain not in ethers v5's built-in network list).
+      const alchemy = new hre.ethers.providers.JsonRpcProvider(
+          process.env.API_URL
       );
       // We're using the same wallet private key for the wallet that you
       // created in Step 6. 
@@ -589,19 +591,18 @@ In your `scripts` folder, creates a file called `scripts/greet.js`. Read through
 </CodeGroup>
 
 <Info>
-  Notice that we're using process.env.ALCHEMY\_API\_KEY, etc., to load environment variables. If you're getting errors related to this, there may be something off with your `dotenv` dependency or `hardhat.config.js` configurations. Retry Steps 12 and 13 to set up the dotenv dependency again!
+  Notice that we're using process.env.API\_URL, etc., to load environment variables. If you're getting errors related to this, there may be something off with your `dotenv` dependency or `hardhat.config.js` configurations. Retry Steps 12 and 13 to set up the dotenv dependency again!
 
   Also check [Ethereum StackExchange ](https://ethereum.stackexchange.com/questions/111731/error-hh8-theres-one-or-more-errors-in-your-config-file-expected-a-value-of-t)to see if anyone else has seen the same issues!
 </Info>
 
-Before you run the greeting interaction script, we also need to define some new environment variables. Remember your `.env` file from [Step 9](/docs/alchemy/tutorials/how-to-deploy-a-polygon-smart-contract#step-9)? We're going to add a few variable definitions, like this:
+Before you run the greeting interaction script, make sure your `.env` file from [Step 9](/docs/alchemy/tutorials/how-to-deploy-a-polygon-smart-contract#step-9) still has your API URL, private key, and the contract address you deployed in Step 12:
 
 <CodeGroup>
   ```text .env
-  API_URL=https://polygon-mumbai.g.alchemy.com/v2/<your-api-key>
+  API_URL=https://polygon-amoy.g.alchemy.com/v2/<your-api-key>
   PRIVATE_KEY="your-wallet-private-key"
-  CONTRACT_ADDRESS="your-contract-address-deployed-to-polygon-mumbai"
-  ALCHEMY_API_KEY="<your-api-key>"
+  CONTRACT_ADDRESS="your-contract-address-deployed-to-polygon-amoy"
   ```
 </CodeGroup>
 
@@ -629,7 +630,7 @@ Once you see this output, that means you've successfully interacted with your po
 
 You can also verify that Alchemy has broadcasted and mined your transaction by going to the [Alchemy Mempool Watcher](https://dashboard.alchemy.com/mempool) and taking a look at your most recent transaction.
 
-By clicking into that transaction, you should see something like this that provides all the information you might want to know about your transaction, including what `Block Number` it was mined in, which `From Address` initiated the transaction, which `To Address` is the recipient of the transaction, how much `Value` (in MATIC) exchanged hands, what the transaction fees were, and much more:
+By clicking into that transaction, you should see something like this that provides all the information you might want to know about your transaction, including what `Block Number` it was mined in, which `From Address` initiated the transaction, which `To Address` is the recipient of the transaction, how much `Value` (in POL) exchanged hands, what the transaction fees were, and much more:
 
 ![2376](4e58695-Mempool.png "Mempool.png")
 
