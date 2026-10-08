@@ -1528,6 +1528,174 @@ components:
         schema:
           $ref: "./transaction.yaml#/components/schemas/SimulatedBundleResult"
 
+    simulateTransactionsAtSlot:
+      name: simulateTransactionsAtSlot
+      summary: >-
+        Simulates one or more transactions against archived Solana account
+        state at a historical slot.
+      description: >-
+        Simulates one or more transactions against the archived account
+        state at a historical slot, using the real Solana runtime. It is
+        a separate method from `simulateTransaction` and from Jito's
+        `simulateBundle`, combining `simulateTransaction`'s "what would
+        this do" question with `simulateBundle`'s multi-transaction
+        sequencing, and extending both to any slot in the
+        [Account Archive](/docs/solana/account-archive)'s coverage.
+
+
+        Up to 5 transactions execute in order over a single shared,
+        mutable overlay: each successful transaction's writable-account
+        changes are written back before the next entry runs, even across
+        a slot change. The first failure aborts the rest of the sequence,
+        which are marked `skipped`. `stateOverrides` lets you patch
+        specific accounts (or the Clock sysvar) before each entry runs;
+        everything you do not override keeps its archived value.
+
+
+        Response invariants:
+
+
+        - `simulationResults` is always an array, in request order, even
+          for a single-entry request.
+
+        - `status` is authoritative; filter on it rather than on `err`,
+          because `skipped` entries also carry `err: null`.
+
+        - A `failed` entry still ran, so it reports `feeLamports` and an
+          empty (not `null`) `changedWritableAccounts`.
+
+        - A failed transaction returns a successful JSON-RPC response
+          with the entry's `err` populated. Bad input (unknown fields,
+          more than 5 simulations, decreasing slots, a vote-program
+          transaction, an unparseable transaction) is a `-32602`
+          JSON-RPC error, detected before anything executes.
+
+        - Each entry's `postExecutionAccounts` is filtered to only the
+          accounts the simulation actually touched (its `stateOverrides`
+          plus the transaction's writes); accounts named in
+          `postExecutionAccountsConfigs` that the simulation did not
+          touch are omitted from that entry (expect `[]` on a `success`
+          whose transaction touched none of them).
+
+
+        Caps enforced before execution (each triggers `-32602` if
+        exceeded): at most 5 simulations per request; 100 accounts per
+        accounts config; 100 `stateOverrides` entries per simulation
+        (10 MiB per `data` override); 128 unique
+        transaction-referenced accounts per entry (static keys plus
+        lookup-table entries); 25 MiB combined byte budget across the
+        rendered result.
+
+
+        Notes on behavior worth knowing before you build:
+
+
+        - Durable-nonce transactions (an `AdvanceNonceAccount`
+          instruction at index 0) validate against the archived nonce
+          account's real state at that slot, not against a blockhash.
+
+        - Vote-program transactions are rejected outright with `-32602`
+          because vote accounts are not in the archive.
+
+        - `sigVerify: true` requires `replaceRecentBlockhash: false`,
+          since replacing the blockhash would invalidate signatures;
+          sending both as `true` is refused with `-32602`.
+
+        - The simulator pins a single Agave/SVM release, so very old
+          slots fall outside what the current build can reproduce
+          faithfully. The usable window is recent history and grows
+          over time as the backfill pipeline extends further back.
+      x-compute-units: 1500
+      params:
+        - name: Simulation request
+          required: true
+          description: >-
+            A single object containing the ordered simulations, optional
+            pre- and post-execution account captures, and the execution
+            flags (`innerInstructions`, `sigVerify`,
+            `replaceRecentBlockhash`).
+          schema:
+            $ref: "./transaction.yaml#/components/schemas/SimulateTransactionsAtSlotRequest"
+      examples:
+        - name: simulateTransactionsAtSlot example
+          params:
+            - name: Simulation request
+              value:
+                simulations:
+                  - slot: 400000000
+                    encodedTransaction: "AVshRNwSzqLB+PQb2vsbiK/ZUNZuyrcWvArv9sv9/AQieAx9gXlF0MApk8AZpYh6ESEbchfb8BBg7VYJrKJdeQ4BAAEDiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1yBOXcOqH0XX1ajVGbDTH7My42KkbTuN6Jd9g9bj8mzlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4zLa+S+r7Oi2P/ekQAXl/f2a+hWHVrYcWpX5BLO40IEBAgIAAQwCAAAAQEIPAAAAAAA="
+                postExecutionAccountsConfigs:
+                  accounts:
+                    - "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu"
+                  encoding: base64
+                innerInstructions: false
+                sigVerify: false
+                replaceRecentBlockhash: true
+          result:
+            name: Simulation results
+            value:
+              context:
+                apiVersion: "2.3.3"
+                slot: 400000000
+              value:
+                preExecutionAccounts: null
+                simulationResults:
+                  - slot: 400000000
+                    status: success
+                    err: null
+                    replacementBlockhash: "FwRYtTPRk5N4wUeP87rTw9kQVSwigB6kbikGzzeCMrW5"
+                    logs:
+                      - "Program 11111111111111111111111111111111 invoke [1]"
+                      - "Program 11111111111111111111111111111111 success"
+                    unitsConsumed: 150
+                    feeLamports: 5000
+                    changedWritableAccounts:
+                      - "AKnL4NNf3DGWZJS6cPknBuEGnVsV4A4m5tgebLHaRSZ9"
+                      - "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu"
+                    postExecutionAccounts:
+                      - address: "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu"
+                        account:
+                          lamports: 1001000000
+                          owner: "11111111111111111111111111111111"
+                          executable: false
+                          rentEpoch: 18446744073709551615
+                          data:
+                            - ""
+                            - base64
+                          space: 0
+                    innerInstructions: null
+                    returnData: null
+                    loadedAccountsDataSize: 0
+                    loadedAddresses: null
+      result:
+        name: Simulation results
+        description: >-
+          A context slot plus the per-simulation execution results.
+          `simulationResults` is always present and in request order,
+          even for a single-entry request.
+        schema:
+          $ref: "./transaction.yaml#/components/schemas/SimulateTransactionsAtSlotResult"
+      errors:
+        - code: -32602
+          message: >-
+            Invalid params. Common causes include: unknown fields on the
+            request, more than 5 simulations, a slot that decreases
+            relative to a preceding entry, a vote-program transaction, an
+            unparseable transaction, `sigVerify: true` without
+            `replaceRecentBlockhash: false`, exceeding one of the
+            per-request caps (100 accounts per accounts config, 100
+            `stateOverrides` per simulation, 128 unique
+            transaction-referenced accounts per entry, 25 MiB combined
+            result budget), or a `stateOverrides` entry on the Clock
+            sysvar key that mixes the account-override and Clock-override
+            shapes.
+        - code: -32601
+          message: Method not found.
+        - code: -32603
+          message: >-
+            Internal error. Retry the request; if it persists, contact
+            support.
+
     getSignaturesForAddress:
       name: getSignaturesForAddress
       description: Returns signatures for confirmed transactions that include the given address.
