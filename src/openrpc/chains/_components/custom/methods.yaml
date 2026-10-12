@@ -3041,3 +3041,30 @@ components:
         description: The in-flight status of each queried bundle.
         schema:
           $ref: "../solana/transaction.yaml#/components/schemas/InflightBundleStatusesResult"
+
+    # Bitcoin Cash fee estimation
+    # (Bitcoin Cash Node exposes the legacy no-argument `estimatefee` RPC and
+    # does not implement `estimatesmartfee`; Bitcoin Core is the opposite.
+    # Scoped to `custom/methods.yaml` so Bitcoin Core's spec does not inherit
+    # it from the shared `bitcoin/methods.yaml` pool.)
+    estimatefee:
+      name: estimatefee
+      summary: Estimate the approximate fee per kilobyte needed for a transaction
+      description: >
+        Returns the approximate fee per kilobyte required for a transaction, as estimated by the node.
+        This is the legacy fee estimation RPC used by Bitcoin Cash Node; it takes no parameters and returns
+        a single estimated fee-per-kilobyte value in BCH/kB.
+      x-compute-units: 10
+      params: []
+      result:
+        name: result
+        description: Estimated fee rate in BCH per kilobyte.
+        schema:
+          type: number
+          format: double
+      examples:
+        - name: estimatefee example
+          params: []
+          result:
+            name: result
+            value: 0.00001

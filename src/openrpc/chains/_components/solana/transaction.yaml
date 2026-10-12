@@ -641,3 +641,411 @@ components:
           description: An array of inflight bundle status objects.
           items:
             $ref: "#/components/schemas/InflightBundleStatus"
+
+    # ---- simulateTransactionsAtSlot ----
+    SimulateTransactionsAtSlotRequest:
+      title: SimulateTransactionsAtSlot Request
+      type: object
+      description: >-
+        The full request body for `simulateTransactionsAtSlot`. The caller
+        passes this as a single positional parameter (`params: [{...}]`).
+      required:
+        - simulations
+      properties:
+        simulations:
+          type: array
+          minItems: 1
+          maxItems: 5
+          description: >-
+            Ordered list of 1-5 transactions to simulate. They execute in
+            order over a single shared overlay: each successful
+            transaction's writable-account changes are written back before
+            the next entry runs, even across a slot change. The first
+            failure aborts the rest of the sequence, which are marked
+            `skipped`.
+          items:
+            $ref: "#/components/schemas/SimulateTransactionsAtSlotSimulation"
+        preExecutionAccountsConfigs:
+          $ref: "#/components/schemas/SimulateTransactionsAtSlotAccountsConfig"
+          description: >-
+            Accounts to capture once, from the archived state at the first
+            simulation's slot, before any transaction runs. Omit to skip
+            the pre-execution capture (`preExecutionAccounts` will be
+            `null`).
+        postExecutionAccountsConfigs:
+          $ref: "#/components/schemas/SimulateTransactionsAtSlotAccountsConfig"
+          description: >-
+            Accounts to capture after every simulation, applied once per
+            simulation entry. Only the subset of these accounts that the
+            simulation actually touched (via its own `stateOverrides` or
+            the transaction's writes) is returned on each entry; untouched
+            requested accounts are omitted from that entry's
+            `postExecutionAccounts`. Omit the config entirely to skip the
+            post-execution capture (each entry's `postExecutionAccounts`
+            will be `null`).
+        innerInstructions:
+          type: boolean
+          default: false
+          description: >-
+            If `true`, each entry's `innerInstructions` field is populated.
+            Defaults to `false`, in which case `innerInstructions` is
+            `null`.
+        sigVerify:
+          type: boolean
+          default: false
+          description: >-
+            If `true`, the transaction signatures are verified. Requires
+            `replaceRecentBlockhash: false` (sending both as `true` is
+            refused with `-32602`, since replacing the blockhash would
+            invalidate the signatures).
+        replaceRecentBlockhash:
+          type: boolean
+          default: true
+          description: >-
+            If `true` (the default), the simulator replaces the
+            transaction's recent blockhash before execution so that
+            archived or stale transactions still run.
+
+    SimulateTransactionsAtSlotSimulation:
+      title: SimulateTransactionsAtSlot Simulation Entry
+      type: object
+      required:
+        - encodedTransaction
+      properties:
+        encodedTransaction:
+          type: string
+          description: >-
+            The transaction to simulate, encoded as a base64 string.
+            `base58` is not accepted.
+        slot:
+          type: integer
+          minimum: 0
+          description: >-
+            The finalized slot whose archived state this transaction
+            executes against. If omitted, defaults to the previous entry's
+            `slot` (the first entry defaults to the finalized tip). Slots
+            across entries must be non-decreasing; a decreasing slot is
+            refused with `-32602`.
+        stateOverrides:
+          type: object
+          description: >-
+            Optional map of account overrides applied to the archived
+            state before this transaction runs. Up to 100 entries per
+            simulation. Keys are base-58 pubkeys; values are either an
+            account override or, for the Clock sysvar pubkey only, a
+            Clock override. Mixing the two shapes on the Clock pubkey is
+            refused.
+          additionalProperties:
+            oneOf:
+              - $ref: "#/components/schemas/SimulateTransactionsAtSlotAccountOverride"
+              - $ref: "#/components/schemas/SimulateTransactionsAtSlotClockOverride"
+
+    SimulateTransactionsAtSlotAccountOverride:
+      title: SimulateTransactionsAtSlot Account Override
+      type: object
+      additionalProperties: false
+      description: >-
+        Partial override of a single account's state. Only the fields
+        present are overridden; every other field keeps its archived
+        value. The combined byte size of all overridden `data` payloads
+        is capped at 10 MiB per `data` override.
+      properties:
+        lamports:
+          type: integer
+          minimum: 0
+          description: Replacement lamport balance.
+        data:
+          description: >-
+            Replacement account data. Either a bare base64 string, or a
+            `[data, "base64"]` tuple. Base58 is not accepted.
+          oneOf:
+            - type: string
+            - type: array
+              minItems: 2
+              maxItems: 2
+              items:
+                type: string
+        owner:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+          description: Replacement owner program.
+        executable:
+          type: boolean
+          description: Replacement `executable` flag.
+
+    SimulateTransactionsAtSlotClockOverride:
+      title: SimulateTransactionsAtSlot Clock Sysvar Override
+      type: object
+      additionalProperties: false
+      description: >-
+        Shape accepted only for the Clock sysvar pubkey
+        (`SysvarC1ock11111111111111111111111111111111`). It overrides the
+        clock fields that the runtime surfaces to programs. Mixing this
+        shape with the generic account-override shape on the same key is
+        refused.
+      properties:
+        unixTimestamp:
+          type: integer
+          description: Replacement UNIX timestamp (seconds).
+        slot:
+          type: integer
+          minimum: 0
+          description: Replacement clock slot.
+        epoch:
+          type: integer
+          minimum: 0
+          description: Replacement clock epoch.
+
+    SimulateTransactionsAtSlotAccountsConfig:
+      title: SimulateTransactionsAtSlot Accounts Config
+      type: object
+      description: >-
+        Which accounts to capture, and how to encode them, for a
+        pre- or post-execution capture.
+      required:
+        - accounts
+      properties:
+        accounts:
+          type: array
+          maxItems: 100
+          description: >-
+            Base-58 pubkeys to capture (up to 100).
+          items:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        encoding:
+          type: string
+          enum:
+            - base64
+            - jsonParsed
+          default: base64
+          description: >-
+            Encoding for the returned account data. Only `base64`
+            (default) and `jsonParsed` are supported here (not `base58`
+            or `base64+zstd`).
+        dataSlice:
+          type: array
+          description: >-
+            Per-account byte slice to return instead of the full `data`.
+            Supply one entry per `accounts` entry (use `null` for
+            accounts you do not want sliced), or omit the field entirely.
+          items:
+            oneOf:
+              - $ref: "./base-types.yaml#/components/schemas/DataSlice"
+              - type: "null"
+
+    SimulateTransactionsAtSlotResult:
+      title: SimulateTransactionsAtSlot Result
+      type: object
+      description: >-
+        The RPC response envelope. `context.slot` echoes the first
+        simulation's slot; the per-entry `slot` in each result is the
+        per-entry truth for a sequence spanning multiple slots.
+      properties:
+        context:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            slot:
+              type: integer
+              description: >-
+                The first simulation's slot. For multi-slot sequences,
+                read each entry's own `slot` instead.
+        value:
+          type: object
+          properties:
+            preExecutionAccounts:
+              type: array
+              nullable: true
+              description: >-
+                Snapshot of the accounts named in
+                `preExecutionAccountsConfigs`, taken from archived state
+                at the first simulation's slot. `null` if the config was
+                omitted.
+              items:
+                $ref: "#/components/schemas/SimulateTransactionsAtSlotCapturedAccount"
+            simulationResults:
+              type: array
+              description: >-
+                One entry per simulation, in request order. Always
+                present as an array, even for a single-entry request.
+              items:
+                $ref: "#/components/schemas/SimulateTransactionsAtSlotSimulationResult"
+
+    SimulateTransactionsAtSlotSimulationResult:
+      title: SimulateTransactionsAtSlot Simulation Result
+      type: object
+      description: >-
+        Execution outcome for one simulation. Filter on `status` rather
+        than `err`: a `skipped` entry also carries `err: null`.
+      properties:
+        slot:
+          type: integer
+          description: The slot this entry executed against.
+        status:
+          type: string
+          enum:
+            - success
+            - failed
+            - skipped
+          description: >-
+            Authoritative outcome. `success` executed cleanly;
+            `failed` executed but the transaction reverted;
+            `skipped` was aborted because an earlier entry failed.
+        err:
+          nullable: true
+          description: >-
+            The `TransactionError` for a `failed` entry, otherwise
+            `null`. Note that a `skipped` entry also carries `null`.
+        replacementBlockhash:
+          type: string
+          nullable: true
+          description: >-
+            The blockhash the simulator substituted when
+            `replaceRecentBlockhash` was `true`, as a bare base-58
+            string (not an object). `null` when the caller kept its own
+            blockhash, when the transaction is durable-nonce, or when
+            the entry was `skipped`.
+        logs:
+          type: array
+          nullable: true
+          items:
+            type: string
+          description: Program log messages produced during execution.
+        unitsConsumed:
+          type: integer
+          nullable: true
+          description: >-
+            Compute units consumed by this transaction. `null` for a
+            `skipped` entry.
+        feeLamports:
+          type: integer
+          nullable: true
+          description: >-
+            Fee charged to the payer. `null` only before fee assessment
+            runs (for example, an unpayable fee payer); a `failed`
+            entry still debits the payer and reports its fee.
+        changedWritableAccounts:
+          type: array
+          description: >-
+            Accounts the transaction actually mutated. Empty (`[]`, not
+            `null`) for a `failed` entry that ran; `null` only for
+            `skipped`.
+          nullable: true
+          items:
+            $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        postExecutionAccounts:
+          type: array
+          nullable: true
+          description: >-
+            Captured accounts after this entry, filtered to only those
+            that the simulation actually touched (via its own
+            `stateOverrides` or the transaction's writes). Accounts named
+            in `postExecutionAccountsConfigs` that this entry did not
+            touch are omitted here (expect `[]` for a `success` entry
+            whose transaction did not touch any requested account).
+            `null` if the config was omitted or if the entry was
+            `skipped`.
+          items:
+            $ref: "#/components/schemas/SimulateTransactionsAtSlotCapturedAccount"
+        innerInstructions:
+          type: array
+          nullable: true
+          description: >-
+            Inner instructions produced during execution. `null` unless
+            `innerInstructions: true` was set on the request.
+          items:
+            $ref: "#/components/schemas/SimulateTransactionsAtSlotInnerInstructionGroup"
+        returnData:
+          nullable: true
+          description: >-
+            Program return data, if the transaction produced any,
+            otherwise `null`.
+          type: object
+          properties:
+            programId:
+              $ref: "./base-types.yaml#/components/schemas/Pubkey"
+            data:
+              type: array
+              minItems: 2
+              maxItems: 2
+              description: '`[base64Data, "base64"]` tuple.'
+              items:
+                type: string
+        loadedAccountsDataSize:
+          type: integer
+          nullable: true
+          description: >-
+            Total loaded account data size for the transaction. `null`
+            only before the loader ran.
+        loadedAddresses:
+          nullable: true
+          description: >-
+            Addresses resolved from address lookup tables, split by
+            writability. `null` if no ALT was used or if the entry was
+            `skipped`.
+          allOf:
+            - $ref: "./block.yaml#/components/schemas/LoadedAddresses"
+
+    SimulateTransactionsAtSlotCapturedAccount:
+      title: SimulateTransactionsAtSlot Captured Account
+      type: object
+      description: >-
+        A `{address, account}` pair for a captured account.
+      properties:
+        address:
+          $ref: "./base-types.yaml#/components/schemas/Pubkey"
+        account:
+          nullable: true
+          description: >-
+            Account state at the capture point, in the requested
+            encoding, or `null` if the account did not exist.
+          allOf:
+            - $ref: "./account.yaml#/components/schemas/AccountInfo"
+
+    SimulateTransactionsAtSlotInnerInstructionGroup:
+      title: SimulateTransactionsAtSlot Inner Instruction Group
+      type: object
+      description: >-
+        Inner instructions emitted by a single top-level instruction.
+      properties:
+        index:
+          type: integer
+          description: >-
+            Index into the transaction's top-level instructions array
+            that produced these inner instructions.
+        instructions:
+          type: array
+          items:
+            type: object
+            properties:
+              programId:
+                $ref: "./base-types.yaml#/components/schemas/Pubkey"
+                description: Program invoked by this inner instruction.
+              accounts:
+                type: array
+                items:
+                  $ref: "./base-types.yaml#/components/schemas/Pubkey"
+                description: Accounts passed to the inner instruction.
+              data:
+                type: string
+                description: Instruction data, base-58 encoded.
+              stackHeight:
+                type: integer
+                description: CPI stack depth at which this instruction was invoked.
+              program:
+                type: string
+                nullable: true
+                description: >-
+                  Human-readable program name when a parser is available,
+                  otherwise `null`.
+              parsed:
+                type: object
+                nullable: true
+                description: >-
+                  Parsed form of the instruction when a parser is
+                  available, otherwise `null`.
+                properties:
+                  type:
+                    type: string
+                  info:
+                    type: object

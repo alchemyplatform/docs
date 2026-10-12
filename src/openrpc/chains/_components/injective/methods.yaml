@@ -1,6 +1,65 @@
 # Injective-specific method definitions (extends shared custom methods where network coverage differs).
 components:
   methods:
+    eth_getBlockByNumber:
+      name: eth_getBlockByNumber
+      description: |
+        Returns information about a block by its number.
+
+        <Note>
+        Alchemy's Injective endpoint provides historical block access starting at block **127,250,000** (`0x795ae50`), where Injective's native EVM upgrade was introduced.
+        </Note>
+      x-compute-units: 20
+      params:
+        - name: Block number or tag
+          required: true
+          description: The block number or special tags like 'latest', 'earliest', or 'pending'.
+          schema:
+            $ref: "../evm/block.yaml#/components/schemas/BlockNumberOrTag"
+        - name: Hydrated transactions
+          required: true
+          description: If true, returns full transaction objects; if false, returns only transaction hashes.
+          schema:
+            title: hydrated
+            type: boolean
+      result:
+        name: Block information
+        description: The block object containing various properties of the block.
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - $ref: "../evm/block.yaml#/components/schemas/Block"
+      examples:
+        - name: eth_getBlockByNumber example
+          params:
+            - name: Block number or tag
+              value: "0x795ae50"
+            - name: Hydrated transactions
+              value: false
+          result:
+            name: Block information
+            value:
+              number: "0x795ae50"
+              hash: "0xdf7ca2f662e315782555113f77e2b11543b5365f424c156a0b5aa56a3ff34ce4"
+              parentHash: "0xd43c94193f45e7709496ef87e240baedcd401bf79578e4c6d350a6922e97d63a"
+              nonce: "0x0000000000000000"
+              mixHash: "0x0000000000000000000000000000000000000000000000000000000000000000"
+              sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"
+              logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              transactionsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+              stateRoot: "0x0000000000000000000000000000000000000000000000000000000000000000"
+              receiptsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
+              miner: "0x0000000000000000000000000000000000000000"
+              difficulty: "0x0"
+              totalDifficulty: "0x0"
+              extraData: "0x"
+              size: "0x0"
+              gasLimit: "0x0"
+              gasUsed: "0x4f0c80"
+              timestamp: "0x688b8418"
+              uncles: []
+              transactions: []
+
     eth_getBlockReceipts:
       name: eth_getBlockReceipts
       description: |
