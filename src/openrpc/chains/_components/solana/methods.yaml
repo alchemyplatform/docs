@@ -352,9 +352,13 @@ components:
         ATA correctly.
 
 
-        For a wallet holding a single token account of the mint, both
-        scopes return the same value. For a wallet holding many, they
-        can differ by orders of magnitude.
+        When a wallet's sole token account for the mint is its
+        canonical ATA, both scopes return the same value. If that
+        single account is an auxiliary or legacy non-ATA account,
+        `all` returns its balance while `ata` resolves the (different)
+        canonical address and may return zero. For a wallet holding
+        many accounts, the two scopes can differ by orders of
+        magnitude.
 
 
         Unlike `getTokenAccountsByOwnerAtSlot`, there is no "latest
