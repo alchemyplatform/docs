@@ -1,0 +1,106 @@
+---
+title: Stellar WebSocket subscriptions
+description: Stream Stellar ledgers, Soroban events, transactions, and classic payments with topic-specific filters.
+subtitle: Connect to Stellar mainnet or testnet and receive live JSON-RPC notifications.
+slug: reference/stellar-websocket-subscriptions
+---
+
+Receive new Stellar activity over a WebSocket connection. Use `stellar_subscribe` to start a subscription and `stellar_unsubscribe` to stop it.
+
+## Connect and subscribe
+
+<Steps>
+  <Step title="Choose your network">
+    Create an API key in the [Alchemy Dashboard](https://dashboard.alchemy.com/) and replace `YOUR_API_KEY` in the endpoint:
+
+    | Network | Endpoint |
+    | --- | --- |
+    | Mainnet | `wss://stellar-mainnet.g.alchemy.com/v2/YOUR_API_KEY` |
+    | Testnet | `wss://stellar-testnet.g.alchemy.com/v2/YOUR_API_KEY` |
+  </Step>
+  <Step title="Open a WebSocket and send a request">
+    This Node.js 22+ example subscribes to closed ledgers. Set `ALCHEMY_API_KEY` in your environment first.
+
+    ```javascript
+    const apiKey = process.env.ALCHEMY_API_KEY;
+    if (!apiKey) throw new Error('Set ALCHEMY_API_KEY');
+
+    const ws = new WebSocket(
+      `wss://stellar-mainnet.g.alchemy.com/v2/${encodeURIComponent(apiKey)}`,
+    );
+    ws.addEventListener('open', () => {
+      ws.send(JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'stellar_subscribe',
+        params: ['newLedgers'],
+      }));
+    });
+    ws.addEventListener('message', ({ data }) => console.log(JSON.parse(data)));
+    ws.addEventListener('error', () => console.error('WebSocket connection failed'));
+    ws.addEventListener('close', ({ code, reason }) => console.log(code, reason));
+    ```
+
+    These methods are WebSocket-only. Send positional `params` arrays, not the named parameter objects used by Stellar's HTTP RPC methods.
+  </Step>
+  <Step title="Save the subscription ID">
+    Match the response `id` to your request and keep the returned subscription ID:
+
+    ```json
+    {"jsonrpc":"2.0","id":1,"result":"0x0123456789abcdef0123456789abcdef"}
+    ```
+
+    Later notifications use `method: "stellar_subscription"`. Their `params.subscription` identifies your subscription and `params.result` contains one record. Check for an `error` object before treating a response as a successful subscription.
+  </Step>
+</Steps>
+
+## Choose a topic
+
+| Topic | Records | Filters |
+| --- | --- | --- |
+| `newLedgers` | Closed ledgers with header and metadata XDR | None |
+| `events` | Contract and system events, including Soroban token events | `type`, `contractIds`, `topics` |
+| `transactions` | Included transactions with XDR-JSON envelopes and results | `status`, `accounts` |
+| `payments` | Successful classic payment and path-payment operations | `accounts`, `from`, `to` |
+
+Read the [complete subscription reference](/docs/chains/stellar/websocket/stellar-subscribe) for request and response shapes, examples for every topic, and filter rules. You can also download the [customer guide](https://data-api-specs.docs.alchemy.com/stellar-websocket/guide.md) and [message JSON Schema](https://data-api-specs.docs.alchemy.com/stellar-websocket/messages.schema.json).
+
+Omit the filter or pass `{}` to receive all eligible records. Filter fields are ANDed together; entries in address arrays are ORed. Address arrays accept 1–100 valid StrKeys. G and M account addresses match exactly; an M address does not implicitly match its underlying G address. Use C addresses only in `contractIds`.
+
+For Soroban transfers, use `events`, not `payments`. Topic filters contain base64 XDR segments or `"*"`. Include both three-segment and four-segment patterns if you want both common transfer event formats:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "stellar_subscribe",
+  "params": ["events", {
+    "type": "contract",
+    "topics": [
+      ["AAAADwAAAAh0cmFuc2Zlcg==", "*", "*"],
+      ["AAAADwAAAAh0cmFuc2Zlcg==", "*", "*", "*"]
+    ]
+  }]
+}
+```
+
+The encoded first segment is the symbol `transfer`. Check `inSuccessfulContractCall` and the transaction result before interpreting an event as a completed transfer. Custom contracts can use different formats.
+
+## Stop a subscription
+
+Send the subscription ID on the same connection:
+
+```json
+{"jsonrpc":"2.0","id":3,"method":"stellar_unsubscribe","params":["0x0123456789abcdef0123456789abcdef"]}
+```
+
+A result of `true` means it was removed; `false` means it was not found on that connection. Other subscriptions remain active. Notifications already in flight can arrive while you unsubscribe. See the [unsubscribe reference](/docs/chains/stellar/websocket/stellar-unsubscribe).
+
+## Plan for limitations
+
+* Subscriptions are live-only. There is no historical start ledger, replay, resume token, or pending-transaction feed. Acknowledgement confirms acceptance, not immediate delivery or delivery from the instant of your request.
+* Delivery is best effort. Reconnects require new subscriptions and new IDs; there is no durable exactly-once or at-least-once guarantee. There is no fixed notification latency guarantee.
+* If you need complete records, persist progress, reconnect with backoff and jitter, buffer live arrivals, backfill an overlapping range through HTTP RPC, and deduplicate. Historical RPC is limited by retained history.
+* `transactions.accounts` matches explicit transaction participants, not every account whose balance or contract state changes.
+* `payments` excludes failed transactions, account creation/merge, and Soroban transfers. Amounts remain integer-unit strings. Path-payment bounds are not executed amounts.
+* Payloads can be large. Process notifications promptly, configure incoming message limits, and bound client queues. Your plan's connection, subscription, and usage limits still apply.

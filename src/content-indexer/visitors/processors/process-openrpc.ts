@@ -65,6 +65,11 @@ export const processOpenRpcSpec = ({
 
   // Process each RPC method
   spec.methods.forEach((method) => {
+    const servers = method.servers ?? spec.servers ?? [];
+    const isWebSocket =
+      servers.length > 0 &&
+      servers.every((server) => /^wss?:\/\//i.test(server.url));
+    const transportLabel = isWebSocket ? "WS" : "POST";
     const slug = kebabCase(method.name);
     const pathBuilder = apiPathBuilder.apply({ urlSlug: slug });
     const finalPath = pathBuilder.get();
@@ -101,7 +106,7 @@ export const processOpenRpcSpec = ({
         path: finalPath,
         title: algoliaTitle,
         content: description,
-        httpMethod: "POST",
+        httpMethod: transportLabel,
         breadcrumbs,
         description: summary,
       });
@@ -111,7 +116,7 @@ export const processOpenRpcSpec = ({
     endpointNavItems.push({
       title: method.name,
       path: `/${finalPath}`,
-      method: "POST",
+      method: transportLabel,
       type: "endpoint",
       description: summary,
     });
