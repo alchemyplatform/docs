@@ -28,7 +28,8 @@ Alchemy's HyperCore streams use the same stream names and the same core data as 
 | One user | `"user": "0x…"` | `"users": ["0x…"]` |
 | Unsubscribe | Repeat the subscription object | `{"method":"unsubscribe","subscriptionId":…}` |
 | Data shape | `data: {coin, time, levels}` | `data: {blockNumber, blockTime, isSnapshot, books: [{coin, levels}]}` |
-| Heartbeat | `{"method":"ping"}` | Not available yet; idle connections close after about 90 seconds (see [heartbeats](/docs/chains/websockets/hypercore/connection-lifecycle#heartbeats)) |
+| Fills | `data: {user, fills: [fill]}` | `data.fills: [[user, fill]]`, one `[user, fill]` pair per fill |
+| Heartbeat | `{"method":"ping"}` | Not available yet. Don't send `ping`: it returns an `invalid_params` error. Idle connections close after about 90 seconds (see [heartbeats](/docs/chains/websockets/hypercore/connection-lifecycle#heartbeats)) |
 | Trades | `trades` | Use `allFills`: one record per side, both sides share `tid` |
 | Replay | None | `fromBlock` on fill streams |
 
@@ -58,7 +59,7 @@ Alchemy data:
 {"seq":1,"channel":"l2Book","subscriptionId":"btc-book","data":{"blockNumber":1183759643,"blockTime":1791999593526,"isSnapshot":true,"books":[{"coin":"BTC","levels":[[…bids],[…asks]]}]}}
 ```
 
-Price levels (`px`, `sz`, `n`) and fill objects use the same fields as the public API.
+Price levels (`px`, `sz`, `n`) and fill objects use the same fields as the public API. Fills arrive as `[user, fill]` pairs, so read `fill.coin`, not `pair.coin`.
 
 ## Common mistakes
 
@@ -66,7 +67,7 @@ Price levels (`px`, `sz`, `n`) and fill objects use the same fields as the publi
 * **Omitting `subscriptionId`.** The request is rejected.
 * **Changing the case of coin names.** Names are case-sensitive: `BTC` works, `btc` returns nothing.
 * **Detecting gaps with block numbers.** Book streams skip blocks with no change. Use `seq`.
-* **Reading `data` as a single market.** Alchemy groups markets in `data.books` (or `data.fills`, `data.mids`, `data.diffs`). Iterate over the array.
+* **Reading `data` as a single market.** Alchemy groups markets in `data.books` (or `data.fills`, `data.diffs`). Iterate over the array. `data.mids` is a map of coin to price.
 
 ## Verify your migration
 
