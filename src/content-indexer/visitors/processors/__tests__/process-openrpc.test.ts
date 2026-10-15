@@ -472,3 +472,64 @@ describe("processOpenRpcSpec", () => {
     expect(results.algoliaRecords[0].content).toBe("Full description");
   });
 });
+
+describe("WebSocket transport labels", () => {
+  test.each([
+    { specUrl: "wss://example.com/v2", methodUrl: undefined, expected: "WS" },
+    {
+      specUrl: "https://example.com/v2",
+      methodUrl: "ws://localhost:8080",
+      expected: "WS",
+    },
+    {
+      specUrl: "wss://example.com/v2",
+      methodUrl: "https://example.com/v2",
+      expected: "POST",
+    },
+    { specUrl: undefined, methodUrl: undefined, expected: "POST" },
+  ])(
+    "should label transport $expected for $specUrl / $methodUrl",
+    ({ specUrl, methodUrl, expected }) => {
+      const context = new ProcessingContext("docs");
+      const result = processOpenRpcSpec({
+        spec: openRpcSpecFactory({
+          servers: specUrl ? [{ name: "Default", url: specUrl }] : undefined,
+          methods: [
+            {
+              name: "stellar_subscribe",
+              params: [],
+              result: { name: "subscriptionId", schema: { type: "string" } },
+              servers: methodUrl
+                ? [{ name: "Method", url: methodUrl }]
+                : undefined,
+            },
+          ],
+        }),
+        specId: "alchemy/json-rpc/stellar-websocket.json",
+        visitorConfig: {
+          item: {
+            api: "Stellar WebSocket methods",
+            "api-name": "stellar-websocket",
+          },
+          parentPath: PathBuilder.init("chains/stellar"),
+          tab: "chains",
+          stripPathPrefix: undefined,
+          contentCache: new ContentCache(),
+          context,
+          navigationAncestors: [],
+        },
+        apiPathBuilder: PathBuilder.init("chains/stellar/websocket"),
+        apiTitle: "Stellar WebSocket methods",
+        isHidden: false,
+        isFlattened: true,
+      });
+      expect(result.navItem).toEqual([
+        expect.objectContaining({
+          method: expected,
+          path: "/chains/stellar/websocket/stellar-subscribe",
+        }),
+      ]);
+      expect(context.getResults().algoliaRecords[0].httpMethod).toBe(expected);
+    },
+  );
+});
