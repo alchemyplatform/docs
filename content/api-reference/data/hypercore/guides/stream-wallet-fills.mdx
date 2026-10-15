@@ -8,7 +8,10 @@ description: "Follow fills for a set of wallets and resume without loss after a 
 # Stream wallet fills
 
 ```js
-let lastBlock = await loadLastBlock();   // last fully processed block, or null on first run
+// You provide: loadLastBlock, saveLastBlock, upsertFill, recordGap, backoffWithJitter, onFatal.
+const RETRYABLE = new Set(["fills_not_ready"]);   // temporary; retry after a short delay
+let lastBlock = await loadLastBlock();             // last fully processed block, or null on first run
+let halted = false;                                // set when an error needs a fix, not a retry
 
 function connect() {
   const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
@@ -16,30 +19,48 @@ function connect() {
   let stopped = false;                    // set on any failure or close
   let queue = Promise.resolve();          // process messages strictly one at a time
 
+  function stop(err) {
+    if (stopped) return;
+    stopped = true;
+    if (err?.fatal) {                     // e.g. invalid_params or limit_reached: retrying won't help
+      halted = true;
+      onFatal(err.error);
+    }
+    ws.close();                           // otherwise reconnect and replay from lastBlock + 1
+  }
+
+  function subscribe() {
+    if (stopped) return;
+    lastSeq = 0;
+    ws.send(JSON.stringify({
+      method: "subscribe",
+      subscriptionId: "wallets",
+      subscription: {
+        type: "userFills",
+        users: ["0x654086857e1fad6dcf05cf6695cce51ea3984268"],
+        ...(lastBlock !== null ? { fromBlock: lastBlock + 1 } : {}),
+      },
+    }));
+  }
+
   ws.onmessage = ({ data }) => {
-    queue = queue
-      .then(() => handle(JSON.parse(data)))
-      .catch(() => {                      // missed message or storage failure:
-        stopped = true;                   // process nothing further on this connection
-        ws.close();                       // and replay from lastBlock + 1 on reconnect
-      });
+    queue = queue.then(() => handle(JSON.parse(data))).catch(stop);
   };
 
   async function handle(msg) {
     if (stopped) return;
-    if (msg.channel === "connected") {
-      ws.send(JSON.stringify({
-        method: "subscribe",
-        subscriptionId: "wallets",
-        subscription: {
-          type: "userFills",
-          users: ["0x654086857e1fad6dcf05cf6695cce51ea3984268"],
-          ...(lastBlock !== null ? { fromBlock: lastBlock + 1 } : {}),
-        },
-      }));
-      return;
+    if (msg.channel === "connected") return subscribe();
+
+    // Errors come as a subscription error (with our ID) or a connection-level error (no ID).
+    if (msg.error && (msg.channel === "error" || msg.subscriptionId === "wallets")) {
+      if (RETRYABLE.has(msg.error.code)) {
+        setTimeout(subscribe, 1000);
+        return;
+      }
+      throw Object.assign(new Error(msg.error.code), { fatal: true, error: msg.error });
     }
-    if (msg.subscriptionId !== "wallets" || msg.seq === undefined) return;  // acks, errors
+    if (msg.subscriptionId !== "wallets" || msg.seq === undefined) return;  // acks, other subscriptions
+
     if (msg.seq !== lastSeq + 1) throw new Error("missed message");
     lastSeq = msg.seq;
 
@@ -59,7 +80,7 @@ function connect() {
 
   ws.onclose = () => {
     stopped = true;
-    setTimeout(connect, backoffWithJitter());
+    if (!halted) setTimeout(connect, backoffWithJitter());
   };
 }
 connect();
@@ -68,7 +89,8 @@ connect();
 ## Notes
 
 * Process messages in order, one at a time. WebSocket callbacks don't wait for asynchronous work, so without a queue a later block can be checkpointed before an earlier one is stored.
-* Treat any failure as a reason to stop and reconnect: a skipped `seq`, a failed fill write, or a failed checkpoint. Nothing after the failed block is processed, and the reconnect replays from the last saved block.
+* Treat any processing failure as a reason to stop and reconnect: a skipped `seq`, a failed fill write, a failed checkpoint, or a malformed message. Nothing after the failed block is processed, and the reconnect replays from the last saved block.
+* Retry `fills_not_ready` after a short delay. Other errors, such as `invalid_params` or `limit_reached`, need a change to the request or your limits, so the example stops and reports them through `onFatal` instead of retrying. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
 * Advance `lastBlock` only after it's saved, and only after the block's fills are stored.
 * Make fill storage idempotent: write each fill keyed on `tid` plus user (an upsert). A block replayed after a failure or restart then can't be processed twice.
 * Reconnect promptly. Replay covers roughly the last 30 seconds; a longer outage returns a `gap` for the part that can't be replayed.
