@@ -66,16 +66,38 @@ If `endTime` minus `startTime` is more than 30 days, the API returns HTTP 400.
 
 Long ranges require multiple queries. Each query may span at most 30 days.
 
-### Pagination and rate limits
+***
 
-When a time-series response includes `cursor`, send it on the next request with
-the same `startTime`, filters, and `groupBy`. `endTime` may be omitted; the
-cursor keeps the original range.
+## Pagination
 
-Cursors expire 15 minutes after they are issued.
+`POST /v1/usage/time-series` returns results in pages. Any multi-day query may
+split across several pages, and the page size is not guaranteed. When more data
+is available, the response includes a `cursor` field. You must send that value
+on follow-up requests to retrieve the rest of the range.
+
+<Warning title="Follow the cursor or your range will look truncated">
+  If the response includes `cursor`, the data for the requested range is
+  incomplete until you page through to the end. Without following `cursor`,
+  buckets near the end of your range will appear to be missing even though the
+  data is available on later pages. Every page returns HTTP 200, including
+  pages that leave more data unread, so an unused cursor is not surfaced as an
+  error.
+</Warning>
+
+On each follow-up request, send the `cursor` value from the prior response and
+keep the same `startTime`, filters, and `groupBy`. `endTime` may be omitted; the
+cursor keeps the original range. Keep paging until the response no longer
+includes a `cursor` field.
+
+Cursors expire 15 minutes after they are issued. If a cursor expires, restart
+pagination from the first page.
 
 Cursor follow-up pages are not counted against the distinct-payload rate limit.
 Only the first page of each query counts toward your per-minute query budget.
+
+For a worked example that paginates through a multi-week range, see
+[Paginate through a long range](/docs/reference/admin-api/quickstart#paginate-through-a-long-range)
+in the quickstart.
 
 ***
 

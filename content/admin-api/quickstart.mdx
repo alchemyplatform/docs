@@ -274,6 +274,48 @@ Example response:
 
 See the [Get usage time series](/docs/admin-api/usage/get-usage-time-series) endpoint for request options.
 
+### Paginate through a long range
+
+Multi-day queries can return results across multiple pages. When the response
+includes `cursor`, resend the request with that value until `cursor` is absent.
+Without following the cursor, buckets near the end of your range will appear to
+be missing even though the data is available on later pages. See the
+[Pagination section](/docs/reference/admin-api/overview#pagination) for details.
+
+```bash
+BODY='{
+  "startTime": "2026-06-01T00:00:00Z",
+  "endTime": "2026-06-30T23:59:59Z",
+  "granularity": "day",
+  "products": ["SUPERNODE_CU"],
+  "metrics": ["amount"],
+  "groupBy": ["network"]
+}'
+
+CURSOR=""
+while :; do
+  if [ -n "$CURSOR" ]; then
+    REQ=$(jq -nc --argjson base "$BODY" --arg cur "$CURSOR" '$base + {cursor:$cur}')
+  else
+    REQ="$BODY"
+  fi
+
+  RESP=$(curl -s -X POST "$ALCHEMY_ADMIN_BASE_URL/usage/time-series" \
+    -H "Content-Type: application/json" \
+    -H "$ALCHEMY_ADMIN_AUTH_HEADER" \
+    -d "$REQ")
+
+  echo "$RESP" | jq '.data.data'
+
+  CURSOR=$(echo "$RESP" | jq -r '.data.cursor // empty')
+  [ -z "$CURSOR" ] && break
+done
+```
+
+Keep `startTime`, filters, and `groupBy` identical across pages. `endTime` can
+be omitted on follow-up requests; the cursor keeps the original range. Cursors
+expire 15 minutes after they are issued.
+
 ## 7. Delete the app
 
 Permanently delete an app. This action cannot be undone.
