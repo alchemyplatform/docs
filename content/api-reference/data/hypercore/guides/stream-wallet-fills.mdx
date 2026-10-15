@@ -8,12 +8,13 @@ description: "Follow fills for a set of wallets and resume without loss after a 
 # Stream wallet fills
 
 ```js
-let lastBlock = loadLastBlock();          // from your store, or null on first run
-const seen = new Set();                   // tid|user, for deduplication
+let lastBlock = await loadLastBlock();   // last fully processed block, or null on first run
 
 function connect() {
   const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
-  ws.onmessage = ({ data }) => {
+  let lastSeq = 0;                        // seq restarts at 1 on every new subscription
+
+  ws.onmessage = async ({ data }) => {
     const msg = JSON.parse(data);
     if (msg.channel === "connected") {
       ws.send(JSON.stringify({
@@ -27,17 +28,28 @@ function connect() {
       }));
       return;
     }
-    if (msg.gap) return recordGap(msg.gap);          // range no longer replayable
-    if (!msg.data?.fills) return;
+    if (msg.subscriptionId !== "wallets" || msg.seq === undefined) return;  // acks, errors
+
+    if (msg.seq !== lastSeq + 1) {
+      ws.close();                         // missed a message: reconnect and replay
+      return;                             // from lastBlock + 1, the last block fully processed
+    }
+    lastSeq = msg.seq;
+
+    if (msg.gap) {
+      await recordGap(msg.gap);           // range no longer replayable
+      lastBlock = msg.gap.toBlock;
+      await saveLastBlock(lastBlock);
+      return;
+    }
+
     for (const [user, fill] of msg.data.fills) {
-      const key = `${fill.tid}|${user}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      handleFill(user, fill);
+      await upsertFill(`${fill.tid}|${user}`, user, fill);  // idempotent, keyed on tid + user
     }
     lastBlock = msg.data.blockNumber;
-    saveLastBlock(lastBlock);                        // after processing succeeds
+    await saveLastBlock(lastBlock);       // only after the block's fills are stored
   };
+
   ws.onclose = () => setTimeout(connect, backoffWithJitter());
 }
 connect();
@@ -45,7 +57,8 @@ connect();
 
 ## Notes
 
-* Save `lastBlock` only after you've processed (and stored) the block's fills.
+* Save `lastBlock` only after you've stored the block's fills. Advance it only when `seq` is contiguous, so a missed message is always replayed.
+* Make fill storage idempotent: write each fill keyed on `tid` plus user (an upsert). If the process stops after storing some fills but before saving `lastBlock`, the block is replayed on restart and the upsert absorbs the duplicates.
 * Reconnect promptly. Replay covers roughly the last 30 seconds; a longer outage returns a `gap` for the part that can't be replayed.
 * `users` is always an array. Split large wallet sets across several subscriptions.
 * Set `aggregateByTime: true` to merge a taker order's partial fills in the same block.
