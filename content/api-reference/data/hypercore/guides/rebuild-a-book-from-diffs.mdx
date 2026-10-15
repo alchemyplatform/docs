@@ -10,49 +10,72 @@ description: "Maintain a local L2 book from l2BookDiff, with gap detection and r
 `l2BookDiff` sends a full snapshot when you subscribe, then only the price levels that change. This guide keeps a local book correct and recovers when something goes wrong.
 
 ```js
-const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
 const books = {};      // coin -> { bids: Map<px, level>, asks: Map<px, level> }
+let subId = null;      // current subscription; messages for any other ID are ignored
+let generation = 0;
 let lastSeq = 0;
+let ready = false;     // true once the current subscription's snapshot has arrived
 
-ws.onmessage = ({ data }) => {
-  const msg = JSON.parse(data);
-  if (msg.channel === "connected") {
+function connect() {
+  const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
+
+  // Start a fresh subscription. A new ID means late messages from the old one are ignored.
+  function subscribe() {
+    if (subId) ws.send(JSON.stringify({ method: "unsubscribe", subscriptionId: subId }));
+    subId = `book-${++generation}`;
+    lastSeq = 0;
+    resetBooks();
     ws.send(JSON.stringify({
       method: "subscribe",
-      subscriptionId: "book",
+      subscriptionId: subId,
       subscription: { type: "l2BookDiff", coins: ["BTC", "ETH"], nLevels: 20 },
     }));
-    return;
   }
-  if (msg.subscriptionId !== "book") return;
-  if (msg.error) {
-    if (msg.error.code === "book_reset") resetLocalState(); // a snapshot follows
-    return;
-  }
-  if (msg.seq === undefined) return;                        // acknowledgement
 
-  if (msg.seq !== lastSeq + 1 && !msg.data.isSnapshot) {
-    return resubscribe();                                   // missed a message
-  }
-  lastSeq = msg.seq;
+  ws.onmessage = ({ data }) => {
+    const msg = JSON.parse(data);
+    if (msg.channel === "connected") {
+      subId = null;                           // new connection, nothing to unsubscribe
+      return subscribe();
+    }
+    if (msg.subscriptionId !== subId) return; // stale or unrelated subscription
+    if (msg.error) {
+      if (msg.error.code === "book_reset") resetBooks();  // a fresh snapshot follows
+      return;
+    }
+    if (msg.seq === undefined) return;        // acknowledgement
 
-  for (const { coin, levels } of msg.data.books) {
-    if (msg.data.isSnapshot || !books[coin]) books[coin] = { bids: new Map(), asks: new Map() };
-    const [bids, asks] = levels;
-    apply(books[coin].bids, bids);
-    apply(books[coin].asks, asks);
-  }
-};
+    if (msg.seq !== lastSeq + 1) return subscribe();  // missed a message: start over
+    lastSeq = msg.seq;
+
+    if (msg.data.isSnapshot) ready = true;
+    if (!ready) return;                       // never apply diffs without a snapshot
+
+    for (const { coin, levels } of msg.data.books) {
+      if (msg.data.isSnapshot || !books[coin]) books[coin] = { bids: new Map(), asks: new Map() };
+      const [bids, asks] = levels;
+      apply(books[coin].bids, bids);
+      apply(books[coin].asks, asks);
+    }
+  };
+
+  ws.onclose = () => setTimeout(connect, backoffWithJitter());
+}
+
+function resetBooks() {
+  for (const coin in books) delete books[coin];
+  ready = false;
+}
 
 function apply(side, levels) {
   for (const l of levels) {
-    if (Number(l.sz) === 0) side.delete(l.px);
+    if (Number(l.sz) === 0 || l.n === 0) side.delete(l.px);
     else side.set(l.px, l);
   }
 }
-```
 
-`resetLocalState` clears `books` and sets `lastSeq` to `0`. `resubscribe` unsubscribes, clears local state, and subscribes again, so the next message is a new snapshot. On a disconnect, reconnect and subscribe again in the same way.
+connect();
+```
 
 ## Rules
 
@@ -60,5 +83,6 @@ function apply(side, levels) {
 * Keep `nSigFigs`, `mantissa`, and `nLevels` the same for the life of the book.
 * Sort when you read: bids high to low, asks low to high. Keep the top `nLevels` per side.
 * Detect missed messages with `seq`, not `blockNumber`. Quiet markets skip blocks.
+* When you start over, use a new `subscriptionId`. Messages already in flight for the old subscription then can't be mistaken for the new one.
 
 The same approach works for `l4BookUpdates`, keyed by order ID instead of price. See [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates).

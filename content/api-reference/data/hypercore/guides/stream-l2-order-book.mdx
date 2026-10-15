@@ -30,4 +30,4 @@ for (const { coin, levels: [bids, asks] } of msg.data.books) {
 }
 ```
 
-After a disconnect, reconnect and subscribe again. The first message is a fresh snapshot of every subscribed market.
+Each entry replaces that market's view, so a missed message leaves a market stale only until it next changes. To avoid even that, track `seq` and resubscribe when it skips. After a disconnect, reconnect and subscribe again. The first message is a fresh snapshot of every subscribed market.

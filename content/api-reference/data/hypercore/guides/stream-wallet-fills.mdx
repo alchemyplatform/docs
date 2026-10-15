@@ -13,9 +13,20 @@ let lastBlock = await loadLastBlock();   // last fully processed block, or null 
 function connect() {
   const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
   let lastSeq = 0;                        // seq restarts at 1 on every new subscription
+  let stopped = false;                    // set on any failure or close
+  let queue = Promise.resolve();          // process messages strictly one at a time
 
-  ws.onmessage = async ({ data }) => {
-    const msg = JSON.parse(data);
+  ws.onmessage = ({ data }) => {
+    queue = queue
+      .then(() => handle(JSON.parse(data)))
+      .catch(() => {                      // missed message or storage failure:
+        stopped = true;                   // process nothing further on this connection
+        ws.close();                       // and replay from lastBlock + 1 on reconnect
+      });
+  };
+
+  async function handle(msg) {
+    if (stopped) return;
     if (msg.channel === "connected") {
       ws.send(JSON.stringify({
         method: "subscribe",
@@ -23,42 +34,43 @@ function connect() {
         subscription: {
           type: "userFills",
           users: ["0x654086857e1fad6dcf05cf6695cce51ea3984268"],
-          ...(lastBlock ? { fromBlock: lastBlock + 1 } : {}),
+          ...(lastBlock !== null ? { fromBlock: lastBlock + 1 } : {}),
         },
       }));
       return;
     }
     if (msg.subscriptionId !== "wallets" || msg.seq === undefined) return;  // acks, errors
-
-    if (msg.seq !== lastSeq + 1) {
-      ws.close();                         // missed a message: reconnect and replay
-      return;                             // from lastBlock + 1, the last block fully processed
-    }
+    if (msg.seq !== lastSeq + 1) throw new Error("missed message");
     lastSeq = msg.seq;
 
     if (msg.gap) {
       await recordGap(msg.gap);           // range no longer replayable
+      await saveLastBlock(msg.gap.toBlock);
       lastBlock = msg.gap.toBlock;
-      await saveLastBlock(lastBlock);
       return;
     }
 
     for (const [user, fill] of msg.data.fills) {
       await upsertFill(`${fill.tid}|${user}`, user, fill);  // idempotent, keyed on tid + user
     }
+    await saveLastBlock(msg.data.blockNumber);  // only after the block's fills are stored
     lastBlock = msg.data.blockNumber;
-    await saveLastBlock(lastBlock);       // only after the block's fills are stored
-  };
+  }
 
-  ws.onclose = () => setTimeout(connect, backoffWithJitter());
+  ws.onclose = () => {
+    stopped = true;
+    setTimeout(connect, backoffWithJitter());
+  };
 }
 connect();
 ```
 
 ## Notes
 
-* Save `lastBlock` only after you've stored the block's fills. Advance it only when `seq` is contiguous, so a missed message is always replayed.
-* Make fill storage idempotent: write each fill keyed on `tid` plus user (an upsert). If the process stops after storing some fills but before saving `lastBlock`, the block is replayed on restart and the upsert absorbs the duplicates.
+* Process messages in order, one at a time. WebSocket callbacks don't wait for asynchronous work, so without a queue a later block can be checkpointed before an earlier one is stored.
+* Treat any failure as a reason to stop and reconnect: a skipped `seq`, a failed fill write, or a failed checkpoint. Nothing after the failed block is processed, and the reconnect replays from the last saved block.
+* Advance `lastBlock` only after it's saved, and only after the block's fills are stored.
+* Make fill storage idempotent: write each fill keyed on `tid` plus user (an upsert). A block replayed after a failure or restart then can't be processed twice.
 * Reconnect promptly. Replay covers roughly the last 30 seconds; a longer outage returns a `gap` for the part that can't be replayed.
 * `users` is always an array. Split large wallet sets across several subscriptions.
 * Set `aggregateByTime: true` to merge a taker order's partial fills in the same block.
