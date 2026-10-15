@@ -1,17 +1,20 @@
 ---
 title: "Combine streaming with backfill"
-description: "HyperCore private-preview documentation."
+description: "Recover data a stream can no longer replay."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Combine streaming with backfill
 
-Run a live subscription and persist the cursor plus block height. On reconnect, request replay. If replay fails, backfill the missing block range, dedupe domain events, update the cursor, then resume live delivery.
+Streams replay only recent blocks. If a fill stream returns a `gap`, or a client was offline longer than the replay window, the missing range has to come from another source.
 
-## Cursor rule
-Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.
+1. Record every `gap` range (`fromBlock` to `toBlock`, inclusive) and any outage longer than the replay window.
+2. Continue processing live data; don't block on the backfill.
+3. Fill the missing range from a historical source, deduplicating on `tid` plus user.
 
-## Chain API cross-link
+<Callout intent="info">
+  HyperCore REST and historical data aren't part of the current beta. To recover a wallet's fills for a missed range, use Hyperliquid's `userFillsByTime` info request, and keep outages short so replay covers them.
+</Callout>
 
-When replay cannot bridge a gap, use [Chain API block backfill](/docs/chains/hyperliquid/hypercore/guides/retrieve-and-backfill-blocks).
+Book streams don't need backfill: resubscribe and the snapshot gives you current state.

@@ -1,125 +1,132 @@
 ---
 title: "userFills stream"
-description: "HyperCore private-preview documentation."
+description: "Fills for one or more wallet addresses."
 ---
 
-<Markdown src="../../shared/preview-notice-september.mdx" />
+<Markdown src="../../shared/preview-notice-beta.mdx" />
 
-# userFills stream
+# userFills
+
+Fills for one or more wallet addresses.
 
 ## Subscribe
 
 ```json
 {
   "method": "subscribe",
+  "subscriptionId": "wallets_01",
   "subscription": {
     "type": "userFills",
-    "users": ["0x1111111111111111111111111111111111111111"]
+    "users": [
+      "0x654086857e1fad6dcf05cf6695cce51ea3984268"
+    ]
   }
 }
 ```
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `users` | string[] | Yes | Wallet addresses. Case-insensitive; returned lowercase. The list size is limited; split large sets across subscriptions. |
+| `fromBlock` | integer | No | Replay from this block (inclusive), then continue live. Omit for live only. |
+| `aggregateByTime` | boolean | No | Merge a taker order's partial fills in the same block. Default `false`. |
+
+The `user` in each `[user, fill]` pair is the subscribed address the fill belongs to.
 
 ## Acknowledgement
 
 ```json
 {
   "channel": "subscriptionResponse",
+  "subscriptionId": "wallets_01",
   "data": {
-    "subscriptionId": "sub_01",
-    "type": "userFills"
-  }
-}
-```
-
-## Event envelope
-
-```json
-{
-  "channel": "userFills",
-  "subscriptionId": "sub_01",
-  "blockHeight": 123456,
-  "blockTime": 1780000000000,
-  "cursor": "<opaque cursor>",
-  "data": {
-    "fills": [
-      {
-        "user": "0x1111111111111111111111111111111111111111",
-        "coin": "BTC",
-        "px": "100000.0",
-        "sz": "0.01",
-        "side": "B",
-        "time": 1780000000000,
-        "startPosition": "0.00",
-        "dir": "Open Long",
-        "closedPnl": "0.0",
-        "hash": "0xabc123",
-        "oid": 12345,
-        "crossed": false,
-        "fee": "0.20",
-        "tid": 87654321,
-        "liquidation": {
-          "liquidatedUser": "0x3333333333333333333333333333333333333333",
-          "markPx": "99990.0",
-          "method": "market"
-        },
-        "feeToken": "USDC",
-        "builderFee": "0.01",
-        "cloid": "client-order-01",
-        "deployerFee": "0.01",
-        "priorityGas": "0.001",
-        "builder": "0x2222222222222222222222222222222222222222",
-        "twapId": null,
-        "txIndex": 3
-      }
+    "type": "userFills",
+    "users": [
+      "0x654086857e1fad6dcf05cf6695cce51ea3984268"
     ]
   }
 }
 ```
 
-## Payload fields
+## Messages
 
-| Field | Type | Description |
-| --- | --- | --- |
-| fills | array | Fill records. |
-| fills[] | object | Fill record. |
-| fills[].user | string | User identifier for the fill. |
-| fills[].coin | string | Market symbol for the fill. |
-| fills[].px | string | Execution price. |
-| fills[].sz | string | Executed size. |
-| fills[].side | string | Side code: A is ask/sell; B is bid/buy. |
-| fills[].time | integer | Time of the fill, in milliseconds. |
-| fills[].startPosition | string | Position size immediately before the fill. |
-| fills[].dir | string | Display direction for the fill. |
-| fills[].closedPnl | string | Realized profit or loss closed by the fill. |
-| fills[].hash | string | Layer-1 transaction hash for the fill. |
-| fills[].oid | integer | Identifier of the order that produced the fill. |
-| fills[].crossed | boolean | Whether the order crossed the spread. |
-| fills[].fee | string | Fee charged for the fill; a negative value is a rebate. |
-| fills[].tid | integer | Trade identifier. |
-| fills[].liquidation | object or null | Liquidation details when the fill is a liquidation. |
-| fills[].liquidation.liquidatedUser | string | Address of the liquidated user, when present. |
-| fills[].liquidation.markPx | string | Mark price at liquidation. |
-| fills[].liquidation.method | string | Liquidation method: market or backstop. |
-| fills[].feeToken | string | Token in which the fee was paid. |
-| fills[].builderFee | string | Amount paid to the builder and included in fee. |
-| fills[].cloid | string or null | Client order identifier. |
-| fills[].deployerFee | string | Fee paid to the HIP-3 deployer. |
-| fills[].priorityGas | string or null | Order-priority fee paid in HYPE. |
-| fills[].builder | string | Builder address associated with the fill. |
-| fills[].twapId | integer or null | Identifier of the TWAP that produced the fill. |
-| fills[].txIndex | integer | Transaction index of the fill within its block. |
-## Unsubscribe
+Each message carries the fills from one block.
 
 ```json
 {
-  "method": "unsubscribe",
-  "subscription": {
-    "type": "userFills",
-    "users": ["0x1111111111111111111111111111111111111111"]
+  "seq": 1,
+  "channel": "userFills",
+  "subscriptionId": "wallets_01",
+  "data": {
+    "blockNumber": 1183759646,
+    "blockTime": 1791999593756,
+    "fills": [
+      [
+        "0x654086857e1fad6dcf05cf6695cce51ea3984268",
+        {
+          "coin": "BTC",
+          "px": "81772.0",
+          "sz": "0.00067",
+          "side": "B",
+          "time": 1791999593756,
+          "startPosition": "-0.37115",
+          "dir": "Close Short",
+          "closedPnl": "0.012",
+          "hash": "0x5a1e...",
+          "oid": 574446008493,
+          "crossed": true,
+          "fee": "0.0246",
+          "tid": 87654321,
+          "feeToken": "USDC",
+          "twapId": null
+        }
+      ]
+    ]
   }
 }
 ```
 
-## Resume
+| Field | Description |
+| --- | --- |
+| `data.blockNumber` | Block the fills came from. Persist it to resume. |
+| `data.blockTime` | Block time, Unix milliseconds. |
+| `data.fills` | Array of `[user, fill]` pairs. |
 
-To resume a stream, supply cursor in the subscription object. The cursor is opaque: clients store and return it unmodified, and its format may change.
+### Fill fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `coin` | string | Market. See [coin names](/docs/data/hypercore/concepts/markets-assets-and-dexes). |
+| `px` | string | Execution price. |
+| `sz` | string | Executed size. |
+| `side` | string | `B` (buy) or `A` (sell), for this user. |
+| `time` | integer | Fill time, Unix milliseconds. |
+| `startPosition` | string | Position size before the fill. |
+| `dir` | string | Display direction, for example `Open Long` or `Close Short`. |
+| `closedPnl` | string | Realized profit or loss from this fill. |
+| `hash` | string | Transaction hash. |
+| `oid` | integer | ID of the order that filled. |
+| `crossed` | boolean | `true` if this side was the taker. |
+| `fee` | string | Fee paid; negative for a rebate. |
+| `tid` | integer | Trade ID. Both sides of a trade share the same `tid`. |
+| `feeToken` | string | Token the fee was paid in. |
+| `twapId` | integer or null | TWAP order ID, if the fill came from a TWAP. |
+| `liquidation` | object | Present on liquidation fills: `liquidatedUser`, `markPx`, `method`. |
+| `builder` | string | Present when the order used a builder code. |
+
+Fill objects follow Hyperliquid's native fill format, so conditional fields such as `builderFee`, `deployerFee`, `priorityGas`, and `cloid` can also appear. Ignore fields you don't use.
+
+### Aggregation
+
+`aggregateByTime` (default `false`) merges a taker order's partial fills within the same block into one record: `sz` and `fee` are summed and `px` is the size-weighted average price, which isn't rounded to the tick size.
+
+## Replay
+
+Pass `fromBlock` to replay from a recent block, inclusive. After a disconnect, resubscribe with `fromBlock` set to the last processed `blockNumber` plus one and deduplicate on `tid` plus user. If the block is older than the replay window, you receive a `gap` message for the missing range, then data from the oldest available block. See [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).
+
+## Unsubscribe
+
+```json
+{"method":"unsubscribe","subscriptionId":"wallets_01"}
+```

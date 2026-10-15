@@ -1,26 +1,64 @@
 ---
 title: "Rebuild a book from diffs"
-description: "HyperCore private-preview documentation."
+description: "Maintain a local L2 book from l2BookDiff, with gap detection and recovery."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Rebuild a book from diffs
 
-Subscribe to `l2BookDiff`. The first message for each market is the current book
-snapshot with `isSnapshot: true`; install it as local state. Apply later diffs in
-height order. The first diff for each market must carry `prev_seq` equal to that
-market's snapshot `seq`; continue checking `prev_seq` against your local position on
-every diff.
+`l2BookDiff` sends a full snapshot when you subscribe, then only the price levels that change. This guide keeps a local book correct and recovers when something goes wrong.
 
-On a continuity break, discard local state for the affected markets and adopt the
-pushed message with `isSnapshot: true`; bootstrap and recovery use the same
-replacement mechanism.
+```js
+const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
+const books = {};      // coin -> { bids: Map<px, level>, asks: Map<px, level> }
+let lastSeq = 0;
 
-For a snapshot shared by many consumers, or to let a slow client digest a large book
-while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api/hyper-core-data-api-endpoints/get-l-2-book-diff-snapshot)
-instead.
+ws.onmessage = ({ data }) => {
+  const msg = JSON.parse(data);
+  if (msg.channel === "connected") {
+    ws.send(JSON.stringify({
+      method: "subscribe",
+      subscriptionId: "book",
+      subscription: { type: "l2BookDiff", coins: ["BTC", "ETH"], nLevels: 20 },
+    }));
+    return;
+  }
+  if (msg.subscriptionId !== "book") return;
+  if (msg.error) {
+    if (msg.error.code === "book_reset") resetLocalState(); // a snapshot follows
+    return;
+  }
+  if (!msg.data) return;                                    // acknowledgement
 
-## Cursor rule
+  if (msg.seq !== lastSeq + 1 && !msg.data.isSnapshot) {
+    return resubscribe();                                   // missed a message
+  }
+  lastSeq = msg.seq;
 
-Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.
+  for (const { coin, levels } of msg.data.books) {
+    if (msg.data.isSnapshot || !books[coin]) books[coin] = { bids: new Map(), asks: new Map() };
+    const [bids, asks] = levels;
+    apply(books[coin].bids, bids);
+    apply(books[coin].asks, asks);
+  }
+};
+
+function apply(side, levels) {
+  for (const l of levels) {
+    if (Number(l.sz) === 0) side.delete(l.px);
+    else side.set(l.px, l);
+  }
+}
+```
+
+`resetLocalState` clears `books` and sets `lastSeq` to `0`. `resubscribe` unsubscribes, clears local state, and subscribes again, so the next message is a new snapshot. On a disconnect, reconnect and subscribe again in the same way.
+
+## Rules
+
+* Build from this stream's own snapshot, not from a separate `l2Book` subscription.
+* Keep `nSigFigs`, `mantissa`, and `nLevels` the same for the life of the book.
+* Sort when you read: bids high to low, asks low to high. Keep the top `nLevels` per side.
+* Detect missed messages with `seq`, not `blockNumber`. Quiet markets skip blocks.
+
+The same approach works for `l4BookUpdates`, keyed by order ID instead of price. See [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates).

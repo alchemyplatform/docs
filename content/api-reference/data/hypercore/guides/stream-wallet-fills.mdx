@@ -1,13 +1,51 @@
 ---
 title: "Stream wallet fills"
-description: "HyperCore private-preview documentation."
+description: "Follow fills for a set of wallets and resume without loss after a disconnect."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Stream wallet fills
 
-Subscribe to `userFills` with a wallet filter. Persist each cursor and trade identifier after processing. Use `userFillsByTime` to recover events if replay cannot satisfy the cursor.
+```js
+let lastBlock = loadLastBlock();          // from your store, or null on first run
+const seen = new Set();                   // tid|user, for deduplication
 
-## Cursor rule
-Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.
+function connect() {
+  const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
+  ws.onmessage = ({ data }) => {
+    const msg = JSON.parse(data);
+    if (msg.channel === "connected") {
+      ws.send(JSON.stringify({
+        method: "subscribe",
+        subscriptionId: "wallets",
+        subscription: {
+          type: "userFills",
+          users: ["0x654086857e1fad6dcf05cf6695cce51ea3984268"],
+          ...(lastBlock ? { fromBlock: lastBlock + 1 } : {}),
+        },
+      }));
+      return;
+    }
+    if (msg.gap) return recordGap(msg.gap);          // range no longer replayable
+    if (!msg.data?.fills) return;
+    for (const [user, fill] of msg.data.fills) {
+      const key = `${fill.tid}|${user}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      handleFill(user, fill);
+    }
+    lastBlock = msg.data.blockNumber;
+    saveLastBlock(lastBlock);                        // after processing succeeds
+  };
+  ws.onclose = () => setTimeout(connect, backoffWithJitter());
+}
+connect();
+```
+
+## Notes
+
+* Save `lastBlock` only after you've processed (and stored) the block's fills.
+* Reconnect promptly. Replay covers roughly the last 30 seconds; a longer outage returns a `gap` for the part that can't be replayed.
+* `users` is always an array. Split large wallet sets across several subscriptions.
+* Set `aggregateByTime: true` to merge a taker order's partial fills in the same block.

@@ -1,45 +1,46 @@
 ---
 title: "Markets, assets, and DEXes"
-description: "HyperCore private-preview documentation."
+description: "How HyperCore names markets, and how price aggregation works on book streams."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Markets, assets, and DEXes
 
-## Market identifiers
+## Coin names
 
-HyperCore coin strings are unambiguous across market types — the format tells you the type:
+Streams use Hyperliquid's own market names, exactly as Hyperliquid's API returns them. The format tells you the market type:
 
 | Form | Market type | Examples |
 | --- | --- | --- |
-| Readable name | Perpetual | `BTC`, `ETH`, `HYPE`, `SOL` |
-| `@index` | Spot | `@1`, `@107`, `@142` |
-| `#N` | Outcome market (HIP-4) | `#90` |
-| `dex:name` | HIP-3 DEX market | `xyz:SP500` |
+| Readable name | Perpetual | `BTC`, `ETH`, `HYPE` |
+| `dex:NAME` | HIP-3 perpetual on a builder-deployed DEX | `xyz:AAPL`, `io:SNDK` |
+| `@index` | Spot | `@107`, `@142` |
+| `#id` | Outcome market (HIP-4) | `#102220` |
 
-There is no overlap between forms: `BTC` is always the perpetual, and spot BTC is a separate `@index` coin. `PURR/USDC` is a documented spot-market exception with a readable name. Discover `@index` mappings through the native `meta` and `spotMeta` metadata endpoints.
+A few spot markets use a readable pair name such as `PURR/USDC`. Look up names and `@index` mappings with Hyperliquid's `meta`, `perpDexs`, and `spotMeta` info requests.
 
-Coin strings are case-sensitive.
+Rules to rely on:
 
-## Market types and DEXes
+* **Names are case-sensitive.** `BTC` is a market; `btc` is not.
+* **Filters match exactly.** `"coins": ["BTC"]` matches the BTC perpetual only, not `xyz:BTC` or spot BTC.
+* **Unknown names aren't rejected.** A subscription to a name that doesn't exist (yet) is accepted and returns empty data until that market appears. Check spelling if a market stays empty.
+* **Omitting `coins` means every market** of every type, including new markets as they're listed.
 
-The `marketTypes` filter accepts `perp`, `spot`, `outcome`, or `*`. Its default is `["perp"]`, and the default never grows: request new types explicitly or pass `["*"]` to opt in to future types automatically.
-
-The `dex` selector is `main` for Hyperliquid perpetuals or a named DEX for HIP-3 deployments. Outcome markets carry two coins per outcome, one per side.
+New market types and naming forms may appear as Hyperliquid evolves. Treat coin names as opaque strings rather than parsing them.
 
 ## Price aggregation
 
+`l2Book` and `l2BookDiff` can group price levels:
+
 | Parameter | Accepted values | Effect |
 | --- | --- | --- |
-| `nSigFigs` | `2`, `3`, `4`, `5` | Significant figures used to bucket price levels |
-| `mantissa` | `2` or `5` | Mantissa step within the bucket. Valid only when `nSigFigs` is `5` |
-| `nLevels` | `1`, `10`, `20` (default), `50` | Levels returned per side |
+| `nSigFigs` | `2`, `3`, `4`, `5` | Group prices to this many significant figures. Omit for exact prices. |
+| `mantissa` | `1`, `2`, `5` | Step size within the last significant figure. Only with `nSigFigs: 5`; default `1`. |
+| `nLevels` | `1`, `10`, `20` (default), `50` | Levels per side. |
 
-Aggregation rounds bids down and asks up. With `nSigFigs: 5` and `mantissa: 2`, a bid of `70325` becomes `70324` and an ask of `70325` becomes `70326`. When aggregation parameters are omitted, each distinct price level is reported individually.
-
-A snapshot and the diffs applied to it must use identical aggregation parameters, or the resulting book is invalid.
+Grouping rounds bids down and asks up. A diff-maintained book must use the same parameters as the snapshot it started from.
 
 ## Level semantics
 
-A price level reports total resting size and an order count — `px`, `sz`, and `n`. One level may represent many orders; `n` is how many. Level-aggregated streams expose no order IDs and no user addresses. Order-level detail requires `l4BookUpdates`.
+A price level reports `px` (price), `sz` (total resting size), and `n` (number of orders). Aggregated streams don't expose order IDs or addresses; use `l4BookUpdates` for order-level detail.
