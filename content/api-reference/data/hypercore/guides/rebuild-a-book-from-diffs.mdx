@@ -29,7 +29,7 @@ ws.onmessage = ({ data }) => {
     if (msg.error.code === "book_reset") resetLocalState(); // a snapshot follows
     return;
   }
-  if (!msg.data) return;                                    // acknowledgement
+  if (msg.seq === undefined) return;                        // acknowledgement
 
   if (msg.seq !== lastSeq + 1 && !msg.data.isSnapshot) {
     return resubscribe();                                   // missed a message
