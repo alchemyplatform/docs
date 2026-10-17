@@ -1,0 +1,83 @@
+---
+title: "allMids stream"
+description: "Mid prices for markets with both a bid and an ask."
+---
+
+<Markdown src="../../shared/preview-notice-beta.mdx" />
+
+# allMids
+
+Mid prices for markets with both a bid and an ask.
+
+## Subscribe
+
+```json
+{
+  "method": "subscribe",
+  "subscriptionId": "mids_01",
+  "subscription": {
+    "type": "allMids",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `coins` | string[] | No | Markets to include. Omit for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
+
+## Acknowledgement
+
+```json
+{
+  "channel": "subscriptionResponse",
+  "subscriptionId": "mids_01",
+  "data": {
+    "type": "allMids",
+    "coins": [
+      "BTC",
+      "ETH"
+    ]
+  }
+}
+```
+
+## Messages
+
+```json
+{
+  "seq": 1,
+  "channel": "allMids",
+  "subscriptionId": "mids_01",
+  "data": {
+    "blockNumber": 1183759643,
+    "blockTime": 1791999593526,
+    "isSnapshot": true,
+    "mids": {
+      "BTC": "81772.5",
+      "ETH": "2436.05"
+    }
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `data.mids` | Map of coin to mid price (a decimal string). Only markets with both a bid and an ask are included. |
+
+The first message includes every subscribed market; later messages include markets whose mid changed.
+
+## Unsubscribe
+
+```json
+{"method":"unsubscribe","subscriptionId":"mids_01"}
+```
+
+## Recovery
+
+Book streams have no replay. After a disconnect, or if `seq` skips, resubscribe; the first message is a fresh snapshot. If you receive a `book_reset` error, drop local state for the subscription and rebuild from the snapshot that follows. See [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).

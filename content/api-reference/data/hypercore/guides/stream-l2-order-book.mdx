@@ -1,26 +1,42 @@
 ---
 title: "Stream an L2 order book"
-description: "HyperCore private-preview documentation."
+description: "Pick between l2Book and l2BookDiff and subscribe to one or many markets."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Stream an L2 order book
 
-To maintain an L2 book from `l2BookDiff`, install the first message for each market
-as local state. It carries the current levels with `isSnapshot: true`. Apply later
-diffs in height order, checking each market's `prev_seq` against the snapshot `seq`
-and then against your local position.
+## Choose a stream
 
-`l2Book` is a standalone display snapshot, not a bootstrap source for a
-diff-maintained book. If continuity breaks, discard affected local state and adopt
-the pushed `isSnapshot: true` message; bootstrap and recovery use the same
-replacement mechanism.
+* **`l2Book`** sends a complete window of levels for each market whenever it changes. No local state needed. Good for displays and periodic reads.
+* **`l2BookDiff`** sends a snapshot, then only changed levels. Much less data for the same book, but you maintain local state. See [rebuild a book from diffs](/docs/data/hypercore/guides/rebuild-a-book-from-diffs).
 
-For a snapshot shared by many consumers, or to let a slow client digest a large book
-while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api/hyper-core-data-api-endpoints/get-l-2-book-diff-snapshot)
-instead.
+## Subscribe
 
-## Cursor rule
+```json
+{"method":"subscribe","subscriptionId":"books","subscription":{"type":"l2Book","coins":["BTC","ETH","SOL"],"nLevels":20}}
+```
 
-Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.
+* List several markets in `coins` to receive them on one subscription. Each message contains only the markets that changed in that block.
+* Add `nSigFigs` (and optionally `mantissa`) to group prices. See [price aggregation](/docs/data/hypercore/concepts/markets-assets-and-dexes#price-aggregation).
+* Omit `coins` to receive every market. This is a large stream; filter where you can.
+
+## Handle messages
+
+```js
+function onMessage(msg) {
+  if (msg.error && (msg.channel === "error" || msg.subscriptionId === "books")) {
+    handleError(msg.error);         // see errors and limits
+    return;
+  }
+  if (msg.subscriptionId !== "books" || msg.seq === undefined) return;  // other subscriptions, acks
+  for (const { coin, levels: [bids, asks] } of msg.data.books) {
+    display[coin] = { bids, asks, blockTime: msg.data.blockTime };
+  }
+}
+```
+
+`handleError` is yours: retry `book_not_ready` after a short delay, and fix the request for other codes. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
+
+Each entry replaces that market's view, so a missed message leaves a market stale only until it next changes. To avoid even that, track `seq` and resubscribe when it skips. After a disconnect, reconnect and subscribe again. The first message is a fresh snapshot of every subscribed market.

@@ -1,16 +1,60 @@
 ---
 title: "Replay and recovery"
-description: "HyperCore private-preview documentation."
+description: "Resume fill streams with fromBlock and re-establish book state after a disconnect."
 ---
 
-<Markdown src="../../shared/preview-notice-september.mdx" />
+<Markdown src="../../shared/preview-notice-beta.mdx" />
 
 # Replay and recovery
 
-For the sequencing and recovery model, see [timestamps, cursors, and replay](/docs/data/hypercore/concepts/timestamps-cursors-and-replay).
+How you recover after a disconnect depends on the kind of stream.
 
-1. Persist the cursor after processing each message on a replay-capable stream.
-2. On disconnect, reconnect with exponential backoff and jitter.
-3. Resubscribe, supplying the last persisted cursor in each replay-capable subscription object. Complete-snapshot streams resubscribe without a cursor.
-4. Deduplicate overlapping messages using the identity documented for that stream — per-market sequence for book diffs, block height or round for block streams, and the event identity fields where a stream provides them.
-5. For stateful snapshot-and-diff streams, a message with `isSnapshot: true` replaces local state for that market.
+| Stream kind | Streams | Recovery |
+| --- | --- | --- |
+| Event | `allFills`, `userFills`, `builderFills`, `liquidationFills` | Resubscribe with `fromBlock` to replay recent blocks. |
+| Book | `l2Book`, `l2BookDiff`, `bbo`, `allMids`, `l4BookUpdates` | Resubscribe. The first message is a fresh snapshot (`isSnapshot: true`) that replaces your local state. |
+
+## Event streams: `fromBlock`
+
+Fill streams accept an optional `fromBlock` in the subscription. Delivery starts at that block (inclusive) and continues live. Omit `fromBlock` to receive live data only.
+
+```json
+{"method":"subscribe","subscriptionId":"fills","subscription":{"type":"allFills","coins":["BTC","ETH"],"fromBlock":1183765139}}
+```
+
+To resume without loss:
+
+1. After processing each data message, persist `data.blockNumber`.
+2. On reconnect, subscribe with `fromBlock` set to the last processed block plus one.
+3. Deduplicate on the fill's trade ID and user (`tid` + user). Both sides of a trade share one `tid`, so `tid` alone isn't unique.
+
+### Replay window
+
+Recent blocks are held in memory for replay. Plan to reconnect within about **30 seconds** to resume without loss. The window may be larger in practice, but it isn't guaranteed and may change.
+
+If `fromBlock` is older than the available history, you receive a `gap` message for the range that can't be replayed, followed by data from the oldest block still available:
+
+```json
+{"seq":1,"channel":"allFills","subscriptionId":"fills","gap":{"fromBlock":1183755197,"toBlock":1183759257}}
+```
+
+The range in `gap` is inclusive. Fills in that range aren't available from the stream; record the gap and continue. A `fromBlock` ahead of the latest block currently starts the stream from the live tip.
+
+## Book streams: snapshots
+
+Book streams don't support `fromBlock`. Every new subscription begins with a snapshot (`isSnapshot: true`) of current state, so after a reconnect you resubscribe and replace your local state with the snapshot. Changes that happened while you were disconnected aren't replayed; the snapshot reflects their result.
+
+Occasionally, while your subscription stays open, the service re-seeds a book (for example after an internal data gap). You then receive a `book_reset` error on that subscription, followed by a new snapshot. Drop your local book for that subscription and rebuild it from the snapshot.
+
+## Missed messages
+
+Track `seq` on every subscription. A skipped `seq` means a message was lost:
+
+* **Book stream**: resubscribe (or reconnect) and rebuild from the new snapshot.
+* **Fill stream**: resubscribe with `fromBlock` set to the last block you fully processed plus one.
+
+## Reconnecting
+
+* Use exponential backoff with jitter. Many clients reconnecting at the same moment can hit [connection limits](/docs/chains/websockets/hypercore/errors-and-limits).
+* Use fresh subscription IDs or the same ones; IDs only need to be unique within a connection.
+* Restarts and deployments close connections without a `gap` or `book_reset`. Reconnecting and resubscribing is the recovery path.
