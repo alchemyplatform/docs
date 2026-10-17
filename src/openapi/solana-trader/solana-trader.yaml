@@ -1,0 +1,1416 @@
+# yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2022-10-07
+
+openapi: 3.1.0
+info:
+  title: 💱 Solana Trader API
+  description: >
+    Alchemy's Solana Trader API returns swap quotes and, on request, an assembled
+    signable transaction for routing token swaps on Solana. Requests are
+    authenticated with your Alchemy API key in the URL path, the same key that
+    powers your other Solana RPC calls. Alchemy currently routes Trader API
+    requests through Metis.
+  version: "1.0"
+servers:
+  - url: https://solana-mainnet.g.alchemy.com/v2
+    description: Solana Mainnet
+paths:
+  "/{apiKey}/order":
+    get:
+      summary: Get Order
+      description: >
+        Returns a swap quote for `inputMint` → `outputMint`. When `taker` is
+        supplied, the response also includes an unsigned, base64-encoded Solana
+        transaction the taker can sign and broadcast. When `taker` is omitted,
+        the response contains the quote and `transaction` is `null`. Optional
+        `payer` compiles a sponsor as the fee payer; optional `referralFee` +
+        `referralAccount` charge an integrator fee.
+      x-compute-units: 100
+      x-rate-limit-cus: 100
+      operationId: get-swap-order
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/InputMint"
+        - $ref: "#/components/parameters/OutputMint"
+        - $ref: "#/components/parameters/Amount"
+        - name: taker
+          in: query
+          required: false
+          description: >
+            Public key of the wallet that will sign the transaction. When
+            omitted, the response returns a quote only and `transaction` is
+            `null`.
+          schema:
+            type: string
+          example: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+        - name: receiver
+          in: query
+          required: false
+          description: >
+            Public key of the wallet that will receive the output tokens. Must
+            differ from `taker`. Expects a wallet address, not a token account.
+            For non-SOL output, tokens are sent to the receiver's associated
+            token account (ATA); a create-ATA instruction is added when the ATA
+            does not exist. Setting this parameter switches `mode` to `manual`.
+          schema:
+            type: string
+        - name: swapMode
+          in: query
+          required: false
+          description: >
+            Swap mode. `ExactIn` treats `amount` as the input amount and
+            slippage is applied on the output side; `ExactOut` treats `amount`
+            as the desired output amount and slippage is applied on the input
+            side. Setting this parameter switches `mode` to `manual`; the
+            echoed value in the response reflects the effective mode and does
+            not on its own indicate the caller set it.
+          schema:
+            type: string
+            enum: [ExactIn, ExactOut]
+            default: ExactIn
+        - name: slippageBps
+          in: query
+          required: false
+          description: >
+            Slippage tolerance in basis points (0-10000 integer). Metis
+            defaults to 50 when omitted. Setting this parameter switches `mode`
+            to `manual`; the echoed `slippageBps: 50` on a response is Metis's
+            default and does not by itself indicate the caller set it. The
+            literal string `rtse` is not accepted on `/order`; sending it
+            returns `400 {"error":"slippageBps must be a number between 0 and
+            10000"}` (on `/build` the same string returns `501` — see that
+            operation).
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10000
+          example: 50
+        - name: priorityFeeLamports
+          in: query
+          required: false
+          description: >
+            Priority-fee component of a caller-supplied fee sum. Does not
+            override the automatic fee on its own — it applies only when
+            `broadcastFeeType` is also set, and is combined with
+            `jitoTipLamports` (when supplied) into a single sum. `exactFee`
+            sends that sum; `maxCap` sends `min(estimate, sum)`. Sent without
+            `broadcastFeeType`, this parameter is ignored.
+          schema:
+            type: integer
+        - name: jitoTipLamports
+          in: query
+          required: false
+          description: >
+            Jito-tip component of a caller-supplied fee sum. Does not override
+            the automatic fee on its own — it applies only when
+            `broadcastFeeType` is also set, and is combined with
+            `priorityFeeLamports` (when supplied) into a single sum. `exactFee`
+            sends that sum; `maxCap` sends `min(estimate, sum)`. Sent without
+            `broadcastFeeType`, this parameter is ignored. Values below 1000
+            return `400 {"error":"jitoTipLamports must be at least 1000"}`.
+          schema:
+            type: integer
+            minimum: 1000
+        - name: broadcastFeeType
+          in: query
+          required: false
+          description: >
+            Fee cap strategy applied to the sum of `priorityFeeLamports` +
+            `jitoTipLamports`. `exactFee` sends that sum; `maxCap` sends
+            `min(estimate, sum)`. Sent without at least one of
+            `priorityFeeLamports` or `jitoTipLamports`, this parameter is
+            ignored. Setting this parameter together with either fee parameter
+            switches `mode` to `manual`.
+          schema:
+            type: string
+            enum: [maxCap, exactFee]
+        - name: excludeDexes
+          in: query
+          required: false
+          description: >
+            Comma-separated list of DEX labels to exclude from routing. Labels
+            are case-sensitive (for example, `Raydium,Orca+V2,Meteora+DLMM`).
+            Setting this parameter switches `mode` to `manual`.
+          schema:
+            type: string
+        - name: excludeRouters
+          in: query
+          required: false
+          description: >
+            Comma-separated list of routers to exclude. Recognized values are
+            `metis`, `jupiterz`, `dflow`, and `okx`. Excluding `metis`, or
+            naming anything outside that set, returns
+            `400 {"error":"invalid excludeRouters"}`. Alchemy only routes
+            through Metis today, so excluding only routers this API does not
+            use is accepted and switches `mode` to `manual` without changing
+            the route.
+          schema:
+            type: string
+        - name: payer
+          in: query
+          required: false
+          description: >
+            Optional public key of a sponsor that pays fees on behalf of the
+            taker.
+
+            When `payer` is set and does not equal `taker`, that account is
+            compiled as the fee payer (account zero) and the taker remains a
+            second signer. `signatureFeeLamports` becomes `10000` (two
+            signers), and all three `*FeePayer` fields in the response name
+            the sponsor. The sponsor pays signature, priority, associated-token
+            rent, and the Jito tip. The trade itself stays with the taker:
+            `inAmount` on `ExactIn`, `otherAmountThreshold` on `ExactOut`. A
+            native SOL debit moves to the sponsor only when it is exactly one
+            token-account's rent, or is split when it is the trade amount plus
+            exactly that rent; any other taker SOL debit produces a `502`,
+            not a transaction that still bills the taker.
+
+            `gasless: true` is set only when a ready transaction was actually
+            built with a non-taker `payer`. A `payer` equal to `taker`, a
+            missing `payer`, a quote with no `taker`, or a 200 rejection
+            (`transaction: ""`) is not gasless, and `mode` stays whatever it
+            already was — `payer` does not switch `mode` to `manual`.
+
+            There is no integrator allowlist: any valid pubkey can sponsor.
+            An unfunded sponsor surfaces as `errorCode: 2` on a 200 rejection,
+            not a `400`. A malformed key returns
+            `400 {"error":"Invalid payer"}`.
+
+            With a sponsor, `errorCode: 1` still describes the taker's input
+            side, `errorCode: 2` describes the sponsor's SOL (signature,
+            priority, associated-token rent, and any system lamports assigned
+            to the sponsor), and `errorCode: 3` is still never returned.
+          schema:
+            type: string
+        - name: referralFee
+          in: query
+          required: false
+          description: >
+            Integrator fee in basis points. Must be an integer in the range
+            50-255 and must be sent together with `referralAccount`.
+
+            Errors:
+
+            * Out of range or not a number: `400 {"error":"referralFee must be
+              a number between 50 and 255"}`.
+            * One of `referralFee` / `referralAccount` without the other:
+              `400 {"error":"referralFee and referralAccount must be provided
+              together"}`.
+          schema:
+            type: integer
+            minimum: 50
+            maximum: 255
+        - name: referralAccount
+          in: query
+          required: false
+          description: >
+            Referral project account used to derive the destination fee token
+            account. Must be sent together with `referralFee`.
+
+            The fee is deposited into the PDA
+            `["referral_ata", referralAccount, feeMint]` under
+            `REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3`. The fee mint is the
+            output mint on `ExactIn` and the input mint on `ExactOut`. That
+            token account must already exist; this API cannot create it.
+
+            Errors:
+
+            * Missing (uninitialized) fee account:
+              `400 {"error":"referral account is not initialized"}`.
+            * One of `referralFee` / `referralAccount` without the other:
+              `400 {"error":"referralFee and referralAccount must be provided
+              together"}`.
+            * Malformed key: `400 {"error":"Invalid referralAccount"}`.
+
+            When both parameters are accepted, the response includes optional
+            `feeBps`, `feeMint`, and `platformFee` fields.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quote, plus an assembled transaction when a `taker` was supplied.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+              examples:
+                quoteOnly:
+                  summary: Quote-only (no taker)
+                  value:
+                    mode: ultra
+                    inputMint: So11111111111111111111111111111111111111112
+                    outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    inAmount: "1000000000"
+                    outAmount: "234506710"
+                    otherAmountThreshold: "233333336"
+                    swapMode: ExactIn
+                    slippageBps: 50
+                    priceImpact: -0.05
+                    priceImpactPct: "-0.0005"
+                    inUsdValue: 234.5
+                    outUsdValue: 234.2
+                    swapUsdValue: 234.3
+                    swapType: aggregator
+                    gasless: false
+                    router: metis
+                    routePlan:
+                      - swapInfo:
+                          ammKey: 5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1
+                          label: Orca V2
+                          inputMint: So11111111111111111111111111111111111111112
+                          outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                          inAmount: "1000000000"
+                          outAmount: "234506710"
+                        percent: 100
+                        bps: 10000
+                        usdValue: 234.3
+                    transaction: null
+                    taker: null
+                    signatureFeeLamports: 0
+                    prioritizationFeeLamports: 0
+                    rentFeeLamports: 0
+                    signatureFeePayer: null
+                    prioritizationFeePayer: null
+                    rentFeePayer: null
+                    totalTime: 42
+                withTransaction:
+                  summary: Quote plus assembled transaction (taker supplied)
+                  value:
+                    mode: ultra
+                    inputMint: So11111111111111111111111111111111111111112
+                    outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    inAmount: "1000000000"
+                    outAmount: "234506710"
+                    otherAmountThreshold: "233333336"
+                    swapMode: ExactIn
+                    slippageBps: 50
+                    priceImpact: -0.05
+                    priceImpactPct: "-0.0005"
+                    inUsdValue: 234.5
+                    outUsdValue: 234.2
+                    swapUsdValue: 234.3
+                    swapType: aggregator
+                    gasless: false
+                    router: metis
+                    routePlan:
+                      - swapInfo:
+                          ammKey: 5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1
+                          label: Orca V2
+                          inputMint: So11111111111111111111111111111111111111112
+                          outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                          inAmount: "1000000000"
+                          outAmount: "234506710"
+                        percent: 100
+                        bps: 10000
+                        usdValue: 234.3
+                    transaction: AQAAAA...base64-encoded-unsigned-transaction...
+                    taker: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+                    lastValidBlockHeight: "300000000"
+                    signatureFeeLamports: 5000
+                    prioritizationFeeLamports: 500000
+                    rentFeeLamports: 2039280
+                    signatureFeePayer: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+                    prioritizationFeePayer: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+                    rentFeePayer: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+                    totalTime: 87
+                sponsoredWithReferral:
+                  summary: Sponsored transaction (payer set) with referral fee
+                  value:
+                    mode: ultra
+                    inputMint: So11111111111111111111111111111111111111112
+                    outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    inAmount: "1000000000"
+                    outAmount: "234506710"
+                    otherAmountThreshold: "233333336"
+                    swapMode: ExactIn
+                    slippageBps: 50
+                    priceImpact: -0.05
+                    priceImpactPct: "-0.0005"
+                    inUsdValue: 234.5
+                    outUsdValue: 234.2
+                    swapUsdValue: 234.3
+                    swapType: aggregator
+                    gasless: true
+                    router: metis
+                    routePlan:
+                      - swapInfo:
+                          ammKey: 5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1
+                          label: Orca V2
+                          inputMint: So11111111111111111111111111111111111111112
+                          outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                          inAmount: "1000000000"
+                          outAmount: "234506710"
+                        percent: 100
+                        bps: 10000
+                        usdValue: 234.3
+                    transaction: AQAAAA...base64-encoded-unsigned-transaction...
+                    taker: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+                    lastValidBlockHeight: "300000000"
+                    signatureFeeLamports: 10000
+                    prioritizationFeeLamports: 500000
+                    rentFeeLamports: 2039280
+                    signatureFeePayer: 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
+                    prioritizationFeePayer: 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
+                    rentFeePayer: 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
+                    feeBps: 100
+                    feeMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    platformFee:
+                      amount: "2345067"
+                      feeBps: 100
+                      feeMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    totalTime: 104
+                pricedButUnexecutable:
+                  summary: 200 rejection (priced but transaction could not be built)
+                  value:
+                    mode: ultra
+                    inputMint: So11111111111111111111111111111111111111112
+                    outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    inAmount: "1000000000"
+                    outAmount: "234506710"
+                    otherAmountThreshold: "233333336"
+                    swapMode: ExactIn
+                    slippageBps: 50
+                    priceImpact: -0.05
+                    priceImpactPct: "-0.0005"
+                    inUsdValue: 234.5
+                    outUsdValue: 234.2
+                    swapUsdValue: 234.3
+                    swapType: aggregator
+                    gasless: false
+                    router: metis
+                    routePlan:
+                      - swapInfo:
+                          ammKey: 5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1
+                          label: Orca V2
+                          inputMint: So11111111111111111111111111111111111111112
+                          outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                          inAmount: "1000000000"
+                          outAmount: "234506710"
+                        percent: 100
+                        bps: 10000
+                        usdValue: 234.3
+                    transaction: ""
+                    taker: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+                    signatureFeeLamports: 0
+                    prioritizationFeeLamports: 0
+                    rentFeeLamports: 0
+                    signatureFeePayer: null
+                    prioritizationFeePayer: null
+                    rentFeePayer: null
+                    errorCode: 1
+                    errorMessage: Insufficient funds
+                    error: Insufficient funds
+                    totalTime: 63
+
+  "/{apiKey}/build":
+    get:
+      summary: Build Swap Instructions
+      description: >
+        Returns raw Solana swap instructions rather than a pre-built
+        transaction. Use `/build` when you need to compose the swap into a
+        larger transaction of your own (for example, a program deposit before
+        the swap or a cleanup step after it). If you just need a signable
+        transaction, use `/order` with a `taker`. Optional `payer` rewrites
+        rent and account-creation instructions onto a sponsor; optional
+        `referralFee` + `referralAccount` charge an integrator fee.
+      x-compute-units: 100
+      x-rate-limit-cus: 100
+      operationId: build-swap-instructions
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/InputMint"
+        - $ref: "#/components/parameters/OutputMint"
+        - $ref: "#/components/parameters/Amount"
+        - name: taker
+          in: query
+          required: true
+          description: >
+            Public key of the wallet that will sign the swap instructions.
+            Required for `/build` since the instructions must reference concrete
+            source and destination accounts.
+          schema:
+            type: string
+          example: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+        - name: payer
+          in: query
+          required: false
+          description: >
+            Optional public key of a sponsor. Rewrites rent and
+            account-creation instructions onto the sponsor using the same
+            rules as `/order`'s `payer`: the trade itself stays with the taker
+            (`inAmount` on `ExactIn`), and a native SOL debit moves to the
+            sponsor only when it is exactly one token-account's rent (or is
+            split when it is the trade plus exactly that rent). Any other
+            taker SOL debit produces a `502`.
+
+            `/build` does NOT default `payer` to `taker`, and `payer` does not
+            pay signature or priority fees — the caller still chooses account
+            zero when they compile the transaction, so gas stays with whoever
+            they put there. A `payer` equal to `taker` therefore changes
+            nothing. Malformed key: `400 {"error":"Invalid payer"}`. The
+            `/build` response has no `gasless` field and no fee-payer fields.
+          schema:
+            type: string
+        - name: slippageBps
+          in: query
+          required: false
+          description: >
+            Slippage tolerance in basis points (0-10000 integer). Metis
+            defaults to 50 when omitted. The literal string `rtse` returns
+            `501 {"error":"slippageBps=rtse is not supported; use a number
+            between 0 and 10000"}` on `/build`; on `/order` the same string
+            returns `400` (see that operation).
+          schema:
+            oneOf:
+              - type: integer
+                minimum: 0
+                maximum: 10000
+              - type: string
+                enum: [rtse]
+          example: 50
+        - name: dexes
+          in: query
+          required: false
+          description: >
+            Comma-separated list of DEX labels to allow-list for routing
+            (labels are case-sensitive). Mutually exclusive with `excludeDexes`.
+          schema:
+            type: string
+        - name: excludeDexes
+          in: query
+          required: false
+          description: >
+            Comma-separated list of DEX labels to exclude from routing (labels
+            are case-sensitive). Mutually exclusive with `dexes`.
+          schema:
+            type: string
+        - name: platformFeeBps
+          in: query
+          required: false
+          description: >
+            Integrator fee in basis points (0-10000). When set to a positive
+            value, `feeAccount` is required. Mutually exclusive with
+            `referralFee` / `referralAccount`; sending them together returns
+            `400 {"error":"referralFee and referralAccount are mutually
+            exclusive with platformFeeBps and feeAccount"}`.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10000
+        - name: feeAccount
+          in: query
+          required: false
+          description: >
+            Token account that receives the integrator fee. Required when
+            `platformFeeBps` is positive. The value is only checked as a valid
+            pubkey — no PDA derivation is performed. Mutually exclusive with
+            `referralFee` / `referralAccount`; sending them together returns
+            `400 {"error":"referralFee and referralAccount are mutually
+            exclusive with platformFeeBps and feeAccount"}`.
+          schema:
+            type: string
+        - name: maxAccounts
+          in: query
+          required: false
+          description: >
+            Upper bound on the number of accounts the swap transaction can
+            reference (1-64). Lower values keep the transaction well within the
+            Solana account limit at the cost of narrower routing.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 64
+        - name: wrapAndUnwrapSol
+          in: query
+          required: false
+          description: >
+            When `true`, Metis inserts wrap-SOL and unwrap-SOL instructions
+            around the swap so native SOL can be used directly as input or
+            output.
+          schema:
+            type: boolean
+        - name: destinationTokenAccount
+          in: query
+          required: false
+          description: >
+            Explicit destination SPL token account for the output tokens.
+            Mutually exclusive with `nativeDestinationAccount`.
+          schema:
+            type: string
+        - name: nativeDestinationAccount
+          in: query
+          required: false
+          description: >
+            Explicit destination wallet for native SOL output. Mutually
+            exclusive with `destinationTokenAccount`.
+          schema:
+            type: string
+        - name: blockhashSlotsToExpiry
+          in: query
+          required: false
+          description: >
+            Number of slots the returned blockhash remains valid for (1-300).
+            Metis types this as `uint8`, so values in the 256-300 range return
+            `501` rather than `400`.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 300
+        - name: tipAmount
+          in: query
+          required: false
+          description: >
+            Not supported on `/build`. Any value returns
+            `501 {"error":"tipAmount is not supported; Jupiter's tip is only
+            redeemable through tx.jup.ag"}`. This is a Jupiter-native tip and
+            not a Jito tip; the `tipInstruction` field in the response is
+            always `null`. If you need a Jito tip, request it on `/order` via
+            `jitoTipLamports` and set an appropriate `broadcastFeeType`.
+          schema:
+            type: integer
+            minimum: 1
+        - name: computeUnitPricePercentile
+          in: query
+          required: false
+          description: >
+            Priority-fee percentile to target. Accepted string values are
+            `medium`, `high`, and `veryHigh`; the server maps them one rung
+            down from Jupiter's naming: `medium` → 25th percentile, `high` →
+            50th percentile, `veryHigh` → 75th percentile.
+
+            When omitted, the server uses the same Alchemy priority-fee
+            estimate that `/order` uses by default: Medium (50th percentile,
+            which is Jupiter's `high` rung) — omitting this parameter does not
+            leave Metis's own price in place.
+
+            A numeric percentile returns
+            `501 {"error":"numeric computeUnitPricePercentile is not
+            supported; use medium, high, or veryHigh"}`. A failed estimate
+            returns `502`. A zero estimate is still emitted as
+            `SetComputeUnitPrice(0)`. The total priority fee is capped at
+            1,000,000 lamports.
+          schema:
+            type: string
+            enum: [medium, high, veryHigh]
+        - name: mode
+          in: query
+          required: false
+          description: >
+            Reserved for future routing modes. Only `fast` is currently valid;
+            any other value returns `400`. Accepting it does not change
+            routing.
+          schema:
+            type: string
+            enum: [fast]
+        - name: forJitoBundle
+          in: query
+          required: false
+          description: >
+            Set to `true` when you plan to submit the swap inside a Jito
+            bundle. Adjusts instruction ordering and priority-fee handling for
+            bundle inclusion.
+          schema:
+            type: boolean
+        - name: referralFee
+          in: query
+          required: false
+          description: >
+            Integrator fee in basis points. Must be an integer in the range
+            50-255 and must be sent together with `referralAccount`. Mutually
+            exclusive with `platformFeeBps` and `feeAccount`.
+
+            Errors:
+
+            * Out of range or not a number: `400 {"error":"referralFee must be
+              a number between 50 and 255"}`.
+            * One of `referralFee` / `referralAccount` without the other:
+              `400 {"error":"referralFee and referralAccount must be provided
+              together"}`.
+            * Sent together with `platformFeeBps` or `feeAccount`:
+              `400 {"error":"referralFee and referralAccount are mutually
+              exclusive with platformFeeBps and feeAccount"}`.
+
+            The `/build` response does NOT include the `feeBps` or `platformFee`
+            fields returned by `/order`.
+          schema:
+            type: integer
+            minimum: 50
+            maximum: 255
+        - name: referralAccount
+          in: query
+          required: false
+          description: >
+            Referral project account used to derive the destination fee token
+            account. Must be sent together with `referralFee`. Mutually
+            exclusive with `platformFeeBps` and `feeAccount`.
+
+            The fee is deposited into the PDA
+            `["referral_ata", referralAccount, feeMint]` under
+            `REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3`. On `/build` the fee
+            mint is always the output mint (Metis's `/build` has no
+            `swapMode`). That token account must already exist; this API cannot
+            create it.
+
+            Errors:
+
+            * Missing (uninitialized) fee account:
+              `400 {"error":"referral account is not initialized"}`.
+            * One of `referralFee` / `referralAccount` without the other:
+              `400 {"error":"referralFee and referralAccount must be provided
+              together"}`.
+            * Malformed key: `400 {"error":"Invalid referralAccount"}`.
+            * Sent together with `platformFeeBps` or `feeAccount`:
+              `400 {"error":"referralFee and referralAccount are mutually
+              exclusive with platformFeeBps and feeAccount"}`.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Quote fields plus decomposed swap instructions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildResponse"
+              example:
+                inputMint: So11111111111111111111111111111111111111112
+                outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                inAmount: "1000000000"
+                outAmount: "234506710"
+                otherAmountThreshold: "233333336"
+                swapMode: ExactIn
+                slippageBps: 50
+                priceImpact: -0.05
+                priceImpactPct: "-0.0005"
+                routePlan:
+                  - swapInfo:
+                      ammKey: 5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1
+                      label: Orca V2
+                      inputMint: So11111111111111111111111111111111111111112
+                      outputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                      inAmount: "1000000000"
+                      outAmount: "234506710"
+                    percent: 100
+                    bps: 10000
+                    usdValue: 234.3
+                setupInstructions: []
+                swapInstruction:
+                  programId: JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4
+                  accounts:
+                    - pubkey: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+                      isSigner: true
+                      isWritable: true
+                  data: AQAAAA...
+                cleanupInstruction: null
+                computeBudgetInstructions:
+                  - programId: ComputeBudget111111111111111111111111111111
+                    accounts: []
+                    data: AgAAAA==
+                otherInstructions: []
+                tipInstruction: null
+                addressesByLookupTableAddress:
+                  AddrLookupTab1e1111111111111111111111111111:
+                    - EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    - So11111111111111111111111111111111111111112
+                blockhashWithMetadata:
+                  blockhash:
+                    [
+                      12,
+                      34,
+                      56,
+                      78,
+                      90,
+                      12,
+                      34,
+                      56,
+                      78,
+                      90,
+                      12,
+                      34,
+                      56,
+                      78,
+                      90,
+                      12,
+                      34,
+                      56,
+                      78,
+                      90,
+                      12,
+                      34,
+                      56,
+                      78,
+                      90,
+                      12,
+                      34,
+                      56,
+                      78,
+                      90,
+                      12,
+                      34,
+                    ]
+                  lastValidBlockHeight: 300000000
+                  fetchedAt:
+                    secs_since_epoch: 1750000000
+                    nanos_since_epoch: 0
+
+  "/{apiKey}/quote-multiple-output-mints":
+    post:
+      summary: Quote Multiple Output Mints
+      description: >
+        Returns quotes for a single input mint against up to 32 candidate
+        output mints in one call. Useful for pricing a basket or comparing
+        outputs without issuing N separate requests. Each quote in the
+        response carries only `inAmount` and `outAmount`; use `/order` for the
+        full quote surface (route plan, fees, transaction) on a single mint
+        pair.
+      x-compute-units: 100
+      x-rate-limit-cus: 100
+      operationId: quote-multiple-output-mints
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MultiQuoteRequest"
+      responses:
+        "200":
+          description: >
+            An object keyed by output mint (in request order) with the priced
+            amounts for each, plus a shared `contextSlot`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MultiQuoteResponse"
+              example:
+                quotes:
+                  EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:
+                    inAmount: "1000000000"
+                    outAmount: "234506710"
+                  Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB:
+                    inAmount: "1000000000"
+                    outAmount: "234481933"
+                contextSlot: 300000000
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: >
+        Trader API requests carry the API key in the URL path, not in a header.
+        This scheme is defined to satisfy tooling and is unused by the
+        endpoints.
+      x-default: Bearer API_KEY
+  parameters:
+    apiKey:
+      name: apiKey
+      in: path
+      required: true
+      schema:
+        type: string
+        default: docs-demo
+      description: For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup).
+    InputMint:
+      name: inputMint
+      in: query
+      required: true
+      description: Mint address of the input token.
+      schema:
+        type: string
+        default: So11111111111111111111111111111111111111112
+      example: So11111111111111111111111111111111111111112
+    OutputMint:
+      name: outputMint
+      in: query
+      required: true
+      description: Mint address of the output token.
+      schema:
+        type: string
+        default: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+      example: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+    Amount:
+      name: amount
+      in: query
+      required: true
+      description: >
+        Amount to swap in the smallest unit of the input token (lamports for
+        native SOL, base units for SPL tokens). On `ExactOut`, this is the
+        desired output amount instead.
+      schema:
+        type: string
+        default: "1000000000"
+      example: "1000000000"
+  schemas:
+    OrderResponse:
+      type: object
+      description: Quote fields plus an assembled transaction when a taker was supplied.
+      properties:
+        mode:
+          type: string
+          description: >
+            Router mode used to price the quote. Defaults to `ultra`; becomes
+            `manual` when the caller sets `slippageBps`, `swapMode`, `receiver`,
+            `excludeDexes`, `excludeRouters`, or a `broadcastFeeType` together
+            with `priorityFeeLamports` or `jitoTipLamports`. `payer` does not
+            change `mode`. The value echoed here reflects the effective mode
+            only — echoed request defaults such as `slippageBps: 50` or
+            `swapMode: ExactIn` do not on their own indicate the caller set
+            them.
+        inputMint:
+          type: string
+          description: Mint of the input token, echoed back.
+        outputMint:
+          type: string
+          description: Mint of the output token, echoed back.
+        inAmount:
+          type: string
+          description: Input amount used for the quote, in base units of the input mint.
+        outAmount:
+          type: string
+          description: >
+            Estimated output amount before slippage, in base units of the
+            output mint.
+        otherAmountThreshold:
+          type: string
+          description: >
+            Slippage threshold, in base units. On `ExactIn` this is the minimum
+            output amount after slippage; on `ExactOut` this is the maximum
+            input amount after slippage. Always present.
+        swapMode:
+          type: string
+          description: Swap mode used to build the quote.
+          enum: [ExactIn, ExactOut]
+        slippageBps:
+          type: integer
+          description: Slippage tolerance in basis points.
+        priceImpact:
+          type: number
+          description: >
+            Price impact of the swap, in percentage points (for example, `-0.1`
+            means -0.1%). Always present.
+        priceImpactPct:
+          type: string
+          description: >
+            Price impact as a decimal fraction string. Divide `priceImpact` by
+            100 to reconcile the two values.
+        inUsdValue:
+          type: number
+          description: >
+            USD value of the input amount at quote time. Omitted (not `null`)
+            when the input mint cannot be priced.
+        outUsdValue:
+          type: number
+          description: >
+            USD value of the output amount at quote time. Omitted (not `null`)
+            when the output mint cannot be priced.
+        swapUsdValue:
+          type: number
+          description: >
+            USD value of the swap at quote time. Exactly one of the two legs
+            (input or output): a fiat-backed mint wins first (`USDC`, `USDT`,
+            `PYUSD`, `USDS`, `FDUSD`, `EURC`), then SOL, and the input side
+            wins a tie. Omitted (not `null`) when neither leg can be priced.
+        swapType:
+          type: string
+          description: Router category that produced the quote (for example, `aggregator`).
+        gasless:
+          type: boolean
+          description: >
+            `true` only when a ready transaction was actually built with a
+            `payer` that is not the taker. A `payer` equal to `taker`, a
+            missing `payer`, a quote with no `taker`, or a 200 rejection
+            (`transaction: ""`) is not gasless, and `mode` stays whatever it
+            already was.
+        router:
+          type: string
+          description: >
+            Router that produced the quote. Alchemy currently serves quotes
+            through Metis only.
+          enum: [metis]
+        routePlan:
+          type: array
+          description: Ordered list of route steps that make up the swap.
+          items:
+            $ref: "#/components/schemas/RoutePlanStep"
+        transaction:
+          type: ["string", "null"]
+          description: >
+            Base64-encoded, unsigned Solana transaction. Always present. `null`
+            when `taker` was not supplied. Empty string when `taker` was
+            supplied but the router could not build a transaction — inspect
+            `errorCode`, `errorMessage`, and `error` in that case.
+        taker:
+          type: ["string", "null"]
+          description: >
+            Taker echoed back from the request. Always present. `null` when
+            `taker` was not supplied.
+        lastValidBlockHeight:
+          type: string
+          description: >
+            Block height beyond which the assembled transaction is no longer
+            valid, as a decimal string. Omitted (not `null`) when the response
+            does not carry a usable transaction.
+        signatureFeeLamports:
+          type: integer
+          description: >
+            Estimated signature fee in lamports. Always present. `0` when
+            `taker` was not supplied or when the transaction was rejected.
+            With a non-taker `payer` (sponsor), this is `10000` because both
+            the sponsor and the taker sign.
+        prioritizationFeeLamports:
+          type: integer
+          description: >
+            Estimated priority fee plus any Jito tip, in lamports. Always
+            present. `0` when `taker` was not supplied or when the transaction
+            was rejected.
+        rentFeeLamports:
+          type: integer
+          description: >
+            Estimated rent fee in lamports (for example, to open the output
+            token account when it does not already exist). Always present. `0`
+            when `taker` was not supplied or when the transaction was
+            rejected.
+        signatureFeePayer:
+          type: ["string", "null"]
+          description: >
+            Public key that pays the signature fee. `null` when `taker` was not
+            supplied or when the transaction was rejected. When a non-taker
+            `payer` is set, this names the sponsor.
+        prioritizationFeePayer:
+          type: ["string", "null"]
+          description: >
+            Public key that pays the priority fee and any Jito tip. `null` when
+            `taker` was not supplied or when the transaction was rejected. When
+            a non-taker `payer` is set, this names the sponsor.
+        rentFeePayer:
+          type: ["string", "null"]
+          description: >
+            Public key that pays the rent fee. `null` when `taker` was not
+            supplied or when the transaction was rejected. When a non-taker
+            `payer` is set, this names the sponsor.
+        totalTime:
+          type: integer
+          description: >
+            Time in milliseconds this service spent producing the response.
+            Always present.
+        feeBps:
+          type: integer
+          description: >
+            Requested referral fee in basis points, echoed back. Present only
+            when the request included a valid `referralFee` + `referralAccount`
+            pair; omitted otherwise.
+        feeMint:
+          type: string
+          description: >
+            Mint of the token in which the referral fee is charged. On
+            `ExactIn` this is the output mint; on `ExactOut` this is the input
+            mint. Present only when the request included a valid `referralFee`
+            + `referralAccount` pair; omitted otherwise.
+        platformFee:
+          type: object
+          description: >
+            Details of the integrator fee actually charged. Present only when
+            the request included a valid `referralFee` + `referralAccount`
+            pair; omitted otherwise.
+          properties:
+            amount:
+              type: string
+              description: Fee amount in the smallest unit of `feeMint`.
+            feeBps:
+              type: integer
+              description: Referral fee in basis points, echoed back.
+            feeMint:
+              type: string
+              description: >
+                Mint of the token in which the fee is charged. Optional inside
+                `platformFee`; when present, matches the top-level `feeMint`.
+          required:
+            - amount
+            - feeBps
+        errorCode:
+          type: integer
+          description: >
+            Present only on a 200 rejection (`taker` was supplied but
+            `transaction` is the empty string). Match on `errorCode` to
+            identify the failure:
+
+            * `1` — insufficient funds. Always describes the taker's input
+              side, even when a `payer` is set.
+            * `2` — insufficient SOL for gas. Without a sponsor this is the
+              taker's SOL; with a `payer`, it describes the sponsor's SOL
+              (signature, priority, associated-token rent, and any system
+              lamports assigned to the sponsor).
+
+            Code `3` is never returned by this service. Any other unexpected
+            taker SOL debit surfaces as a `502`, not a 200 rejection that
+            still bills the taker.
+        errorMessage:
+          type: string
+          description: >
+            Human-readable error description. Present on a 200 rejection
+            alongside `errorCode`. Match on `errorCode` rather than parsing
+            this string.
+        error:
+          type: string
+          description: >
+            Duplicate of `errorMessage`, kept for compatibility. Present on a
+            200 rejection alongside `errorCode`.
+      required:
+        - mode
+        - inputMint
+        - outputMint
+        - inAmount
+        - outAmount
+        - otherAmountThreshold
+        - swapMode
+        - slippageBps
+        - priceImpact
+        - priceImpactPct
+        - swapType
+        - gasless
+        - router
+        - routePlan
+        - transaction
+        - taker
+        - signatureFeeLamports
+        - prioritizationFeeLamports
+        - rentFeeLamports
+        - signatureFeePayer
+        - prioritizationFeePayer
+        - rentFeePayer
+        - totalTime
+
+    BuildResponse:
+      type: object
+      description: Quote fields plus decomposed swap instructions.
+      properties:
+        inputMint:
+          type: string
+          description: Mint of the input token, echoed back.
+        outputMint:
+          type: string
+          description: Mint of the output token, echoed back.
+        inAmount:
+          type: string
+          description: Input amount used for the quote, in base units of the input mint.
+        outAmount:
+          type: string
+          description: >
+            Estimated output amount before slippage, in base units of the
+            output mint.
+        otherAmountThreshold:
+          type: string
+          description: >
+            Minimum output amount after slippage is applied, in base units of
+            the output mint. `/build` is `ExactIn` only, so this is always a
+            minimum output.
+        swapMode:
+          type: string
+          description: >
+            Swap mode used to build the instructions. `/build` supports
+            `ExactIn` only.
+          enum: [ExactIn]
+        slippageBps:
+          type: integer
+          description: Slippage tolerance in basis points applied to the quote.
+        priceImpact:
+          type: number
+          description: >
+            Price impact of the swap, in percentage points (for example, `-0.1`
+            means -0.1%). Same number as `/order`'s `priceImpact`. Always
+            present.
+        priceImpactPct:
+          type: string
+          description: >
+            Price impact as a decimal fraction string. `priceImpact` divided
+            by 100. Always present.
+        routePlan:
+          type: array
+          description: Ordered list of route steps that make up the swap.
+          items:
+            $ref: "#/components/schemas/RoutePlanStep"
+        setupInstructions:
+          type: array
+          description: >
+            Instructions that must run before the swap (for example, create an
+            associated token account or wrap SOL). Always present; may be
+            empty.
+          items:
+            $ref: "#/components/schemas/Instruction"
+        swapInstruction:
+          $ref: "#/components/schemas/Instruction"
+        cleanupInstruction:
+          description: >
+            Optional instruction that runs after the swap (for example, close a
+            temporary wrapped-SOL account and reclaim rent). `null` when no
+            cleanup is required.
+          oneOf:
+            - $ref: "#/components/schemas/Instruction"
+            - type: "null"
+        computeBudgetInstructions:
+          type: array
+          description: >
+            Priority-fee instructions this service assembles for the caller —
+            not Metis's own compute-budget instructions and not a compute-unit
+            limit. The array is exactly one `SetComputeUnitPrice` instruction
+            and never a `SetComputeUnitLimit`. Omitting
+            `computeUnitPricePercentile` on the request does not leave Metis's
+            own price in place: it uses the same Alchemy priority-fee estimate
+            `/order` uses by default (Medium, 50th percentile, Jupiter's `high`
+            rung). A zero estimate is still emitted as
+            `SetComputeUnitPrice(0)`. The total priority fee is capped at
+            1,000,000 lamports.
+          items:
+            $ref: "#/components/schemas/Instruction"
+        otherInstructions:
+          type: array
+          description: >
+            Additional instructions Metis wants included in the final
+            transaction (for example, integrator fee transfers). Always
+            present; may be empty.
+          items:
+            $ref: "#/components/schemas/Instruction"
+        tipInstruction:
+          description: >
+            Reserved for a Jupiter-native tip. Always `null` on `/build`
+            because `tipAmount` is not supported here (see the `tipAmount`
+            parameter). If you need a Jito tip, use `/order`'s
+            `jitoTipLamports` instead.
+          oneOf:
+            - $ref: "#/components/schemas/Instruction"
+            - type: "null"
+        addressesByLookupTableAddress:
+          type: ["object", "null"]
+          description: >
+            Address lookup table accounts referenced by the swap, keyed by
+            lookup-table address. Each value is the ordered list of accounts
+            resolved from that table. `null` when the route uses no lookup
+            tables. Never an empty object.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        blockhashWithMetadata:
+          $ref: "#/components/schemas/BlockhashWithMetadata"
+      required:
+        - inputMint
+        - outputMint
+        - inAmount
+        - outAmount
+        - otherAmountThreshold
+        - swapMode
+        - slippageBps
+        - priceImpact
+        - priceImpactPct
+        - routePlan
+        - setupInstructions
+        - swapInstruction
+        - cleanupInstruction
+        - computeBudgetInstructions
+        - otherInstructions
+        - tipInstruction
+        - addressesByLookupTableAddress
+        - blockhashWithMetadata
+
+    BlockhashWithMetadata:
+      type: object
+      description: >
+        Recent blockhash Metis fetched for the swap transaction, plus its
+        expiry and the timestamp this service stamped when building the
+        response.
+      properties:
+        blockhash:
+          type: array
+          description: >
+            Blockhash as a 32-byte little-endian array of unsigned integers,
+            NOT base58-encoded.
+          minItems: 32
+          maxItems: 32
+          items:
+            type: integer
+            minimum: 0
+            maximum: 255
+        lastValidBlockHeight:
+          type: integer
+          description: >
+            Block height beyond which the blockhash is no longer valid, as a
+            JSON number. (On `/order`'s top-level response the equivalent
+            `lastValidBlockHeight` is a decimal string; on `/build` here it is
+            a number.)
+        fetchedAt:
+          type: object
+          description: >
+            Timestamp this service stamps when building the response. Keys are
+            snake_case as returned.
+          properties:
+            secs_since_epoch:
+              type: integer
+              description: Seconds since Unix epoch.
+            nanos_since_epoch:
+              type: integer
+              description: Nanoseconds portion of the timestamp.
+          required:
+            - secs_since_epoch
+            - nanos_since_epoch
+      required:
+        - blockhash
+        - lastValidBlockHeight
+        - fetchedAt
+
+    Instruction:
+      type: object
+      description: A Solana instruction in decomposed form.
+      properties:
+        programId:
+          type: string
+          description: Program ID that owns the instruction.
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountMeta"
+        data:
+          type: string
+          description: Base64-encoded instruction data.
+      required:
+        - programId
+        - accounts
+        - data
+
+    AccountMeta:
+      type: object
+      properties:
+        pubkey:
+          type: string
+        isSigner:
+          type: boolean
+        isWritable:
+          type: boolean
+      required:
+        - pubkey
+        - isSigner
+        - isWritable
+
+    RoutePlanStep:
+      type: object
+      properties:
+        swapInfo:
+          $ref: "#/components/schemas/SwapInfo"
+        percent:
+          type: integer
+          description: Percentage of the total swap routed through this step (0-100).
+          minimum: 0
+          maximum: 100
+        bps:
+          type: integer
+          description: Basis-points share of the total swap routed through this step (0-10000).
+          minimum: 0
+          maximum: 10000
+        usdValue:
+          type: number
+          description: Optional USD value of this step at quote time.
+      required:
+        - swapInfo
+        - percent
+        - bps
+
+    SwapInfo:
+      type: object
+      properties:
+        ammKey:
+          type: string
+          description: On-chain address of the AMM pool used for this step.
+        label:
+          type: string
+          description: Human-readable DEX label (for example, `Orca V2`, `Raydium CLMM`).
+        inputMint:
+          type: string
+        outputMint:
+          type: string
+        inAmount:
+          type: string
+        outAmount:
+          type: string
+      required:
+        - ammKey
+        - label
+        - inputMint
+        - outputMint
+        - inAmount
+        - outAmount
+
+    MultiQuoteRequest:
+      type: object
+      properties:
+        inputMint:
+          type: string
+          description: Mint address of the input token.
+          example: So11111111111111111111111111111111111111112
+          default: So11111111111111111111111111111111111111112
+        amount:
+          type: string
+          description: >
+            Amount to price, in base units of the input mint (or the desired
+            output amount when `swapMode` is `ExactOut`). Must be a JSON
+            string; a JSON number returns `400`.
+          example: "1000000000"
+          default: "1000000000"
+        outputMints:
+          type: array
+          description: >
+            Mint addresses of the candidate output tokens (1-32). Entries must
+            be unique and none may equal `inputMint`.
+          minItems: 1
+          maxItems: 32
+          items:
+            type: string
+          example:
+            - EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+            - Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
+        swapMode:
+          type: string
+          enum: [ExactIn, ExactOut]
+          default: ExactIn
+          description: >
+            Swap mode applied to every quote in the batch. On `ExactOut`,
+            `amount` is the desired output for each mint independently.
+      required:
+        - inputMint
+        - amount
+        - outputMints
+
+    MultiQuoteResponse:
+      type: object
+      description: >
+        Priced amounts for each requested output mint, plus a shared context
+        slot. The response deliberately omits route plans, fees, transactions,
+        and per-mint errors — use `/order` for the full quote surface on a
+        single mint pair.
+      properties:
+        quotes:
+          type: object
+          description: >
+            Object keyed by output mint (in request order). Each value carries
+            the priced amounts only.
+          additionalProperties:
+            $ref: "#/components/schemas/MultiQuoteEntry"
+        contextSlot:
+          type: integer
+          description: >
+            Oldest slot any quote in `quotes` reported. Omitted when none of
+            the quotes carried a slot.
+      required:
+        - quotes
+
+    MultiQuoteEntry:
+      type: object
+      properties:
+        inAmount:
+          type: string
+          description: Input amount in base units of the input mint.
+        outAmount:
+          type: string
+          description: Priced output amount in base units of the output mint.
+      required:
+        - inAmount
+        - outAmount
