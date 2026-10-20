@@ -52,7 +52,9 @@ const SUMMARY_ROWS: ReadonlyArray<[string, keyof LycheeReport]> = [
   ["⛔ Unsupported", "unsupported"],
 ];
 
-const SLACK_CHANNEL = "#dx-developer-relations";
+// #dx-docs-automations. Use the ID, not the name: a channel rename breaks
+// name-based posts with `channel_not_found`.
+const SLACK_CHANNEL = "C0852FMMUMR";
 const SLACK_API = "https://slack.com/api/chat.postMessage";
 
 // Slack user ID for the docs-agent bot. Uses the literal `<@U...>` form so
