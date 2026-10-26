@@ -1,10 +1,25 @@
 ---
 title: "Fills, orders, and liquidations"
-description: "HyperCore private-preview documentation."
+description: "How fills, trades, builder attribution, and liquidations appear in HyperCore streams."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Fills, orders, and liquidations
 
-Fills record executions; order updates describe lifecycle state; liquidations are explicitly labeled fills. Builder-specific streams are purpose-built so consumers need not infer attribution from a broad trade feed.
+A **fill** is one side of a trade. Every trade produces two fills, one for each counterparty, and both share the same trade ID (`tid`). Fill streams deliver `[user, fill]` pairs grouped by block.
+
+| To follow | Use |
+| --- | --- |
+| Every trade, or every trade in some markets | [`allFills`](/docs/chains/websockets/hypercore/streams/all-fills) |
+| Specific wallets | [`userFills`](/docs/chains/websockets/hypercore/streams/user-fills) |
+| Orders placed through builder codes | [`builderFills`](/docs/chains/websockets/hypercore/streams/builder-fills) |
+| Liquidations | [`liquidationFills`](/docs/chains/websockets/hypercore/streams/liquidation-fills) |
+
+**Taker and maker.** `crossed: true` marks the taker side.
+
+**Liquidations.** Liquidation fills carry a `liquidation` object with the liquidated user, mark price, and method. `liquidationFills` delivers only these fills.
+
+**Builder attribution.** Fills from orders placed with a builder code carry the `builder` address.
+
+**Aggregation.** A taker order that sweeps several resting orders produces several fills in the same block. Set `aggregateByTime: true` to receive one merged fill per taker order per block: size, fees, and `closedPnl` are summed, the price is the size-weighted average, and other fields (including `tid`) come from the first partial fill. Maker fills are never merged.

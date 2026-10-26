@@ -1,10 +1,30 @@
 ---
 title: "Order books"
-description: "HyperCore private-preview documentation."
+description: "Choosing a book stream and keeping a local book correct."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Order books
 
-L2 aggregates resting liquidity by price. L2 diffs modify a compatible snapshot. L4 exposes order-by-order state. Clients must apply ordered diffs, detect gaps, and backfill before trusting local state.
+## Choosing a book stream
+
+| | `l2Book` | `l2BookDiff` | `bbo` | `allMids` | `l4BookUpdates` |
+| --- | --- | --- | --- | --- | --- |
+| Delivers | Complete level window per changed market | Changed levels only | Best bid and ask | Mid price | Changed individual orders |
+| Client state | None | Local book | None | None | Local order book |
+| Detail | Aggregated levels | Aggregated levels | Top of book | One price | Orders with queue position |
+| Typical use | Displays, periodic reads | Efficient live book | Prices and spreads | Price tracking | Market making, queue analysis |
+
+All book streams begin with a snapshot (`isSnapshot: true`) and then send a market only when it changes, so quiet markets produce no messages.
+
+## Keeping a local book correct
+
+For `l2BookDiff` and `l4BookUpdates`:
+
+1. Install the snapshot as local state.
+2. Apply each later message in order.
+3. Watch `seq` on the subscription. If it skips, you missed a message and your book may be wrong: resubscribe and start again from the new snapshot.
+4. If you receive `book_reset`, drop local state for that subscription; a new snapshot follows. The `book_reset` message takes the next `seq`, so count it.
+
+Book streams don't replay. After any disconnect, resubscribe and rebuild from the snapshot. See [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).

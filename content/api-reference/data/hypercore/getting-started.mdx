@@ -1,22 +1,39 @@
 ---
 title: "Quickstart"
-description: "HyperCore private-preview documentation."
+description: "Connect to HyperCore streaming and receive your first messages."
 ---
 
-<Markdown src="../../shared/preview-notice.mdx" />
+<Markdown src="../../shared/preview-notice-beta.mdx" />
 
 # Quickstart
 
-## Connect
+## 1. Get access
 
-Review the [WebSocket streaming documentation](/docs/chains/websockets/hypercore) for the intended subscription envelope.
+HyperCore streaming is in beta and is enabled per team. To request access, contact [abdul.manan@alchemy.com](mailto:abdul.manan@alchemy.com). Once your team has access, HyperCore appears in your [Alchemy dashboard](https://dashboard.alchemy.com/chains/hypercore) and works with your existing API key.
 
-For REST reads, see the [REST API overview](/docs/data/hypercore/rest-api). Each REST
-operation includes its API key in the `{apiKey}` path segment.
+## 2. Connect and subscribe
 
-## Next steps
-Review the WebSocket lifecycle, replay, and wallet-fill guide before integrating.
+```bash
+websocat wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>
+```
 
-## Chain API cross-link
+After `{"channel":"connected"}`, send:
 
-For block cursors and protocol-level backfill, see [the HyperCore Chain API getting started guide](/docs/chains/hyperliquid/hypercore/getting-started).
+```json
+{"method":"subscribe","subscriptionId":"eth-top","subscription":{"type":"bbo","coins":["ETH"]}}
+```
+
+You'll receive an acknowledgement, a snapshot, then an update whenever the best bid or ask changes:
+
+```json
+{"channel":"subscriptionResponse","subscriptionId":"eth-top","data":{"type":"bbo","coins":["ETH"]}}
+{"seq":1,"channel":"bbo","subscriptionId":"eth-top","data":{"blockNumber":1183716828,"blockTime":1791996538119,"isSnapshot":true,"books":[{"coin":"ETH","bbo":[{"px":"2442.5","sz":"36.3142","n":7},{"px":"2442.6","sz":"237.042","n":44}]}]}}
+```
+
+## 3. Before going to production
+
+* Reconnect automatically with backoff, and resubscribe after every reconnect. See [connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle).
+* Track `seq` per subscription to catch missed messages.
+* Resume fill streams with `fromBlock`. See [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).
+* Filter with `coins` or `users` to keep volume (and cost) down.
+* Coming from Hyperliquid's public API? Read [migrating from the Hyperliquid API](/docs/chains/websockets/hypercore/migrating-from-hyperliquid-api).

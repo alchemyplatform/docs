@@ -1,33 +1,69 @@
 ---
 title: "gRPC streaming"
-description: "HyperCore private-preview documentation."
+description: "Connect to the HyperCore gRPC block stream: endpoint, authentication, and service definition."
 ---
 
-<Markdown src="../shared/preview-notice-september.mdx" />
+<Markdown src="../shared/preview-notice-beta.mdx" />
 
 # gRPC streaming
 
-HyperCore gRPC provides block streaming and order-book streaming at price-level,
-top-of-book, and order-level detail, plus trigger-order updates. Connection details and
-generated client configuration will be published as the service is finalized.
+HyperCore gRPC streams raw HyperCore blocks over a single server-streaming method.
 
-## Available streams
+| Service | Method | Delivers |
+| --- | --- | --- |
+| `streams.v1.BlockStream` | [`StreamBlocks`](/docs/chains/hypercore-grpc/api-reference/stream-blocks) | Raw blocks, one message per block, in ascending block order |
 
-| Stream | Delivers |
+This is the only gRPC service. For order-book, mid-price, and fill data, use the [HyperCore WebSocket streams](/docs/chains/websockets/hypercore).
+
+## Connection details
+
+| Setting | Value |
 | --- | --- |
-| [StreamBlocks](/docs/chains/hypercore-grpc/api-reference/stream-blocks) | Raw blocks, one message per block |
-| [StreamL2Book](/docs/chains/hypercore-grpc/api-reference/stream-l2-book) | Aggregated price-level snapshots |
-| [StreamL2BookDiff](/docs/chains/hypercore-grpc/api-reference/stream-l2-book-diff) | Incremental price-level changes |
-| [StreamL4BookUpdates](/docs/chains/hypercore-grpc/api-reference/stream-l4-book-updates) | Per-order changes with queue position |
-| [StreamBboBook](/docs/chains/hypercore-grpc/api-reference/stream-bbo-book) | Top-of-book best bid and offer |
-| [StreamTpslUpdates](/docs/chains/hypercore-grpc/api-reference/stream-tpsl-updates) | Take-profit and stop-loss order lifecycle |
+| Host | `hypercore-mainnet.g.alchemy.com` |
+| Port | `443` |
+| Transport | TLS |
+| Full method name | `streams.v1.BlockStream/StreamBlocks` |
+| Server reflection | Not supported. Use the service definition below. |
 
-## Choosing a transport
+## Authentication
 
-WebSocket and gRPC can expose the same market data through different transports. Use
-[WebSocket streams](/docs/chains/websockets/hypercore) when integrating with the
-subscription envelope, and use [gRPC streams](/docs/chains/hypercore-grpc/getting-started/overview)
-when integrating with the RPC service definition. For L2 books,
-[l2Book](/docs/chains/websockets/hypercore/streams/l2-book) and
-[l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff) describe
-complementary snapshot and diff representations.
+Send your API key as gRPC metadata on every call:
+
+```text
+authorization: Bearer <API_KEY>
+```
+
+The key must be in the `authorization` metadata. A key sent any other way, for example as `x-api-key`, is rejected with `UNAUTHENTICATED` and the message `Must be authenticated!`.
+
+## Service definition
+
+Save this as `blocks.proto` and generate your client from it.
+
+```proto title="blocks.proto"
+syntax = "proto3";
+
+package streams.v1;
+
+service BlockStream {
+  rpc StreamBlocks(StreamBlocksRequest) returns (stream BlockMessage);
+}
+
+message StreamBlocksRequest {
+  optional uint64 start_block = 1;
+}
+
+message BlockMessage {
+  uint64 block_number = 1;
+  bytes data = 2;
+}
+```
+
+See [StreamBlocks](/docs/chains/hypercore-grpc/api-reference/stream-blocks) for field details, errors, examples, and how to resume after a disconnect.
+
+## Client settings
+
+* **Maximum receive message size.** Many gRPC clients default to 4 MB. Individual blocks can be several megabytes, so raise this limit.
+* **No call deadline.** The stream stays open until you cancel it or the server ends it. A deadline on the call ends the stream with `DEADLINE_EXCEEDED` when it expires.
+* **Reconnect.** Treat the end of a stream as routine and reconnect with backoff. See [resuming after a disconnect](/docs/chains/hypercore-grpc/api-reference/stream-blocks#resuming-after-a-disconnect).
+
+Usage is metered by data delivered. Each block sent to your client counts toward your usage.

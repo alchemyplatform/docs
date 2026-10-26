@@ -1,36 +1,64 @@
 ---
 title: "Connection lifecycle"
-description: "HyperCore private-preview documentation."
+description: "Connecting, staying connected, detecting missed messages, and reconnecting."
 ---
 
-<Markdown src="../../shared/preview-notice-september.mdx" />
+<Markdown src="../../shared/preview-notice-beta.mdx" />
 
 # Connection lifecycle
 
-## Lifecycle
+1. Open a TLS WebSocket connection to the [endpoint](/docs/chains/websockets/hypercore) with your API key in the path. Requests without a valid key are rejected during the handshake.
+2. Wait for `{"channel":"connected"}`.
+3. Send one or more subscribe requests, each with its own `subscriptionId`.
+4. Wait for each acknowledgement (`subscriptionResponse`) or error.
+5. Process messages, tracking `seq` per subscription.
+6. When the connection closes, reconnect with exponential backoff and jitter, then resubscribe. See [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).
 
-1. Open a TLS WebSocket connection.
-2. Authenticate when the connection is established.
-3. Send one or more subscription frames.
-4. Wait for an acknowledgement for each subscription.
-5. Process messages and persist the latest cursor for each replay-capable subscription.
-6. If the connection closes, reconnect with exponential backoff and jitter.
-7. Resume replay-capable subscriptions from their last persisted cursor. Complete-snapshot streams resubscribe without a cursor.
+Treat disconnects as routine. Deployments, maintenance, network interruptions, and slow consumers all close connections, and a closed connection is never resumed: you open a new one and subscribe again.
 
 ## Heartbeats
 
-The connection uses WebSocket ping and pong frames. Clients must respond promptly and should treat a missed pong as a dead connection, then reconnect.
+A connection with no traffic in either direction for about 90 seconds is closed (`1006`). This affects subscriptions that are often quiet, such as `userFills` for a few wallets.
 
-## Sequencing and recovery
+To keep a quiet connection open, send a WebSocket protocol ping frame every 30 seconds. The server answers each ping with a pong, and the traffic keeps the connection alive. Most WebSocket libraries can send pings on a timer (for example `ws.ping()` in Node's `ws` package). Browser WebSocket APIs can't send ping frames.
 
-For the sequencing and recovery model, see [timestamps, cursors, and replay](/docs/data/hypercore/concepts/timestamps-cursors-and-replay).
+The server doesn't send its own pings, and there is no JSON-level heartbeat: `{"method":"ping"}` returns an `invalid_params` error.
 
-> For replay-capable subscriptions, resume is per subscription: supply the last persisted cursor in that subscription's subscribe frame. Complete-snapshot streams resubscribe without a cursor.
+## Sequence numbers
 
-## Backpressure and slow consumers
+Every data, `gap`, and `book_reset` message carries `seq`, a counter scoped to its subscription:
 
-Clients should apply bounded queues. A consumer that cannot keep up may receive an error frame before the connection is disconnected.
+* It starts at `1` for each new subscription, including after a reconnect.
+* It increases by exactly one per message on that subscription.
+* Acknowledgements and request errors don't carry `seq`.
 
-## Errors
+A `book_reset` uses a sequence number like any other message on the subscription, so count it when you check for gaps.
 
-Errors arrive as a structured frame on the same connection.
+If `seq` skips (for example from `41` to `43`), you missed a message. On a book stream, your local book can no longer be trusted: resubscribe to get a fresh snapshot. On a fill stream, resubscribe with [`fromBlock`](/docs/chains/websockets/hypercore/replay-and-recovery) to recover the missing range.
+
+<Callout intent="warning">
+  Don't use `blockNumber` to detect missed messages on book streams. Book streams send a market only when it changes, so block numbers skip normally between messages.
+</Callout>
+
+## Slow consumers
+
+The server buffers messages for each connection. If your client reads more slowly than data arrives and the buffer fills, the server closes the connection. The close code is `1008` with reason `slow_consumer` when the close frame can be delivered; because the backlog sits ahead of it, most clients will instead see an abnormal closure (`1006`).
+
+To avoid this:
+
+* Read from the socket continuously and hand messages to a bounded queue for processing.
+* Subscribe only to the markets and streams you need. Unfiltered book streams can be very large.
+* Size receive buffers for large messages. A snapshot of every market's order-level book can be tens of megabytes; plan for messages up to around 100 MB if you subscribe to unfiltered `l4BookUpdates`.
+
+## Close codes
+
+| Code | Meaning | What to do |
+| --- | --- | --- |
+| `1000` | Normal closure | Reconnect if you still need data. |
+| `1001` | Going away (reason `going_away`): the server is being deployed or restarted | Reconnect with backoff. |
+| `1005` | Closed without a status code, for example when the server loses its upstream data feed | Reconnect with backoff. |
+| `1006` | Abnormal closure, no close frame (network interruption, idle timeout, or a slow consumer whose close frame couldn't be delivered) | Reconnect with backoff. |
+| `1008` | Policy violation (reason `slow_consumer`): your client fell too far behind | Reconnect, then reduce volume or read faster. |
+| `1009` | Message too big (reason `message_too_big`): a request was larger than 256 KiB | Fix the request, then reconnect. |
+
+During a deployment, new subscriptions are refused with `going_away` and the connection then closes with `1001`. Other codes may be added. Treat any unexpected close as a signal to reconnect with backoff.

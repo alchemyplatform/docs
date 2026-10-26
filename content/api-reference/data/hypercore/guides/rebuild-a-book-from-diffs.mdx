@@ -1,26 +1,118 @@
 ---
 title: "Rebuild a book from diffs"
-description: "HyperCore private-preview documentation."
+description: "Maintain a local L2 book from l2BookDiff, with gap detection and recovery."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Rebuild a book from diffs
 
-Subscribe to `l2BookDiff`. The first message for each market is the current book
-snapshot with `isSnapshot: true`; install it as local state. Apply later diffs in
-height order. The first diff for each market must carry `prev_seq` equal to that
-market's snapshot `seq`; continue checking `prev_seq` against your local position on
-every diff.
+`l2BookDiff` sends a full snapshot when you subscribe, then only the price levels that change. This guide keeps a local book correct and recovers when something goes wrong. Run it in Node.js 22+ or a browser. On older Node.js versions, add `import WebSocket from "ws";`.
 
-On a continuity break, discard local state for the affected markets and adopt the
-pushed message with `isSnapshot: true`; bootstrap and recovery use the same
-replacement mechanism.
+```js
+// You provide: backoffWithJitter, resetBackoff, onFatal.
+const N_LEVELS = 20;
+const books = {};      // coin -> { bids: Map<px, level>, asks: Map<px, level> }
+let subId = null;      // current subscription; messages for any other ID are ignored
+let generation = 0;
+let lastSeq = 0;
+let ready = false;     // true once the current subscription's snapshot has arrived
+let halted = false;    // set when an error needs a fix, not a retry
 
-For a snapshot shared by many consumers, or to let a slow client digest a large book
-while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api/hyper-core-data-api-endpoints/get-l-2-book-diff-snapshot)
-instead.
+function connect() {
+  const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
+  let closed = false;
 
-## Cursor rule
+  // Start a fresh subscription. A new ID means late messages from the old one are ignored.
+  function subscribe() {
+    if (closed) return;
+    if (subId) ws.send(JSON.stringify({ method: "unsubscribe", subscriptionId: subId }));
+    subId = `book-${++generation}`;
+    lastSeq = 0;
+    resetBooks();
+    ws.send(JSON.stringify({
+      method: "subscribe",
+      subscriptionId: subId,
+      subscription: { type: "l2BookDiff", coins: ["BTC", "ETH"], nLevels: N_LEVELS },
+    }));
+  }
 
-Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.
+  ws.onmessage = ({ data }) => {
+    if (closed) return;
+    let msg;
+    try {
+      msg = JSON.parse(data);
+    } catch {
+      return ws.close();                       // malformed message: reconnect
+    }
+    if (msg.channel === "connected") {
+      subId = null;                            // new connection, nothing to unsubscribe
+      return subscribe();
+    }
+
+    // Errors come as a subscription error (with our ID) or a connection-level error (no ID).
+    if (msg.error && (msg.channel === "error" || msg.subscriptionId === subId)) {
+      if (msg.error.code === "book_reset") return subscribe();      // start over from a full snapshot
+      if (msg.error.code === "book_not_ready" || msg.error.code === "going_away") return ws.close();   // temporary: reconnect with backoff
+      halted = true;                           // e.g. invalid_params or limit_reached
+      onFatal(msg.error);
+      return ws.close();
+    }
+    if (msg.subscriptionId !== subId) return;  // stale or unrelated subscription
+    if (msg.seq === undefined) return resetBackoff();  // acknowledgement: the connection is healthy
+
+    if (msg.seq !== lastSeq + 1) return subscribe();  // missed a message: start over
+    lastSeq = msg.seq;
+
+    if (msg.data.isSnapshot) ready = true;
+    if (!ready) return;                        // never apply diffs without a snapshot
+
+    try {
+      for (const { coin, levels } of msg.data.books) {
+        if (msg.data.isSnapshot) books[coin] = { bids: new Map(), asks: new Map() };
+        else if (!books[coin]) return ws.close();    // diff for a market with no snapshot: reconnect with backoff
+        const [bids, asks] = levels;
+        apply(books[coin].bids, bids, (a, b) => b - a);  // bids: high to low
+        apply(books[coin].asks, asks, (a, b) => a - b);  // asks: low to high
+      }
+    } catch {
+      return ws.close();                       // unexpected message shape: reconnect with backoff
+    }
+  };
+
+  ws.onclose = () => {
+    closed = true;
+    resetBooks();                              // stale until the next snapshot
+    if (!halted) setTimeout(connect, backoffWithJitter());
+  };
+}
+
+function resetBooks() {
+  for (const coin in books) delete books[coin];
+  ready = false;
+}
+
+function apply(side, levels, order) {
+  for (const l of levels) {
+    if (Number(l.sz) === 0 || l.n === 0) side.delete(l.px);
+    else side.set(l.px, l);
+  }
+  // Keep only the top N_LEVELS, so a level that leaves the window can't linger.
+  const prices = [...side.keys()].sort((a, b) => order(Number(a), Number(b)));
+  for (const px of prices.slice(N_LEVELS)) side.delete(px);
+}
+
+connect();
+```
+
+## Rules
+
+* Build from this stream's own snapshot, not from a separate `l2Book` subscription.
+* Keep `nSigFigs`, `mantissa`, and `nLevels` the same for the life of the book.
+* Keep at most `nLevels` per side, and sort when you read: bids high to low, asks low to high. Levels that move into the window arrive as updates.
+* Detect missed messages with `seq`, not `blockNumber`. Quiet markets skip blocks.
+* When you start over, use a new `subscriptionId`. Messages already in flight for the old subscription then can't be mistaken for the new one.
+* Treat the book as unavailable between a disconnect or reset and the next snapshot. `books` is empty during that window.
+* On `book_reset`, the example resubscribes so every market gets a fresh snapshot. `book_not_ready` and `going_away` (sent while a server is restarting for a deployment) are temporary, so it reconnects with backoff. Other errors, such as `invalid_params` or `limit_reached`, need a change to the request or your limits, so the example stops and reports them through `onFatal`. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
+
+For `l4BookUpdates`, the `seq`, snapshot, and reset handling carry over; key the book by order ID and don't trim it to a level count. See [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates).
