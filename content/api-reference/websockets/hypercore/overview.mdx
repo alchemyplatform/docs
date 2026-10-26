@@ -55,10 +55,10 @@ Filters are arrays: `coins`, `users`, `builders`. To subscribe to one market, pa
 | `connected` | `{"channel":"connected"}` | The connection is ready. |
 | Acknowledgement | `{"channel":"subscriptionResponse","subscriptionId":…,"data":{…}}` | A subscribe or unsubscribe succeeded. `data` echoes the accepted filters. |
 | Data | `{"seq":…,"channel":<type>,"subscriptionId":…,"data":{…}}` | A block's worth of fills, or a book update. |
-| Gap | `{"seq":…,"channel":<type>,"subscriptionId":…,"gap":{"fromBlock":…,"toBlock":…}}` | Fill streams only. The range could not be replayed. |
+| Gap | `{"seq":…,"channel":<type>,"subscriptionId":…,"gap":{"fromBlock":…,"toBlock":…}}` | Fill streams only. The range could not be delivered. |
 | Error | `{"channel":…,"subscriptionId"?:…,"error":{"code":…,"message":…}}` | See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits). |
 
-Every data message includes `data.blockNumber` and `data.blockTime` (Unix milliseconds). `seq` is a per-subscription counter that starts at `1` and increases by one with each data or gap message; use it to detect a missed message. See [connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle#sequence-numbers).
+Every data message includes `data.blockNumber` and `data.blockTime` (Unix milliseconds). `seq` is a per-subscription counter that starts at `1` and increases by one with each data, `gap`, or `book_reset` message; use it to detect a missed message. See [connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle#sequence-numbers).
 
 ## Streams
 

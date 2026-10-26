@@ -17,13 +17,20 @@ Errors arrive in one of two shapes:
 {"channel":"subscriptionResponse","subscriptionId":"l2_01","error":{"code":"invalid_params","message":"nLevels must be one of 1, 10, 20, 50; got 7"}}
 ```
 
-**Connection-level error**: no `subscriptionId`. Sent when a request can't be parsed or attributed to a subscription.
+**Connection-level error**: no `subscriptionId`. Sent when a request can't be parsed, even if it included a `subscriptionId`.
 
 ```json
 {"channel":"error","error":{"code":"invalid_params","message":"missing field `subscriptionId`"}}
 ```
 
-Handle both shapes. Some validation errors currently arrive as connection-level errors even when your request included a `subscriptionId`; if you send several subscriptions at once, check which ones were acknowledged.
+Which shape you get depends on where the request fails:
+
+* **Connection-level**: the message isn't valid JSON, `method` is missing or unknown, `subscriptionId` is missing, `type` is missing or unknown, a required field is missing (for example `users` on `userFills`), or a value has the wrong type (for example `"fromBlock":"abc"`).
+* **Subscription error**: the request parsed but a value is out of range or over a limit, for example `nLevels`, `nSigFigs`, an empty or oversized `users` list, too many `coins`, or a duplicate subscription.
+
+Because connection-level errors don't name a subscription, send subscribe requests one at a time, or match each acknowledgement to its request, if you need to know which one failed.
+
+Successful subscribe and unsubscribe requests are both acknowledged with `channel: "subscriptionResponse"` and a `data` object that echoes the subscription. A response with `error` instead of `data` is a failure.
 
 Branch on `error.code`. Message text is for humans and may change.
 
@@ -31,37 +38,52 @@ Branch on `error.code`. Message text is for humans and may change.
 
 | Code | Meaning | What to do |
 | --- | --- | --- |
-| `invalid_params` | The request is malformed or a parameter is out of range. | Fix the request. The message describes the problem. |
-| `already_exists` | The `subscriptionId` is already in use on this connection. | Use a different ID or unsubscribe first. |
-| `limit_reached` | A usage limit was hit, such as too many subscriptions on the connection or a duplicate unfiltered subscription. | See [limits](#limits). |
-| `book_reset` | A book was re-seeded internally. The subscription stays open and the next message is a snapshot. | Drop local state for that subscription and rebuild from the snapshot. |
+| `invalid_params` | The request is malformed or a parameter is out of range. Also returned when you unsubscribe an ID that isn't active. | Fix the request. The message describes the problem. |
+| `already_exists` | The `subscriptionId` is already in use on this connection, or this connection already has a subscription with the same type and filters under another ID. | Use a different ID, change the filters, or unsubscribe first. |
+| `limit_reached` | A usage limit was hit, such as too many subscriptions on the connection, too many `users`, `builders` or `coins`, or a second unfiltered subscription of the same type. | See [limits](#limits). |
+| `book_reset` | A book was re-seeded internally. The subscription stays open and the next data message is a snapshot. | Drop local state for that subscription and rebuild from the snapshot. |
 | `fills_not_ready`, `book_not_ready` | Temporary internal unavailability. | Retry the subscription after a short delay. |
+| `going_away` | The server is shutting down for a deployment. New subscriptions are refused; the connection closes shortly with code `1001`. | Reconnect with backoff. |
 
 New codes may be added. Treat unknown codes as errors for the affected subscription.
 
 ## Limits
 
-Limits protect shared infrastructure and may change during early access. When you hit one, you receive a `limit_reached` error; existing subscriptions keep working.
+Limits protect shared infrastructure and may change during early access. Hitting a limit on a subscription returns `limit_reached`; existing subscriptions keep working.
 
-* **Subscriptions per connection**: up to 200. Open more connections if you need more.
-* **Connections**: up to 1,000 concurrent connections. Contact [abdul.manan@alchemy.com](mailto:abdul.manan@alchemy.com) if you need more.
-* **Addresses per subscription**: `users` and `builders` filters accept a bounded list of addresses. Split larger sets across subscriptions.
+| Limit | Value |
+| --- | --- |
+| Subscriptions per connection | 200 |
+| Addresses in `users` or `builders` | 1 to 200 per subscription |
+| Markets in `coins` | Up to 200 per subscription |
+| Unfiltered subscriptions per stream type | 1 per connection, 5 per team |
+| Subscriptions per team | 20,000 |
+| Concurrent connections per team | 1,000 |
+| Request message size | 256 KiB |
+| `subscriptionId` and coin name length | 128 characters each |
+
+A connection over your team's connection limit is refused during the handshake with HTTP `429`; the server may also refuse with HTTP `503` when it's at capacity. Reconnect with backoff in both cases. Contact [abdul.manan@alchemy.com](mailto:abdul.manan@alchemy.com) if you need higher limits.
+
+A request larger than 256 KiB closes the connection with code `1009`.
 
 ### Unfiltered subscriptions
 
-Omitting `coins` subscribes to every market. Each connection allows one unfiltered subscription per stream type, and the number of unfiltered streams per team is limited. Unfiltered book streams carry a lot of data:
+Omitting `coins`, or sending an empty list (`"coins":[]`), subscribes to every market. `liquidationFills` has no `coins` filter, so every `liquidationFills` subscription is unfiltered; a connection can hold one with `aggregateByTime` on and one with it off.
+
+Unfiltered book streams carry a lot of data:
 
 | Stream (all markets) | Approximate volume |
 | --- | --- |
-| `l2Book` | ~3 MB/s |
-| `l4BookUpdates` | ~1.5–2 MB/s, plus a large initial snapshot |
-| `l2BookDiff` | ~0.4 MB/s |
-| `bbo`, `allFills` | ~0.1 MB/s |
+| `l2Book` | ~2–3 MB/s |
+| `l4BookUpdates` | ~1.3–1.7 MB/s, plus a first message of about 75 MB |
+| `l2BookDiff` | ~0.35–0.45 MB/s |
+| `bbo`, `allFills` | under 0.1 MB/s |
 
 Volumes vary with market activity. Usage is metered by data delivered, so filter by `coins` where you can. For a live book, `l2BookDiff` carries the same information as `l2Book` at a fraction of the volume.
 
 ## Input rules
 
-* Coin names are case-sensitive and must match Hyperliquid's names exactly. An unknown coin is accepted and returns empty data until that market exists, so check spelling. See [markets and coin names](/docs/data/hypercore/concepts/markets-assets-and-dexes).
-* Addresses are case-insensitive and are returned lowercase.
-* `subscriptionId` can be up to 128 characters.
+* Fields the server doesn't recognize are ignored rather than rejected. A misspelled or unsupported field, such as `coin` instead of `coins` or `marketTypes`, is dropped, and dropping a filter can turn the request into an unfiltered, all-markets subscription. The acknowledgement echoes the filters that were applied, so check it.
+* Coin names are case-sensitive and must match Hyperliquid's names exactly. An unknown coin is accepted: book streams return it with empty data (for example `"bbo":[null,null]`) until that market exists, so check spelling. Duplicate coins are ignored. See [markets and coin names](/docs/data/hypercore/concepts/markets-assets-and-dexes).
+* Addresses are case-insensitive and are returned lowercase. Duplicates are ignored.
+* `subscriptionId` must be 1 to 128 characters with no control characters.

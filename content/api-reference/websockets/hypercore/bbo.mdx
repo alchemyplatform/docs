@@ -1,13 +1,13 @@
 ---
 title: "bbo stream"
-description: "Best bid and best ask for each market, sent whenever either changes."
+description: "Best bid and best ask for each market, sent whenever the top of the book changes."
 ---
 
 <Markdown src="../../shared/preview-notice-beta.mdx" />
 
 # bbo
 
-Best bid and best ask for each market, sent whenever either changes.
+Best bid and best ask for each market, sent whenever the top of the book changes: price, size, or number of orders.
 
 ## Subscribe
 
@@ -29,7 +29,7 @@ Best bid and best ask for each market, sent whenever either changes.
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `coins` | string[] | No | Markets to include. Omit for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
+| `coins` | string[] | No | Markets to include, up to 200. Omit, or send `[]`, for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
 
 ## Acknowledgement
 
@@ -60,6 +60,21 @@ Best bid and best ask for each market, sent whenever either changes.
     "isSnapshot": true,
     "books": [
       {
+        "coin": "BTC",
+        "bbo": [
+          {
+            "px": "81772.0",
+            "sz": "30.29109",
+            "n": 96
+          },
+          {
+            "px": "81773.0",
+            "sz": "0.02692",
+            "n": 2
+          }
+        ]
+      },
+      {
         "coin": "ETH",
         "bbo": [
           {
@@ -84,7 +99,7 @@ Best bid and best ask for each market, sent whenever either changes.
 | `data.books[].bbo` | `[bid, ask]`. Either side can be `null` when that side of the book is empty. |
 | `px`, `sz`, `n` | Price, total size at the level, and number of orders. |
 
-The first message includes every subscribed market; later messages include only markets whose best bid or ask changed.
+The first message includes every subscribed market, in alphabetical order; later messages include only markets whose top of book changed.
 
 ## Unsubscribe
 

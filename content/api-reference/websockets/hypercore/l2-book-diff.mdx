@@ -30,7 +30,7 @@ A snapshot of aggregated price levels, then only the levels that change.
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `coins` | string[] | No | Markets to include. Omit for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
+| `coins` | string[] | No | Markets to include, up to 200. Omit, or send `[]`, for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
 | `nSigFigs` | integer | No | Group prices to 2–5 significant figures. Omit for exact prices. |
 | `mantissa` | integer | No | `1`, `2`, or `5`. Only with `nSigFigs: 5`; default `1`. |
 | `nLevels` | integer | No | Levels per side: `1`, `10`, `20` (default), or `50`. |
@@ -94,7 +94,7 @@ The first message is the full window for every subscribed market (`isSnapshot: t
 
 1. On `isSnapshot: true`, replace your local book for each market in the message.
 2. For each later level: if `sz` is `"0"` (or `n` is `0`), remove that price; otherwise set the price to the new `sz` and `n`.
-3. Keep `nLevels` levels per side. Levels that move into the window arrive as updates.
+3. Keep `nLevels` levels per side. Levels that move into the window arrive as updates. A level pushed out of the window is sent with `sz` `"0"`, even if orders still rest at that price, so applying every message keeps your book exactly `nLevels` deep.
 4. Check that `seq` increases by one. If it skips, resubscribe and start from the new snapshot.
 
 Build the book from this stream's own snapshot. Don't seed it from a separate `l2Book` subscription, and keep the same `nSigFigs`, `mantissa`, and `nLevels` for the life of the book.

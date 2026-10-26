@@ -15,7 +15,7 @@ Alchemy's HyperCore streams use the same stream names and the same core data as 
 * Many markets or addresses in one subscription, or every market at once.
 * Order-level books (`l4BookUpdates`) and incremental L2 books (`l2BookDiff`).
 * Fill replay after a reconnect (`fromBlock`) and a per-subscription `seq` to detect missed messages.
-* Block number and block time on every message.
+* Block number and block time on every data message.
 
 ## Differences at a glance
 
@@ -24,12 +24,12 @@ Alchemy's HyperCore streams use the same stream names and the same core data as 
 | Endpoint | `wss://api.hyperliquid.xyz/ws` | `wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>` |
 | Subscription ID | None | `subscriptionId` required on every request |
 | One market | `"coin": "BTC"` | `"coins": ["BTC"]` |
-| All markets | One subscription per market | Omit `coins` |
+| All markets | One subscription per market | Omit `coins` (or send `[]`) |
 | One user | `"user": "0x…"` | `"users": ["0x…"]` |
 | Unsubscribe | Repeat the subscription object | `{"method":"unsubscribe","subscriptionId":…}` |
 | Data shape | `data: {coin, time, levels}` | `data: {blockNumber, blockTime, isSnapshot, books: [{coin, levels}]}` |
 | Fills | `data: {user, fills: [fill]}` | `data.fills: [[user, fill]]`, one `[user, fill]` pair per fill |
-| Heartbeat | `{"method":"ping"}` | Not available yet. Don't send `ping`: it returns an `invalid_params` error. Idle connections close after about 90 seconds (see [heartbeats](/docs/chains/websockets/hypercore/connection-lifecycle#heartbeats)) |
+| Heartbeat | `{"method":"ping"}` | Send a WebSocket protocol ping frame every 30 seconds instead. `{"method":"ping"}` returns an `invalid_params` error. Idle connections close after about 90 seconds (see [heartbeats](/docs/chains/websockets/hypercore/connection-lifecycle#heartbeats)) |
 | Trades | `trades` | Use `allFills`: one record per side, both sides share `tid` |
 | Replay | None | `fromBlock` on fill streams |
 

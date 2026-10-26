@@ -1,108 +1,184 @@
 ---
 title: "StreamBlocks"
-description: "HyperCore private-preview documentation."
+description: "Stream raw HyperCore blocks over gRPC, with short-range resume by block number."
 ---
 
-<Markdown src="../shared/preview-notice-september.mdx" />
+<Markdown src="../shared/preview-notice-beta.mdx" />
 
-# Stream blocks
+# StreamBlocks
 
-`StreamBlocks` delivers raw HyperCore blocks as they are produced — every signed action
-the block contained, together with its execution results. This is ideal for full-chain
-indexers, action and response analysis, deposit and transfer monitoring, and
-reconciliation against your own records.
+`streams.v1.BlockStream/StreamBlocks` is a server-streaming method. It sends one message per HyperCore block, in ascending block order, until you cancel the call or the server ends it with a status.
 
-## Overview
+See the [overview](/docs/chains/hypercore-grpc/getting-started/overview) for the endpoint, authentication, and the full `blocks.proto`.
 
-HyperCore produces a block roughly every 70 ms, and block numbers increment by exactly
-one. The stream reflects that directly:
-
-* One message per block, in order, including blocks with no activity
-* Block number is the stream sequence — there is no separate sequence counter to track
-* A missing block number is therefore an unambiguous gap
-* Blocks are delivered as passthrough — the raw block, not a normalized projection
-
-Because the stream is dense, gap detection needs no heartbeat and no bookkeeping beyond
-remembering the last block you processed.
-
-## Request structure
+## Request
 
 ```proto
 message StreamBlocksRequest {
-  optional uint64 start_height = 1;
-  string cursor = 2;
+  optional uint64 start_block = 1;
 }
 ```
 
-### Start height
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `start_block` | `uint64` | No | Block number to start from, inclusive. Omit it to receive only new blocks. |
 
-**Field**: `start_height`
-**Type**: `uint64`
+### How `start_block` is handled
 
-Block number to begin streaming from. Omit to start from the current head.
+| Request | Result |
+| --- | --- |
+| `start_block` omitted | The stream starts with the next new block. |
+| `start_block` inside the retained window | The server replays from `start_block` through the latest block, then continues with new blocks. There are no gaps or duplicates between the replayed and new blocks. |
+| `start_block` older than the retained window | The call fails with `NOT_FOUND`. No messages are sent. |
+| `start_block` newer than the latest block | Treated like an omitted `start_block`. The stream starts with the next new block, which can be lower than `start_block`. Skip blocks you don't need. |
 
-### Cursor
+### Retained window
 
-**Field**: `cursor`
-**Type**: `string`
+The server keeps a short window of recent blocks for resuming, currently up to the last 64. That covers only a few seconds of chain activity. The window size is not guaranteed and can be smaller, for example right after a server restart, when it can be empty.
 
-Resume token from a previous session. Opaque — store it and return it unmodified.
-Takes precedence over `start_height` when both are supplied.
+A `start_block` the server can't replay as a continuous range returns `NOT_FOUND`, even if the block is recent. This also happens when the window has no blocks yet.
 
-## Response structure
+The stream is for live data and short reconnects. It doesn't serve historical ranges.
+
+## Response
 
 ```proto
-message BlockEnvelope {
-  uint64 height = 1;
-  string cursor = 2;
-  BlockData block = 3;
+message BlockMessage {
+  uint64 block_number = 1;
+  bytes data = 2;
 }
 ```
 
-### Key fields
-
-**`height`**: Block number and stream sequence. Compare it with the last processed block
-to detect a gap.
-
-**`cursor`**: Resume position for this message. Persist it after processing.
-
-**`block`**: The raw block.
-
-## Block contents
-
-| Field | Description |
-| --- | --- |
-| `abci_block.round` | Block number. Use this as the block identifier. |
-| `abci_block.parent_round` | Preceding block number, for verifying continuity. |
-| `abci_block.time` | Block timestamp. |
-| `abci_block.proposer` | Validator that proposed the block. |
-| `abci_block.hardfork` | Protocol version and the round it activated. |
-| `abci_block.signed_action_bundles` | Signed actions in the block, each with signature, action type, nonce, and vault address, plus builder attribution where present. |
-| `resps` | Execution result per action, keyed by transaction hash, with the acting user and an ok or error status. |
-
-See [raw and normalized HyperCore blocks](/docs/chains/hyperliquid/hypercore/concepts/raw-and-normalized-blocks)
-for how these relate to the normalized objects returned by the JSON-RPC block methods.
-
-## Recovering from a gap
-
-1. Track the block number of the last message you processed.
-2. On reconnect, send that number plus one as `start_height`, or send your stored `cursor`.
-3. If `parent_round` does not match your last processed block, fetch the missing range
-   with [`hl_getBatchBlocks`](/docs/chains/hyperliquid/hypercore/json-rpc/overview)
-   and reconcile before resuming.
-
-Replay covers a short reconnect window, not long-range recovery. Gaps wider than that window cannot be replayed on the stream — use the block lookup methods above to fetch the missing range, then resume.
-
-## Stream vs block lookup
-
-| | StreamBlocks | JSON-RPC block methods |
+| Field | Type | Description |
 | --- | --- | --- |
-| **Delivery** | Push, one message per block | Request/response |
-| **Latency** | Lowest available | Higher — per-call round trip |
-| **Range** | Live, plus bounded replay | Bounded historical lookup |
-| **Use case** | Continuous indexing | Backfill, gap repair, spot checks |
+| `block_number` | `uint64` | Block height. Matches the top-level `height` in `data`. It is not the consensus round (`abci_block.round`). |
+| `data` | `bytes` | The block as UTF-8 JSON, passed through unchanged. Parse it with a JSON parser. |
 
-## Message size
+### Block JSON
 
-Raw HyperCore blocks can be large, and high-activity blocks substantially more so.
-Configure your client's maximum receive size and processing queues accordingly.
+`data` decodes to a JSON object with these top-level keys:
+
+| Key | Contents |
+| --- | --- |
+| `abci_block` | Block header and contents: `time`, `round`, `parent_round`, `proposer`, `hardfork`, and `signed_action_bundles`. |
+| `resps` | Responses to the block's actions. |
+| `height` | Block height, equal to `block_number`. |
+
+The block format comes from the Hyperliquid node, not from this API, and can change when the node changes. Ignore keys you don't use.
+
+### Ordering
+
+* Messages arrive in ascending `block_number` order, with no duplicates within a stream.
+* Block numbers are normally consecutive. If a number is skipped, the skipped block isn't available on the stream, and a resume into that range returns `NOT_FOUND`.
+
+### Message size
+
+Block sizes vary widely. Most are hundreds of kilobytes, and some are several megabytes. Set your client's maximum receive message size well above the common 4 MB default.
+
+## Errors
+
+Every error ends the stream with a gRPC status. There are no error messages inside the stream. Branch on the status code; message text may change.
+
+| Code | When | Message | What to do |
+| --- | --- | --- | --- |
+| `UNAUTHENTICATED` | At call start | `Must be authenticated!` | Send `authorization: Bearer <API_KEY>` metadata. Don't retry until the key is fixed. |
+| `NOT_FOUND` | At call start | `start_block is older than the retained block window` | Fetch the missed blocks from another source, then call again without `start_block`. |
+| `ABORTED` | During the stream | `block stream fell behind live blocks` | Your client read too slowly. Reconnect from your last block plus one, and read faster. |
+| `UNAVAILABLE` | At call start or during the stream | For example `block feed not ready`, `block stream connection limit reached`, or `server draining` | Temporary. Reconnect with backoff from your last block plus one. |
+| `DEADLINE_EXCEEDED` | When your call deadline expires | Set by your client | Don't set a deadline on this call. Reconnect. |
+
+## Slow consumers
+
+The server buffers a small number of blocks for each stream. If your client stops reading and that buffer fills, the server ends the stream with `ABORTED`.
+
+To avoid this, read messages continuously and process them off the receive path, for example through a bounded queue. Because the retained window is short, a reconnect after a long stall returns `NOT_FOUND`.
+
+## Resuming after a disconnect
+
+1. Record `block_number` after you process each message.
+2. When the stream ends with `ABORTED`, `UNAVAILABLE`, or a network error, call again with `start_block` set to your last `block_number` plus one. Use exponential backoff with jitter.
+3. If the call returns `NOT_FOUND`, the blocks you missed are no longer retained. Fetch them from another source if you need them, then call without `start_block` to resume live.
+4. On `UNAUTHENTICATED`, stop and fix the API key.
+
+`start_block` is inclusive. If you resume from your last `block_number` instead of the next one, you receive that block again; drop it.
+
+## Examples
+
+### grpcurl
+
+The server doesn't support reflection, so pass `blocks.proto` from the [overview](/docs/chains/hypercore-grpc/getting-started/overview#service-definition). Don't set `-max-time`; it ends the stream when it expires.
+
+```bash
+grpcurl \
+  -proto blocks.proto \
+  -H "authorization: Bearer $ALCHEMY_API_KEY" \
+  -max-msg-sz 67108864 \
+  -d '{}' \
+  hypercore-mainnet.g.alchemy.com:443 \
+  streams.v1.BlockStream/StreamBlocks
+```
+
+To resume, pass a block number:
+
+```bash
+grpcurl \
+  -proto blocks.proto \
+  -H "authorization: Bearer $ALCHEMY_API_KEY" \
+  -max-msg-sz 67108864 \
+  -d '{"start_block": 1194130000}' \
+  hypercore-mainnet.g.alchemy.com:443 \
+  streams.v1.BlockStream/StreamBlocks
+```
+
+grpcurl prints each message as JSON, with `blockNumber` as a string and `data` as base64:
+
+```json
+{
+  "blockNumber": "1194129990",
+  "data": "eyJhYmNpX2Jsb2NrIjp7InRpbWUiOiIyMDI2LTEwLTIzVDA4OjMxOjMyLjc4MDg2MDc2OSIs..."
+}
+```
+
+### Node.js
+
+Uses [`@grpc/grpc-js`](https://www.npmjs.com/package/@grpc/grpc-js) and [`@grpc/proto-loader`](https://www.npmjs.com/package/@grpc/proto-loader), with `blocks.proto` in the working directory. The client resumes from the next block after a disconnect.
+
+```javascript title="stream-blocks.js"
+const grpc = require("@grpc/grpc-js");
+const protoLoader = require("@grpc/proto-loader");
+
+const definition = protoLoader.loadSync("blocks.proto", { longs: String });
+const { BlockStream } = grpc.loadPackageDefinition(definition).streams.v1;
+
+const client = new BlockStream(
+  "hypercore-mainnet.g.alchemy.com:443",
+  grpc.credentials.createSsl(),
+  { "grpc.max_receive_message_length": 64 * 1024 * 1024 },
+);
+
+let lastBlock = null; // block_number of the last processed block, as a string
+
+function connect() {
+  const metadata = new grpc.Metadata();
+  metadata.set("authorization", `Bearer ${process.env.ALCHEMY_API_KEY}`);
+
+  const request =
+    lastBlock === null ? {} : { startBlock: (BigInt(lastBlock) + 1n).toString() };
+  const call = client.StreamBlocks(request, metadata);
+
+  call.on("data", (message) => {
+    const block = JSON.parse(message.data.toString("utf8"));
+    console.log(message.blockNumber, block.abci_block.time);
+    lastBlock = message.blockNumber;
+  });
+
+  call.on("error", (err) => {
+    console.error(grpc.status[err.code], err.details);
+    if (err.code === grpc.status.UNAUTHENTICATED) return; // fix the API key
+    if (err.code === grpc.status.NOT_FOUND) lastBlock = null; // resume live
+    setTimeout(connect, 1000); // use exponential backoff with jitter in production
+  });
+}
+
+connect();
+```

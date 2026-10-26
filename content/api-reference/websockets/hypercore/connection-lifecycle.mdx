@@ -18,19 +18,21 @@ Treat disconnects as routine. Deployments, maintenance, network interruptions, a
 
 ## Heartbeats
 
-There is no heartbeat yet. A connection that receives no messages for about 90 seconds may be closed, which affects subscriptions that are often quiet, such as `userFills` for a few wallets. Reconnect when that happens, or keep a low-volume subscription (for example `bbo` for one active market) open on the same connection so messages keep flowing.
+A connection with no traffic in either direction for about 90 seconds is closed (`1006`). This affects subscriptions that are often quiet, such as `userFills` for a few wallets.
 
-<Callout intent="info">
-  A heartbeat is planned. Until then, `{"method":"ping"}` returns an `invalid_params` error.
-</Callout>
+To keep a quiet connection open, send a WebSocket protocol ping frame every 30 seconds. The server answers each ping with a pong, and the traffic keeps the connection alive. Most WebSocket libraries can send pings on a timer (for example `ws.ping()` in Node's `ws` package).
+
+The server doesn't send its own pings, and there is no JSON-level heartbeat: `{"method":"ping"}` returns an `invalid_params` error.
 
 ## Sequence numbers
 
-Every data and gap message carries `seq`, a counter scoped to its subscription:
+Every data, `gap`, and `book_reset` message carries `seq`, a counter scoped to its subscription:
 
 * It starts at `1` for each new subscription, including after a reconnect.
 * It increases by exactly one per message on that subscription.
-* Acknowledgements and errors don't carry `seq`.
+* Acknowledgements and request errors don't carry `seq`.
+
+A `book_reset` uses a sequence number like any other message on the subscription, so count it when you check for gaps.
 
 If `seq` skips (for example from `41` to `43`), you missed a message. On a book stream, your local book can no longer be trusted: resubscribe to get a fresh snapshot. On a fill stream, resubscribe with [`fromBlock`](/docs/chains/websockets/hypercore/replay-and-recovery) to recover the missing range.
 
@@ -40,7 +42,7 @@ If `seq` skips (for example from `41` to `43`), you missed a message. On a book 
 
 ## Slow consumers
 
-The server buffers messages for each connection. If your client reads more slowly than data arrives and the buffer fills, the server closes the connection. The close code is `1008` with a reason when the close frame can be delivered; because the backlog sits ahead of it, many clients will instead see an abnormal closure (`1006`).
+The server buffers messages for each connection. If your client reads more slowly than data arrives and the buffer fills, the server closes the connection. The close code is `1008` with reason `slow_consumer` when the close frame can be delivered; because the backlog sits ahead of it, most clients will instead see an abnormal closure (`1006`).
 
 To avoid this:
 
@@ -53,8 +55,10 @@ To avoid this:
 | Code | Meaning | What to do |
 | --- | --- | --- |
 | `1000` | Normal closure | Reconnect if you still need data. |
-| `1001` | Going away: the server is restarting or being deployed | Reconnect with backoff. |
-| `1006` | Abnormal closure, no close frame (network interruption, idle timeout, restart, or a slow consumer whose close frame couldn't be delivered) | Reconnect with backoff. |
-| `1008` | Policy violation, for example a slow consumer | Reconnect, then reduce volume or read faster. |
+| `1001` | Going away (reason `going_away`): the server is being deployed or restarted | Reconnect with backoff. |
+| `1005` | Closed without a status code, for example when the server loses its upstream data feed | Reconnect with backoff. |
+| `1006` | Abnormal closure, no close frame (network interruption, idle timeout, or a slow consumer whose close frame couldn't be delivered) | Reconnect with backoff. |
+| `1008` | Policy violation (reason `slow_consumer`): your client fell too far behind | Reconnect, then reduce volume or read faster. |
+| `1009` | Message too big (reason `message_too_big`): a request was larger than 256 KiB | Fix the request, then reconnect. |
 
-Restarts currently close connections without a close frame (`1006`); a graceful `1001` close is planned. Other codes may be added. Treat any unexpected close as a signal to reconnect with backoff.
+During a deployment, new subscriptions are refused with `going_away` and the connection then closes with `1001`. Other codes may be added. Treat any unexpected close as a signal to reconnect with backoff.

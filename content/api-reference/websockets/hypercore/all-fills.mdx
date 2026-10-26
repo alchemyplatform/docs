@@ -29,11 +29,11 @@ Every fill on HyperCore, or every fill for the markets you choose. Each trade ap
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `coins` | string[] | No | Markets to include. Omit for every market. |
+| `coins` | string[] | No | Markets to include, up to 200. Omit, or send `[]`, for every market. |
 | `fromBlock` | integer | No | Replay from this block (inclusive), then continue live. Omit for live only. |
 | `aggregateByTime` | boolean | No | Merge a taker order's partial fills in the same block. Default `false`. |
 
-Omitting `coins` subscribes to every market. Each connection allows one unfiltered `allFills` subscription. See [unfiltered subscriptions](/docs/chains/websockets/hypercore/errors-and-limits#unfiltered-subscriptions).
+Omitting `coins`, or sending an empty list, subscribes to every market. Each connection allows one unfiltered `allFills` subscription. See [unfiltered subscriptions](/docs/chains/websockets/hypercore/errors-and-limits#unfiltered-subscriptions).
 
 ## Acknowledgement
 
@@ -121,7 +121,7 @@ Fill objects follow Hyperliquid's native fill format, so conditional fields such
 
 ### Aggregation
 
-`aggregateByTime` (default `false`) merges a taker order's partial fills within the same block into one record: `sz` and `fee` are summed and `px` is the size-weighted average price, which isn't rounded to the tick size.
+`aggregateByTime` (default `false`) merges a taker order's partial fills within the same block into one record: `sz`, `fee`, `closedPnl`, and, when present, `builderFee`, `deployerFee`, and `priorityGas` are summed, and `px` is the size-weighted average price, which isn't rounded to the tick size. Other fields, including `tid`, `hash`, and `startPosition`, come from the first partial fill. Maker fills are never merged.
 
 ## Replay
 

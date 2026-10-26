@@ -25,6 +25,6 @@ For `l2BookDiff` and `l4BookUpdates`:
 1. Install the snapshot as local state.
 2. Apply each later message in order.
 3. Watch `seq` on the subscription. If it skips, you missed a message and your book may be wrong: resubscribe and start again from the new snapshot.
-4. If you receive `book_reset`, drop local state for that subscription; a new snapshot follows.
+4. If you receive `book_reset`, drop local state for that subscription; a new snapshot follows. The `book_reset` message takes the next `seq`, so count it.
 
 Book streams don't replay. After any disconnect, resubscribe and rebuild from the snapshot. See [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).

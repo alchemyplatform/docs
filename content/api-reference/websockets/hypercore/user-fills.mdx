@@ -28,7 +28,7 @@ Fills for one or more wallet addresses.
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `users` | string[] | Yes | Wallet addresses. Case-insensitive; returned lowercase. The list size is limited; split large sets across subscriptions. |
+| `users` | string[] | Yes | Wallet addresses. Case-insensitive; returned lowercase. 1 to 200 addresses; split larger sets across subscriptions. |
 | `fromBlock` | integer | No | Replay from this block (inclusive), then continue live. Omit for live only. |
 | `aggregateByTime` | boolean | No | Merge a taker order's partial fills in the same block. Default `false`. |
 
@@ -119,7 +119,7 @@ Fill objects follow Hyperliquid's native fill format, so conditional fields such
 
 ### Aggregation
 
-`aggregateByTime` (default `false`) merges a taker order's partial fills within the same block into one record: `sz` and `fee` are summed and `px` is the size-weighted average price, which isn't rounded to the tick size.
+`aggregateByTime` (default `false`) merges a taker order's partial fills within the same block into one record: `sz`, `fee`, `closedPnl`, and, when present, `builderFee`, `deployerFee`, and `priorityGas` are summed, and `px` is the size-weighted average price, which isn't rounded to the tick size. Other fields, including `tid`, `hash`, and `startPosition`, come from the first partial fill. Maker fills are never merged.
 
 ## Replay
 

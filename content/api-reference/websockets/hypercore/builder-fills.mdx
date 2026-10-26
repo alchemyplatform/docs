@@ -28,7 +28,7 @@ Fills for orders placed with one or more builder codes.
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `builders` | string[] | Yes | Builder addresses. Always an array, even for one builder. The list size is limited. |
+| `builders` | string[] | Yes | Builder addresses. Always an array, even for one builder. 1 to 200 addresses. |
 | `fromBlock` | integer | No | Replay from this block (inclusive), then continue live. Omit for live only. |
 | `aggregateByTime` | boolean | No | Merge a taker order's partial fills in the same block. Default `false`. |
 
@@ -120,7 +120,7 @@ Fill objects follow Hyperliquid's native fill format, so conditional fields such
 
 ### Aggregation
 
-`aggregateByTime` (default `false`) merges a taker order's partial fills within the same block into one record: `sz` and `fee` are summed and `px` is the size-weighted average price, which isn't rounded to the tick size.
+`aggregateByTime` (default `false`) merges a taker order's partial fills within the same block into one record: `sz`, `fee`, `closedPnl`, and, when present, `builderFee`, `deployerFee`, and `priorityGas` are summed, and `px` is the size-weighted average price, which isn't rounded to the tick size. Other fields, including `tid`, `hash`, and `startPosition`, come from the first partial fill. Maker fills are never merged.
 
 ## Replay
 

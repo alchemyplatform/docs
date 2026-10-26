@@ -1,13 +1,13 @@
 ---
 title: "allMids stream"
-description: "Mid prices for markets with both a bid and an ask."
+description: "Mid prices for every market, sent whenever a mid changes."
 ---
 
 <Markdown src="../../shared/preview-notice-beta.mdx" />
 
 # allMids
 
-Mid prices for markets with both a bid and an ask.
+Mid prices for each market, sent whenever a mid changes.
 
 ## Subscribe
 
@@ -29,7 +29,7 @@ Mid prices for markets with both a bid and an ask.
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `coins` | string[] | No | Markets to include. Omit for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
+| `coins` | string[] | No | Markets to include, up to 200. Omit, or send `[]`, for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
 
 ## Acknowledgement
 
@@ -68,7 +68,7 @@ Mid prices for markets with both a bid and an ask.
 
 | Field | Description |
 | --- | --- |
-| `data.mids` | Map of coin to mid price (a decimal string). Only markets with both a bid and an ask are included. |
+| `data.mids` | Map of coin to mid price (a decimal string). The snapshot includes only markets with both a bid and an ask. In later messages, a value is `null` when that market loses its bid or ask; treat `null` as "no mid" until a later message sends a price. |
 
 The first message includes every subscribed market; later messages include markets whose mid changed.
 
