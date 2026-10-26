@@ -37,6 +37,6 @@ function onMessage(msg) {
 }
 ```
 
-`handleError` is yours: retry `book_not_ready` after a short delay, and fix the request for other codes. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
+`handleError` is yours. `book_reset` isn't a failure: the subscription stays open and the next message is a fresh snapshot that replaces each market's view, so keep listening. Retry `book_not_ready` after a short delay. For other codes, fix the request. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
 
 Each entry replaces that market's view, so a missed message leaves a market stale only until it next changes. To avoid even that, track `seq` and resubscribe when it skips. After a disconnect, reconnect and subscribe again. The first message is a fresh snapshot of every subscribed market.

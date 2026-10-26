@@ -172,10 +172,15 @@ function connect() {
     lastBlock = message.blockNumber;
   });
 
-  call.on("error", (err) => {
-    console.error(grpc.status[err.code], err.details);
-    if (err.code === grpc.status.UNAUTHENTICATED) return; // fix the API key
-    if (err.code === grpc.status.NOT_FOUND) lastBlock = null; // resume live
+  // "status" fires exactly once when the call ends, whether it failed or the
+  // server completed it normally, so reconnect from here.
+  call.on("error", () => {}); // failures are handled in "status" below
+  call.on("status", (status) => {
+    if (status.code !== grpc.status.OK) {
+      console.error(grpc.status[status.code], status.details);
+    }
+    if (status.code === grpc.status.UNAUTHENTICATED) return; // fix the API key
+    if (status.code === grpc.status.NOT_FOUND) lastBlock = null; // resume live
     setTimeout(connect, 1000); // use exponential backoff with jitter in production
   });
 }
