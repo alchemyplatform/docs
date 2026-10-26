@@ -1,13 +1,101 @@
 ---
 title: "Stream wallet fills"
-description: "HyperCore private-preview documentation."
+description: "Follow fills for a set of wallets and resume without loss after a disconnect."
 ---
 
-<Markdown src="../../../shared/preview-notice.mdx" />
+<Markdown src="../../../shared/preview-notice-beta.mdx" />
 
 # Stream wallet fills
 
-Subscribe to `userFills` with a wallet filter. Persist each cursor and trade identifier after processing. Use `userFillsByTime` to recover events if replay cannot satisfy the cursor.
+Run this as an ES module (`.mjs`) in Node.js 22+ or a browser. On older Node.js versions, add `import WebSocket from "ws";`. To keep quiet connections open with protocol pings (see the notes), use the `ws` package: browsers and Node's built-in `WebSocket` can't send ping frames.
 
-## Cursor rule
-Advance a durable cursor only after downstream storage succeeds. Treat a gap, correction, or finality change as a reason to backfill and reconcile.
+```js
+// You provide: loadLastBlock, saveLastBlock, upsertFill, recordGap, backoffWithJitter, resetBackoff, onFatal.
+let lastBlock = await loadLastBlock();   // last fully processed block, or null on first run
+let halted = false;                      // set when an error needs a fix, not a retry
+
+function connect() {
+  const ws = new WebSocket("wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>");
+  let lastSeq = 0;                       // seq restarts at 1 on every new subscription
+  let stopped = false;                   // set on any failure or close
+  let queue = Promise.resolve();         // process messages strictly one at a time
+
+  function stop(err) {
+    if (stopped) return;
+    stopped = true;
+    if (err.fatal) {                     // e.g. invalid_params or limit_reached: retrying won't help
+      halted = true;
+      onFatal(err.error);
+    }
+    ws.close();                          // otherwise reconnect and replay from lastBlock + 1
+  }
+
+  ws.onmessage = ({ data }) => {
+    queue = queue.then(() => handle(JSON.parse(data))).catch(stop);
+  };
+
+  async function handle(msg) {
+    if (stopped) return;
+    if (msg.channel === "connected") {
+      ws.send(JSON.stringify({
+        method: "subscribe",
+        subscriptionId: "wallets",
+        subscription: {
+          type: "userFills",
+          users: ["0x654086857e1fad6dcf05cf6695cce51ea3984268"],
+          // First run: start from block 0. The server answers with a gap up to its oldest
+          // replayable block, which becomes the starting checkpoint, then replays from there.
+          fromBlock: lastBlock == null ? 0 : Number(lastBlock) + 1,
+        },
+      }));
+      return;
+    }
+
+    // Errors come as a subscription error (with our ID) or a connection-level error (no ID).
+    if (msg.error && (msg.channel === "error" || msg.subscriptionId === "wallets")) {
+      if (msg.error.code === "fills_not_ready" || msg.error.code === "going_away") throw new Error(msg.error.code);  // temporary: reconnect with backoff
+      throw Object.assign(new Error(msg.error.code), { fatal: true, error: msg.error });
+    }
+    if (msg.subscriptionId !== "wallets") return;  // other subscriptions
+    if (msg.seq === undefined) return resetBackoff();  // acknowledgement: the connection is healthy
+
+    if (msg.seq !== lastSeq + 1) throw new Error("missed message");
+    lastSeq = msg.seq;
+
+    if (msg.gap) {
+      if (msg.gap.fromBlock > 0) await recordGap(msg.gap);  // range no longer replayable (0 = first-run start)
+      if (stopped) return;               // connection replaced mid-message: let the new one checkpoint
+      await saveLastBlock(msg.gap.toBlock);
+      lastBlock = msg.gap.toBlock;
+      return;
+    }
+
+    for (const [user, fill] of msg.data.fills) {
+      await upsertFill(`${fill.tid}|${user}`, user, fill);  // idempotent, keyed on tid + user
+    }
+    if (stopped) return;
+    await saveLastBlock(msg.data.blockNumber);  // only after the block's fills are stored
+    lastBlock = msg.data.blockNumber;
+  }
+
+  ws.onclose = () => {
+    stopped = true;
+    if (!halted) setTimeout(connect, backoffWithJitter());
+  };
+}
+connect();
+```
+
+## Notes
+
+* Process messages in order, one at a time. WebSocket callbacks don't wait for asynchronous work, so without a queue a later block can be checkpointed before an earlier one is stored.
+* Treat any processing failure as a reason to stop and reconnect: a skipped `seq`, a failed fill write, a failed checkpoint, or a malformed message. Nothing after the failed block is processed, and the reconnect replays from the last saved block.
+* `fills_not_ready` and `going_away` (sent while a server is restarting for a deployment) are temporary, so the example reconnects with backoff and resumes from the same block. Other errors, such as `invalid_params` or `limit_reached`, need a change to the request or your limits, so the example stops and reports them through `onFatal`. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
+* Always send `fromBlock`. On a first run the example sends `0`: the server returns a gap up to its oldest replayable block and then replays from there, so a checkpoint exists before the first fill arrives and a disconnect at any point can resume. That first gap isn't a loss, so it isn't recorded.
+* Advance `lastBlock` only after it's saved, and only after the block's fills are stored.
+* Make fill storage idempotent: write each fill keyed on `tid` plus user (an upsert). A block replayed after a failure or restart then can't be processed twice.
+* Reconnect promptly, and reset your backoff once a subscription is acknowledged. Replay covers about the last 60 seconds. A longer outage returns a `gap` for the part that can't be replayed.
+* Send a WebSocket protocol ping every 30 seconds (for example `ws.ping()` with Node's `ws` package). A connection with no traffic for about 90 seconds is closed, and a few quiet wallets can easily go that long without a fill. See [heartbeats](/docs/chains/websockets/hypercore/connection-lifecycle#heartbeats).
+* The checkpoint only moves when a wallet has fills, so after a reconnect a quiet wallet often gets a `gap`. It means the range can't be replayed, not that fills were lost; check it against a backfill source if you need certainty.
+* `users` is always an array. Split large wallet sets across several subscriptions.
+* Set `aggregateByTime: true` to merge a taker order's partial fills in the same block. Choose before you start storing fills: merged and unmerged records are different rows, so switching on an existing store mixes the two.

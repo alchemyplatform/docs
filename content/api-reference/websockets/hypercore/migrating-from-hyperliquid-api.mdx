@@ -1,0 +1,74 @@
+---
+title: "Migrating from the Hyperliquid API"
+description: "What changes when you move a client from Hyperliquid's public WebSocket to Alchemy."
+---
+
+<Markdown src="../../shared/preview-notice-beta.mdx" />
+
+# Migrating from the Hyperliquid API
+
+Alchemy's HyperCore streams use the same stream names and the same core data as Hyperliquid's public WebSocket (`wss://api.hyperliquid.xyz/ws`), with a few request and envelope differences. Code written for the public API needs small changes before it works here.
+
+## What you gain
+
+* Book updates every block. The public `l2Book` feed is throttled; Alchemy sends a market's book whenever it changes.
+* Many markets or addresses in one subscription, or every market at once.
+* Order-level books (`l4BookUpdates`) and incremental L2 books (`l2BookDiff`).
+* Fill replay after a reconnect (`fromBlock`) and a per-subscription `seq` to detect missed messages.
+* Block number and block time on every data message.
+
+## Differences at a glance
+
+| | Hyperliquid public API | Alchemy |
+| --- | --- | --- |
+| Endpoint | `wss://api.hyperliquid.xyz/ws` | `wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>` |
+| Subscription ID | None | `subscriptionId` required on every request |
+| One market | `"coin": "BTC"` | `"coins": ["BTC"]` |
+| All markets | One subscription per market | Omit `coins` (or send `[]`) |
+| One user | `"user": "0x…"` | `"users": ["0x…"]` |
+| Unsubscribe | Repeat the subscription object | `{"method":"unsubscribe","subscriptionId":…}` |
+| Data shape | `data: {coin, time, levels}` | `data: {blockNumber, blockTime, isSnapshot, books: [{coin, levels}]}` |
+| Fills | `data: {user, fills: [fill]}` | `data.fills: [[user, fill]]`, one `[user, fill]` pair per fill |
+| Heartbeat | `{"method":"ping"}` | Send a WebSocket protocol ping frame every 30 seconds instead. `{"method":"ping"}` returns an `invalid_params` error. Idle connections close after about 90 seconds (see [heartbeats](/docs/chains/websockets/hypercore/connection-lifecycle#heartbeats)) |
+| Trades | `trades` | Use `allFills`: one record per side, both sides share `tid` |
+| Replay | None | `fromBlock` on fill streams |
+
+## Before and after
+
+Public API:
+
+```json
+{"method":"subscribe","subscription":{"type":"l2Book","coin":"BTC"}}
+```
+
+Alchemy:
+
+```json
+{"method":"subscribe","subscriptionId":"btc-book","subscription":{"type":"l2Book","coins":["BTC"]}}
+```
+
+Public API data:
+
+```text
+{"channel":"l2Book","data":{"coin":"BTC","time":1791999593526,"levels":[[…bids],[…asks]]}}
+```
+
+Alchemy data:
+
+```text
+{"seq":1,"channel":"l2Book","subscriptionId":"btc-book","data":{"blockNumber":1183759643,"blockTime":1791999593526,"isSnapshot":true,"books":[{"coin":"BTC","levels":[[…bids],[…asks]]}]}}
+```
+
+Price levels (`px`, `sz`, `n`) and fill objects use the same fields as the public API. Fills arrive as `[user, fill]` pairs, so read `fill.coin`, not `pair.coin`.
+
+## Common mistakes
+
+* **Sending `coin` instead of `coins`.** Unsupported fields are ignored, which turns a one-market subscription into an all-markets subscription. Always use the array form.
+* **Omitting `subscriptionId`.** The request is rejected.
+* **Changing the case of coin names.** Names are case-sensitive: `BTC` works, but `btc` is treated as an unknown market. It's accepted and returns empty data (for example `"bbo":[null,null]`), so a wrong case looks like a quiet market.
+* **Detecting gaps with block numbers.** Book streams skip blocks with no change. Use `seq`.
+* **Reading `data` as a single market.** Alchemy groups markets in `data.books` (or `data.fills`, `data.diffs`). Iterate over the array. `data.mids` is a map of coin to price.
+
+## Verify your migration
+
+Run both feeds side by side for a few minutes and compare values by coin and block time. Book levels and fills should match exactly; Alchemy delivers more frequent book updates because the public feed is throttled.

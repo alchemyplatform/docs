@@ -1,141 +1,116 @@
 ---
 title: "l4BookUpdates stream"
-description: "HyperCore private-preview documentation."
+description: "Order-level book: every resting order, then each order added, resized, or removed."
 ---
 
-<Markdown src="../../shared/preview-notice-september.mdx" />
+<Markdown src="../../shared/preview-notice-beta.mdx" />
 
-# l4BookUpdates stream
+# l4BookUpdates
 
-`l4BookUpdates` delivers every individual order placed, resized, or removed,
-including its position in the price-level queue. This is ideal for market making,
-queue-position analysis, liquidity attribution, and reconstructing an order-level book.
-
-For the corresponding gRPC update stream, see [StreamL4BookUpdates](/docs/chains/hypercore-grpc/api-reference/stream-l4-book-updates).
+The order-level book: every resting order, then each order that is added, resized, or removed.
 
 ## Subscribe
 
 ```json
 {
   "method": "subscribe",
-  "subscription": { "type": "l4BookUpdates", "coins": ["BTC", "ETH"] }
+  "subscriptionId": "l4_01",
+  "subscription": {
+    "type": "l4BookUpdates",
+    "coins": [
+      "ETH"
+    ]
+  }
 }
 ```
 
-Use `marketTypes` instead of `coins` to subscribe to all markets of selected types:
+## Parameters
 
-```json
-{
-  "method": "subscribe",
-  "subscription": { "type": "l4BookUpdates", "marketTypes": ["spot"] }
-}
-```
-
-## Subscription parameters
-
-| Parameter     | Type     | Required | Source            | Description                                                                                                                                                                                                              |
-| ------------- | -------- | -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `coins`       | string[] | No       | Alchemy extension | Markets to subscribe to. Omit to subscribe to every market of the types in `marketTypes`, which defaults to perpetuals. The native API takes a single `coin` per subscription; the plural array is an Alchemy extension. |
-| `marketTypes` | string[] | No       | Alchemy extension | Restricts delivery by market type. Accepted values: `perp`, `spot`, `outcome`, or `*`. Defaults to `["perp"]`. Rejected if combined with `coins`.                                                                        |
-
-The default never grows. New market types must be added to `marketTypes` explicitly, or pass `["*"]` to opt in to future types automatically.
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `coins` | string[] | No | Markets to include, up to 200. Omit, or send `[]`, for every market (one unfiltered subscription per stream per connection). Unknown coins stay subscribed and return empty data until the market exists. |
 
 ## Acknowledgement
 
 ```json
 {
   "channel": "subscriptionResponse",
-  "data": { "subscriptionId": "sub_01", "type": "l4BookUpdates" }
+  "subscriptionId": "l4_01",
+  "data": {
+    "type": "l4BookUpdates",
+    "coins": [
+      "ETH"
+    ]
+  }
 }
 ```
 
-## Event envelope
+## Messages
+
+The first message (`isSnapshot: true`) lists every resting order in the subscribed markets as a `new` diff. Later messages carry the changes in each block:
 
 ```json
 {
+  "seq": 2,
   "channel": "l4BookUpdates",
-  "subscriptionId": "sub_01",
-  "blockHeight": 123456,
-  "blockTime": 1780000000000,
-  "cursor": "<opaque cursor>",
+  "subscriptionId": "l4_01",
   "data": {
-    "height": 123456,
-    "timestamp": 1780000000000,
+    "blockNumber": 1183759644,
+    "blockTime": 1791999593590,
     "isSnapshot": false,
     "diffs": [
       {
         "type": "new",
-        "coin": "BTC",
-        "oid": 12345,
-        "user": "0x1111111111111111111111111111111111111111",
+        "coin": "ETH",
+        "oid": 574446008493,
+        "user": "0x67f7aa8fb95c47e6ea9c517b623e0701cbf9d9ba",
         "side": "B",
-        "px": "100000.0",
-        "sz": "0.10",
-        "insertBefore": 12346
+        "px": "2436.0",
+        "sz": "1.1853",
+        "insertBefore": 574446008411
+      },
+      {
+        "type": "update",
+        "coin": "ETH",
+        "oid": 574446008100,
+        "sz": "0.5"
+      },
+      {
+        "type": "remove",
+        "coin": "ETH",
+        "oid": 574446007990
       }
     ]
   }
 }
 ```
 
-## Payload fields
+| Diff | Fields | Meaning |
+| --- | --- | --- |
+| `new` | `coin`, `oid`, `user`, `side`, `px`, `sz`, optional `insertBefore` | A new resting order. |
+| `update` | `coin`, `oid`, `sz` | The order's remaining size changed, usually from a partial fill. |
+| `remove` | `coin`, `oid` | The order left the book (filled or cancelled). |
 
-| Field                  | Type    | Description                                                                                                    |
-| ---------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
-| `height`               | integer | Block height.                                                                                                  |
-| `timestamp`            | integer | Block timestamp in milliseconds.                                                                               |
-| `isSnapshot`           | boolean | `true` when the message contains a complete replacement snapshot; absent or `false` for an incremental update. |
-| `diffs`                | array   | Per-order changes in this block.                                                                               |
-| `diffs[].type`         | string  | `new`, `update`, or `remove`.                                                                                  |
-| `diffs[].coin`         | string  | Market symbol.                                                                                                 |
-| `diffs[].oid`          | integer | Order ID, unique and stable for the life of the order.                                                         |
-| `diffs[].user`         | string  | Address that placed the order.                                                                                 |
-| `diffs[].side`         | string  | `B` for bid, `A` for ask.                                                                                      |
-| `diffs[].px`           | string  | Limit price, as a decimal string.                                                                              |
-| `diffs[].sz`           | string  | Initial order size. Present on `new` only.                                                                      |
-| `diffs[].origSz`       | string  | Order size before an `update`. Present on `update` only.                                                        |
-| `diffs[].newSz`        | string  | Order size after an `update`. Present on `update` only.                                                         |
-| `diffs[].insertBefore` | integer | Optional, on `new` only. Queue placement — see below.                                                          |
+`side` is `B` (bid) or `A` (ask). `insertBefore` places the new order immediately ahead of that order in the price level's queue; when it's absent, add the order at the back of the queue.
 
-## Queue position
+## Maintaining a book
 
-`insertBefore` places this order immediately ahead of the resting order with that ID at the same price level, reflecting HyperCore's priority placement rules. When absent, append the order to the tail of the queue. If the named order is no longer at that level, append to the tail.
+1. On `isSnapshot: true`, replace your local orders for the subscribed markets.
+2. Apply `new`, `update`, and `remove` in the order received.
+3. Check that `seq` increases by one. If it skips, resubscribe and start from the new snapshot.
 
-## Update behavior
+Summing `sz` and counting orders at each price gives the same levels as an exact-price `l2Book`.
 
-* `update` means the order's size changed, typically a partial fill; it carries `origSz` and `newSz`
-* `remove` is terminal — the order was filled or cancelled and carries no operation-specific payload
-* Grouping these orders by price produces the corresponding level-aggregated view — sum the sizes and count the orders at each price — so one subscription can serve both order-level and level-aggregated needs. This corresponds to an unaggregated `l2Book`; it does not reproduce a book requested with `nSigFigs` or `mantissa` applied.
-
-## Bootstrap
-
-The first message after subscribing carries a full order-book snapshot with `isSnapshot: true`, delivering every resting order as a `new` diff. Install it as local state, then apply later diffs. A later message with `isSnapshot: true` uses the same replacement mechanism for recovery.
-
-For a snapshot shared by many consumers, or to let a slow client digest a large book while buffering live updates, use [the REST snapshot read](/docs/data/hypercore/rest-api/market-data-and-snapshots/l-4-book-snapshots) instead.
-
-## Choosing a book stream
-
-|                  | l2Book                       | l2BookDiff                | bbo                       | l4BookUpdates                          |
-| ---------------- | ---------------------------- | ------------------------- | ------------------------- | -------------------------------------- |
-| **Delivers**     | Complete aggregated snapshot | Changed aggregated levels | Best bid and ask only     | Changed individual orders              |
-| **Client state** | None required                | Maintains a local book    | None required             | Maintains a local book                 |
-| **Detail**       | Aggregated levels            | Aggregated levels         | Top of book               | Individual orders, with queue position |
-| **Use case**     | Displays, periodic reads     | Efficient live book       | Price and spread tracking | Market making, queue analysis          |
+<Callout intent="warning">
+  An unfiltered `l4BookUpdates` snapshot covers every resting order on HyperCore and can be tens of megabytes. Size your receive buffers accordingly, or filter by `coins`.
+</Callout>
 
 ## Unsubscribe
 
 ```json
-{
-  "method": "unsubscribe",
-  "subscription": { "type": "l4BookUpdates", "coins": ["BTC", "ETH"] }
-}
+{"method":"unsubscribe","subscriptionId":"l4_01"}
 ```
 
 ## Recovery
 
-`l4BookUpdates` carries no per-market `seq` or `prev_seq`; gap detection is server-side, so there is no client sequence bookkeeping. See [detecting gaps](/docs/data/hypercore/concepts/timestamps-cursors-and-replay#detecting-gaps).
-
-* Persist `cursor` after applying a message.
-* On reconnect, supply `cursor` in the subscription object.
-* A message with `isSnapshot: true` replaces your local state. Any message without it is a diff that must chain onto your previous state.
-* If continuity is broken, a fresh message with `isSnapshot: true` is pushed to you. `isSnapshot` is the only continuity signal you need to handle — receiving it means discard local state and adopt the supplied snapshot.
+Book streams have no replay. After a disconnect, or if `seq` skips, resubscribe; the first message is a fresh snapshot. If you receive a `book_reset` error, drop local state for the subscription and rebuild from the snapshot that follows. See [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).

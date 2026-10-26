@@ -1,61 +1,84 @@
 ---
 title: "WebSocket streaming"
-description: "HyperCore private-preview documentation."
+description: "Real-time HyperCore order book and fill data over WebSocket."
 ---
 
-<Markdown src="../../shared/preview-notice-september.mdx" />
+<Markdown src="../../shared/preview-notice-beta.mdx" />
 
 # WebSocket streaming
 
-## Subscription envelope
+Stream Hyperliquid order books and fills from Alchemy-operated nodes. One connection carries many subscriptions, each subscription can cover many markets or addresses, and every data message carries the block it came from.
 
-Use the native subscription envelope: `{"method":"subscribe","subscription":{...}}`. Use the same subscription object with `"method":"unsubscribe"` to close a stream. Acknowledgements use `"channel":"subscriptionResponse"`; data frames use `{"channel":"<type>","data":{...}}`.
+## Endpoint
 
-HyperCore data frames carry additive top-level metadata: `subscriptionId`, `blockHeight`, `blockTime`, and, on replay-capable streams, `cursor`.
+```text
+wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>
+```
 
-## Envelope fields
+HyperCore access is enabled per team during the beta; to request it, contact [abdul.manan@alchemy.com](mailto:abdul.manan@alchemy.com). Once enabled, the HyperCore network appears in your Alchemy dashboard and works with your existing API key. Testnet is not available yet.
 
-| Field | Type | Description |
+## Quick example
+
+```json
+{"method":"subscribe","subscriptionId":"btc-top","subscription":{"type":"bbo","coins":["BTC"]}}
+```
+
+```json
+{"channel":"subscriptionResponse","subscriptionId":"btc-top","data":{"type":"bbo","coins":["BTC"]}}
+{"seq":1,"channel":"bbo","subscriptionId":"btc-top","data":{"blockNumber":1183716828,"blockTime":1791996538119,"isSnapshot":true,"books":[{"coin":"BTC","bbo":[{"px":"81772.0","sz":"30.29","n":96},{"px":"81773.0","sz":"0.02","n":2}]}]}}
+```
+
+## Requests
+
+Every request is a JSON object with `method` and `subscriptionId`.
+
+| Field | Required | Description |
 | --- | --- | --- |
-| channel | string | Subscription-response channel or stream type. |
-| data | object | Stream-specific payload. |
-| subscriptionId | string | Subscription identifier. |
-| blockHeight | integer | Source-block height. |
-| blockTime | integer | Source-block time. |
-| cursor | string | Opaque resume token on replay-capable streams. |
+| `method` | Yes | `subscribe` or `unsubscribe`. |
+| `subscriptionId` | Yes | An ID you choose, up to 128 characters. It must be unique on the connection and is echoed on every message for that subscription. Use it to unsubscribe. |
+| `subscription` | Subscribe only | The stream `type` plus its filters. |
 
-## Subscription fields
+```json
+{"method":"unsubscribe","subscriptionId":"btc-top"}
+```
 
-Native subscriptions use singular `coin` and `user` fields. HyperCore's `coins`, `users`, `builders`, `intervals`, and `eventTypes` arrays are Alchemy extensions for multi-entity subscriptions. Candle subscriptions include both a coin dimension and an interval dimension.
+Filters are arrays: `coins`, `users`, `builders`. To subscribe to one market, pass a one-element array such as `"coins": ["BTC"]`. Omitting `coins` subscribes to **every market**, which can be a large volume of data. See [unfiltered subscriptions](/docs/chains/websockets/hypercore/errors-and-limits#unfiltered-subscriptions).
 
-## Stream catalog
+<Callout intent="warning">
+  Send only the fields documented for each stream. Fields the server doesn't recognize are ignored rather than rejected, so a misspelled or unsupported filter (for example `coin` instead of `coins`) can result in an unfiltered, all-markets subscription.
+</Callout>
 
-| Stream | Description |
-| --- | --- |
-| [activeAssetCtx](/docs/chains/websockets/hypercore/streams/active-asset-context) | Active asset context. |
-| [allCandles](/docs/chains/websockets/hypercore/streams/all-candles) | Candle updates across selected coins and intervals. |
-| [allFills](/docs/chains/websockets/hypercore/streams/all-fills) | Fill updates across selected coins. |
-| [allIsolatedMarginUpdates](/docs/chains/websockets/hypercore/streams/all-isolated-margin-updates) | Isolated-margin updates across the available stream scope. |
-| [allLeverageUpdates](/docs/chains/websockets/hypercore/streams/all-leverage-updates) | Leverage-setting updates across the available stream scope. |
-| [allTwapStatusUpdates](/docs/chains/websockets/hypercore/streams/all-twap-status-updates) | TWAP-status updates. |
-| [allUserNonFundingLedgerUpdates](/docs/chains/websockets/hypercore/streams/all-user-non-funding-ledger-updates) | Non-funding ledger updates. |
-| [bbo](/docs/chains/websockets/hypercore/streams/bbo) | Best-bid and offer book updates. |
-| [builderFills](/docs/chains/websockets/hypercore/streams/builder-fills) | Builder fill updates. |
-| [builderLiquidation](/docs/chains/websockets/hypercore/streams/builder-liquidation) | Builder-context liquidation updates. |
-| [builderOrderUpdates](/docs/chains/websockets/hypercore/streams/builder-order-updates) | Builder order updates. |
-| [candles](/docs/chains/websockets/hypercore/streams/candles) | Candle updates for selected coins and intervals. |
-| [fundingRates](/docs/chains/websockets/hypercore/streams/funding-rates) | Funding-rate updates. |
-| [l2Book](/docs/chains/websockets/hypercore/streams/l2-book) | L2 book snapshots. |
-| [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff) | L2 book differences. |
-| [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates) | L4 order-level updates. |
-| [liquidationFills](/docs/chains/websockets/hypercore/streams/liquidation-fills) | Liquidation fill updates. |
-| [setOracleUpdates](/docs/chains/websockets/hypercore/streams/set-oracle-updates) | Oracle updates. |
-| [tpslUpdates](/docs/chains/websockets/hypercore/streams/tpsl-updates) | Take-profit and stop-loss updates. |
-| [trades](/docs/chains/websockets/hypercore/streams/trades) | Market-wide trade events; use userFills for the same events scoped to an account. |
-| [userFills](/docs/chains/websockets/hypercore/streams/user-fills) | User fill updates. |
-| [userIsolatedMarginUpdates](/docs/chains/websockets/hypercore/streams/user-isolated-margin-updates) | User-context isolated-margin updates. |
-| [userLeverageUpdates](/docs/chains/websockets/hypercore/streams/user-leverage-updates) | User-context leverage updates. |
-| [userNonFundingLedgerUpdates](/docs/chains/websockets/hypercore/streams/user-non-funding-ledger-updates) | User non-funding ledger updates. |
-| [userOrderUpdates](/docs/chains/websockets/hypercore/streams/user-order-updates) | User order updates. |
+## Messages
 
-For connection, resume, and recovery behavior, see [connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle) and [replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery).
+| Message | Shape | When |
+| --- | --- | --- |
+| `connected` | `{"channel":"connected"}` | The connection is ready. |
+| Acknowledgement | `{"channel":"subscriptionResponse","subscriptionId":…,"data":{…}}` | A subscribe or unsubscribe succeeded. `data` echoes the accepted filters. |
+| Data | `{"seq":…,"channel":<type>,"subscriptionId":…,"data":{…}}` | A block's worth of fills, or a book update. |
+| Gap | `{"seq":…,"channel":<type>,"subscriptionId":…,"gap":{"fromBlock":…,"toBlock":…}}` | Fill streams only. The range could not be delivered. |
+| Error | `{"channel":…,"subscriptionId"?:…,"error":{"code":…,"message":…}}` | See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits). |
+
+Every data message includes `data.blockNumber` and `data.blockTime` (Unix milliseconds). `seq` is a per-subscription counter that starts at `1` and increases by one with each data, `gap`, or `book_reset` message; use it to detect a missed message. See [connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle#sequence-numbers).
+
+## Streams
+
+| Stream | Kind | Filter | Replay |
+| --- | --- | --- | --- |
+| [allFills](/docs/chains/websockets/hypercore/streams/all-fills) | Event | `coins` (optional) | `fromBlock` |
+| [userFills](/docs/chains/websockets/hypercore/streams/user-fills) | Event | `users` | `fromBlock` |
+| [builderFills](/docs/chains/websockets/hypercore/streams/builder-fills) | Event | `builders` | `fromBlock` |
+| [liquidationFills](/docs/chains/websockets/hypercore/streams/liquidation-fills) | Event | None | `fromBlock` |
+| [l2Book](/docs/chains/websockets/hypercore/streams/l2-book) | Book: snapshots | `coins` (optional) | No |
+| [l2BookDiff](/docs/chains/websockets/hypercore/streams/l2-book-diff) | Book: snapshot, then diffs | `coins` (optional) | No |
+| [bbo](/docs/chains/websockets/hypercore/streams/bbo) | Book: snapshots | `coins` (optional) | No |
+| [allMids](/docs/chains/websockets/hypercore/streams/all-mids) | Book: snapshots | `coins` (optional) | No |
+| [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates) | Book: snapshot, then order diffs | `coins` (optional) | No |
+
+**Event streams** deliver each fill once and can replay recent blocks after a reconnect. **Book streams** start with a snapshot of current state and need no replay: resubscribe and the snapshot re-establishes your state.
+
+## Next steps
+
+* [Connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle): reconnecting, heartbeats, sequence numbers
+* [Replay and recovery](/docs/chains/websockets/hypercore/replay-and-recovery): resuming fill streams after a disconnect
+* [Errors and limits](/docs/chains/websockets/hypercore/errors-and-limits)
+* [Migrating from the Hyperliquid API](/docs/chains/websockets/hypercore/migrating-from-hyperliquid-api)
