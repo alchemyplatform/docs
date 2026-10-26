@@ -625,6 +625,15 @@ components:
             `sort_by` is accepted as an alias.
           schema:
             $ref: "./account.yaml#/components/schemas/GetTokenHoldersAtSlotSortBy"
+        - name: pageKey
+          required: false
+          description: >-
+            Cursor for the next page. Use the `pageKey` returned by the
+            previous response; omit or send an empty string for the
+            first page.
+          schema:
+            type: string
+            default: ""
       examples:
         - name: getTokenHoldersAtSlot example
           params:
@@ -651,12 +660,14 @@ components:
                   owner: "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9"
                   balanceRaw: "694102667534076"
                   balanceUi: "694102667.534076"
+              pageKey: null
       result:
         name: Holders at slot
         description: >-
           The token accounts that held the mint at the requested slot,
           ranked by balance, along with the slot the result was
-          computed at and the sort order applied.
+          computed at, the sort order applied, and a `pageKey` cursor
+          for the next page (or `null` on the last page).
         schema:
           $ref: "./account.yaml#/components/schemas/GetTokenHoldersAtSlotResult"
       errors:
@@ -666,9 +677,9 @@ components:
             malformed `mint` (must be a 32-byte base-58 pubkey), a
             missing or non-integer `slot`, a non-integer `limit`, an
             unknown `sortBy` value (only `balance_desc` and
-            `balance_asc` are accepted, case-sensitive), a `params`
-            value that is neither an array nor an object, or a mint
-            that is not present in the index.
+            `balance_asc` are accepted, case-sensitive), an invalid
+            `pageKey` cursor, a `params` value that is neither an array
+            nor an object, or a mint that is not present in the index.
         - code: -32601
           message: Method not found.
         - code: -32603
