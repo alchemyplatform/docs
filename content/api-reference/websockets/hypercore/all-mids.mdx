@@ -70,7 +70,7 @@ Mid prices for each market, sent whenever a mid changes.
 | --- | --- |
 | `data.mids` | Map of coin to mid price (a decimal string). The snapshot includes only markets with both a bid and an ask. In later messages, a value is `null` when that market loses its bid or ask; treat `null` as "no mid" until a later message sends a price. |
 
-The first message includes every subscribed market; later messages include markets whose mid changed.
+The first message includes every subscribed market that currently has a mid. A market without both a bid and an ask is left out until it has one. Later messages include only markets whose mid changed, with `null` when a market loses its mid.
 
 ## Unsubscribe
 
