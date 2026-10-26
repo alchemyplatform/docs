@@ -29,7 +29,7 @@ The first time Claude calls an Alchemy tool, a browser window opens to sign in w
   </Step>
   <Step title="Select an app">
 
-Run `/alchemy:setup` to list your Alchemy apps and select one. This caches the app's API key for the rest of the session — most data tools require it.
+Run `/alchemy:setup` to list your Alchemy apps and select one. Most data tools need a selected app. The server caches that app's API key on Alchemy's side for later requests, for up to 90 days.
 
 ```text
 /alchemy:setup
@@ -58,9 +58,13 @@ Networks default to `eth-mainnet` when you don't specify one.
 
 ## What's included
 
-* **160+ MCP tools** from the hosted Alchemy MCP Server (`mcp.alchemy.com`): EVM JSON-RPC, Token, NFT, Prices, and Portfolio APIs, transaction simulation and tracing, account abstraction, and Solana (RPC + Digital Asset Standard). See the [full tool list](docs/alchemy-mcp-server#available-tools).
+* **170+ MCP tools** from the hosted Alchemy MCP Server (`mcp.alchemy.com`): EVM JSON-RPC, Token, NFT, Prices, and Portfolio APIs, transaction simulation and tracing, Alchemy app management, and Solana (RPC + Digital Asset Standard). See the [full tool list](docs/alchemy-mcp-server#available-tools). The plugin's connection hides the faucet, airdrop, and paymaster tools.
 * **Slash commands** for the workflows above, so common queries are one command away.
-* **Agent Skills** (`alchemy-mcp`, `alchemy-api`, `alchemy-cli`, `agentic-gateway`) that teach Claude how to use Alchemy correctly — both for live queries in the conversation and when writing application code against Alchemy APIs.
+* **Agent Skills** (`alchemy-mcp` and `alchemy-api`) that teach Claude how to use Alchemy correctly — both for live queries in the conversation and when writing application code against Alchemy APIs.
+
+The plugin reads blockchain data, simulates transactions, and manages your Alchemy apps. It doesn't send transactions, swap, bridge, make payments, or sign with a wallet.
+
+Plugin versions before 0.2.0 also bundled the `alchemy-cli` and `agentic-gateway` skills. To keep using them, install them from [Agent Skills](docs/alchemy-agent-skills).
 
 ## Plugin vs. MCP server vs. skills
 
@@ -70,11 +74,11 @@ Networks default to `eth-mainnet` when you don't specify one.
 | **[MCP Server](docs/alchemy-mcp-server)** | Any MCP-compatible client (Cursor, Codex, Claude Desktop, VS Code Copilot) — live blockchain data as tool calls |
 | **[Agent Skills](docs/alchemy-agent-skills)** | Any agent that writes code against Alchemy APIs — endpoint knowledge without tool calls |
 
-If you use Claude Code, install the plugin and you get all three.
+If you use Claude Code, the plugin gives you the MCP server, slash commands, and the `alchemy-mcp` and `alchemy-api` skills in one install.
 
 ## Privacy and support
 
-The plugin connects to Alchemy's hosted MCP server and APIs. Data collection, usage, retention, and sharing practices are described in the [Alchemy Privacy Policy](https://www.alchemy.com/policies/privacy-policy). The plugin stores no data locally beyond what Claude Code persists for the connection; the API key for a selected app is cached server-side for the session.
+The plugin connects to Alchemy's hosted MCP server and APIs. Data collection, usage, retention, and sharing practices are described in the [Alchemy Privacy Policy](https://www.alchemy.com/policies/privacy-policy). The plugin stores no data locally beyond what Claude Code persists for the connection; the server caches the selected app's API key on Alchemy's side for up to 90 days, and clears it if your sign-in becomes invalid.
 
 For help, contact [support@alchemy.com](mailto:support@alchemy.com) or open an issue on [GitHub](https://github.com/alchemyplatform/alchemy-claude-plugin/issues).
 
