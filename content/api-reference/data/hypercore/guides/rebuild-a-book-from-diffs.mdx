@@ -10,7 +10,7 @@ description: "Maintain a local L2 book from l2BookDiff, with gap detection and r
 `l2BookDiff` sends a full snapshot when you subscribe, then only the price levels that change. This guide keeps a local book correct and recovers when something goes wrong. Run it in Node.js 22+ or a browser. On older Node.js versions, add `import WebSocket from "ws";`.
 
 ```js
-// You provide: backoffWithJitter, onFatal.
+// You provide: backoffWithJitter, resetBackoff, onFatal.
 const N_LEVELS = 20;
 const books = {};      // coin -> { bids: Map<px, level>, asks: Map<px, level> }
 let subId = null;      // current subscription; messages for any other ID are ignored
@@ -53,13 +53,13 @@ function connect() {
     // Errors come as a subscription error (with our ID) or a connection-level error (no ID).
     if (msg.error && (msg.channel === "error" || msg.subscriptionId === subId)) {
       if (msg.error.code === "book_reset") return subscribe();      // start over from a full snapshot
-      if (msg.error.code === "book_not_ready") return ws.close();   // temporary: reconnect with backoff
+      if (msg.error.code === "book_not_ready" || msg.error.code === "going_away") return ws.close();   // temporary: reconnect with backoff
       halted = true;                           // e.g. invalid_params or limit_reached
       onFatal(msg.error);
       return ws.close();
     }
     if (msg.subscriptionId !== subId) return;  // stale or unrelated subscription
-    if (msg.seq === undefined) return;         // acknowledgement
+    if (msg.seq === undefined) return resetBackoff();  // acknowledgement: the connection is healthy
 
     if (msg.seq !== lastSeq + 1) return subscribe();  // missed a message: start over
     lastSeq = msg.seq;
@@ -113,6 +113,6 @@ connect();
 * Detect missed messages with `seq`, not `blockNumber`. Quiet markets skip blocks.
 * When you start over, use a new `subscriptionId`. Messages already in flight for the old subscription then can't be mistaken for the new one.
 * Treat the book as unavailable between a disconnect or reset and the next snapshot. `books` is empty during that window.
-* On `book_reset`, the example resubscribes so every market gets a fresh snapshot. `book_not_ready` is temporary, so it reconnects with backoff. Other errors, such as `invalid_params` or `limit_reached`, need a change to the request or your limits, so the example stops and reports them through `onFatal`. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
+* On `book_reset`, the example resubscribes so every market gets a fresh snapshot. `book_not_ready` and `going_away` (sent while a server is restarting for a deployment) are temporary, so it reconnects with backoff. Other errors, such as `invalid_params` or `limit_reached`, need a change to the request or your limits, so the example stops and reports them through `onFatal`. See [errors and limits](/docs/chains/websockets/hypercore/errors-and-limits).
 
 For `l4BookUpdates`, the `seq`, snapshot, and reset handling carry over; key the book by order ID and don't trim it to a level count. See [l4BookUpdates](/docs/chains/websockets/hypercore/streams/l4-book-updates).

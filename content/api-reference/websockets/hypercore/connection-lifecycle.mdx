@@ -20,7 +20,7 @@ Treat disconnects as routine. Deployments, maintenance, network interruptions, a
 
 A connection with no traffic in either direction for about 90 seconds is closed (`1006`). This affects subscriptions that are often quiet, such as `userFills` for a few wallets.
 
-To keep a quiet connection open, send a WebSocket protocol ping frame every 30 seconds. The server answers each ping with a pong, and the traffic keeps the connection alive. Most WebSocket libraries can send pings on a timer (for example `ws.ping()` in Node's `ws` package).
+To keep a quiet connection open, send a WebSocket protocol ping frame every 30 seconds. The server answers each ping with a pong, and the traffic keeps the connection alive. Most WebSocket libraries can send pings on a timer (for example `ws.ping()` in Node's `ws` package). Browser WebSocket APIs can't send ping frames.
 
 The server doesn't send its own pings, and there is no JSON-level heartbeat: `{"method":"ping"}` returns an `invalid_params` error.
 

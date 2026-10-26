@@ -49,13 +49,13 @@ Alchemy:
 
 Public API data:
 
-```json
+```text
 {"channel":"l2Book","data":{"coin":"BTC","time":1791999593526,"levels":[[…bids],[…asks]]}}
 ```
 
 Alchemy data:
 
-```json
+```text
 {"seq":1,"channel":"l2Book","subscriptionId":"btc-book","data":{"blockNumber":1183759643,"blockTime":1791999593526,"isSnapshot":true,"books":[{"coin":"BTC","levels":[[…bids],[…asks]]}]}}
 ```
 
@@ -63,9 +63,9 @@ Price levels (`px`, `sz`, `n`) and fill objects use the same fields as the publi
 
 ## Common mistakes
 
-* **Sending `coin` instead of `coins`.** Unsupported fields may be ignored, which turns a one-market subscription into an all-markets subscription. Always use the array form.
+* **Sending `coin` instead of `coins`.** Unsupported fields are ignored, which turns a one-market subscription into an all-markets subscription. Always use the array form.
 * **Omitting `subscriptionId`.** The request is rejected.
-* **Changing the case of coin names.** Names are case-sensitive: `BTC` works, `btc` returns nothing.
+* **Changing the case of coin names.** Names are case-sensitive: `BTC` works, but `btc` is treated as an unknown market. It's accepted and returns empty data (for example `"bbo":[null,null]`), so a wrong case looks like a quiet market.
 * **Detecting gaps with block numbers.** Book streams skip blocks with no change. Use `seq`.
 * **Reading `data` as a single market.** Alchemy groups markets in `data.books` (or `data.fills`, `data.diffs`). Iterate over the array. `data.mids` is a map of coin to price.
 
