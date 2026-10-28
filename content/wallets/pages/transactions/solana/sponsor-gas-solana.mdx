@@ -97,3 +97,51 @@ We support sponsoring rent for inner `SystemProgram.createAccount` calls. `Syste
 * **Important:** Only use `prefundRent` for payloads you control or can validate. If an attacker can influence the transaction or the programs it invokes, they may be able to grief your policy by causing failed or unnecessarily expensive prefunds.
 * `prefundRent` is not transaction-shape-preserving. When prefunding is needed, the returned transaction includes an added top-level `SystemProgram.transfer` instruction before your program flow. Programs that inspect sibling instructions or depend on exact top-level instruction ordering can behave differently or fail.
 * Durable nonce transactions have a simulation caveat: the service simulates a modified copy without `AdvanceNonceAccount`, then returns a nonce-preserving transaction for submission.
+
+## v1 transaction sponsorship
+
+<Note>
+  Sponsorship for Solana v1 transactions is in beta. Email [support@alchemy.com](mailto:support@alchemy.com) to request access.
+</Note>
+
+### Build the transaction
+
+When building a v1 transaction for sponsorship, use these settings and limits:
+
+* **Compute units and loaded accounts data size:** Set both limits to nonzero values in the [transaction config](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0385-transaction-v1.md). Both default to `0`, which causes the service to reject the request. Unlike legacy and v0 transactions, v1 transactions no longer use `ComputeBudget` instructions to set these limits.
+* **Priority fee:** Set the [total fee in lamports](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0385-transaction-v1.md), up to 10,000,000 lamports. This fee is charged once per transaction.
+* **Transaction size:** Stay within 4,096 bytes, including signatures, with at most 12 signatures, 64 accounts, and 64 instructions. If the service adds the paymaster as a new signer, it adds 96 bytes to the transaction, so leave room. For comparison, legacy and v0 transactions allow 1,232 bytes. See [SIMD-0296](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0296-larger-transactions.md).
+* **Address lookup tables:** These are not supported in v1 transactions. See [SIMD-0385](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0385-transaction-v1.md).
+* **Durable nonces:** Alchemy does not sponsor v1 transactions that use durable nonces. Solana plans to [remove durable nonces](https://solana.com/upgrades/durable-nonce-deprecation).
+
+### Choose limits based on simulation
+
+Simulate your transaction to estimate its compute-unit and loaded-accounts data size requirements, then add some headroom. See Solana's [compute budget documentation](https://solana.com/docs/core/fees/compute-budget).
+
+For fee-only sponsorship, the service checks that both limits are nonzero but does not simulate the transaction or verify that the limits are sufficient. For example, a transaction that needs 200,000 compute units but requests 100,000 can receive sponsorship and still fail during execution.
+
+Submit with preflight enabled to catch insufficient limits before the transaction lands. Preflight can reject the transaction with errors such as `MaxLoadedAccountsDataSizeExceeded` or `ProgramFailedToComplete`. Without preflight, the transaction can land and fail onchain. Repeatedly submitting transactions that fail because of invalid limits may result in Alchemy revoking your access.
+
+If you use rent prefunding, the service simulates the transaction with the added prefund transfer. Your limits must cover both your instructions and that transfer. If they do not, the service rejects the request before signing; it does not increase your limits automatically.
+
+Avoid setting limits much higher than you need. Higher limits do not increase the v1 priority fee, which is a fixed total in lamports, but they do increase the transaction cost that leaders use for scheduling. This can lower your transaction's scheduling priority. See Anza's guides on [transaction costs and compute units](https://www.anza.xyz/blog/why-solana-transaction-costs-and-compute-units-matter-for-developers) and [loaded accounts data size limits](https://anza.xyz/blog/cu-optimization-with-setloadedaccountsdatasizelimit).
+
+### Sign the sponsored transaction
+
+Sign the message in the returned `serializedTransaction` and place each signature in its corresponding slot. The service does not carry over signatures from the transaction you submitted; only the paymaster's signature slot is filled in the response.
+
+If the service adds the paymaster as a new signer, the returned transaction has one more signature slot than the original.
+
+### Sponsor CPI rent
+
+To enable prefunding, follow the [CPI rent prefunding requirements](#cpi-rent-prefunding): set `prefundRent: true`, use the user's wallet as `payerKey`, and set a per-transaction spend cap on your policy.
+
+Prefunding applies only when the service adds the paymaster as the fee payer while keeping the original payer in the transaction. If the service replaces the original payer instead, `prefundRent` has no effect.
+
+When using prefunding:
+
+* Submit the transaction with `minContextSlot` set to the returned `simulationSlot`.
+* Use `estimatedRentLamports` as the total rent estimate. It already includes the prefund amount.
+* Request additional access for composed account creation and account-growth top-ups.
+
+Only rent is sponsored. The service rejects programs that deposit additional fees into the account they create, such as Metaplex Token Metadata creation, which includes a 0.01 SOL fee.
