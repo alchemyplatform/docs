@@ -156,14 +156,11 @@ Gas Manager signs each webhook request so your server can confirm it came from A
       signature: string | null,
       signingKey: string,
     ): boolean {
-      if (!signature) return false;
+      if (!signature || !/^[0-9a-f]{64}$/.test(signature)) return false;
       const expected = createHmac("sha256", signingKey)
         .update(rawBody, "utf8")
         .digest("hex");
-      return (
-        expected.length === signature.length &&
-        timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
-      );
+      return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
     }
     ```
 
