@@ -83,6 +83,7 @@ We support sponsoring rent for inner `SystemProgram.createAccount` calls. `Syste
 
 * **`payerKey` MUST be set to the user's wallet** — the same account your program's CPI will debit for rent. This is different from fee and top-level rent sponsorship, where `payerKey` can be any placeholder address. With `prefundRent: true`, the service targets `payerKey` by position: it transfers SOL to whatever account sits there, and only detects inner `createAccount` calls funded by that same account. If `payerKey` is a placeholder (or any account other than the CPI funder), prefunding silently misses and the transaction will fail on-chain for lack of rent.
 * **Set `maxSpendPerTxnUsd`** on every policy used with `prefundRent`. The request is rejected if the policy does not have this cap.
+* **Additional access is required** for composed account creation and for topping up rent when an account grows. Contact [support@alchemy.com](mailto:support@alchemy.com) to request access.
 
 ### Best practices
 
@@ -92,6 +93,7 @@ We support sponsoring rent for inner `SystemProgram.createAccount` calls. `Syste
 
 ### Notes
 
+* Only rent is sponsored. The service rejects programs that deposit additional fees into the account they create, such as Metaplex Token Metadata creation, which includes a 0.01 SOL fee.
 * Simulation is not the same as execution. Account state can change between sponsorship and submission, and programs can take different CPI paths at execution time.
   * If execution needs more lamports than the simulation predicted, the transaction will fail. If execution needs less, the extra SOL remains in the funded wallet and is still billed to your policy.
 * **Important:** Only use `prefundRent` for payloads you control or can validate. If an attacker can influence the transaction or the programs it invokes, they may be able to grief your policy by causing failed or unnecessarily expensive prefunds.
@@ -138,9 +140,4 @@ To enable prefunding, follow the [CPI rent prefunding requirements](#cpi-rent-pr
 
 Prefunding applies only when the service adds the paymaster as the fee payer while keeping the original payer in the transaction. If the service replaces the original payer instead, `prefundRent` has no effect.
 
-When using prefunding:
-
-* Use `estimatedRentLamports` as the total rent estimate. It already includes the prefund amount.
-* Request additional access for composed account creation and account-growth top-ups.
-
-Only rent is sponsored. The service rejects programs that deposit additional fees into the account they create, such as Metaplex Token Metadata creation, which includes a 0.01 SOL fee.
+The returned `estimatedRentLamports` includes the rent prefund amount, so you do not need to add `prefundLamports` to it.
