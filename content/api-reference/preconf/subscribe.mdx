@@ -8,10 +8,6 @@ slug: reference/preconf-grpc-subscribe
 
 Preconfirmation subscriptions stream Solana transactions from Jito BAM (Block Assembly Marketplace) nodes as they are sequenced into a block, before that block is produced. This lets latency-sensitive applications react to transaction activity ahead of the standard `processed` commitment level.
 
-<Info>
-  Preconfirmations are served from Alchemy's `alchemy.preconf.v1.Preconf` gRPC service. The endpoint is hosted on `solana-mainnet.streaming.alchemy.com:443` and uses the same `x-token` authentication header as [Yellowstone gRPC](/docs/reference/yellowstone-grpc-overview), but it is a separate service with its own proto package and its own `SubscribeRequest` schema.
-</Info>
-
 ## Overview
 
 Preconfirmed transactions are transactions that a Jito BAM slot leader has sequenced into the block it is building, before that block is produced. Alchemy receives preconfirmations from all 15 BAM regions over redundant connections and streams the ones matching your filters over gRPC.
@@ -25,9 +21,9 @@ Preconfirmed transactions are transactions that a Jito BAM slot leader has seque
 
 ## Endpoint and authentication
 
-* **Endpoint**: `solana-mainnet.streaming.alchemy.com:443` (TLS).
+* **Endpoint**: `solana-mainnet.streaming.alchemy.com` (TLS).
 * **Method**: `alchemy.preconf.v1.Preconf/Subscribe`, server-streaming: send one request, then receive a stream of updates. To change filters, open a new stream.
-* **Authentication**: your Alchemy API key in the `x-token` gRPC metadata header, the same as for [Yellowstone gRPC](/docs/reference/yellowstone-grpc-overview).
+* **Authentication**: your Alchemy API key in the `x-token` gRPC metadata header.
 
 Example with `grpcurl`, using the proto at the end of this page saved as `alchemy_preconf.proto`:
 
@@ -36,7 +32,7 @@ grpcurl \
   -import-path . -proto alchemy_preconf.proto \
   -H "x-token: {apiKey}" \
   -d '{"accountInclude": ["<ACCOUNT_PUBKEY>"]}' \
-  solana-mainnet.streaming.alchemy.com:443 \
+  solana-mainnet.streaming.alchemy.com \
   alchemy.preconf.v1.Preconf/Subscribe
 ```
 
