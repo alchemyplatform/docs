@@ -112,7 +112,12 @@ When building a v1 transaction for sponsorship, use these settings and limits:
 
 * **Compute units and loaded accounts data size:** Set both limits to nonzero values in the [transaction config](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0385-transaction-v1.md). Both default to `0`, which causes the service to reject the request. Unlike legacy and v0 transactions, v1 transactions no longer use `ComputeBudget` instructions to set these limits.
 * **Priority fee:** Set the [total fee in lamports](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0385-transaction-v1.md). The maximum value allowed is 10,000,000 lamports. This fee is charged once per transaction.
-* **Transaction size:** Stay within 4,096 bytes, including signatures, with at most 12 signatures, 64 accounts, and 64 instructions. Leave at least 96 bytes of room for the paymaster to be added as a signer. For comparison, legacy and v0 transactions allow 1,232 bytes. See [SIMD-0296](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0296-larger-transactions.md).
+* **Transaction size:** Stay within 4,096 bytes, including signatures, with at most 12 signatures, 64 accounts, and 64 instructions. These limits apply after the service modifies your transaction, so leave room for these additions:
+  * Adding the paymaster as a new signer uses one signature, one account, and 96 bytes.
+  * Rent prefunding adds one transfer instruction (18 bytes). If the transaction does not already reference the System Program, it also adds that account (32 bytes).
+  * To accommodate both additions, leave at least 146 bytes, one signature slot, two account slots, and one instruction slot available.
+
+  For comparison, legacy and v0 transactions allow 1,232 bytes. See [SIMD-0296](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0296-larger-transactions.md).
 * **Address lookup tables:** These are not supported in v1 transactions. See [SIMD-0385](https://github.com/solana-foundation/solana-improvement-documents/blob/main/proposals/0385-transaction-v1.md).
 * **Durable nonces:** Alchemy does not sponsor v1 transactions that use durable nonces. Solana plans to [remove durable nonces](https://solana.com/upgrades/durable-nonce-deprecation).
 
@@ -139,3 +144,11 @@ If the service adds the paymaster as a new signer, the returned transaction has 
 To enable prefunding, follow the [CPI rent prefunding requirements](#cpi-rent-prefunding): set `prefundRent: true`, use the user's wallet as `payerKey`, and set a per-transaction spend cap on your policy.
 
 Prefunding applies only when the service adds the paymaster as the fee payer while keeping the original payer in the transaction. If the service replaces the original payer instead, `prefundRent` has no effect.
+
+When prefunding adds a transfer, it shifts instruction positions. The service rejects v1 transactions with any of the following before signing:
+
+* An instruction that receives the Instructions sysvar.
+* A secp256k1 signature verification proof.
+* An Ed25519 or secp256r1 signature verification proof that references an explicit instruction index.
+
+Self-contained Ed25519 and secp256r1 proofs, with all instruction indices set to `0xffff`, are supported. These restrictions do not apply to fee-only sponsorship.
