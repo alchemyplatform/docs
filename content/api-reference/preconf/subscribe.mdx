@@ -1,0 +1,289 @@
+---
+title: Subscribe to Preconfirmed Transactions
+description: Stream Solana transactions from Jito BAM nodes before they land on-chain
+slug: reference/preconf-grpc-subscribe
+---
+
+# Subscribe to preconfirmed transactions
+
+Preconfirmation subscriptions stream Solana transactions from Jito BAM (Block Assembly Marketplace) nodes as they are sequenced into a block, before that block is produced. This lets latency-sensitive applications react to transaction activity ahead of the standard `processed` commitment level.
+
+## Overview
+
+Preconfirmed transactions are transactions that a Jito BAM slot leader has sequenced into the block it is building, before that block is produced. Alchemy receives preconfirmations from all 15 BAM regions over redundant connections and streams the ones matching your filters over gRPC.
+
+* **Earlier than confirmation**: transactions arrive while their block is still being built, ahead of the `processed` commitment.
+* **BAM-led slots only**: preconfirmations exist only for slots led by validators running Jito BAM. Other slots produce nothing on this stream.
+* **Not final**: a preconfirmed transaction can still be dropped if its slot is skipped or ends up on an abandoned fork.
+* **Delivered once**: each matching transaction reaches your subscription exactly once, even though BAM publishes it from many regions.
+* **Live only**: a subscription starts at the current moment. There is no history or replay, and transactions published while you are disconnected are not redelivered.
+* **Mainnet only, paid plans only.**
+
+## Endpoint and authentication
+
+* **Endpoint**: `solana-mainnet.streaming.alchemy.com` (TLS).
+* **Method**: `alchemy.preconf.v1.Preconf/Subscribe`, server-streaming: send one request, then receive a stream of updates. To change filters, open a new stream.
+* **Authentication**: your Alchemy API key in the `x-token` gRPC metadata header.
+
+Example with `grpcurl`, using the proto at the end of this page saved as `alchemy_preconf.proto`:
+
+```bash
+grpcurl \
+  -import-path . -proto alchemy_preconf.proto \
+  -H "x-token: {apiKey}" \
+  -d '{"accountInclude": ["<ACCOUNT_PUBKEY>"]}' \
+  solana-mainnet.streaming.alchemy.com \
+  alchemy.preconf.v1.Preconf/Subscribe
+```
+
+## Filter structure
+
+```rust
+message SubscribeRequest {
+  repeated string account_include = 1;
+  repeated string account_exclude = 2;
+  repeated string account_required = 3;
+  repeated string program_include = 4;
+  repeated string region_include = 5;
+  optional bool failed = 6;
+  repeated string signer_include = 8;
+  repeated string signer_exclude = 9;
+  repeated string signatures = 10;
+  repeated InstructionFilter instructions = 11;
+}
+
+message InstructionFilter {
+  string program_id = 1;
+  repeated Memcmp memcmp = 2;
+  optional uint64 data_size = 3;
+}
+
+message Memcmp {
+  uint64 offset = 1;
+  string bytes = 2;
+  optional string encoding = 3;
+}
+```
+
+<Warning>
+  At least one of `account_include`, `account_required`, `program_include`, `signer_include`, `signatures`, or `instructions` must be set. A request with no filters, or with only exclusions, is rejected with `INVALID_ARGUMENT`.
+</Warning>
+
+All filters you set must match, with two exceptions:
+
+* `account_include` and `program_include` are alternatives: when both are set, matching either is enough.
+* Exclusions always win, including over an account that is also listed in `account_include`.
+
+Public keys and signatures are base58 strings.
+
+## Filter options
+
+### Account include
+
+**Field**: `account_include`\
+**Type**: `repeated string`\
+**Default**: empty
+
+The transaction must reference at least one of these accounts. Accounts loaded through address lookup tables count. Up to 10,000 accounts.
+
+### Account required
+
+**Field**: `account_required`\
+**Type**: `repeated string`\
+**Default**: empty
+
+The transaction must reference all of these accounts. Accounts loaded through address lookup tables count. Up to 10,000 accounts.
+
+### Account exclude
+
+**Field**: `account_exclude`\
+**Type**: `repeated string`\
+**Default**: empty
+
+The transaction is dropped if it references any of these accounts, including through address lookup tables. Up to 10,000 accounts.
+
+### Program include
+
+**Field**: `program_include`\
+**Type**: `repeated string`\
+**Default**: empty
+
+A top-level instruction must invoke one of these programs. Inner (CPI) instructions are not checked. To match any transaction that references a program, including through CPI, put the program ID in `account_include` instead.
+
+### Signer include
+
+**Field**: `signer_include`\
+**Type**: `repeated string`\
+**Default**: empty
+
+The transaction must be signed by at least one of these accounts. Up to 10,000 accounts.
+
+### Signer exclude
+
+**Field**: `signer_exclude`\
+**Type**: `repeated string`\
+**Default**: empty
+
+The transaction is dropped if it is signed by any of these accounts. Up to 10,000 accounts.
+
+### Signatures
+
+**Field**: `signatures`\
+**Type**: `repeated string`\
+**Default**: empty
+
+The transaction's first signature must be one of these. Up to 1,000 signatures.
+
+### Instructions
+
+**Field**: `instructions`\
+**Type**: `repeated InstructionFilter`\
+**Default**: empty
+
+At least one top-level instruction must match one of these filters. Up to 16 filters. Each filter has:
+
+* **`program_id`**: the program the instruction invokes (required).
+* **`memcmp`**: up to 4 byte comparisons, all of which must match the instruction data:
+  * **`offset`**: byte offset into the instruction data.
+  * **`bytes`**: the bytes to compare, 1 to 128 bytes once decoded; `offset` plus length must be at most 4,096.
+  * **`encoding`**: `base58` (default), `base64`, or `hex`.
+* **`data_size`**: the exact instruction data length in bytes, at most 4,096.
+
+### Region include
+
+**Field**: `region_include`\
+**Type**: `repeated string`\
+**Default**: empty (all regions)
+
+Only deliver transactions published by these BAM regions: `ams`, `dfw`, `dub`, `ewr`, `fra`, `hkg`, `iad`, `lax`, `lon`, `pit`, `sea`, `sin`, `slc`, `sqq`, `tyo`.
+
+### Failed
+
+**Field**: `failed`\
+**Type**: `optional bool`\
+**Default**: unset
+
+When `true`:
+
+* Only transactions that failed are delivered.
+
+When `false`:
+
+* Transactions that failed are not delivered.
+
+When unset:
+
+* Transactions are delivered regardless of status.
+
+## Response structure
+
+```rust
+message PreconfUpdate {
+  oneof update {
+    PreconfNotification transaction = 1;
+    PreconfPing ping = 2;
+  }
+}
+
+message PreconfNotification {
+  uint64 slot = 1;
+  uint32 sequence_id = 2;
+  uint32 bundle_position = 3;
+  optional bool execution_success = 4;
+  string region = 5;
+  bytes transaction = 6;
+}
+
+message PreconfPing {}
+```
+
+### Fields
+
+* **`slot`**: the slot the transaction was sequenced into.
+* **`sequence_id`**: sequence number assigned by the BAM node.
+* **`bundle_position`**: position of the transaction within its bundle (`0` when it is not part of a bundle).
+* **`execution_success`**: whether the transaction executed successfully; unset if unknown.
+* **`region`**: the BAM region that published the transaction, for example `fra`.
+* **`transaction`**: the raw serialized Solana transaction (versioned transaction wire format).
+
+### Update types
+
+* **`transaction`**: a preconfirmed transaction matching your filters.
+* **`ping`**: sent after about 15 seconds without traffic so proxies keep the stream open. It carries no data and can be ignored.
+
+### Delivery
+
+* Each transaction is delivered once per subscription.
+* A transaction that matches your filters only through an address lookup table Alchemy has not loaded yet is delivered up to about 2 seconds after other transactions.
+* There is no ordering across BAM regions; transactions arrive in the order each region publishes them.
+
+## Pricing
+
+* 100 CU per delivered preconfirmation, with a minimum of 3,000 CU for each slot in which your subscription receives at least one preconfirmation (`max(100 × n, 3,000)` CU per slot).
+* Slots with no matching transactions cost nothing.
+* Opening a stream is free.
+
+## Errors
+
+* **`INVALID_ARGUMENT`**: no include filter set, an invalid public key, signature, or `memcmp` value, or a limit exceeded.
+* **`UNAUTHENTICATED`**: missing or invalid API key.
+* **`PERMISSION_DENIED`**: the team is on the Free plan.
+* **`RESOURCE_EXHAUSTED`**: the team's monthly CU limit has been reached; open streams end with this status.
+
+## Proto
+
+```rust
+syntax = "proto3";
+
+package alchemy.preconf.v1;
+
+message SubscribeRequest {
+  repeated string account_include = 1;
+  repeated string account_exclude = 2;
+  repeated string account_required = 3;
+  repeated string program_include = 4;
+  repeated string region_include = 5;
+  optional bool failed = 6;
+  reserved 7;
+  reserved "dedupe";
+  repeated string signer_include = 8;
+  repeated string signer_exclude = 9;
+  repeated string signatures = 10;
+  repeated InstructionFilter instructions = 11;
+}
+
+message InstructionFilter {
+  string program_id = 1;
+  repeated Memcmp memcmp = 2;
+  optional uint64 data_size = 3;
+}
+
+message Memcmp {
+  uint64 offset = 1;
+  string bytes = 2;
+  // "base58" (default), "base64" or "hex".
+  optional string encoding = 3;
+}
+
+message PreconfNotification {
+  uint64 slot = 1;
+  uint32 sequence_id = 2;
+  uint32 bundle_position = 3;
+  optional bool execution_success = 4;
+  string region = 5;
+  bytes transaction = 6;
+}
+
+message PreconfPing {}
+
+message PreconfUpdate {
+  oneof update {
+    PreconfNotification transaction = 1;
+    PreconfPing ping = 2;
+  }
+}
+
+service Preconf {
+  rpc Subscribe(SubscribeRequest) returns (stream PreconfUpdate);
+}
+```
