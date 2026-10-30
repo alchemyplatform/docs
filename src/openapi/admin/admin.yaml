@@ -443,6 +443,70 @@ paths:
                         items:
                           $ref: "#/components/schemas/Sponsorship"
 
+  "/api/gasManager/policy/{id}/webhookSigningKey":
+    get:
+      summary: Get Webhook Signing Key
+      description: |
+        Returns the key used to sign the policy's custom rules webhook requests. The key is created the first time you call this endpoint, and Gas Manager starts signing webhook requests for the policy from then on.
+
+        Each signed request includes an `X-Alchemy-Signature` header. See [verify webhook requests](/docs/wallets/transactions/sponsor-gas/conditional-sponsorship-rules#verify-webhook-requests).
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your [access token](/docs/how-to-create-access-keys) in the [authorization header](/docs/how-to-use-api-keys-in-http-headers) of the API request. The access token needs Gas Manager read and write access.
+        </Note>
+      operationId: get-webhook-signing-key
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          description: ID of the policy.
+          in: path
+          required: true
+          schema:
+            type: string
+            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
+      responses:
+        "200":
+          description: Webhook signing key fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/WebhookSigningKey"
+
+  "/api/gasManager/policy/{id}/webhookSigningKey/reset":
+    post:
+      summary: Reset Webhook Signing Key
+      description: |
+        Replaces the policy's webhook signing key with a new one. Gas Manager signs requests with the new key immediately, and the previous key stops working.
+
+        <Note title="Header Access Token">
+          To call this endpoint, you must use your [access token](/docs/how-to-create-access-keys) in the [authorization header](/docs/how-to-use-api-keys-in-http-headers) of the API request. The access token needs Gas Manager read and write access.
+        </Note>
+      operationId: reset-webhook-signing-key
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          description: ID of the policy.
+          in: path
+          required: true
+          schema:
+            type: string
+            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
+      responses:
+        "200":
+          description: Webhook signing key reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/WebhookSigningKey"
+
 components:
   securitySchemes:
     BearerAuth:
@@ -703,6 +767,16 @@ components:
         - uoHash
         - uoExplorerUrl
         - network
+
+    WebhookSigningKey:
+      type: object
+      properties:
+        signingKey:
+          type: string
+          description: Key used to sign the policy's custom rules webhook requests. Keep it secret.
+          example: "whsec_dGhpcy1pcy1hbi1leGFtcGxlLWtleS1vbmx5LTAwMDA"
+      required:
+        - signingKey
 
     Erc20NetworkStats:
       type: object

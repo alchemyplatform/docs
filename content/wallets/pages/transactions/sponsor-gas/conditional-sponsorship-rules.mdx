@@ -121,6 +121,55 @@ In the Admin API, this configuration is represented as:
 }
 ```
 
+### Verify webhook requests
+
+Gas Manager signs each webhook request so your server can confirm it came from Alchemy and wasn't modified. The `X-Alchemy-Signature` header contains the hex-encoded HMAC-SHA256 of the raw request body, computed with your policy's webhook signing key.
+
+<Steps>
+  <Step title="Get your signing key">
+    Call [get webhook signing key](/docs/wallets/api-reference/gas-manager-admin-api/admin-api-endpoints/get-webhook-signing-key) with an access token that has Gas Manager read and write access. Gas Manager starts signing the policy's webhook requests after you fetch the key for the first time.
+
+    ```bash
+    curl https://manage.g.alchemy.com/api/gasManager/policy/YOUR_POLICY_ID/webhookSigningKey \
+      -H "Authorization: Bearer $ALCHEMY_ACCESS_TOKEN"
+    ```
+
+    ```json
+    {
+      "data": {
+        "signingKey": "whsec_..."
+      }
+    }
+    ```
+
+    Store the key as a secret on your server.
+  </Step>
+
+  <Step title="Verify the signature">
+    Compute the HMAC-SHA256 of the raw request body using the full signing key, including the `whsec_` prefix, and compare it to the header. Use the body exactly as received: parsing and re-serializing the JSON changes the bytes and breaks the comparison.
+
+    ```ts
+    import { createHmac, timingSafeEqual } from "node:crypto";
+
+    export function isValidSignature(
+      rawBody: string,
+      signature: string | null,
+      signingKey: string,
+    ): boolean {
+      if (!signature || !/^[0-9a-f]{64}$/.test(signature)) return false;
+      const expected = createHmac("sha256", signingKey)
+        .update(rawBody, "utf8")
+        .digest("hex");
+      return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+    }
+    ```
+
+    Respond with an error status, such as `401`, to requests with a missing or invalid signature, and don't evaluate them.
+  </Step>
+</Steps>
+
+To replace the key, call [reset webhook signing key](/docs/wallets/api-reference/gas-manager-admin-api/admin-api-endpoints/reset-webhook-signing-key). The previous key stops working immediately, so update your server with the new key right away. Until you do, your server responds to Gas Manager's requests with an error status, and Gas Manager handles them according to your `approveOnFailure` setting.
+
 ## Next steps
 
 * [Gas sponsorship quickstart](/docs/wallets/transactions/sponsor-gas)
