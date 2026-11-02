@@ -243,7 +243,12 @@ components:
     GetTransactionsForAddressFilters:
       title: GetTransactionsForAddress Filters
       type: object
-      description: Advanced filtering options for narrowing down results.
+      description: >-
+        Advanced filtering options for narrowing down results. Only
+        transactions that reference the provided address are returned;
+        transactions that only touch token accounts owned by the address
+        (for example incoming SPL token transfers or airdrops) are not
+        included.
       properties:
         slot:
           type: object
@@ -304,19 +309,6 @@ components:
             - failed
             - any
           default: any
-        tokenAccounts:
-          type: string
-          description: >-
-            Filter transactions for related token accounts. `none` returns only
-            transactions that reference the provided address. `balanceChanged`
-            also returns transactions that modify the balance of a token account
-            owned by the provided address. `all` returns transactions that
-            reference the provided address or any token account owned by it.
-          enum:
-            - none
-            - balanceChanged
-            - all
-          default: none
     GetTransactionsForAddressConfig:
       title: GetTransactionsForAddress Configuration
       type: object
